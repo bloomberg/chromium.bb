@@ -1000,8 +1000,8 @@ void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
     BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
                                { xd->plane[0].dst.stride, 0, 0 } };
     if (!ctx) ctx = &default_ctx;
-    av1_build_interintra_predictors_sby(cm, xd, xd->plane[0].dst.buf,
-                                        xd->plane[0].dst.stride, ctx, bsize);
+    av1_build_interintra_predictors_sbp(cm, xd, xd->plane[0].dst.buf,
+                                        xd->plane[0].dst.stride, ctx, 0, bsize);
   }
 }
 
@@ -1640,42 +1640,23 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
       inter_pred, inter_stride, intra_pred, intra_stride);
 }
 
-void av1_build_interintra_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         uint8_t *ypred, int ystride,
-                                         BUFFER_SET *ctx, BLOCK_SIZE bsize) {
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    DECLARE_ALIGNED(16, uint16_t, intrapredictor[MAX_SB_SQUARE]);
-    av1_build_intra_predictors_for_interintra(
-        cm, xd, bsize, 0, ctx, CONVERT_TO_BYTEPTR(intrapredictor), MAX_SB_SIZE);
-    av1_combine_interintra(xd, bsize, 0, ypred, ystride,
-                           CONVERT_TO_BYTEPTR(intrapredictor), MAX_SB_SIZE);
-    return;
-  }
-  {
-    DECLARE_ALIGNED(16, uint8_t, intrapredictor[MAX_SB_SQUARE]);
-    av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, ctx,
-                                              intrapredictor, MAX_SB_SIZE);
-    av1_combine_interintra(xd, bsize, 0, ypred, ystride, intrapredictor,
-                           MAX_SB_SIZE);
-  }
-}
-
-void av1_build_interintra_predictors_sbc(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         uint8_t *upred, int ustride,
+// build interintra_predictors for one plane
+void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                         uint8_t *pred, int stride,
                                          BUFFER_SET *ctx, int plane,
                                          BLOCK_SIZE bsize) {
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    DECLARE_ALIGNED(16, uint16_t, uintrapredictor[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint16_t, intrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(
-        cm, xd, bsize, plane, ctx, CONVERT_TO_BYTEPTR(uintrapredictor),
+        cm, xd, bsize, plane, ctx, CONVERT_TO_BYTEPTR(intrapredictor),
         MAX_SB_SIZE);
-    av1_combine_interintra(xd, bsize, plane, upred, ustride,
-                           CONVERT_TO_BYTEPTR(uintrapredictor), MAX_SB_SIZE);
+    av1_combine_interintra(xd, bsize, plane, pred, stride,
+                           CONVERT_TO_BYTEPTR(intrapredictor), MAX_SB_SIZE);
   } else {
-    DECLARE_ALIGNED(16, uint8_t, uintrapredictor[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint8_t, intrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(cm, xd, bsize, plane, ctx,
-                                              uintrapredictor, MAX_SB_SIZE);
-    av1_combine_interintra(xd, bsize, plane, upred, ustride, uintrapredictor,
+                                              intrapredictor, MAX_SB_SIZE);
+    av1_combine_interintra(xd, bsize, plane, pred, stride, intrapredictor,
                            MAX_SB_SIZE);
   }
 }
@@ -1684,8 +1665,8 @@ void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           uint8_t *upred, uint8_t *vpred,
                                           int ustride, int vstride,
                                           BUFFER_SET *ctx, BLOCK_SIZE bsize) {
-  av1_build_interintra_predictors_sbc(cm, xd, upred, ustride, ctx, 1, bsize);
-  av1_build_interintra_predictors_sbc(cm, xd, vpred, vstride, ctx, 2, bsize);
+  av1_build_interintra_predictors_sbp(cm, xd, upred, ustride, ctx, 1, bsize);
+  av1_build_interintra_predictors_sbp(cm, xd, vpred, vstride, ctx, 2, bsize);
 }
 
 void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -1693,7 +1674,7 @@ void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      uint8_t *vpred, int ystride, int ustride,
                                      int vstride, BUFFER_SET *ctx,
                                      BLOCK_SIZE bsize) {
-  av1_build_interintra_predictors_sby(cm, xd, ypred, ystride, ctx, bsize);
+  av1_build_interintra_predictors_sbp(cm, xd, ypred, ystride, ctx, 0, bsize);
   av1_build_interintra_predictors_sbuv(cm, xd, upred, vpred, ustride, vstride,
                                        ctx, bsize);
 }

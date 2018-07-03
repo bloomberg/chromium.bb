@@ -859,8 +859,8 @@ static void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
     BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
                                { xd->plane[0].dst.stride, 0, 0 } };
     if (!ctx) ctx = &default_ctx;
-    av1_build_interintra_predictors_sby(cm, xd, xd->plane[0].dst.buf,
-                                        xd->plane[0].dst.stride, ctx, bsize);
+    av1_build_interintra_predictors_sbp(cm, xd, xd->plane[0].dst.buf,
+                                        xd->plane[0].dst.stride, ctx, 0, bsize);
   }
 }
 
