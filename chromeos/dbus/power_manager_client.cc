@@ -463,6 +463,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
   }
 
+  void DeferScreenDim() override {
+    SimpleMethodCallToPowerManager(power_manager::kDeferScreenDimMethod);
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     power_manager_proxy_ = bus->GetObjectProxy(
@@ -496,6 +500,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
          &PowerManagerClientImpl::SuspendDoneReceived},
         {power_manager::kDarkSuspendImminentSignal,
          &PowerManagerClientImpl::DarkSuspendImminentReceived},
+        {power_manager::kScreenDimImminentSignal,
+         &PowerManagerClientImpl::ScreenDimImminentReceived},
         {power_manager::kIdleActionImminentSignal,
          &PowerManagerClientImpl::IdleActionImminentReceived},
         {power_manager::kIdleActionDeferredSignal,
@@ -884,6 +890,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     for (auto& observer : observers_)
       observer.SuspendDone(duration);
     base::PowerMonitorDeviceSource::HandleSystemResumed();
+  }
+
+  void ScreenDimImminentReceived(dbus::Signal* signal) {
+    for (auto& observer : observers_)
+      observer.ScreenDimImminent();
   }
 
   void IdleActionImminentReceived(dbus::Signal* signal) {
