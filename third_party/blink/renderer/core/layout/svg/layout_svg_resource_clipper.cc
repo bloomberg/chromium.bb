@@ -244,8 +244,8 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
        Traversal<SVGElement>::ChildrenOf(*GetElement())) {
     if (!ContributesToClip(child_element))
       continue;
-    IntPoint hit_point;
-    HitTestResult result(HitTestRequest::kSVGClipContent, hit_point);
+    HitTestLocation location((LayoutPoint()));
+    HitTestResult result(HitTestRequest::kSVGClipContent, location);
     LayoutObject* layout_object = child_element.GetLayoutObject();
 
     DCHECK(!layout_object->IsBoxModelObject() ||

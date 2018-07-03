@@ -1663,8 +1663,9 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestResult hit_test_result = HitTestResult(request, point);
-  layer->HitTest(hit_test_result);
+  HitTestLocation location(point);
+  HitTestResult hit_test_result = HitTestResult(request, location);
+  layer->HitTest(location, hit_test_result);
 
   Node* node = hit_test_result.InnerNode();
   if (!node)

@@ -1327,9 +1327,9 @@ Response InspectorDOMAgent::getNodeForLocation(
   LayoutPoint document_point(x, y);
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
-  HitTestResult result(request,
-                       document_->View()->DocumentToFrame(document_point));
-  document_->GetFrame()->ContentLayoutObject()->HitTest(result);
+  HitTestLocation location(document_->View()->DocumentToFrame(document_point));
+  HitTestResult result(request, location);
+  document_->GetFrame()->ContentLayoutObject()->HitTest(location, result);
   if (!include_user_agent_shadow_dom)
     result.SetToShadowHostIfInRestrictedShadowRoot();
   Node* node = result.InnerPossiblyPseudoNode();

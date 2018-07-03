@@ -155,6 +155,8 @@ WebInputEventResult GestureManager::HandleGestureTap(
   uint64_t pre_dispatch_style_version = frame_->GetDocument()->StyleVersion();
 
   HitTestResult current_hit_test = targeted_event.GetHitTestResult();
+  const HitTestLocation& current_hit_test_location =
+      targeted_event.GetHitTestLocation();
 
   // We use the adjusted position so the application isn't surprised to see a
   // event with co-ordinates outside the target's bounds.
@@ -237,7 +239,8 @@ WebInputEventResult GestureManager::HandleGestureTap(
     }
     if (mouse_down_event_result == WebInputEventResult::kNotHandled) {
       mouse_down_event_result = mouse_event_manager_->HandleMousePressEvent(
-          MouseEventWithHitTestResults(fake_mouse_down, current_hit_test));
+          MouseEventWithHitTestResults(
+              fake_mouse_down, current_hit_test_location, current_hit_test));
     }
   }
 
@@ -292,9 +295,11 @@ WebInputEventResult GestureManager::HandleGestureTap(
     mouse_event_manager_->SetClickElement(nullptr);
   }
 
-  if (mouse_up_event_result == WebInputEventResult::kNotHandled)
+  if (mouse_up_event_result == WebInputEventResult::kNotHandled) {
     mouse_up_event_result = mouse_event_manager_->HandleMouseReleaseEvent(
-        MouseEventWithHitTestResults(fake_mouse_up, current_hit_test));
+        MouseEventWithHitTestResults(fake_mouse_up, current_hit_test_location,
+                                     current_hit_test));
+  }
   mouse_event_manager_->ClearDragHeuristicState();
 
   WebInputEventResult event_result = EventHandlingUtil::MergeEventResult(
@@ -326,10 +331,10 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
   // overhaul of the touch drag-and-drop code and LongPress is such a special
   // scenario that it's unlikely to matter much in practice.
 
-  IntPoint hit_test_point = frame_->View()->ConvertFromRootFrame(
-      FlooredIntPoint(gesture_event.PositionInRootFrame()));
+  HitTestLocation location(frame_->View()->ConvertFromRootFrame(
+      FlooredIntPoint(gesture_event.PositionInRootFrame())));
   HitTestResult hit_test_result =
-      frame_->GetEventHandler().HitTestResultAtPoint(hit_test_point);
+      frame_->GetEventHandler().HitTestResultAtLocation(location);
 
   long_tap_should_invoke_context_menu_ = false;
   bool hit_test_contains_links = hit_test_result.URLElement() ||

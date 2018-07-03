@@ -348,9 +348,10 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
 
 TEST_F(EventHandlerTest, HitOnNothingDoesNotShowIBeam) {
   SetHtmlInnerHTML("");
+  HitTestLocation location((LayoutPoint(10, 10)));
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
-          LayoutPoint(10, 10));
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
   EXPECT_FALSE(
       GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
           GetDocument().body(), hit));
@@ -359,10 +360,10 @@ TEST_F(EventHandlerTest, HitOnNothingDoesNotShowIBeam) {
 TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
   SetHtmlInnerHTML("blabla");
   Node* const text = GetDocument().body()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -373,10 +374,10 @@ TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
 TEST_F(EventHandlerTest, HitOnUserSelectNoneDoesNotShowIBeam) {
   SetHtmlInnerHTML("<span style='user-select: none'>blabla</span>");
   Node* const text = GetDocument().body()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_FALSE(text->CanStartSelection());
   EXPECT_FALSE(
@@ -390,10 +391,10 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectNone) {
       "<span style='user-select: text' id='bla'>blabla</span>", "host");
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -408,10 +409,10 @@ TEST_F(EventHandlerTest, UserSelectAllCanOverrideUserSelectNone) {
       "</div>");
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -426,10 +427,10 @@ TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectAll) {
       "</div>");
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_FALSE(text->CanStartSelection());
   EXPECT_FALSE(
@@ -444,10 +445,10 @@ TEST_F(EventHandlerTest, UserSelectTextCanOverrideUserSelectNone) {
       "</div>");
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -461,10 +462,10 @@ TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectText) {
       "<span style='user-select: none'>blabla</span>"
       "</div>");
   Node* const text = GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_FALSE(text->CanStartSelection());
   EXPECT_FALSE(
@@ -478,10 +479,10 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectText) {
       "<span style='user-select: none' id='bla'>blabla</span>", "host");
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_FALSE(text->CanStartSelection());
   EXPECT_FALSE(
@@ -493,10 +494,10 @@ TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
   SetHtmlInnerHTML("<input value='blabla'>");
   auto* const field = ToHTMLInputElement(GetDocument().body()->firstChild());
   Element* const text = field->InnerEditorElement();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -513,10 +514,10 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
       ToHTMLInputElement(GetDocument().getElementById("sample"));
   Node* const text = input->InnerEditorElement()->firstChild();
 
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_TRUE(text->CanStartSelection());
   EXPECT_TRUE(
@@ -527,10 +528,10 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
 TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
   SetHtmlInnerHTML("<img>");
   Element* const img = ToElement(GetDocument().body()->firstChild());
-  LayoutPoint location =
-      img->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestLocation location(
+      img->GetLayoutObject()->FirstFragment().VisualRect().Center());
   HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   EXPECT_FALSE(img->CanStartSelection());
   EXPECT_FALSE(
@@ -541,24 +542,24 @@ TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
 TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
   SetHtmlInnerHTML("<a href='bala'>link text</a>");
   Node* const link = GetDocument().body()->firstChild();
-  LayoutPoint location =
-      link->GetLayoutObject()->FirstFragment().VisualRect().Center();
-  HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+  HitTestLocation location(
+      link->GetLayoutObject()->FirstFragment().VisualRect().Center());
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   Node* const text = link->firstChild();
   EXPECT_FALSE(text->CanStartSelection());
-  EXPECT_TRUE(hit.IsOverLink());
+  EXPECT_TRUE(result.IsOverLink());
   // ShouldShowIBeamForNode() returns |cursor: auto|'s value.
   // In https://github.com/w3c/csswg-drafts/issues/1598 it was decided that:
   // a { cursor: auto } /* gives I-beam over links */
   EXPECT_TRUE(
-      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
-                                                                         hit));
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
+          text, result));
   EXPECT_EQ(GetDocument()
                 .GetFrame()
                 ->GetEventHandler()
-                .SelectCursor(hit)
+                .SelectCursor(location, result)
                 .GetCursor()
                 .GetType(),
             Cursor::Type::kHand);  // A hand signals ability to navigate.
@@ -567,21 +568,21 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
 TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
   SetHtmlInnerHTML("<a contenteditable='true' href='bala'>editable link</a>");
   Node* const link = GetDocument().body()->firstChild();
-  LayoutPoint location =
-      link->GetLayoutObject()->FirstFragment().VisualRect().Center();
-  HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+  HitTestLocation location(
+      link->GetLayoutObject()->FirstFragment().VisualRect().Center());
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
   Node* const text = link->firstChild();
   EXPECT_TRUE(text->CanStartSelection());
-  EXPECT_TRUE(hit.IsOverLink());
+  EXPECT_TRUE(result.IsOverLink());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
-                                                                         hit));
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
+          text, result));
   EXPECT_EQ(GetDocument()
                 .GetFrame()
                 ->GetEventHandler()
-                .SelectCursor(hit)
+                .SelectCursor(location, result)
                 .GetCursor()
                 .GetType(),
             Cursor::Type::kIBeam);  // An I-beam signals editability.

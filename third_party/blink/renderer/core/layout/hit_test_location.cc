@@ -28,6 +28,9 @@ namespace blink {
 HitTestLocation::HitTestLocation()
     : is_rect_based_(false), is_rectilinear_(true) {}
 
+HitTestLocation::HitTestLocation(const IntPoint& point)
+    : HitTestLocation(LayoutPoint(point)) {}
+
 HitTestLocation::HitTestLocation(const LayoutPoint& point)
     : point_(point),
       bounding_box_(RectForPoint(point)),
@@ -43,6 +46,9 @@ HitTestLocation::HitTestLocation(const FloatPoint& point)
       transformed_rect_(FloatRect(bounding_box_)),
       is_rect_based_(false),
       is_rectilinear_(true) {}
+
+HitTestLocation::HitTestLocation(const DoublePoint& point)
+    : HitTestLocation(FloatPoint(point)) {}
 
 HitTestLocation::HitTestLocation(const FloatPoint& point, const FloatQuad& quad)
     : transformed_point_(point), transformed_rect_(quad), is_rect_based_(true) {

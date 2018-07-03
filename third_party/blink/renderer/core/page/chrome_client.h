@@ -71,6 +71,7 @@ class GraphicsLayer;
 class HTMLFormControlElement;
 class HTMLInputElement;
 class HTMLSelectElement;
+class HitTestLocation;
 class HitTestResult;
 class IntRect;
 class KeyboardEvent;
@@ -219,7 +220,9 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void ResizeAfterLayout() const {}
   virtual void LayoutUpdated() const {}
 
-  void MouseDidMoveOverElement(LocalFrame&, const HitTestResult&);
+  void MouseDidMoveOverElement(LocalFrame&,
+                               const HitTestLocation&,
+                               const HitTestResult&);
   virtual void SetToolTip(LocalFrame&, const String&, TextDirection) = 0;
   void ClearToolTip(LocalFrame&);
 
@@ -381,7 +384,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   bool CanOpenModalIfDuringPageDismissal(Frame& main_frame,
                                          DialogType,
                                          const String& message);
-  void SetToolTip(LocalFrame&, const HitTestResult&);
+  void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;
   LayoutPoint last_tool_tip_point_;

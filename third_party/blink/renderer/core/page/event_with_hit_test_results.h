@@ -35,8 +35,11 @@ class EventWithHitTestResults {
 
  public:
   EventWithHitTestResults(const EventType& event,
+                          const HitTestLocation& location,
                           const HitTestResult& hit_test_result)
-      : event_(event), hit_test_result_(hit_test_result) {}
+      : event_(event),
+        hit_test_result_(hit_test_result),
+        hit_test_location_(location) {}
 
   const EventType& Event() const { return event_; }
   const HitTestResult& GetHitTestResult() const { return hit_test_result_; }
@@ -52,9 +55,17 @@ class EventWithHitTestResults {
     return hit_test_result_.CanvasRegionId();
   }
 
+  const HitTestLocation& GetHitTestLocation() const {
+    return hit_test_location_;
+  }
+  void SetHitTestLocation(const HitTestLocation& new_location) {
+    hit_test_location_ = new_location;
+  }
+
  private:
   EventType event_;
   HitTestResult hit_test_result_;
+  HitTestLocation hit_test_location_;
 };
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;

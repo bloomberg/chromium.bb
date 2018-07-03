@@ -41,10 +41,12 @@ class CORE_EXPORT HitTestLocation {
   // Note that all points are in contents (aka "page") coordinate space for the
   // document that is being hit tested.
   HitTestLocation();
-  HitTestLocation(const LayoutPoint&);
-  HitTestLocation(const FloatPoint&);
-  HitTestLocation(const FloatPoint&, const FloatQuad&);
-  HitTestLocation(const LayoutRect&);
+  explicit HitTestLocation(const LayoutPoint&);
+  explicit HitTestLocation(const IntPoint&);
+  explicit HitTestLocation(const FloatPoint&);
+  explicit HitTestLocation(const DoublePoint&);
+  explicit HitTestLocation(const FloatPoint&, const FloatQuad&);
+  explicit HitTestLocation(const LayoutRect&);
   HitTestLocation(const HitTestLocation&, const LayoutSize& offset);
   HitTestLocation(const HitTestLocation&);
   ~HitTestLocation();

@@ -20,7 +20,8 @@ HitTestResult HitTestResultInFrame(
     LocalFrame* frame,
     const LayoutPoint& point,
     HitTestRequest::HitTestRequestType hit_type) {
-  HitTestResult result(HitTestRequest(hit_type), point);
+  HitTestLocation location(point);
+  HitTestResult result(HitTestRequest(hit_type), location);
 
   if (!frame || !frame->ContentLayoutObject())
     return result;
@@ -29,7 +30,7 @@ HitTestResult HitTestResultInFrame(
     if (!rect.Contains(RoundedIntPoint(point)))
       return result;
   }
-  frame->ContentLayoutObject()->HitTest(result);
+  frame->ContentLayoutObject()->HitTest(location, result);
   return result;
 }
 

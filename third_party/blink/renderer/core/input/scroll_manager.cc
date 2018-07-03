@@ -763,8 +763,9 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     LayoutPoint view_point = view->ConvertFromRootFrame(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     HitTestRequest request(HitTestRequest::kReadOnly);
-    HitTestResult result(request, view_point);
-    document->GetLayoutView()->HitTest(result);
+    HitTestLocation location(view_point);
+    HitTestResult result(request, location);
+    document->GetLayoutView()->HitTest(location, result);
 
     event_target = result.InnerNode();
 

@@ -89,9 +89,10 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
   good_targets.clear();
   LayoutPoint hit_point(main_frame->View()->ConvertFromRootFrame(
       touch_box_in_root_frame.Location()));
-  LayoutRect hit_rect(hit_point, LayoutSize(touch_box_in_root_frame.Size()));
-  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtRect(
-      hit_rect, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+  HitTestLocation location(
+      LayoutRect(hit_point, LayoutSize(touch_box_in_root_frame.Size())));
+  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                     HitTestRequest::kListBased);
   const HeapListHashSet<Member<Node>>& hit_results =
       result.ListBasedTestResult();

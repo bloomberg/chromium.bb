@@ -572,12 +572,13 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   if (!frame)
     return false;
 
-  IntPoint location = FrameRect().Location();
-  LayoutRect document_rect(location.X() + rect.x, location.Y() + rect.y,
-                           rect.width, rect.height);
-  HitTestResult result = frame->GetEventHandler().HitTestResultAtRect(
-      document_rect, HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                         HitTestRequest::kListBased);
+  IntPoint frame_location = FrameRect().Location();
+  HitTestLocation location(LayoutRect(frame_location.X() + rect.x,
+                                      frame_location.Y() + rect.y, rect.width,
+                                      rect.height));
+  HitTestResult result = frame->GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                    HitTestRequest::kListBased);
   const HitTestResult::NodeSet& nodes = result.ListBasedTestResult();
   if (nodes.size() != 1)
     return false;

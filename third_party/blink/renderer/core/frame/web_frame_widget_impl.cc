@@ -750,10 +750,11 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   // capture because it will interfere with the scrollbar receiving events.
   LayoutPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
   if (event.button == WebMouseEvent::Button::kLeft) {
-    point = LocalRootImpl()->GetFrameView()->ConvertFromRootFrame(point);
+    HitTestLocation location(
+        LocalRootImpl()->GetFrameView()->ConvertFromRootFrame(point));
     HitTestResult result(
-        LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtPoint(
-            point));
+        LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+            location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
     Node* hit_node = result.InnerNode();
 
@@ -1141,9 +1142,10 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   LayoutPoint doc_point(
       LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame));
+  HitTestLocation location(doc_point);
   HitTestResult result =
-      LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtPoint(
-          doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+      LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }

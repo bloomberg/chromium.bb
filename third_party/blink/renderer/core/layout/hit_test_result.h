@@ -59,8 +59,6 @@ class CORE_EXPORT HitTestResult {
   typedef HeapListHashSet<Member<Node>> NodeSet;
 
   HitTestResult();
-  HitTestResult(const HitTestRequest&, const LayoutPoint&);
-  HitTestResult(const HitTestRequest&, const LayoutRect&);
   HitTestResult(const HitTestRequest&, const HitTestLocation&);
   HitTestResult(const HitTestResult&);
   ~HitTestResult();
@@ -68,7 +66,7 @@ class CORE_EXPORT HitTestResult {
   void Trace(blink::Visitor*);
 
   bool EqualForCacheability(const HitTestResult&) const;
-  void CacheValues(const HitTestResult&);
+  void CacheValues(const HitTestResult& other);
 
   // Populate this object based on another HitTestResult; similar to assignment
   // operator but don't assign any of the request parameters. ie. This method
@@ -97,15 +95,7 @@ class CORE_EXPORT HitTestResult {
   }
 
   // Forwarded from HitTestLocation
-  bool IsRectBasedTest() const { return hit_test_location_.IsRectBasedTest(); }
-
-  // The hit-tested point in the coordinates of the main frame.
-  const LayoutPoint& PointInMainFrame() const {
-    return hit_test_location_.Point();
-  }
-  IntPoint RoundedPointInMainFrame() const {
-    return RoundedIntPoint(PointInMainFrame());
-  }
+  bool IsRectBasedTest() const { return is_rect_based_test_; }
 
   // The hit-tested point in the coordinates of the innerNode frame, the frame
   // containing innerNode.
@@ -132,9 +122,6 @@ class CORE_EXPORT HitTestResult {
 
   void SetToShadowHostIfInRestrictedShadowRoot();
 
-  const HitTestLocation& GetHitTestLocation() const {
-    return hit_test_location_;
-  }
   const HitTestRequest& GetHitTestRequest() const { return hit_test_request_; }
 
   void SetInnerNode(Node*);
@@ -145,7 +132,7 @@ class CORE_EXPORT HitTestResult {
     is_over_embedded_content_view_ = b;
   }
 
-  bool IsSelected() const;
+  bool IsSelected(const HitTestLocation& location) const;
   String Title(TextDirection&) const;
   const AtomicString& AltDisplayString() const;
   Image* GetImage() const;
@@ -188,14 +175,14 @@ class CORE_EXPORT HitTestResult {
 
   // Collapse the rect-based test result into a single target at the specified
   // location.
-  void ResolveRectBasedTest(Node* resolved_inner_node,
-                            const LayoutPoint& resolved_point_in_main_frame);
+  HitTestLocation ResolveRectBasedTest(
+      Node* resolved_inner_node,
+      const LayoutPoint& resolved_point_in_main_frame);
 
  private:
   NodeSet& MutableListBasedTestResult();  // See above.
   HTMLMediaElement* MediaElement() const;
 
-  HitTestLocation hit_test_location_;
   HitTestRequest hit_test_request_;
   bool cacheable_;
 
@@ -217,6 +204,7 @@ class CORE_EXPORT HitTestResult {
 
   mutable Member<NodeSet> list_based_test_result_;
   String canvas_region_id_;
+  bool is_rect_based_test_;
 };
 
 }  // namespace blink

@@ -434,14 +434,14 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
-  LayoutPoint point(event.PositionInWidget());
   if (event.button == WebMouseEvent::Button::kLeft &&
       page_->MainFrame()->IsLocalFrame()) {
-    point =
-        page_->DeprecatedLocalMainFrame()->View()->ConvertFromRootFrame(point);
+    HitTestLocation location(
+        page_->DeprecatedLocalMainFrame()->View()->ConvertFromRootFrame(
+            event.PositionInWidget()));
     HitTestResult result(page_->DeprecatedLocalMainFrame()
                              ->GetEventHandler()
-                             .HitTestResultAtPoint(point));
+                             .HitTestResultAtLocation(location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
     Node* hit_node = result.InnerNodeOrImageMapImage();
 
@@ -665,7 +665,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
             // Stash the position of the node that would've been used absent
             // disambiguation, for UMA purposes.
             last_tap_disambiguation_best_candidate_position_ =
-                targeted_event.GetHitTestResult().RoundedPointInMainFrame() -
+                RoundedIntPoint(targeted_event.GetHitTestLocation().Point()) -
                 RoundedIntSize(targeted_event.GetHitTestResult().LocalPoint());
 
             EnableTapHighlights(highlight_nodes);
@@ -790,7 +790,7 @@ void WebViewImpl::ResolveTapDisambiguation(base::TimeTicks timestamp,
         page_->DeprecatedLocalMainFrame()->GetEventHandler().TargetGestureEvent(
             scaled_event);
     WebPoint node_position =
-        targeted_event.GetHitTestResult().RoundedPointInMainFrame() -
+        RoundedIntPoint(targeted_event.GetHitTestLocation().Point()) -
         RoundedIntSize(targeted_event.GetHitTestResult().LocalPoint());
     TapDisambiguationResult result =
         (node_position == last_tap_disambiguation_best_candidate_position_)
@@ -1030,14 +1030,15 @@ WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
     return WebRect();
 
   // Use the point-based hit test to find the node.
-  LayoutPoint point = MainFrameImpl()->GetFrameView()->ConvertFromRootFrame(
-      LayoutPoint(point_in_root_frame));
+  HitTestLocation location(
+      MainFrameImpl()->GetFrameView()->ConvertFromRootFrame(
+          LayoutPoint(point_in_root_frame)));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
       (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
   HitTestResult result =
-      MainFrameImpl()->GetFrame()->GetEventHandler().HitTestResultAtPoint(
-          point, hit_type);
+      MainFrameImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location, hit_type);
   result.SetToShadowHostIfInRestrictedShadowRoot();
 
   Node* node = result.InnerNodeOrImageMapImage();
@@ -1909,7 +1910,6 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   // routing code.
   if (!MainFrameImpl())
     return WebInputEventResult::kNotHandled;
-
   DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
 
   GetPage()->GetVisualViewport().StartTrackingPinchStats();
@@ -3287,12 +3287,14 @@ HitTestResult WebViewImpl::HitTestResultForRootFramePos(
     const LayoutPoint& pos_in_root_frame) {
   if (!page_->MainFrame()->IsLocalFrame())
     return HitTestResult();
-  LayoutPoint doc_point(
+  HitTestLocation location(
       page_->DeprecatedLocalMainFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame));
   HitTestResult result =
-      page_->DeprecatedLocalMainFrame()->GetEventHandler().HitTestResultAtPoint(
-          doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+      page_->DeprecatedLocalMainFrame()
+          ->GetEventHandler()
+          .HitTestResultAtLocation(
+              location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }

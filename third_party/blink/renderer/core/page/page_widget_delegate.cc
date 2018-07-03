@@ -140,10 +140,10 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     WebMouseEvent mouse_event = TransformWebMouseEvent(
         root->View(), static_cast<const WebMouseEvent&>(event));
 
-    IntPoint doc_point(root->View()->ConvertFromRootFrame(
+    HitTestLocation location(root->View()->ConvertFromRootFrame(
         FlooredIntPoint(mouse_event.PositionInRootFrame())));
-    HitTestResult result = root->GetEventHandler().HitTestResultAtPoint(
-        doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+    HitTestResult result = root->GetEventHandler().HitTestResultAtLocation(
+        location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
     result.SetToShadowHostIfInRestrictedShadowRoot();
     if (result.InnerNodeFrame()) {
       Document* document = result.InnerNodeFrame()->GetDocument();

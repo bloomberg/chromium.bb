@@ -365,7 +365,8 @@ bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
                                hit_rules)) {
     const LayoutPoint& local_layout_point = LayoutPoint(local_point);
     UpdateHitTestResult(result, local_layout_point);
-    if (result.AddNodeToListBasedTestResult(GetElement(), local_layout_point) ==
+    HitTestLocation location(local_layout_point);
+    if (result.AddNodeToListBasedTestResult(GetElement(), location) ==
         kStopHitTesting)
       return true;
   }

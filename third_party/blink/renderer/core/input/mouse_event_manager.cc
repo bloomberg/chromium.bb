@@ -868,8 +868,9 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
 
   if (mouse_down_may_start_drag_) {
     HitTestRequest request(HitTestRequest::kReadOnly);
-    HitTestResult result(request, mouse_down_pos_);
-    frame_->ContentLayoutObject()->HitTest(result);
+    HitTestLocation location(mouse_down_pos_);
+    HitTestResult result(request, location);
+    frame_->ContentLayoutObject()->HitTest(location, result);
     Node* node = result.InnerNode();
     if (node) {
       DragController::SelectionDragPolicy selection_drag_policy =

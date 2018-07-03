@@ -4216,12 +4216,15 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   // page.  Furthermore, mousemove events before the first layout should not
   // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in EventHandler::hitTestResultAtPoint.
-  if (!GetLayoutView() || !View() || !View()->DidFirstLayout())
-    return MouseEventWithHitTestResults(event,
-                                        HitTestResult(request, LayoutPoint()));
+  if (!GetLayoutView() || !View() || !View()->DidFirstLayout()) {
+    HitTestLocation location((LayoutPoint()));
+    return MouseEventWithHitTestResults(event, location,
+                                        HitTestResult(request, location));
+  }
 
-  HitTestResult result(request, document_point);
-  GetLayoutView()->HitTest(result);
+  HitTestLocation location(document_point);
+  HitTestResult result(request, location);
+  GetLayoutView()->HitTest(location, result);
 
   if (!request.ReadOnly())
     UpdateHoverActiveState(request, result.InnerElement());
@@ -4236,7 +4239,7 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
     result.SetCanvasRegionId(hit_test_canvas_result->GetId());
   }
 
-  return MouseEventWithHitTestResults(event, result);
+  return MouseEventWithHitTestResults(event, location, result);
 }
 
 // DOM Section 1.1.1

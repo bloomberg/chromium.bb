@@ -1791,12 +1791,15 @@ static inline LayoutRect FrameVisibleRect(LayoutObject& layout_object) {
 
 PaintLayer::HitTestRecursionData::HitTestRecursionData(
     const LayoutRect& rect_arg,
-    const HitTestLocation& location_arg)
+    const HitTestLocation& location_arg,
+    const HitTestLocation& original_location_arg)
     : rect(rect_arg),
       location(location_arg),
+      original_location(original_location_arg),
       intersects_location(location_arg.Intersects(rect_arg)) {}
 
-bool PaintLayer::HitTest(HitTestResult& result) {
+bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
+                         HitTestResult& result) {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
 
   // LayoutView should make sure to update layout before entering hit testing
@@ -1804,7 +1807,6 @@ bool PaintLayer::HitTest(HitTestResult& result) {
   DCHECK(!GetLayoutObject().GetDocument().GetLayoutView()->NeedsLayout());
 
   const HitTestRequest& request = result.GetHitTestRequest();
-  const HitTestLocation& hit_test_location = result.GetHitTestLocation();
 
   // Start with frameVisibleRect to ensure we include the scrollbars.
   LayoutRect hit_test_area = FrameVisibleRect(GetLayoutObject());
@@ -1815,7 +1817,8 @@ bool PaintLayer::HitTest(HitTestResult& result) {
     }
   }
 
-  HitTestRecursionData recursion_data(hit_test_area, hit_test_location);
+  HitTestRecursionData recursion_data(hit_test_area, hit_test_location,
+                                      hit_test_location);
   PaintLayer* inside_layer =
       HitTestLayer(this, nullptr, result, recursion_data, false);
   if (!inside_layer && IsRootLayer()) {
@@ -2147,7 +2150,7 @@ PaintLayer* PaintLayer::HitTestLayer(
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
-                                result.GetHitTestLocation());
+                                recursion_data.original_location);
       bool inside_fragment_foreground_rect = false;
 
       if (HitTestContentsForFragments(
@@ -2189,7 +2192,7 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   if (recursion_data.intersects_location && IsSelfPaintingLayer()) {
     HitTestResult temp_result(result.GetHitTestRequest(),
-                              result.GetHitTestLocation());
+                              recursion_data.original_location);
     bool inside_fragment_background_rect = false;
     if (HitTestContentsForFragments(*layer_fragments, offset, temp_result,
                                     recursion_data.location, kHitTestSelf,
@@ -2303,7 +2306,8 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     new_location.emplace(local_point, local_point_quad);
   else
     new_location.emplace(local_point);
-  HitTestRecursionData new_recursion_data(bounds_of_mapped_area, *new_location);
+  HitTestRecursionData new_recursion_data(bounds_of_mapped_area, *new_location,
+                                          recursion_data.original_location);
 
   // Now do a hit test with the root layer shifted to be us.
   return HitTestLayer(this, container_layer, result, new_recursion_data, true,
@@ -2416,7 +2420,7 @@ PaintLayer* PaintLayer::HitTestChildren(
 
     PaintLayer* hit_layer = nullptr;
     HitTestResult temp_result(result.GetHitTestRequest(),
-                              result.GetHitTestLocation());
+                              recursion_data.original_location);
     hit_layer = child_layer->HitTestLayer(
         root_layer, this, temp_result, recursion_data, false, transform_state,
         z_offset_for_descendants);

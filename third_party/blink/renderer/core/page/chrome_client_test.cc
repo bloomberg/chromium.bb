@@ -39,32 +39,32 @@ class ChromeClientTest : public testing::Test {};
 TEST_F(ChromeClientTest, SetToolTipFlood) {
   ChromeClientToolTipLogger logger;
   ChromeClient* client = &logger;
-  HitTestResult result(HitTestRequest(HitTestRequest::kMove),
-                       LayoutPoint(10, 20));
+  HitTestLocation location(LayoutPoint(10, 20));
+  HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   Document* doc = Document::CreateForTest();
   Element* element = HTMLElement::Create(HTMLNames::divTag, *doc);
   element->setAttribute(HTMLNames::titleAttr, "tooltip");
   result.SetInnerNode(element);
 
-  client->SetToolTip(*doc->GetFrame(), result);
+  client->SetToolTip(*doc->GetFrame(), location, result);
   EXPECT_EQ("tooltip", logger.ToolTipForLastSetToolTip());
 
   // seToolTip(HitTestResult) again in the same condition.
   logger.ClearToolTipForLastSetToolTip();
-  client->SetToolTip(*doc->GetFrame(), result);
+  client->SetToolTip(*doc->GetFrame(), location, result);
   // setToolTip(String,TextDirection) should not be called.
   EXPECT_EQ(String(), logger.ToolTipForLastSetToolTip());
 
   // Cancel the tooltip, and setToolTip(HitTestResult) again.
   client->ClearToolTip(*doc->GetFrame());
   logger.ClearToolTipForLastSetToolTip();
-  client->SetToolTip(*doc->GetFrame(), result);
+  client->SetToolTip(*doc->GetFrame(), location, result);
   // setToolTip(String,TextDirection) should not be called.
   EXPECT_EQ(String(), logger.ToolTipForLastSetToolTip());
 
   logger.ClearToolTipForLastSetToolTip();
   element->setAttribute(HTMLNames::titleAttr, "updated");
-  client->SetToolTip(*doc->GetFrame(), result);
+  client->SetToolTip(*doc->GetFrame(), location, result);
   // setToolTip(String,TextDirection) should be called because tooltip string
   // is different from the last one.
   EXPECT_EQ("updated", logger.ToolTipForLastSetToolTip());

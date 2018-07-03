@@ -808,7 +808,8 @@ String LocalFrame::SelectedTextForClipboard() const {
 
 PositionWithAffinity LocalFrame::PositionForPoint(
     const LayoutPoint& frame_point) {
-  HitTestResult result = GetEventHandler().HitTestResultAtPoint(frame_point);
+  HitTestLocation location(frame_point);
+  HitTestResult result = GetEventHandler().HitTestResultAtLocation(location);
   Node* node = result.InnerNodeOrImageMapImage();
   if (!node)
     return PositionWithAffinity();
@@ -826,12 +827,12 @@ Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
   if (!View())
     return nullptr;
 
-  LayoutPoint pt = View()->ConvertFromRootFrame(point_in_root_frame);
+  HitTestLocation location(View()->ConvertFromRootFrame(point_in_root_frame));
 
   if (!ContentLayoutObject())
     return nullptr;
-  HitTestResult result = GetEventHandler().HitTestResultAtPoint(
-      pt, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result = GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   return result.InnerNode() ? &result.InnerNode()->GetDocument() : nullptr;
 }
 

@@ -284,8 +284,9 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(205, 255));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestResult result(request, LayoutPoint(206, 206));
-  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  HitTestLocation location((LayoutPoint(206, 206)));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
   EXPECT_EQ(LayoutPoint(206, 206), result.PointInInnerNodeFrame());
 }
@@ -317,8 +318,9 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(235, 255));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestResult result(request, LayoutPoint(236, 206));
-  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  HitTestLocation location((LayoutPoint(236, 206)));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
   EXPECT_EQ(LayoutPoint(236, 206), result.PointInInnerNodeFrame());
 }

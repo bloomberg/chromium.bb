@@ -223,8 +223,9 @@ HitTestResult HitTestInDocument(Document* document,
   if (!PointInFrameContentIfVisible(*document, hit_point))
     return HitTestResult();
 
-  HitTestResult result(request, LayoutPoint(hit_point));
-  document->GetLayoutView()->HitTest(result);
+  HitTestLocation location(hit_point);
+  HitTestResult result(request, location);
+  document->GetLayoutView()->HitTest(location, result);
   return result;
 }
 
@@ -314,11 +315,12 @@ HeapVector<Member<Element>> TreeScope::ElementsFromPoint(double x,
   if (!PointInFrameContentIfVisible(document, hit_point))
     return HeapVector<Member<Element>>();
 
+  HitTestLocation location(hit_point);
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kListBased |
                          HitTestRequest::kPenetratingList);
-  HitTestResult result(request, LayoutPoint(hit_point));
-  document.GetLayoutView()->HitTest(result);
+  HitTestResult result(request, location);
+  document.GetLayoutView()->HitTest(location, result);
 
   return ElementsFromHitTestResult(result);
 }

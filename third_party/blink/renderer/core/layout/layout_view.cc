@@ -115,7 +115,8 @@ LayoutView::LayoutView(Document* document)
 
 LayoutView::~LayoutView() = default;
 
-bool LayoutView::HitTest(HitTestResult& result) {
+bool LayoutView::HitTest(const HitTestLocation& location,
+                         HitTestResult& result) {
   // We have to recursively update layout/style here because otherwise, when the
   // hit test recurses into a child document, it could trigger a layout on the
   // parent document, which can destroy PaintLayer that are higher up in the
@@ -128,25 +129,26 @@ bool LayoutView::HitTest(HitTestResult& result) {
     return false;
   HitTestLatencyRecorder hit_test_latency_recorder(
       result.GetHitTestRequest().AllowsChildFrameContent());
-  return HitTestNoLifecycleUpdate(result);
+  return HitTestNoLifecycleUpdate(location, result);
 }
 
-bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
+bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
+                                          HitTestResult& result) {
   TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
   hit_test_count_++;
 
-  DCHECK(!result.GetHitTestLocation().IsRectBasedTest() ||
-         result.GetHitTestRequest().ListBased());
+  DCHECK(!location.IsRectBasedTest() || result.GetHitTestRequest().ListBased());
 
   uint64_t dom_tree_version = GetDocument().DomTreeVersion();
   HitTestResult cache_result = result;
   bool hit_layer = false;
-  if (hit_test_cache_->LookupCachedResult(cache_result, dom_tree_version)) {
+  if (hit_test_cache_->LookupCachedResult(location, cache_result,
+                                          dom_tree_version)) {
     hit_test_cache_hits_++;
     hit_layer = true;
     result = cache_result;
   } else {
-    hit_layer = Layer()->HitTest(result);
+    hit_layer = Layer()->HitTest(location, result);
 
     // If hitTestResult include scrollbar, innerNode should be the parent of the
     // scrollbar.
@@ -173,13 +175,12 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
     }
 
     if (hit_layer)
-      hit_test_cache_->AddCachedResult(result, dom_tree_version);
+      hit_test_cache_->AddCachedResult(location, result, dom_tree_version);
   }
 
-  TRACE_EVENT_END1(
-      "blink,devtools.timeline", "HitTest", "endData",
-      InspectorHitTestEvent::EndData(result.GetHitTestRequest(),
-                                     result.GetHitTestLocation(), result));
+  TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData",
+                   InspectorHitTestEvent::EndData(result.GetHitTestRequest(),
+                                                  location, result));
   return hit_layer;
 }
 
