@@ -642,6 +642,21 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
   TestSiteData("SessionStorage", GetParam());
 }
 
+// SessionStorage is not supported by site data counting and the cookie tree
+// model but we can test the web visible behavior.
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
+                       SessionStorageDeletion) {
+  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  const std::string type = "SessionStorage";
+  EXPECT_FALSE(HasDataForType(type));
+  SetDataForType(type);
+  EXPECT_TRUE(HasDataForType(type));
+  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+                GetParam());
+  EXPECT_FALSE(HasDataForType(type));
+}
+
 // Test that session storage is not counted until crbug.com/772337 is fixed.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_EQ(0, GetSiteDataCount());
