@@ -14,12 +14,9 @@ cr.define('downloads', function() {
       chrome.send('discardDangerous', [id]);
     }
 
-    /** @param {string} url URL of a file to download. */
-    download(url) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.setAttribute('download', '');
-      a.click();
+    /** @param {string} id ID of the download to retry. */
+    retryDownload(id) {
+      chrome.send('retryDownload', [id]);
     }
 
     /** @param {string} id ID of the download that the user started dragging. */

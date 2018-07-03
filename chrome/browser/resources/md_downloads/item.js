@@ -325,7 +325,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onRetryTap_: function() {
-      this.browserProxy_.download(this.data.url);
+      this.browserProxy_.retryDownload(this.data.id);
     },
 
     /** @private */
