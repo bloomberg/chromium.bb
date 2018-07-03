@@ -34,7 +34,9 @@ namespace blink {
 
 void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
   base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
-  for (ContextLifecycleObserver* observer : observers_) {
+  for (LifecycleObserverBase* observer_base : observers_) {
+    ContextLifecycleObserver* observer =
+        static_cast<ContextLifecycleObserver*>(observer_base);
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
       continue;
@@ -49,7 +51,9 @@ void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
 
 void ContextLifecycleNotifier::NotifySuspendingPausableObjects() {
   base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
-  for (ContextLifecycleObserver* observer : observers_) {
+  for (LifecycleObserverBase* observer_base : observers_) {
+    ContextLifecycleObserver* observer =
+        static_cast<ContextLifecycleObserver*>(observer_base);
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
       continue;
@@ -65,7 +69,9 @@ void ContextLifecycleNotifier::NotifySuspendingPausableObjects() {
 unsigned ContextLifecycleNotifier::PausableObjectCount() const {
   DCHECK(!IsIteratingOverObservers());
   unsigned pausable_objects = 0;
-  for (ContextLifecycleObserver* observer : observers_) {
+  for (LifecycleObserverBase* observer_base : observers_) {
+    ContextLifecycleObserver* observer =
+        static_cast<ContextLifecycleObserver*>(observer_base);
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
       continue;
@@ -77,7 +83,9 @@ unsigned ContextLifecycleNotifier::PausableObjectCount() const {
 #if DCHECK_IS_ON()
 bool ContextLifecycleNotifier::Contains(PausableObject* object) const {
   DCHECK(!IsIteratingOverObservers());
-  for (ContextLifecycleObserver* observer : observers_) {
+  for (LifecycleObserverBase* observer_base : observers_) {
+    ContextLifecycleObserver* observer =
+        static_cast<ContextLifecycleObserver*>(observer_base);
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
       continue;

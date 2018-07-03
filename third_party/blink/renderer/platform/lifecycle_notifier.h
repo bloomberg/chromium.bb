@@ -33,13 +33,15 @@
 
 namespace blink {
 
+class LifecycleObserverBase;
+
 template <typename T, typename Observer>
 class LifecycleNotifier : public GarbageCollectedMixin {
  public:
   virtual ~LifecycleNotifier();
 
-  void AddObserver(Observer*);
-  void RemoveObserver(Observer*);
+  void AddObserver(LifecycleObserverBase*);
+  void RemoveObserver(LifecycleObserverBase*);
 
   // notifyContextDestroyed() should be explicitly dispatched from an
   // observed context to detach its observers, and if the observer kind
@@ -61,7 +63,7 @@ class LifecycleNotifier : public GarbageCollectedMixin {
 
   T* Context() { return static_cast<T*>(this); }
 
-  using ObserverSet = HeapHashSet<WeakMember<Observer>>;
+  using ObserverSet = HeapHashSet<WeakMember<LifecycleObserverBase>>;
 
   enum IterationState {
     kAllowingNone = 0,
@@ -135,7 +137,8 @@ inline void LifecycleNotifier<T, Observer>::NotifyContextDestroyed() {
   base::AutoReset<IterationState> scope(&iteration_state_, kAllowingRemoval);
   ObserverSet observers;
   observers_.swap(observers);
-  for (Observer* observer : observers) {
+  for (LifecycleObserverBase* observer_base : observers) {
+    Observer* observer = static_cast<Observer*>(observer_base);
     DCHECK(observer->LifecycleContext() == Context());
     ContextDestroyedNotifier<Observer, T>::Call(observer, Context());
     observer->ClearContext();
@@ -143,13 +146,15 @@ inline void LifecycleNotifier<T, Observer>::NotifyContextDestroyed() {
 }
 
 template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::AddObserver(Observer* observer) {
+inline void LifecycleNotifier<T, Observer>::AddObserver(
+    LifecycleObserverBase* observer) {
   CHECK(iteration_state_ & kAllowingAddition);
   observers_.insert(observer);
 }
 
 template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::RemoveObserver(Observer* observer) {
+inline void LifecycleNotifier<T, Observer>::RemoveObserver(
+    LifecycleObserverBase* observer) {
   // If immediate removal isn't currently allowed,
   // |observer| is recorded for pending removal.
   if (iteration_state_ & kAllowPendingRemoval) {

@@ -13,28 +13,40 @@ SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
 void SynchronousMutationNotifier::NotifyChangeChildren(
     const ContainerNode& container) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->DidChangeChildren(container);
+  }
 }
 
 void SynchronousMutationNotifier::NotifyMergeTextNodes(
     const Text& node,
     const NodeWithIndex& node_to_be_removed_with_index,
     unsigned old_length) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->DidMergeTextNodes(node, node_to_be_removed_with_index,
                                 old_length);
+  }
 }
 
 void SynchronousMutationNotifier::NotifyMoveTreeToNewDocument(
     const Node& root) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->DidMoveTreeToNewDocument(root);
+  }
 }
 
 void SynchronousMutationNotifier::NotifySplitTextNode(const Text& node) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->DidSplitTextNode(node);
+  }
 }
 
 void SynchronousMutationNotifier::NotifyUpdateCharacterData(
@@ -42,7 +54,9 @@ void SynchronousMutationNotifier::NotifyUpdateCharacterData(
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
-  for (SynchronousMutationObserver* observer : observers_) {
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->DidUpdateCharacterData(character_data, offset, old_length,
                                      new_length);
   }
@@ -50,13 +64,19 @@ void SynchronousMutationNotifier::NotifyUpdateCharacterData(
 
 void SynchronousMutationNotifier::NotifyNodeChildrenWillBeRemoved(
     ContainerNode& container) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->NodeChildrenWillBeRemoved(container);
+  }
 }
 
 void SynchronousMutationNotifier::NotifyNodeWillBeRemoved(Node& node) {
-  for (SynchronousMutationObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    SynchronousMutationObserver* observer =
+        static_cast<SynchronousMutationObserver*>(observer_base);
     observer->NodeWillBeRemoved(node);
+  }
 }
 
 }  // namespace blink

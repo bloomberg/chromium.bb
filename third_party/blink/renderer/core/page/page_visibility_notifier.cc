@@ -32,8 +32,11 @@ namespace blink {
 
 void PageVisibilityNotifier::NotifyPageVisibilityChanged() {
   base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
-  for (PageVisibilityObserver* observer : observers_)
+  for (LifecycleObserverBase* observer_base : observers_) {
+    PageVisibilityObserver* observer =
+        static_cast<PageVisibilityObserver*>(observer_base);
     observer->PageVisibilityChanged();
+  }
 }
 
 }  // namespace blink
