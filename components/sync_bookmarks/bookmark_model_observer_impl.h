@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "url/gurl.h"
 
 namespace syncer {
@@ -52,6 +53,8 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* node) override;
+  void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
+                               const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeChildrenReordered(

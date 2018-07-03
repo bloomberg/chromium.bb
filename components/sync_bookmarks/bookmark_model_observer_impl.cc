@@ -17,6 +17,41 @@
 
 namespace sync_bookmarks {
 
+namespace {
+
+void UpdateBookmarkSpecificsMetaInfo(
+    const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
+    sync_pb::BookmarkSpecifics* bm_specifics) {
+  // TODO(crbug.com/516866): update the implementation to be similar to the
+  // directory implementation
+  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
+  for (const std::pair<std::string, std::string>& pair : *metainfo_map) {
+    sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
+    meta_info->set_key(pair.first);
+    meta_info->set_value(pair.second);
+  }
+}
+
+sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
+    const bookmarks::BookmarkNode* node) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(node->url().spec());
+  // TODO(crbug.com/516866): Set the favicon.
+  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
+  bm_specifics->set_creation_time_us(
+      node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
+                                              : std::string());
+  if (node->GetMetaInfoMap()) {
+    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
+  }
+  return specifics;
+}
+
+}  // namespace
+
 BookmarkModelObserverImpl::BookmarkModelObserverImpl(
     const base::RepeatingClosure& nudge_for_commit_closure,
     SyncedBookmarkTracker* bookmark_tracker)
@@ -71,32 +106,69 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   const sync_pb::UniquePosition unique_position =
       ComputePosition(*parent, index, sync_id).ToProto();
 
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
-  bm_specifics->set_url(node->url().spec());
-  // TODO(crbug.com/516866): Set the favicon.
-  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
-  bm_specifics->set_creation_time_us(
-      node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
 
-  bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
-                                              : std::string());
-  // TODO(crbug.com/516866): update the implementation to be similar to the
-  // directory implementation
-  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
-  if (node->GetMetaInfoMap()) {
-    for (const std::pair<std::string, std::string>& pair :
-         *node->GetMetaInfoMap()) {
-      sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
-      meta_info->set_key(pair.first);
-      meta_info->set_value(pair.second);
-    }
-  }
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          unique_position, specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(sync_id);
   nudge_for_commit_closure_.Run();
+}
+
+void BookmarkModelObserverImpl::BookmarkNodeRemoved(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    int old_index,
+    const bookmarks::BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
+  NOTIMPLEMENTED();
+}
+
+void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
+    bookmarks::BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
+  NOTIMPLEMENTED();
+}
+
+void BookmarkModelObserverImpl::BookmarkNodeChanged(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+
+  // We shouldn't see changes to the top-level nodes.
+  DCHECK(!model->is_permanent_node(node));
+
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(node);
+  DCHECK(entity);
+  const std::string& sync_id = entity->metadata()->server_id();
+  const base::Time modification_time = base::Time::Now();
+  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
+
+  bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+                            modification_time, specifics);
+  // Mark the entity that it needs to be committed.
+  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  nudge_for_commit_closure_.Run();
+}
+
+void BookmarkModelObserverImpl::BookmarkMetaInfoChanged(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  BookmarkNodeChanged(model, node);
+}
+
+void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  NOTIMPLEMENTED();
+}
+
+void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  NOTIMPLEMENTED();
 }
 
 syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
@@ -149,39 +221,6 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
       syncer::UniquePosition::FromProto(
           successor_entity->metadata()->unique_position()),
       suffix);
-}
-
-void BookmarkModelObserverImpl::BookmarkNodeRemoved(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* parent,
-    int old_index,
-    const bookmarks::BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
-  NOTIMPLEMENTED();
-}
-
-void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
-    bookmarks::BookmarkModel* model,
-    const std::set<GURL>& removed_urls) {
-  NOTIMPLEMENTED();
-}
-
-void BookmarkModelObserverImpl::BookmarkNodeChanged(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* node) {
-  NOTIMPLEMENTED();
-}
-
-void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* node) {
-  NOTIMPLEMENTED();
-}
-
-void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* node) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace sync_bookmarks
