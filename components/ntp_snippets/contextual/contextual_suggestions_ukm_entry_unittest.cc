@@ -104,4 +104,25 @@ TEST_F(ContextualSuggestionsUkmEntryTest, ExpectedOperationTest) {
   EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kTriggerEventName));
 }
 
+TEST_F(ContextualSuggestionsUkmEntryTest, ExpectedOperationButtonTest) {
+  ukm_entry_->RecordEventMetrics(FETCH_DELAYED);
+  ukm_entry_->RecordEventMetrics(FETCH_REQUESTED);
+  ukm_entry_->RecordEventMetrics(FETCH_COMPLETED);
+  ukm_entry_->RecordEventMetrics(UI_BUTTON_SHOWN);
+  ukm_entry_->RecordEventMetrics(UI_OPENED);
+  ukm_entry_->RecordEventMetrics(SUGGESTION_DOWNLOADED);
+  ukm_entry_->RecordEventMetrics(SUGGESTION_DOWNLOADED);
+  ukm_entry_->RecordEventMetrics(SUGGESTION_CLICKED);
+  ukm_entry_->Flush();
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kAnyDownloadedName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kAnySuggestionTakenName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kClosedFromPeekName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kEverOpenedName));
+  EXPECT_EQ(static_cast<int64_t>(FetchState::COMPLETED),
+            GetEntryMetric(ContextualSuggestions::kFetchStateName));
+  EXPECT_LT(0,
+            GetEntryMetric(ContextualSuggestions::kShowDurationBucketMinName));
+  EXPECT_EQ(2, GetEntryMetric(ContextualSuggestions::kTriggerEventName));
+}
+
 }  // namespace contextual_suggestions

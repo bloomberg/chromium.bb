@@ -43,6 +43,8 @@ class ContextualSuggestionsMetricsReporter
   // Internal UMA state data.
   // Whether the sheet ever peeked.
   bool sheet_peeked_;
+  // Whether the button was ever shown.
+  bool button_shown_;
   // Whether the sheet was ever opened.
   bool sheet_opened_;
   // Whether the sheet was closed.

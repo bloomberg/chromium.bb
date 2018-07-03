@@ -63,6 +63,9 @@ struct MetricEvent {
   // Did the sheet peek show.
   bool sheet_peeked;
 
+  // Was the toolbar button shown.
+  bool button_shown;
+
   // If the peek was closed without being opened.
   bool sheet_opened;
 

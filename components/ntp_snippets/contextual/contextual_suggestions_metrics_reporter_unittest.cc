@@ -36,6 +36,7 @@ const int kSuggestionDownloaded = 11;
 const int kSuggestionClicked = 12;
 const int kUiDismissedWithoutOpen = 13;
 const int kUiDismissedAfterOpen = 14;
+const int kUiButtonShown = 15;
 }  // namespace
 
 class ContextualSuggestionsMetricsReporterTest : public ::testing::Test {
@@ -195,6 +196,53 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, EnumNotReorderedTest) {
   histogram_tester->ExpectBucketCount(kEventsHistogramName, kSuggestionClicked,
                                       1);
   GetReporter().Flush();
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, ButtonTest) {
+  base::HistogramTester histogram_tester;
+  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().RecordEvent(FETCH_REQUESTED);
+  GetReporter().RecordEvent(FETCH_COMPLETED);
+  GetReporter().RecordEvent(UI_BUTTON_SHOWN);
+  GetReporter().RecordEvent(UI_OPENED);
+  GetReporter().RecordEvent(SUGGESTION_DOWNLOADED);
+  GetReporter().RecordEvent(SUGGESTION_CLICKED);
+  // Flush data to write to UKM.
+  GetReporter().Flush();
+  // Check that we wrote something to UKM.  Details of UKM reporting are tested
+  // in a different test suite.
+  TestUkmRecorder* test_ukm_recorder = GetTestUkmRecorder();
+  std::vector<const ukm::mojom::UkmEntry*> entry_vector =
+      test_ukm_recorder->GetEntriesByName(ContextualSuggestions::kEntryName);
+  EXPECT_EQ(1U, entry_vector.size());
+  const ukm::mojom::UkmEntry* first_entry = entry_vector[0];
+  EXPECT_TRUE(test_ukm_recorder->EntryHasMetric(
+      first_entry, ContextualSuggestions::kFetchStateName));
+  EXPECT_EQ(static_cast<int64_t>(FetchState::COMPLETED),
+            *(test_ukm_recorder->GetEntryMetric(
+                first_entry, ContextualSuggestions::kFetchStateName)));
+  // Test that the expected histogram events were written.
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUninitialized, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchDelayed, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchError, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchServerBusy, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchBelowThreshold,
+                                     0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchEmpty, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiButtonShown, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiOpened, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiClosedObsolete,
+                                     0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kSuggestionDownloaded, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kSuggestionClicked,
+                                     1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kUiDismissedWithoutOpen, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kUiDismissedAfterOpen, 0);
 }
 
 }  // namespace contextual_suggestions

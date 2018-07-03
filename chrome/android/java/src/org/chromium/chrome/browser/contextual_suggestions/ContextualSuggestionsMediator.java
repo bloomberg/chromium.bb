@@ -73,6 +73,7 @@ class ContextualSuggestionsMediator
 
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
+    private boolean mHasRecordedButtonShownForTab;
 
     private boolean mHasReachedTargetScrollPercentage;
     private boolean mHasPeekDelayPassed;
@@ -140,24 +141,28 @@ class ContextualSuggestionsMediator
                     }
                 }
             };
-
-            fullscreenManager.addListener(new FullscreenListener() {
-                @Override
-                public void onContentOffsetChanged(float offset) {}
-
-                @Override
-                public void onControlsOffsetChanged(
-                        float topOffset, float bottomOffset, boolean needsAnimate) {
-                    maybeShowContentInSheet();
-                }
-
-                @Override
-                public void onToggleOverlayVideoMode(boolean enabled) {}
-
-                @Override
-                public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
-            });
         }
+
+        fullscreenManager.addListener(new FullscreenListener() {
+            @Override
+            public void onContentOffsetChanged(float offset) {}
+
+            @Override
+            public void onControlsOffsetChanged(
+                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                if (!mToolbarButtonEnabled) {
+                    maybeShowContentInSheet();
+                } else {
+                    reportToolbarButtonShown();
+                }
+            }
+
+            @Override
+            public void onToggleOverlayVideoMode(boolean enabled) {}
+
+            @Override
+            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+        });
     }
 
     /** Destroys the mediator. */
@@ -261,6 +266,7 @@ class ContextualSuggestionsMediator
                     mCoordinator.showSuggestions(mSuggestionsSource);
                     mCoordinator.expandBottomSheet();
                 }, R.drawable.btn_star_filled, R.string.contextual_suggestions_button_description);
+                reportToolbarButtonShown();
             } else {
                 setPeekConditions(suggestionsResult);
                 // If the controls are already off-screen, show the suggestions immediately so they
@@ -299,6 +305,20 @@ class ContextualSuggestionsMediator
                 maybeShowContentInSheet();
             }, remainingDelay);
         }
+    }
+
+    private void reportToolbarButtonShown() {
+        assert mToolbarButtonEnabled;
+
+        if (mHasRecordedButtonShownForTab || areBrowserControlsHidden()
+                || mSuggestionsSource == null || !mModel.hasSuggestions()) {
+            return;
+        }
+
+        mHasRecordedButtonShownForTab = true;
+        reportEvent(ContextualSuggestionsEvent.UI_BUTTON_SHOWN);
+        TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
+                EventConstants.CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN);
     }
 
     @Override
@@ -356,6 +376,7 @@ class ContextualSuggestionsMediator
 
         mDidSuggestionsShowForTab = false;
         mHasRecordedPeekEventForTab = false;
+        mHasRecordedButtonShownForTab = false;
         mHasSheetBeenOpened = false;
         mHandler.removeCallbacksAndMessages(null);
         mHasReachedTargetScrollPercentage = false;

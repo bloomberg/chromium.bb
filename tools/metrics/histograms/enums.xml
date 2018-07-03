@@ -7642,6 +7642,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="Suggestion clicked"/>
   <int value="13" label="UI dismissed without open"/>
   <int value="14" label="UI dismissed after open"/>
+  <int value="15" label="UI button shown"/>
 </enum>
 
 <enum name="CookieCommitProblem">

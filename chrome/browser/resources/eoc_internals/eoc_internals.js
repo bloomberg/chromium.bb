@@ -49,6 +49,8 @@ function addCachedMetricEventsToPage(metrics) {
     metricEventClone.querySelector('#url').textContent = metricEvent.url;
     metricEventClone.querySelector('#sheet-peeked').textContent =
         metricEvent.sheetPeeked;
+    metricEventClone.querySelector('#button-shown').textContent =
+        metricEvent.buttonShown;
     metricEventClone.querySelector('#sheet-opened').textContent =
         metricEvent.sheetOpened;
     metricEventClone.querySelector('#sheet-closed').textContent =
