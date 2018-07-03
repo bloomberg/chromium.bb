@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #include "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
@@ -30,7 +31,8 @@ class ChromeBrowserState;
 }
 
 @interface ClearBrowsingDataTableViewController ()<
-    TableViewTextLinkCellDelegate>
+    TableViewTextLinkCellDelegate,
+    ClearBrowsingDataConsumer>
 
 // TODO(crbug.com/850699): remove direct dependency and replace with
 // delegate.
@@ -44,6 +46,7 @@ class ChromeBrowserState;
 @implementation ClearBrowsingDataTableViewController
 @synthesize browserState = _browserState;
 @synthesize dataManager = _dataManager;
+@synthesize dispatcher = _dispatcher;
 @synthesize localDispatcher = _localDispatcher;
 
 #pragma mark - ViewController Lifecycle.
@@ -56,6 +59,7 @@ class ChromeBrowserState;
     _dataManager = [[ClearBrowsingDataManager alloc]
         initWithBrowserState:browserState
                     listType:ClearBrowsingDataListType::kListTypeTableView];
+    _dataManager.consumer = self;
   }
   return self;
 }
@@ -178,6 +182,22 @@ class ChromeBrowserState;
             didRequestOpenURL:(const GURL&)URL {
   GURL copiedURL(URL);
   [self.localDispatcher openURL:copiedURL];
+}
+
+#pragma mark - ClearBrowsingDataConsumer
+
+- (void)updateCellsForItem:(ListItem*)item {
+  [self reconfigureCellsForItems:@[ item ]];
+}
+
+- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+                               timePeriod:(browsing_data::TimePeriod)timePeriod
+                               removeMask:(BrowsingDataRemoveMask)removeMask
+                          completionBlock:(ProceduralBlock)completionBlock {
+  [self.dispatcher removeBrowsingDataForBrowserState:browserState
+                                          timePeriod:timePeriod
+                                          removeMask:removeMask
+                                     completionBlock:completionBlock];
 }
 
 #pragma mark - Private Helpers

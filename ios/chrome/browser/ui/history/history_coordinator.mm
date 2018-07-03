@@ -127,6 +127,7 @@
     self.historyClearBrowsingDataCoordinator.presentationDelegate =
         self.presentationDelegate;
     self.historyClearBrowsingDataCoordinator.loader = self.loader;
+    self.historyClearBrowsingDataCoordinator.dispatcher = self.dispatcher;
     [self.historyClearBrowsingDataCoordinator start];
   } else {
     [self.dispatcher showClearBrowsingDataSettingsFromViewController:

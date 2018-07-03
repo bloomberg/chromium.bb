@@ -26,6 +26,7 @@
 @end
 
 @implementation HistoryClearBrowsingDataCoordinator
+@synthesize dispatcher = _dispatcher;
 @synthesize historyClearBrowsingDataNavigationController =
     _historyClearBrowsingDataNavigationController;
 @synthesize loader = _loader;
@@ -38,6 +39,7 @@
           initWithBrowserState:self.browserState];
   clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars = YES;
   clearBrowsingDataTableViewController.localDispatcher = self;
+  clearBrowsingDataTableViewController.dispatcher = self.dispatcher;
   // Configure and present ClearBrowsingDataNavigationController.
   self.historyClearBrowsingDataNavigationController =
       [[TableViewNavigationController alloc]
