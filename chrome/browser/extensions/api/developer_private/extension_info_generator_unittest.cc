@@ -412,7 +412,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   // Revoke the all urls permission.
   ScriptingPermissionsModifier permissions_modifier(profile(),
                                                     all_urls_extension);
-  permissions_modifier.SetWithholdAllUrls(true);
+  permissions_modifier.SetWithholdHostPermissions(true);
 
   // Now the extension want all urls, but not have it granted.
   info = GenerateExtensionInfo(all_urls_extension->id());

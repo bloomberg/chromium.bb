@@ -268,14 +268,6 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
                                            URLPatternSet(), URLPatternSet());
   };
 
-  auto url_permission_set = [](const GURL& url) {
-    URLPatternSet set;
-    URLPattern pattern(URLPattern::SCHEME_ALL, url.spec());
-    set.AddPattern(pattern);
-    return std::make_unique<PermissionSet>(
-        APIPermissionSet(), ManifestPermissionSet(), set, URLPatternSet());
-  };
-
   auto can_access_page =
       [](scoped_refptr<const extensions::Extension> extension,
          const GURL& document_url) -> bool {
@@ -337,65 +329,6 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kCookie));
     EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
                     ->HasAPIPermission(APIPermission::kCookie));
-  }
-
-  {
-    // Test revoking non-optional host permissions with click-to-script.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
-    ListBuilder optional_permissions;
-    optional_permissions.Append("tabs");
-    ListBuilder required_permissions;
-    required_permissions.Append("topSites")
-        .Append("http://*/*")
-        .Append("http://*.google.com/*");
-    scoped_refptr<const Extension> extension =
-        CreateExtensionWithOptionalPermissions(optional_permissions.Build(),
-                                               required_permissions.Build(),
-                                               "My Extension");
-    PermissionsUpdater updater(profile());
-    updater.InitializePermissions(extension.get());
-
-    ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
-
-    // All-hosts was withheld, so the extension shouldn't have access to any
-    // site (like foo.com).
-    const GURL kOrigin("http://foo.com");
-
-    EXPECT_FALSE(extension->permissions_data()
-                     ->active_permissions()
-                     .HasExplicitAccessToOrigin(kOrigin));
-    EXPECT_TRUE(extension->permissions_data()
-                    ->withheld_permissions()
-                    .HasExplicitAccessToOrigin(kOrigin));
-
-    const GURL kRequiredOrigin("http://www.google.com/");
-    EXPECT_TRUE(extension->permissions_data()
-                    ->active_permissions()
-                    .HasExplicitAccessToOrigin(kRequiredOrigin));
-    EXPECT_FALSE(updater.GetRevokablePermissions(extension.get())
-                     ->HasExplicitAccessToOrigin(kRequiredOrigin));
-
-    // Give the extension access to foo.com. Now, the foo.com permission should
-    // be revokable.
-    updater.AddPermissions(extension.get(), *url_permission_set(kOrigin));
-    EXPECT_TRUE(extension->permissions_data()
-                    ->active_permissions()
-                    .HasExplicitAccessToOrigin(kOrigin));
-    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
-                    ->HasExplicitAccessToOrigin(kOrigin));
-
-    // Revoke the foo.com permission. The extension should no longer have
-    // access to foo.com, and the revokable permissions should be empty.
-    updater.RemovePermissions(extension.get(), *url_permission_set(kOrigin),
-                              PermissionsUpdater::REMOVE_HARD);
-    EXPECT_FALSE(extension->permissions_data()
-                     ->active_permissions()
-                     .HasExplicitAccessToOrigin(kOrigin));
-    EXPECT_TRUE(extension->permissions_data()
-                    ->withheld_permissions()
-                    .HasExplicitAccessToOrigin(kOrigin));
-    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
   }
 
   {
@@ -569,6 +502,168 @@ TEST_F(PermissionsUpdaterTest, UpdatingRuntimeGrantedPermissions) {
   updater.RemovePermissions(extension.get(), optional_permissions,
                             PermissionsUpdater::REMOVE_HARD);
   EXPECT_TRUE(prefs->GetRuntimeGrantedPermissions(extension->id())->IsEmpty());
+}
+
+TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  InitializeEmptyExtensionService();
+
+  constexpr struct {
+    const char* permission;
+    const char* test_url;
+  } test_cases[] = {
+      {"http://*/*", "http://foo.com"},
+      {"http://google.com/*", "http://google.com"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    std::string test_name =
+        base::StringPrintf("%s, %s", test_case.permission, test_case.test_url);
+    SCOPED_TRACE(test_name);
+    scoped_refptr<const Extension> extension =
+        CreateExtensionWithOptionalPermissions(
+            std::make_unique<base::ListValue>(),
+            ListBuilder().Append(test_case.permission).Build(), test_name);
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+
+    ScriptingPermissionsModifier(profile(), extension)
+        .SetWithholdHostPermissions(true);
+
+    // Host access was withheld, so the extension shouldn't have access to the
+    // test site.
+    const GURL kOrigin(test_case.test_url);
+
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
+    EXPECT_TRUE(extension->permissions_data()
+                    ->withheld_permissions()
+                    .HasExplicitAccessToOrigin(kOrigin));
+
+    URLPatternSet url_pattern_set;
+    url_pattern_set.AddOrigin(URLPattern::SCHEME_ALL, kOrigin);
+    const PermissionSet permission_set(APIPermissionSet(),
+                                       ManifestPermissionSet(), url_pattern_set,
+                                       URLPatternSet());
+    // Give the extension access to the test site. Now, the test site permission
+    // should be revokable.
+    updater.AddPermissions(extension.get(), permission_set);
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
+                    ->HasExplicitAccessToOrigin(kOrigin));
+
+    // Revoke the test site permission. The extension should no longer have
+    // access to test site, and the revokable permissions should be empty.
+    updater.RemovePermissions(extension.get(), permission_set,
+                              PermissionsUpdater::REMOVE_HARD);
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->withheld_permissions()
+                    .HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
+  }
+}
+
+TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  InitializeEmptyExtensionService();
+
+  URLPattern chrome_favicon_pattern(Extension::kValidHostPermissionSchemes,
+                                    "chrome://favicon/");
+
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("favicon extension")
+            .AddPermissions({"https://example.com/*", "chrome://favicon/*"})
+            .Build();
+    URLPattern example_com_pattern(Extension::kValidHostPermissionSchemes,
+                                   "https://example.com/*");
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+
+    // To start, the extension should have both example.com and chrome://favicon
+    // permissions.
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(chrome_favicon_pattern));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(example_com_pattern));
+
+    // Only example.com should be revokable - chrome://favicon is not a real
+    // host permission.
+    std::unique_ptr<const PermissionSet> revokable_permissions =
+        updater.GetRevokablePermissions(extension.get());
+    EXPECT_FALSE(revokable_permissions->explicit_hosts().ContainsPattern(
+        chrome_favicon_pattern));
+    EXPECT_TRUE(revokable_permissions->explicit_hosts().ContainsPattern(
+        example_com_pattern));
+
+    // Withholding host permissions shouldn't withhold example.com.
+    ScriptingPermissionsModifier(profile(), extension)
+        .SetWithholdHostPermissions(true);
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(chrome_favicon_pattern));
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .explicit_hosts()
+                     .ContainsPattern(example_com_pattern));
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("all urls extension")
+            .AddPermission("<all_urls>")
+            .Build();
+    URLPattern all_urls_pattern(Extension::kValidHostPermissionSchemes,
+                                "<all_urls>");
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+
+    // <all_urls> (strangely) includes the chrome://favicon/ permission.
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(chrome_favicon_pattern));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(all_urls_pattern));
+
+    std::unique_ptr<const PermissionSet> revokable_permissions =
+        updater.GetRevokablePermissions(extension.get());
+    // TODO(https://crbug.com/859600): <all_urls> will report containing
+    // chrome://favicon/, even though it shouldn't since the scheme doesn't
+    // match.
+    // EXPECT_FALSE(revokable_permissions->explicit_hosts().ContainsPattern(
+    //     chrome_favicon_pattern));
+    EXPECT_TRUE(revokable_permissions->explicit_hosts().ContainsPattern(
+        all_urls_pattern));
+
+    ScriptingPermissionsModifier(profile(), extension)
+        .SetWithholdHostPermissions(true);
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .explicit_hosts()
+                    .ContainsPattern(chrome_favicon_pattern));
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .explicit_hosts()
+                     .ContainsPattern(all_urls_pattern));
+  }
 }
 
 }  // namespace extensions

@@ -693,7 +693,7 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
     extension_ = LoadExtension(extension_dir_.UnpackedPath());
     ASSERT_TRUE(extension_);
     extensions::ScriptingPermissionsModifier(profile(), extension_)
-        .SetWithholdAllUrls(true);
+        .SetWithholdHostPermissions(true);
   }
 
   const extensions::Extension* extension() const { return extension_.get(); }
