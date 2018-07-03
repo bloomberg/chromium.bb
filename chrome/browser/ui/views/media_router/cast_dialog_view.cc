@@ -159,6 +159,8 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
   }
   dialog_title_ = model.dialog_header();
   MaybeSizeToContents();
+  // Update the main action button.
+  DialogModelChanged();
 }
 
 void CastDialogView::OnControllerInvalidated() {

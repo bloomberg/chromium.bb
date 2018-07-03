@@ -26,6 +26,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 using testing::_;
 using testing::Invoke;
@@ -287,6 +288,21 @@ TEST_F(CastDialogViewTest, ShowNoDeviceView) {
   // The scroll view should be shown when there are sinks.
   EXPECT_FALSE(no_sinks_view());
   EXPECT_TRUE(scroll_view()->visible());
+}
+
+TEST_F(CastDialogViewTest, SwitchToNoDeviceView) {
+  // Start with one sink. The main button should be enabled.
+  CastDialogModel model = CreateModelWithSinks({CreateAvailableSink()});
+  InitializeDialogWithModel(model);
+  EXPECT_TRUE(dialog_->GetDialogClientView()->ok_button()->enabled());
+
+  // Remove the sink. The no-device view should be shown, and the main button
+  // should be disabled.
+  model.set_media_sinks({});
+  dialog_->OnModelUpdated(model);
+  EXPECT_TRUE(no_sinks_view()->visible());
+  EXPECT_FALSE(scroll_view());
+  EXPECT_FALSE(dialog_->GetDialogClientView()->ok_button()->enabled());
 }
 
 }  // namespace media_router
