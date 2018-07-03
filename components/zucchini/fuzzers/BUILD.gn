@@ -123,7 +123,14 @@ if (current_toolchain == host_toolchain && !is_win) {
     ]
   }
 
+  # For Gen fuzzers seeds can be created from this directory with:
+  # python create_seed_file_pair.py <protoc> <old file> <new file> <out file>
+  #   [--imposed=<imposed>]
+
   # Raw Gen Fuzzer:
+  # <old file>: testdata/old.ztf
+  # <new file>: testdata/new.ztf
+  # <out file>: testdata/raw_or_ztf_gen_fuzzer/seed.asciipb
   fuzzer_test("zucchini_raw_gen_fuzzer") {
     sources = [
       "raw_gen_fuzzer.cc",
@@ -138,6 +145,9 @@ if (current_toolchain == host_toolchain && !is_win) {
   }
 
   # ZTF Gen Fuzzer:
+  # <old file>: testdata/old.ztf
+  # <new file>: testdata/new.ztf
+  # <out file>: testdata/raw_or_ztf_gen_fuzzer/seed.asciipb
   fuzzer_test("zucchini_ztf_gen_fuzzer") {
     sources = [
       "ztf_gen_fuzzer.cc",
@@ -149,5 +159,24 @@ if (current_toolchain == host_toolchain && !is_win) {
       "//third_party/libprotobuf-mutator",
     ]
     seed_corpus = "testdata/raw_or_ztf_gen_fuzzer"
+  }
+
+  # Imposed Ensemble Match Fuzzer:
+  # <old file>: testdata/old_imposed_archive.txt
+  # <new file>: testdata/new_imposed_archive.txt
+  # <out file>: testdata/imposed_ensemble_matcher_fuzzer/seed.asciipb
+  # <imposed>: 17+420=388+347,452+420=27+347
+  # This is a mapping of regions old_offset+old_size=new_offset+new_size,...
+  fuzzer_test("zucchini_imposed_ensemble_matcher_fuzzer") {
+    sources = [
+      "imposed_ensemble_matcher_fuzzer.cc",
+    ]
+    deps = [
+      ":zucchini_file_pair_proto",
+      "//base",
+      "//components/zucchini:zucchini_lib",
+      "//third_party/libprotobuf-mutator",
+    ]
+    seed_corpus = "testdata/imposed_ensemble_matcher_fuzzer"
   }
 }

@@ -221,6 +221,7 @@ group("zucchini_fuzzers") {
   if (current_toolchain == host_toolchain && !is_win) {
     deps += [
       "//components/zucchini/fuzzers:zucchini_apply_fuzzer",
+      "//components/zucchini/fuzzers:zucchini_imposed_ensemble_matcher_fuzzer",
       "//components/zucchini/fuzzers:zucchini_raw_gen_fuzzer",
       "//components/zucchini/fuzzers:zucchini_ztf_gen_fuzzer",
     ]
