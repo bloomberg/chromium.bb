@@ -9,11 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cbor/cbor_writer.h"
 #include "crypto/ec_private_key.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
@@ -52,6 +55,18 @@ bool AreMakeCredentialOptionsValid(const AuthenticatorSupportedOptions& options,
     return false;
 
   return !request.user_verification_required() ||
+         options.user_verification_availability() ==
+             AuthenticatorSupportedOptions::UserVerificationAvailability::
+                 kSupportedAndConfigured;
+}
+
+bool AreGetAssertionOptionsValid(const AuthenticatorSupportedOptions& options,
+                                 const CtapGetAssertionRequest& request) {
+  if (request.user_presence_required() && !options.user_presence_required())
+    return false;
+
+  return request.user_verification() !=
+             UserVerificationRequirement::kRequired ||
          options.user_verification_availability() ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured;
@@ -113,6 +128,20 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   return GetSerializedCtapDeviceResponse(make_credential_response);
 }
 
+std::vector<uint8_t> ConstructGetAssertionResponse(
+    AuthenticatorData authenticator_data,
+    base::span<const uint8_t> signature,
+    base::span<const uint8_t> key_handle) {
+  AuthenticatorGetAssertionResponse response(
+      std::move(authenticator_data),
+      fido_parsing_utils::Materialize(signature));
+
+  response.SetCredential({CredentialType::kPublicKey,
+                          fido_parsing_utils::Materialize(key_handle)});
+  response.SetNumCredentials(1);
+  return GetSerializedCtapDeviceResponse(response);
+}
+
 }  // namespace
 
 VirtualCtap2Device::VirtualCtap2Device()
@@ -158,6 +187,9 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
     case CtapRequestCommand::kAuthenticatorMakeCredential:
       response_code = OnMakeCredential(request_bytes, &response_data);
       break;
+    case CtapRequestCommand::kAuthenticatorGetAssertion:
+      response_code = OnGetAssertion(request_bytes, &response_data);
+      break;
     default:
       break;
   }
@@ -180,17 +212,23 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   auto request = ParseCtapMakeCredentialRequest(request_bytes);
-  if (!request)
+  if (!request) {
+    DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
 
   if (!AreMakeCredentialOptionsValid(device_info_.options(), *request) ||
       !AreMakeCredentialParamsValid(*request)) {
+    DLOG(ERROR) << "Virtual CTAP2 device does not support options required by "
+                   "the request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
   }
 
   // Client pin is not supported.
-  if (request->pin_auth())
+  if (request->pin_auth()) {
+    DLOG(ERROR) << "Virtual CTAP2 device does not support client pin.";
     return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
+  }
 
   // Check for already registered credentials.
   const auto rp_id_hash =
@@ -219,7 +257,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
       ConstructECPublicKey(public_key));
 
   auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, std::move(attested_credential_data));
+      rp_id_hash, 01ul, std::move(attested_credential_data));
   auto sign_buffer =
       ConstructSignatureBuffer(authenticator_data, request->client_data_hash());
 
@@ -234,13 +272,75 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
 
   auto attestation_cert = GenerateAttestationCertificate(
       false /* individual_attestation_requested */);
-  if (!attestation_cert)
+  if (!attestation_cert) {
+    DLOG(ERROR) << "Failed to generate attestation certificate.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
 
   *response = ConstructMakeCredentialResponse(std::move(*attestation_cert), sig,
                                               std::move(authenticator_data));
 
   StoreNewKey(rp_id_hash, key_handle, std::move(private_key));
+  return CtapDeviceResponseCode::kSuccess;
+}
+
+CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
+    base::span<const uint8_t> request_bytes,
+    std::vector<uint8_t>* response) {
+  auto request = ParseCtapGetAssertionRequest(request_bytes);
+  if (!request) {
+    DLOG(ERROR) << "Incorrectly formatted GetAssertion request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  // Resident keys are not supported.
+  if (!request->allow_list() || request->allow_list()->empty()) {
+    DLOG(ERROR) << "Allowed credential list is empty, but Virtual CTAP2 device "
+                   "does not support resident keys.";
+    return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+  }
+
+  // Client pin option is not supported.
+  if (request->pin_auth()) {
+    DLOG(ERROR) << "Virtual CTAP2 device does not support client pin.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  if (!AreGetAssertionOptionsValid(device_info_.options(), *request)) {
+    DLOG(ERROR) << "Unsupported options required from the request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  const auto rp_id_hash =
+      fido_parsing_utils::CreateSHA256Hash(request->rp_id());
+
+  RegistrationData* found_data = nullptr;
+  base::span<const uint8_t> credential_id;
+  for (const auto& allowed_credential : *request->allow_list()) {
+    if ((found_data =
+             FindRegistrationData(allowed_credential.id(), rp_id_hash))) {
+      credential_id = allowed_credential.id();
+      break;
+    }
+  }
+
+  if (!found_data)
+    return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+
+  found_data->counter++;
+  auto authenticator_data =
+      ConstructAuthenticatorData(rp_id_hash, found_data->counter);
+  auto signature_buffer =
+      ConstructSignatureBuffer(authenticator_data, request->client_data_hash());
+
+  // Sign with the private key of the received key handle.
+  std::vector<uint8_t> sig;
+  auto* private_key = found_data->private_key.get();
+  bool status = Sign(private_key, std::move(signature_buffer), &sig);
+  DCHECK(status);
+
+  *response = ConstructGetAssertionResponse(std::move(authenticator_data),
+                                            std::move(sig), credential_id);
   return CtapDeviceResponseCode::kSuccess;
 }
 
@@ -252,24 +352,20 @@ CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
 
 AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
     base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
+    uint32_t current_signature_count,
     base::Optional<AttestedCredentialData> attested_credential_data) {
   uint8_t flag =
       base::strict_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
   std::array<uint8_t, kSignCounterLength> signature_counter;
 
   // Constructing AuthenticatorData for registration operation.
-  if (attested_credential_data) {
+  if (attested_credential_data)
     flag |= base::strict_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-    signature_counter = {{0x00, 0x00, 0x00, 0x01}};
-    // Constructing AuthenticatorData for sign operation.
-  } else {
-    auto* registration_data = FindRegistrationData(
-        attested_credential_data->credential_id(), rp_id_hash);
-    signature_counter[0] = (registration_data->counter >> 24) & 0xff;
-    signature_counter[1] = (registration_data->counter >> 16) & 0xff;
-    signature_counter[2] = (registration_data->counter >> 8) & 0xff;
-    signature_counter[3] = (registration_data->counter) & 0xff;
-  }
+
+  signature_counter[0] = (current_signature_count >> 24) & 0xff;
+  signature_counter[1] = (current_signature_count >> 16) & 0xff;
+  signature_counter[2] = (current_signature_count >> 8) & 0xff;
+  signature_counter[3] = (current_signature_count)&0xff;
 
   return AuthenticatorData(rp_id_hash, flag, signature_counter,
                            std::move(attested_credential_data));
