@@ -40,7 +40,7 @@ class ASH_EXPORT NotifierSettingsView
   void SetQuietModeState(bool is_quiet_mode);
 
   // NotifierSettingsListener:
-  void SetNotifierList(
+  void OnNotifierListUpdated(
       const std::vector<mojom::NotifierUiDataPtr>& ui_data) override;
   void UpdateNotifierIcon(const message_center::NotifierId& notifier_id,
                           const gfx::ImageSkia& icon) override;

@@ -185,8 +185,8 @@ void MessageCenterController::CloseClientNotification(const std::string& id) {
 
 void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
                                                  const gfx::ImageSkia& icon) {
-  if (notifier_id_)
-    notifier_id_->UpdateNotifierIcon(notifier_id, icon);
+  for (auto& listener : notifier_settings_listeners_)
+    listener.UpdateNotifierIcon(notifier_id, icon);
 }
 
 void MessageCenterController::NotifierEnabledChanged(
@@ -218,22 +218,37 @@ void MessageCenterController::GetArcAppIdByPackageName(
   client_->GetArcAppIdByPackageName(package_name, std::move(callback));
 }
 
-void MessageCenterController::SetNotifierSettingsListener(
+void MessageCenterController::AddNotifierSettingsListener(
     NotifierSettingsListener* listener) {
-  DCHECK(!listener || !notifier_id_);
-  notifier_id_ = listener;
+  DCHECK(listener);
+  notifier_settings_listeners_.AddObserver(listener);
+}
 
+void MessageCenterController::RemoveNotifierSettingsListener(
+    NotifierSettingsListener* listener) {
+  DCHECK(listener);
+  notifier_settings_listeners_.RemoveObserver(listener);
+}
+
+void MessageCenterController::RequestNotifierSettingsUpdate() {
   // |client_| may not be bound in unit tests.
-  if (listener && client_.is_bound()) {
-    client_->GetNotifierList(base::BindOnce(
-        &MessageCenterController::OnGotNotifierList, base::Unretained(this)));
-  }
+  if (!client_.is_bound())
+    return;
+
+  client_->GetNotifierList(base::BindOnce(
+      &MessageCenterController::OnGotNotifierList, base::Unretained(this)));
 }
 
 void MessageCenterController::OnGotNotifierList(
     std::vector<mojom::NotifierUiDataPtr> ui_data) {
-  if (notifier_id_)
-    notifier_id_->SetNotifierList(ui_data);
+  disabled_notifier_count_ = 0;
+  for (const auto& notifier : ui_data) {
+    if (!notifier->enabled)
+      ++disabled_notifier_count_;
+  }
+
+  for (auto& listener : notifier_settings_listeners_)
+    listener.OnNotifierListUpdated(ui_data);
 }
 
 }  // namespace ash

@@ -53,7 +53,10 @@ ArcApplicationNotifierController::~ArcApplicationNotifierController() {
 
 std::vector<ash::mojom::NotifierUiDataPtr>
 ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
-  DCHECK(!profile->IsOffTheRecord());
+  // In Guest mode, it can be called but there's no ARC apps to return.
+  if (profile->IsOffTheRecord())
+    return std::vector<ash::mojom::NotifierUiDataPtr>();
+
   package_to_app_ids_.clear();
   icons_.clear();
   StopObserving();
