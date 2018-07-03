@@ -152,6 +152,7 @@ CHROMEOS_EXPORT extern const char kOobeTimerInterval[];
 CHROMEOS_EXPORT extern const char kProfileRequiresPolicy[];
 CHROMEOS_EXPORT extern const char kRlzPingDelay[];
 CHROMEOS_EXPORT extern const char kShelfHoverPreviews[];
+CHROMEOS_EXPORT extern const char kShelfNewUi[];
 CHROMEOS_EXPORT extern const char kShillStub[];
 CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kFilesAppNewStyleNavigation[];
@@ -229,6 +230,9 @@ CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 // Returns true if we should show window previews when hovering over an app
 // on the shelf.
 CHROMEOS_EXPORT bool ShouldShowShelfHoverPreviews();
+
+// Returns true if the shelf should adopt the new UI from summer 2018.
+CHROMEOS_EXPORT bool ShouldUseShelfNewUi();
 
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model

@@ -174,6 +174,10 @@ class ASH_EXPORT ShelfView : public views::View,
                                Pointer pointer,
                                bool canceled);
 
+  // Enumerates the shelf items that are centered in the new UI and returns
+  // the total size they occupy.
+  int GetDimensionOfCenteredShelfItemsInNewUi() const;
+
   // Updates the background for the shelf items.
   void UpdateShelfItemBackground(SkColor color);
 

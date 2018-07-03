@@ -842,6 +842,20 @@ void ShelfView::LayoutToIdealBounds() {
   UpdateBackButton();
 }
 
+int ShelfView::GetDimensionOfCenteredShelfItemsInNewUi() const {
+  int size = 0;
+  int added_items = 0;
+  for (ShelfItem item : model_->items()) {
+    if (item.type == TYPE_PINNED_APP || item.type == TYPE_APP ||
+        item.type == TYPE_BROWSER_SHORTCUT) {
+      size += kShelfButtonSize;
+      added_items++;
+    }
+  }
+  size += (added_items - 1) * kShelfButtonSpacingNewUi;
+  return size;
+}
+
 void ShelfView::UpdateShelfItemBackground(SkColor color) {
   shelf_item_background_color_ = color;
   overflow_button_->UpdateShelfItemBackground(color);
@@ -866,9 +880,13 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
 void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   DCHECK(model_->item_count() == view_model_->view_size());
 
-  int available_size = shelf_->PrimaryAxisValue(width(), height());
-  int first_panel_index = model_->FirstPanelIndex();
-  int last_button_index = first_panel_index - 1;
+  const int button_spacing = chromeos::switches::ShouldUseShelfNewUi()
+                                 ? kShelfButtonSpacingNewUi
+                                 : kShelfButtonSpacing;
+
+  const int available_size = shelf_->PrimaryAxisValue(width(), height());
+  const int first_panel_index = model_->FirstPanelIndex();
+  const int last_button_index = first_panel_index - 1;
 
   int x = 0;
   int y = 0;
@@ -881,6 +899,14 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
+    if (i == 2 && chromeos::switches::ShouldUseShelfNewUi()) {
+      // Start centering after we've laid out the launcher button.
+      int centered_shelf_items_size = GetDimensionOfCenteredShelfItemsInNewUi();
+      int padding_for_centering =
+          (available_size - centered_shelf_items_size) / 2;
+      x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
+      y = shelf_->PrimaryAxisValue(0, padding_for_centering);
+    }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     // If not in tablet mode do not increase |x| or |y|. Instead just let the
@@ -892,8 +918,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     // There is no spacing between the first two elements. Do not worry about y
     // since the back button only appears in tablet mode, which forces the shelf
     // to be bottom aligned.
-    x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : kShelfButtonSpacing), x);
-    y = shelf_->PrimaryAxisValue(y, y + h + kShelfButtonSpacing);
+    x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : button_spacing), x);
+    y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
   }
 
   if (is_overflow_mode()) {
@@ -906,8 +932,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   x = shelf_->PrimaryAxisValue(end_position, 0);
   y = shelf_->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1; i >= first_panel_index; --i) {
-    x = shelf_->PrimaryAxisValue(x - w - kShelfButtonSpacing, x);
-    y = shelf_->PrimaryAxisValue(y, y - h - kShelfButtonSpacing);
+    x = shelf_->PrimaryAxisValue(x - w - button_spacing, x);
+    y = shelf_->PrimaryAxisValue(y, y - h - button_spacing);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     end_position = shelf_->PrimaryAxisValue(x, y);
   }
@@ -918,7 +944,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
       shelf_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_button_index).right(),
           view_model_->ideal_bounds(last_button_index).bottom()) +
-      kShelfButtonSpacing;
+      button_spacing;
   int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
   if (last_icon_position < reserved_icon_space)
     end_position = last_icon_position;
@@ -929,7 +955,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
                                       shelf_->PrimaryAxisValue(height(), h)));
 
   last_visible_index_ =
-      DetermineLastVisibleIndex(end_position - kShelfButtonSpacing);
+      DetermineLastVisibleIndex(end_position - button_spacing);
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
   bool show_overflow = last_visible_index_ < last_button_index ||
                        last_hidden_index_ >= first_panel_index;
@@ -985,8 +1011,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     if (last_visible_index_ >= 0) {
       // Add more space between last visible item and overflow button.
       // Without this, two buttons look too close compared with other items.
-      x = shelf_->PrimaryAxisValue(x + kShelfButtonSpacing, x);
-      y = shelf_->PrimaryAxisValue(y, y + kShelfButtonSpacing);
+      x = shelf_->PrimaryAxisValue(x + button_spacing, x);
+      y = shelf_->PrimaryAxisValue(y, y + button_spacing);
     }
 
     // Set all hidden panel icon positions to be on the overflow button.
