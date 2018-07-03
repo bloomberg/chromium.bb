@@ -122,8 +122,9 @@ class GPU_EXPORT GpuChannelHost
   int32_t ReserveTransferBufferId();
 
   // An ordering barrier must be placed after any commands that use the buffer
-  // before it is safe to call this function to destroy it.
-  void DestroyTransferBuffer(int32_t route_id, int32_t id_to_destroy);
+  // before it is safe to call this function to destroy it. Returns a flush id
+  // just like OrderingBarrier.
+  uint32_t DestroyTransferBuffer(int32_t route_id, int32_t id_to_destroy);
 
   // Reserve one unused image ID.
   int32_t ReserveImageId();
