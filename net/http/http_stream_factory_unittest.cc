@@ -400,7 +400,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
                     const SocketTag& socket_tag,
                     ClientSocketPool::RespectLimits respect_limits,
                     ClientSocketHandle* handle,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     const NetLogWithSource& net_log) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;

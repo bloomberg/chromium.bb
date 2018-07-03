@@ -40,7 +40,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -187,7 +187,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   class NET_EXPORT_PRIVATE Request {
    public:
     Request(ClientSocketHandle* handle,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             RequestPriority priority,
             const SocketTag& socket_tag,
             ClientSocketPool::RespectLimits respect_limits,
@@ -197,7 +197,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     virtual ~Request();
 
     ClientSocketHandle* handle() const { return handle_; }
-    const CompletionCallback& callback() const { return callback_; }
+    bool has_callback() const { return static_cast<bool>(callback_); }
+    CompletionOnceCallback release_callback() { return std::move(callback_); }
     RequestPriority priority() const { return priority_; }
     void set_priority(RequestPriority priority) { priority_ = priority; }
     ClientSocketPool::RespectLimits respect_limits() const {
@@ -218,7 +219,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     };
 
     ClientSocketHandle* const handle_;
-    const CompletionCallback callback_;
+    CompletionOnceCallback callback_;
     RequestPriority priority_;
     const ClientSocketPool::RespectLimits respect_limits_;
     const Flags flags_;
@@ -534,11 +535,12 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   struct CallbackResultPair {
     CallbackResultPair();
-    CallbackResultPair(const CompletionCallback& callback_in, int result_in);
-    CallbackResultPair(const CallbackResultPair& other);
+    CallbackResultPair(CompletionOnceCallback callback_in, int result_in);
+    CallbackResultPair(CallbackResultPair&& other);
+    CallbackResultPair& operator=(CallbackResultPair&& other);
     ~CallbackResultPair();
 
-    CompletionCallback callback;
+    CompletionOnceCallback callback;
     int result;
   };
 
@@ -626,7 +628,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // keyed by |handle|. Apply |socket_tag| to the socket if socket successfully
   // created.
   void InvokeUserCallbackLater(ClientSocketHandle* handle,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                int rv,
                                const SocketTag& socket_tag);
 
@@ -702,7 +704,7 @@ class ClientSocketPoolBase {
   class Request : public internal::ClientSocketPoolBaseHelper::Request {
    public:
     Request(ClientSocketHandle* handle,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             RequestPriority priority,
             const SocketTag& socket_tag,
             ClientSocketPool::RespectLimits respect_limits,
@@ -710,7 +712,7 @@ class ClientSocketPoolBase {
             const scoped_refptr<SocketParams>& params,
             const NetLogWithSource& net_log)
         : internal::ClientSocketPoolBaseHelper::Request(handle,
-                                                        callback,
+                                                        std::move(callback),
                                                         priority,
                                                         socket_tag,
                                                         respect_limits,
@@ -782,10 +784,10 @@ class ClientSocketPoolBase {
                     const SocketTag& socket_tag,
                     ClientSocketPool::RespectLimits respect_limits,
                     ClientSocketHandle* handle,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     const NetLogWithSource& net_log) {
     std::unique_ptr<Request> request(new Request(
-        handle, callback, priority, socket_tag, respect_limits,
+        handle, std::move(callback), priority, socket_tag, respect_limits,
         internal::ClientSocketPoolBaseHelper::NORMAL, params, net_log));
     return helper_.RequestSocket(group_name, std::move(request));
   }
@@ -797,10 +799,10 @@ class ClientSocketPoolBase {
                       const scoped_refptr<SocketParams>& params,
                       int num_sockets,
                       const NetLogWithSource& net_log) {
-    const Request request(nullptr /* no handle */, CompletionCallback(), IDLE,
-                          SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                          internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS,
-                          params, net_log);
+    const Request request(
+        nullptr /* no handle */, CompletionOnceCallback(), IDLE, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED,
+        internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS, params, net_log);
     helper_.RequestSockets(group_name, request, num_sockets);
   }
 

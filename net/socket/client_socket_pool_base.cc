@@ -133,14 +133,14 @@ namespace internal {
 
 ClientSocketPoolBaseHelper::Request::Request(
     ClientSocketHandle* handle,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     RequestPriority priority,
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     Flags flags,
     const NetLogWithSource& net_log)
     : handle_(handle),
-      callback_(callback),
+      callback_(std::move(callback)),
       priority_(priority),
       respect_limits_(respect_limits),
       flags_(flags),
@@ -208,13 +208,16 @@ ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair()
 }
 
 ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
-    const CompletionCallback& callback_in, int result_in)
-    : callback(callback_in),
-      result(result_in) {
-}
+    CompletionOnceCallback callback_in,
+    int result_in)
+    : callback(std::move(callback_in)), result(result_in) {}
 
 ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
-    const CallbackResultPair& other) = default;
+    ClientSocketPoolBaseHelper::CallbackResultPair&& other) = default;
+
+ClientSocketPoolBaseHelper::CallbackResultPair&
+ClientSocketPoolBaseHelper::CallbackResultPair::operator=(
+    ClientSocketPoolBaseHelper::CallbackResultPair&& other) = default;
 
 ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() = default;
 
@@ -271,7 +274,7 @@ void ClientSocketPoolBaseHelper::RemoveHigherLayeredPool(
 int ClientSocketPoolBaseHelper::RequestSocket(
     const std::string& group_name,
     std::unique_ptr<Request> request) {
-  CHECK(!request->callback().is_null());
+  CHECK(request->has_callback());
   CHECK(request->handle());
 
   // Cleanup any timed-out idle sockets.
@@ -309,7 +312,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
 void ClientSocketPoolBaseHelper::RequestSockets(const std::string& group_name,
                                                 const Request& request,
                                                 int num_sockets) {
-  DCHECK(request.callback().is_null());
+  DCHECK(!request.has_callback());
   DCHECK(!request.handle());
 
   // Cleanup any timed-out idle sockets.
@@ -962,8 +965,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
                     connect_timing, request->handle(), base::TimeDelta(), group,
                     request->net_log());
       request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
-      InvokeUserCallbackLater(request->handle(), request->callback(), result,
-                              request->socket_tag());
+      InvokeUserCallbackLater(request->handle(), request->release_callback(),
+                              result, request->socket_tag());
     } else {
       AddIdleSocket(std::move(socket), group);
       OnAvailableSocketSlot(group_name, group);
@@ -986,8 +989,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       }
       request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
                                                   result);
-      InvokeUserCallbackLater(request->handle(), request->callback(), result,
-                              request->socket_tag());
+      InvokeUserCallbackLater(request->handle(), request->release_callback(),
+                              result, request->socket_tag());
     } else {
       RemoveConnectJob(job, group);
     }
@@ -1050,7 +1053,7 @@ void ClientSocketPoolBaseHelper::ProcessPendingRequest(
 
     request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
                                                 rv);
-    InvokeUserCallbackLater(request->handle(), request->callback(), rv,
+    InvokeUserCallbackLater(request->handle(), request->release_callback(), rv,
                             request->socket_tag());
   }
 }
@@ -1129,8 +1132,8 @@ void ClientSocketPoolBaseHelper::CancelAllRequestsWithError(int error) {
       std::unique_ptr<Request> request = group->PopNextPendingRequest();
       if (!request)
         break;
-      InvokeUserCallbackLater(request->handle(), request->callback(), error,
-                              request->socket_tag());
+      InvokeUserCallbackLater(request->handle(), request->release_callback(),
+                              error, request->socket_tag());
     }
 
     // Delete group if no longer needed.
@@ -1198,11 +1201,11 @@ bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInHigherLayeredPool() {
 
 void ClientSocketPoolBaseHelper::InvokeUserCallbackLater(
     ClientSocketHandle* handle,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     int rv,
     const SocketTag& socket_tag) {
   CHECK(!base::ContainsKey(pending_callback_map_, handle));
-  pending_callback_map_[handle] = CallbackResultPair(callback, rv);
+  pending_callback_map_[handle] = CallbackResultPair(std::move(callback), rv);
   if (rv == OK) {
     handle->socket()->ApplySocketTag(socket_tag);
   }
@@ -1220,10 +1223,10 @@ void ClientSocketPoolBaseHelper::InvokeUserCallback(
     return;
 
   CHECK(!handle->is_initialized());
-  CompletionCallback callback = it->second.callback;
+  CompletionOnceCallback callback = std::move(it->second.callback);
   int result = it->second.result;
   pending_callback_map_.erase(it);
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
