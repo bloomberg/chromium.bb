@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
@@ -170,6 +171,11 @@ void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
   create_device_func_ = std::move(callback);
 }
 
+void D3D11VideoDecoder::SetWasSupportedReason(
+    D3D11VideoNotSupportedReason enum_value) {
+  UMA_HISTOGRAM_ENUMERATION("Media.D3D11.WasVideoSupported", enum_value);
+}
+
 bool D3D11VideoDecoder::IsPotentiallySupported(
     const VideoDecoderConfig& config) {
   // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
@@ -182,23 +188,28 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
   HRESULT hr = create_device_func_.Run(
       nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, levels, ARRAYSIZE(levels),
       D3D11_SDK_VERSION, nullptr, nullptr, nullptr);
+
   if (FAILED(hr)) {
+    SetWasSupportedReason(
+        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
     DVLOG(2) << "Insufficient D3D11 feature level";
     return false;
   }
 
   // Must be H264.
+  // TODO(tmathmeyer): vp9 should be supported.
   const bool is_h264 = config.profile() >= H264PROFILE_MIN &&
                        config.profile() <= H264PROFILE_MAX;
 
-  if (!is_h264) {
+  if (is_h264) {
+    if (config.profile() == H264PROFILE_HIGH10PROFILE) {
+      // Must use NV12, which excludes HDR.
+      SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
+      DVLOG(2) << "High 10 profile is not supported.";
+      return false;
+    }
+  } else {
     DVLOG(2) << "Profile is not H264.";
-    return false;
-  }
-
-  // Must use NV12, which excludes HDR.
-  if (config.profile() == H264PROFILE_HIGH10PROFILE) {
-    DVLOG(2) << "High 10 profile is not supported.";
     return false;
   }
 
@@ -207,6 +218,8 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
   // we skip it here for now.
 
   // Must use the validating decoder.
+  // TODO(tmathmeyer): support passthrough decoder. No logging to UMA since
+  // this condition should go away soon.
   if (gpu_preferences_.use_passthrough_cmd_decoder) {
     DVLOG(2) << "Must use validating decoder.";
     return false;
@@ -214,15 +227,18 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
 
   // Must allow zero-copy of nv12 textures.
   if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyNv12Required);
     DVLOG(2) << "Must allow zero-copy NV12.";
     return false;
   }
 
   if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyVideoRequired);
     DVLOG(2) << "Must allow zero-copy video.";
     return false;
   }
 
+  SetWasSupportedReason(D3D11VideoNotSupportedReason::kVideoIsSupported);
   return true;
 }
 

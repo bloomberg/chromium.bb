@@ -8863,6 +8863,24 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="D3D11CreateDevice returned DXGI_ERROR_DEVICE_HUNG"/>
 </enum>
 
+<enum name="D3D11VideoNotSupportedReason">
+  <int value="0" label="kVideoIsSupported">
+    Video is not disqualified from potential playback.
+  </int>
+  <int value="1" label="kInsufficientD3D11FeatureLevel">
+    D3D11 is not 11.1 or later.
+  </int>
+  <int value="2" label="kProfileNotSupported">
+    A supported video codec is using the an unsupported profile.
+  </int>
+  <int value="3" label="kZeroCopyNv12Required">
+    The GPU is not configured to allow zero copy for nv12.
+  </int>
+  <int value="4" label="kZeroCopyVideoRequired">
+    The GPU is not configured to allow zero copy for videos.
+  </int>
+</enum>
+
 <enum name="D3D12FeatureLevel">
   <int value="0" label="D3D_FEATURE_LEVEL_UNKNOWN"/>
   <int value="1" label="D3D_FEATURE_LEVEL_12_0"/>

@@ -75,6 +75,29 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
                     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
                     std::unique_ptr<D3D11VideoDecoderImpl> impl);
 
+  enum class D3D11VideoNotSupportedReason {
+    kVideoIsSupported = 0,
+
+    // D3D11 version 11.1 required.
+    kInsufficientD3D11FeatureLevel = 1,
+
+    // The video profile for a supported codec is not supported.
+    kProfileNotSupported = 2,
+
+    // GPU options: require zero copy.
+    kZeroCopyNv12Required = 3,
+
+    // GPU options: require zero copy.
+    kZeroCopyVideoRequired = 4,
+
+    // For UMA. Must be the last entry. It should be initialized to the
+    // numerically largest value above; if you add more entries, then please
+    // update this to the last one.
+    kMaxValue = kZeroCopyVideoRequired
+  };
+
+  void SetWasSupportedReason(D3D11VideoNotSupportedReason enum_value);
+
   // The implementation, which we trampoline to the impl thread.
   // This must be freed on the impl thread.
   std::unique_ptr<D3D11VideoDecoderImpl> impl_;
