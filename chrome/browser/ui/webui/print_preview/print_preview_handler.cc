@@ -74,6 +74,7 @@
 #include "printing/backend/print_backend_consts.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
@@ -1112,7 +1113,8 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
   Profile* profile = Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
+  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     FireWebUIListener(
         "use-cloud-print",
         base::Value(GURL(cloud_devices::GetCloudPrintURL()).spec()),
@@ -1280,6 +1282,15 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
           preview_web_contents(), Profile::FromWebUI(web_ui()));
     }
     return local_printer_handler_.get();
+  }
+  if (printer_type == PrinterType::kCloudPrinter) {
+    // This printer handler is currently an empty implementation to prevent
+    // crashes when the network service flag is enabled. Ensure it is never
+    // created otherwise.
+    CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    if (!cloud_printer_handler_)
+      cloud_printer_handler_ = PrinterHandler::CreateForCloudPrinters();
+    return cloud_printer_handler_.get();
   }
   NOTREACHED();
   return nullptr;

@@ -97,6 +97,7 @@ print_preview.PrinterType = {
   EXTENSION_PRINTER: 1,
   PDF_PRINTER: 2,
   LOCAL_PRINTER: 3,
+  CLOUD_PRINTER: 4
 };
 
 cr.define('print_preview', function() {
