@@ -10,7 +10,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_classifier.h"
@@ -163,6 +165,23 @@ void CopyElementValueToOtherInputElements(
   }
 }
 
+// Returns the number of characters the user may type while password generation
+// is offered. Once the user has typed more than the given number, a password
+// generation popup is removed.
+// TODO(crbug.com/859472) Delete this function once we know a good value from
+// the field trial.
+size_t GetMaximumOfferSize() {
+  std::string string_value = base::GetFieldTrialParamValue(
+      "PasswordGenerationMaximumOfferSize", "maximum_offer_size");
+  size_t parsed_value = 0;
+  if (!base::StringToSizeT(string_value, &parsed_value)) {
+    // This is the historic default value and remains in place for the time
+    // being. The hypothesis is, though, that 0 would be a better default.
+    return 5;
+  }
+  return parsed_value;
+}
+
 }  // namespace
 
 PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
@@ -191,7 +210,8 @@ PasswordGenerationAgent::PasswordGenerationAgent(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kShowAutofillSignatures)),
       password_agent_(password_agent),
-      binding_(this) {
+      binding_(this),
+      maximum_offer_size_(GetMaximumOfferSize()) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
   registry->AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
                                     base::Unretained(this)));
@@ -576,11 +596,11 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     return true;
   }
 
-  // Assume that if the password field has less than kMaximumOfferSize
+  // Assume that if the password field has less than maximum_offer_size_
   // characters then the user is not finished typing their password and display
   // the password suggestion.
   if (!element->IsReadOnly() && element->IsEnabled() &&
-      element->Value().length() <= kMaximumOfferSize) {
+      element->Value().length() <= maximum_offer_size_) {
     MaybeOfferAutomaticGeneration();
     return true;
   }
@@ -620,11 +640,11 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     if (presaved_form) {
       GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
     }
-  } else if (element.Value().length() > kMaximumOfferSize) {
+  } else if (element.Value().length() > maximum_offer_size_) {
     // User has rejected the feature and has started typing a password.
     GenerationRejectedByTyping();
   } else {
-    // Password isn't generated and there are fewer than kMaximumOfferSize
+    // Password isn't generated and there are fewer than maximum_offer_size_
     // characters typed, so keep offering the password. Note this function
     // will just keep the previous popup if one is already showing.
     MaybeOfferAutomaticGeneration();

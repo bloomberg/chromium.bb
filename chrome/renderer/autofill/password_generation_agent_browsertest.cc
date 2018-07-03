@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
@@ -153,8 +152,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   FakePasswordManagerClient fake_pw_client_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
 
@@ -518,63 +515,74 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
 }
 
 TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
-  base::HistogramTester histogram_tester;
+  for (size_t maximum_offer_size : {0, 5}) {
+    SCOPED_TRACE(testing::Message()
+                 << "maximum_offer_size = " << maximum_offer_size);
+    password_generation_->set_maximum_offer_size_for_testing(
+        maximum_offer_size);
+    EXPECT_EQ(maximum_offer_size, password_generation_->maximum_offer_size());
 
-  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->GetDocument(), 0, 1);
-  ExpectAutomaticGenerationAvailable("first_password", true);
+    base::HistogramTester histogram_tester;
 
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
-  WebInputElement first_password_element = element.To<WebInputElement>();
+    LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+    SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+    SetAccountCreationFormsDetectedMessage(password_generation_,
+                                           GetMainFrame()->GetDocument(), 0, 1);
+    // There should now be a message to show the UI.
+    ExpectAutomaticGenerationAvailable("first_password", true);
 
-  // Make a password just under maximum offer size.
-  SimulateUserInputChangeForElement(
-      &first_password_element,
-      std::string(password_generation_->kMaximumOfferSize - 1, 'a'));
-  // There should now be a message to show the UI.
-  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
-  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+    WebDocument document = GetMainFrame()->GetDocument();
+    WebElement element =
+        document.GetElementById(WebString::FromUTF8("first_password"));
+    ASSERT_FALSE(element.IsNull());
+    WebInputElement first_password_element = element.To<WebInputElement>();
 
-  fake_pw_client_.reset_called_password_generation_rejected_by_typing();
-  // Simulate a user typing a password just over maximum offer size.
-  SimulateUserTypingASCIICharacter('a', false);
-  SimulateUserTypingASCIICharacter('a', true);
-  // There should now be a message that generation was rejected.
-  fake_pw_client_.Flush();
-  EXPECT_TRUE(fake_pw_client_.called_password_generation_rejected_by_typing());
-  fake_pw_client_.reset_called_show_manual_pw_generation_popup();
+    // Make a password just under maximum offer size.
+    if (password_generation_->maximum_offer_size() > 0) {
+      SimulateUserInputChangeForElement(
+          &first_password_element,
+          std::string(password_generation_->maximum_offer_size(), 'a'));
 
-  // Simulate the user deleting characters. The generation popup should be shown
-  // again.
-  SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
-  // There should now be a message to show the UI.
-  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
-  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+      // There should still be a message to show the UI.
+      EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+      fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+      fake_pw_client_.reset_called_password_generation_rejected_by_typing();
+    }
 
-  // Change focus. Bubble should be hidden, but that is handled by AutofilAgent,
-  // so no messages are sent.
-  ExecuteJavaScriptForTests("document.getElementById('username').focus();");
-  EXPECT_FALSE(GetCalledAutomaticGenerationStatusChangedTrue());
+    // Simulate a user typing a password just over maximum offer size.
+    SimulateUserTypingASCIICharacter('a', true);
+    // There should now be a message that generation was rejected.
+    fake_pw_client_.Flush();
+    EXPECT_TRUE(
+        fake_pw_client_.called_password_generation_rejected_by_typing());
+    fake_pw_client_.reset_called_show_manual_pw_generation_popup();
 
-  // Focusing the password field will bring up the generation UI again.
-  ExecuteJavaScriptForTests(
-      "document.getElementById('first_password').focus();");
-  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
-  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+    // Simulate the user deleting characters. The generation popup should be
+    // shown again.
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
+    // There should now be a message to show the UI.
+    EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+    fake_pw_client_.reset_called_automatic_generation_status_changed_true();
 
-  // Loading a different page triggers UMA stat upload. Verify that only one
-  // display event is sent.
-  LoadHTMLWithUserGesture(kSigninFormHTML);
+    // Change focus. Bubble should be hidden, but that is handled by
+    // AutofilAgent, so no messages are sent.
+    ExecuteJavaScriptForTests("document.getElementById('username').focus();");
+    EXPECT_FALSE(GetCalledAutomaticGenerationStatusChangedTrue());
 
-  histogram_tester.ExpectBucketCount(
-      "PasswordGeneration.Event",
-      autofill::password_generation::GENERATION_POPUP_SHOWN,
-      1);
+    // Focusing the password field will bring up the generation UI again.
+    ExecuteJavaScriptForTests(
+        "document.getElementById('first_password').focus();");
+    EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+    fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+
+    // Loading a different page triggers UMA stat upload. Verify that only one
+    // display event is sent.
+    LoadHTMLWithUserGesture(kSigninFormHTML);
+
+    histogram_tester.ExpectBucketCount(
+        "PasswordGeneration.Event",
+        autofill::password_generation::GENERATION_POPUP_SHOWN, 1);
+  }
 }
 
 TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {

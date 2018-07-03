@@ -68,7 +68,13 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void OnFieldAutofilled(const blink::WebInputElement& password_element);
 
   // The length that a password can be before the UI is hidden.
-  static const size_t kMaximumOfferSize = 5;
+  size_t maximum_offer_size() const { return maximum_offer_size_; }
+
+#if defined(UNIT_TEST)
+  void set_maximum_offer_size_for_testing(size_t maximum_offer_size) {
+    maximum_offer_size_ = maximum_offer_size;
+  }
+#endif
 
  protected:
   // Returns true if the document for |render_frame()| is one that we should
@@ -226,6 +232,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
 
   mojo::Binding<mojom::PasswordGenerationAgent> binding_;
+
+  // The length that a password can be before the UI is hidden.
+  size_t maximum_offer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };
