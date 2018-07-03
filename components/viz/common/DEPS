@@ -26,6 +26,7 @@ specific_include_rules = {
     "+cc/test",
     "+gpu/ipc/gl_in_process_context.h",
     "+media/base",
+    "+third_party/skia/include/core",
     "+ui/gl",
   ],
   ".*_benchmark\.cc": [
