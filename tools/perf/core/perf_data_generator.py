@@ -111,161 +111,6 @@ def get_waterfall_config():
     waterfall = add_builder(
         waterfall, builder, additional_compile_targets=targets)
 
-  # These configurations are taken from chromium_perf.py in
-  # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
-  # to generate the correct json for each tester
-  waterfall = add_tester(
-    waterfall, 'Android Nexus5X Perf', 'android-nexus5X', 'android',
-    swarming=[
-      {
-       'os': 'Android',
-       'pool': 'chrome.tests.perf',
-       'device_os': 'MMB29Q',
-       'device_type': 'bullhead',
-       'device_os_flavor': 'google',
-       'device_ids': [
-           'build211-b7--device1', 'build211-b7--device2',
-           'build211-b7--device3', 'build211-b7--device4',
-           'build211-b7--device5', 'build211-b7--device6',
-           'build211-b7--device7',
-           'build212-b7--device1', 'build212-b7--device2',
-           'build212-b7--device3', 'build212-b7--device4',
-           'build212-b7--device5', 'build212-b7--device6',
-           'build212-b7--device7',
-           'build213-b7--device1', 'build213-b7--device2',
-           'build213-b7--device3', 'build213-b7--device4',
-           'build213-b7--device5', 'build213-b7--device6',
-           'build213-b7--device7',
-          ],
-       'perf_tests': [
-         ('tracing_perftests', 'build211-b7--device2'),
-         ('gpu_perftests', 'build211-b7--device2'),
-         ('media_perftests', 'build212-b7--device7'),
-         ('components_perftests', 'build212-b7--device1'),
-       ],
-       'perf_tests_with_args': [
-         ('angle_perftests', 'build211-b7--device4', ['--shard-timeout=300'],
-           'angle_perftests'),
-       ]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Android Nexus5 Perf', 'android-nexus5', 'android',
-    swarming=[
-      {
-       'os': 'Android',
-       'pool': 'chrome.tests.perf',
-       'device_os': 'KOT49H',
-       'device_type': 'hammerhead',
-       'device_os_flavor': 'google',
-       'device_ids': [
-           'build199-b7--device1', 'build199-b7--device2',
-           'build199-b7--device3', 'build199-b7--device4',
-           'build199-b7--device5', 'build199-b7--device6',
-           'build199-b7--device7',
-           'build200-b7--device1', 'build200-b7--device2',
-           'build200-b7--device3', 'build200-b7--device4',
-           'build200-b7--device5', 'build200-b7--device6',
-           'build200-b7--device7',
-           'build201-b7--device1', 'build201-b7--device2',
-           'build201-b7--device3', 'build201-b7--device4',
-           'build201-b7--device5', 'build201-b7--device6',
-           'build201-b7--device7',
-          ],
-       'perf_tests': [
-         ('tracing_perftests', 'build199-b7--device2'),
-         ('gpu_perftests', 'build199-b7--device2'),
-         ('components_perftests', 'build201-b7--device5'),
-        ],
-       'perf_tests_with_args': [
-         ('angle_perftests', 'build199-b7--device3', ['--shard-timeout=300'],
-           'angle_perftests'),
-       ]
-      }
-    ])
-
-  waterfall = add_tester(
-    waterfall, 'Android One Perf', 'android-nexus7v2', 'android',
-    swarming=[
-      {
-       'os': 'Android',
-       'pool': 'chrome.tests.perf',
-       'device_os': 'LMY47W',
-       'device_type': 'sprout',
-       'device_os_flavor': 'google',
-       'device_ids': [
-           'build191-b7--device1', 'build191-b7--device2',
-           'build191-b7--device3', 'build191-b7--device4',
-           'build191-b7--device5', 'build191-b7--device6',
-           'build191-b7--device7',
-           'build192-b7--device1', 'build192-b7--device2',
-           'build192-b7--device3', 'build192-b7--device4',
-           'build192-b7--device5', 'build192-b7--device6',
-           'build192-b7--device7',
-           'build193-b7--device1', 'build193-b7--device2',
-           'build193-b7--device3', 'build193-b7--device4',
-           'build193-b7--device5', 'build193-b7--device6',
-           'build193-b7--device7',
-          ],
-       'perf_tests': [
-         ('tracing_perftests', 'build191-b7--device2'),
-         # ('gpu_perftests', 'build192-b7--device2'), https://crbug.com/775219
-        ]
-      }
-    ])
-
-  waterfall = add_tester(
-    waterfall, 'Android Nexus5X WebView Perf', 'android-webview-nexus5X',
-    'android', swarming=[
-      {
-       'os': 'Android',
-       'pool': 'chrome.tests.perf-webview',
-       'device_os': 'MOB30K',
-       'device_type': 'bullhead',
-       'device_os_flavor': 'aosp',
-       'device_ids': [
-           'build188-b7--device1', 'build188-b7--device2',
-           'build188-b7--device3', 'build188-b7--device4',
-           'build188-b7--device5', 'build188-b7--device6',
-           'build188-b7--device7',
-           'build189-b7--device1', 'build189-b7--device2',
-           'build189-b7--device3', 'build189-b7--device4',
-           'build189-b7--device5', 'build189-b7--device6',
-           'build189-b7--device7',
-           'build190-b7--device1', 'build190-b7--device2',
-           'build190-b7--device3', 'build190-b7--device4',
-           'build190-b7--device5', 'build190-b7--device6',
-           'build190-b7--device7',
-          ],
-      }
-    ], replace_system_webview=True)
-
-  waterfall = add_tester(
-    waterfall, 'Android Nexus6 WebView Perf', 'android-webview-nexus6',
-    'android', swarming=[
-      {
-       'os': 'Android',
-       'pool': 'chrome.tests.perf-webview',
-       'device_os': 'MOB30K',
-       'device_type': 'shamu',
-       'device_os_flavor': 'aosp',
-       'device_ids': [
-           'build202-b7--device1', 'build202-b7--device2',
-           'build202-b7--device3', 'build202-b7--device4',
-           'build202-b7--device5', 'build202-b7--device6',
-           'build202-b7--device7',
-           'build203-b7--device1', 'build203-b7--device2',
-           'build203-b7--device3', 'build203-b7--device4',
-           'build203-b7--device5', 'build203-b7--device6',
-           'build203-b7--device7',
-           'build204-b7--device1', 'build204-b7--device2',
-           'build204-b7--device3', 'build204-b7--device4',
-           'build204-b7--device5', 'build204-b7--device6',
-           'build204-b7--device7',
-          ],
-      }
-    ], replace_system_webview=True)
-
   return waterfall
 
 
@@ -732,7 +577,8 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
       # TODO(eyaich): Determine new way to generate ownership based
       # on the benchmark bot map instead of on the generated tests
       # for new perf recipe.
-      if name is 'performance_test_suite':
+      if (name is 'performance_test_suite'
+          or name is 'performance_webview_test_suite'):
         continue
       test_names.add(name)
 
@@ -960,8 +806,172 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
   }
 }
 
+# These configurations are taken from chromium_perf.py in
+# build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
+# to generate the correct json for each tester
 NEW_PERF_RECIPE_MIGRATED_TESTERS = {
   'testers' : {
+    'Android Nexus5X Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'gpu_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--shard-timeout=300'
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'bullhead',
+        'device_os': 'MMB29Q',
+        'device_os_flavor': 'google',
+      },
+      'device_ids': [],
+    },
+    'Android Nexus5 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'gpu_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--shard-timeout=300'
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'hammerhead',
+        'device_os': 'KOT49H',
+        'device_os_flavor': 'google',
+      },
+      'device_ids': [],
+    },
+    'Android One Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_one_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'sprout',
+        'device_os': 'LMY47W',
+        'device_os_flavor': 'google',
+      },
+      'device_ids': [],
+    },
+    'Android Nexus5X WebView Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview',
+        'os': 'Android',
+        'device_type': 'bullhead',
+        'device_os': 'MOB30K',
+        'device_os_flavor': 'aosp',
+      },
+      'device_ids': [],
+    },
+    'Android Nexus6 WebView Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus6_webview_16_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview',
+        'os': 'Android',
+        'device_type': 'shamu',
+        'device_os': 'MOB30K',
+        'device_os_flavor': 'aosp',
+      },
+      'device_ids': [],
+    },
     'Win 10 High-DPI Perf': {
       'tests': [
         {
