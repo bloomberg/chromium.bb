@@ -2827,11 +2827,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui see seade jäetakse seadistamata, saab kasutaja otsustada, kas funktsiooni kasutada või mitte.</translation>
 <translation id="8870318296973696995">Avaleht</translation>
 <translation id="8882006618241293596">Blokeeri nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
-<translation id="8894962626537183708">
-      Reegel määrab allikate (URL-ide) loendi, mida käsitletakse turvalise kontekstina. Reegli eesmärk on võimaldada organisatsioonidel seadistada kontrollserver siseseks veebiarenduseks, et arendajad saaksid testida turvalist konteksti nõudvaid funktsioone, ilma et oleks vaja kontrollserveris TLS-i juurutada.
-      Reeglis URL-ide loendi määramisel on sama mõju mis käsureamärgistuse „--unsafely-treat-insecure-origin-as-secure” lisamine samadest URL-idest koosnevasse komaeraldusega loendisse. Kui reegel on määratud, alistab see käsureamärgistuse.
-      Turvaliste kontekstide lisateavet leiate aadressilt https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Sundlubab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse.
 
       Kui lubate reegli, lubatakse õigekirjakontroll määratud keelte jaoks, mis lisanduvad keeltele, mille jaoks kasutaja on õigekirjakontrolli lubanud.

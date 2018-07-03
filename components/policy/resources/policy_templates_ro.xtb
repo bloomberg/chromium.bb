@@ -2723,11 +2723,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
-<translation id="8894962626537183708">
-      Politica specifică o listă de origini (adrese URL) care trebuie tratate drept context securizat. Scopul este să permită organizațiilor să configureze un server de simulare pentru dezvoltarea web internă, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare.
-      Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
-      Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
 
       Dacă activezi această politică, verificarea ortografică va fi activată pentru limbile specificate, pe lângă limbile pentru care utilizatorul a activat verificarea ortografică.

@@ -2803,11 +2803,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak je toto nastavenie ponechané nenastavené, používateľ sa môže rozhodnúť, či chce túto funkciu použiť.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8882006618241293596">Blokovať doplnok <ph name="FLASH_PLUGIN_NAME" /> na týchto weboch</translation>
-<translation id="8894962626537183708">
-      Toto pravidlo umožňuje určiť zoznam zdrojov (webových adries), ktoré sa majú považovať za zabezpečený kontext. Cieľom je povoliť organizáciám nastaviť pracovný server na interný vývoj webu, aby ich vývojári mohli testovať funkcie vyžadujúce zabezpečené kontexty bez nutnosti nasadenia protokolu TLS na pracovnom serveri.
-      Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účinok ako nastavenie príznaku príkazového riadka --unsafely-treat-insecure-origin-as-secure do zoznamu rovnakých webových adries oddelených čiarkou. Ak toto pravidlo nastavíte, prepíše príznak príkazového riadka.
-      Ďalšie informácie o zabezpečených kontextoch nájdete na adrese https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Vynucuje povolenie jazykov kontroly pravopisu. Nerozpoznané jazyky sa budú v danom zozname ignorovať.
 
       Ak toto pravidlo povolíte, kontrola pravopisu sa povolí nielen pre jazyky, ktoré nastavil používateľ, ale aj pre tieto špecifikované jazyky.

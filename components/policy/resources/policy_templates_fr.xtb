@@ -2851,11 +2851,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser ou non cette fonction.</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
 <translation id="8882006618241293596">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
-<translation id="8894962626537183708">
-      Cette règle répertorie les origines (URL) à considérer comme contexte sécurisé. L'objectif est de permettre aux organisations de configurer un serveur de test pour les développements Web internes. Cela permet aux développeurs de tester les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS sur le serveur de test.
-      Définir une liste d'URL dans cette règle a le même effet qu'utiliser l'indicateur de ligne de commande "--unsafely-treat-insecure-origin-as-secure" avec une liste des URL en question séparées par une virgule. Si la règle est définie, elle remplace l'indicateur de ligne de commande.
-      Pour en savoir plus sur les contextes sécurisés, consultez https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="890403179930035128">Active de manière forcée les langues pour la vérification orthographique. Les langues non compatibles de cette liste seront ignorées.
 
       Si vous activez cette règle, la vérification orthographique sera activée pour les langues spécifiées, en plus des langues pour lesquelles l'utilisateur a activé la vérification orthographique.

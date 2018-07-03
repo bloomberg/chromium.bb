@@ -2828,11 +2828,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai izmantot šo funkciju.</translation>
 <translation id="8870318296973696995">Sākumlapa</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
-<translation id="8894962626537183708">
-      Šī politika nosaka tādu avotu (vietrāžu URL) sarakstu, kuri ir jāapstrādā kā drošs konteksts. Nolūks ir atļaut organizācijām iestatīt izstādīšanas serveri iekšējai tīmekļa izstrādei, lai organizācijas izstrādātāji var izmēģināt funkcijas, kuru darbībai nepieciešams drošs konteksts, izvairoties no TLS izmantošanas izstādīšanas serveros.
-      Politikas URL saraksta noteikšanai ir tāds pats rezultāts kā komandrindas atzīmes “--unsafely-treat-insecure-origin-as-secure” mainīšanai uz komatatdalītu sarakstu, kurā ietverti tie paši URL. Ja politika ir iestatīta, tā ignorēs komandrindas atzīmi.
-      Plašāku informāciju par drošu kontekstu skatiet vietnē https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="890403179930035128">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
       Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajās valodās, gan tajās valodās, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
 

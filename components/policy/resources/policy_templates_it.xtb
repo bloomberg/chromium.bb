@@ -2653,11 +2653,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questa impostazione non viene configurata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="8870318296973696995">Pagina iniziale</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
-<translation id="8894962626537183708">
-      Questa norma consente di specificare un elenco di origini (URL) da considerare come contesto sicuro. Lo scopo è consentire alle organizzazioni di configurare un server di gestione temporanea per gli sviluppi web interni, affinché gli sviluppatori possano testare le funzioni che richiedono contesti sicuri senza dover implementare TLS sul server di gestione temporanea.
-      L'impostazione di un elenco di URL in questa norma ha lo stesso effetto dell'impostazione del flag della riga di comando "--unsafely-treat-insecure-origin-as-secure" su un elenco separato da virgole degli stessi URL. Se viene impostata, questa norma sostituisce il flag della riga di comando.
-      Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Consente di forzare l'attivazione delle lingue per il controllo ortografico. Le lingue non riconosciute dell'elenco verranno ignorate.
 
       Se questa norma viene attivata, il controllo ortografico verrà attivato per le lingue specificate, oltre che per le lingue per cui l'utente ha attivato il controllo ortografico.

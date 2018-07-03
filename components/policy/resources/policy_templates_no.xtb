@@ -2782,11 +2782,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen ikke angis, kan brukeren velge å bruke denne funksjonen eller ikke.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
-<translation id="8894962626537183708">
-      Regelen spesifiserer en liste over opprinnelser (nettadresser) som skal behandles som sikker kontekst. Hensikten er å la organisasjoner konfigurere en testtjener for intern nettutvikling, slik at utviklerne deres kan teste funksjoner som krever sikker kontekst, uten å måtte implementere TLS på testtjeneren.
-      Angivelse av en liste over nettadresser i denne regelen har samme effekt som å angi kommandolinjeflagget «--unsafely-treat-insecure-origin-as-secure» i en kommadelt liste over de samme nettadressene. Hvis regelen angis, overstyrer den kommandolinjeflagget.
-      Hvis du vil ha mer informasjon om sikker kontekst, kan du gå til https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Tvinger aktivering av språk med stavekontroll. Språk som ikke gjenkjennes i listen, blir ignorert.
 
       Hvis du aktiverer denne regelen, aktiveres stavekontroll for de spesifiserte språkene, i tillegg til språkene brukeren har aktivert stavekontroll for.

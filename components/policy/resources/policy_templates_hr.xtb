@@ -2712,11 +2712,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Ako ta postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
-<translation id="8894962626537183708">
-      Pravilo navodi popis izvora (URL-ova) koji će se tretirati kao siguran kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja u pokusne svrhe za interni razvoj na webu, tako da njihovi razvojni programeri mogu testirati naše značajke koje zahtijevaju siguran kontekst bez potrebe za implementacijom TLS-a na pokusnom poslužitelju.
-      Postavljanje popisa URL-ova u ovom pravilu ima isti učinak kao i postavljanje oznake naredbenog retka '--unsafely-treat-insecure-origin-as-secure' na popis odijeljen zarezima istih URL-ova. Ako je pravilo postavljeno, nadjačat će oznaku naredbenog retka.
-      Više informacija o sigurnim kontekstima potražite na https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Nameće provjeru pravopisa za jezike. Neprepoznati jezici na popisu zanemarit će se.
 
       Ako omogućite ovo pravilo, provjera pravopisa bit će omogućena za navedene jezike, kao i za jezike za koje je korisnik omogućio provjeru pravopisa.

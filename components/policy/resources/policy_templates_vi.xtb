@@ -2812,11 +2812,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
-<translation id="8894962626537183708">
-      Chính sách xác định danh sách các URL gốc cần được coi là ngữ cảnh an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ theo giai đoạn để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng yêu cầu ngữ cảnh an toàn mà không phải triển khai TLS trên máy chủ theo giai đoạn.
-      Đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một danh sách được phân tách bằng dấu phẩy gồm có các URL tương tự. Nếu bạn đặt chính sách, chính sách này sẽ ghi đè cờ dòng lệnh.
-      Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Buộc bật tính năng kiểm tra chính tả ngôn ngữ. Các ngôn ngữ không xác định được trong danh sách đó sẽ bị bỏ qua.
 
       Nếu bạn bật chính sách này, tính năng kiểm tra chính tả sẽ được bật cho ngôn ngữ đã chỉ định ngoài ngôn ngữ mà người dùng đã bật tính năng kiểm tra chính tả.

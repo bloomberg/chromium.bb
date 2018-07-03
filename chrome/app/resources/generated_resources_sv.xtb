@@ -4078,7 +4078,7 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="7328867076235380839">Ogiltig kombination</translation>
 <translation id="7329154610228416156">Inloggningen misslyckades eftersom den har konfigurerats att använda en webbadress som inte är säker (<ph name="BLOCKED_URL" />). Kontakta administratören.</translation>
 <translation id="7334190995941642545">Smart Lock är för närvarande inte tillgängligt. Försök igen senare.</translation>
-<translation id="7334274148831027933">Aktivera dockad skärmförstorare</translation>
+<translation id="7334274148831027933">Aktivera dockad skärmförstoring</translation>
 <translation id="7339763383339757376">PKCS #7, enstaka certifikat</translation>
 <translation id="7339785458027436441">Kontrollera stavning medan jag skriver</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
@@ -4462,7 +4462,7 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="7912080627461681647">Lösenordet har ändrats på servern. Logga ut och logga sedan in igen.</translation>
 <translation id="7915471803647590281">Berätta för oss vad som händer innan du skickar feedback.</translation>
 <translation id="7916556741383518510">Vid klick</translation>
-<translation id="792514962475806987">Zoomnivå för dockad skärmförstorare</translation>
+<translation id="792514962475806987">Zoomnivå för dockad skärmförstoring</translation>
 <translation id="7925247922861151263">Kontroll med AAA misslyckades</translation>
 <translation id="7925285046818567682">Väntar på <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Använd inte mobildata för synkronisering</translation>

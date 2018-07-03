@@ -2707,11 +2707,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Hvis indstillingen ikke konfigureres, kan brugerne selv bestemme, om de vil bruge denne funktion eller ej.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
-<translation id="8894962626537183708">
-      Denne politik angiver en liste over kilder (webadresser), der skal behandles som sikkert indhold. Formålet er, at organisationerne kan konfigurere en testserver til intern webudvikling, så deres udviklere kan teste funktioner, der kræver sikre kontekster, uden at det er nødvendigt at anvende TLS på testserveren.
-      Indstillingen af en liste af webadresser i denne politik har den samme effekt som at indstille kommandolinjemarkeringen "--unsafely-treat-insecure-origin-as-secure" til en kommasepareret liste med de samme webadresser. Hvis politikken er indstillet, tilsidesætter den kommandolinjemarkeringen.
-      Få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Gennemtvinger aktivering af stavekontrol af sprog. Ikke-genkendte sprog på denne liste ignoreres.
 
       Hvis du aktiverer denne politik, aktiveres stavekontrol for de angivne sprog samt de sprog, for hvilke brugeren har aktiveret stavekontrol.

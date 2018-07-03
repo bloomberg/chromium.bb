@@ -2708,11 +2708,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
       Jos asetusta ei ole määritetty, käyttäjä voi itse päättää, haluaako käyttää toimintoa.</translation>
 <translation id="8870318296973696995">Etusivu</translation>
 <translation id="8882006618241293596">Estä <ph name="FLASH_PLUGIN_NAME" />-laajennus näillä sivustoilla.</translation>
-<translation id="8894962626537183708">
-      Käytäntö määrittelee ne alkuperät (URL-osoitteet), joita kohdellaan turvallisena kontekstina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen sisäistä verkkokehitystä varten ja kehittäjät voivat testata turvallista kontekstia edellyttäviä ominaisuuksia ilman TLS:n käyttöä valmistelupalvelimella.
-      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa komentorivimerkinnän.
-      Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="890403179930035128">Pakottaa ottamaan oikeinkirjoituksen tarkistuskielet käyttöön. Jos luettelossa on tunnistamattomia kieliä, ne ohitetaan.
 
       Jos otat tämän käytännön käyttöön, oikeinkirjoitus voidaan tarkistaa määritetyillä kielillä käyttäjän valitsemien tarkistuskielten lisäksi.

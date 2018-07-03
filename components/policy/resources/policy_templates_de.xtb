@@ -2694,11 +2694,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Wenn die Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte oder nicht.</translation>
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
-<translation id="8894962626537183708">
-      Mit dieser Richtlinie wird eine Liste aller Quellen (URLs) festgelegt, die als sicherer Kontext eingestuft werden sollen. Auf diese Weise können Organisationen einen Testserver für interne Webentwicklung einrichten, damit ihre Entwickler Funktionen testen können, die einen sicheren Quellenkontext voraussetzen, ohne TLS auf dem Testserver bereitstellen zu müssen.
-      Das Festlegen einer Liste von URLs in dieser Richtlinie hat den gleichen Effekt wie das Festlegen des Befehlszeilenparameters "--unsafely-treat-insecure-origin-as-secure" für eine durch Kommas getrennte Liste mit denselben URLs. Wenn die Richtlinie festgelegt wird, wird der Befehlszeilenparameter überschrieben.
-      Weitere Informationen zu sicherem Kontext finden Sie unter https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="890403179930035128">Erzwingt die Aktivierung von Sprachen für die Rechtschreibprüfung. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
 
       Wenn diese Richtlinie aktiviert wird, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.

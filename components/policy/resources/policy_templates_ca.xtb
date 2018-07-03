@@ -2094,7 +2094,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si no s'estableix aquesta política, la lupa es desactivarà la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris poden activar o desactivar la lupa en qualsevol moment i el seu estat a la pàgina d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
-<translation id="725322441686394886">Si no s'estableix, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. A continuació, Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. L'usuari podrà optar per compartir els resultats de la neteja amb Google per contribuir a la detecció de programari no desitjat. Aquests resultats contenen metadades de fitxers, extensions instal·lades automàticament i claus de registre, segons es descriu al llibre blanc de privadesa de Chrome.
+<translation id="725322441686394886">Si no s'estableix, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. A continuació, Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. L'usuari podrà optar per compartir els resultats de la neteja amb Google per contribuir a la detecció de programari no desitjat en el futur. Aquests resultats contenen metadades de fitxers, extensions instal·lades automàticament i claus de registre, segons es descriu al llibre blanc de privadesa de Chrome.
 
       Si es desactiva, en el cas que Neteja de Chrome detecti programari no desitjat, no comunicarà les metadades de l'escaneig a Google i substituirà qualsevol política establerta per SafeBrowsingExtendedReportingEnabled. Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. Els resultats de la neteja no es comunicaran a Google i l'usuari no podrà fer-ho.
 
@@ -2684,11 +2684,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si deixes l'opció sense definir, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
-<translation id="8894962626537183708">
-      La política especifica una llista d'orígens (URL) que es poden tractar com a context segur. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
-      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres '--unsafely-treat-insecure-origin-as-secure' a una llista d'URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
-      Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="890403179930035128">Força l'activació del corrector ortogràfic d'idiomes. S'ignoraran els idiomes de la llista que no es reconeguin.
 
       Si actives aquesta política, s'activarà el corrector ortogràfic en els idiomes especificats, a més dels idiomes en què l'usuari ja l'havia activat.
@@ -2833,9 +2828,9 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
 <translation id="981346395360763138">Serveis d'ubicació de Google desactivats</translation>
 <translation id="982497069985795632">Activa el corrector ortogràfic</translation>
-<translation id="988537626274109600">Aquesta política controla els intervals de temps en què no es permet que el dispositiu <ph name="PRODUCT_OS_NAME" /> cerqui actualitzacions automàticament.
+<translation id="988537626274109600">Aquesta política controla els intervals de temps en què no es permet que <ph name="PRODUCT_OS_NAME" /> cerqui actualitzacions automàticament.
       Quan aquesta política s'estableix en una llista no buida d'intervals de temps:
-      Els dispositius no poden cercar actualitzacions automàticament durant els intervals de temps especificats. Aquesta política no afecta els dispositius que s'han de revertir a una versió anterior o que tenen una versió anterior a la mínima (<ph name="PRODUCT_OS_NAME" />), ja que podria provocar problemes de seguretat. A més, aquesta política no bloqueja les cerques d'actualitzacions sol·licitades per usuaris o administradors.
-      Si aquesta política no s'estableix o no conté cap interval de temps:
+      Els dispositius no poden cercar actualitzacions automàticament durant els intervals de temps especificats. Aquesta política no afecta els dispositius d'una versió anterior a la mínima (<ph name="PRODUCT_OS_NAME" />) o que s'hi han de revertir a una versió anterior, ja que podria provocar problemes de seguretat. A més, aquesta política no bloqueja les cerques d'actualitzacions sol·licitades per usuaris o administradors.
+      Quan aquesta política no s'estableix o no conté cap interval de temps:
       La política no bloqueja les cerques automàtiques d'actualitzacions, però pot ser que hi hagi altres polítiques que sí que les bloquegin.</translation>
 </translationbundle>
