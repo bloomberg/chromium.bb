@@ -34,6 +34,12 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTransportSelection);
+    } else if (name == "insert_usb_register") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
+                                kUsbInsertAndActivateOnRegister);
+    } else if (name == "insert_usb_sign") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivateOnSign);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -56,5 +62,12 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_completed) {
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_transports) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_insert_usb_register) {
+  ShowAndVerifyUi();
+}
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_insert_usb_sign) {
   ShowAndVerifyUi();
 }

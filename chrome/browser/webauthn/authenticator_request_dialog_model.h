@@ -25,9 +25,8 @@ class AuthenticatorRequestDialogModel {
     kCompleted,
 
     // Universal Serial Bus (USB).
-    kUsbInsert,
-    kUsbActivate,
-    kUsbVerifying,
+    kUsbInsertAndActivateOnRegister,
+    kUsbInsertAndActivateOnSign,
 
     // Bluetooth Low Energy (BLE).
     kBlePowerOnAutomatic,

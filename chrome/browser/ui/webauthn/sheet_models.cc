@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -95,13 +96,31 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
 
-// AuthenticatorInsertUsbSheetModel
-// ---------------------------------------------
+// AuthenticatorInsertAndActivateUsbOnRegisterSheetModel ----------------------
 
-base::string16 AuthenticatorInsertUsbSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_TITLE);
+base::string16
+AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_TITLE_ON_REGISTER);
 }
 
-base::string16 AuthenticatorInsertUsbSheetModel::GetStepDescription() const {
+base::string16
+AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
+}
+
+// AuthenticatorInsertAndActivateUsbOnSignSheetModel ----------------------
+
+base::string16 AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepTitle()
+    const {
+  // TODO(hongjunchoi): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_USB_TITLE_ON_SIGNIN,
+                                    application_name);
+}
+
+base::string16
+AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
 }
