@@ -52,6 +52,7 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
     local_device_metadata_ = local_device_metadata;
   }
 
+  using DeviceSyncClient::NotifyReady;
   using DeviceSyncClient::NotifyEnrollmentFinished;
   using DeviceSyncClient::NotifyNewDevicesSynced;
 

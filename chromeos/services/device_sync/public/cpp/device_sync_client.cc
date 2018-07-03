@@ -20,6 +20,13 @@ void DeviceSyncClient::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void DeviceSyncClient::NotifyReady() {
+  is_ready_ = true;
+
+  for (auto& observer : observer_list_)
+    observer.OnReady();
+}
+
 void DeviceSyncClient::NotifyEnrollmentFinished() {
   for (auto& observer : observer_list_)
     observer.OnEnrollmentFinished();

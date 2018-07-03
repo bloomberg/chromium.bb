@@ -261,7 +261,10 @@ class FakeDeviceSyncClientImplFactory
   // chromeos::device_sync::DeviceSyncClientImpl::Factory:
   std::unique_ptr<chromeos::device_sync::DeviceSyncClient> BuildInstance(
       service_manager::Connector* connector) override {
-    return std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
+    auto fake_device_sync_client =
+        std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
+    fake_device_sync_client->NotifyReady();
+    return fake_device_sync_client;
   }
 };
 
@@ -311,6 +314,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_device_sync_client_ =
         std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
+    fake_device_sync_client_->NotifyReady();
+
     fake_device_sync_client_impl_factory_ =
         std::make_unique<FakeDeviceSyncClientImplFactory>();
     chromeos::device_sync::DeviceSyncClientImpl::Factory::SetInstanceForTesting(
@@ -415,17 +420,19 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         base::WrapUnique(fake_notification_presenter_),
         base::WrapUnique(mock_timer_));
 
-    // Ensure that TetherService does not prematurely update its TechnologyState
-    // before it fetches the BluetoothAdapter.
-    EXPECT_EQ(
-        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-        network_state_handler()->GetTechnologyState(
-            chromeos::NetworkTypePattern::Tether()));
-    VerifyTetherActiveStatus(false /* expected_active */);
-
     SetPrimaryUserLoggedIn();
 
-    base::RunLoop().RunUntilIdle();
+    if (fake_device_sync_client_->is_ready()) {
+      // Ensure that TetherService does not prematurely update its
+      // TechnologyState before it fetches the BluetoothAdapter.
+      EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::
+                    TECHNOLOGY_UNAVAILABLE,
+                network_state_handler()->GetTechnologyState(
+                    chromeos::NetworkTypePattern::Tether()));
+      VerifyTetherActiveStatus(false /* expected_active */);
+
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   void ShutdownTetherService() {
@@ -513,11 +520,11 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
       fake_tether_host_fetcher_factory_;
   chromeos::tether::FakeNotificationPresenter* fake_notification_presenter_;
   base::MockOneShotTimer* mock_timer_;
-  std::unique_ptr<chromeos::device_sync::DeviceSyncClient>
+  std::unique_ptr<chromeos::device_sync::FakeDeviceSyncClient>
       fake_device_sync_client_;
   std::unique_ptr<FakeDeviceSyncClientImplFactory>
       fake_device_sync_client_impl_factory_;
-  std::unique_ptr<chromeos::secure_channel::SecureChannelClient>
+  std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<FakeSecureChannelClientImplFactory>
       fake_secure_channel_client_impl_factory_;
@@ -623,6 +630,28 @@ TEST_F(TetherServiceTest, TestSuspend) {
                                    2 /* expected_count */);
   VerifyLastShutdownReason(
       chromeos::tether::TetherComponent::ShutdownReason::USER_CLOSED_LID);
+}
+
+TEST_F(TetherServiceTest, TestDeviceSyncClientNotReady) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kMultiDeviceApi);
+
+  fake_device_sync_client_ =
+      std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
+
+  CreateTetherService();
+
+  fake_device_sync_client_->NotifyReady();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(true /* expected_active */);
+
+  ShutdownTetherService();
+  VerifyLastShutdownReason(
+      chromeos::tether::TetherComponent::ShutdownReason::USER_LOGGED_OUT);
 }
 
 TEST_F(TetherServiceTest, TestBleAdvertisingNotSupported) {

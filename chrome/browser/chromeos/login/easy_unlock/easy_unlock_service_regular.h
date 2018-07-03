@@ -115,6 +115,7 @@ class EasyUnlockServiceRegular
                           device_change_result) override;
 
   // device_sync::DeviceSyncClient::Observer:
+  void OnReady() override;
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 
@@ -219,14 +220,6 @@ class EasyUnlockServiceRegular
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
   // notification.
   bool shown_pairing_changed_notification_;
-
-  // If this service is the first caller on DeviceSyncClient, it won't have
-  // devices cached yet. |is_waiting_for_initial_sync_| is set to true if
-  // DeviceSyncClient has no devices, to indicate that we are waiting for the
-  // initial sync, to be inspected in OnNewDevicesSynced(). OnNewDevicesSynced()
-  // needs to know that it is receiving the initial sync, not a newly forced
-  // one, in order to prevent it from running unrelated logic.
-  bool is_waiting_for_initial_sync_ = false;
 
   // Listens to pref changes.
   PrefChangeRegistrar registrar_;

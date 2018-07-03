@@ -57,7 +57,7 @@ class MultiDeviceSetupInitializer
       TriggerEventForDebuggingCallback callback) override;
 
   // device_sync::DeviceSyncClient::Observer:
-  void OnEnrollmentFinished() override;
+  void OnReady() override;
 
   void InitializeImplementation();
 

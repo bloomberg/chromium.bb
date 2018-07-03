@@ -130,16 +130,10 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
       shown_pairing_changed_notification_(false),
       weak_ptr_factory_(this) {
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    // If this is the first GetSyncedDevices() call on DeviceSyncClient, it
-    // won't have devices cached yet. |is_waiting_for_initial_sync_| is flipped
-    // to indicate that we are waiting for this initial sync, to be inspected
-    // in OnNewDevicesSynced(). OnNewDevicesSynced() needs to know that it is
-    // receiving the initial sync, not a newly forced one, in order to prevent
-    // it from running unrelated logic.
-    if (device_sync_client_->GetSyncedDevices().empty())
-      is_waiting_for_initial_sync_ = true;
-    else
-      remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+    // If |device_sync_client_| is not ready yet, wait for it to call back on
+    // OnReady().
+    if (device_sync_client_->is_ready())
+      OnReady();
 
     device_sync_client_->AddObserver(this);
   }
@@ -157,11 +151,11 @@ EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
 // explicit.
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      !device_sync_client_->GetLocalDeviceMetadata()) {
-    // OnEnrollmentFinished() will call back on this method once the local
-    // device is ready.
-    PA_LOG(INFO)
-        << "Local device is not ready yet, delaying UseLoadedRemoteDevices().";
+      !device_sync_client_->is_ready()) {
+    // OnEnrollmentFinished() or OnNewDevicesSynced() will call back on this
+    // method once |device_sync_client_| is ready.
+    PA_LOG(INFO) << "DeviceSyncClient is not ready yet, delaying "
+                    "UseLoadedRemoteDevices().";
     return;
   }
 
@@ -622,9 +616,16 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   LoadRemoteDevices();
 }
 
+void EasyUnlockServiceRegular::OnReady() {
+  // If the local device and synced devices are ready for the first time,
+  // establish what the unlock keys were before the next sync. This is necessary
+  // in order for OnNewDevicesSynced() to determine if new devices were added
+  // since the last sync.
+  remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+}
+
 void EasyUnlockServiceRegular::OnEnrollmentFinished() {
-  // If the local device is ready for the first time, or has been updated,
-  // reload devices.
+  // If the local device has been updated, reload devices.
   LoadRemoteDevices();
 }
 
@@ -635,12 +636,6 @@ void EasyUnlockServiceRegular::OnNewDevicesSynced() {
   DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
 
   std::set<std::string> public_keys_before_sync;
-  if (is_waiting_for_initial_sync_) {
-    is_waiting_for_initial_sync_ = false;
-
-    // Without this, |public_keys_before_sync| would be incorrectly empty.
-    remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
-  }
   for (const auto& remote_device : remote_device_unlock_keys_before_sync_) {
     public_keys_before_sync.insert(remote_device.public_key());
   }

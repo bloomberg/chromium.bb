@@ -52,7 +52,7 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client) {
-  if (device_sync_client_->GetLocalDeviceMetadata()) {
+  if (device_sync_client_->is_ready()) {
     InitializeImplementation();
     return;
   }
@@ -90,10 +90,7 @@ void MultiDeviceSetupInitializer::TriggerEventForDebugging(
   std::move(callback).Run(false /* success */);
 }
 
-void MultiDeviceSetupInitializer::OnEnrollmentFinished() {
-  if (!device_sync_client_->GetLocalDeviceMetadata())
-    return;
-
+void MultiDeviceSetupInitializer::OnReady() {
   device_sync_client_->RemoveObserver(this);
   InitializeImplementation();
 }
