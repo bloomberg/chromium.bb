@@ -34,6 +34,9 @@ class ChromeAndroidImpl : public ChromeImpl {
   bool HasTouchScreen() const override;
   Status QuitImpl() override;
 
+ protected:
+  Status GetWindow(const std::string& target_id, Window* window) override;
+
  private:
   std::unique_ptr<Device> device_;
 };

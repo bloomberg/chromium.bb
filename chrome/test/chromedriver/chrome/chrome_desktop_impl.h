@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/process/process.h"
-#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 #include "chrome/test/chromedriver/chrome/scoped_temp_dir_with_retry.h"
 
@@ -66,8 +65,6 @@ class ChromeDesktopImpl : public ChromeImpl {
   int GetNetworkConnection() const;
   void SetNetworkConnection(int network_connection);
 
-  Status GetWindowPosition(const std::string& target_id, int* x, int* y);
-  Status GetWindowSize(const std::string& target_id, int* width, int* height);
   Status SetWindowRect(const std::string& target_id,
                        const base::DictionaryValue& params);
   Status SetWindowPosition(const std::string& target_id, int x, int y);
@@ -77,20 +74,6 @@ class ChromeDesktopImpl : public ChromeImpl {
   Status FullScreenWindow(const std::string& target_id);
 
  private:
-  struct Window {
-    int id;
-    std::string state;
-    int left;
-    int top;
-    int width;
-    int height;
-  };
-  Status ParseWindowBounds(std::unique_ptr<base::DictionaryValue> params,
-                           Window* window);
-  Status ParseWindow(std::unique_ptr<base::DictionaryValue> params,
-                     Window* window);
-
-  Status GetWindow(const std::string& target_id, Window* window);
   Status GetWindowBounds(int window_id, Window* window);
   Status SetWindowBounds(int window_id,
                          std::unique_ptr<base::DictionaryValue> bounds);

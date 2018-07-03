@@ -36,6 +36,18 @@ Status StubChrome::GetWebViewById(const std::string& id, WebView** web_view) {
   return Status(kOk);
 }
 
+Status StubChrome::GetWindowSize(const std::string& id,
+                                 int* width,
+                                 int* height) {
+  return Status(kOk);
+}
+
+Status StubChrome::GetWindowPosition(const std::string& target_id,
+                                     int* x,
+                                     int* y) {
+  return Status(kOk);
+}
+
 Status StubChrome::CloseWebView(const std::string& id) {
   return Status(kOk);
 }

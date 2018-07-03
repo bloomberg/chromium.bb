@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
 struct BrowserInfo;
@@ -26,7 +27,6 @@ class WebViewsInfo;
 class ChromeImpl : public Chrome {
  public:
   ~ChromeImpl() override;
-
   // Overridden from Chrome:
   Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   const BrowserInfo* GetBrowserInfo() const override;
@@ -36,6 +36,8 @@ class ChromeImpl : public Chrome {
   Status GetWebViewIds(std::list<std::string>* web_view_ids,
                        bool w3c_compliant) override;
   Status GetWebViewById(const std::string& id, WebView** web_view) override;
+  Status GetWindowSize(const std::string& id, int* width, int* height) override;
+  Status GetWindowPosition(const std::string& id, int* x, int* y) override;
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;
   Status SetAcceptInsecureCerts() override;
@@ -52,6 +54,20 @@ class ChromeImpl : public Chrome {
              std::string page_load_strategy);
 
   virtual Status QuitImpl() = 0;
+
+  struct Window {
+    int id;
+    std::string state;
+    int left;
+    int top;
+    int width;
+    int height;
+  };
+  virtual Status GetWindow(const std::string& target_id, Window* window);
+  Status ParseWindow(std::unique_ptr<base::DictionaryValue> params,
+                     Window* window);
+  Status ParseWindowBounds(std::unique_ptr<base::DictionaryValue> params,
+                           Window* window);
 
   bool quit_;
   std::unique_ptr<DevToolsHttpClient> devtools_http_client_;

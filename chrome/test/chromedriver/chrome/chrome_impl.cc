@@ -122,6 +122,79 @@ Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
   return Status(kUnknownError, "web view not found");
 }
 
+Status ChromeImpl::GetWindow(const std::string& target_id, Window* window) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetString("targetId", target_id);
+  std::unique_ptr<base::DictionaryValue> result;
+  status = devtools_websocket_client_->SendCommandAndGetResult(
+      "Browser.getWindowForTarget", params, &result);
+  if (status.IsError())
+    return status;
+
+  return ParseWindow(std::move(result), window);
+}
+
+Status ChromeImpl::GetWindowPosition(const std::string& target_id,
+                                     int* x,
+                                     int* y) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  *x = window.left;
+  *y = window.top;
+  return Status(kOk);
+}
+
+Status ChromeImpl::GetWindowSize(const std::string& target_id,
+                                 int* width,
+                                 int* height) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  *width = window.width;
+  *height = window.height;
+  return Status(kOk);
+}
+
+Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,
+                               Window* window) {
+  if (!params->GetInteger("windowId", &window->id))
+    return Status(kUnknownError, "no window id in response");
+
+  return ParseWindowBounds(std::move(params), window);
+}
+
+Status ChromeImpl::ParseWindowBounds(
+    std::unique_ptr<base::DictionaryValue> params,
+    Window* window) {
+  const base::Value* value = nullptr;
+  const base::DictionaryValue* bounds_dict = nullptr;
+  if (!params->Get("bounds", &value) || !value->GetAsDictionary(&bounds_dict))
+    return Status(kUnknownError, "no window bounds in response");
+
+  if (!bounds_dict->GetString("windowState", &window->state))
+    return Status(kUnknownError, "no window state in window bounds");
+
+  if (!bounds_dict->GetInteger("left", &window->left))
+    return Status(kUnknownError, "no left offset in window bounds");
+  if (!bounds_dict->GetInteger("top", &window->top))
+    return Status(kUnknownError, "no top offset in window bounds");
+  if (!bounds_dict->GetInteger("width", &window->width))
+    return Status(kUnknownError, "no width in window bounds");
+  if (!bounds_dict->GetInteger("height", &window->height))
+    return Status(kUnknownError, "no height in window bounds");
+
+  return Status(kOk);
+}
+
 Status ChromeImpl::CloseWebView(const std::string& id) {
   Status status = devtools_http_client_->CloseWebView(id);
   if (status.IsError())
