@@ -63,7 +63,7 @@ class ControllerStateChangeWaiter
 
 bool WaitVisibilityChangesTo(bool visibility) {
   aura::Window* keyboard_window =
-      keyboard::KeyboardController::Get()->GetContentsWindow();
+      keyboard::KeyboardController::Get()->GetKeyboardWindow();
   WindowVisibilityChangeWaiter waiter(keyboard_window, visibility);
   waiter.Wait();
   return true;
@@ -100,7 +100,7 @@ TestKeyboardUI::~TestKeyboardUI() {
   window_.reset();
 }
 
-aura::Window* TestKeyboardUI::GetContentsWindow() {
+aura::Window* TestKeyboardUI::GetKeyboardWindow() {
   if (!window_) {
     window_.reset(new aura::Window(&delegate_));
     window_->Init(ui::LAYER_NOT_DRAWN);
@@ -113,7 +113,7 @@ ui::InputMethod* TestKeyboardUI::GetInputMethod() {
   return input_method_;
 }
 
-bool TestKeyboardUI::HasContentsWindow() const {
+bool TestKeyboardUI::HasKeyboardWindow() const {
   return !!window_;
 }
 

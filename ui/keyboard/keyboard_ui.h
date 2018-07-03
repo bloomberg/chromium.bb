@@ -23,19 +23,21 @@ namespace keyboard {
 
 class KeyboardController;
 
-// An interface implemented by an object that implements a keyboard UI.
+// Interface representing a window containing virtual keyboard UI.
+// The window can load asynchronously.... blah.
 class KEYBOARD_EXPORT KeyboardUI {
  public:
   KeyboardUI();
   virtual ~KeyboardUI();
 
-  // Gets the virtual keyboard contents window i.e. the WebContents window where
+  // Gets the virtual keyboard window i.e. the WebContents window where
   // keyboard extensions are loaded. May return null if the window has not yet
   // been created.
-  virtual aura::Window* GetContentsWindow() = 0;
+  // This class owns the window.
+  virtual aura::Window* GetKeyboardWindow() = 0;
 
-  // Whether the keyboard contents window has been created.
-  virtual bool HasContentsWindow() const = 0;
+  // Whether the keyboard window has been created.
+  virtual bool HasKeyboardWindow() const = 0;
 
   // Whether this window should do an overscroll to avoid occlusion by the
   // virtual keyboard. IME windows and virtual keyboard windows should always
@@ -46,15 +48,15 @@ class KEYBOARD_EXPORT KeyboardUI {
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
 
-  // Shows the container window of the keyboard. The default implementation
-  // simply shows the container. An overridden implementation can set up
-  // necessary animation, or delay the visibility change as it desires.
-  virtual void ShowKeyboardContainer(aura::Window* container);
+  // Shows the keyboard window. The default implementation simply calls |Show|
+  // on the window. An overridden implementation can set up animations or delay
+  // the visibility change.
+  virtual void ShowKeyboardWindow();
 
-  // Hides the container window of the keyboard. The default implementation
-  // simply hides the container. An overridden implementation can set up
-  // necesasry animation, or delay the visibility change as it desires.
-  virtual void HideKeyboardContainer(aura::Window* container);
+  // Hides the keyboard window. The default implementation simply calls |Hide|
+  // on the window. An overridden implementation can set up animations or delay
+  // the visibility change.
+  virtual void HideKeyboardWindow();
 
   // Ensures caret in current work area (not occluded by virtual keyboard
   // window).
@@ -87,7 +89,7 @@ class KEYBOARD_EXPORT KeyboardUI {
   KeyboardController* keyboard_controller() { return keyboard_controller_; }
 
  private:
-  keyboard::KeyboardController* keyboard_controller_;
+  keyboard::KeyboardController* keyboard_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUI);
 };

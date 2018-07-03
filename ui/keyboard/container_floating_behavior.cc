@@ -190,7 +190,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   DCHECK(controller_);
   auto kb_offset = gfx::Vector2d(event.x(), event.y());
 
-  aura::Window* contents = controller_->GetContentsWindow();
+  aura::Window* contents = controller_->GetKeyboardWindow();
 
   const gfx::Rect& keyboard_bounds_in_screen = contents->GetBoundsInScreen();
 

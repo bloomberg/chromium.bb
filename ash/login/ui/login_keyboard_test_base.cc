@@ -51,12 +51,12 @@ void LoginKeyboardTestBase::ShowKeyboard() {
   keyboard_controller_->ShowKeyboard(false);
   // Set keyboard height to half of the root window - this should overlap with
   // lock/login layout.
-  if (keyboard_controller_->ui()->GetContentsWindow()->bounds().height() == 0) {
+  if (keyboard_controller_->ui()->GetKeyboardWindow()->bounds().height() == 0) {
     int height = Shell::GetPrimaryRootWindow()->bounds().height() / 2;
-    keyboard_controller_->ui()->GetContentsWindow()->SetBounds(
+    keyboard_controller_->ui()->GetKeyboardWindow()->SetBounds(
         keyboard::KeyboardBoundsFromRootBounds(
             Shell::GetPrimaryRootWindow()->bounds(), height));
-    keyboard_controller_->NotifyContentsLoaded();
+    keyboard_controller_->NotifyKeyboardWindowLoaded();
   }
   ASSERT_TRUE(keyboard_controller_->keyboard_visible());
 }
@@ -67,7 +67,7 @@ void LoginKeyboardTestBase::HideKeyboard() {
 }
 
 gfx::Rect LoginKeyboardTestBase::GetKeyboardBoundsInScreen() const {
-  return keyboard_controller_->ui()->GetContentsWindow()->GetBoundsInScreen();
+  return keyboard_controller_->ui()->GetKeyboardWindow()->GetBoundsInScreen();
 }
 
 void LoginKeyboardTestBase::ShowLockScreen() {

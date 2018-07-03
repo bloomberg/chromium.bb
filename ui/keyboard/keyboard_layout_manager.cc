@@ -27,7 +27,7 @@ void KeyboardLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
 void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
-  aura::Window* contents_window = controller_->GetContentsWindow();
+  aura::Window* contents_window = controller_->GetKeyboardWindow();
   if (contents_window != child)
     return;
 
@@ -61,7 +61,7 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
 
   SetChildBoundsDirect(contents_window, new_bounds);
 
-  controller_->SetContainerBounds(new_bounds);
+  controller_->SetKeyboardWindowBounds(new_bounds);
 }
 
 }  // namespace keyboard

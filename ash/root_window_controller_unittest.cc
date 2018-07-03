@@ -740,7 +740,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_container->Show();
 
   aura::Window* contents_window =
-      keyboard::KeyboardController::Get()->GetContentsWindow();
+      keyboard::KeyboardController::Get()->GetKeyboardWindow();
   contents_window->SetBounds(gfx::Rect());
   contents_window->Show();
 
@@ -773,7 +773,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
   auto* controller = keyboard::KeyboardController::Get();
-  aura::Window* keyboard_window = controller->GetContentsWindow();
+  aura::Window* keyboard_window = controller->GetKeyboardWindow();
   // Track the keyboard contents window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_window);
@@ -791,7 +791,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
       Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard_container->Show();
   auto* controller = keyboard::KeyboardController::Get();
-  aura::Window* contents_window = controller->GetContentsWindow();
+  aura::Window* contents_window = controller->GetKeyboardWindow();
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
   contents_window->Show();
@@ -800,7 +800,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   // Notify keyboard bounds changing.
-  controller->NotifyContentsBoundsChanging(keyboard_container->bounds());
+  controller->NotifyKeyboardBoundsChanging(keyboard_container->bounds());
 
   if (!keyboard::IsKeyboardOverscrollEnabled()) {
     gfx::Rect after =
@@ -823,7 +823,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ASSERT_EQ(root_window, controller->GetRootWindow());
 
-  aura::Window* contents_window = controller->GetContentsWindow();
+  aura::Window* contents_window = controller->GetKeyboardWindow();
   contents_window->SetName("KeyboardContentsWindow");
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
@@ -868,7 +868,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   const int keyboard_height = 100;
-  aura::Window* contents_window = ui->GetContentsWindow();
+  aura::Window* contents_window = ui->GetKeyboardWindow();
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height));
   contents_window->Show();
@@ -905,7 +905,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   const int keyboard_height = 100;
   // Check that the keyboard on the primary screen doesn't cover the window on
   // the secondary screen.
-  aura::Window* contents_window = ui->GetContentsWindow();
+  aura::Window* contents_window = ui->GetKeyboardWindow();
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       primary_root_window->bounds(), keyboard_height));
   contents_window->Show();
@@ -945,7 +945,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   const int keyboard_height = 200;
-  aura::Window* contents_window = keyboard_controller->GetContentsWindow();
+  aura::Window* contents_window = keyboard_controller->GetKeyboardWindow();
   gfx::Rect keyboard_bounds = keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height);
   contents_window->SetBounds(keyboard_bounds);
@@ -1018,7 +1018,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, DisplayRotation) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
 
-  aura::Window* keyboard_window = keyboard_controller->GetContentsWindow();
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
 
   keyboard_window->SetBounds(gfx::Rect(0, 400, 800, 200));
   EXPECT_EQ("0,400 800x200", keyboard_window->bounds().ToString());
@@ -1062,9 +1062,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickDoesNotFocusKeyboard) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->NotifyContentsLoaded();
+  keyboard_controller->NotifyKeyboardWindowLoaded();
 
-  aura::Window* keyboard_window = keyboard_controller->GetContentsWindow();
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(keyboard_window->HasFocus());

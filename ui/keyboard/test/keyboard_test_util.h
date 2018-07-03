@@ -39,9 +39,9 @@ class TestKeyboardUI : public KeyboardUI {
   ~TestKeyboardUI() override;
 
   // Overridden from KeyboardUI:
-  bool HasContentsWindow() const override;
+  bool HasKeyboardWindow() const override;
   bool ShouldWindowOverscroll(aura::Window* window) const override;
-  aura::Window* GetContentsWindow() override;
+  aura::Window* GetKeyboardWindow() override;
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override {}
   void InitInsets(const gfx::Rect& keyboard_bounds) override {}

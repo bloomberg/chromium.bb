@@ -1805,7 +1805,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
-  kb_controller->ui()->GetContentsWindow()->SetBounds(
+  kb_controller->ui()->GetKeyboardWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 
@@ -1817,10 +1817,10 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
-  kb_controller->NotifyContentsLoaded();
+  kb_controller->NotifyKeyboardWindowLoaded();
 
   int shift =
-      work_area.height() - kb_controller->GetContentsWindow()->bounds().y();
+      work_area.height() - kb_controller->GetKeyboardWindow()->bounds().y();
   gfx::Rect changed_window_bounds(orig_window_bounds);
   changed_window_bounds.Offset(0, -shift);
   // Window should be shifted up.

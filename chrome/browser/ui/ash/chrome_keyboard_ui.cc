@@ -142,7 +142,7 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
 
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override {
-    aura::Window* keyboard = ui_->GetContentsWindow();
+    aura::Window* keyboard = ui_->GetKeyboardWindow();
     // keyboard window must have been added to keyboard container window at this
     // point. Otherwise, wrong keyboard bounds is used and may cause problem as
     // described in crbug.com/367788.
@@ -283,7 +283,7 @@ void ChromeKeyboardUI::RequestAudioInput(
 }
 
 void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
-  if (!ShouldWindowOverscroll(window) || !HasContentsWindow())
+  if (!ShouldWindowOverscroll(window) || !HasKeyboardWindow())
     return;
 
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
@@ -293,7 +293,7 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
     if (view && window->Contains(view->GetNativeView())) {
       gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
       gfx::Rect intersect = gfx::IntersectRects(
-          window_bounds, GetContentsWindow()->GetBoundsInScreen());
+          window_bounds, GetKeyboardWindow()->GetBoundsInScreen());
       int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
       if (overlap > 0 && overlap < window_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
@@ -304,7 +304,7 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
   }
 }
 
-aura::Window* ChromeKeyboardUI::GetContentsWindow() {
+aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
   if (!keyboard_contents_) {
     keyboard_contents_ = CreateWebContents();
     keyboard_contents_->SetDelegate(new ChromeKeyboardContentsDelegate(this));
@@ -326,7 +326,7 @@ aura::Window* ChromeKeyboardUI::GetContentsWindow() {
   return keyboard_contents_->GetNativeView();
 }
 
-bool ChromeKeyboardUI::HasContentsWindow() const {
+bool ChromeKeyboardUI::HasKeyboardWindow() const {
   return !!keyboard_contents_;
 }
 
@@ -358,7 +358,7 @@ void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
       // same as Android. Note we need to explicitly close current page as it
       // might try to resize keyboard window in javascript on a resize event.
       TRACE_EVENT0("vk", "ReloadKeyboardIfNeeded");
-      GetContentsWindow()->SetBounds(gfx::Rect());
+      GetKeyboardWindow()->SetBounds(gfx::Rect());
       keyboard_contents_->ClosePage();
     }
     LoadContents(GetVirtualKeyboardUrl());
@@ -466,7 +466,7 @@ const GURL& ChromeKeyboardUI::GetVirtualKeyboardUrl() {
 }
 
 bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
-  aura::Window* contents_window = GetContentsWindow();
+  aura::Window* contents_window = GetKeyboardWindow();
   return (contents_window->GetRootWindow() == window->GetRootWindow() &&
           keyboard::IsKeyboardOverscrollEnabled() &&
           contents_window->IsVisible() &&
@@ -519,10 +519,6 @@ void ChromeKeyboardUI::SetController(keyboard::KeyboardController* controller) {
   keyboard_controller()->AddObserver(observer_.get());
 }
 
-void ChromeKeyboardUI::ShowKeyboardContainer(aura::Window* container) {
-  KeyboardUI::ShowKeyboardContainer(container);
-}
-
 void ChromeKeyboardUI::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   content::HostZoomMap* zoom_map =
@@ -536,5 +532,5 @@ void ChromeKeyboardUI::RenderViewCreated(
 void ChromeKeyboardUI::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  keyboard_controller()->NotifyContentsLoaded();
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
 }

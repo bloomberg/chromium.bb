@@ -73,7 +73,7 @@ void EnableTabletMode(bool enable) {
 }
 
 // Generates a fling.
-void FlingUpOrDown(ui::test::EventGenerator& generator,
+void FlingUpOrDown(ui::test::EventGenerator* generator,
                    app_list::AppListView* view,
                    bool up) {
   int offset = up ? -100 : 100;
@@ -81,8 +81,8 @@ void FlingUpOrDown(ui::test::EventGenerator& generator,
   gfx::Point target_point = start_point;
   target_point.Offset(0, offset);
 
-  generator.GestureScrollSequence(start_point, target_point,
-                                  base::TimeDelta::FromMilliseconds(10), 2);
+  generator->GestureScrollSequence(start_point, target_point,
+                                   base::TimeDelta::FromMilliseconds(10), 2);
 }
 
 }  // namespace
@@ -702,10 +702,10 @@ TEST_P(AppListPresenterDelegateTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->ui()->GetContentsWindow()->SetBounds(
+  keyboard_controller->ui()->GetKeyboardWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
-  keyboard_controller->NotifyContentsLoaded();
+  keyboard_controller->NotifyKeyboardWindowLoaded();
   EXPECT_TRUE(keyboard_controller->keyboard_visible());
 
   // Tap or click outside the searchbox, the virtual keyboard should hide.
@@ -913,7 +913,7 @@ TEST_P(AppListPresenterDelegateTest,
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
 
   if (test_fullscreen) {
-    FlingUpOrDown(GetEventGenerator(), view, true /* up */);
+    FlingUpOrDown(&GetEventGenerator(), view, true /* up */);
     GetAppListTestHelper()->WaitUntilIdle();
     GetAppListTestHelper()->CheckState(
         app_list::AppListViewState::FULLSCREEN_ALL_APPS);
@@ -944,14 +944,14 @@ TEST_P(AppListPresenterDelegateTest,
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
 
   if (test_fullscreen) {
-    FlingUpOrDown(GetEventGenerator(), view, true /* up */);
+    FlingUpOrDown(&GetEventGenerator(), view, true /* up */);
     GetAppListTestHelper()->WaitUntilIdle();
     GetAppListTestHelper()->CheckState(
         app_list::AppListViewState::FULLSCREEN_ALL_APPS);
   }
 
   // Fling down, the app list should close.
-  FlingUpOrDown(GetEventGenerator(), view, false /* down */);
+  FlingUpOrDown(&GetEventGenerator(), view, false /* down */);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
   GetAppListTestHelper()->CheckVisibility(false);
@@ -972,7 +972,7 @@ TEST_P(AppListPresenterDelegateTest, LongUpwardDragInFullscreenShouldNotClose) {
   const bool test_fullscreen_search = GetParam();
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   app_list::AppListView* view = GetAppListView();
-  FlingUpOrDown(GetEventGenerator(), view, true);
+  FlingUpOrDown(&GetEventGenerator(), view, true);
   GetAppListTestHelper()->CheckState(
       app_list::AppListViewState::FULLSCREEN_ALL_APPS);
 
@@ -1242,14 +1242,14 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, GestureScrollToDismiss) {
   // Show app list in non-tablet mode. Fling down.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckVisibility(true);
-  FlingUpOrDown(GetEventGenerator(), GetAppListView(), false /* up */);
+  FlingUpOrDown(&GetEventGenerator(), GetAppListView(), false /* up */);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 
   // Show app list in tablet mode. Fling down.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
-  FlingUpOrDown(GetEventGenerator(), GetAppListView(), false /* up */);
+  FlingUpOrDown(&GetEventGenerator(), GetAppListView(), false /* up */);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 }
