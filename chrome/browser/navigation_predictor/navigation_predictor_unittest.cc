@@ -50,5 +50,5 @@ TEST_F(NavigationPredictorTest, UpdateAnchorElementMetrics) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore", 1);
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 }
