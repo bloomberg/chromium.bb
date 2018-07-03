@@ -432,9 +432,6 @@ class ArcBluetoothBridge
   // Send the power status change to Android via an intent.
   void SendBluetoothPoweredStateBroadcast(AdapterPowerState powered) const;
 
-  // Propagates the list of paired device to Android.
-  void SendCachedPairedDevices() const;
-
   bool IsGattServerAttributeHandleAvailable(int need);
   int32_t GetNextGattServerAttributeHandle();
   template <class LocalGattAttribute>

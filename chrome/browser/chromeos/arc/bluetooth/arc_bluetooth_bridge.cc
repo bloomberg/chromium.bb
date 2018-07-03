@@ -1142,7 +1142,6 @@ void ArcBluetoothBridge::OnPoweredOn(
     SetPrimaryUserBluetoothPowerSetting(true);
 
   std::move(callback).Run(mojom::BluetoothAdapterState::ON);
-  SendCachedPairedDevices();
 }
 
 void ArcBluetoothBridge::OnPoweredOff(
@@ -2742,27 +2741,6 @@ void ArcBluetoothBridge::SendCachedDevicesFound() const {
   DCHECK(bluetooth_adapter_);
   for (auto* device : bluetooth_adapter_->GetDevices())
     SendDevice(device, /* include_cached_device = */ true);
-}
-
-void ArcBluetoothBridge::SendCachedPairedDevices() const {
-  DCHECK(bluetooth_adapter_);
-
-  BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
-  for (auto* device : devices) {
-    if (!device->IsPaired())
-      continue;
-
-    SendDevice(device, /* include_cached_device = */ true);
-
-    // OnBondStateChanged must be called with mojom::BluetoothBondState::BONDING
-    // to make sure the bond state machine on Android is ready to take the
-    // pair-done event. Otherwise the pair-done event will be dropped as an
-    // invalid change of paired status.
-    mojom::BluetoothAddressPtr addr =
-        mojom::BluetoothAddress::From(device->GetAddress());
-    OnPairing(addr->Clone());
-    OnPairedDone(std::move(addr));
-  }
 }
 
 void ArcBluetoothBridge::OnGetServiceRecordsDone(
