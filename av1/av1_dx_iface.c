@@ -342,16 +342,16 @@ static int frame_worker_hook(void *arg1, void *arg2) {
   const uint8_t *data = frame_worker_data->data;
   (void)arg2;
 
-  frame_worker_data->result = av1_receive_compressed_data(
-      frame_worker_data->pbi, frame_worker_data->data_size, &data);
+  int result = av1_receive_compressed_data(frame_worker_data->pbi,
+                                           frame_worker_data->data_size, &data);
   frame_worker_data->data_end = data;
 
-  if (frame_worker_data->result != 0) {
+  if (result != 0) {
     // Check decode result in serial decode.
     frame_worker_data->pbi->cur_buf->buf.corrupted = 1;
     frame_worker_data->pbi->need_resync = 1;
   }
-  return !frame_worker_data->result;
+  return !result;
 }
 
 static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
