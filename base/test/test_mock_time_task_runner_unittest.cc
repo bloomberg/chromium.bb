@@ -7,6 +7,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -179,6 +180,33 @@ TEST(TestMockTimeTaskRunnerTest, RunLoopDriveableWhenBound) {
   expected_value += 1024;
   expected_value += 4096;
   EXPECT_EQ(expected_value, counter);
+}
+
+TEST(TestMockTimeTaskRunnerTest, AvoidCaptureWhenBound) {
+  // Make sure that capturing the active task runner --- which sometimes happens
+  // unknowingly due to ThreadsafeObserverList deep within some singleton ---
+  // does not keep the entire TestMockTimeTaskRunner alive, as in bound mode
+  // that's a RunLoop::Delegate, and leaking that renders any further tests that
+  // need RunLoop support unrunnable.
+  //
+  // (This used to happen when code run from ProcessAllTasksNoLaterThan grabbed
+  //  the runner.).
+  scoped_refptr<SingleThreadTaskRunner> captured;
+  {
+    auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>(
+        TestMockTimeTaskRunner::Type::kBoundToThread);
+
+    task_runner->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                            captured = ThreadTaskRunnerHandle::Get();
+                          }));
+    task_runner->RunUntilIdle();
+  }
+
+  {
+    // This should not complain about RunLoop::Delegate already existing.
+    auto task_runner2 = MakeRefCounted<TestMockTimeTaskRunner>(
+        TestMockTimeTaskRunner::Type::kBoundToThread);
+  }
 }
 
 // Regression test that receiving the quit-when-idle signal when already empty

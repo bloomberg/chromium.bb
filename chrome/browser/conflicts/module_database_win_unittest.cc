@@ -47,6 +47,13 @@ class ModuleDatabaseTest : public testing::Test {
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(base::SequencedTaskRunnerHandle::Get()) {}
 
+  void TearDown() override {
+    // Give work on background threads a chance run, as it may want to use
+    // |mock_time_task_runner_|, which gets destroyed before
+    // |test_browser_thread_bundle_|
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
+
   const ModuleDatabase::ModuleMap& modules() {
     return module_database_.modules_;
   }
