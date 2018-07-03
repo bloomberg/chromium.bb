@@ -10,9 +10,9 @@ namespace blink {
 
 namespace {
 
-String TreatNullSourceAsEmpty(const String& source) {
+MovableString TreatNullSourceAsEmpty(const MovableString& source) {
   // ScriptSourceCode allows for the representation of the null/not-there-really
-  // ScriptSourceCode value.  Encoded by way of a m_source.isNull() being true,
+  // ScriptSourceCode value.  Encoded by way of a source_.IsNull() being true,
   // with the nullary constructor to be used to construct such a value.
   //
   // Should the other constructors be passed a null string, that is interpreted
@@ -20,7 +20,7 @@ String TreatNullSourceAsEmpty(const String& source) {
   // between such null string occurrences.  Do that by converting the latter
   // case's null strings into empty ones.
   if (source.IsNull())
-    return "";
+    return MovableString();
 
   return source;
 }
@@ -49,7 +49,7 @@ String SourceMapUrlFromResponse(const ResourceResponse& response) {
 }  // namespace
 
 ScriptSourceCode::ScriptSourceCode(
-    const String& source,
+    const MovableString& source,
     ScriptSourceLocationType source_location_type,
     SingleCachedMetadataHandler* cache_handler,
     const KURL& url,
@@ -62,6 +62,18 @@ ScriptSourceCode::ScriptSourceCode(
   // External files should use a ScriptResource.
   DCHECK(source_location_type != ScriptSourceLocationType::kExternalFile);
 }
+
+ScriptSourceCode::ScriptSourceCode(
+    const String& source,
+    ScriptSourceLocationType source_location_type,
+    SingleCachedMetadataHandler* cache_handler,
+    const KURL& url,
+    const TextPosition& start_position)
+    : ScriptSourceCode(MovableString(source.Impl()),
+                       source_location_type,
+                       cache_handler,
+                       url,
+                       start_position) {}
 
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
                                    ScriptResource* resource)

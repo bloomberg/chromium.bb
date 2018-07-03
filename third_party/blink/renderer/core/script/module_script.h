@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  public:
   // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
   static ModuleScript* Create(
-      const String& source_text,
+      const MovableString& source_text,
       Modulator*,
       const KURL& source_url,
       const KURL& base_url,
@@ -70,10 +71,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                const KURL& source_url,
                const KURL& base_url,
                const ScriptFetchOptions&,
-               const String& source_text,
+               const MovableString& source_text,
                const TextPosition& start_position);
 
-  static ModuleScript* CreateInternal(const String& source_text,
+  static ModuleScript* CreateInternal(const MovableString& source_text,
                                       Modulator*,
                                       ScriptModule,
                                       const KURL& source_url,
@@ -135,7 +136,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
   // For CSP check.
-  const String source_text_;
+  const MovableString source_text_;
 
   const TextPosition start_position_;
   HashMap<String, KURL> specifier_to_url_cache_;

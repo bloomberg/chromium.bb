@@ -42,7 +42,7 @@ class CORE_EXPORT ClassicScript final : public Script {
   ScriptType GetScriptType() const override { return ScriptType::kClassic; }
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override {
-    return script_source_code_.Source();
+    return script_source_code_.Source().ToString();
   }
 
   const ScriptSourceCode script_source_code_;

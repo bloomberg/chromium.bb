@@ -61,6 +61,28 @@ void StringCacheMapTraits::OnWeakCallback(
       ->InvalidateLastString();
 }
 
+MovableStringCacheMapTraits::MapType*
+MovableStringCacheMapTraits::MapFromWeakCallbackInfo(
+    const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
+  return &(V8PerIsolateData::From(data.GetIsolate())
+               ->GetStringCache()
+               ->movable_string_cache_);
+}
+
+void MovableStringCacheMapTraits::Dispose(v8::Isolate* isolate,
+                                          v8::Global<v8::String> value,
+                                          MovableStringImpl* key) {
+  key->Release();
+}
+
+void MovableStringCacheMapTraits::DisposeWeak(
+    const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
+  data.GetParameter()->Release();
+}
+
+void MovableStringCacheMapTraits::OnWeakCallback(
+    const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {}
+
 void StringCache::Dispose() {
   // The MapType::Dispose callback calls StringCache::InvalidateLastString,
   // which will only work while the destructor has not yet finished. Thus,
@@ -91,6 +113,29 @@ static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
   return new_string;
 }
 
+static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
+                                                const MovableString& string) {
+  if (string.Is8Bit()) {
+    auto* string_resource = new MovableStringResource8(string);
+    v8::Local<v8::String> new_string;
+    if (!v8::String::NewExternalOneByte(isolate, string_resource)
+             .ToLocal(&new_string)) {
+      delete string_resource;
+      return v8::String::Empty(isolate);
+    }
+    return new_string;
+  }
+
+  auto* string_resource = new MovableStringResource16(string);
+  v8::Local<v8::String> new_string;
+  if (!v8::String::NewExternalTwoByte(isolate, string_resource)
+           .ToLocal(&new_string)) {
+    delete string_resource;
+    return v8::String::Empty(isolate);
+  }
+  return new_string;
+}
+
 v8::Local<v8::String> StringCache::V8ExternalStringSlow(
     v8::Isolate* isolate,
     StringImpl* string_impl) {
@@ -108,6 +153,21 @@ v8::Local<v8::String> StringCache::V8ExternalStringSlow(
   }
 
   return CreateStringAndInsertIntoCache(isolate, string_impl);
+}
+
+v8::Local<v8::String> StringCache::V8ExternalString(
+    v8::Isolate* isolate,
+    const MovableString& string) {
+  if (!string.length())
+    return v8::String::Empty(isolate);
+
+  MovableStringCacheMapTraits::MapType::PersistentValueReference
+      cached_v8_string = movable_string_cache_.GetReference(string.Impl());
+  if (!cached_v8_string.IsEmpty()) {
+    return cached_v8_string.NewLocal(isolate);
+  }
+
+  return CreateStringAndInsertIntoCache(isolate, string);
 }
 
 void StringCache::SetReturnValueFromStringSlow(
@@ -150,6 +210,29 @@ v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
   string_impl->AddRef();
   string_cache_.Set(string_impl, std::move(wrapper), &last_v8_string_);
   last_string_impl_ = string_impl;
+
+  return new_string;
+}
+
+v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
+    v8::Isolate* isolate,
+    const MovableString& string) {
+  MovableStringImpl* string_impl = string.Impl();
+  DCHECK(!movable_string_cache_.Contains(string_impl));
+  DCHECK(string_impl->length());
+
+  v8::Local<v8::String> new_string =
+      MakeExternalString(isolate, MovableString(string));
+  DCHECK(!new_string.IsEmpty());
+  DCHECK(new_string->Length());
+
+  v8::UniquePersistent<v8::String> wrapper(isolate, new_string);
+
+  string_impl->AddRef();
+  // MovableStringImpl objects are not cache in |string_cache_| or
+  // |last_string_impl_|.
+  MovableStringCacheMapTraits::MapType::PersistentValueReference unused;
+  movable_string_cache_.Set(string_impl, std::move(wrapper), &unused);
 
   return new_string;
 }

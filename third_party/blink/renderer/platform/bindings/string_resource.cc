@@ -26,7 +26,7 @@ struct StringTraits<String> {
 
 template <>
 struct StringTraits<AtomicString> {
-  static const AtomicString& FromStringResource(StringResourceBase* resource) {
+  static const AtomicString FromStringResource(StringResourceBase* resource) {
     return resource->GetAtomicString();
   }
   template <typename V8StringTrait>

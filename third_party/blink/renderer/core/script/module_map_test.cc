@@ -114,7 +114,7 @@ class ModuleMapTestModulator final : public DummyModulator {
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = new TestRequest(
           ModuleScriptCreationParams(
-              request.Url(), "",
+              request.Url(), MovableString(String("").ReleaseImpl()),
               request.GetResourceRequest().GetFetchCredentialsMode(),
               kSharableCrossOrigin),
           client);

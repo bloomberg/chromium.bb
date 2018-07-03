@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "v8/include/v8.h"
 
@@ -39,6 +40,17 @@ class StringResourceBase {
         string.CharactersSizeInBytes());
   }
 
+  explicit StringResourceBase(const MovableString& string)
+      : movable_string_(string) {
+#if DCHECK_IS_ON()
+    thread_id_ = WTF::CurrentThread();
+#endif
+    // TODO(lizeb): This is only true without compression.
+    DCHECK(!string.IsNull());
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        string.CharactersSizeInBytes());
+  }
+
   virtual ~StringResourceBase() {
 #if DCHECK_IS_ON()
     DCHECK(thread_id_ == WTF::CurrentThread());
@@ -51,12 +63,24 @@ class StringResourceBase {
         -reduced_external_memory);
   }
 
-  const String& GetWTFString() { return plain_string_; }
+  const String& GetWTFString() {
+    if (!movable_string_.IsNull()) {
+      DCHECK(plain_string_.IsNull());
+      DCHECK(atomic_string_.IsNull());
+      return movable_string_.ToString();
+    }
+    return plain_string_;
+  }
 
-  const AtomicString& GetAtomicString() {
+  AtomicString GetAtomicString() {
 #if DCHECK_IS_ON()
     DCHECK(thread_id_ == WTF::CurrentThread());
 #endif
+    if (!movable_string_.IsNull()) {
+      DCHECK(plain_string_.IsNull());
+      DCHECK(atomic_string_.IsNull());
+      return AtomicString(movable_string_.ToString());
+    }
     if (atomic_string_.IsNull()) {
       atomic_string_ = AtomicString(plain_string_);
       DCHECK(!atomic_string_.IsNull());
@@ -78,6 +102,9 @@ class StringResourceBase {
   // the original string alive because v8 may keep derived pointers
   // into that string.
   AtomicString atomic_string_;
+  // If this string is movable, its value is held here, and the other
+  // members above are null.
+  MovableString movable_string_;
 
  private:
 #if DCHECK_IS_ON()
@@ -126,6 +153,48 @@ class StringResource8 final : public StringResourceBase,
   }
 
   DISALLOW_COPY_AND_ASSIGN(StringResource8);
+};
+
+class MovableStringResource16 final
+    : public StringResourceBase,
+      public v8::String::ExternalStringResource {
+ public:
+  explicit MovableStringResource16(const MovableString& string)
+      : StringResourceBase(string) {
+    DCHECK(!movable_string_.Is8Bit());
+  }
+
+  // V8 external resources are "compressible", not "movable".
+  bool IsCompressible() const override { return true; }
+
+  size_t length() const override { return movable_string_.length(); }
+
+  const uint16_t* data() const override {
+    return reinterpret_cast<const uint16_t*>(movable_string_.Characters16());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MovableStringResource16);
+};
+
+class MovableStringResource8 final
+    : public StringResourceBase,
+      public v8::String::ExternalOneByteStringResource {
+ public:
+  explicit MovableStringResource8(const MovableString& string)
+      : StringResourceBase(string) {
+    DCHECK(movable_string_.Is8Bit());
+  }
+
+  // V8 external resources are "compressible", not "movable".
+  bool IsCompressible() const override { return true; }
+
+  size_t length() const override { return movable_string_.length(); }
+
+  const char* data() const override {
+    return reinterpret_cast<const char*>(movable_string_.Characters8());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MovableStringResource8);
 };
 
 enum ExternalMode { kExternalize, kDoNotExternalize };
