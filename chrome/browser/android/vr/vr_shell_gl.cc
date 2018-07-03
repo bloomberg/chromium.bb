@@ -859,7 +859,11 @@ void VrShellGl::ConnectPresentingService(
       GetWebVrFrameTransportOptions(options);
 
   if (webxr_use_shared_buffer_draw_) {
-    CreateSurfaceBridge(nullptr);
+    // Create the mailbox bridge if it doesn't exist yet. We can continue
+    // reusing the existing one if it does, its resources such as mailboxes
+    // are still valid.
+    if (!mailbox_bridge_)
+      CreateSurfaceBridge(nullptr);
   } else {
     if (!webvr_surface_texture_) {
       webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
