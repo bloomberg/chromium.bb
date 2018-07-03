@@ -27,12 +27,17 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_CLIENT_H_
 
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
+
+class Resource;
 
 class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   USING_PRE_FINALIZER(ResourceClient, ClearResource);
@@ -69,7 +74,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   // Name for debugging, e.g. shown in memory-infra.
   virtual String DebugName() const = 0;
 
-  void Trace(blink::Visitor* visitor) override { visitor->Trace(resource_); }
+  void Trace(Visitor* visitor) override;
 
  protected:
   ResourceClient() = default;
@@ -87,18 +92,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   friend class CSSFontFaceSrcValue;
 
   void SetResource(Resource* new_resource,
-                   base::SingleThreadTaskRunner* task_runner) {
-    if (new_resource == resource_)
-      return;
-
-    // Some ResourceClient implementations reenter this so
-    // we need to prevent double removal.
-    if (Resource* old_resource = resource_.Release())
-      old_resource->RemoveClient(this);
-    resource_ = new_resource;
-    if (resource_)
-      resource_->AddClient(this, task_runner);
-  }
+                   base::SingleThreadTaskRunner* task_runner);
 
   Member<Resource> resource_;
 };
