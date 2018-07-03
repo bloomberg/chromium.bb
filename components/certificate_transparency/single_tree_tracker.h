@@ -13,10 +13,8 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/certificate_transparency/sth_observer.h"
 #include "net/base/hash_value.h"
 #include "net/base/network_change_notifier.h"
-#include "net/cert/ct_verifier.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/log/net_log_with_source.h"
 
@@ -97,11 +95,10 @@ enum SCTCanBeCheckedForInclusion {
 // SCTs, the SCTs (and their corresponding entries) are present in the log.
 //
 // To accomplish this, this class needs to be notified of when new SCTs are
-// observed (which it does by implementing net::CTVerifier::Observer) and when
-// new STHs are observed (which it does by implementing STHObserver).
-// Once connected to sources providing that data, the status for a given SCT
-// can be queried by calling GetLogEntryInclusionCheck.
-class SingleTreeTracker : public net::CTVerifier::Observer, public STHObserver {
+// observed and when new STHs are observed. Once both SCTs and at least one
+// STH have been provided, the status for a given SCT can be queried by
+// calling GetLogEntryInclusionCheck.
+class SingleTreeTracker {
  public:
   enum SCTInclusionStatus {
     // SCT was not observed by this class and is not currently pending
@@ -132,10 +129,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer, public STHObserver {
                     LogDnsClient* dns_client,
                     net::HostResolver* host_resolver,
                     net::NetLog* net_log);
-  ~SingleTreeTracker() override;
+  ~SingleTreeTracker();
 
-  // net::ct::CTVerifier::Observer implementation.
-  // TODO(eranm): Extract CTVerifier::Observer to SCTObserver
   // Enqueues |sct| for later inclusion checking of the given |cert|, so long as
   // both of the following are true:
   // a) The latest STH known for this log is older than |sct.timestamp| +
@@ -151,13 +146,12 @@ class SingleTreeTracker : public net::CTVerifier::Observer, public STHObserver {
   // here as this callback is invoked during certificate validation.
   void OnSCTVerified(base::StringPiece hostname,
                      net::X509Certificate* cert,
-                     const net::ct::SignedCertificateTimestamp* sct) override;
+                     const net::ct::SignedCertificateTimestamp* sct);
 
-  // STHObserver implementation.
   // After verification of the signature over the |sth|, uses this
   // STH for future inclusion checks.
   // Must only be called for STHs issued by the log this instance tracks.
-  void NewSTHObserved(const net::ct::SignedTreeHead& sth) override;
+  void NewSTHObserved(const net::ct::SignedTreeHead& sth);
 
   // Returns the status of a given log entry that is assembled from
   // |cert| and |sct|. If |cert| and |sct| were not previously observed,
