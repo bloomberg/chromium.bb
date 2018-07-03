@@ -36,9 +36,13 @@ public final class ModuleLoader {
         if (moduleContext == null) return null;
 
         try {
+            long entryPointLoadClassStartTime = ModuleMetrics.now();
             Class<?> clazz = moduleContext.getClassLoader().loadClass(className);
+            ModuleMetrics.recordLoadClassTime(entryPointLoadClassStartTime);
 
+            long entryPointNewInstanceStartTime = ModuleMetrics.now();
             IBinder binder = (IBinder) clazz.newInstance();
+            ModuleMetrics.recordEntryPointNewInstanceTime(entryPointNewInstanceStartTime);
 
             ModuleHostImpl moduleHost = new ModuleHostImpl(applicationContext, moduleContext);
             ModuleEntryPoint entryPoint =
@@ -67,8 +71,10 @@ public final class ModuleLoader {
         try {
             // The flags Context.CONTEXT_INCLUDE_CODE and Context.CONTEXT_IGNORE_SECURITY are
             // needed to be able to load classes via the classloader of the returned context.
+            long createPackageContextStartTime = ModuleMetrics.now();
             Context moduleContext = applicationContext.createPackageContext(
                     packageName, Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY);
+            ModuleMetrics.recordCreatePackageContextTime(createPackageContextStartTime);
             return moduleContext;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not create package context for %s", packageName, e);

@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -371,7 +372,9 @@ public class CustomTabActivity extends ChromeActivity {
         ModuleEntryPoint entryPoint = mConnection.loadModule(packageName, className);
         if (entryPoint == null) return;
 
+        long createActivityDelegateStartTime = ModuleMetrics.now();
         mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
+        ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
         mActivityDelegate.onCreate(getSavedInstanceState());
     }
 
