@@ -1065,7 +1065,7 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
   return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
 }
 
-static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
+static INLINE void av1_zero_above_context(AV1_COMMON *const cm, const MACROBLOCKD *xd,
   int mi_col_start, int mi_col_end, const int tile_row) {
   const int num_planes = av1_num_planes(cm);
   const int width = mi_col_end - mi_col_start;
@@ -1083,7 +1083,7 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
       av1_zero_array(cm->above_context[1][tile_row] + offset_uv, width_uv);
       av1_zero_array(cm->above_context[2][tile_row] + offset_uv, width_uv);
     } else {
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+      aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid value of planes");
     }
   }

@@ -1704,7 +1704,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   const int mi_col_end = tile->mi_col_end;
   int mi_row, mi_col;
 
-  av1_zero_above_context(cm, mi_col_start, mi_col_end, tile->tile_row);
+  av1_zero_above_context(cm, xd, mi_col_start, mi_col_end, tile->tile_row);
   av1_init_above_context(cm, xd, tile->tile_row);
 
   if (cpi->common.delta_q_present_flag) {

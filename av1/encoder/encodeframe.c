@@ -4117,8 +4117,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
   int mi_row;
 
-  av1_zero_above_context(cm, tile_info->mi_col_start, tile_info->mi_col_end,
-                         tile_row);
+  av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
+                         tile_info->mi_col_end, tile_row);
   av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
 
   // Set up pointers to per thread motion search counters.
