@@ -43,7 +43,6 @@
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_characteristic_bluez.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -380,24 +379,6 @@ void OnRemoveServiceRecordError(
     status = arc::mojom::BluetoothStatus::FAIL;
 
   std::move(callback).Run(status);
-}
-
-const device::BluetoothLocalGattDescriptor* FindCCCD(
-    const device::BluetoothLocalGattCharacteristic* characteristic) {
-  for (const auto& descriptor :
-       static_cast<const bluez::BluetoothLocalGattCharacteristicBlueZ*>(
-           characteristic)
-           ->GetDescriptors()) {
-    if (descriptor->GetUUID() ==
-        BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
-      return descriptor.get();
-    }
-  }
-  return nullptr;
-}
-
-std::vector<uint8_t> MakeCCCDValue(uint8_t value) {
-  return {value, 0};
 }
 
 }  // namespace
@@ -916,30 +897,11 @@ void ArcBluetoothBridge::OnDescriptorWriteRequest(
 void ArcBluetoothBridge::OnNotificationsStart(
     const BluetoothDevice* device,
     device::BluetoothGattCharacteristic::NotificationType notification_type,
-    const BluetoothLocalGattCharacteristic* characteristic) {
-  const BluetoothLocalGattDescriptor* cccd = FindCCCD(characteristic);
-  if (cccd == nullptr)
-    return;
-  OnDescriptorWriteRequest(
-      device, cccd,
-      MakeCCCDValue(notification_type ==
-                            device::BluetoothRemoteGattCharacteristic::
-                                NotificationType::kNotification
-                        ? ENABLE_NOTIFICATION_VALUE
-                        : ENABLE_INDICATION_VALUE),
-      0, base::DoNothing(), base::DoNothing());
-}
+    const BluetoothLocalGattCharacteristic* characteristic) {}
 
 void ArcBluetoothBridge::OnNotificationsStop(
     const BluetoothDevice* device,
-    const BluetoothLocalGattCharacteristic* characteristic) {
-  const BluetoothLocalGattDescriptor* cccd = FindCCCD(characteristic);
-  if (cccd == nullptr)
-    return;
-  OnDescriptorWriteRequest(device, cccd,
-                           MakeCCCDValue(DISABLE_NOTIFICATION_VALUE), 0,
-                           base::DoNothing(), base::DoNothing());
-}
+    const BluetoothLocalGattCharacteristic* characteristic) {}
 
 void ArcBluetoothBridge::EnableAdapter(EnableAdapterCallback callback) {
   DCHECK(bluetooth_adapter_);
@@ -1965,6 +1927,14 @@ void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
     std::move(callback).Run(kInvalidGattAttributeHandle);
     return;
   }
+  // Chrome automatically adds a CCC Descriptor to a characteristic when needed.
+  // We will generate a bogus handle for Android.
+  if (uuid ==
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
+    int32_t handle = GetNextGattServerAttributeHandle();
+    std::move(callback).Run(handle);
+    return;
+  }
 
   DCHECK(gatt_identifier_.find(service_handle) != gatt_identifier_.end());
   BluetoothLocalGattService* service =
@@ -2038,34 +2008,7 @@ void ArcBluetoothBridge::SendIndication(int32_t attribute_handle,
                                         mojom::BluetoothAddressPtr address,
                                         bool confirm,
                                         const std::vector<uint8_t>& value,
-                                        SendIndicationCallback callback) {
-  BluetoothDevice* device =
-      bluetooth_adapter_->GetDevice(address->To<std::string>());
-  auto identifier = gatt_identifier_.find(attribute_handle);
-  if (device == nullptr || identifier == gatt_identifier_.end()) {
-    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
-    return;
-  }
-
-  for (const auto& service_handle : last_characteristic_) {
-    auto it = gatt_identifier_.find(service_handle.first);
-    if (it == gatt_identifier_.end())
-      continue;
-    BluetoothLocalGattService* service =
-        bluetooth_adapter_->GetGattService(it->second);
-    if (service == nullptr)
-      continue;
-    BluetoothLocalGattCharacteristic* characteristic =
-        service->GetCharacteristic(identifier->second);
-    if (characteristic == nullptr)
-      continue;
-    characteristic->NotifyValueChanged(device, value, confirm);
-    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
-    return;
-  }
-
-  std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
-}
+                                        SendIndicationCallback callback) {}
 
 void ArcBluetoothBridge::GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
                                        const BluetoothUUID& target_uuid) {
