@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -92,6 +93,12 @@ bool AppListMenuModelAdapter::IsItemChecked(int id) const {
 }
 
 bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
+  // NOTIFICATION_CONTAINER is always enabled. It is added to this model by
+  // NotificationMenuController, but it is not added to |menu_items_|, so check
+  // for it first.
+  if (id == ash::NOTIFICATION_CONTAINER)
+    return true;
+
   return ash::menu_utils::GetMenuItemByCommandId(menu_items_, id)->enabled;
 }
 
