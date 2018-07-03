@@ -2,5 +2,6 @@ include_rules = [
   "+base",
   "+ios/testing",
   "+ios/web_view/public",
+  "+mojo/edk/embedder",
   "+net",
 ]

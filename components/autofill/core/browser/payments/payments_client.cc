@@ -30,9 +30,10 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace autofill {
 namespace payments {
@@ -453,13 +454,14 @@ PaymentsClient::UploadRequestDetails::UploadRequestDetails(
     const UploadRequestDetails& other) = default;
 PaymentsClient::UploadRequestDetails::~UploadRequestDetails() {}
 
-PaymentsClient::PaymentsClient(net::URLRequestContextGetter* context_getter,
-                               PrefService* pref_service,
-                               identity::IdentityManager* identity_manager,
-                               PaymentsClientUnmaskDelegate* unmask_delegate,
-                               PaymentsClientSaveDelegate* save_delegate,
-                               bool is_off_the_record)
-    : context_getter_(context_getter),
+PaymentsClient::PaymentsClient(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service,
+    identity::IdentityManager* identity_manager,
+    PaymentsClientUnmaskDelegate* unmask_delegate,
+    PaymentsClientSaveDelegate* save_delegate,
+    bool is_off_the_record)
+    : url_loader_factory_(url_loader_factory),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
       unmask_delegate_(unmask_delegate),
@@ -517,98 +519,64 @@ void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
                                   bool authenticate) {
   request_ = std::move(request);
   has_retried_authorization_ = false;
-  InitializeUrlFetcher();
 
-  if (!authenticate)
-    url_fetcher_->Start();
-  else if (access_token_.empty())
+  InitializeResourceRequest();
+
+  if (!authenticate) {
+    StartRequest();
+  } else if (access_token_.empty()) {
     StartTokenFetch(false);
-  else
+  } else {
     SetOAuth2TokenAndStartRequest();
+  }
 }
 
-void PaymentsClient::InitializeUrlFetcher() {
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("payments_sync_cards", R"(
-        semantics {
-          sender: "Payments"
-          description:
-            "This service communicates with Google Payments servers to upload "
-            "(save) or receive the user's credit card info."
-          trigger:
-            "Requests are triggered by a user action, such as selecting a "
-            "masked server card from Chromium's credit card autofill dropdown, "
-            "submitting a form which has credit card information, or accepting "
-            "the prompt to save a credit card to Payments servers."
-          data:
-            "In case of save, a protocol buffer containing relevant address "
-            "and credit card information which should be saved in Google "
-            "Payments servers, along with user credentials. In case of load, a "
-            "protocol buffer containing the id of the credit card to unmask, "
-            "an encrypted cvc value, an optional updated card expiration date, "
-            "and user credentials."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can enable or disable this feature in Chromium settings by "
-            "toggling 'Credit cards and addresses using Google Payments', "
-            "under 'Advanced sync settings...'. This feature is enabled by "
-            "default."
-          chrome_policy {
-            AutoFillEnabled {
-              policy_options {mode: MANDATORY}
-              AutoFillEnabled: false
-            }
-          }
-        })");
-  url_fetcher_ =
-      net::URLFetcher::Create(0, GetRequestUrl(request_->GetRequestUrlPath()),
-                              net::URLFetcher::POST, this, traffic_annotation);
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::AUTOFILL);
-  url_fetcher_->SetRequestContext(context_getter_.get());
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DISABLE_CACHE);
-
-  url_fetcher_->SetUploadData(request_->GetRequestContentType(),
-                              request_->GetRequestContent());
-
+void PaymentsClient::InitializeResourceRequest() {
+  resource_request_ = std::make_unique<network::ResourceRequest>();
+  resource_request_->url = GetRequestUrl(request_->GetRequestUrlPath());
+  resource_request_->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                  net::LOAD_DO_NOT_SEND_COOKIES |
+                                  net::LOAD_DISABLE_CACHE;
+  resource_request_->method = "POST";
   if (base::FeatureList::IsEnabled(
           features::kAutofillSendExperimentIdsInPaymentsRPCs)) {
     // Add Chrome experiment state to the request headers.
     net::HttpRequestHeaders headers;
     // User is always signed-in to be able to upload card to Google Payments.
-    variations::AppendVariationHeaders(url_fetcher_->GetOriginalURL(),
-                                       is_off_the_record_
-                                           ? variations::InIncognito::kYes
-                                           : variations::InIncognito::kNo,
-                                       variations::SignedIn::kYes, &headers);
-    url_fetcher_->SetExtraRequestHeaders(headers.ToString());
+    variations::AppendVariationHeaders(
+        resource_request_->url,
+        is_off_the_record_ ? variations::InIncognito::kYes
+                           : variations::InIncognito::kNo,
+        variations::SignedIn::kYes, &resource_request_->headers);
   }
 }
 
 void PaymentsClient::CancelRequest() {
   request_.reset();
-  url_fetcher_.reset();
+  resource_request_.reset();
+  simple_url_loader_.reset();
   token_fetcher_.reset();
   access_token_.clear();
   has_retried_authorization_ = false;
 }
 
-void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(source, url_fetcher_.get());
-
-  // |url_fetcher_|, which is aliased to |source|, might continue to be used in
-  // this method, but should be freed once control leaves the method.
-  std::unique_ptr<net::URLFetcher> scoped_url_fetcher(std::move(url_fetcher_));
-  std::unique_ptr<base::DictionaryValue> response_dict;
-  int response_code = source->GetResponseCode();
+void PaymentsClient::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        simple_url_loader_->ResponseInfo()->headers->response_code();
+  }
   std::string data;
-  source->GetResponseAsString(&data);
+  if (response_body)
+    data = std::move(*response_body);
+  OnSimpleLoaderCompleteInternal(response_code, data);
+}
+
+void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
+                                                    const std::string& data) {
+  std::unique_ptr<base::DictionaryValue> response_dict;
   VLOG(2) << "Got data: " << data;
 
   AutofillClient::PaymentsRpcResult result = AutofillClient::SUCCESS;
@@ -640,7 +608,7 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
       }
       has_retried_authorization_ = true;
 
-      InitializeUrlFetcher();
+      InitializeResourceRequest();
       StartTokenFetch(true);
       return;
     }
@@ -678,16 +646,16 @@ void PaymentsClient::AccessTokenFetchFinished(GoogleServiceAuthError error,
   }
 
   access_token_ = access_token;
-  if (url_fetcher_)
+  if (resource_request_)
     SetOAuth2TokenAndStartRequest();
 }
 
 void PaymentsClient::AccessTokenError(const GoogleServiceAuthError& error) {
   VLOG(1) << "Unhandled OAuth2 error: " << error.ToString();
-  if (url_fetcher_) {
-    url_fetcher_.reset();
+  if (simple_url_loader_)
+    simple_url_loader_.reset();
+  if (request_)
     request_->RespondToDelegate(AutofillClient::PERMANENT_FAILURE);
-  }
 }
 
 void PaymentsClient::StartTokenFetch(bool invalidate_old) {
@@ -712,10 +680,67 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {
-  url_fetcher_->AddExtraRequestHeader(net::HttpRequestHeaders::kAuthorization +
-                                      std::string(": Bearer ") + access_token_);
+  DCHECK(resource_request_);
+  resource_request_->headers.AddHeaderFromString(
+      net::HttpRequestHeaders::kAuthorization + std::string(": Bearer ") +
+      access_token_);
+  StartRequest();
+}
 
-  url_fetcher_->Start();
+void PaymentsClient::StartRequest() {
+  DCHECK(resource_request_);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("payments_sync_cards", R"(
+        semantics {
+          sender: "Payments"
+          description:
+            "This service communicates with Google Payments servers to upload "
+            "(save) or receive the user's credit card info."
+          trigger:
+            "Requests are triggered by a user action, such as selecting a "
+            "masked server card from Chromium's credit card autofill dropdown, "
+            "submitting a form which has credit card information, or accepting "
+            "the prompt to save a credit card to Payments servers."
+          data:
+            "In case of save, a protocol buffer containing relevant address "
+            "and credit card information which should be saved in Google "
+            "Payments servers, along with user credentials. In case of load, a "
+            "protocol buffer containing the id of the credit card to unmask, "
+            "an encrypted cvc value, an optional updated card expiration date, "
+            "and user credentials."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can enable or disable this feature in Chromium settings by "
+            "toggling 'Credit cards and addresses using Google Payments', "
+            "under 'Advanced sync settings...'. This feature is enabled by "
+            "default."
+          chrome_policy {
+            AutoFillEnabled {
+              policy_options {mode: MANDATORY}
+              AutoFillEnabled: false
+            }
+          }
+        })");
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::AUTOFILL
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request_), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload(request_->GetRequestContent(),
+                                            request_->GetRequestContentType());
+
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&PaymentsClient::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
+}
+
+void PaymentsClient::set_url_loader_factory_for_testing(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = std::move(url_loader_factory);
 }
 
 }  // namespace payments

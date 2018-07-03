@@ -3,12 +3,19 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
 
-TestAutofillDriver::TestAutofillDriver() : url_request_context_(nullptr) {}
+TestAutofillDriver::TestAutofillDriver()
+    : url_request_context_(nullptr),
+      test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {}
 
 TestAutofillDriver::~TestAutofillDriver() {}
 
@@ -18,6 +25,11 @@ bool TestAutofillDriver::IsIncognito() const {
 
 net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
   return url_request_context_;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+TestAutofillDriver::GetURLLoaderFactory() {
+  return test_shared_loader_factory_;
 }
 
 bool TestAutofillDriver::RendererIsAvailable() {

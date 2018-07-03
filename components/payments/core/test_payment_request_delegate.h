@@ -15,6 +15,9 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace payments {
 
@@ -28,20 +31,6 @@ class TestPaymentsClientDelegate
   // autofill::payments::PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(autofill::AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override;
-};
-
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit TestURLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  net::URLRequestContext* GetURLRequestContext() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override;
-
- private:
-  ~TestURLRequestContextGetter() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class TestPaymentRequestDelegate : public PaymentRequestDelegate {
@@ -82,7 +71,8 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   std::string locale_;
   const GURL last_committed_url_;
   autofill::TestAddressNormalizer address_normalizer_;
-  scoped_refptr<TestURLRequestContextGetter> request_context_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   autofill::TestAutofillClient autofill_client_;
   autofill::payments::PaymentsClient payments_client_;
   autofill::payments::FullCardRequest full_card_request_;

@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -21,10 +22,10 @@ TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
                                          TestPersonalDataManager* personal_data)
     : AutofillManager(driver, client, personal_data),
       personal_data_(personal_data),
-      context_getter_(driver->GetURLRequestContext()),
+      url_loader_factory_(driver->GetURLLoaderFactory()),
       client_(client) {
   set_payments_client(new payments::PaymentsClient(
-      context_getter_, client->GetPrefs(), client->GetIdentityManager(),
+      url_loader_factory_, client->GetPrefs(), client->GetIdentityManager(),
       /*unmask_delegate=*/this,
       /*save_delegate=*/nullptr));
 }

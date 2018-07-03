@@ -7,10 +7,15 @@
 
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "components/autofill/core/common/form_data.h"
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace gfx {
@@ -41,6 +46,10 @@ class AutofillDriver {
 
   // Returns the URL request context information associated with this driver.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+
+  // Returns the URL loader factory associated with this driver.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;

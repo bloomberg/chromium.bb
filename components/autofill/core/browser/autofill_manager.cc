@@ -69,6 +69,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -1150,7 +1151,7 @@ AutofillManager::AutofillManager(
     : AutofillHandler(driver),
       client_(client),
       payments_client_(std::make_unique<payments::PaymentsClient>(
-          driver->GetURLRequestContext(),
+          driver->GetURLLoaderFactory(),
           client->GetPrefs(),
           client->GetIdentityManager(),
           /*unmask_delegate=*/this,

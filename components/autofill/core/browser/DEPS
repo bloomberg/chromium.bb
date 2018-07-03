@@ -24,6 +24,7 @@ include_rules = [
   "+services/identity/public",
   "+services/metrics/public",
   "+services/network/public",
+  "+services/network/test",
   "+sql",
   "+third_party/fips181",
   "+third_party/libaddressinput", # For address i18n.

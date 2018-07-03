@@ -67,6 +67,17 @@ void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
   url_fetcher_factory_ = std::make_unique<net::FakeURLFetcherFactory>(
       new net::URLFetcherImplFactory());
 
+  // Set up the URL loader factory for the payments client so we can intercept
+  // those network requests too.
+  test_shared_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_);
+  ContentAutofillDriver::GetForRenderFrameHost(
+      GetActiveWebContents()->GetMainFrame())
+      ->autofill_manager()
+      ->payments_client()
+      ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
+
   // Set up this class as the ObserverForTest implementation.
   CreditCardSaveManager* credit_card_save_manager =
       ContentAutofillDriver::GetForRenderFrameHost(
@@ -251,21 +262,19 @@ void SaveCardBubbleViewsBrowserTestBase::
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcPaymentsAccepts() {
-  url_fetcher_factory_->SetFakeResponse(
-      GURL(kURLGetUploadDetailsRequest), kResponseGetUploadDetailsSuccess,
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURLGetUploadDetailsRequest,
+                                         kResponseGetUploadDetailsSuccess);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcPaymentsDeclines() {
-  url_fetcher_factory_->SetFakeResponse(
-      GURL(kURLGetUploadDetailsRequest), kResponseGetUploadDetailsFailure,
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURLGetUploadDetailsRequest,
+                                         kResponseGetUploadDetailsFailure);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcServerError() {
-  url_fetcher_factory_->SetFakeResponse(
-      GURL(kURLGetUploadDetailsRequest), kResponseGetUploadDetailsSuccess,
-      net::HTTP_INTERNAL_SERVER_ERROR, net::URLRequestStatus::FAILED);
+  test_url_loader_factory()->AddResponse(kURLGetUploadDetailsRequest,
+                                         kResponseGetUploadDetailsSuccess,
+                                         net::HTTP_INTERNAL_SERVER_ERROR);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
@@ -353,6 +362,11 @@ void SaveCardBubbleViewsBrowserTestBase::ResetEventWaiterForSequence(
 
 void SaveCardBubbleViewsBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
+}
+
+network::TestURLLoaderFactory*
+SaveCardBubbleViewsBrowserTestBase::test_url_loader_factory() {
+  return &test_url_loader_factory_;
 }
 
 }  // namespace autofill

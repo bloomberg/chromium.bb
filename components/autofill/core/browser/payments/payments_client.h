@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -14,17 +15,17 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace identity {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace identity
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+struct ResourceRequest;
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace autofill {
 
@@ -62,7 +63,7 @@ class PaymentsClientSaveDelegate {
 // request will cancel a pending request.
 // Tests are located in
 // src/components/autofill/content/browser/payments/payments_client_unittest.cc.
-class PaymentsClient : public net::URLFetcherDelegate {
+class PaymentsClient {
  public:
   // The names of the fields used to send non-location elements as part of an
   // address. Used in the implementation and in tests which verify that these
@@ -100,19 +101,20 @@ class PaymentsClient : public net::URLFetcherDelegate {
     std::vector<const char*> active_experiments;
   };
 
-  // |context_getter| is reference counted so it has no lifetime or ownership
-  // requirements. |pref_service| is used to get the registered preference
-  // value, |identity_manager|, |unmask_delegate| and |save_delegate| must all
-  // outlive |this|. Either delegate might be nullptr. |is_off_the_record|
-  // denotes incognito mode.
-  PaymentsClient(net::URLRequestContextGetter* context_getter,
-                 PrefService* pref_service,
-                 identity::IdentityManager* identity_manager,
-                 PaymentsClientUnmaskDelegate* unmask_delegate,
-                 PaymentsClientSaveDelegate* save_delegate,
-                 bool is_off_the_record = false);
+  // |url_loader_factory| is reference counted so it has no lifetime or
+  // ownership requirements. |pref_service| is used to get the registered
+  // preference value, |identity_manager|, |unmask_delegate| and |save_delegate|
+  // must all outlive |this|. Either delegate might be nullptr.
+  // |is_off_the_record| denotes incognito mode.
+  PaymentsClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
+      identity::IdentityManager* identity_manager,
+      PaymentsClientUnmaskDelegate* unmask_delegate,
+      PaymentsClientSaveDelegate* save_delegate,
+      bool is_off_the_record = false);
 
-  ~PaymentsClient() override;
+  virtual ~PaymentsClient();
 
   // Starts fetching the OAuth2 token in anticipation of future Payments
   // requests. Called as an optimization, but not strictly necessary. Should
@@ -156,15 +158,26 @@ class PaymentsClient : public net::URLFetcherDelegate {
   // Cancels and clears the current |request_|.
   void CancelRequest();
 
+  // Exposed for testing.
+  void set_url_loader_factory_for_testing(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
  private:
+  friend class PaymentsClientTest;
+
   // Initiates a Payments request using the state in |request|. If
   // |authenticate| is true, ensures that an OAuth token is avialble first.
   // Takes ownership of |request|.
   void IssueRequest(std::unique_ptr<PaymentsRequest> request,
                     bool authenticate);
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Creates |resource_request_| to be used later in StartRequest().
+  void InitializeResourceRequest();
+
+  // Callback from |simple_url_loader_|.
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnSimpleLoaderCompleteInternal(int response_code,
+                                      const std::string& data);
 
   // Callback that handles a completed access token request.
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
@@ -173,17 +186,17 @@ class PaymentsClient : public net::URLFetcherDelegate {
   // Handles a completed access token request in the case of failure.
   void AccessTokenError(const GoogleServiceAuthError& error);
 
-  // Creates |url_fetcher_| based on the current state of |request_|.
-  void InitializeUrlFetcher();
-
   // Initiates a new OAuth2 token request.
   void StartTokenFetch(bool invalidate_old);
 
-  // Adds the token to |url_fetcher_| and starts the request.
+  // Adds the token to |simple_url_loader_| and starts the request.
   void SetOAuth2TokenAndStartRequest();
 
-  // The context for the request.
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  // Creates |simple_url_loader_| and calls it to start the request.
+  void StartRequest();
+
+  // The URL loader factory for the request.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The pref service for this client.
   PrefService* const pref_service_;
@@ -198,8 +211,11 @@ class PaymentsClient : public net::URLFetcherDelegate {
   // The current request.
   std::unique_ptr<PaymentsRequest> request_;
 
-  // The fetcher being used to issue the current request.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // The resource request being used to issue the current request.
+  std::unique_ptr<network::ResourceRequest> resource_request_;
+
+  // The URL loader being used to issue the current request.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // The current OAuth2 token fetcher.
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;

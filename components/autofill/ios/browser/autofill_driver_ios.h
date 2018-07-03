@@ -38,6 +38,7 @@ class AutofillDriverIOS : public AutofillDriver,
   // AutofillDriver:
   bool IsIncognito() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,

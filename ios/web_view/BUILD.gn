@@ -309,6 +309,18 @@ ios_web_view_test_sources = [
   "internal/translate/fake_web_view_translate_client.mm",
 ]
 
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk",
+  ]
+}
+
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
@@ -332,8 +344,8 @@ test("ios_web_view_unittests") {
   sources += ios_web_view_test_sources
 
   deps = [
+    ":run_all_unittests",
     "test:test_support",
-    "//base/test:run_all_unittests",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
     "//components/prefs:test_support",
