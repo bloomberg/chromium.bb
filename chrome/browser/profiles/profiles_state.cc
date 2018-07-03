@@ -67,6 +67,18 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kForceBrowserSignin, false);
 }
 
+void SetLastUsedProfile(const std::string& profile_dir) {
+  // We should never be saving the System Profile as the last one used since it
+  // shouldn't have a browser.
+  if (profile_dir == base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe())
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  local_state->SetString(prefs::kProfileLastUsed, profile_dir);
+}
+
+#if !defined(OS_ANDROID)
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
   base::string16 display_name;
 
@@ -160,7 +172,7 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
 
   return accounts;
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 bool IsRegularOrGuestSession(Browser* browser) {
   Profile* profile = browser->profile();
@@ -222,7 +234,7 @@ bool SetActiveProfileToGuestIfLocked() {
 
   return true;
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
   // The BrowsingDataRemover relies on the ResourceDispatcherHost, which is
@@ -243,17 +255,6 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
       ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
-}
-
-void SetLastUsedProfile(const std::string& profile_dir) {
-  // We should never be saving the System Profile as the last one used since it
-  // shouldn't have a browser.
-  if (profile_dir == base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe())
-    return;
-
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  local_state->SetString(prefs::kProfileLastUsed, profile_dir);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -287,5 +288,6 @@ bool IsPublicSession() {
 #endif
   return false;
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles
