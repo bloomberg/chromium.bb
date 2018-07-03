@@ -804,6 +804,12 @@ void MediaDevicesManager::UpdateSnapshot(
   bool need_update_device_change_subscribers = false;
   MediaDeviceInfoArray& old_snapshot = current_snapshot_[type];
 
+  if (old_snapshot.size() != new_snapshot.size() &&
+      (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
+       type == MEDIA_DEVICE_TYPE_VIDEO_INPUT)) {
+    StopRemovedDevices(type, new_snapshot);
+  }
+
   // Update the cached snapshot and send notifications only if the device list
   // has changed.
   if (old_snapshot.size() != new_snapshot.size() ||
@@ -893,7 +899,7 @@ void MediaDevicesManager::HandleDevicesChanged(MediaDeviceType type) {
   DoEnumerateDevices(type);
 }
 
-void MediaDevicesManager::NotifyMediaStreamManager(
+void MediaDevicesManager::StopRemovedDevices(
     MediaDeviceType type,
     const MediaDeviceInfoArray& new_snapshot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -914,6 +920,17 @@ void MediaDevicesManager::NotifyMediaStreamManager(
     if (it == new_snapshot.end())
       media_stream_manager_->StopRemovedDevice(type, old_device_info);
   }
+}
+
+void MediaDevicesManager::NotifyMediaStreamManager(
+    MediaDeviceType type,
+    const MediaDeviceInfoArray& new_snapshot) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
+         type == MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+
+  if (!media_stream_manager_)
+    return;
 
   media_stream_manager_->NotifyDevicesChanged(type, new_snapshot);
 }
