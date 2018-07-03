@@ -2877,6 +2877,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
+      "//third_party/android_async_task/java/src/org/chromium/base/AsyncTask.java",
     ]
 
     # New versions of BuildConfig.java and NativeLibraries.java
@@ -3011,7 +3012,11 @@ if (is_android) {
     java_files = [
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
+      "test/android/junit/src/org/chromium/base/test/asynctask/BackgroundShadowAsyncTask.java",
+      "test/android/junit/src/org/chromium/base/test/asynctask/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/test/util/TestRunnerTestRule.java",
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/test/asynctask/ShadowAsyncTask.java",
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/test/asynctask/ShadowAsyncTaskBridge.java",
     ]
     deps = [
       ":base_java",
