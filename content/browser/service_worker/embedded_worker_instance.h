@@ -281,10 +281,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void OnStartFailed(StatusCallback callback,
                      blink::ServiceWorkerStatusCode status);
 
-  // Returns the time elapsed since |step_time_| and updates |step_time_|
-  // to the current time.
-  base::TimeDelta UpdateStepTime();
-
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
   ServiceWorkerVersion* owner_version_;
@@ -326,9 +322,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // This is valid only after a process is allocated for the worker.
   ServiceWorkerMetrics::StartSituation start_situation_ =
       ServiceWorkerMetrics::StartSituation::UNKNOWN;
-
-  // Used for UMA. The start time of the current start sequence step.
-  base::TimeTicks step_time_;
 
   std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
