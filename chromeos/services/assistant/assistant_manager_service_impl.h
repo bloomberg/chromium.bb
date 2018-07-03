@@ -43,6 +43,8 @@ class Connector;
 namespace chromeos {
 namespace assistant {
 
+class Service;
+
 // Implementation of AssistantManagerService based on LibAssistant.
 // This is the main class that ineracts with LibAssistant.
 // Since LibAssistant is a standalone library, all callbacks come from it
@@ -57,10 +59,10 @@ class AssistantManagerServiceImpl
       public ash::mojom::VoiceInteractionObserver,
       public assistant_client::DeviceStateListener {
  public:
+  // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor,
-                              mojom::Client* client,
-                              mojom::DeviceActionsPtr device_actions);
+                              Service* service);
 
   ~AssistantManagerServiceImpl() override;
 
@@ -77,8 +79,6 @@ class AssistantManagerServiceImpl
   void SendUpdateSettingsUiRequest(
       const std::string& update,
       UpdateSettingsUiResponseCallback callback) override;
-  void SetAssistantController(
-      ash::mojom::AssistantController* controller) override;
 
   // mojom::Assistant overrides:
   void StartVoiceInteraction() override;
@@ -183,7 +183,7 @@ class AssistantManagerServiceImpl
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
-  mojom::DeviceActionsPtr device_actions_;
+  // same ownership as assistant_manager_.
   assistant_client::AssistantManagerInternal* assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
@@ -191,8 +191,7 @@ class AssistantManagerServiceImpl
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
 
-  ash::mojom::AssistantController* assistant_controller_;
-  mojom::Client* assistant_client_;
+  Service* service_;  // unowned.
 
   bool assistant_enabled_ = false;
   bool context_enabled_ = false;

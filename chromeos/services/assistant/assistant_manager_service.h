@@ -47,10 +47,6 @@ class AssistantManagerService : public mojom::Assistant {
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
 
-  // Sets assistant controller.
-  virtual void SetAssistantController(
-      ash::mojom::AssistantController* controller) = 0;
-
   using GetSettingsUiResponseCallback =
       base::OnceCallback<void(const std::string&)>;
   // Send request for getting settings ui.

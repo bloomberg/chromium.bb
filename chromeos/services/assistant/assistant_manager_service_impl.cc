@@ -42,17 +42,15 @@ const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
-    mojom::Client* client,
-    mojom::DeviceActionsPtr device_actions)
+    Service* service)
     : platform_api_(CreateLibAssistantConfig(),
                     connector,
                     std::move(battery_monitor)),
-      device_actions_(std::move(device_actions)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       voice_interaction_observer_binding_(this),
-      assistant_client_(client),
+      service_(service),
       background_thread_("background thread"),
       weak_factory_(this) {
   background_thread_.Start();
@@ -186,19 +184,14 @@ void AssistantManagerServiceImpl::RequestScreenContext(
       base::BindOnce(
           &AssistantManagerServiceImpl::SendContextQueryAndRunCallback,
           weak_factory_.GetWeakPtr(), std::move(callback)));
-  assistant_client_->RequestAssistantStructure(
+  service_->client()->RequestAssistantStructure(
       base::BindOnce(&AssistantManagerServiceImpl::OnAssistantStructureReceived,
                      weak_factory_.GetWeakPtr(), on_done));
   // TODO(muyuanli): handle metalayer and grab only part of the screen.
-  assistant_controller_->RequestScreenshot(
+  service_->assistant_controller()->RequestScreenshot(
       region, base::BindOnce(
                   &AssistantManagerServiceImpl::OnAssistantScreenshotReceived,
                   weak_factory_.GetWeakPtr(), on_done));
-}
-
-void AssistantManagerServiceImpl::SetAssistantController(
-    ash::mojom::AssistantController* controller) {
-  assistant_controller_ = controller;
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
@@ -305,10 +298,10 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
   if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
     switch (modify_setting_args.change()) {
       case api::client_op::ModifySettingArgs_Change_ON:
-        device_actions_->SetWifiEnabled(true);
+        service_->device_actions()->SetWifiEnabled(true);
         return;
       case api::client_op::ModifySettingArgs_Change_OFF:
-        device_actions_->SetWifiEnabled(false);
+        service_->device_actions()->SetWifiEnabled(false);
         return;
 
       case api::client_op::ModifySettingArgs_Change_TOGGLE:
