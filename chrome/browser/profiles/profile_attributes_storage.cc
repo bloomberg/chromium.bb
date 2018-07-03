@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -161,12 +162,8 @@ bool GetRandomAvatarIconIndex(
 
 }  // namespace
 
-ProfileAttributesStorage::ProfileAttributesStorage(
-    PrefService* prefs,
-    const base::FilePath& user_data_dir)
+ProfileAttributesStorage::ProfileAttributesStorage(PrefService* prefs)
     : prefs_(prefs),
-      user_data_dir_(user_data_dir),
-      disable_avatar_download_for_testing_(false),
       file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}

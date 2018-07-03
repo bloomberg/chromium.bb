@@ -40,8 +40,7 @@ class ProfileAttributesStorage
  public:
   using Observer = ProfileInfoCacheObserver;
 
-  ProfileAttributesStorage(PrefService* prefs,
-                           const base::FilePath& user_data_dir);
+  explicit ProfileAttributesStorage(PrefService* prefs);
   virtual ~ProfileAttributesStorage();
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
@@ -140,8 +139,7 @@ class ProfileAttributesStorage
                              const std::string& key,
                              const base::FilePath& image_path);
 
-  PrefService* prefs_;
-  base::FilePath user_data_dir_;
+  PrefService* const prefs_;
   mutable std::unordered_map<base::FilePath::StringType,
                              std::unique_ptr<ProfileAttributesEntry>>
       profile_attributes_entries_;
@@ -167,7 +165,7 @@ class ProfileAttributesStorage
 
   // Determines of the ProfileAvatarDownloader should be created and executed
   // or not. Only set to true for tests.
-  bool disable_avatar_download_for_testing_;
+  bool disable_avatar_download_for_testing_ = false;
 
   // Task runner used for file operation on avatar images.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
