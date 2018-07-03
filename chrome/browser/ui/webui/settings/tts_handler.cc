@@ -30,6 +30,9 @@ void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
 }
 
 void TtsHandler::HandleGetTtsExtensions(const base::ListValue* args) {
+  // Ensure the built in tts engine is loaded to be able to respond to messages.
+  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(
+      Profile::FromWebUI(web_ui()));
   base::ListValue responses;
   Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionRegistry* registry =
