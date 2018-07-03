@@ -146,6 +146,12 @@ void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_mt_info) {
   }
 }
 
+void av1_dec_free_cb_buf(AV1Decoder *pbi) {
+  aom_free(pbi->cb_buffer_base);
+  pbi->cb_buffer_base = NULL;
+  pbi->cb_buffer_alloc_size = 0;
+}
+
 void av1_decoder_remove(AV1Decoder *pbi) {
   int i;
 
@@ -181,6 +187,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
     av1_dealloc_dec_jobs(&pbi->tile_mt_info);
   }
 
+  av1_dec_free_cb_buf(pbi);
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);
 #endif

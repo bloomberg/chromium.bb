@@ -192,6 +192,9 @@ typedef struct AV1Decoder {
   inverse_tx_inter_block_visitor_fn_t inverse_tx_inter_block_visit;
   predict_inter_block_visitor_fn_t predict_inter_block_visit;
   cfl_store_inter_block_visitor_fn_t cfl_store_inter_block_visit;
+
+  CB_BUFFER *cb_buffer_base;
+  int cb_buffer_alloc_size;
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
@@ -217,6 +220,8 @@ struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 
 void av1_decoder_remove(struct AV1Decoder *pbi);
 void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_jobs_sync);
+
+void av1_dec_free_cb_buf(AV1Decoder *pbi);
 
 static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
                                       BufferPool *const pool) {

@@ -2698,8 +2698,15 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   }
 }
 
-static void set_cb_buffer(MACROBLOCKD *const xd, CB_BUFFER *cb_buffer,
-                          const int num_planes) {
+static void set_cb_buffer(AV1Decoder *pbi, MACROBLOCKD *const xd,
+                          CB_BUFFER *cb_buffer_base, const int num_planes,
+                          int mi_row, int mi_col) {
+  AV1_COMMON *const cm = &pbi->common;
+  int mib_size_log2 = cm->seq_params.mib_size_log2;
+  int stride = (cm->mi_cols >> mib_size_log2) + 1;
+  int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
+  CB_BUFFER *cb_buffer = cb_buffer_base + offset;
+
   for (int plane = 0; plane < num_planes; ++plane) {
     xd->plane[plane].dqcoeff_block = cb_buffer->dqcoeff[plane];
     xd->plane[plane].eob_data = cb_buffer->eob_data[plane];
@@ -2712,23 +2719,21 @@ static void set_cb_buffer(MACROBLOCKD *const xd, CB_BUFFER *cb_buffer,
   xd->color_index_map_offset[1] = 0;
 }
 
-#if 0
 static void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
-                               TileInfo tile_info, const int mi_row,
-                               int parse_decode_flag) {
+                               TileInfo tile_info, const int mi_row) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
-  av1_zero_left_context(&td->xd);
 
   for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
        mi_col += cm->seq_params.mib_size) {
-    set_cb_buffer(&td->xd, &td->cb_buffer_base, num_planes);
+    set_cb_buffer(pbi, &td->xd, pbi->cb_buffer_base, num_planes, mi_row,
+                  mi_col);
 
+    // Decoding of the super-block
     decode_partition(pbi, &td->xd, mi_row, mi_col, td->bit_reader,
-                     cm->seq_params.sb_size, parse_decode_flag);
+                     cm->seq_params.sb_size, 0x2);
   }
 }
-#endif
 
 static int check_trailing_bits_after_symbol_coder(aom_reader *r) {
   uint32_t nb_bits = aom_reader_tell(r);
@@ -2788,7 +2793,7 @@ static void decode_tile(AV1Decoder *pbi, ThreadData *const td, int tile_row,
 
     for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
          mi_col += cm->seq_params.mib_size) {
-      set_cb_buffer(&td->xd, &td->cb_buffer_base, num_planes);
+      set_cb_buffer(pbi, &td->xd, &td->cb_buffer_base, num_planes, 0, 0);
 
       // Bit-stream parsing and decoding of the superblock
       decode_partition(pbi, &td->xd, mi_row, mi_col, td->bit_reader,
@@ -3036,6 +3041,72 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   return !td->xd.corrupted;
 }
 
+static int row_mt_worker_hook(void *arg1, void *arg2) {
+  DecWorkerData *const thread_data = (DecWorkerData *)arg1;
+  AV1Decoder *const pbi = (AV1Decoder *)arg2;
+  AV1_COMMON *cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
+  ThreadData *const td = thread_data->td;
+  uint8_t allow_update_cdf;
+
+  if (setjmp(thread_data->error_info.jmp)) {
+    thread_data->error_info.setjmp = 0;
+    thread_data->td->xd.corrupted = 1;
+    return 0;
+  }
+  thread_data->error_info.setjmp = 1;
+
+  allow_update_cdf = cm->large_scale_tile ? 0 : 1;
+  allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
+
+  assert(cm->tile_cols > 0);
+  while (1) {
+    TileJobsDec *cur_job_info = get_dec_job_info(&pbi->tile_mt_info);
+
+    if (cur_job_info != NULL && !td->xd.corrupted) {
+      const TileBufferDec *const tile_buffer = cur_job_info->tile_buffer;
+      TileDataDec *const tile_data = cur_job_info->tile_data;
+      tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
+                            allow_update_cdf);
+
+      // decode tile
+      TileInfo tile_info = tile_data->tile_info;
+      int tile_row = tile_info.tile_row;
+
+      av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end,
+                             tile_row);
+      av1_reset_loop_restoration(&td->xd, num_planes);
+
+      for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+           mi_row += cm->seq_params.mib_size) {
+        av1_zero_left_context(&td->xd);
+
+        for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+             mi_col += cm->seq_params.mib_size) {
+          set_cb_buffer(pbi, &td->xd, pbi->cb_buffer_base, num_planes, mi_row,
+                        mi_col);
+
+          // Bit-stream parsing of the superblock
+          decode_partition(pbi, &td->xd, mi_row, mi_col, td->bit_reader,
+                           cm->seq_params.sb_size, 0x1);
+        }
+      }
+
+      int corrupted =
+          (check_trailing_bits_after_symbol_coder(td->bit_reader)) ? 1 : 0;
+      aom_merge_corrupted_flag(&td->xd.corrupted, corrupted);
+
+      for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+           mi_row += cm->seq_params.mib_size) {
+        decode_tile_sb_row(pbi, td, tile_info, mi_row);
+      }
+    } else {
+      break;
+    }
+  }
+  return !td->xd.corrupted;
+}
+
 // sorts in descending order
 static int compare_tile_buffers(const void *a, const void *b) {
   const TileJobsDec *const buf1 = (const TileJobsDec *)a;
@@ -3111,7 +3182,8 @@ static void allocate_mc_tmp_buf(AV1_COMMON *const cm, ThreadData *thread_data,
   thread_data->mc_buf_size = buf_size;
 }
 
-static void reset_dec_workers(AV1Decoder *pbi, int num_workers) {
+static void reset_dec_workers(AV1Decoder *pbi, AVxWorkerHook worker_hook,
+                              int num_workers) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
   // Reset tile decoding hook
@@ -3120,7 +3192,7 @@ static void reset_dec_workers(AV1Decoder *pbi, int num_workers) {
     DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
     winterface->sync(worker);
 
-    worker->hook = tile_worker_hook;
+    worker->hook = worker_hook;
     worker->data1 = thread_data;
     worker->data2 = pbi;
   }
@@ -3303,7 +3375,122 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   tile_mt_queue(pbi, tile_cols, tile_rows, tile_rows_start, tile_rows_end,
                 tile_cols_start, tile_cols_end, start_tile, end_tile);
 
-  reset_dec_workers(pbi, num_workers);
+  reset_dec_workers(pbi, tile_worker_hook, num_workers);
+  launch_dec_workers(pbi, data_end, num_workers);
+  sync_dec_workers(pbi, num_workers);
+
+  if (pbi->mb.corrupted)
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Failed to decode tile data");
+
+  if (cm->large_scale_tile) {
+    if (n_tiles == 1) {
+      // Find the end of the single tile buffer
+      return aom_reader_find_end(&pbi->tile_data->bit_reader);
+    }
+    // Return the end of the last tile buffer
+    return raw_data_end;
+  }
+  TileDataDec *const tile_data = pbi->tile_data + end_tile;
+
+  return aom_reader_find_end(&tile_data->bit_reader);
+}
+
+static void dec_alloc_cb_buf(AV1Decoder *pbi) {
+  AV1_COMMON *const cm = &pbi->common;
+  int size = ((cm->mi_rows >> cm->seq_params.mib_size_log2) + 1) *
+             ((cm->mi_cols >> cm->seq_params.mib_size_log2) + 1);
+
+  if (pbi->cb_buffer_alloc_size < size) {
+    av1_dec_free_cb_buf(pbi);
+    CHECK_MEM_ERROR(cm, pbi->cb_buffer_base,
+                    aom_memalign(32, sizeof(*pbi->cb_buffer_base) * size));
+    pbi->cb_buffer_alloc_size = size;
+  }
+}
+
+static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
+                                          const uint8_t *data_end,
+                                          int start_tile, int end_tile) {
+  AV1_COMMON *const cm = &pbi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+  const int n_tiles = tile_cols * tile_rows;
+  TileBufferDec(*const tile_buffers)[MAX_TILE_COLS] = pbi->tile_buffers;
+  const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);
+  const int single_row = pbi->dec_tile_row >= 0;
+  const int dec_tile_col = AOMMIN(pbi->dec_tile_col, tile_cols);
+  const int single_col = pbi->dec_tile_col >= 0;
+  int tile_rows_start;
+  int tile_rows_end;
+  int tile_cols_start;
+  int tile_cols_end;
+  int tile_count_tg;
+  int num_workers;
+  const uint8_t *raw_data_end = NULL;
+
+  if (cm->large_scale_tile) {
+    tile_rows_start = single_row ? dec_tile_row : 0;
+    tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
+    tile_cols_start = single_col ? dec_tile_col : 0;
+    tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
+  } else {
+    tile_rows_start = 0;
+    tile_rows_end = tile_rows;
+    tile_cols_start = 0;
+    tile_cols_end = tile_cols;
+  }
+  tile_count_tg = end_tile - start_tile + 1;
+  num_workers = AOMMIN(pbi->max_threads, tile_count_tg);
+
+  // No tiles to decode.
+  if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start ||
+      // First tile is larger than end_tile.
+      tile_rows_start * tile_cols + tile_cols_start > end_tile ||
+      // Last tile is smaller than start_tile.
+      (tile_rows_end - 1) * tile_cols + tile_cols_end - 1 < start_tile)
+    return data;
+
+  assert(tile_rows <= MAX_TILE_ROWS);
+  assert(tile_cols <= MAX_TILE_COLS);
+  assert(tile_count_tg > 0);
+  assert(num_workers > 0);
+  assert(start_tile <= end_tile);
+  assert(start_tile >= 0 && end_tile < n_tiles);
+
+  decode_mt_init(pbi);
+
+  // get tile size in tile group
+#if EXT_TILE_DEBUG
+  if (cm->large_scale_tile) assert(pbi->ext_tile_debug == 1);
+  if (cm->large_scale_tile)
+    raw_data_end = get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
+  else
+#endif  // EXT_TILE_DEBUG
+    get_tile_buffers(pbi, data, data_end, tile_buffers, start_tile, end_tile);
+
+  if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
+    aom_free(pbi->tile_data);
+    CHECK_MEM_ERROR(cm, pbi->tile_data,
+                    aom_memalign(32, n_tiles * sizeof(*pbi->tile_data)));
+    pbi->allocated_tiles = n_tiles;
+  }
+
+  set_decode_func_pointers(pbi, 0);
+
+  for (int row = 0; row < tile_rows; row++) {
+    for (int col = 0; col < tile_cols; col++) {
+      TileDataDec *tile_data = pbi->tile_data + row * cm->tile_cols + col;
+      av1_tile_init(&tile_data->tile_info, cm, row, col);
+    }
+  }
+
+  tile_mt_queue(pbi, tile_cols, tile_rows, tile_rows_start, tile_rows_end,
+                tile_cols_start, tile_cols_end, start_tile, end_tile);
+
+  dec_alloc_cb_buf(pbi);
+
+  reset_dec_workers(pbi, row_mt_worker_hook, num_workers);
   launch_dec_workers(pbi, data_end, num_workers);
   sync_dec_workers(pbi, num_workers);
 
@@ -4654,7 +4841,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (pbi->max_threads > 1 && !(cm->large_scale_tile && !pbi->ext_tile_debug) &&
       pbi->row_mt)
-    *p_data_end = decode_tiles_mt(pbi, data, data_end, start_tile, end_tile);
+    *p_data_end =
+        decode_tiles_row_mt(pbi, data, data_end, start_tile, end_tile);
   else if (pbi->max_threads > 1 && tile_count_tg > 1 &&
            !(cm->large_scale_tile && !pbi->ext_tile_debug))
     *p_data_end = decode_tiles_mt(pbi, data, data_end, start_tile, end_tile);
