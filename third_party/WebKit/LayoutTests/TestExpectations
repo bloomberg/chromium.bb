@@ -3207,7 +3207,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/available-size-017.html [ Fa
 crbug.com/626703 [ Mac10.11 Retina ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-active-cue.html [ Crash ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/title-manual.html [ Skip ]
-crbug.com/626703 external/wpt/resource-timing/resource_timing.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/astral-bidi/adlam-anti-ref.html [ Pass Failure ]
 crbug.com/626703 external/wpt/css/css-text/astral-bidi/cypriot-anti-ref.html [ Pass Failure ]
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
