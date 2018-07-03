@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/download/download_item_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/test/views_test_base.h"
 
-using DownloadItemViewDangerousDownloadLabelTest = views::ViewsTestBase;
+using DownloadItemViewDangerousDownloadLabelTest = ChromeViewsTestBase;
 
 TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
   // For very short label that can fit in a single line, no need to do any

@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +26,6 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
@@ -166,7 +166,7 @@ ACTION_P2(QuitRunLoop, task_runner, run_loop) {
   task_runner->PostTask(FROM_HERE, run_loop->QuitWhenIdleClosure());
 }
 
-class NativeDesktopMediaListTest : public views::ViewsTestBase {
+class NativeDesktopMediaListTest : public ChromeViewsTestBase {
  public:
   NativeDesktopMediaListTest() = default;
 
@@ -174,7 +174,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
     for (size_t i = 0; i < desktop_widgets_.size(); i++)
       desktop_widgets_[i].reset();
 
-    ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
   void AddNativeWindow(int id) {

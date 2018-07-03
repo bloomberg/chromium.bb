@@ -5,14 +5,14 @@
 #include "chrome/test/views/accessibility_checker.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-typedef views::ViewsTestBase AccessibilityCheckerTest;
+using AccessibilityCheckerTest = ChromeViewsTestBase;
 
 // Test that a view that is not accessible will fail the accessibility audit.
 TEST_F(AccessibilityCheckerTest, VerifyAccessibilityCheckerFailAndPass) {
