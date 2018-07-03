@@ -123,9 +123,8 @@ const char* TabCloseButton::GetClassName() const {
 void TabCloseButton::Layout() {
   ImageButton::Layout();
   if (focus_ring()) {
-    focus_ring()->Layout();
     SkPath path;
-    path.addOval(gfx::RectToSkRect(GetContentsBounds()));
+    path.addOval(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
     focus_ring()->SetPath(path);
   }
 }
