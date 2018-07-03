@@ -12,7 +12,7 @@
 namespace {
 
 base::LazyInstance<PreviewsServiceFactory>::DestructorAtExit
-    g_previews_factory = LAZY_INSTANCE_INITIALIZER;
+    g_previews_service_factory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -24,7 +24,7 @@ PreviewsService* PreviewsServiceFactory::GetForProfile(Profile* profile) {
 
 // static
 PreviewsServiceFactory* PreviewsServiceFactory::GetInstance() {
-  return g_previews_factory.Pointer();
+  return g_previews_service_factory.Pointer();
 }
 
 PreviewsServiceFactory::PreviewsServiceFactory()
