@@ -10017,6 +10017,55 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBAUTHN_TIMEOUT_DESCRIPTION" desc="Contents of the dialog shown when Web Authentication request times out due to inactivity or error.">
       The request timed out
     </message>
+    <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TITLE" desc="Title of the dialog shown when instructing the user to manually turn on Bluetooth so that security keys can be used over Bluetooth.">
+      Turn on Bluetooth
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_DESCRIPTION" desc="Contents of the dialog shown instructing the user to turn on bluetooth so that security keys can be used over Bluetooth.">
+      Your Security Key only works when your device's Bluetooth is on
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TRY_AGAIN" desc="Contents of the button shown to let the user restart the Bluetooth pairing process with Bluetooth powered on.">
+      Try again
+    </message>
+
+    <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE" desc="Title of the dialog shown when preparing the user to pair Bluetooth security key.">
+      Ready to pair your Security Key?
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION" desc="Contents of the dialog shown when initiating the user to pair Bluetooth security key.">
+      Pair your key to this device so you can use it to sign into your account
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_START" desc="Contents of the button that lets the user initiate Bluetooth pairing process.">
+     Begin
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE" desc="Title of the dialog shown when instructing the user to put security key into pairing mode.">
+      Allow the use of your Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to put security key into pairing mode.">
+      Press and hold the button on your Security Key for at least 5 seconds
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE" desc="Title of the dialog shown when instructing the user to select security key to connect.">
+      Select your Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to select his/her security key from list of near by BLE devices.">
+      Find the name printed on the back of your key
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key.">
+      Pair with <ph name="DEVICE_NAME">$1<ex>VHGSHSSN</ex></ph>
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key.">
+     Find the 6-digit PIN on the back of your key
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT" desc="Contents of the button that lets the user continue the pairing process with the entered Bluetooth PIN code.">
+     Next
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_VERIFYING_TITLE" desc="Title of the dialog shown when the user has established BLE connection with the security key.">
+      Verifying your Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_ACTIVATE_TITLE" desc="Title of the dialog shown when the user tries to sign-in using a security key.">
+      Use your Security Key with <ph name="APP_NAME">$1<ex>airbnb.com</ex></ph>
+    </message>
+    <message name="IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a security key.">
+      To use most keys, simply press the button
+   </message>
   </messages>
  </release>
 </grit>

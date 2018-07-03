@@ -136,3 +136,127 @@ base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
 base::string16 AuthenticatorTimeoutErrorModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_DESCRIPTION);
 }
+
+// AuthenticatorBlePowerOnManualSheetModel ------------------------------------
+
+base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TITLE);
+}
+
+base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_DESCRIPTION);
+}
+
+bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorBlePowerOnManualSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TRY_AGAIN);
+}
+
+// AuthenticatorBlePairingBeginSheetModel -------------------------------------
+
+base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE);
+}
+
+base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION);
+}
+
+bool AuthenticatorBlePairingBeginSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorBlePairingBeginSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorBlePairingBeginSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_START);
+}
+
+// AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
+
+base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE);
+}
+
+base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_DESCRIPTION);
+}
+
+// AuthenticatorBleDeviceSelectionSheetModel ----------------------------------
+
+base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE);
+}
+
+base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION);
+}
+
+// AuthenticatorBlePinEntrySheetModel -----------------------------------------
+
+base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
+  // TODO(hongjunchoi): Insert actual device name from model to |device_name|.
+  base::string16 device_name = base::UTF8ToUTF16("VHGSHSSN");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
+                                    device_name);
+}
+
+base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION);
+}
+
+bool AuthenticatorBlePinEntrySheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorBlePinEntrySheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorBlePinEntrySheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT);
+}
+
+// AuthenticatorBleVerifyingSheetModel ----------------------------------------
+
+base::string16 AuthenticatorBleVerifyingSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_VERIFYING_TITLE);
+}
+
+base::string16 AuthenticatorBleVerifyingSheetModel::GetStepDescription() const {
+  return base::string16();
+}
+
+// AuthenticatorBleActivateSheetModel -----------------------------------------
+
+base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
+  // TODO(hongjunchoi): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_TITLE,
+                                    application_name);
+}
+
+base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
+}

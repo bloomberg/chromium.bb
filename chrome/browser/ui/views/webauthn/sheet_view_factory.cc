@@ -57,15 +57,40 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorTimeoutErrorModel>(dialog_model));
       break;
+    case Step::kBlePowerOnManual:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBlePowerOnManualSheetModel>(
+              dialog_model));
+      break;
+    case Step::kBlePairingBegin:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBlePairingBeginSheetModel>(
+              dialog_model));
+      break;
+    case Step::kBleEnterPairingMode:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBleEnterPairingModeSheetModel>(
+              dialog_model));
+      break;
+    case Step::kBleDeviceSelection:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBleDeviceSelectionSheetModel>(
+              dialog_model));
+      break;
+    case Step::kBlePinEntry:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBlePinEntrySheetModel>(dialog_model));
+      break;
+    case Step::kBleVerifying:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBleVerifyingSheetModel>(dialog_model));
+      break;
+    case Step::kBleActivate:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorBleActivateSheetModel>(dialog_model));
+      break;
     case Step::kCompleted:
     case Step::kBlePowerOnAutomatic:
-    case Step::kBlePowerOnManual:
-    case Step::kBlePairingBegin:
-    case Step::kBleEnterPairingMode:
-    case Step::kBleDeviceSelection:
-    case Step::kBlePinEntry:
-    case Step::kBleActivate:
-    case Step::kBleVerifying:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<PlaceholderSheetModel>(dialog_model));
       break;
