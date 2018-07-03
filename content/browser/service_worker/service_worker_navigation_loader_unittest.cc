@@ -843,7 +843,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
   EXPECT_FALSE(loader_->WasCanceled());
   EXPECT_TRUE(version_->HasWorkInBrowser());
-  loader_->Cancel();
+  loader_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(loader_->WasCanceled());
   EXPECT_FALSE(version_->HasWorkInBrowser());
 
@@ -1006,6 +1007,57 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::SERVICE_WORKER_OK, 1);
+}
+
+TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterForwardToServiceWorker) {
+  LoaderResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  base::WeakPtr<ServiceWorkerNavigationLoader> loader = loader_->AsWeakPtr();
+  ASSERT_TRUE(loader);
+
+  client_.RunUntilComplete();
+  EXPECT_TRUE(loader);
+
+  // Even after calling DetachedFromRequest(), |loader_| should be alive until
+  // the Mojo connection to the loader is disconnected.
+  loader_.release()->DetachedFromRequest();
+  EXPECT_TRUE(loader);
+
+  // When the interface pointer to |loader_| is disconnected, its weak pointers
+  // (|loader|) are invalidated.
+  loader_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(loader);
+
+  // |loader_| is deleted here. LSan test will alert if it leaks.
+}
+
+TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
+  network::ResourceRequest request;
+  request.url = GURL("https://www.example.com/");
+  request.method = "GET";
+  request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+  request.fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kInclude;
+  request.fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+
+  SingleRequestURLLoaderFactory::RequestHandler handler;
+  auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
+      base::BindOnce(&ReceiveRequestHandler, &handler), this, request,
+      base::WrapRefCounted<URLLoaderFactoryGetter>(
+          helper_->context()->loader_factory_getter()));
+  base::WeakPtr<ServiceWorkerNavigationLoader> loader_weakptr =
+      loader->AsWeakPtr();
+  // Ask the loader to fallback to network. In production code,
+  // ServiceWorkerControlleeRequestHandler calls FallbackToNetwork() to do this.
+  loader->FallbackToNetwork();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(handler);
+  EXPECT_TRUE(loader_weakptr);
+
+  // DetachedFromRequest() deletes |loader_|.
+  loader.release()->DetachedFromRequest();
+  EXPECT_FALSE(loader_weakptr);
 }
 
 }  // namespace service_worker_navigation_loader_unittest
