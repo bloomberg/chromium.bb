@@ -1409,18 +1409,14 @@ void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
   matched_preloads_.clear();
 }
 
-void ResourceFetcher::WarnUnusedPreloads() {
+Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
+  Vector<KURL> urls;
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
-    if (resource && resource->IsLinkPreload() && resource->IsUnusedPreload()) {
-      Context().AddWarningConsoleMessage(
-          "The resource " + resource->Url().GetString() +
-              " was preloaded using link preload but not used within a few " +
-              "seconds from the window's load event. Please make sure it has " +
-              "an appropriate `as` value and it is preloaded intentionally.",
-          FetchContext::kJSSource);
-    }
+    if (resource && resource->IsLinkPreload() && resource->IsUnusedPreload())
+      urls.push_back(resource->Url());
   }
+  return urls;
 }
 
 ArchiveResource* ResourceFetcher::CreateArchive(Resource* resource) {

@@ -158,15 +158,6 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
   return blocked_reason;
 }
 
-void BaseFetchContext::AddWarningConsoleMessage(const String& message,
-                                                LogSource source) const {
-  // When LogSource is extended, this DCHECK should be replaced with a logic to
-  // convert LogSource to blink::MessageSource.
-  DCHECK_EQ(source, kJSSource);
-  AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
-}
-
 void BaseFetchContext::AddErrorConsoleMessage(const String& message,
                                               LogSource source) const {
   // When LogSource is extended, this DCHECK should be replaced with a logic to
