@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -112,7 +113,8 @@ class DemoSessionTest : public testing::Test {
   ~DemoSessionTest() override = default;
 
   void SetUp() override {
-    chromeos::DemoSession::SetDeviceInDemoModeForTesting(true);
+    DemoSession::SetDemoModeEnrollmentTypeForTesting(
+        DemoSession::EnrollmentType::kOnline);
     auto image_loader_client = std::make_unique<TestImageLoaderClient>();
     image_loader_client_ = image_loader_client.get();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
@@ -121,6 +123,8 @@ class DemoSessionTest : public testing::Test {
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
+    DemoSession::SetDemoModeEnrollmentTypeForTesting(
+        DemoSession::EnrollmentType::kNone);
     image_loader_client_ = nullptr;
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -128,6 +132,7 @@ class DemoSessionTest : public testing::Test {
  protected:
   // Points to the image loader client passed to the test DBusTestManager.
   TestImageLoaderClient* image_loader_client_ = nullptr;
+  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DemoSessionTest);
@@ -138,6 +143,7 @@ TEST_F(DemoSessionTest, StartForDeviceInDemoMode) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
   EXPECT_TRUE(demo_session->started());
+  EXPECT_FALSE(demo_session->offline_enrolled());
   EXPECT_EQ(demo_session, DemoSession::Get());
 }
 
@@ -160,12 +166,29 @@ TEST_F(DemoSessionTest, StartInitiatesOfflineResourcesLoad) {
 }
 
 TEST_F(DemoSessionTest, StartForDemoDeviceNotInDemoMode) {
-  DemoSession::SetDeviceInDemoModeForTesting(false);
+  DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      DemoSession::EnrollmentType::kNone);
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_FALSE(DemoSession::StartIfInDemoMode());
   EXPECT_FALSE(DemoSession::Get());
 
   EXPECT_EQ(std::list<std::string>(), image_loader_client_->pending_loads());
+}
+
+TEST_F(DemoSessionTest, StartIfInOfflineEnrolledDemoMode) {
+  DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      DemoSession::EnrollmentType::kOffline);
+
+  EXPECT_FALSE(DemoSession::Get());
+  DemoSession* demo_session = DemoSession::StartIfInDemoMode();
+  ASSERT_TRUE(demo_session);
+  EXPECT_TRUE(demo_session->started());
+  EXPECT_TRUE(demo_session->offline_enrolled());
+  EXPECT_EQ(demo_session, DemoSession::Get());
+
+  EXPECT_FALSE(demo_session->offline_resources_loaded());
+  EXPECT_EQ(std::list<std::string>({kOfflineResourcesComponent}),
+            image_loader_client_->pending_loads());
 }
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
@@ -174,6 +197,7 @@ TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
   DemoSession* demo_session = DemoSession::Get();
   ASSERT_TRUE(demo_session);
   EXPECT_FALSE(demo_session->started());
+  EXPECT_FALSE(demo_session->offline_enrolled());
 
   EXPECT_FALSE(demo_session->offline_resources_loaded());
   EXPECT_EQ(std::list<std::string>({kOfflineResourcesComponent}),
@@ -191,10 +215,26 @@ TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
 }
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfNotInDemoMode) {
-  DemoSession::SetDeviceInDemoModeForTesting(false);
+  DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      DemoSession::EnrollmentType::kNone);
   DemoSession::PreloadOfflineResourcesIfInDemoMode();
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_EQ(std::list<std::string>(), image_loader_client_->pending_loads());
+}
+
+TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInOfflineDemoMode) {
+  DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      DemoSession::EnrollmentType::kOffline);
+  DemoSession::PreloadOfflineResourcesIfInDemoMode();
+
+  DemoSession* demo_session = DemoSession::Get();
+  ASSERT_TRUE(demo_session);
+  EXPECT_FALSE(demo_session->started());
+  EXPECT_TRUE(demo_session->offline_enrolled());
+
+  EXPECT_FALSE(demo_session->offline_resources_loaded());
+  EXPECT_EQ(std::list<std::string>({kOfflineResourcesComponent}),
+            image_loader_client_->pending_loads());
 }
 
 TEST_F(DemoSessionTest, ShutdownResetsInstance) {

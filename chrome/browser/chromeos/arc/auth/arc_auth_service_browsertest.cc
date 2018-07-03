@@ -13,14 +13,18 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -39,11 +43,16 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_test_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -146,9 +155,21 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   void SetAccountAndProfile(const user_manager::UserType user_type) {
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
-    user_type == user_manager::USER_TYPE_CHILD
-        ? GetFakeUserManager()->AddChildUser(account_id)
-        : GetFakeUserManager()->AddUser(account_id);
+    switch (user_type) {
+      case user_manager::USER_TYPE_CHILD:
+        GetFakeUserManager()->AddChildUser(account_id);
+        break;
+      case user_manager::USER_TYPE_REGULAR:
+        GetFakeUserManager()->AddUser(account_id);
+        break;
+      case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+        GetFakeUserManager()->AddPublicAccountUser(account_id);
+        break;
+      default:
+        ADD_FAILURE() << "Unexpected user type " << user_type;
+        return;
+    }
+
     GetFakeUserManager()->LoginUser(account_id);
     GetFakeUserManager()->CreateLocalState();
 
@@ -235,6 +256,142 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
   EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance.account_info()->account_type);
+  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance.account_info()->is_managed);
+
+  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+}
+
+class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
+ public:
+  ArcRobotAccountAuthServiceTest() = default;
+  ~ArcRobotAccountAuthServiceTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
+                                    "http://localhost");
+    ArcAuthServiceTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    ArcAuthServiceTest::SetUpOnMainThread();
+    interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
+        "localhost", content::BrowserThread::GetTaskRunnerForThread(
+                         content::BrowserThread::IO));
+    SetUpPolicyClient();
+  }
+
+  void TearDownOnMainThread() override {
+    ArcAuthServiceTest::TearDownOnMainThread();
+
+    // Verify that all the expected requests were handled.
+    EXPECT_EQ(0u, interceptor_->GetPendingSize());
+    interceptor_.reset();
+  }
+
+ protected:
+  // JobCallback for the interceptor.
+  static net::URLRequestJob* ResponseJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) {
+    enterprise_management::DeviceManagementResponse response;
+    response.mutable_service_api_access_response()->set_auth_code(
+        kFakeAuthCode);
+
+    std::string response_data;
+    EXPECT_TRUE(response.SerializeToString(&response_data));
+
+    return new net::URLRequestTestJob(request, network_delegate,
+                                      net::URLRequestTestJob::test_headers(),
+                                      response_data, true);
+  }
+
+  policy::TestRequestInterceptor* interceptor() { return interceptor_.get(); }
+
+ private:
+  void SetUpPolicyClient() {
+    policy::BrowserPolicyConnectorChromeOS* const connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    policy::DeviceCloudPolicyManagerChromeOS* const cloud_policy_manager =
+        connector->GetDeviceCloudPolicyManager();
+
+    cloud_policy_manager->StartConnection(
+        std::make_unique<policy::MockCloudPolicyClient>(),
+        connector->GetInstallAttributes());
+
+    policy::MockCloudPolicyClient* const cloud_policy_client =
+        static_cast<policy::MockCloudPolicyClient*>(
+            cloud_policy_manager->core()->client());
+    cloud_policy_client->SetDMToken("fake-dm-token");
+    cloud_policy_client->client_id_ = "client-id";
+  }
+
+  std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcRobotAccountAuthServiceTest);
+};
+
+// Tests that when ARC requests account info for a demo session account,
+// Chrome supplies the info configured in SetAccountAndProfile() above.
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
+  chromeos::DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      chromeos::DemoSession::EnrollmentType::kOnline);
+  chromeos::DemoSession::StartIfInDemoMode();
+
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
+  interceptor()->PushJobCallback(
+      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
+
+  ArcBridgeService* arc_bridge_service =
+      ArcServiceManager::Get()->arc_bridge_service();
+  ASSERT_TRUE(arc_bridge_service);
+
+  FakeAuthInstance auth_instance;
+  arc_bridge_service->auth()->SetInstance(&auth_instance);
+  WaitForInstanceReady(arc_bridge_service->auth());
+
+  base::RunLoop run_loop;
+  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance.account_info());
+  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
+            auth_instance.account_info()->account_type);
+  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance.account_info()->is_managed);
+
+  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
+  chromeos::DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      chromeos::DemoSession::EnrollmentType::kOffline);
+  chromeos::DemoSession::StartIfInDemoMode();
+
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  interceptor()->PushJobCallback(
+      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
+
+  ArcBridgeService* arc_bridge_service =
+      ArcServiceManager::Get()->arc_bridge_service();
+  ASSERT_TRUE(arc_bridge_service);
+
+  FakeAuthInstance auth_instance;
+  arc_bridge_service->auth()->SetInstance(&auth_instance);
+  WaitForInstanceReady(arc_bridge_service->auth());
+
+  base::RunLoop run_loop;
+  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance.account_info());
+  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
             auth_instance.account_info()->account_type);
   EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance.account_info()->is_managed);

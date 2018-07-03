@@ -19,9 +19,23 @@ namespace chromeos {
 // started, and whether the demo session offline resources have been loaded.
 class DemoSession {
  public:
+  enum class EnrollmentType {
+    // Device was not enrolled into demo mode
+    kNone,
+
+    // Device was enrolled into demo mode using online enrollment flow.
+    kOnline,
+
+    // Device was enrolled into demo mode using offline enrollment flow - i.e.
+    // policies are retrieved from the device, rather than from DM server.
+    kOffline,
+  };
+
   // Whether the device is set up to run demo sessions.
   static bool IsDeviceInDemoMode();
-  static void SetDeviceInDemoModeForTesting(bool in_demo_mode);
+
+  static void SetDemoModeEnrollmentTypeForTesting(
+      EnrollmentType enrollment_type);
 
   // If the device is set up to run in demo mode, marks demo session as started,
   // and requests load of demo session resources.
@@ -48,7 +62,10 @@ class DemoSession {
   // will be set when the offline resources get loaded.
   base::FilePath GetDemoAppsPath() const;
 
+  bool offline_enrolled() const { return offline_enrolled_; }
+
   bool started() const { return started_; }
+
   bool offline_resources_loaded() const { return offline_resources_loaded_; }
 
  private:
@@ -59,6 +76,12 @@ class DemoSession {
   // |mount_path| is the path at which the resources were loaded.
   void OnOfflineResourcesLoaded(base::Optional<base::FilePath> mounted_path);
 
+  // Whether the device was offline-enrolled into demo mode, i.e. enrolled using
+  // pre-built policies. Offline enrolled demo sessions do not have working
+  // robot account associated with them.
+  bool offline_enrolled_ = false;
+
+  // Whether demo session has been started.
   bool started_ = false;
 
   bool offline_resources_load_requested_ = false;

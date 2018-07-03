@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -97,8 +98,22 @@ mojom::ChromeAccountType GetAccountType(const Profile* profile) {
   if (profile->IsChild())
     return mojom::ChromeAccountType::CHILD_ACCOUNT;
 
-  return IsRobotAccountMode() ? mojom::ChromeAccountType::ROBOT_ACCOUNT
-                              : mojom::ChromeAccountType::USER_ACCOUNT;
+  chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+  if (demo_session && demo_session->started()) {
+    // Internally, demo mode is implemented as a public session, and should
+    // generally follow normal robot account provisioning flow. Offline enrolled
+    // demo mode is an exception, as it is expected to work purely offline, with
+    // a (fake) robot account not known to auth service - this means that it has
+    // to go through different, offline provisioning flow.
+    DCHECK(IsRobotOrOfflineDemoAccountMode());
+    return demo_session->offline_enrolled()
+               ? mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT
+               : mojom::ChromeAccountType::ROBOT_ACCOUNT;
+  }
+
+  return IsRobotOrOfflineDemoAccountMode()
+             ? mojom::ChromeAccountType::ROBOT_ACCOUNT
+             : mojom::ChromeAccountType::USER_ACCOUNT;
 }
 
 mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
@@ -270,7 +285,7 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   }
   // For non-AD enrolled devices an auth code is fetched.
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher;
-  if (IsRobotAccountMode()) {
+  if (IsRobotOrOfflineDemoAccountMode()) {
     // In Kiosk and public session mode, use Robot auth code fetching.
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   } else {
