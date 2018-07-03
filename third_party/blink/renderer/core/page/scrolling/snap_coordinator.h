@@ -57,15 +57,10 @@ class CORE_EXPORT SnapCoordinator final
   void PerformSnapping(const LayoutBox& snap_container,
                        bool did_scroll_x,
                        bool did_scroll_y);
-  base::Optional<FloatPoint> GetSnapPositionForPoint(
-      const LayoutBox& snap_container,
-      const FloatPoint& natural_position,
-      bool did_scroll_x,
-      bool did_scroll_y);
-  bool GetSnapFlingInfo(const LayoutBox& snap_container,
-                        const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* out_initial_offset,
-                        gfx::Vector2dF* out_target_offset);
+  FloatPoint GetSnapPositionForPoint(const LayoutBox& snap_container,
+                                     const FloatPoint& natural_position,
+                                     bool did_scroll_x,
+                                     bool did_scroll_y);
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();

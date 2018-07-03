@@ -1431,8 +1431,4 @@ void LocalFrame::ResumeSubresourceLoading() {
   pause_handle_bindings_.CloseAllBindings();
 }
 
-void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
-  GetEventHandler().AnimateSnapFling(monotonic_time);
-}
-
 }  // namespace blink

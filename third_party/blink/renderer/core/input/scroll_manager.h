@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -27,7 +26,6 @@ class LocalFrame;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class Page;
-class ScrollableArea;
 class Scrollbar;
 class ScrollState;
 class WebGestureEvent;
@@ -36,11 +34,9 @@ class WebGestureEvent;
 // user action that causes scrolling or resizing is determined in other *Manager
 // classes and they call into this class for doing the work.
 class CORE_EXPORT ScrollManager
-    : public GarbageCollectedFinalized<ScrollManager>,
-      public SnapFlingClient {
+    : public GarbageCollectedFinalized<ScrollManager> {
  public:
   explicit ScrollManager(LocalFrame&);
-  virtual ~ScrollManager() = default;
   void Trace(blink::Visitor*);
 
   void Clear();
@@ -94,16 +90,6 @@ class CORE_EXPORT ScrollManager
   void ClearResizeScrollableArea(bool should_not_be_null);
   void SetResizeScrollableArea(PaintLayer*, IntPoint);
 
-  // SnapFlingClient implementation.
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* out_initial_offset,
-                        gfx::Vector2dF* out_target_offset) const override;
-  gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
-  void ScrollEndForSnapFling() override;
-  void RequestAnimationForSnapFling() override;
-
-  void AnimateSnapFling(base::TimeTicks monotonic_time);
-
  private:
   WebInputEventResult HandleGestureScrollUpdate(const WebGestureEvent&);
   WebInputEventResult HandleGestureScrollBegin(const WebGestureEvent&);
@@ -139,9 +125,6 @@ class CORE_EXPORT ScrollManager
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();
 
-  LayoutBox* LayoutBoxForSnapping() const;
-  ScrollableArea* ScrollableAreaForSnapping() const;
-
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
@@ -175,8 +158,6 @@ class CORE_EXPORT ScrollManager
   Member<Scrollbar> scrollbar_handling_scroll_gesture_;
 
   Member<PaintLayerScrollableArea> resize_scrollable_area_;
-
-  std::unique_ptr<SnapFlingController> snap_fling_controller_;
 
   LayoutSize
       offset_from_resize_corner_;  // In the coords of m_resizeScrollableArea.

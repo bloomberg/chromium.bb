@@ -146,7 +146,6 @@ _CONFIG = [
             'gfx::Size',
             'gfx::SizeF',
             'gfx::Transform',
-            'gfx::Vector2dF',
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
 

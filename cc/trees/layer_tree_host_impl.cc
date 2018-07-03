@@ -4354,8 +4354,8 @@ gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
 
 bool LayerTreeHostImpl::GetSnapFlingInfo(
     const gfx::Vector2dF& natural_displacement_in_viewport,
-    gfx::Vector2dF* out_initial_offset,
-    gfx::Vector2dF* out_target_offset) const {
+    gfx::Vector2dF* initial_offset,
+    gfx::Vector2dF* target_offset) const {
   const ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
@@ -4365,7 +4365,7 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
   gfx::Vector2dF natural_displacement_in_content =
       gfx::ScaleVector2d(natural_displacement_in_viewport, 1.f / scale_factor);
 
-  *out_initial_offset =
+  *initial_offset =
       ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
 
   bool did_scroll_x = did_scroll_x_for_scroll_gesture_ ||
@@ -4374,15 +4374,15 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
                       natural_displacement_in_content.y() != 0;
 
   gfx::ScrollOffset snap_offset;
-  if (!data.FindSnapPosition(gfx::ScrollOffset(*out_initial_offset +
-                                               natural_displacement_in_content),
-                             did_scroll_x, did_scroll_y, &snap_offset)) {
+  if (!data.FindSnapPosition(
+          gfx::ScrollOffset(*initial_offset + natural_displacement_in_content),
+          did_scroll_x, did_scroll_y, &snap_offset)) {
     return false;
   }
 
-  *out_target_offset = ScrollOffsetToVector2dF(snap_offset);
-  out_target_offset->Scale(scale_factor);
-  out_initial_offset->Scale(scale_factor);
+  *target_offset = ScrollOffsetToVector2dF(snap_offset);
+  target_offset->Scale(scale_factor);
+  initial_offset->Scale(scale_factor);
   return true;
 }
 
