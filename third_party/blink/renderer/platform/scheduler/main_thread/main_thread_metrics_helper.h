@@ -121,6 +121,10 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
       foreground_per_task_type_duration_reporter_;
   TaskDurationPerTaskTypeMetricReporter
       background_per_task_type_duration_reporter_;
+  TaskDurationPerTaskTypeMetricReporter
+      background_after_fifth_minute_per_task_type_duration_reporter_;
+  TaskDurationPerTaskTypeMetricReporter
+      background_after_tenth_minute_per_task_type_duration_reporter_;
 
   TaskDurationMetricReporter<UseCase> per_task_use_case_duration_reporter_;
 

@@ -117,6 +117,10 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Foreground"),
       background_per_task_type_duration_reporter_(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Background"),
+      background_after_fifth_minute_per_task_type_duration_reporter_(
+          DURATION_PER_TASK_TYPE_METRIC_NAME ".Background.AfterFifthMinute"),
+      background_after_tenth_minute_per_task_type_duration_reporter_(
+          DURATION_PER_TASK_TYPE_METRIC_NAME ".Background.AfterTenthMinute"),
       per_task_use_case_duration_reporter_(DURATION_PER_TASK_USE_CASE_NAME),
       main_thread_task_load_state_(MainThreadTaskLoadState::kUnknown) {
   main_thread_load_tracker_.Resume(now);
@@ -331,6 +335,21 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
     }
 
     background_per_task_type_duration_reporter_.RecordTask(task_type, duration);
+
+    background_after_fifth_minute_per_task_type_duration_reporter_.RecordTask(
+        task_type,
+        DurationOfIntervalOverlap(
+            start_time, end_time,
+            backgrounded_at + base::TimeDelta::FromMinutes(5),
+            std::max(backgrounded_at + base::TimeDelta::FromMinutes(5),
+                     end_time)));
+    background_after_tenth_minute_per_task_type_duration_reporter_.RecordTask(
+        task_type,
+        DurationOfIntervalOverlap(
+            start_time, end_time,
+            backgrounded_at + base::TimeDelta::FromMinutes(10),
+            std::max(backgrounded_at + base::TimeDelta::FromMinutes(10),
+                     end_time)));
   } else {
     per_queue_type_reporters_.foreground.RecordTask(queue_type, duration);
 
