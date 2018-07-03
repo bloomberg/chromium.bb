@@ -87,7 +87,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void FallbackToNetwork();
   void ForwardToServiceWorker();
   bool ShouldFallbackToNetwork();
-  void Cancel();
   bool WasCanceled() const;
 
   // The navigation request that was holding this job is
@@ -96,6 +95,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   // Otherwise |this| will be kept around as far as the loader
   // endpoint is held by the client.
   void DetachedFromRequest();
+
+  base::WeakPtr<ServiceWorkerNavigationLoader> AsWeakPtr();
 
  private:
   class StreamWaiter;
@@ -151,6 +152,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   void OnBlobReadingComplete(int net_error);
 
+  void OnConnectionClosed();
   void DeleteIfNeeded();
 
   ResponseType response_type_ = ResponseType::NOT_DETERMINED;

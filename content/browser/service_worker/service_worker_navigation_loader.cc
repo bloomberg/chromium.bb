@@ -106,6 +106,7 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
+  status_ = Status::kCompleted;
   // This could be called multiple times in some cases because we simply
   // call this synchronously here and don't wait for a separate async
   // StartRequest cue like what URLRequestJob case does.
@@ -126,18 +127,6 @@ bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
   return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
 }
 
-void ServiceWorkerNavigationLoader::Cancel() {
-  status_ = Status::kCancelled;
-  weak_factory_.InvalidateWeakPtrs();
-  fetch_dispatcher_.reset();
-  stream_waiter_.reset();
-
-  url_loader_client_->OnComplete(
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-  url_loader_client_.reset();
-  DeleteIfNeeded();
-}
-
 bool ServiceWorkerNavigationLoader::WasCanceled() const {
   return status_ == Status::kCancelled;
 }
@@ -145,6 +134,11 @@ bool ServiceWorkerNavigationLoader::WasCanceled() const {
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
   detached_from_request_ = true;
   DeleteIfNeeded();
+}
+
+base::WeakPtr<ServiceWorkerNavigationLoader>
+ServiceWorkerNavigationLoader::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void ServiceWorkerNavigationLoader::StartRequest() {
@@ -319,8 +313,9 @@ void ServiceWorkerNavigationLoader::StartResponse(
   DCHECK(!binding_.is_bound());
   DCHECK(!url_loader_client_.is_bound());
   binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &ServiceWorkerNavigationLoader::Cancel, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
+                     base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
   ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
@@ -444,6 +439,23 @@ void ServiceWorkerNavigationLoader::ResumeReadingBodyFromNet() {}
 void ServiceWorkerNavigationLoader::OnBlobReadingComplete(int net_error) {
   CommitCompleted(net_error);
   body_as_blob_.reset();
+}
+
+void ServiceWorkerNavigationLoader::OnConnectionClosed() {
+  weak_factory_.InvalidateWeakPtrs();
+  fetch_dispatcher_.reset();
+  stream_waiter_.reset();
+  binding_.Close();
+
+  // Cancel the request if this loader hasn't yet responded to it.
+  if (status_ != Status::kCompleted && status_ != Status::kCancelled) {
+    status_ = Status::kCancelled;
+    url_loader_client_->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+  }
+  url_loader_client_.reset();
+
+  DeleteIfNeeded();
 }
 
 void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
