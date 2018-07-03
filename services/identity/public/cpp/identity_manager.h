@@ -120,6 +120,20 @@ class IdentityManager : public SigninManagerBase::Observer,
   // primary account info has a valid account ID.
   bool HasPrimaryAccount();
 
+  // Provides access to the latest cached information of all accounts that have
+  // refresh tokens.
+  // NOTE: The accounts should not be assumed to be in any particular order; in
+  // particular, they are not guaranteed to be in the order in which the
+  // refresh tokens were added.
+  std::vector<AccountInfo> GetAccountsWithRefreshTokens();
+
+  // Returns true if a refresh token exists for |account_id|.
+  bool HasAccountWithRefreshToken(const std::string& account_id);
+
+  // Returns true if (a) the primary account exists, and (b) a refresh token
+  // exists for the primary account.
+  bool HasPrimaryAccountWithRefreshToken();
+
   // Creates an AccessTokenFetcher given the passed-in information.
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const std::string& account_id,
@@ -217,6 +231,10 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // The latest (cached) value of the primary account.
   AccountInfo primary_account_info_;
+
+  // The latest (cached) value of the accounts with refresh tokens.
+  using AccountIDToAccountInfoMap = std::map<std::string, AccountInfo>;
+  AccountIDToAccountInfoMap accounts_with_refresh_tokens_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

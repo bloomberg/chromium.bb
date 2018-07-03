@@ -14,7 +14,20 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
     : signin_manager_(signin_manager),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service) {
+  // Initialize the state of the primary account.
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
+
+  // Initialize the state of accounts with refresh tokens.
+  // |account_id| is moved into |accounts_with_refresh_tokens_|.
+  // Do not change this to "const std::string&".
+  for (std::string account_id : token_service->GetAccounts()) {
+    AccountInfo account_info =
+        account_tracker_service_->GetAccountInfo(account_id);
+    DCHECK(!account_info.IsEmpty());
+    accounts_with_refresh_tokens_.emplace(std::move(account_id),
+                                          std::move(account_info));
+  }
+
   signin_manager_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   SigninManager::FromSigninManagerBase(signin_manager_)
@@ -81,6 +94,29 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
 
 bool IdentityManager::HasPrimaryAccount() {
   return !primary_account_info_.account_id.empty();
+}
+
+std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() {
+  // TODO(blundell): It seems wasteful to construct this vector every time this
+  // method is called, but it also seems bad to maintain the vector as an ivar
+  // along the map.
+  std::vector<AccountInfo> accounts;
+  accounts.reserve(accounts_with_refresh_tokens_.size());
+
+  for (const auto& pair : accounts_with_refresh_tokens_) {
+    accounts.push_back(pair.second);
+  }
+
+  return accounts;
+}
+
+bool IdentityManager::HasAccountWithRefreshToken(
+    const std::string& account_id) {
+  return base::ContainsKey(accounts_with_refresh_tokens_, account_id);
+}
+
+bool IdentityManager::HasPrimaryAccountWithRefreshToken() {
+  return HasAccountWithRefreshToken(GetPrimaryAccountInfo().account_id);
 }
 
 std::unique_ptr<AccessTokenFetcher>
@@ -197,6 +233,20 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
   DCHECK(!account_info.IsEmpty());
+
+  // Insert the account into |accounts_with_refresh_tokens_|.
+  auto insertion_result = accounts_with_refresh_tokens_.emplace(
+      account_id, std::move(account_info));
+
+  // The account might have already been  present (e.g., this method can fire on
+  // updating an invalid token to a valid one or vice versa); in this case we
+  // sanity-check that the cached account info has the expected values.
+  if (!insertion_result.second) {
+    AccountInfo cached_account_info = insertion_result.first->second;
+    DCHECK_EQ(account_info.gaia, cached_account_info.gaia);
+    DCHECK_EQ(account_info.email, cached_account_info.email);
+  }
+
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenUpdatedForAccount(account_info, is_valid);
   }
@@ -204,9 +254,27 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
 
 void IdentityManager::WillFireOnRefreshTokenRevoked(
     const std::string& account_id) {
+  auto iterator = accounts_with_refresh_tokens_.find(account_id);
+  if (iterator == accounts_with_refresh_tokens_.end()) {
+    // A corner case exists wherein the token service revokes tokens while
+    // loading tokens during initial startup. This is the only case in which it
+    // is expected that we could receive this notification without having
+    // previously received a notification that this account was available. In
+    // this case, we simply do not forward on the notification, for the
+    // following reasons: (1) We may not have a fully-populated |account_info|
+    // to send as the argument. (2) Sending the notification breaks clients'
+    // expectations that IdentityManager will only fire RefreshTokenRemoved
+    // notifications for accounts that it previously knew about.
+    DCHECK(!token_service_->AreAllCredentialsLoaded());
+    return;
+  }
+
+  accounts_with_refresh_tokens_.erase(iterator);
+
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
   DCHECK(!account_info.IsEmpty());
+
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_info);
   }
