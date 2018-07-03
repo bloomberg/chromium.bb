@@ -18,6 +18,18 @@ Polymer({
     path_: String,
 
     queryParams_: Object,
+
+    /** @private {string} */
+    query_: {
+      type: String,
+      observer: 'onQueryChanged_',
+    },
+
+    /** @private {string} */
+    urlQuery_: {
+      type: String,
+      observer: 'onUrlQueryChanged_',
+    },
   },
 
   /** @private {boolean} */
@@ -34,6 +46,21 @@ Polymer({
       window.location.href = window.location.href.split('#')[0] + '?' +
           window.location.hash.substr(1);
     }
+  },
+
+  /**
+   * @param {?string} current Current value of the query.
+   * @param {?string} previous Previous value of the query.
+   * @private
+   */
+  onQueryChanged_: function(current, previous) {
+    if (previous !== undefined)
+      this.urlQuery_ = this.query_;
+  },
+
+  /** @private */
+  onUrlQueryChanged_: function() {
+    this.query_ = this.urlQuery_;
   },
 
   /**
