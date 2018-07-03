@@ -1118,7 +1118,8 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
   LayoutRect rect =
       LayoutRect(LayoutPoint(), PhysicalFragment().Size().ToLayoutSize());
   rect.MoveBy(border_box_location);
-  return !location_in_container.Intersects(style.GetRoundedBorderFor(rect));
+  return !location_in_container.Intersects(style.GetRoundedBorderFor(
+      rect, border_edges_.line_left, border_edges_.line_right));
 }
 
 LayoutPoint NGBoxFragmentPainter::FlipForWritingModeForChild(
