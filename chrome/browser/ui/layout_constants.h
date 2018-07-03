@@ -34,6 +34,9 @@ enum LayoutConstant {
   // The size of the app menu button in a hosted app browser window.
   HOSTED_APP_MENU_BUTTON_SIZE,
 
+  // The size of page action icons in a hosted app title bar.
+  HOSTED_APP_PAGE_ACTION_ICON_SIZE,
+
   // The vertical padding (additional to TOOLBAR_ELEMENT_PADDING) above and
   // below location bar bubbles.
   LOCATION_BAR_BUBBLE_VERTICAL_PADDING,

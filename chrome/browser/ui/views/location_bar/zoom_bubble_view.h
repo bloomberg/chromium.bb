@@ -118,7 +118,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Updates |label_| with the up to date zoom.
   void UpdateZoomPercent();
 
-  // Updates visibility of the zoom icon in location bar.
+  // Updates visibility of the zoom icon.
   void UpdateZoomIconVisibility();
 
   // Starts a timer which will close the bubble if |auto_close_| is true.

@@ -54,10 +54,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -77,8 +74,6 @@
 #include "components/toolbar/vector_icons.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/zoom/zoom_controller.h"
-#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -154,18 +149,12 @@ LocationBarView::LocationBarView(Browser* browser,
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
                  base::Unretained(this)));
 
-  zoom::ZoomEventManager::GetForBrowserContext(profile)
-      ->AddZoomEventManagerObserver(this);
-
   // TODO(tommycli): This is a placeholder duration. Replace this with the real
   // value once UX decides.
   text_indent_animation_.SetSlideDuration(60);
 }
 
-LocationBarView::~LocationBarView() {
-  zoom::ZoomEventManager::GetForBrowserContext(profile())
-      ->RemoveZoomEventManagerObserver(this);
-}
+LocationBarView::~LocationBarView() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public:
@@ -225,8 +214,14 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  zoom_view_ = new ZoomView(delegate_, this);
-  page_action_icons_.push_back(zoom_view_);
+  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
+
+  page_action_icon_container_view_ = new PageActionIconContainerView(
+      {PageActionIconType::kZoom}, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      profile(), this, delegate_);
+  AddChildView(page_action_icon_container_view_);
+  page_action_icon_container_view_->SetIconColor(icon_color);
+
   manage_passwords_icon_view_ =
       new ManagePasswordsIconViews(command_updater(), this);
   page_action_icons_.push_back(manage_passwords_icon_view_);
@@ -250,15 +245,12 @@ void LocationBarView::Init() {
         star_view_ = new StarView(command_updater(), browser_, this));
   }
 
-  std::for_each(page_action_icons_.begin(), page_action_icons_.end(),
-                [this](PageActionIconView* icon_view) -> void {
-                  icon_view->Init();
-                  icon_view->SetVisible(false);
-                  AddChildView(icon_view);
-                });
-
-  page_action_icon_container_view_ = new PageActionIconContainerView();
-  AddChildView(page_action_icon_container_view_);
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    icon_view->Init();
+    icon_view->SetVisible(false);
+    icon_view->SetIconColor(icon_color);
+    AddChildView(icon_view);
+  }
 
   clear_all_button_ = views::CreateVectorImageButton(this);
   clear_all_button_->SetTooltipText(
@@ -323,25 +315,6 @@ SkColor LocationBarView::GetSecurityChipColor(
 
   return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
                          state);
-}
-
-void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  DCHECK(zoom_view_);
-  if (RefreshZoomView()) {
-    Layout();
-    SchedulePaint();
-  }
-
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return;
-
-  if (can_show_bubble) {
-    ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                               ZoomBubbleView::AUTOMATIC);
-  } else {
-    ZoomBubbleView::RefreshBubbleIfShowing(web_contents);
-  }
 }
 
 void LocationBarView::SetStarToggled(bool on) {
@@ -462,7 +435,7 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   if (save_credit_card_icon_view_)
     trailing_width += IncrementalMinimumWidth(save_credit_card_icon_view_);
   trailing_width += IncrementalMinimumWidth(manage_passwords_icon_view_) +
-                    IncrementalMinimumWidth(zoom_view_);
+                    IncrementalMinimumWidth(page_action_icon_container_view_);
 #if defined(OS_CHROMEOS)
   if (intent_picker_view_)
     trailing_width += IncrementalMinimumWidth(intent_picker_view_);
@@ -553,7 +526,7 @@ void LocationBarView::Layout() {
 
   if (star_view_)
     add_trailing_decoration(star_view_);
-  add_trailing_decoration(zoom_view_);
+  add_trailing_decoration(page_action_icon_container_view_);
   add_trailing_decoration(find_bar_icon_);
 #if defined(OS_CHROMEOS)
   if (intent_picker_view_)
@@ -645,11 +618,18 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SchedulePaint();
 }
 
+void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
+  if (child != page_action_icon_container_view_)
+    return;
+
+  Layout();
+}
+
 void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
 
-  // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
-  RefreshZoomView();
+  page_action_icon_container_view_->UpdatePageActionIcon(
+      PageActionIconType::kZoom);
 
   RefreshPageActionIconViews();
 
@@ -678,6 +658,11 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
+  if (page_action_icon_container_view_
+          ->ActivateFirstInactiveBubbleForAccessibility()) {
+    return true;
+  }
+
   auto result = std::find_if(
       page_action_icons_.begin(), page_action_icons_.end(),
       [](PageActionIconView* view) {
@@ -725,23 +710,6 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 // LocationBarView, public PageActionIconView::Delegate implementation:
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
-}
-
-OmniboxTint LocationBarView::GetTint() {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  if (theme_service->UsingDefaultTheme()) {
-    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
-  }
-
-  // Check for GTK on Desktop Linux.
-  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
-      theme_service->UsingSystemTheme())
-    return OmniboxTint::NATIVE;
-
-  // TODO(tapted): Infer a tint from theme colors?
-  return OmniboxTint::LIGHT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -877,7 +845,7 @@ bool LocationBarView::RefreshContentSettingViews() {
   return visibility_changed;
 }
 
-bool LocationBarView::RefreshPageActionIconViews() {
+void LocationBarView::RefreshPageActionIconViews() {
   if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
@@ -885,26 +853,10 @@ bool LocationBarView::RefreshPageActionIconViews() {
     GetWidget()->non_client_view()->ResetWindowControls();
   }
 
-  bool visibility_changed = false;
-  for (auto* v : page_action_icons_) {
-    visibility_changed |= v->Update();
-  }
-  return visibility_changed;
-}
+  page_action_icon_container_view_->UpdateAll();
 
-bool LocationBarView::RefreshZoomView() {
-  DCHECK(zoom_view_);
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return false;
-  const bool was_visible = zoom_view_->visible();
-  zoom_view_->UpdateWithController(
-      zoom::ZoomController::FromWebContents(web_contents));
-  return was_visible != zoom_view_->visible();
-}
-
-void LocationBarView::OnDefaultZoomLevelChanged() {
-  RefreshZoomView();
+  for (PageActionIconView* icon : page_action_icons_)
+    icon->Update();
 }
 
 void LocationBarView::ButtonPressed(views::Button* sender,
@@ -1032,6 +984,23 @@ OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
   return omnibox_view_->model()->popup_model()->view();
 }
 
+OmniboxTint LocationBarView::GetTint() {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  if (theme_service->UsingDefaultTheme()) {
+    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE
+               ? OmniboxTint::DARK
+               : OmniboxTint::LIGHT;
+  }
+
+  // Check for GTK on Desktop Linux.
+  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
+      theme_service->UsingSystemTheme())
+    return OmniboxTint::NATIVE;
+
+  // TODO(tapted): Infer a tint from theme colors?
+  return OmniboxTint::LIGHT;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBar implementation:
 
@@ -1095,11 +1064,6 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
         edit_bookmarks_enabled_.GetValue() &&
         !IsBookmarkStarHiddenByExtension());
   }
-}
-
-void LocationBarView::UpdateZoomViewVisibility() {
-  RefreshZoomView();
-  OnChanged();
 }
 
 void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {

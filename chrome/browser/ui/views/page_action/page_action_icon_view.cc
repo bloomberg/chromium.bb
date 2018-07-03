@@ -38,6 +38,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        PageActionIconView::Delegate* delegate)
     : widget_observer_(this),
       image_(new views::ImageView()),
+      icon_size_(GetLayoutConstant(LOCATION_BAR_ICON_SIZE)),
       command_updater_(command_updater),
       delegate_(delegate),
       command_id_(command_id),
@@ -266,16 +267,19 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
+void PageActionIconView::SetIconColor(SkColor icon_color) {
+  icon_color_ = icon_color;
+  UpdateIconImage();
+}
+
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
-  SkColor icon_color =
-      active_ ? theme->GetSystemColor(
-                    ui::NativeTheme::kColorId_ProminentButtonColor)
-              : GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP,
-                                delegate_->GetTint(),
-                                OmniboxPartState::CHIP_DEFAULT);
-  image_->SetImage(gfx::CreateVectorIcon(
-      GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color));
+  SkColor icon_color = active_
+                           ? theme->GetSystemColor(
+                                 ui::NativeTheme::kColorId_ProminentButtonColor)
+                           : icon_color_;
+  image_->SetImage(
+      gfx::CreateVectorIcon(GetVectorIcon(), icon_size_, icon_color));
 }
 
 void PageActionIconView::SetActiveInternal(bool active) {

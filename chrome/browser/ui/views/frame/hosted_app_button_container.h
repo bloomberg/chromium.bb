@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -32,6 +33,7 @@ class MenuButton;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
+                                 public PageActionIconView::Delegate,
                                  public ToolbarButtonProvider,
                                  public ImmersiveModeController::Observer {
  public:
@@ -67,6 +69,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   void FadeInContentSettingButtons();
 
+  void UpdateIconsColor();
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
@@ -78,6 +82,9 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
       ToolbarActionsBarDelegate* delegate,
       Browser* browser,
       ToolbarActionsBar* main_bar) const override;
+
+  // PageActionIconView::Delegate:
+  content::WebContents* GetWebContentsForPageActionIconView() override;
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
@@ -93,16 +100,17 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   BrowserView* browser_view_;
 
   // Button colors.
+  bool paint_as_active_ = true;
   const SkColor active_icon_color_;
   const SkColor inactive_icon_color_;
 
   base::OneShotTimer fade_in_content_setting_buttons_timer_;
 
   // Owned by the views hierarchy.
-  HostedAppMenuButton* app_menu_button_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
+  HostedAppMenuButton* app_menu_button_ = nullptr;
 
   base::OneShotTimer opening_animation_timer_;
 

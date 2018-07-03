@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_ZOOM_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_ZOOM_VIEW_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-
-namespace zoom {
-class ZoomController;
-}
 
 // View for the zoom icon in the Omnibox.
 class ZoomView : public PageActionIconView {
@@ -26,17 +22,20 @@ class ZoomView : public PageActionIconView {
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void UpdateWithController(zoom::ZoomController* zoom_controller);
+  void ZoomChangedForActiveTab(bool can_show_bubble);
 
  protected:
   // PageActionIconView:
+  bool Update() override;
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  private:
-  // The delegate used to get the currently visible WebContents.
+  bool ShouldBeVisible(bool can_show_bubble) const;
+
+  // The delegate used to get whether omnibox input is in progress.
   LocationBarView::Delegate* location_bar_delegate_;
 
   const gfx::VectorIcon* icon_ = nullptr;
@@ -46,4 +45,4 @@ class ZoomView : public PageActionIconView {
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_ZOOM_VIEW_H_

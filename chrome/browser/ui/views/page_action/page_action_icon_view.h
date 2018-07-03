@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/focus_ring.h"
@@ -38,10 +40,14 @@ class PageActionIconView : public views::InkDropHostView {
   class Delegate {
    public:
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
-    virtual OmniboxTint GetTint() = 0;
   };
 
   void Init();
+
+  // Updates the color of the icon, this must be set before the icon is drawn.
+  void SetIconColor(SkColor icon_color);
+
+  void set_icon_size(int size) { icon_size_ = size; }
 
   // Invoked when a bubble for this icon is created. The PageActionIconView
   // changes highlights based on this widget's visibility.
@@ -167,6 +173,12 @@ class PageActionIconView : public views::InkDropHostView {
 
   // The image shown in the button.
   views::ImageView* image_;
+
+  // The size of the icon image (excluding the ink drop).
+  int icon_size_;
+
+  // What color to paint the icon with.
+  SkColor icon_color_ = gfx::kPlaceholderColor;
 
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;

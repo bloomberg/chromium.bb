@@ -3,10 +3,102 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/page_action/zoom_view.h"
+#include "ui/views/layout/box_layout.h"
 
-void PageActionIconContainerView::UpdatePageActionIcon(PageActionIconType) {
+PageActionIconContainerView::PageActionIconContainerView(
+    const std::vector<PageActionIconType>& types_enabled,
+    int icon_size,
+    content::BrowserContext* browser_context,
+    PageActionIconView::Delegate* bubble_icon_delegate,
+    LocationBarView::Delegate* location_bar_delegate)
+    : zoom_observer_(this) {
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+
+  for (PageActionIconType type : types_enabled) {
+    switch (type) {
+      case PageActionIconType::kZoom:
+        zoom_view_ = new ZoomView(location_bar_delegate, bubble_icon_delegate);
+        page_action_icons_.push_back(zoom_view_);
+        break;
+    }
+  }
+
+  for (PageActionIconView* icon : page_action_icons_) {
+    icon->SetVisible(false);
+    icon->set_icon_size(icon_size);
+    icon->Init();
+    AddChildView(icon);
+  }
+
+  zoom_observer_.Add(
+      zoom::ZoomEventManager::GetForBrowserContext(browser_context));
+}
+
+PageActionIconContainerView::~PageActionIconContainerView() {}
+
+PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
+    PageActionIconType type) {
   // TODO(https://crbug.com/788051): Update page action icons here as update
   // methods are migrated out of LocationBar to the PageActionIconContainer
   // interface.
-  NOTIMPLEMENTED();
+  switch (type) {
+    case PageActionIconType::kZoom:
+      return zoom_view_;
+  }
+  return nullptr;
+}
+
+void PageActionIconContainerView::UpdateAll() {
+  for (PageActionIconView* icon : page_action_icons_)
+    icon->Update();
+}
+
+void PageActionIconContainerView::UpdatePageActionIcon(
+    PageActionIconType type) {
+  PageActionIconView* icon = GetPageActionIconView(type);
+  if (icon)
+    icon->Update();
+}
+
+bool PageActionIconContainerView::
+    ActivateFirstInactiveBubbleForAccessibility() {
+  for (PageActionIconView* icon : page_action_icons_) {
+    if (!icon->visible() || !icon->GetBubble())
+      continue;
+
+    views::Widget* widget = icon->GetBubble()->GetWidget();
+    if (widget && widget->IsVisible() && !widget->IsActive()) {
+      widget->Show();
+      return true;
+    }
+  }
+  return false;
+}
+
+void PageActionIconContainerView::SetIconColor(SkColor icon_color) {
+  for (PageActionIconView* icon : page_action_icons_)
+    icon->SetIconColor(icon_color);
+}
+
+void PageActionIconContainerView::ZoomChangedForActiveTab(
+    bool can_show_bubble) {
+  if (zoom_view_)
+    zoom_view_->ZoomChangedForActiveTab(can_show_bubble);
+}
+
+void PageActionIconContainerView::ChildPreferredSizeChanged(
+    views::View* child) {
+  PreferredSizeChanged();
+}
+
+void PageActionIconContainerView::ChildVisibilityChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
+void PageActionIconContainerView::OnDefaultZoomLevelChanged() {
+  ZoomChangedForActiveTab(false);
 }

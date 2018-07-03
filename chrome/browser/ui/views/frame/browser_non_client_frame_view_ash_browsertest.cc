@@ -54,6 +54,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -874,6 +876,28 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
             frame_header_->GetHeaderHeight());
   EXPECT_LE(hosted_app_button_container_->size().height(),
             frame_header_->GetHeaderHeight());
+}
+
+// Test that the zoom icon appears in the title bar for hosted app windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
+  PageActionIconView* zoom_icon =
+      browser_view_->toolbar_button_provider()
+          ->GetPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kZoom);
+
+  EXPECT_TRUE(zoom_icon);
+  EXPECT_FALSE(zoom_icon->visible());
+  EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
+
+  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(zoom_icon->visible());
+  EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 }
 
 // Tests that the focus toolbar command focuses the app menu button in web app
