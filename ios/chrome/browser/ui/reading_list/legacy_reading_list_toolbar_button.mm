@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar_button.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -14,17 +14,17 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ReadingListToolbarButton ()
+@interface LegacyReadingListToolbarButton ()
 
-// The actual UIButton object inside ReadingListToolbarButton.
+// The actual UIButton object inside LegacyReadingListToolbarButton.
 @property(nonatomic, strong) UIButton* button;
 
-// Width constraint for the ReadingListToolbarButton.
+// Width constraint for the LegacyReadingListToolbarButton.
 @property(nonatomic, strong) NSLayoutConstraint* widthConstraint;
 
 @end
 
-@implementation ReadingListToolbarButton
+@implementation LegacyReadingListToolbarButton
 
 @synthesize button = _button;
 @synthesize widthConstraint = _widthConstraint;

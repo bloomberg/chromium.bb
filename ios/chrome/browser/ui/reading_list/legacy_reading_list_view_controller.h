@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
 
 @class ReadingListCollectionViewController;
 @protocol ReadingListListViewControllerDelegate;
 
 // Container for the ReadingList Collection View Controller and the toolbar. It
 // handles the interactions between the two.
-@interface ReadingListViewController : UIViewController
+@interface LegacyReadingListViewController : UIViewController
 
-- (instancetype)initWithCollectionViewController:
-                    (ReadingListCollectionViewController*)
-                        collectionViewController
-                                         toolbar:(ReadingListToolbar*)toolbar
+- (instancetype)
+initWithCollectionViewController:
+    (ReadingListCollectionViewController*)collectionViewController
+                         toolbar:(LegacyReadingListToolbar*)toolbar
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -29,4 +29,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_VIEW_CONTROLLER_H_

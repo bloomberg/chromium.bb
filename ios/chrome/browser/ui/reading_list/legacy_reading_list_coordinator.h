@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
@@ -16,7 +16,7 @@ class ChromeBrowserState;
 @protocol UrlLoader;
 
 // Coordinator for Reading List, displaying the Reading List when starting.
-@interface ReadingListCoordinator
+@interface LegacyReadingListCoordinator
     : ChromeCoordinator<ReadingListListViewControllerDelegate>
 
 // Mediator used by this coordinator. Reset when |-start| is called.
@@ -37,4 +37,4 @@ initWithBaseViewController:(nullable UIViewController*)viewController
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_COORDINATOR_H_

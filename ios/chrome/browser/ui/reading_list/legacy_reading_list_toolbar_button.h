@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_BUTTON_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_BUTTON_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_BUTTON_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_BUTTON_H_
 
 #import <UIKit/UIKit.h>
 
 typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
-// A button class for the buttons in ReadingListToolBar's stackview.  Handles
-// the layout alignment of the button and its titleLabel.
-@interface ReadingListToolbarButton : UIView
+// A button class for the buttons in LegacyReadingListToolbar's stackview.
+// Handles the layout alignment of the button and its titleLabel.
+@interface LegacyReadingListToolbarButton : UIView
 
 // Initializer.
 - (instancetype)initWithText:(NSString*)labelText
@@ -32,7 +32,7 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 // Gets the titleLabel of the UIButton.
 - (UILabel*)titleLabel;
 
-// Sets the maximum width contraint of ReadingListToolbarButton.
+// Sets the maximum width contraint of LegacyReadingListToolbarButton.
 - (void)setMaxWidth:(CGFloat)maxWidth;
 
 // The font of the title text.
@@ -40,4 +40,4 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_BUTTON_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_BUTTON_H_

@@ -15,12 +15,12 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/reading_list/empty_reading_list_background_view.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -47,7 +47,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     ReadingListDataSink,
     UIGestureRecognizerDelegate> {
   // Toolbar with the actions.
-  ReadingListToolbar* _toolbar;
+  LegacyReadingListToolbar* _toolbar;
   // Action sheet presenting the subactions of the toolbar.
   AlertCoordinator* _actionSheet;
   UIView* _emptyCollectionBackground;
@@ -156,7 +156,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 #pragma mark lifecycle
 
 - (instancetype)initWithDataSource:(id<ReadingListDataSource>)dataSource
-                           toolbar:(ReadingListToolbar*)toolbar {
+                           toolbar:(LegacyReadingListToolbar*)toolbar {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
@@ -176,7 +176,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 #pragma mark - properties
 
-- (void)setToolbarState:(ReadingListToolbarState)toolbarState {
+- (void)setToolbarState:(LegacyReadingListToolbarState)toolbarState {
   [_toolbar setState:toolbarState];
 }
 
@@ -515,7 +515,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
                                        atPoint:touchLocation];
 }
 
-#pragma mark - ReadingListToolbarDelegate
+#pragma mark - LegacyReadingListToolbarDelegate
 
 - (void)markPressed {
   if (![self.editor isEditing]) {

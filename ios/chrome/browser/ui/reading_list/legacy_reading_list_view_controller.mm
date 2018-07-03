@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_view_controller.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,26 +24,27 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 };
 }
 
-@interface ReadingListViewController ()<ReadingListToolbarActions,
-                                        ReadingListListViewControllerAudience>
+@interface LegacyReadingListViewController ()<
+    LegacyReadingListToolbarActions,
+    ReadingListListViewControllerAudience>
 
 @property(nonatomic, strong, readonly)
     ReadingListCollectionViewController* readingListCollectionViewController;
-@property(nonatomic, strong, readonly) ReadingListToolbar* toolbar;
+@property(nonatomic, strong, readonly) LegacyReadingListToolbar* toolbar;
 
 @end
 
-@implementation ReadingListViewController
+@implementation LegacyReadingListViewController
 
 @synthesize delegate = _delegate;
 @synthesize readingListCollectionViewController =
     _readingListCollectionViewController;
 @synthesize toolbar = _toolbar;
 
-- (instancetype)initWithCollectionViewController:
-                    (ReadingListCollectionViewController*)
-                        collectionViewController
-                                         toolbar:(ReadingListToolbar*)toolbar {
+- (instancetype)
+initWithCollectionViewController:
+    (ReadingListCollectionViewController*)collectionViewController
+                         toolbar:(LegacyReadingListToolbar*)toolbar {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _toolbar = toolbar;
@@ -67,7 +68,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
       setTranslatesAutoresizingMaskIntoConstraints:NO];
 
   NSDictionary* views =
-      @{ @"collection" : self.readingListCollectionViewController.view };
+      @{@"collection" : self.readingListCollectionViewController.view};
   NSArray* constraints = @[ @"V:|[collection]", @"H:|[collection]|" ];
   ApplyVisualConstraints(constraints, views);
 
@@ -92,7 +93,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   return YES;
 }
 
-#pragma mark - ReadingListToolbarActionTarget
+#pragma mark - LegacyReadingListToolbarActionTarget
 
 - (void)markPressed {
   [self.readingListCollectionViewController markPressed];
@@ -140,7 +141,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 }
 
 - (NSArray*)keyCommands {
-  __weak ReadingListViewController* weakSelf = self;
+  __weak LegacyReadingListViewController* weakSelf = self;
   return
       @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
                                 modifierFlags:Cr_UIKeyModifierNone

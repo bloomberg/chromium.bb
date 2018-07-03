@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
 
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar_button.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -36,18 +36,18 @@ const CGFloat kHorizontalSpacing = 8.0f;
 
 }  // namespace
 
-@interface ReadingListToolbar ()
+@interface LegacyReadingListToolbar ()
 
 // Button that displays "Edit".
-@property(nonatomic, strong) ReadingListToolbarButton* editButton;
+@property(nonatomic, strong) LegacyReadingListToolbarButton* editButton;
 // Button that displays "Delete".
-@property(nonatomic, strong) ReadingListToolbarButton* deleteButton;
+@property(nonatomic, strong) LegacyReadingListToolbarButton* deleteButton;
 // Button that displays "Delete All Read".
-@property(nonatomic, strong) ReadingListToolbarButton* deleteAllButton;
+@property(nonatomic, strong) LegacyReadingListToolbarButton* deleteAllButton;
 // Button that displays "Cancel".
-@property(nonatomic, strong) ReadingListToolbarButton* cancelButton;
+@property(nonatomic, strong) LegacyReadingListToolbarButton* cancelButton;
 // Button that displays the mark options.
-@property(nonatomic, strong) ReadingListToolbarButton* markButton;
+@property(nonatomic, strong) LegacyReadingListToolbarButton* markButton;
 // Stack view for arranging the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
 // Height constraint for the stack view containing the buttons.
@@ -67,7 +67,7 @@ const CGFloat kHorizontalSpacing = 8.0f;
 
 @end
 
-@implementation ReadingListToolbar
+@implementation LegacyReadingListToolbar
 
 @synthesize editButton = _editButton;
 @synthesize deleteButton = _deleteButton;
@@ -81,29 +81,29 @@ const CGFloat kHorizontalSpacing = 8.0f;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _deleteButton = [[ReadingListToolbarButton alloc]
+    _deleteButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_DELETE_BUTTON)
          destructive:YES
             position:Leading];
 
-    _deleteAllButton = [[ReadingListToolbarButton alloc]
+    _deleteAllButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON)
          destructive:YES
             position:Leading];
 
-    _markButton = [[ReadingListToolbarButton alloc]
+    _markButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_MARK_ALL_BUTTON)
          destructive:NO
             position:Centered];
 
-    _cancelButton = [[ReadingListToolbarButton alloc]
+    _cancelButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_CANCEL_BUTTON)
          destructive:NO
             position:Trailing];
 
-    _editButton = [[ReadingListToolbarButton alloc]
+    _editButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_EDIT_BUTTON)
          destructive:NO
             position:Trailing];
@@ -167,7 +167,7 @@ const CGFloat kHorizontalSpacing = 8.0f;
   [self updateHeight];
 }
 
-- (void)setState:(ReadingListToolbarState)state {
+- (void)setState:(LegacyReadingListToolbarState)state {
   switch (state) {
     case NoneSelected:
       [self updateButtonsForEmptySelection];
@@ -231,7 +231,6 @@ const CGFloat kHorizontalSpacing = 8.0f;
                               IDS_IOS_READING_LIST_MARK_BUTTON)];
 }
 
-
 - (void)setMarkButtonText:(NSString*)text {
   [self.markButton setTitle:text];
 }
@@ -246,7 +245,7 @@ const CGFloat kHorizontalSpacing = 8.0f;
 
   // Count the number of visible buttons and deduct the button spacings from
   // availableWidth.
-  for (ReadingListToolbarButton* button in buttons) {
+  for (LegacyReadingListToolbarButton* button in buttons) {
     if (!button.hidden) {
       visibleCount++;
       if (visibleCount > 1) {
@@ -258,17 +257,18 @@ const CGFloat kHorizontalSpacing = 8.0f;
   // Set the button width manually here instead of relying on UIStackView's auto
   // width distribution which is unpredictable when rounding happens.
   CGFloat maxButtonWidth = ceil(availableWidth / visibleCount);
-  for (ReadingListToolbarButton* button in buttons) {
+  for (LegacyReadingListToolbarButton* button in buttons) {
     if (!button.hidden) {
       [button setMaxWidth:maxButtonWidth];
     }
   }
 
   CGFloat toolbarHeight = kToolbarNormalHeight;
-  CGFloat lineHeight = ceil([ReadingListToolbarButton textFont].lineHeight);
+  CGFloat lineHeight =
+      ceil([LegacyReadingListToolbarButton textFont].lineHeight);
   CGSize labelBounds = CGSizeMake(maxButtonWidth, CGFLOAT_MAX);
   // Expand toolbar height in case word wrapping happens.
-  for (ReadingListToolbarButton* button in buttons) {
+  for (LegacyReadingListToolbarButton* button in buttons) {
     if (!button.hidden) {
       CGFloat labelHeight =
           [[button titleLabel] sizeThatFits:labelBounds].height;

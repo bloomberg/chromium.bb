@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_coordinator.h"
 
 #import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,12 +24,12 @@
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_commands.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -43,13 +43,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ReadingListCoordinator ()<ReadingListContextMenuCommands>
+@interface LegacyReadingListCoordinator ()<ReadingListContextMenuCommands>
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Used to load the Reading List pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 // The container view containing both the collection view and the toolbar.
-@property(nonatomic, strong) ReadingListViewController* containerViewController;
+@property(nonatomic, strong)
+    LegacyReadingListViewController* containerViewController;
 // The collection view controller that displays the reading list items (owned by
 // |containerViewController|).
 @property(nonatomic, weak)
@@ -60,7 +61,7 @@
 
 @end
 
-@implementation ReadingListCoordinator
+@implementation LegacyReadingListCoordinator
 
 @synthesize containerViewController = _containerViewController;
 @synthesize collectionViewController = _collectionViewController;
@@ -98,7 +99,7 @@
     self.mediator = [[ReadingListMediator alloc] initWithModel:model
                                               largeIconService:largeIconService
                                                listItemFactory:itemFactory];
-    ReadingListToolbar* toolbar = [[ReadingListToolbar alloc] init];
+    LegacyReadingListToolbar* toolbar = [[LegacyReadingListToolbar alloc] init];
     ReadingListCollectionViewController* collectionViewController =
         [[ReadingListCollectionViewController alloc]
             initWithDataSource:self.mediator
@@ -108,7 +109,7 @@
     itemFactory.accessibilityDelegate = collectionViewController;
     self.collectionViewController = collectionViewController;
 
-    self.containerViewController = [[ReadingListViewController alloc]
+    self.containerViewController = [[LegacyReadingListViewController alloc]
         initWithCollectionViewController:collectionViewController
                                  toolbar:toolbar];
     self.containerViewController.delegate = self;
