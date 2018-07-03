@@ -3591,25 +3591,6 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
             nullptr);
 }
 
-static unsigned NumFragments(const LayoutObject* obj) {
-  unsigned count = 0;
-  auto* fragment = &obj->FirstFragment();
-  while (fragment) {
-    count++;
-    fragment = fragment->NextFragment();
-  }
-  return count;
-}
-
-static const FragmentData& FragmentAt(const LayoutObject* obj, unsigned count) {
-  auto* fragment = &obj->FirstFragment();
-  while (count > 0) {
-    count--;
-    fragment = fragment->NextFragment();
-  }
-  return *fragment;
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   SetBodyInnerHTML(R"HTML(
     <!doctype HTML>
