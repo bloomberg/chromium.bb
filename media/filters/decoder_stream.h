@@ -56,11 +56,10 @@ class MEDIA_EXPORT DecoderStream {
       base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
 
   // Indicates completion of a DecoderStream initialization.
-  using InitCB = base::RepeatingCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(bool success)>;
 
   // Indicates completion of a DecoderStream read.
-  using ReadCB =
-      base::RepeatingCallback<void(Status, const scoped_refptr<Output>&)>;
+  using ReadCB = base::OnceCallback<void(Status, const scoped_refptr<Output>&)>;
 
   DecoderStream(std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
                 const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -76,16 +75,16 @@ class MEDIA_EXPORT DecoderStream {
   // |cdm_context| can be used to handle encrypted stream. Can be null if the
   // stream is not encrypted.
   void Initialize(DemuxerStream* stream,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   CdmContext* cdm_context,
-                  const StatisticsCB& statistics_cb,
-                  const base::Closure& waiting_for_decryption_key_cb);
+                  StatisticsCB statistics_cb,
+                  base::RepeatingClosure waiting_for_decryption_key_cb);
 
   // Reads a decoded Output and returns it via the |read_cb|. Note that
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
   // pending Reset().
-  void Read(const ReadCB& read_cb);
+  void Read(ReadCB read_cb);
 
   // Resets the decoder, flushes all decoded outputs and/or internal buffers,
   // fires any existing pending read callback and calls |closure| on completion.
@@ -94,7 +93,7 @@ class MEDIA_EXPORT DecoderStream {
   // during pending Reset().
   // N.B: If the decoder stream has run into an error, calling this method does
   // not 'reset' it to a normal state.
-  void Reset(const base::Closure& closure);
+  void Reset(base::OnceClosure closure);
 
   // Returns true if the decoder currently has the ability to decode and return
   // an Output.
@@ -224,10 +223,10 @@ class MEDIA_EXPORT DecoderStream {
 
   StatisticsCB statistics_cb_;
   InitCB init_cb_;
-  base::Closure waiting_for_decryption_key_cb_;
+  base::RepeatingClosure waiting_for_decryption_key_cb_;
 
   ReadCB read_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   DemuxerStream* stream_;
 
