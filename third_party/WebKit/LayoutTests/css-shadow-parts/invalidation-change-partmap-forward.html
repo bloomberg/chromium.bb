@@ -17,15 +17,15 @@
       <span id="part" part="partp">This text</span>
     </template>
     <script>installCustomElement("custom-element-outer", "custom-element-outer-template");</script>
-    <template id="custom-element-outer-template"><custom-element-inner id="c-e-inner"></custom-element-inner></template>
+    <template id="custom-element-outer-template"><custom-element-inner id="c-e-inner" partmap="partp part-forwarded"></custom-element-inner></template>
     The following text should be green:
-    <custom-element-outer id="c-e-outer" partmap="partp part-forwarded"></custom-element-outer>
+    <custom-element-outer id="c-e-outer"></custom-element-outer>
     <script type="text/javascript">
       "use strict";
       test(function() {
         var part = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "part"]);
         var before = window.getComputedStyle(part).color;
-        document.getElementById("c-e-outer").setAttribute("partmap", "new-partmap");
+        getElementByShadowIds(document, ["c-e-outer", "c-e-inner"]).setAttribute("partmap", "new-partmap");
         var after = window.getComputedStyle(part).color;
         assert_not_equals(before, after);
       }, "Part in selected host changed color");
