@@ -222,6 +222,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
 
+  TimeDelta marking_time_so_far() const {
+    return TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
+  }
+
  private:
   // Statistics for the currently running garbage collection. Note that the
   // Event may not be fully populated yet as some phase may not have been run.

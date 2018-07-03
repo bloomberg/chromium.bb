@@ -88,8 +88,8 @@ const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 
 // Duration of one incremental marking step. Should be short enough that it
 // doesn't cause jank even though it is scheduled as a normal task.
-constexpr TimeDelta kIncrementalMarkingStepDuration =
-    TimeDelta::FromMilliseconds(1);
+constexpr TimeDelta kDefaultIncrementalMarkingStepDuration =
+    TimeDelta::FromMilliseconds(2);
 
 constexpr size_t kMaxTerminationGCLoops = 20;
 
@@ -599,6 +599,8 @@ void ThreadState::ScheduleFullGC() {
 void ThreadState::ScheduleGCIfNeeded() {
   VLOG(2) << "[state:" << this << "] ScheduleGCIfNeeded";
   DCHECK(CheckThread());
+
+  UpdateIncrementalMarkingStepDuration();
 
   // Allocation is allowed during sweeping, but those allocations should not
   // trigger nested GCs.
@@ -1451,6 +1453,9 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kIncrementalMarkingStartMarking);
     AtomicPauseScope atomic_pause_scope(this);
+    next_incremental_marking_step_duration_ =
+        kDefaultIncrementalMarkingStepDuration;
+    previous_incremental_marking_time_left_ = TimeDelta::Max();
     MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalMarking, reason);
     MarkPhaseVisitRoots();
@@ -1468,8 +1473,8 @@ void ThreadState::IncrementalMarkingStep() {
           << "IncrementalMarking: Step";
   AtomicPauseScope atomic_pause_scope(this);
   DCHECK(IsMarkingInProgress());
-  bool complete = MarkPhaseAdvanceMarking(CurrentTimeTicks() +
-                                          kIncrementalMarkingStepDuration);
+  bool complete = MarkPhaseAdvanceMarking(
+      CurrentTimeTicks() + next_incremental_marking_step_duration_);
   if (complete)
     ScheduleIncrementalMarkingFinalize();
   else
@@ -1756,6 +1761,19 @@ void ThreadState::CollectAllGarbage() {
       break;
     previous_live_objects = live_objects;
   }
+}
+
+void ThreadState::UpdateIncrementalMarkingStepDuration() {
+  if (!IsIncrementalMarking())
+    return;
+  TimeDelta time_left = Heap().stats_collector()->estimated_marking_time() -
+                        Heap().stats_collector()->marking_time_so_far();
+  // Increase step size if estimated time left is increasing.
+  if (previous_incremental_marking_time_left_ < time_left) {
+    constexpr double ratio = 2.0;
+    next_incremental_marking_step_duration_ *= ratio;
+  }
+  previous_incremental_marking_time_left_ = time_left;
 }
 
 }  // namespace blink

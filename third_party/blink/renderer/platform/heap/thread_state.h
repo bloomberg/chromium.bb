@@ -655,6 +655,8 @@ class PLATFORM_EXPORT ThreadState {
 
   void RunScheduledGC(BlinkGC::StackState);
 
+  void UpdateIncrementalMarkingStepDuration();
+
   void EagerSweep();
 
   void InvokePreFinalizers();
@@ -702,6 +704,9 @@ class PLATFORM_EXPORT ThreadState {
   size_t mixins_being_constructed_count_;
   bool object_resurrection_forbidden_;
   bool in_atomic_pause_;
+
+  TimeDelta next_incremental_marking_step_duration_;
+  TimeDelta previous_incremental_marking_time_left_;
 
   GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker_;
 
