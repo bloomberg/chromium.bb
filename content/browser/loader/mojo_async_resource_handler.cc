@@ -38,6 +38,21 @@ constexpr size_t kMinAllocationSize = 2 * net::kMaxBytesToSniff;
 
 constexpr size_t kMaxChunkSize = 32 * 1024;
 
+// Time between sending the transfer size updates to renderer. This threshold is
+// chosen as a compromise between sending too frequent updates and the limit its
+// consumers (DevTools and page load metrics) expect.
+constexpr base::TimeDelta kTransferSizeReportInterval =
+    base::TimeDelta::FromMilliseconds(500);
+
+bool ShouldReportTransferSize(
+    const ResourceRequestInfoImpl* resource_request_info) {
+  // Transfer size is reported only when report_raw_headers is set or the
+  // renderer is allowed to receive the resource response metadata (e.g. by
+  // Cross-Origin Read Blocking).
+  return resource_request_info->ShouldReportRawHeaders() ||
+         !resource_request_info->blocked_response_from_reaching_renderer();
+}
+
 }  // namespace
 
 // This class is for sharing the ownership of a ScopedDataPipeProducerHandle
@@ -303,11 +318,15 @@ void MojoAsyncResourceHandler::OnReadCompleted(
     return;
   }
 
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (info->ShouldReportRawHeaders()) {
+  if (ShouldReportTransferSize(GetRequestInfo()) &&
+      (time_transfer_size_next_report_.is_null() ||
+       time_transfer_size_next_report_ <= base::TimeTicks::Now())) {
     auto transfer_size_diff = CalculateRecentlyReceivedBytes();
-    if (transfer_size_diff > 0)
+    if (transfer_size_diff > 0) {
       url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+      time_transfer_size_next_report_ =
+          base::TimeTicks::Now() + kTransferSizeReportInterval;
+    }
   }
 
   if (response_body_consumer_handle_.is_valid()) {
@@ -485,6 +504,12 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
       net::IsCertStatusError(request()->ssl_info().cert_status) &&
       !net::IsCertStatusMinorError(request()->ssl_info().cert_status)) {
     loader_status.ssl_info = request()->ssl_info();
+  }
+
+  if (ShouldReportTransferSize(GetRequestInfo())) {
+    auto transfer_size_diff = CalculateRecentlyReceivedBytes();
+    if (transfer_size_diff > 0)
+      url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
   }
 
   url_loader_client_->OnComplete(loader_status);

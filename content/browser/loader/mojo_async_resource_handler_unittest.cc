@@ -49,7 +49,9 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -304,9 +306,9 @@ class MojoAsyncResourceHandlerTestBase {
 
     // Create and initialize |request_|.  None of this matters, for these tests,
     // just need something non-NULL.
-    net::URLRequestContext* request_context =
+    request_context_ =
         browser_context_->GetResourceContext()->GetRequestContext();
-    request_ = request_context->CreateRequest(
+    request_ = request_context_->CreateRequest(
         GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);
     request_->set_upload(std::move(upload_stream));
@@ -403,6 +405,7 @@ class MojoAsyncResourceHandlerTestBase {
   network::TestURLLoaderClient url_loader_client_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::TestDelegate url_request_delegate_;
+  net::URLRequestContext* request_context_;
   std::unique_ptr<net::URLRequest> request_;
   std::unique_ptr<MojoAsyncResourceHandlerWithStubOperations> handler_;
   std::unique_ptr<MockResourceLoader> mock_loader_;
@@ -1458,6 +1461,66 @@ TEST_F(MojoAsyncResourceHandlerSendSSLInfoForCertificateError,
   url_loader_client_.RunUntilComplete();
   EXPECT_FALSE(url_loader_client_.completion_status().ssl_info);
 };
+
+TEST_F(MojoAsyncResourceHandlerTest,
+       TransferSizeUpdateCalledForNonBlockedResponse) {
+  net::URLRequestJobFactoryImpl test_job_factory_;
+  auto test_job = std::make_unique<net::URLRequestTestJob>(
+      request_.get(), request_context_->network_delegate(), "response headers",
+      "response body", true);
+  auto test_job_interceptor = std::make_unique<net::TestJobInterceptor>();
+  net::TestJobInterceptor* raw_test_job_interceptor =
+      test_job_interceptor.get();
+  EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+      url::kHttpScheme, std::move(test_job_interceptor)));
+
+  request_context_->set_job_factory(&test_job_factory_);
+  raw_test_job_interceptor->set_main_intercept_job(std::move(test_job));
+  request_->Start();
+
+  ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
+  url_loader_client_.RunUntilComplete();
+
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnResponseCompleted(status));
+  url_loader_client_.RunUntilComplete();
+  EXPECT_LT(0, url_loader_client_.body_transfer_size());
+  EXPECT_EQ(request_->GetTotalReceivedBytes(),
+            url_loader_client_.body_transfer_size());
+}
+
+TEST_F(MojoAsyncResourceHandlerTest,
+       TransferSizeUpdateNotCalledForBlockedResponse) {
+  net::URLRequestJobFactoryImpl test_job_factory_;
+  auto test_job = std::make_unique<net::URLRequestTestJob>(
+      request_.get(), request_context_->network_delegate(), "response headers",
+      "response body", true);
+  auto test_job_interceptor = std::make_unique<net::TestJobInterceptor>();
+  net::TestJobInterceptor* raw_test_job_interceptor =
+      test_job_interceptor.get();
+  EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+      url::kHttpScheme, std::move(test_job_interceptor)));
+
+  request_context_->set_job_factory(&test_job_factory_);
+  raw_test_job_interceptor->set_main_intercept_job(std::move(test_job));
+  request_->Start();
+
+  // Block the response to reach renderer.
+  ResourceRequestInfoImpl::ForRequest(request_.get())
+      ->set_blocked_response_from_reaching_renderer(true);
+
+  ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
+
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnResponseCompleted(status));
+  url_loader_client_.RunUntilComplete();
+  EXPECT_TRUE(ResourceRequestInfoImpl::ForRequest(request_.get())
+                  ->blocked_response_from_reaching_renderer());
+  EXPECT_EQ(0, url_loader_client_.body_transfer_size());
+  EXPECT_LT(0, request_->GetTotalReceivedBytes());
+}
 
 INSTANTIATE_TEST_CASE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
                         MojoAsyncResourceHandlerWithAllocationSizeTest,

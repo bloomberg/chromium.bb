@@ -203,8 +203,8 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
             client.completion_status().encoded_data_length);
   EXPECT_EQ(static_cast<int64_t>(expected.size()),
             client.completion_status().encoded_body_length);
-  // OnTransferSizeUpdated is not dispatched as report_raw_headers is not set.
-  EXPECT_EQ(0, client.body_transfer_size());
+  EXPECT_EQ(static_cast<int64_t>(expected.size()), client.body_transfer_size());
+  EXPECT_GT(client.body_transfer_size(), 0);
   EXPECT_GT(client.response_head().encoded_data_length, 0);
   EXPECT_GT(client.completion_status().encoded_data_length, 0);
 }

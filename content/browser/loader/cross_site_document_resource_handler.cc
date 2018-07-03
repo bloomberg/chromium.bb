@@ -435,6 +435,7 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
 
     // Block the response and throw away the data.  Report zero bytes read.
     blocked_read_completed_ = true;
+    info->set_blocked_response_from_reaching_renderer(true);
     if (analyzer_->ShouldReportBlockedResponse())
       info->set_should_report_corb_blocking(true);
     network::CrossOriginReadBlocking::SanitizeBlockedResponse(
