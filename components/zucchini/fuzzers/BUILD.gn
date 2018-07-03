@@ -7,6 +7,20 @@ import("//third_party/protobuf/proto_library.gni")
 
 # To download the corpus for local fuzzing use:
 # gsutil -m rsync \
+#   gs://clusterfuzz-corpus/libfuzzer/zucchini_disassembler_dex_fuzzer \
+#   components/zucchini/fuzzing/testdata/disassembler_dex_fuzzer
+fuzzer_test("zucchini_disassembler_dex_fuzzer") {
+  sources = [
+    "disassembler_dex_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//components/zucchini:zucchini_lib",
+  ]
+}
+
+# To download the corpus for local fuzzing use:
+# gsutil -m rsync \
 #   gs://clusterfuzz-corpus/libfuzzer/zucchini_disassembler_win32_fuzzer \
 #   components/zucchini/fuzzing/testdata/disassembler_win32_fuzzer
 fuzzer_test("zucchini_disassembler_win32_fuzzer") {
