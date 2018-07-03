@@ -125,6 +125,10 @@ bool CrostiniInstallerView::ShouldShowCloseButton() const {
   return false;
 }
 
+bool CrostiniInstallerView::ShouldShowWindowTitle() const {
+  return false;
+}
+
 bool CrostiniInstallerView::Accept() {
   // This dialog can be accepted from State::ERROR. In that case, we're doing a
   // Retry.
@@ -239,11 +243,16 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
 
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
+  // Layout constants from the spec.
+  constexpr gfx::Insets kDialogInsets(60, 64, 32, 64);
+  constexpr int kDialogSpacingVertical = 32;
+  constexpr gfx::Size kLogoImageSize(32, 32);
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(60, 64, 32, 64), 32));
+      views::BoxLayout::kVertical, kDialogInsets, kDialogSpacingVertical));
 
   logo_image_ = new views::ImageView();
-  logo_image_->SetImageSize(gfx::Size(32, 32));
+  logo_image_->SetImageSize(kLogoImageSize);
   logo_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_DEFAULT));
@@ -257,7 +266,6 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
       ash::AshTextContext::CONTEXT_HEADLINE_OVERSIZED);
   big_message_label_->SetMultiLine(true);
   big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  big_message_label_->SizeToFit(kOOBEWindowWidth);
   AddChildView(big_message_label_);
 
   // TODO(timloh): Descenders in the message appear to be clipped, re-visit once
@@ -270,7 +278,6 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   message_label_ = new views::Label(message);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message_label_->SizeToFit(kOOBEWindowWidth);
   AddChildView(message_label_);
 
   // Make a slot for the progress bar, but it's not initially visible.
@@ -308,6 +315,12 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message,
   message_label_->SetText(error_message);
   SetBigMessageLabel();
   progress_bar_->SetVisible(false);
+
+  // Remove the buttons so they get recreated with correct color and
+  // highlighting. Without this it is possible for both buttons to be styled as
+  // default buttons.
+  delete GetDialogClientView()->ok_button();
+  delete GetDialogClientView()->cancel_button();
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
 }

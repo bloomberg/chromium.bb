@@ -50,6 +50,7 @@ class CrostiniInstallerView
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
+  bool ShouldShowWindowTitle() const override;
   bool Accept() override;
   bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
