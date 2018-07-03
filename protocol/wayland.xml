@@ -2399,6 +2399,9 @@
 	The geometry event describes geometric properties of the output.
 	The event is sent when binding to the output object and whenever
 	any of the properties change.
+
+	The physical size can be set to zero if it doesn't make sense for this
+	output (e.g. for projectors or virtual outputs).
       </description>
       <arg name="x" type="int"
 	   summary="x position within the global compositor space"/>
