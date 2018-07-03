@@ -350,20 +350,25 @@ public class CustomTabActivity extends ChromeActivity {
      * is not loaded yet.
      */
     private void maybeLoadModule() {
-        // TODO(https://crbug.com/853728): Load the module in the background.
+        String packageName = mIntentDataProvider.getModulePackageName();
+        String className = mIntentDataProvider.getModuleClassName();
+        // Return early if these were not provided. It's important to do this before checking the
+        // feature experiment group, to avoid entering users into the experiment that do not even
+        // receive the intent extras for using the feature.
+        if (packageName == null || className == null) return;
+
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
             return;
         }
 
-        String packageName = mIntentDataProvider.getModulePackageName();
         if (!ExternalAuthUtils.getInstance().isGoogleSigned(packageName)) {
             Log.w(TAG, "The %s package is not Google-signed.", packageName);
             return;
         }
 
-        ModuleEntryPoint entryPoint =
-                mConnection.loadModule(packageName, mIntentDataProvider.getModuleClassName());
+        // TODO(https://crbug.com/853728): Load the module in the background.
+        ModuleEntryPoint entryPoint = mConnection.loadModule(packageName, className);
         if (entryPoint == null) return;
 
         mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
