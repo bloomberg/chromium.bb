@@ -96,7 +96,7 @@ MEDIA_EXPORT bool operator!=(const PipelineStatistics& first,
 
 // Used for updating pipeline statistics; the passed value should be a delta
 // of all attributes since the last update.
-typedef base::Callback<void(const PipelineStatistics&)> StatisticsCB;
+using StatisticsCB = base::RepeatingCallback<void(const PipelineStatistics&)>;
 
 }  // namespace media
 

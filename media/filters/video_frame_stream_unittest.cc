@@ -85,8 +85,8 @@ class VideoFrameStreamTest
     video_frame_stream_.reset(new VideoFrameStream(
         std::make_unique<VideoFrameStream::StreamTraits>(&media_log_),
         message_loop_.task_runner(),
-        base::Bind(&VideoFrameStreamTest::CreateVideoDecodersForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&VideoFrameStreamTest::CreateVideoDecodersForTest,
+                            base::Unretained(this)),
         &media_log_));
     video_frame_stream_->set_decoder_change_observer_for_testing(base::Bind(
         &VideoFrameStreamTest::OnDecoderChanged, base::Unretained(this)));
@@ -259,12 +259,14 @@ class VideoFrameStreamTest
   void Initialize() {
     pending_initialize_ = true;
     video_frame_stream_->Initialize(
-        demuxer_stream_.get(), base::Bind(&VideoFrameStreamTest::OnInitialized,
-                                          base::Unretained(this)),
+        demuxer_stream_.get(),
+        base::BindOnce(&VideoFrameStreamTest::OnInitialized,
+                       base::Unretained(this)),
         cdm_context_.get(),
-        base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
-        base::Bind(&VideoFrameStreamTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+        base::BindRepeating(&VideoFrameStreamTest::OnStatistics,
+                            base::Unretained(this)),
+        base::BindRepeating(&VideoFrameStreamTest::OnWaitingForDecryptionKey,
+                            base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

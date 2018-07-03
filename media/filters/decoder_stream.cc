@@ -73,13 +73,13 @@ DecoderStream<StreamType>::~DecoderStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (init_cb_) {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::ResetAndReturn(&init_cb_), false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(init_cb_), false));
   }
   if (read_cb_) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::ResetAndReturn(&read_cb_), ABORTED,
-                                  scoped_refptr<Output>()));
+        FROM_HERE,
+        base::BindOnce(std::move(read_cb_), ABORTED, scoped_refptr<Output>()));
   }
   if (reset_cb_)
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
@@ -96,10 +96,10 @@ std::string DecoderStream<StreamType>::GetStreamTypeString() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Initialize(
     DemuxerStream* stream,
-    const InitCB& init_cb,
+    InitCB init_cb,
     CdmContext* cdm_context,
-    const StatisticsCB& statistics_cb,
-    const base::Closure& waiting_for_decryption_key_cb) {
+    StatisticsCB statistics_cb,
+    base::RepeatingClosure waiting_for_decryption_key_cb) {
   FUNCTION_DVLOG(1);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -107,10 +107,10 @@ void DecoderStream<StreamType>::Initialize(
   DCHECK(init_cb);
 
   stream_ = stream;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   cdm_context_ = cdm_context;
-  statistics_cb_ = statistics_cb;
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
+  statistics_cb_ = std::move(statistics_cb);
+  waiting_for_decryption_key_cb_ = std::move(waiting_for_decryption_key_cb);
 
   traits_->OnStreamReset(stream_);
 
@@ -119,7 +119,7 @@ void DecoderStream<StreamType>::Initialize(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
+void DecoderStream<StreamType>::Read(ReadCB read_cb) {
   FUNCTION_DVLOG(3);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_INITIALIZING)
@@ -130,26 +130,27 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
   DCHECK(!reset_cb_);
 
   if (state_ == STATE_ERROR) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(read_cb, DECODE_ERROR,
-                                                     scoped_refptr<Output>()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(read_cb), DECODE_ERROR,
+                                          scoped_refptr<Output>()));
     return;
   }
 
   if (state_ == STATE_END_OF_STREAM && ready_outputs_.empty() &&
       unprepared_outputs_.empty()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(read_cb, OK, StreamTraits::CreateEOSOutput()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(read_cb), OK,
+                                          StreamTraits::CreateEOSOutput()));
     return;
   }
 
   if (!ready_outputs_.empty()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(read_cb, OK, ready_outputs_.front()));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(read_cb), OK,
+                                                     ready_outputs_.front()));
     ready_outputs_.pop_front();
     MaybePrepareAnotherOutput();
   } else {
-    read_cb_ = read_cb;
+    read_cb_ = std::move(read_cb);
   }
 
   if (state_ == STATE_NORMAL && CanDecodeMore())
@@ -157,18 +158,18 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
+void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, STATE_UNINITIALIZED);
   DCHECK(!reset_cb_);
 
-  reset_cb_ = closure;
+  reset_cb_ = std::move(closure);
 
   if (read_cb_) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::ResetAndReturn(&read_cb_), ABORTED,
-                                  scoped_refptr<Output>()));
+        FROM_HERE,
+        base::BindOnce(std::move(read_cb_), ABORTED, scoped_refptr<Output>()));
   }
 
   ClearOutputs();
@@ -328,7 +329,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
       state_ = STATE_UNINITIALIZED;
       MEDIA_LOG(ERROR, media_log_)
           << GetStreamTypeString() << " decoder initialization failed";
-      base::ResetAndReturn(&init_cb_).Run(false);
+      std::move(init_cb_).Run(false);
     } else {
       CompleteDecoderReinitialization(false);
     }
@@ -356,7 +357,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   state_ = STATE_NORMAL;
   if (StreamTraits::NeedsBitstreamConversion(decoder_.get()))
     stream_->EnableBitstreamConverter();
-  base::ResetAndReturn(&init_cb_).Run(true);
+  std::move(init_cb_).Run(true);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -364,7 +365,7 @@ void DecoderStream<StreamType>::SatisfyRead(
     Status status,
     const scoped_refptr<Output>& output) {
   DCHECK(read_cb_);
-  base::ResetAndReturn(&read_cb_).Run(status, output);
+  std::move(read_cb_).Run(status, output);
 }
 
 template <DemuxerStream::Type StreamType>
