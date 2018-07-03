@@ -20,8 +20,8 @@ enum : uint8_t { kTerminalValue = 0, kEndOfTableValue = 127 };
 
 class TrieWriter {
  public:
-  TrieWriter(const huffman_trie::HuffmanRepresentationTable& huffman_table,
-             huffman_trie::HuffmanBuilder* huffman_builder);
+  TrieWriter(const HuffmanRepresentationTable& huffman_table,
+             HuffmanBuilder* huffman_builder);
   ~TrieWriter();
 
   // Constructs a trie containing all |entries|. The output is written to
@@ -40,18 +40,25 @@ class TrieWriter {
   // complete.
   const std::vector<uint8_t>& bytes() const { return buffer_.bytes(); }
 
+ protected:
+  const HuffmanRepresentationTable& huffman_table() const {
+    return huffman_table_;
+  }
+
+  HuffmanBuilder* huffman_builder() { return huffman_builder_; }
+
  private:
   bool WriteDispatchTables(ReversedEntries::iterator start,
                            ReversedEntries::iterator end,
                            uint32_t* position);
 
-  huffman_trie::BitWriter buffer_;
-  const huffman_trie::HuffmanRepresentationTable& huffman_table_;
-  huffman_trie::HuffmanBuilder* huffman_builder_;
+  BitWriter buffer_;
+  const HuffmanRepresentationTable& huffman_table_;
+  HuffmanBuilder* huffman_builder_;
 };
 
 }  // namespace huffman_trie
 
 }  // namespace net
 
-#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRIE_TRIE_WRITER_H_
+#endif  // NET_TOOLS_HUFFMAN_TRIE_TRIE_TRIE_WRITER_H_

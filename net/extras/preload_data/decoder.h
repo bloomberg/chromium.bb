@@ -5,7 +5,11 @@
 #ifndef NET_EXTRAS_PRELOAD_DATA_DECODER_H_
 #define NET_EXTRAS_PRELOAD_DATA_DECODER_H_
 
+#include <stdint.h>
+
 #include <string>
+
+#include "base/macros.h"
 
 namespace net {
 
@@ -16,6 +20,9 @@ namespace extras {
 // they are interested in.
 class PreloadDecoder {
  public:
+  // These must match the values in net/tools/huffman_trie/trie/trie_writer.h.
+  enum : char { kEndOfString = 0, kEndOfTable = 127 };
+
   // BitReader is a class that allows a bytestring to be read bit-by-bit.
   class BitReader {
    public:
@@ -51,6 +58,29 @@ class PreloadDecoder {
     // num_bits_used_ contains the number of bits of |current_byte_| that have
     // been read.
     unsigned num_bits_used_;
+
+    DISALLOW_COPY_AND_ASSIGN(BitReader);
+  };
+
+  // HuffmanDecoder is a very simple Huffman reader. The input Huffman tree is
+  // simply encoded as a series of two-byte structures. The first byte
+  // determines the "0" pointer for that node and the second the "1" pointer.
+  // Each byte either has the MSB set, in which case the bottom 7 bits are the
+  // value for that position, or else the bottom seven bits contain the index of
+  // a node.
+  //
+  // The tree is decoded by walking rather than a table-driven approach.
+  class HuffmanDecoder {
+   public:
+    HuffmanDecoder(const uint8_t* tree, size_t tree_bytes);
+
+    bool Decode(PreloadDecoder::BitReader* reader, char* out) const;
+
+   private:
+    const uint8_t* const tree_;
+    const size_t tree_bytes_;
+
+    DISALLOW_COPY_AND_ASSIGN(HuffmanDecoder);
   };
 
   PreloadDecoder(const uint8_t* huffman_tree,
@@ -84,17 +114,21 @@ class PreloadDecoder {
   // value always comes before an entry for '.'.
   bool Decode(const std::string& search, bool* out_found);
 
+ protected:
   virtual bool ReadEntry(BitReader* reader,
                          const std::string& search,
                          size_t current_search_offset,
                          bool* out_found) = 0;
 
+  const HuffmanDecoder& huffman_decoder() const { return huffman_decoder_; }
+
  private:
-  const uint8_t* huffman_tree_;
-  const size_t huffman_tree_size_;
-  const uint8_t* trie_;
-  const size_t trie_bits_;
+  HuffmanDecoder huffman_decoder_;
+  BitReader bit_reader_;
+
   const size_t trie_root_position_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreloadDecoder);
 };
 
 }  // namespace extras

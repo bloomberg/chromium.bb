@@ -11,6 +11,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+#include "net/extras/preload_data/decoder.h"
+
 #include "third_party/icu/source/common/unicode/uniset.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
@@ -35,6 +37,13 @@ FORWARD_DECLARE_TEST(UrlFormatterTest, IDNToUnicode);
 
 class IDNSpoofChecker {
  public:
+  struct HuffmanTrieParams {
+    const uint8_t* huffman_tree;
+    size_t huffman_tree_size;
+    const uint8_t* trie;
+    size_t trie_bits;
+    size_t trie_root_position;
+  };
   IDNSpoofChecker();
   ~IDNSpoofChecker();
 
@@ -62,8 +71,8 @@ class IDNSpoofChecker {
   bool IsMadeOfLatinAlikeCyrillic(const icu::UnicodeString& label);
 
   // Used for unit tests.
-  static void RestoreTopDomainGraphToDefault();
-  static void SetTopDomainGraph(base::StringPiece domain_graph);
+  static void SetTrieParamsForTesting(const HuffmanTrieParams& trie_params);
+  static void RestoreTrieParamsForTesting();
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;

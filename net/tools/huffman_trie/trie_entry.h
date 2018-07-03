@@ -20,6 +20,8 @@ class TrieEntry {
   TrieEntry();
   virtual ~TrieEntry();
 
+  // The name to be used when inserting the entry to the trie. E.g. for HSTS
+  // preload list, this is the hostname.
   virtual std::string name() const = 0;
   virtual bool WriteEntry(huffman_trie::TrieBitBuffer* writer) const = 0;
 };
@@ -28,6 +30,8 @@ class TrieEntry {
 // of raw pointers instead.
 using TrieEntries = std::vector<TrieEntry*>;
 
+// ReversedEntry points to a TrieEntry and contains the reversed name for
+// that entry. This is used to construct the trie.
 struct ReversedEntry {
   ReversedEntry(std::vector<uint8_t> reversed_name, const TrieEntry* entry);
   ~ReversedEntry();

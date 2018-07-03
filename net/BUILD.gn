@@ -269,8 +269,6 @@ component("net") {
     "der/parser.h",
     "der/tag.cc",
     "der/tag.h",
-    "extras/preload_data/decoder.cc",
-    "extras/preload_data/decoder.h",
     "http/http_auth_challenge_tokenizer.cc",
     "http/http_auth_challenge_tokenizer.h",
     "http/http_auth_scheme.cc",
@@ -2133,6 +2131,7 @@ source_set("net_deps") {
   public_deps = [
     ":constants",
     ":net_resources",
+    ":preload_decoder",
     "//base",
     "//net/base/registry_controlled_domains",
     "//third_party/protobuf:protobuf_lite",
@@ -2264,6 +2263,16 @@ if (!is_proto_quic) {
       "//sql:sql",
     ]
   }
+}
+
+static_library("preload_decoder") {
+  sources = [
+    "extras/preload_data/decoder.cc",
+    "extras/preload_data/decoder.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 if (!is_ios) {
