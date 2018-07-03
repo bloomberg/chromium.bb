@@ -2994,8 +2994,8 @@ static void tile_worker_hook_init(AV1Decoder *const pbi,
   av1_zero(td->dqcoeff);
   av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
   setup_bool_decoder(tile_buffer->data, thread_data->data_end,
-                     tile_buffer->size, &cm->error, td->bit_reader,
-                     allow_update_cdf);
+                     tile_buffer->size, &thread_data->error_info,
+                     td->bit_reader, allow_update_cdf);
 #if CONFIG_ACCOUNTING
   if (pbi->acct_enabled) {
     td->bit_reader->accounting = &pbi->accounting;
