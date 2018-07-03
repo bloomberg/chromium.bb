@@ -103,8 +103,6 @@ class CommitQueueHandleChangesStageTests(
     self.PatchObject(relevant_changes.RelevantChanges,
                      'GetRelevantChangesForSlaves',
                      return_value={'master-paladin': {mock.Mock()}})
-    self.PatchObject(relevant_changes.RelevantChanges,
-                     'GetSubsysResultForSlaves')
     self.PatchObject(handle_changes_stages.CommitQueueHandleChangesStage,
                      '_GetBuildsPassedSyncStage')
     stage.sync_stage.pool.SubmitPartialPool.return_value = self.changes

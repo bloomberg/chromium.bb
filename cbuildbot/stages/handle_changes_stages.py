@@ -172,9 +172,6 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
               build_id, db, self._run.config, changes,
               builds_not_passed_sync_stage,
               slave_buildbucket_ids, include_master=True))
-      subsys_by_config = (
-          relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
-              build_id, db))
 
       changes_by_slaves = changes_by_config.copy()
       # Exclude master build
@@ -189,7 +186,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
       changes = self.sync_stage.pool.SubmitPartialPool(
-          changes, messages, changes_by_config, subsys_by_config,
+          changes, messages, changes_by_config,
           passed_in_history_slaves_by_change, failing, inflight, no_stat)
 
     tot_sanity = self._CheckToTSanity()

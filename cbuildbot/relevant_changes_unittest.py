@@ -130,41 +130,6 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
         no_stat, None)
     self.assertEqual(results, expected)
 
-  def testGetSubsysResultForSlaves(self):
-    """Tests for the GetSubsysResultForSlaves."""
-    def get_dict(build_config, message_type, message_subtype, message_value):
-      return {'build_config': build_config,
-              'message_type': message_type,
-              'message_subtype': message_subtype,
-              'message_value': message_value}
-
-    slave_msgs = [get_dict('config_1', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_PASS, 'a'),
-                  get_dict('config_1', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_PASS, 'b'),
-                  get_dict('config_1', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_FAIL, 'c'),
-                  get_dict('config_2', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_UNUSED, None),
-                  get_dict('config_3', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_PASS, 'a'),
-                  get_dict('config_3', constants.SUBSYSTEMS,
-                           constants.SUBSYSTEM_PASS, 'e'),]
-    # Setup DB and provide list of slave build messages.
-    mock_cidb = mock.MagicMock()
-    self.PatchObject(mock_cidb, 'GetSlaveBuildMessages',
-                     return_value=slave_msgs)
-
-    expect_result = {
-        'config_1': {'pass_subsystems':set(['a', 'b']),
-                     'fail_subsystems':set(['c'])},
-        'config_2': {},
-        'config_3': {'pass_subsystems':set(['a', 'e'])}}
-    self.assertEqual(
-        relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
-            1, mock_cidb),
-        expect_result)
-
   def testGetPreviouslyPassedSlavesForChangesWithIrrelevantSlaves(self):
     """Test GetPreviouslyPassedSlavesForChanges with irrelevant slaves."""
     new_master_build_id = self.fake_cidb.InsertBuild(
@@ -370,40 +335,32 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         self.buildbucket_client, dry_run)
 
   def _MockSlaveInfo(self, slave_stages_dict, slave_changes_dict,
-                     slave_subsys_dict, change_passed_slaves_dict):
+                     change_passed_slaves_dict):
     mock_get_stages = self.PatchObject(relevant_changes.TriageRelevantChanges,
                                        'GetSlaveStages',
                                        return_value=slave_stages_dict)
     mock_get_changes = self.PatchObject(relevant_changes.TriageRelevantChanges,
                                         '_GetRelevantChanges',
                                         return_value=slave_changes_dict)
-    mock_get_subsys = self.PatchObject(relevant_changes.RelevantChanges,
-                                       'GetSubsysResultForSlaves',
-                                       return_value=slave_subsys_dict)
     mock_get_passed_slaves = self.PatchObject(
         relevant_changes.RelevantChanges, 'GetPreviouslyPassedSlavesForChanges',
         return_value=change_passed_slaves_dict)
 
-    return (mock_get_stages, mock_get_changes, mock_get_subsys,
-            mock_get_passed_slaves)
+    return (mock_get_stages, mock_get_changes, mock_get_passed_slaves)
 
   def testGetTriageRelevantChangesUpdateSlaveInfo(self):
     """test GetTriageRelevantChanges init with _UpdateSlaveInfo."""
     mock_stage_dict = {}
     mock_changes_dict = {}
-    mock_subsys_dict = {}
     mock_passed_slaves_dict = {}
-    (mock_get_stages, mock_get_changes, mock_get_subsys,
+    (mock_get_stages, mock_get_changes,
      mock_get_passed_slaves) = (self._MockSlaveInfo(
-         mock_stage_dict, mock_changes_dict, mock_subsys_dict,
-         mock_passed_slaves_dict))
+         mock_stage_dict, mock_changes_dict, mock_passed_slaves_dict))
     self.GetTriageRelevantChanges()
     mock_get_stages.assert_called_once_with(
         self.master_build_id, self.fake_cidb, self.buildbucket_info_dict)
     mock_get_changes.assert_called_once_with(
         mock_stage_dict)
-    mock_get_subsys.assert_called_once_with(
-        self.master_build_id, self.fake_cidb)
     mock_get_passed_slaves.assert_called_once_with(
         self.master_build_id, self.fake_cidb, self.changes, mock.ANY)
 
@@ -691,7 +648,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         build: self.BuildbucketInfos.GetCanceledBuild()
     }
 
-    self._MockSlaveInfo(slave_stages_dict, slave_changes_dict, {}, {})
+    self._MockSlaveInfo(slave_stages_dict, slave_changes_dict, {})
 
   def testProcessCompletedBuildsNoStage(self):
     """Test _ProcessCompletedBuilds on build without stages."""

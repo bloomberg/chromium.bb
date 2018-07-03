@@ -1164,31 +1164,6 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
 
     return packages_under_test
 
-  def GetSubsystemToTest(self, relevant_changes):
-    """Get subsystems from relevant cls for current board, write to BOARD_ATTRS.
-
-    Args:
-      relevant_changes: A set of changes that are relevant to current board.
-
-    Returns:
-      A set of the subsystems. An empty set indicates that all subsystems should
-      be tested.
-    """
-    # Go through all the relevant changes, collect subsystem info from them. If
-    # there exists a change without subsystem info, we assume it affects all
-    # subsystems. Then set the superset of all the subsystems to be empty, which
-    # means that need to test all subsystems.
-    subsystem_set = set()
-    for change in relevant_changes:
-      sys_lst = triage_lib.GetTestSubsystemForChange(self._build_root, change)
-      if sys_lst:
-        subsystem_set = subsystem_set.union(sys_lst)
-      else:
-        subsystem_set = set()
-        break
-
-    return subsystem_set
-
   def _RecordActionForChanges(self, changes, action):
     """Records |changes| action to the slave build into cidb.
 
@@ -1252,9 +1227,6 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
       logging.info('No changes are relevant for board: %s.',
                    self._current_board)
 
-    subsystem_set = self.GetSubsystemToTest(relevant_changes)
-    logging.info('Subsystems need to be tested: %s. Empty set represents '
-                 'testing all subsystems.', subsystem_set)
     # Record subsystems to metadata
     self._run.attrs.metadata.UpdateBoardDictWithDict(
-        self._current_board, {'subsystems_to_test': list(subsystem_set)})
+        self._current_board, {'subsystems_to_test': []})

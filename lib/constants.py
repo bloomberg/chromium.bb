@@ -734,8 +734,6 @@ HWTEST_STATUES_NOT_PASSED = frozenset([HWTEST_STATUS_FAIL,
 
 # Define HWTEST subsystem logic constants.
 SUBSYSTEMS = 'subsystems'
-SUBSYSTEM_PASS = 'subsystem_pass'
-SUBSYSTEM_FAIL = 'subsystem_fail'
 SUBSYSTEM_UNUSED = 'subsystem_unused'
 
 # Build messages
@@ -958,7 +956,6 @@ STRATEGY_CQ_PARTIAL_NOT_TESTED = 'strategy:cq-submit-partial-pool-not-tested'
 STRATEGY_CQ_PARTIAL_CQ_HISTORY = 'strategy:cq-submit-partial-pool-cq-history'
 STRATEGY_CQ_PARTIAL_IGNORED_STAGES = (
     'strategy:cq-submit-partial-pool-ignored-stages')
-STRATEGY_CQ_PARTIAL_SUBSYSTEM = 'strategy:cq-submit-partial-pool-pass-subsystem'
 STRATEGY_CQ_PARTIAL_BUILDS_PASSED = (
     'strategy:cq-submit-partial-pool-builds-passed')
 
@@ -968,8 +965,7 @@ STRATEGY_CQ_PARTIAL_REASONS = {
     STRATEGY_CQ_PARTIAL_NOT_TESTED: 1,
     STRATEGY_CQ_PARTIAL_CQ_HISTORY: 2,
     STRATEGY_CQ_PARTIAL_IGNORED_STAGES: 3,
-    STRATEGY_CQ_PARTIAL_SUBSYSTEM: 4,
-    STRATEGY_CQ_PARTIAL_BUILDS_PASSED: 5
+    STRATEGY_CQ_PARTIAL_BUILDS_PASSED: 4
 }
 
 # CQ types.

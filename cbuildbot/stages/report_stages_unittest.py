@@ -24,7 +24,6 @@ from chromite.lib.const import waterfall
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import constants
-from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
@@ -39,7 +38,6 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import risk_report
 from chromite.lib import toolchain
-from chromite.lib import triage_lib
 
 
 # pylint: disable=protected-access
@@ -478,30 +476,6 @@ class DetectRelevantChangesStageTest(
     build_id = self.fake_db.InsertBuild(
         'test-paladin', 'chromeos', 1, 'test-paladin', 'bot_hostname')
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
-
-  def testGetSubsystemsWithoutEmptyEntry(self):
-    """Tests the logic of GetSubsystemTobeTested() under normal case."""
-    relevant_changes = self.changes
-    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
-    self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
-                     side_effect=[['light'], ['light', 'power']])
-
-    expected = {'light', 'power'}
-    stage = self.ConstructStage()
-    results = stage.GetSubsystemToTest(relevant_changes)
-    self.assertEqual(results, expected)
-
-  def testGetSubsystemsWithEmptyEntry(self):
-    """Tests whether return empty set when have empty entry in subsystems."""
-    relevant_changes = self.changes
-    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
-    self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
-                     side_effect=[['light'], []])
-
-    expected = set()
-    stage = self.ConstructStage()
-    results = stage.GetSubsystemToTest(relevant_changes)
-    self.assertEqual(results, expected)
 
   def ConstructStage(self):
     return report_stages.DetectRelevantChangesStage(self._run,

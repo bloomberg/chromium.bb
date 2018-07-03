@@ -10,7 +10,6 @@ from __future__ import print_function
 import glob
 import os
 import pprint
-import re
 
 from chromite.lib import constants
 from chromite.lib import cq_config
@@ -125,36 +124,6 @@ def GetAffectedPackagesForOverlayChange(change, manifest, overlays):
     return None
 
   return packages
-
-
-def GetTestSubsystemForChange(build_root, change):
-  """Get a list of subsystem that a given |change| affects.
-
-  If subsystem is specified in the commit message, use that. Otherwise, look in
-  appropriate COMMIT-QUEUE.ini. If subsystem is not specified anywhere,
-  'subsystem:default' will be used.
-
-  Based on the subsystems a given |change| affects, the CQ could tell whether a
-  failure is potentially caused by this |change|. The CQ could then submit some
-  changes in the face of unrelated failures.
-
-  Args:
-    build_root: The root of the checkout.
-    change: Change to examine, as a PatchQuery object.
-
-  Returns:
-    A list of subsystem for the given |change|.
-  """
-  subsystems = []
-  if change.commit_message:
-    lines = cros_patch.GetOptionLinesFromCommitMessage(
-        change.commit_message, 'subsystem:')
-    if lines:
-      subsystems = [x for x in re.split("[, ]", ' '.join(lines)) if x]
-  if not subsystems:
-    cq_config_parser = cq_config.CQConfigParser(build_root, change)
-    subsystems = cq_config_parser.GetSubsystems()
-  return subsystems if subsystems else ['default']
 
 
 class CategorizeChanges(object):
@@ -566,8 +535,7 @@ class CalculateSuspects(object):
     return suspect_changes
 
   @classmethod
-  def CanIgnoreFailures(cls, messages, change, build_root,
-                        subsys_by_config):
+  def CanIgnoreFailures(cls, messages, change, build_root):
     """Examine whether we can ignore the failures for |change|.
 
     First, examine the |messages| to see if we are allowed to ignore
@@ -580,8 +548,6 @@ class CalculateSuspects(object):
         failed slaves.
       change: A GerritPatch instance to examine.
       build_root: Build root directory.
-      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
-        by the config names.
 
     Returns:
       A tuple, first element is True/False indicates whether we can ignore the
@@ -604,40 +570,10 @@ class CalculateSuspects(object):
     if ignored_stages and failing_stages.issubset(ignored_stages):
       return (True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES)
 
-    # Among the failed stages, except the stages that can be ignored, only
-    # HWTestStage fails, and subsystem logic has been used on all configs
-    # failed at HWTest, and failed subsystems of each config are unrelated to
-    # the current cl, we submit the cl.
-    if not subsys_by_config:
-      return (False, None)
-    relevant_failing_stages = failing_stages - set(ignored_stages)
-    if relevant_failing_stages == set(['HWTest']):
-      configs_failed_hwtest = set([m.builder for m in messages
-                                   if 'HWTest' in m.GetFailingStages()])
-      subsys_result_dicts = ([v for k, v in subsys_by_config.iteritems()
-                              if k in configs_failed_hwtest])
-      if len(configs_failed_hwtest) != len(subsys_result_dicts):
-        logging.warning('There exists malformed config names, which results in '
-                        'mismatch between build configs. Cannot decide '
-                        'whether change is innocent to failures. Will not '
-                        'submit')
-        return (False, None)
-      # Empty dict indicates subsystem logic not used, make sure subsystem logic
-      # is used in all the configs failed at hwtest.
-      if all(subsys_result_dicts):
-        all_fail_subsys, all_pass_subsys = set(), set()
-        for v in subsys_result_dicts:
-          all_fail_subsys |= set(v.get('fail_subsystems', []))
-          all_pass_subsys |= set(v.get('pass_subsystems', []))
-        all_pass_subsys -= all_fail_subsys
-        cl_subsys = set(GetTestSubsystemForChange(build_root, change))
-        if (not cl_subsys & all_fail_subsys) and (cl_subsys <= all_pass_subsys):
-          return (True, constants.STRATEGY_CQ_PARTIAL_SUBSYSTEM)
-
     return (False, None)
 
   @classmethod
-  def GetFullyVerifiedChanges(cls, changes, changes_by_config, subsys_by_config,
+  def GetFullyVerifiedChanges(cls, changes, changes_by_config,
                               passed_in_history_slaves_by_change, failing,
                               inflight, no_stat, messages, build_root):
     """Examines build failures and returns a set of fully verified changes.
@@ -650,8 +586,6 @@ class CalculateSuspects(object):
       changes: A list of GerritPatch instances to examine.
       changes_by_config: A dictionary of relevant changes indexed by the
         config names.
-      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
-        by the config names.
       passed_in_history_slaves_by_change: A dict mapping changes to their
         relevant slaves (build config name strings) which passed in history.
       failing: Names of the builders that failed.
@@ -718,7 +652,7 @@ class CalculateSuspects(object):
         elif build_config in failing:
           failed_messages = [x for x in messages if x.builder == build_config]
           ignore_result = cls.CanIgnoreFailures(
-              failed_messages, change, build_root, subsys_by_config)
+              failed_messages, change, build_root)
           if ignore_result[0]:
             verified_reasons.add(ignore_result[1])
           elif build_config in passed_in_history_slaves:

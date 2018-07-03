@@ -1478,7 +1478,7 @@ class BaseSubmitPoolTestCase(_Base):
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       if not self.ALL_BUILDS_PASSED:
         actually_rejected = sorted(pool.SubmitPartialPool(
-            pool.candidates, mock.ANY, dict(), dict(), dict(), [], [], []))
+            pool.candidates, mock.ANY, dict(), dict(), [], [], []))
       else:
         verified_cls = {c:reason for c in self.patches}
         _, actually_rejected = pool.SubmitChanges(verified_cls)

@@ -1653,8 +1653,8 @@ class ValidationPool(object):
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
   def SubmitPartialPool(self, changes, messages, changes_by_config,
-                        subsys_by_config, passed_in_history_slaves_by_change,
-                        failing, inflight, no_stat):
+                        passed_in_history_slaves_by_change, failing,
+                        inflight, no_stat):
     """If the build failed, push any CLs that don't care about the failure.
 
     In this function we calculate what CLs are definitely innocent and submit
@@ -1671,8 +1671,6 @@ class ValidationPool(object):
         objects from the failed slaves.
       changes_by_config: A dictionary of relevant changes indexed by the
         config names.
-      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
-        by the config names.
       passed_in_history_slaves_by_change: A dict mapping changes to their
         relevant slaves (build config name strings) which passed in history.
       failing: Names of the builders that failed.
@@ -1683,9 +1681,8 @@ class ValidationPool(object):
       A set of the non-submittable changes.
     """
     fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        changes, changes_by_config, subsys_by_config,
-        passed_in_history_slaves_by_change, failing, inflight, no_stat,
-        messages, self.build_root)
+        changes, changes_by_config, passed_in_history_slaves_by_change,
+        failing, inflight, no_stat, messages, self.build_root)
     fully_verified_cls = fully_verified.keys()
     if fully_verified_cls:
       logging.info('The following changes will be submitted using '
