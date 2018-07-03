@@ -251,9 +251,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   // Our key handles are simple hashes of the public key.
   auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
+  std::array<uint8_t, 2> sha256_length = {0, crypto::kSHA256Length};
 
   AttestedCredentialData attested_credential_data(
-      kDeviceAaguid, {{0, crypto::kSHA256Length}}, key_handle,
+      kDeviceAaguid, sha256_length, key_handle,
       ConstructECPublicKey(public_key));
 
   auto authenticator_data = ConstructAuthenticatorData(
