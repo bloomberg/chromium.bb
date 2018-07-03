@@ -2221,6 +2221,26 @@
             ]
         }
     ],
+    "NTPBirthdayFeatures": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "NewTabPageAllBirthday_Enabled",
+                    "enable_features": [
+                        "NewTabPageBackgrounds",
+                        "NewTabPageIcons",
+                        "NewTabPageUIMd"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPBreakingNewsPush": [
         {
             "platforms": [
