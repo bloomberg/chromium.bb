@@ -84,7 +84,7 @@ public class AwServiceWorkerController {
 
         @Override
         public boolean getSafeBrowsingEnabled() {
-            return AwContentsStatics.getSafeBrowsingEnabledByManifest();
+            return AwSafeBrowsingConfigHelper.getSafeBrowsingEnabledByManifest();
         }
     }
 

@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_resource_context.h"
-#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"

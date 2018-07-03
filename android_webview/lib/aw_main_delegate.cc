@@ -8,7 +8,6 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
-#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
