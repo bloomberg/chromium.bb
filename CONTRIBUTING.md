@@ -206,6 +206,11 @@ people with commit access, there needs to be at least one Acked-by from
 someone with commit access. A person with commit access is expected to be
 able to evaluate the patch with respect to the project scope and architecture.
 
+The below review guidelines are intended to be interpreted in spirit, not by
+the letter. There may be circumstances where some guidelines are better
+ignored. We rely very much on the judgement of reviewers and commit rights
+holders.
+
 During review, the following matters should be checked:
 
 - The commit message explains why the change is being made.
