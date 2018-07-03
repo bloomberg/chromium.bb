@@ -832,26 +832,12 @@ void ResourceLoader::CallDidFinishLoading() {
 }
 
 void ResourceLoader::RecordHistograms() {
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (request_->response_info().network_accessed) {
-    if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
-      UMA_HISTOGRAM_ENUMERATION("Net.HttpResponseInfo.ConnectionInfo.MainFrame",
-                                request_->response_info().connection_info,
-                                net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.HttpResponseInfo.ConnectionInfo.SubResource",
-          request_->response_info().connection_info,
-          net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
-    }
-  }
-
   if (request_->load_flags() & net::LOAD_PREFETCH) {
     // Note that RESOURCE_TYPE_PREFETCH requests are a subset of
     // net::LOAD_PREFETCH requests. In the histograms below, "Prefetch" means
     // RESOURCE_TYPE_PREFETCH and "LoadPrefetch" means net::LOAD_PREFETCH.
     bool is_resource_type_prefetch =
-        info->GetResourceType() == RESOURCE_TYPE_PREFETCH;
+        GetRequestInfo()->GetResourceType() == RESOURCE_TYPE_PREFETCH;
     PrefetchStatus prefetch_status = STATUS_UNDEFINED;
     TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
 
