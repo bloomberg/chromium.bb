@@ -66,14 +66,6 @@ const int kMaxAgcSegmentDiffMs =
   200;
 #endif
 
-// Temporarily disabled on Win (https://crbug.com/850936).
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
-#else
-// Not implemented on Android, ChromeOS etc.
-#define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
-#endif
-
 }  // namespace
 
 // Test we can set up a WebRTC call and play audio through it.
@@ -135,9 +127,9 @@ const int kMaxAgcSegmentDiffMs =
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
 //    and set that level to 50 / 100. Otherwise you will get distortion in
 //    the recording.
-class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
+class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
-  MAYBE_WebRtcAudioQualityBrowserTest() {}
+  WebRtcAudioQualityBrowserTest() {}
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
@@ -161,6 +153,9 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
 
     // Add loopback interface such that there is always connectivity.
     command_line->AppendSwitch(switches::kAllowLoopbackInPeerConnection);
+
+    reference_file_ = test::GetReferenceFilesDir().Append(kReferenceFile);
+    ConfigureFakeDeviceToPlayFile(reference_file_);
   }
 
   void ConfigureFakeDeviceToPlayFile(const base::FilePath& wav_file_path) {
@@ -498,17 +493,18 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
   }
 
  protected:
-  void TestAutoGainControl(const base::FilePath::StringType& reference_filename,
-                           const std::string& constraints,
+  void TestAutoGainControl(const std::string& constraints,
                            const std::string& perf_modifier);
-  void SetupAndRecordAudioCall(const base::FilePath& reference_file,
-                               const base::FilePath& recording,
+  void SetupAndRecordAudioCall(const base::FilePath& recording,
                                const std::string& constraints,
                                const base::TimeDelta recording_time);
   void TestWithFakeDeviceGetUserMedia(const std::string& constraints,
                                       const std::string& perf_modifier);
 
+  const base::FilePath& reference_file() { return reference_file_; }
+
  private:
+  base::FilePath reference_file_;
   base::FilePath wav_dump_path_;
 };
 
@@ -654,16 +650,13 @@ bool ForceMicrophoneVolumeTo100Percent() {
 // plenty of time. Similarly, the recording time should be enough to catch the
 // whole reference file. If you then silence-trim the reference file and actual
 // file, you should end up with two time-synchronized files.
-void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
-    const base::FilePath& reference_file,
+void WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::FilePath& recording,
     const std::string& constraints,
     const base::TimeDelta recording_time) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
-
-  ConfigureFakeDeviceToPlayFile(reference_file);
 
   // Create a two-way call. Mute one of the receivers though; that way it will
   // be receiving audio bytes, but we will not be playing out of both elements.
@@ -688,7 +681,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
   HangUp(left_tab);
 }
 
-void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
+void WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
     const std::string& constraints,
     const std::string& perf_modifier) {
   if (OnWin8OrHigher()) {
@@ -697,25 +690,22 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
     return;
   }
 
-  base::FilePath reference_file =
-      test::GetReferenceFilesDir().Append(kReferenceFile);
   base::FilePath recording = CreateTemporaryWaveFile();
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
-      reference_file, recording, constraints,
-      base::TimeDelta::FromSeconds(30)));
+      recording, constraints, base::TimeDelta::FromSeconds(30)));
 
-  ComputeAndPrintPesqResults(reference_file, recording, perf_modifier);
+  ComputeAndPrintPesqResults(reference_file(), recording, perf_modifier);
   DeleteFileUnlessTestFailed(recording, false);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromFakeDevice) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   TestWithFakeDeviceGetUserMedia(kAudioOnlyCallConstraints, "_getusermedia");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromWebAudio) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (OnWin8OrHigher()) {
@@ -754,9 +744,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   // Compare with the reference file on disk (this is the same file we played
   // through WebAudio earlier).
-  base::FilePath reference_file =
-      test::GetReferenceFilesDir().Append(kReferenceFile);
-  ComputeAndPrintPesqResults(reference_file, recording, "_webaudio");
+  ComputeAndPrintPesqResults(reference_file(), recording, "_webaudio");
 
   DeleteFileUnlessTestFailed(recording, false);
 }
@@ -791,8 +779,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
  * device currently supports, and we want to be able to compare directly. See
  * http://crbug.com/421054.
  */
-void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
-    const base::FilePath::StringType& reference_filename,
+void WebRtcAudioQualityBrowserTest::TestAutoGainControl(
     const std::string& constraints,
     const std::string& perf_modifier) {
   if (OnWin8OrHigher()) {
@@ -800,18 +787,15 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
     LOG(ERROR) << "This test is not implemented for Win8 or higher.";
     return;
   }
-  base::FilePath reference_file =
-      test::GetReferenceFilesDir().Append(reference_filename);
   base::FilePath recording = CreateTemporaryWaveFile();
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
-      reference_file, recording, constraints,
-      base::TimeDelta::FromSeconds(30)));
+      recording, constraints, base::TimeDelta::FromSeconds(30)));
 
   base::ScopedTempDir split_ref_files;
   ASSERT_TRUE(split_ref_files.CreateUniqueTempDirUnderPath(wav_dump_path_));
   ASSERT_NO_FATAL_FAILURE(
-      SplitFileOnSilenceIntoDir(reference_file, split_ref_files.GetPath()));
+      SplitFileOnSilenceIntoDir(reference_file(), split_ref_files.GetPath()));
   std::vector<base::FilePath> ref_segments =
       ListWavFilesInDir(split_ref_files.GetPath());
 
@@ -825,30 +809,30 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   std::vector<base::FilePath> actual_segments =
       ListWavFilesInDir(actual_files_dir);
 
-  AnalyzeSegmentsAndPrintResult(
-      ref_segments, actual_segments, reference_file, perf_modifier);
+  AnalyzeSegmentsAndPrintResult(ref_segments, actual_segments, reference_file(),
+                                perf_modifier);
 
   DeleteFileUnlessTestFailed(recording, false);
   DeleteFileUnlessTestFailed(actual_files_dir, true);
 }
 
 // The AGC should apply non-zero gain here.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAutoGainControlOnLowAudio) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Disables AEC, but leaves AGC on.
   const char* kAudioCallWithoutEchoCancellation =
       "{audio: { mandatory: { googEchoCancellation: false } } }";
-  ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
-      kReferenceFile, kAudioCallWithoutEchoCancellation, "_with_agc"));
+  ASSERT_NO_FATAL_FAILURE(
+      TestAutoGainControl(kAudioCallWithoutEchoCancellation, "_with_agc"));
 }
 
 // Since the AGC is off here there should be no gain at all.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
-  ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
-      kReferenceFile, kAudioCallWithoutAudioProcessing, "_no_agc"));
+  ASSERT_NO_FATAL_FAILURE(
+      TestAutoGainControl(kAudioCallWithoutAudioProcessing, "_no_agc"));
 }
