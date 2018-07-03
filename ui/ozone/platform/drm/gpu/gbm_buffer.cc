@@ -36,10 +36,9 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      uint32_t format,
                      uint32_t flags,
                      uint64_t modifier,
-                     std::vector<base::ScopedFD>&& fds,
+                     std::vector<base::ScopedFD> fds,
                      const gfx::Size& size,
-
-                     const std::vector<gfx::NativePixmapPlane>&& planes)
+                     std::vector<gfx::NativePixmapPlane> planes)
     : drm_(gbm),
       bo_(bo),
       format_modifier_(modifier),
@@ -254,7 +253,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     const scoped_refptr<GbmDevice>& gbm,
     uint32_t format,
     const gfx::Size& size,
-    std::vector<base::ScopedFD>&& fds,
+    std::vector<base::ScopedFD> fds,
     const std::vector<gfx::NativePixmapPlane>& planes) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());

@@ -40,7 +40,7 @@ class GbmBuffer : public ScanoutBuffer {
       const scoped_refptr<GbmDevice>& gbm,
       uint32_t format,
       const gfx::Size& size,
-      std::vector<base::ScopedFD>&& fds,
+      std::vector<base::ScopedFD> fds,
       const std::vector<gfx::NativePixmapPlane>& planes);
   uint32_t GetFormat() const { return format_; }
   uint32_t GetFlags() const { return flags_; }
@@ -71,9 +71,9 @@ class GbmBuffer : public ScanoutBuffer {
             uint32_t format,
             uint32_t flags,
             uint64_t modifier,
-            std::vector<base::ScopedFD>&& fds,
+            std::vector<base::ScopedFD> fds,
             const gfx::Size& size,
-            const std::vector<gfx::NativePixmapPlane>&& planes);
+            std::vector<gfx::NativePixmapPlane> planes);
   ~GbmBuffer() override;
 
   static scoped_refptr<GbmBuffer> CreateBufferForBO(
