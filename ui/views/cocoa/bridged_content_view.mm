@@ -1325,6 +1325,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSTextInputClient protocol implementation.
 
+// IMPORTANT: Always null-check |textInputClient_|. It can change (or be
+// cleared) in -setTextInputClient:, which requires informing AppKit that the
+// -inputContext has changed and to update its raw pointer. However, the AppKit
+// method which does that may also spin a nested run loop communicating with an
+// IME window and cause it to *use* the exact same NSTextInputClient (i.e.,
+// |self|) that we're trying to invalidate in -setTextInputClient:.
+// See https://crbug.com/817097#c12 for further details on this atrocity.
+
 - (NSAttributedString*)
     attributedSubstringForProposedRange:(NSRange)range
                             actualRange:(NSRangePointer)actualRange {
@@ -1383,12 +1391,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)insertText:(id)text replacementRange:(NSRange)replacementRange {
-  if (!hostedView_)
+  if (!hostedView_ || !textInputClient_)
     return;
-
-  // Verify inputContext is not nil, i.e. |textInputClient_| is valid and no
-  // menu is active.
-  DCHECK([self inputContext]);
 
   textInputClient_->DeleteRange(gfx::Range(replacementRange));
   [self insertTextInternal:text];
