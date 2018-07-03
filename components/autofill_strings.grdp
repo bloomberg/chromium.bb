@@ -303,7 +303,7 @@
     Check your expiration year and try again
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
-    This card can't be verified right now.
+    This card can't be verified right now
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK" desc="Error message to show when a credit card cannot be verified because Wallet servers can't be reached.">
     There was a problem confirming your card. Check your internet connection and try again.
