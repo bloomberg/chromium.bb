@@ -176,10 +176,6 @@ class PermissionsData {
   PermissionMessages GetNewPermissionMessages(
       const PermissionSet& granted_permissions) const;
 
-  // Returns true if the extension has requested all-hosts permissions (or
-  // something close to it), but has had it withheld.
-  bool HasWithheldImpliedAllHosts() const;
-
   // Returns true if the associated extension has permission to access and
   // interact with the specified page, in order to do things like inject
   // scripts or modify the content.

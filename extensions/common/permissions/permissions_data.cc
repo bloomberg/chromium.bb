@@ -309,14 +309,6 @@ PermissionMessages PermissionsData::GetNewPermissionMessages(
                                                             manifest_type_));
 }
 
-bool PermissionsData::HasWithheldImpliedAllHosts() const {
-  base::AutoLock auto_lock(runtime_lock_);
-  // Since we currently only withhold all_hosts, it's sufficient to check
-  // that either set is not empty.
-  return !withheld_permissions_unsafe_->explicit_hosts().is_empty() ||
-         !withheld_permissions_unsafe_->scriptable_hosts().is_empty();
-}
-
 bool PermissionsData::CanAccessPage(const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const {

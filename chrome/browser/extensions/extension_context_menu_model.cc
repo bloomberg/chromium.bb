@@ -374,7 +374,7 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
     content::WebContents* web_contents) const {
   ScriptingPermissionsModifier modifier(profile_, extension);
   DCHECK(modifier.CanAffectExtension());
-  if (!modifier.HasWithheldAllUrls())
+  if (!modifier.HasWithheldHostPermissions())
     return PAGE_ACCESS_RUN_ON_ALL_SITES;
   if (modifier.HasGrantedHostPermission(
           GetActiveWebContents()->GetLastCommittedURL()))
@@ -394,6 +394,8 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
   page_access_submenu_->AddRadioItemWithStringId(
       PAGE_ACCESS_RUN_ON_CLICK,
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
+  // TODO(https://crbug.com/857235): We should update these options based on
+  // the withheld permissions for the extension.
   page_access_submenu_->AddRadioItemWithStringId(
       PAGE_ACCESS_RUN_ON_ALL_SITES,
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
@@ -428,18 +430,18 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
   switch (command_id) {
     case PAGE_ACCESS_RUN_ON_CLICK:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetWithholdAllUrls(true);
+        modifier.SetWithholdHostPermissions(true);
       if (modifier.HasGrantedHostPermission(url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_SITE:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetWithholdAllUrls(true);
+        modifier.SetWithholdHostPermissions(true);
       if (!modifier.HasGrantedHostPermission(url))
         modifier.GrantHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
-      modifier.SetWithholdAllUrls(false);
+      modifier.SetWithholdHostPermissions(false);
       break;
     default:
       NOTREACHED();

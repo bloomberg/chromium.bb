@@ -6,6 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -13,6 +15,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
@@ -21,6 +25,7 @@
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/test_extension_dir.h"
 
 namespace extensions {
 
@@ -103,89 +108,94 @@ using ScriptingPermissionsModifierUnitTest = ExtensionServiceTestBase;
 
 }  // namespace
 
-TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAndGrantAllHosts) {
+TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
   InitializeEmptyExtensionService();
 
   // Permissions can only be withheld with the appropriate feature turned on.
   RuntimeHostPermissionsEnabledScope enabled_scope;
 
-  URLPattern google(URLPattern::SCHEME_ALL, "http://www.google.com/*");
-  URLPattern sub_google(URLPattern::SCHEME_ALL, "http://*.google.com/*");
-  URLPattern all_http(URLPattern::SCHEME_ALL, "http://*/*");
-  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
-  URLPattern all_com(URLPattern::SCHEME_ALL, "http://*.com/*");
+  std::vector<std::string> test_cases[] = {
+      {"http://www.google.com/*"},
+      {"http://*/*"},
+      {"<all_urls>"},
+      {"http://*.com/*"},
+      {"http://google.com/*", "<all_urls>"},
+  };
 
-  std::set<URLPattern> all_host_patterns;
-  std::set<URLPattern> safe_patterns;
+  for (const auto& test_case : test_cases) {
+    std::string test_case_name = base::JoinString(test_case, ",");
+    SCOPED_TRACE(test_case_name);
+    std::set<URLPattern> patterns;
+    for (const auto& pattern : test_case)
+      patterns.insert(URLPattern(URLPattern::SCHEME_ALL, pattern));
+    scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
+        patterns, patterns, Manifest::INTERNAL, test_case_name);
 
-  all_host_patterns.insert(all_http);
-  all_host_patterns.insert(all_hosts);
-  all_host_patterns.insert(all_com);
+    PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
-  safe_patterns.insert(google);
-  safe_patterns.insert(sub_google);
+    const PermissionsData* permissions_data = extension->permissions_data();
 
-  std::set<URLPattern> all_patterns =
-      base::STLSetUnion<std::set<URLPattern>>(all_host_patterns, safe_patterns);
+    ScriptingPermissionsModifier modifier(profile(), extension);
+    ASSERT_TRUE(modifier.CanAffectExtension());
 
-  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_patterns, all_patterns, Manifest::INTERNAL, "a");
-  const PermissionsData* permissions_data = extension->permissions_data();
-  PermissionsUpdater updater(profile());
-  updater.InitializePermissions(extension.get());
+    // By default, all permissions are granted.
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->active_permissions().scriptable_hosts().patterns(),
+        patterns));
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->active_permissions().explicit_hosts().patterns(),
+        patterns));
+    EXPECT_TRUE(permissions_data->withheld_permissions()
+                    .scriptable_hosts()
+                    .patterns()
+                    .empty());
+    EXPECT_TRUE(permissions_data->withheld_permissions()
+                    .explicit_hosts()
+                    .patterns()
+                    .empty());
 
-  // By default, all permissions are granted.
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      all_patterns));
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().explicit_hosts().patterns(),
-      all_patterns));
-  EXPECT_TRUE(permissions_data->withheld_permissions()
-                  .scriptable_hosts()
-                  .patterns()
-                  .empty());
-  EXPECT_TRUE(permissions_data->withheld_permissions()
-                  .explicit_hosts()
-                  .patterns()
-                  .empty());
+    // Then, withhold host permissions.
+    modifier.SetWithholdHostPermissions(true);
 
-  // Then, withhold the all-hosts permissions.
-  ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetWithholdAllUrls(true);
+    EXPECT_TRUE(permissions_data->active_permissions()
+                    .scriptable_hosts()
+                    .patterns()
+                    .empty());
+    // Note: can't use explicit_hosts().empty() here, since chrome://favicon/
+    // will remain will still be present in explicit_hosts() (it's not really a
+    // host permission and isn't withheld). SetsAreEqual() ignores
+    // chrome://favicon in its checks.
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->active_permissions().explicit_hosts().patterns(),
+        std::set<URLPattern>()));
 
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      safe_patterns));
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().explicit_hosts().patterns(),
-      safe_patterns));
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions().explicit_hosts().patterns(),
-      all_host_patterns));
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->withheld_permissions().scriptable_hosts().patterns(),
+        patterns));
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->withheld_permissions().explicit_hosts().patterns(),
+        patterns));
 
-  // Finally, re-grant the withheld permissions.
-  modifier.SetWithholdAllUrls(false);
+    // Finally, re-grant the withheld permissions.
+    modifier.SetWithholdHostPermissions(false);
 
-  // We should be back to our initial state - all requested permissions are
-  // granted.
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      all_patterns));
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().explicit_hosts().patterns(),
-      all_patterns));
-  EXPECT_TRUE(permissions_data->withheld_permissions()
-                  .scriptable_hosts()
-                  .patterns()
-                  .empty());
-  EXPECT_TRUE(permissions_data->withheld_permissions()
-                  .explicit_hosts()
-                  .patterns()
-                  .empty());
+    // We should be back to our initial state - all requested permissions are
+    // granted.
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->active_permissions().scriptable_hosts().patterns(),
+        patterns));
+    EXPECT_TRUE(SetsAreEqual(
+        permissions_data->active_permissions().explicit_hosts().patterns(),
+        patterns));
+    EXPECT_TRUE(permissions_data->withheld_permissions()
+                    .scriptable_hosts()
+                    .patterns()
+                    .empty());
+    EXPECT_TRUE(permissions_data->withheld_permissions()
+                    .explicit_hosts()
+                    .patterns()
+                    .empty());
+  }
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
@@ -211,11 +221,11 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   EXPECT_TRUE(
       permissions_data->withheld_permissions().scriptable_hosts().is_empty());
   ScriptingPermissionsModifier modifier(profile(), extension);
-  EXPECT_FALSE(modifier.HasWithheldAllUrls());
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
 
   // Revoke access.
-  modifier.SetWithholdAllUrls(true);
-  EXPECT_TRUE(modifier.HasWithheldAllUrls());
+  modifier.SetWithholdHostPermissions(true);
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
   EXPECT_TRUE(
       permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
@@ -236,7 +246,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   // withheld.
   enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
   updater.InitializePermissions(extension.get());
-  EXPECT_TRUE(modifier.HasWithheldAllUrls());
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
   EXPECT_TRUE(
       permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
@@ -259,7 +269,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
   ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetWithholdAllUrls(true);
+  modifier.SetWithholdHostPermissions(true);
 
   const GURL kUrl("https://www.google.com/");
   const GURL kUrl2("https://www.chromium.org/");
@@ -346,6 +356,77 @@ TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
                      .CanAffectExtension())
         << test_case.location;
   }
+}
+
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       ExtensionsInitializedWithSavedRuntimeGrantedHostPermissionsAcrossLoad) {
+  // Permissions can only be withheld with the appropriate feature turned on.
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+
+  InitializeEmptyExtensionService();
+
+  const GURL kExampleCom("https://example.com/");
+  const GURL kChromiumOrg("https://chromium.org/");
+  const URLPatternSet kExampleComPatternSet({URLPattern(
+      Extension::kValidHostPermissionSchemes, "https://example.com/")});
+
+  TestExtensionDir test_extension_dir;
+  test_extension_dir.WriteManifest(
+      R"({
+           "name": "foo",
+           "manifest_version": 2,
+           "version": "1",
+           "permissions": ["<all_urls>"]
+         })");
+  ChromeTestExtensionLoader loader(profile());
+  loader.set_grant_permissions(true);
+  scoped_refptr<const Extension> extension =
+      loader.LoadExtension(test_extension_dir.UnpackedPath());
+
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .explicit_hosts()
+                  .MatchesURL(kExampleCom));
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .explicit_hosts()
+                  .MatchesURL(kChromiumOrg));
+
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .explicit_hosts()
+                   .MatchesURL(kExampleCom));
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .explicit_hosts()
+                   .MatchesURL(kChromiumOrg));
+
+  ScriptingPermissionsModifier(profile(), extension)
+      .GrantHostPermission(kExampleCom);
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .explicit_hosts()
+                  .MatchesURL(kExampleCom));
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .explicit_hosts()
+                   .MatchesURL(kChromiumOrg));
+
+  {
+    TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()));
+    service()->ReloadExtension(extension->id());
+    extension = base::WrapRefCounted(observer.WaitForExtensionLoaded());
+  }
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .explicit_hosts()
+                  .MatchesURL(kExampleCom));
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .explicit_hosts()
+                   .MatchesURL(kChromiumOrg));
 }
 
 }  // namespace extensions

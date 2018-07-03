@@ -173,7 +173,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
     ScriptingPermissionsModifier modifier(profile(), extension);
     if (withhold_permissions == WITHHOLD_PERMISSIONS &&
         modifier.CanAffectExtension()) {
-      modifier.SetWithholdAllUrls(true);
+      modifier.SetWithholdHostPermissions(true);
     }
   }
 
@@ -318,13 +318,12 @@ bool ActiveScriptTester::WantsToRun() {
 
 IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
                        ActiveScriptsAreDisplayedAndDelayExecution) {
-  // First, we load up three extensions:
+  // First, we load up four extensions:
   // - An extension that injects scripts into all hosts,
   // - An extension that injects scripts into explicit hosts,
   // - An extension with a content script that runs on all hosts,
   // - An extension with a content script that runs on explicit hosts.
-  // The extensions that operate on explicit hosts have permission; the ones
-  // that request all hosts require user consent.
+  // All extensions should require user consent.
   std::vector<std::unique_ptr<ActiveScriptTester>> testers;
   testers.push_back(std::make_unique<ActiveScriptTester>(
       "inject_scripts_all_hosts",
@@ -333,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   testers.push_back(std::make_unique<ActiveScriptTester>(
       "inject_scripts_explicit_hosts",
       CreateExtension(EXPLICIT_HOSTS, EXECUTE_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT));
+      browser(), REQUIRES_CONSENT, EXECUTE_SCRIPT));
   testers.push_back(std::make_unique<ActiveScriptTester>(
       "content_scripts_all_hosts",
       CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS),
@@ -341,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   testers.push_back(std::make_unique<ActiveScriptTester>(
       "content_scripts_explicit_hosts",
       CreateExtension(EXPLICIT_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT));
+      browser(), REQUIRES_CONSENT, CONTENT_SCRIPT));
 
   // Navigate to an URL (which matches the explicit host specified in the
   // extension content_scripts_explicit_hosts). All four extensions should
@@ -435,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Enable the extension to run on all urls.
   ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetWithholdAllUrls(false);
+  modifier.SetWithholdHostPermissions(false);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Navigate again - this time, the extension should execute immediately (and
@@ -447,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Revoke all urls permissions.
   inject_success_listener.Reset();
-  modifier.SetWithholdAllUrls(true);
+  modifier.SetWithholdHostPermissions(true);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Re-navigate; the extension should again need permission to run.
@@ -466,7 +465,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("blocked_actions/content_scripts"));
   ASSERT_TRUE(extension);
-  ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
 
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =

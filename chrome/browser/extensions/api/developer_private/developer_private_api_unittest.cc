@@ -85,7 +85,8 @@ std::unique_ptr<KeyedService> BuildEventRouter(
 
 bool HasAllUrlsPermission(const Extension* extension,
                           content::BrowserContext* context) {
-  return !ScriptingPermissionsModifier(context, extension).HasWithheldAllUrls();
+  return !ScriptingPermissionsModifier(context, extension)
+              .HasWithheldHostPermissions();
 }
 
 bool HasPrefsPermission(bool (*has_pref)(const std::string&,
@@ -369,7 +370,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
   const std::string& id = extension->id();
 
   ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
-      .SetWithholdAllUrls(true);
+      .SetWithholdHostPermissions(true);
 
   TestExtensionPrefSetting(
       base::Bind(&HasPrefsPermission, &util::IsIncognitoEnabled, profile(), id),
@@ -1309,8 +1310,8 @@ TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
   ScriptingPermissionsModifier modifier(profile(), extension.get());
-  EXPECT_FALSE(modifier.HasWithheldAllUrls());
-  modifier.SetWithholdAllUrls(true);
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+  modifier.SetWithholdHostPermissions(true);
 
   auto run_add_host_permission = [this, extension](base::StringPiece host,
                                                    bool should_succeed,
@@ -1354,8 +1355,8 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
   ScriptingPermissionsModifier modifier(profile(), extension.get());
-  EXPECT_FALSE(modifier.HasWithheldAllUrls());
-  modifier.SetWithholdAllUrls(true);
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+  modifier.SetWithholdHostPermissions(true);
 
   auto run_remove_host_permission = [this, extension](
                                         base::StringPiece host,

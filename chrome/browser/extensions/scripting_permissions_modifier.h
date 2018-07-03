@@ -31,18 +31,16 @@ class ScriptingPermissionsModifier {
                                const scoped_refptr<const Extension>& extension);
   ~ScriptingPermissionsModifier();
 
-  // Sets whether Chrome should withhold <all_urls>-style permissions from the
-  // extension. Used when the features::kRuntimeHostPermissions feature is
-  // enabled.
+  // Sets whether Chrome should withhold host permissions from the extension.
+  // Used when the features::kRuntimeHostPermissions feature is enabled.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
-  void SetWithholdAllUrls(bool withhold);
+  void SetWithholdHostPermissions(bool withhold);
 
-  // Returns whether Chrome has withheld <all_urls>-style permissions from the
-  // extension.
+  // Returns whether Chrome has withheld host permissions from the extension.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
-  bool HasWithheldAllUrls() const;
+  bool HasWithheldHostPermissions() const;
 
   // Returns true if the associated extension can be affected by
   // features::kRuntimeHostPermissions.
@@ -54,7 +52,9 @@ class ScriptingPermissionsModifier {
   void GrantHostPermission(const GURL& url);
 
   // Returns true if the extension has been explicitly granted permission to run
-  // on the origin of |url|.
+  // on the origin of |url|. Note: This checks any runtime-granted permissions,
+  // which includes both granted optional permissions and permissions granted
+  // through the runtime host permissions feature.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   bool HasGrantedHostPermission(const GURL& url) const;
@@ -83,11 +83,11 @@ class ScriptingPermissionsModifier {
   std::unique_ptr<const PermissionSet> GetRevokablePermissions() const;
 
  private:
-  // Grants any withheld all-hosts (or all-hosts-like) permissions.
-  void GrantWithheldImpliedAllHosts();
+  // Grants any withheld host permissions.
+  void GrantWithheldHostPermissions();
 
-  // Revokes any granted all-hosts (or all-hosts-like) permissions.
-  void WithholdImpliedAllHosts();
+  // Revokes any granted host permissions.
+  void WithholdHostPermissions();
 
   content::BrowserContext* browser_context_;
 

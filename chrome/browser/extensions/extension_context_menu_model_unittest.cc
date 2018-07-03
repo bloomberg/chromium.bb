@@ -623,7 +623,8 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
                                      Manifest::INTERNAL, "*://*/*");
-  ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
 
   const GURL kActiveUrl("http://www.example.com/");
@@ -755,16 +756,15 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_EQ(2, run_count);
   EXPECT_TRUE(action_runner->WantsToRun(extension));
 
-  // Install an extension requesting only a single host. Since the extension
-  // doesn't request all hosts, it shouldn't have withheld permissions, and
-  // thus shouldn't have the page access submenu.
+  // Install an extension requesting a single host. The page access submenu
+  // should still be present.
   const Extension* single_host_extension = AddExtensionWithHostPermission(
       "single_host_extension", manifest_keys::kBrowserAction,
       Manifest::INTERNAL, "http://www.google.com/*");
   ExtensionContextMenuModel single_host_menu(
       single_host_extension, GetBrowser(), ExtensionContextMenuModel::VISIBLE,
       nullptr);
-  EXPECT_EQ(-1, single_host_menu.GetIndexOfCommandId(
+  EXPECT_NE(-1, single_host_menu.GetIndexOfCommandId(
                     ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
 
   // Disable the click-to-script feature, and install a new extension requiring

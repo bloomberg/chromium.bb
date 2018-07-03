@@ -805,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
   ASSERT_TRUE(extension) << message_;
   ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
-      .SetWithholdAllUrls(true);
+      .SetWithholdHostPermissions(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Navigate the browser to a page in a new tab.
@@ -916,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
   ASSERT_TRUE(extension) << message_;
   ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
-      .SetWithholdAllUrls(true);
+      .SetWithholdHostPermissions(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   ui_test_utils::NavigateToURL(
@@ -1832,7 +1832,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
       LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
   ASSERT_TRUE(extension) << message_;
   ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
-      .SetWithholdAllUrls(true);
+      .SetWithholdHostPermissions(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Navigate the browser to a page in a new tab.
