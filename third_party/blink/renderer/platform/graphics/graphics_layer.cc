@@ -286,7 +286,7 @@ void GraphicsLayer::PaintRecursively() {
   PaintRecursivelyInternal(repainted_layers);
 
   // Notify the controllers that the artifact has been pushed and some
-  // lifecycle state can be updated.
+  // lifecycle state can be freed (such as raster invalidations).
   for (auto* layer : repainted_layers) {
 #if DCHECK_IS_ON()
     if (VLOG_IS_ON(2))
@@ -335,13 +335,10 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     return false;
 #endif
 
-  bool repainted = false;
-  if (PaintWithoutCommit(interest_rect, disabled_mode)) {
-    repainted = true;
+  if (PaintWithoutCommit(interest_rect, disabled_mode))
     GetPaintController().CommitNewDisplayItems();
-  } else if (!needs_check_raster_invalidation_) {
+  else if (!needs_check_raster_invalidation_)
     return false;
-  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -372,7 +369,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   }
 
   needs_check_raster_invalidation_ = false;
-  return repainted;
+  return true;
 }
 
 bool GraphicsLayer::PaintWithoutCommit(

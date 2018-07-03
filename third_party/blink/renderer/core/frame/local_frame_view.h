@@ -664,10 +664,7 @@ class CORE_EXPORT LocalFrameView final
   void NotifyFrameRectsChangedIfNeededRecursive();
   void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
-  // Returns true if paint_controller_ is repainted. The return value is not
-  // used for non-BlinkGenPropertyTrees/SPv2 where paint_controller_ doesn't
-  // exist.
-  bool PaintTree();
+  void PaintTree();
 
   void UpdateStyleAndLayoutIfNeededRecursiveInternal();
 
