@@ -24,6 +24,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/browser/application_session_id_manager.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -662,6 +663,13 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
 #endif
+
+  std::string application_session_id =
+      CastNavigationUIData::GetSessionIdForWebContents(
+          content::WebContents::FromRenderFrameHost(render_frame_host));
+  registry->AddInterface(base::BindRepeating(
+      &media::CreateApplicationSessionIdManager, render_frame_host,
+      std::move(application_session_id)));
 }
 
 void CastContentBrowserClient::RegisterInProcessServices(

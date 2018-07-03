@@ -116,7 +116,8 @@ void InterfaceFactoryImpl::CreateRenderer(
   // audio device ID. See interface_factory.mojom.
   const std::string& audio_device_id = type_specific_id;
   auto renderer = mojo_media_client_->CreateRenderer(
-      base::ThreadTaskRunnerHandle::Get(), media_log_, audio_device_id);
+      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), media_log_,
+      audio_device_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";
     return;

@@ -28,7 +28,9 @@
 #include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
+#include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace chromecast {
 namespace media {
@@ -57,7 +59,8 @@ CastRenderer::CastRenderer(
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     MediaResourceTracker* media_resource_tracker,
-    service_manager::Connector* connector)
+    service_manager::Connector* connector,
+    service_manager::mojom::InterfaceProvider* host_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       audio_device_id_(audio_device_id.empty()
@@ -67,6 +70,7 @@ CastRenderer::CastRenderer(
       video_resolution_policy_(video_resolution_policy),
       media_resource_tracker_(media_resource_tracker),
       connector_(connector),
+      host_interfaces_(host_interfaces),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -92,7 +96,36 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               const ::media::PipelineStatusCB& init_cb) {
   CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!application_session_id_manager_ptr_);
 
+  // Retrieve application_session_id if it is available via
+  // ApplicationSessionIdManager.
+
+  // If a CastRenderer is created for a purpose other than a web application,
+  // the ApplicationSessionIdManager interface is not available, and application
+  // session ID will be an empty string.
+
+  if (host_interfaces_) {
+    service_manager::GetInterface<::media::mojom::ApplicationSessionIdManager>(
+        host_interfaces_, &application_session_id_manager_ptr_);
+  }
+
+  if (application_session_id_manager_ptr_) {
+    application_session_id_manager_ptr_->GetApplicationSessionId(base::BindOnce(
+        &CastRenderer::OnApplicationSessionIdReceived,
+        weak_factory_.GetWeakPtr(), media_resource, client, init_cb));
+  } else {
+    OnApplicationSessionIdReceived(media_resource, client, init_cb,
+                                   std::string());
+  }
+}
+
+void CastRenderer::OnApplicationSessionIdReceived(
+    ::media::MediaResource* media_resource,
+    ::media::RendererClient* client,
+    const ::media::PipelineStatusCB& init_cb,
+    const std::string& application_session_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // Create pipeline backend.
   media_resource_usage_.reset(
       new MediaResourceTracker::ScopedUsage(media_resource_tracker_));

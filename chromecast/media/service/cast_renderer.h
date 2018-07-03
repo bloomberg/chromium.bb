@@ -13,6 +13,7 @@
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/base/renderer.h"
+#include "media/mojo/interfaces/application_session_id_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -21,6 +22,9 @@ class SingleThreadTaskRunner;
 
 namespace service_manager {
 class Connector;
+namespace mojom {
+class InterfaceProvider;
+}  // namespace mojom
 }  // namespace service_manager
 
 namespace chromecast {
@@ -35,13 +39,16 @@ class VideoModeSwitcher;
 class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer {
  public:
+  // |connector| provides interfaces for services hosted by ServiceManager.
+  // |host_interfaces| provides interfaces tied to RenderFrameHost.
   CastRenderer(CmaBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                const std::string& audio_device_id,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
                MediaResourceTracker* media_resource_tracker,
-               service_manager::Connector* connector);
+               service_manager::Connector* connector,
+               service_manager::mojom::InterfaceProvider* host_interfaces);
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
@@ -61,6 +68,11 @@ class CastRenderer : public ::media::Renderer,
 
  private:
   enum Stream { STREAM_AUDIO, STREAM_VIDEO };
+  void OnApplicationSessionIdReceived(
+      ::media::MediaResource* media_resource,
+      ::media::RendererClient* client,
+      const ::media::PipelineStatusCB& init_cb,
+      const std::string& application_session_id);
   void OnError(::media::PipelineStatus status);
   void OnEnded(Stream stream);
   void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
@@ -80,6 +92,7 @@ class CastRenderer : public ::media::Renderer,
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;
   service_manager::Connector* connector_;
+  service_manager::mojom::InterfaceProvider* host_interfaces_;
   // Must outlive |pipeline_| to properly count resource usage.
   std::unique_ptr<MediaResourceTracker::ScopedUsage> media_resource_usage_;
 
@@ -90,6 +103,9 @@ class CastRenderer : public ::media::Renderer,
   std::unique_ptr<MediaPipelineImpl> pipeline_;
   bool eos_[2];
   gfx::Size video_res_;
+
+  ::media::mojom::ApplicationSessionIdManagerPtr
+      application_session_id_manager_ptr_;
 
   base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

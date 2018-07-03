@@ -30,6 +30,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   // MojoMediaClient implementation.
   void Initialize(service_manager::Connector* connector) final;
   std::unique_ptr<Renderer> CreateRenderer(
+      service_manager::mojom::InterfaceProvider* host_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       const std::string& audio_device_id) final;

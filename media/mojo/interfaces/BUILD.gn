@@ -47,6 +47,10 @@ mojom("interfaces") {
     ]
   }
 
+  if (is_chromecast) {
+    sources += [ "application_session_id_manager.mojom" ]
+  }
+
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/public/mojom/base",
