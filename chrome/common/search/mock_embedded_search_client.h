@@ -21,6 +21,7 @@ class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
                void(const std::vector<InstantMostVisitedItem>&));
   MOCK_METHOD1(SetInputInProgress, void(bool));
   MOCK_METHOD1(ThemeChanged, void(const ThemeBackgroundInfo&));
+  MOCK_METHOD0(SelectLocalImageSuccess, void());
 };
 
 #endif  // CHROME_COMMON_SEARCH_MOCK_EMBEDDED_SEARCH_CLIENT_H_

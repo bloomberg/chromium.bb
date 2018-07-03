@@ -7,15 +7,18 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +39,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -81,7 +85,6 @@ const char kNtpBackgroundCollectionScriptFilename[] =
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kDoodleScriptFilename[] = "doodle.js";
-
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 
 const struct Resource{
@@ -106,6 +109,11 @@ const struct Resource{
     {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
     {kDoodleScriptFilename, kLocalResource, "text/javascript"},
+    // Image may not be a jpeg but the .jpg extension here still works for other
+    // filetypes. Special handling for different extensions isn't worth the
+    // added complexity.
+    {chrome::kChromeSearchLocalNtpBackgroundFilename, kLocalResource,
+     "image/jpg"},
 };
 
 // Strips any query parameters from the specified path.
@@ -237,6 +245,22 @@ std::string GetThemeCSS(Profile* profile) {
                             SkColorGetR(background_color),
                             SkColorGetG(background_color),
                             SkColorGetB(background_color));
+}
+
+std::string ReadBackgroundImageData() {
+  std::string data_string;
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::ReadFileToString(user_data_dir.AppendASCII(
+                             chrome::kChromeSearchLocalNtpBackgroundFilename),
+                         &data_string);
+  return data_string;
+}
+
+void ServeBackgroundImageData(
+    const content::URLDataSource::GotDataCallback& callback,
+    std::string data_string) {
+  callback.Run(base::RefCountedString::TakeString(&data_string));
 }
 
 std::string GetLocalNtpPath() {
@@ -619,6 +643,14 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == kThemeCSSFilename) {
     std::string theme_css = GetThemeCSS(profile_);
     callback.Run(base::RefCountedString::TakeString(&theme_css));
+    return;
+  }
+
+  if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&ReadBackgroundImageData),
+        base::BindOnce(&ServeBackgroundImageData, callback));
     return;
   }
 

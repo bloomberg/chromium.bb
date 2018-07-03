@@ -122,6 +122,9 @@ class SearchBox : public content::RenderFrameObserver,
   // Updates the NTP custom background preferences.
   void SetCustomBackgroundURL(const GURL& background_url);
 
+  // Let the user select a local file for the NTP background.
+  void SelectLocalBackgroundImage();
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }

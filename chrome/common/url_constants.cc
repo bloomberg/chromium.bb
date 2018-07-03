@@ -77,6 +77,10 @@ const char kChromeSearchLocalNtpUrl[] =
 const char kChromeSearchMostVisitedHost[] = "most-visited";
 const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
 
+const char kChromeSearchLocalNtpBackgroundUrl[] =
+    "chrome-search://local-ntp/background.jpg";
+const char kChromeSearchLocalNtpBackgroundFilename[] = "background.jpg";
+
 const char kChromeSearchRemoteNtpHost[] = "remote-ntp";
 
 const char kChromeSearchScheme[] = "chrome-search";
