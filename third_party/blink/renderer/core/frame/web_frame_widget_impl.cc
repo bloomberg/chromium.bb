@@ -91,8 +91,7 @@ const float kIdealPaddingRatio = 0.3f;
 
 // Returns a rect which is offset and scaled accordingly to |base_rect|'s
 // location and size.
-FloatRect NormalizeRect(const FloatRect& to_normalize,
-                        const FloatRect& base_rect) {
+FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
   FloatRect result(to_normalize);
   result.SetLocation(to_normalize.Location() + (-base_rect.Location()));
   result.Scale(1.0 / base_rect.Width(), 1.0 / base_rect.Height());
