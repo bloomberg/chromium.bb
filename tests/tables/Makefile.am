@@ -9,7 +9,6 @@ EXTRA_DIST =					\
 	empty.ctb				\
 	large.ctb				\
 	loop.ctb				\
-	lowercase_with_unicode.ctb		\
 	new_emph.utb				\
 	nocross.ctb				\
 	non-letters-as-caps.utb			\
@@ -19,5 +18,4 @@ EXTRA_DIST =					\
 	pass2.ctb				\
 	squash_space_with_context_1.utb		\
 	squash_space_with_correct.utb		\
-	suggestChunks.ctb		\
-	uplow_with_unicode.ctb
+	suggestChunks.ctb

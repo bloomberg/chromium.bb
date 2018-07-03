@@ -54,9 +54,9 @@ table: | # uplow_with_unicode.ctb
   uplow       \x1e9e\x00df 2346	LATIN LETTER SHARP S
 
   word gross 1245-2346
-  word gro\x00df 1245-2346
+  word groß 1245-2346
 
-table: |
+table: | # lowercase_with_unicode.ctb
   display ^ 2346
 
   uplow       Gg  1245
