@@ -8,9 +8,11 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 
 #if !defined(OS_CHROMEOS)
 #include <vector>
+
 #include "chrome/browser/profiles/avatar_menu.h"
 #endif
 
@@ -18,6 +20,7 @@ class Browser;
 class PrefRegistrySimple;
 class Profile;
 class SigninErrorController;
+
 namespace base { class FilePath; }
 
 namespace profiles {
@@ -36,6 +39,11 @@ base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir);
 // Register multi-profile related preferences in Local State.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
+// Sets the last used profile pref to |profile_dir|, unless |profile_dir| is the
+// System Profile directory, which is an invalid last used profile.
+void SetLastUsedProfile(const std::string& profile_dir);
+
+#if !defined(OS_ANDROID)
 // Returns the display name of the specified on-the-record profile (or guest),
 // specified by |profile_path|, used in the avatar button or user manager. If
 // |profile_path| is the guest path, it will return IDS_GUEST_PROFILE_NAME. If
@@ -67,7 +75,7 @@ void UpdateProfileName(Profile* profile,
 std::vector<std::string> GetSecondaryAccountsForProfile(
     Profile* profile,
     const std::string& primary_account);
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 // Returns whether the |browser|'s profile is a non-incognito or guest profile.
 // The distinction is needed because guest profiles are implemented as
@@ -99,15 +107,11 @@ SigninErrorController* GetSigninErrorController(Profile* profile);
 // profile had been Guest before calling or became Guest as a result of this
 // method.
 bool SetActiveProfileToGuestIfLocked();
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 // If the profile given by |profile_path| is loaded in the ProfileManager, use
 // a BrowsingDataRemover to delete all the Profile's data.
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path);
-
-// Sets the last used profile pref to |profile_dir|, unless |profile_dir| is the
-// System Profile directory, which is an invalid last used profile.
-void SetLastUsedProfile(const std::string& profile_dir);
 
 #if !defined(OS_CHROMEOS)
 // Returns true if there exists at least one non-supervised or non-child profile
@@ -117,6 +121,7 @@ bool AreAllNonChildNonSupervisedProfilesLocked();
 
 // Returns whether a public session is being run currently.
 bool IsPublicSession();
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles
 
