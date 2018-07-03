@@ -121,7 +121,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void CompleteRead(int bytes_read);
   void ResponseCompleted();
   void CallDidFinishLoading();
-  void RecordHistograms();
   void SetRawResponseHeaders(
       scoped_refptr<const net::HttpResponseHeaders> headers);
 
