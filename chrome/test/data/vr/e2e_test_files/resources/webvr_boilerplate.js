@@ -53,9 +53,6 @@ function onAnimationFrame(t) {
   vrDisplay.requestAnimationFrame(onAnimationFrame);
   // If presenting, set canvas to blue. Otherwise, red.
   if (vrDisplay.isPresenting) {
-    if (onPresentingAnimationFrameCallback) {
-      onPresentingAnimationFrameCallback();
-    }
     vrDisplay.getFrameData(frameData);
 
     gl.clearColor(0.0, 0.0, 1.0, 1.0);
@@ -64,6 +61,10 @@ function onAnimationFrame(t) {
     gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
     gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5,
                 webglCanvas.height);
+
+    if (onPresentingAnimationFrameCallback) {
+      onPresentingAnimationFrameCallback(frameData, gl);
+    }
 
     if (shouldSubmitFrame) {
       vrDisplay.submitFrame();

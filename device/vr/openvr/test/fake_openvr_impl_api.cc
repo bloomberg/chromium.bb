@@ -470,10 +470,11 @@ void TestVRSystem::GetProjectionRaw(EVREye eEye,
                                     float* pfRight,
                                     float* pfTop,
                                     float* pfBottom) {
-  *pfLeft = 1;
-  *pfRight = 1;
-  *pfTop = 1;
-  *pfBottom = 1;
+  auto proj = g_test_helper.GetProjectionRaw(eEye == EVREye::Eye_Left);
+  *pfLeft = proj.projection[0];
+  *pfRight = proj.projection[1];
+  *pfTop = proj.projection[2];
+  *pfBottom = proj.projection[3];
 }
 
 HmdMatrix34_t TestVRSystem::GetEyeToHeadTransform(EVREye eEye) {
@@ -491,19 +492,8 @@ void TestVRSystem::GetDeviceToAbsoluteTrackingPose(
     VR_ARRAY_COUNT(unTrackedDevicePoseArrayCount)
         TrackedDevicePose_t* pTrackedDevicePoseArray,
     uint32_t unTrackedDevicePoseArrayCount) {
-  TrackedDevicePose_t pose = {};
-  pose.mDeviceToAbsoluteTracking.m[0][0] = 1;
-  pose.mDeviceToAbsoluteTracking.m[1][1] = 1;
-  pose.mDeviceToAbsoluteTracking.m[2][2] = 1;
-  pose.mDeviceToAbsoluteTracking.m[0][2] = 5;
-
-  pose.vVelocity = {0, 0, 0};
-  pose.vAngularVelocity = {0, 0, 0};
-  pose.eTrackingResult = TrackingResult_Running_OK;
-  pose.bPoseIsValid = true;
-  pose.bDeviceIsConnected = true;
+  TrackedDevicePose_t pose = g_test_helper.GetPose(false /* presenting pose */);
   pTrackedDevicePoseArray[0] = pose;
-
   for (unsigned int i = 1; i < unTrackedDevicePoseArrayCount; ++i) {
     TrackedDevicePose_t pose = {};
     pTrackedDevicePoseArray[i] = pose;
@@ -536,7 +526,7 @@ float TestVRSystem::GetFloatTrackedDeviceProperty(
   }
   switch (prop) {
     case Prop_UserIpdMeters_Float:
-      return 0.06f;
+      return g_test_helper.GetIpd();
     default:
       NOTIMPLEMENTED();
   }
@@ -560,23 +550,24 @@ EVRCompositorError TestVRCompositor::WaitGetPoses(TrackedDevicePose_t* poses1,
                                                   unsigned int count1,
                                                   TrackedDevicePose_t* poses2,
                                                   unsigned int count2) {
-  if (poses1)
-    g_system.GetDeviceToAbsoluteTrackingPose(TrackingUniverseSeated, 0, poses1,
-                                             count1);
+  TrackedDevicePose_t pose = g_test_helper.GetPose(true /* presenting pose */);
+  for (unsigned int i = 0; i < count1; ++i) {
+    poses1[i] = pose;
+  }
 
-  if (poses2)
-    g_system.GetDeviceToAbsoluteTrackingPose(TrackingUniverseSeated, 0, poses2,
-                                             count2);
+  for (unsigned int i = 0; i < count2; ++i) {
+    poses2[i] = pose;
+  }
 
   return VRCompositorError_None;
 }
 
-EVRCompositorError TestVRCompositor::Submit(EVREye,
+EVRCompositorError TestVRCompositor::Submit(EVREye eye,
                                             Texture_t const* texture,
-                                            VRTextureBounds_t const*,
+                                            VRTextureBounds_t const* bounds,
                                             EVRSubmitFlags) {
   g_test_helper.OnPresentedFrame(
-      reinterpret_cast<ID3D11Texture2D*>(texture->handle));
+      reinterpret_cast<ID3D11Texture2D*>(texture->handle), bounds, eye);
   return VRCompositorError_None;
 }
 

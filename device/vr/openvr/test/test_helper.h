@@ -7,15 +7,25 @@
 
 #include "base/synchronization/lock.h"
 #include "device/vr/openvr/test/test_hook.h"
+#include "third_party/openvr/src/headers/openvr.h"
 
 class ID3D11Texture2D;
 
 namespace vr {
 
+struct ProjectionRaw {
+  float projection[4];
+};
+
 class TestHelper : public device::TestHookRegistration {
  public:
   // Methods called by mock OpenVR APIs.
-  void OnPresentedFrame(ID3D11Texture2D* texture);
+  void OnPresentedFrame(ID3D11Texture2D* texture,
+                        const VRTextureBounds_t* bounds,
+                        EVREye eye);
+  TrackedDevicePose_t GetPose(bool presenting);
+  float GetIpd();
+  ProjectionRaw GetProjectionRaw(bool left);
   void TestFailure();
 
   // TestHookRegistration

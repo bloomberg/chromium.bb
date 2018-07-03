@@ -89,10 +89,10 @@ function onXRFrame(t, frame) {
 
   // If in an exclusive session, set canvas to blue. Otherwise, red.
   if (session.exclusive) {
-    if (onExclusiveXRFrameCallback) {
-      onExclusiveXRFrameCallback(session, frame);
-    }
     gl.clearColor(0.0, 0.0, 1.0, 1.0);
+    if (onExclusiveXRFrameCallback) {
+      onExclusiveXRFrameCallback(session, frame, gl);
+    }
   } else {
     if (onMagicWindowXRFrameCallback) {
       onMagicWindowXRFrameCallback(session, frame);

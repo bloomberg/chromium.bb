@@ -55,10 +55,18 @@ OpenVRRenderLoop::~OpenVRRenderLoop() {
   Stop();
 }
 
+void OpenVRRenderLoop::ClearPendingFrame() {
+  has_outstanding_frame_ = false;
+  if (delayed_get_frame_data_callback_) {
+    base::ResetAndReturn(&delayed_get_frame_data_callback_).Run();
+  }
+}
+
 void OpenVRRenderLoop::SubmitFrameMissing(int16_t frame_index,
                                           const gpu::SyncToken& sync_token) {
   // Nothing to do. It's OK to start the next frame even if the current
   // one didn't get sent to OpenVR.
+  ClearPendingFrame();
 }
 
 void OpenVRRenderLoop::SubmitFrame(int16_t frame_index,
@@ -80,14 +88,15 @@ void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
     mojo::ScopedHandle texture_handle) {
   TRACE_EVENT1("gpu", "SubmitFrameWithTextureHandle", "frameIndex",
                frame_index);
-
 #if defined(OS_WIN)
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(platform_handle);
   MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
                                                nullptr, &platform_handle);
-  if (result != MOJO_RESULT_OK)
+  if (result != MOJO_RESULT_OK) {
+    ClearPendingFrame();
     return;
+  }
 
   texture_helper_.SetSourceTexture(
       base::win::ScopedHandle(reinterpret_cast<HANDLE>(platform_handle.value)));
@@ -125,6 +134,8 @@ void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
   submit_client_->OnSubmitFrameTransferred(copy_successful);
   submit_client_->OnSubmitFrameRendered();
 #endif
+
+  ClearPendingFrame();
 }
 
 void OpenVRRenderLoop::CleanUp() {
@@ -195,6 +206,7 @@ void OpenVRRenderLoop::ExitPresent() {
   binding_.Close();
   submit_client_ = nullptr;
   vr_compositor_->SuspendRendering(true);
+  ClearPendingFrame();
 }
 
 mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
@@ -234,6 +246,17 @@ base::WeakPtr<OpenVRRenderLoop> OpenVRRenderLoop::GetWeakPtr() {
 void OpenVRRenderLoop::GetFrameData(
     mojom::VRPresentationProvider::GetFrameDataCallback callback) {
   DCHECK(is_presenting_);
+
+  if (has_outstanding_frame_) {
+    DCHECK(!delayed_get_frame_data_callback_);
+    delayed_get_frame_data_callback_ =
+        base::BindOnce(&OpenVRRenderLoop::GetFrameData, base::Unretained(this),
+                       std::move(callback));
+    return;
+  }
+
+  has_outstanding_frame_ = true;
+
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
 
   frame_data->frame_id = next_frame_id_;

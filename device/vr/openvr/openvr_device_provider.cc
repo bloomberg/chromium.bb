@@ -13,12 +13,6 @@
 
 #include "base/command_line.h"
 
-namespace {
-// Use the pattern established in content_switches.h, but don't add a content
-// dependency -- device shouldn't have one.
-constexpr char kTestType[] = "test-type";
-}  // namespace
-
 namespace device {
 
 void OpenVRDeviceProvider::RecordRuntimeAvailability() {
@@ -43,7 +37,6 @@ OpenVRDeviceProvider::~OpenVRDeviceProvider() {
   }
 
   if (test_hook_registration_s) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType));
     test_hook_registration_s->SetTestHook(nullptr);
   }
 
@@ -66,7 +59,6 @@ void OpenVRDeviceProvider::Initialize(
 }
 
 void OpenVRDeviceProvider::SetTestHook(OpenVRTestHook* test_hook) {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType));
   test_hook_s = test_hook;
   if (test_hook_registration_s) {
     test_hook_registration_s->SetTestHook(test_hook_s);
@@ -84,8 +76,13 @@ void OpenVRDeviceProvider::CreateDevice() {
   vr::IVRSystem* vr_system =
       vr::VR_Init(&init_error, vr::EVRApplicationType::VRApplication_Scene);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType)) {
+  if (test_hook_s) {
     // Allow our mock implementation of OpenVR to be controlled by tests.
+    // Note that SetTestHook must be called before CreateDevice, or
+    // test_hook_registration_s will remain null.  This is a good pattern for
+    // tests anyway, since the alternative is we start mocking part-way through
+    // using the device, and end up with race conditions for when we started
+    // controlling things.
     vr::EVRInitError eError;
     test_hook_registration_s = reinterpret_cast<TestHookRegistration*>(
         vr::VR_GetGenericInterface(kChromeOpenVRTestHookAPI, &eError));
