@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/cdm_proxy_context.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
@@ -24,6 +25,22 @@
 namespace media {
 
 using Status = H264Decoder::H264Accelerator::Status;
+
+namespace {
+
+// Converts SubsampleEntry to D3D11_VIDEO_DECODER_SUB_SAMPLE_MAPPING_BLOCK.
+void AppendSubsamples(
+    const std::vector<SubsampleEntry>& from,
+    std::vector<D3D11_VIDEO_DECODER_SUB_SAMPLE_MAPPING_BLOCK>* to) {
+  for (const auto& from_entry : from) {
+    D3D11_VIDEO_DECODER_SUB_SAMPLE_MAPPING_BLOCK subsample = {};
+    subsample.ClearSize = from_entry.clear_bytes;
+    subsample.EncryptedSize = from_entry.cypher_bytes;
+    to->push_back(subsample);
+  }
+}
+
+}  // namespace
 
 class D3D11H264Picture : public H264Picture {
  public:
@@ -45,10 +62,12 @@ D3D11H264Picture::~D3D11H264Picture() {
 
 D3D11H264Accelerator::D3D11H264Accelerator(
     D3D11VideoDecoderClient* client,
+    CdmProxyContext* cdm_proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-    Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context)
+    Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context)
     : client_(client),
+      cdm_proxy_context_(cdm_proxy_context),
       video_decoder_(video_decoder),
       video_device_(video_device),
       video_context_(video_context) {}
@@ -71,21 +90,50 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb0,
     const H264Picture::Vector& ref_pic_listb1,
     const scoped_refptr<H264Picture>& pic) {
+  const bool is_encrypted = pic->decrypt_config();
+  if (is_encrypted && !cdm_proxy_context_) {
+    DVLOG(1) << "The input is encrypted but there is no proxy context.";
+    return Status::kFail;
+  }
+
+  std::unique_ptr<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION> content_key;
+  // This decrypt context has to be outside the if block because pKeyInfo in
+  // D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION is a pointer (to a GUID).
+  base::Optional<CdmProxyContext::D3D11DecryptContext> decrypt_context;
+  if (is_encrypted) {
+    decrypt_context = cdm_proxy_context_->GetD3D11DecryptContext(
+        pic->decrypt_config()->key_id());
+    if (!decrypt_context) {
+      DVLOG(1) << "Cannot find decrypt context for the frame.";
+      return Status::kNoKey;
+    }
+
+    content_key =
+        std::make_unique<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION>();
+    content_key->pCryptoSession = decrypt_context->crypto_session;
+    content_key->pBlob = const_cast<void*>(decrypt_context->key_blob);
+    content_key->BlobSize = decrypt_context->key_blob_size;
+    content_key->pKeyInfoId = &decrypt_context->key_info_guid;
+    frame_iv_.assign(pic->decrypt_config()->iv().begin(),
+                     pic->decrypt_config()->iv().end());
+  }
+
   scoped_refptr<D3D11H264Picture> our_pic(
       static_cast<D3D11H264Picture*>(pic.get()));
 
   HRESULT hr;
   for (;;) {
     hr = video_context_->DecoderBeginFrame(
-        video_decoder_.Get(), our_pic->picture->output_view().Get(), 0,
-        nullptr);
+        video_decoder_.Get(), our_pic->picture->output_view().Get(),
+        content_key ? sizeof(*content_key) : 0, content_key.get());
 
     if (hr == E_PENDING || hr == D3DERR_WASSTILLDRAWING) {
       // Hardware is busy.  We should make the call again.
       // TODO(liberato): For now, just busy wait.
       ;
     } else if (!SUCCEEDED(hr)) {
-      LOG(ERROR) << "DecoderBeginFrame failed";
+      LOG(ERROR) << "DecoderBeginFrame failed: "
+                 << logging::SystemErrorCodeToString(hr);
       return Status::kFail;
     } else {
       break;
@@ -312,6 +360,31 @@ Status D3D11H264Accelerator::SubmitSlice(
   size_t remaining_bitstream = out_bitstream_size;
   size_t start_location = 0;
 
+  const bool is_encrypted = pic->decrypt_config();
+
+  if (is_encrypted) {
+    // For now, the entire frame has to fit into the bitstream buffer. This way
+    // the subsample ClearSize adjustment below should work.
+    if (bitstream_buffer_size_ < remaining_bitstream) {
+      LOG(ERROR) << "Input slice NALU (" << remaining_bitstream
+                 << ") too big to fit in the bistream buffer ("
+                 << bitstream_buffer_size_ << ").";
+      return Status::kFail;
+    }
+
+    AppendSubsamples(subsamples, &subsamples_);
+    if (!subsamples.empty()) {
+      // 3 added to clear bytes because a start code is prepended to the slice
+      // NALU.
+      // TODO(rkuroiwa): This should be done right after the start code is
+      // written to the buffer, but currently the start code is written in the
+      // loop (which is not the right place, there's only one slice NALU passed
+      // into this function) and it's not easy to identify where the subsample
+      // starts in the buffer.
+      subsamples_[subsamples_.size() - subsamples.size()].ClearSize += 3;
+    }
+  }
+
   while (remaining_bitstream > 0) {
     if (bitstream_buffer_size_ < remaining_bitstream &&
         slice_info_.size() > 0) {
@@ -397,7 +470,7 @@ bool D3D11H264Accelerator::SubmitSliceData() {
     return false;
   }
 
-  D3D11_VIDEO_DECODER_BUFFER_DESC buffers[4] = {};
+  D3D11_VIDEO_DECODER_BUFFER_DESC1 buffers[4] = {};
   buffers[0].BufferType = D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS;
   buffers[0].DataOffset = 0;
   buffers[0].DataSize = sizeof(DXVA_PicParams_H264);
@@ -407,18 +480,32 @@ bool D3D11H264Accelerator::SubmitSliceData() {
   buffers[1].DataSize = sizeof(DXVA_Qmatrix_H264);
   buffers[2].BufferType = D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL;
   buffers[2].DataOffset = 0;
-  buffers[2].DataSize = (UINT)(sizeof(slice_info_[0]) * slice_info_.size());
+  buffers[2].DataSize = sizeof(slice_info_[0]) * slice_info_.size();
   buffers[3].BufferType = D3D11_VIDEO_DECODER_BUFFER_BITSTREAM;
   buffers[3].DataOffset = 0;
-  buffers[3].DataSize = (UINT)current_offset_;
+  buffers[3].DataSize = current_offset_;
 
-  hr = video_context_->SubmitDecoderBuffers(video_decoder_.Get(), 4, buffers);
+  if (!frame_iv_.empty()) {
+    buffers[3].pIV = frame_iv_.data();
+    buffers[3].IVSize = frame_iv_.size();
+    // Subsmaples matter iff there is IV, for decryption.
+    if (!subsamples_.empty()) {
+      buffers[3].pSubSampleMappingBlock = subsamples_.data();
+      buffers[3].SubSampleMappingCount = subsamples_.size();
+    }
+  }
+
+  hr = video_context_->SubmitDecoderBuffers1(video_decoder_.Get(),
+                                             base::size(buffers), buffers);
   current_offset_ = 0;
   slice_info_.clear();
   bitstream_buffer_bytes_ = nullptr;
   bitstream_buffer_size_ = 0;
+  frame_iv_.clear();
+  subsamples_.clear();
   if (!SUCCEEDED(hr)) {
-    LOG(ERROR) << "SubmitDecoderBuffers failed";
+    LOG(ERROR) << "SubmitDecoderBuffers failed: "
+               << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
