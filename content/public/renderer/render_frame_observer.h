@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -133,7 +134,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // |request_id| uniquely identifies the request within this render frame.
   virtual void DidStartResponse(
       int request_id,
-      const network::ResourceResponseHead& response_head) {}
+      const network::ResourceResponseHead& response_head,
+      content::ResourceType resource_type) {}
   virtual void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) {}

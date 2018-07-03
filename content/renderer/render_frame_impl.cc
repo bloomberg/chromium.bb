@@ -4896,9 +4896,10 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
 
 void RenderFrameImpl::DidStartResponse(
     int request_id,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    content::ResourceType resource_type) {
   for (auto& observer : observers_)
-    observer.DidStartResponse(request_id, response_head);
+    observer.DidStartResponse(request_id, response_head, resource_type);
 }
 
 void RenderFrameImpl::DidCompleteResponse(

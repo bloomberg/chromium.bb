@@ -87,7 +87,8 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
 
 void MetricsRenderFrameObserver::DidStartResponse(
     int request_id,
-    const network::ResourceResponseHead& response_head) {}
+    const network::ResourceResponseHead& response_head,
+    content::ResourceType resource_type) {}
 
 void MetricsRenderFrameObserver::DidCompleteResponse(
     int request_id,

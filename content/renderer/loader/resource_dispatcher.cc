@@ -100,14 +100,16 @@ void NotifyResourceLoadStarted(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
     int render_frame_id,
     int request_id,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    content::ResourceType resource_type) {
   if (!thread_task_runner)
     return;
 
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
         FROM_HERE, base::BindOnce(NotifyResourceLoadStarted, thread_task_runner,
-                                  render_frame_id, request_id, response_head));
+                                  render_frame_id, request_id, response_head,
+                                  resource_type));
     return;
   }
 
@@ -116,7 +118,7 @@ void NotifyResourceLoadStarted(
   if (!render_frame)
     return;
 
-  render_frame->DidStartResponse(request_id, response_head);
+  render_frame->DidStartResponse(request_id, response_head, resource_type);
 }
 
 void NotifyResourceLoadComplete(
@@ -310,7 +312,8 @@ void ResourceDispatcher::OnReceivedResponse(
   auto deep_copied_response = resource_response->DeepCopy();
   NotifyResourceLoadStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                             request_info->render_frame_id, request_id,
-                            deep_copied_response->head);
+                            deep_copied_response->head,
+                            request_info->resource_type);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
