@@ -462,21 +462,21 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
   # add links for the perf results and the dashboard url to
   # the logs section of buildbot
   if is_ref:
-    logdog_dict[base_benchmark_name]['perf_results_ref'] = \
-        output_json_file.get_viewer_url()
-  else:
+    logdog_dict[base_benchmark_name]['perf_results_ref'] = (
+        output_json_file.get_viewer_url())
     if upload_failure:
-      logdog_dict[base_benchmark_name]['dashboard_url'] = \
-          'upload failed'
-    else:
-      logdog_dict[base_benchmark_name]['dashboard_url'] = \
-          upload_results_to_perf_dashboard.GetDashboardUrl(
-              benchmark_name,
-              configuration_name, RESULTS_URL,
-              build_properties['got_revision_cp'],
-              _GetMachineGroup(build_properties))
+      logdog_dict[base_benchmark_name]['ref_upload_failed'] = 'True'
+  else:
+    logdog_dict[base_benchmark_name]['dashboard_url'] = \
+        upload_results_to_perf_dashboard.GetDashboardUrl(
+            benchmark_name,
+            configuration_name, RESULTS_URL,
+            build_properties['got_revision_cp'],
+            _GetMachineGroup(build_properties))
     logdog_dict[base_benchmark_name]['perf_results'] = \
         output_json_file.get_viewer_url()
+    if upload_failure:
+      logdog_dict[base_benchmark_name]['upload_failed'] = 'True'
 
 
 def print_duration(step, start, end):
