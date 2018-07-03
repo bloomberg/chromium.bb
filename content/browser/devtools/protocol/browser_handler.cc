@@ -47,10 +47,14 @@ Response BrowserHandler::GetVersion(std::string* protocol_version,
 namespace {
 
 // Converts an histogram.
-std::unique_ptr<Browser::Histogram> Convert(
-    const base::HistogramBase& in_histogram) {
-  const std::unique_ptr<const base::HistogramSamples> in_buckets =
-      in_histogram.SnapshotSamples();
+std::unique_ptr<Browser::Histogram> Convert(base::HistogramBase& in_histogram,
+                                            bool in_delta) {
+  std::unique_ptr<const base::HistogramSamples> in_buckets;
+  if (!in_delta) {
+    in_buckets = in_histogram.SnapshotSamples();
+  } else {
+    in_buckets = in_histogram.SnapshotDelta();
+  }
   DCHECK(in_buckets);
 
   auto out_buckets = std::make_unique<Array<Browser::Bucket>>();
@@ -81,16 +85,17 @@ std::unique_ptr<Browser::Histogram> Convert(
 
 Response BrowserHandler::GetHistograms(
     const Maybe<std::string> in_query,
+    const Maybe<bool> in_delta,
     std::unique_ptr<Array<Browser::Histogram>>* const out_histograms) {
   // Convert histograms.
   DCHECK(out_histograms);
   *out_histograms = std::make_unique<Array<Browser::Histogram>>();
-  for (const base::HistogramBase* const h :
+  for (base::HistogramBase* const h :
        base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
            base::StatisticsRecorder::GetHistograms(),
            in_query.fromMaybe("")))) {
     DCHECK(h);
-    (*out_histograms)->addItem(Convert(*h));
+    (*out_histograms)->addItem(Convert(*h, in_delta.fromMaybe(false)));
   }
 
   return Response::OK();
@@ -98,16 +103,17 @@ Response BrowserHandler::GetHistograms(
 
 Response BrowserHandler::GetHistogram(
     const std::string& in_name,
+    const Maybe<bool> in_delta,
     std::unique_ptr<Browser::Histogram>* const out_histogram) {
   // Get histogram by name.
-  const base::HistogramBase* const in_histogram =
+  base::HistogramBase* const in_histogram =
       base::StatisticsRecorder::FindHistogram(in_name);
   if (!in_histogram)
     return Response::InvalidParams("Cannot find histogram: " + in_name);
 
   // Convert histogram.
   DCHECK(out_histogram);
-  *out_histogram = Convert(*in_histogram);
+  *out_histogram = Convert(*in_histogram, in_delta.fromMaybe(false));
 
   return Response::OK();
 }
