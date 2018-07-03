@@ -10,8 +10,10 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
@@ -83,18 +85,6 @@ DocumentMarkerVector ComputeMarkersToPaint(
   return document_marker_controller.ComputeMarkersToPaint(*node);
 }
 
-void PaintStyleableMarkerUnderline(GraphicsContext& context,
-                                   const LayoutPoint& box_origin,
-                                   const StyleableMarker& marker,
-                                   const ComputedStyle& style,
-                                   const NGPhysicalOffsetRect& local_rect) {
-  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-  DCHECK(font_data);
-  DocumentMarkerPainter::PaintStyleableMarkerUnderline(
-      context, box_origin, marker, style, local_rect.ToFloatRect(),
-      LayoutUnit(font_data->GetFontMetrics().Height()));
-}
-
 unsigned GetTextContentOffset(const Text& text, unsigned offset) {
   const Position position(text, offset);
   const NGOffsetMapping* const offset_mapping =
@@ -135,6 +125,20 @@ void PaintRect(GraphicsContext& context,
   context.FillRect(global_rect.ToFloatRect(), color);
 }
 
+LayoutRect MarkerRectForForeground(const NGPhysicalTextFragment& text_fragment,
+                                   unsigned start_offset,
+                                   unsigned end_offset) {
+  LayoutUnit start_position, end_position;
+  std::tie(start_position, end_position) =
+      text_fragment.LineLeftAndRightForOffsets(start_offset, end_offset);
+
+  const LayoutUnit height = text_fragment.Size()
+                                .ConvertToLogical(static_cast<WritingMode>(
+                                    text_fragment.Style().GetWritingMode()))
+                                .block_size;
+  return {start_position, LayoutUnit(), end_position - start_position, height};
+}
+
 // Copied from InlineTextBoxPainter
 void PaintDocumentMarkers(GraphicsContext& context,
                           const NGPaintFragment& paint_fragment,
@@ -171,8 +175,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
           continue;
         DocumentMarkerPainter::PaintDocumentMarker(
             context, box_origin, style, marker->GetType(),
-            text_fragment.LocalRect(paint_start_offset, paint_end_offset)
-                .ToLayoutRect());
+            MarkerRectForForeground(text_fragment, paint_start_offset,
+                                    paint_end_offset));
       } break;
 
       case DocumentMarker::kTextMatch: {
@@ -215,12 +219,12 @@ void PaintDocumentMarkers(GraphicsContext& context,
               styleable_marker.BackgroundColor());
           break;
         }
-        // TODO(yoichio) We call this on vertical/horizontal flipped context.
-        // Since NGPhysicalTextFragment::LocalRect returns physical rect,
-        // we need to adapt it.
-        PaintStyleableMarkerUnderline(
+        const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+        DocumentMarkerPainter::PaintStyleableMarkerUnderline(
             context, box_origin, styleable_marker, style,
-            text_fragment.LocalRect(paint_start_offset, paint_end_offset));
+            FloatRect(MarkerRectForForeground(text_fragment, paint_start_offset,
+                                              paint_end_offset)),
+            LayoutUnit(font_data->GetFontMetrics().Height()));
       } break;
 
       default:
