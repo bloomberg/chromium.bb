@@ -25,14 +25,6 @@ promise_test(async t => {
         res, {signal}, t.unreached_func('callback should not run')),
       'Bindings should throw if the signal option is a not an AbortSignal');
   }
-
-  // These cases should work:
-  for (const signal of [null, undefined]) {
-    assert_equals(
-      undefined,
-      await navigator.locks.request(res, {signal}, lock => {}),
-      'Bindings should accept a null-ish signal option');
-  }
 }, 'The signal option must be an AbortSignal');
 
 promise_test(async t => {

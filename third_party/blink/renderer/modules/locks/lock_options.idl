@@ -9,5 +9,5 @@ dictionary LockOptions {
     LockMode mode = "exclusive";
     boolean ifAvailable = false;
     boolean steal = false;
-    AbortSignal? signal;
+    AbortSignal signal;
 };
