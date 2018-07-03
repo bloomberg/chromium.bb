@@ -97,6 +97,9 @@ class InstantService : public KeyedService,
   // Invoked when a custom background is selected on the NTP.
   void SetCustomBackgroundURL(const GURL& url);
 
+  // Invoked when a user selected the "Upload an image" option on the NTP.
+  void SelectLocalBackgroundImage(const base::FilePath& path);
+
  private:
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
@@ -128,6 +131,10 @@ class InstantService : public KeyedService,
 
   void ApplyGoogleNtpThemeElements();
 
+  // Update the background pref to point to
+  // chrome-search://local-ntp/background.jpg
+  void SetBackgroundToLocalResource();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -147,6 +154,8 @@ class InstantService : public KeyedService,
 
   // Data source for NTP tiles (aka Most Visited tiles). May be null.
   std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_sites_;
+
+  base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantService);
 };

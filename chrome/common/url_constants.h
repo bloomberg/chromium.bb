@@ -66,6 +66,11 @@ extern const char kChromeSearchLocalNtpUrl[];
 extern const char kChromeSearchMostVisitedHost[];
 extern const char kChromeSearchMostVisitedUrl[];
 
+// URL for NTP custom background image selected from the user's machine and
+// filename for the version of the file in the Profile directory
+extern const char kChromeSearchLocalNtpBackgroundUrl[];
+extern const char kChromeSearchLocalNtpBackgroundFilename[];
+
 // Page under chrome-search.
 extern const char kChromeSearchRemoteNtpHost[];
 

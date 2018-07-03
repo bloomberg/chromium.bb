@@ -303,6 +303,11 @@ function renderTheme() {
     var imageWithOverlay = [
       customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, info.imageUrl
     ].join(',').trim();
+
+    if (imageWithOverlay != document.body.style.backgroundImage) {
+      customBackgrounds.closeCustomizationDialog();
+    }
+
     document.body.style.setProperty('background-image', imageWithOverlay);
   }
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden =

@@ -283,6 +283,12 @@ customBackgrounds.loadCollections = function() {
   document.body.appendChild(collScript);
 };
 
+/* Close dialog when an image is selected via the file picker. */
+customBackgrounds.closeCustomizationDialog = function() {
+  $(customBackgrounds.IDS.EDIT_BG_DIALOG).close();
+  $(customBackgrounds.IDS.EDIT_BG).focus();
+};
+
 /**
  * Initialize the custom backgrounds dialogs. Set the text and event handlers
  * for the various elements.
@@ -307,6 +313,19 @@ customBackgrounds.initCustomBackgrounds = function() {
       configData.translatedStrings.selectionDone;
   $(customBackgrounds.IDS.CANCEL).textContent =
       configData.translatedStrings.selectionCancel;
+
+  // TODO(kmilka): files should be validated and have errors shown as needed.
+  // crbug.com/848981.
+  var uploadImageInteraction = function(event) {
+    window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
+  };
+
+  $(customBackgrounds.IDS.UPLOAD_IMAGE).onclick = uploadImageInteraction;
+  $(customBackgrounds.IDS.UPLOAD_IMAGE).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      uploadImageInteraction(event);
+    }
+  };
 
   // Edit gear icon interaction events.
   var editBackgroundInteraction = function(event) {

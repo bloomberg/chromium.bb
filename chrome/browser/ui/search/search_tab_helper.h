@@ -21,6 +21,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_ANDROID)
 #error "Instant is only used on desktop";
@@ -42,7 +43,8 @@ class SearchIPCRouterTest;
 class SearchTabHelper : public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper>,
                         public InstantServiceObserver,
-                        public SearchIPCRouter::Delegate {
+                        public SearchIPCRouter::Delegate,
+                        public ui::SelectFileDialog::Listener {
  public:
   ~SearchTabHelper() override;
 
@@ -105,11 +107,18 @@ class SearchTabHelper : public content::WebContentsObserver,
   bool ChromeIdentityCheck(const base::string16& identity) override;
   bool HistorySyncCheck() override;
   void OnSetCustomBackgroundURL(const GURL& url) override;
+  void OnSelectLocalBackgroundImage() override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
   void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
+
+  // Overridden from SelectFileDialog::Listener:
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   OmniboxView* GetOmniboxView();
   const OmniboxView* GetOmniboxView() const;
@@ -127,6 +136,8 @@ class SearchTabHelper : public content::WebContentsObserver,
   InstantService* instant_service_;
 
   bool is_setting_title_ = false;
+
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

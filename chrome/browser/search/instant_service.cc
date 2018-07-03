@@ -7,6 +7,9 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
@@ -24,8 +27,10 @@
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search.mojom.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -37,7 +42,20 @@
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_utils.h"
 
-InstantService::InstantService(Profile* profile) : profile_(profile) {
+namespace {
+
+void CopyFileToProfilePath(const base::FilePath& from_path) {
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath to_path(user_data_dir.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::CopyFile(from_path, to_path);
+}
+
+}  // namespace
+
+InstantService::InstantService(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
@@ -163,6 +181,25 @@ void InstantService::SetCustomBackgroundURL(const GURL& url) {
   }
 
   UpdateThemeInfo();
+}
+
+void InstantService::SetBackgroundToLocalResource() {
+  // Add a timestamp to the url to prevent the browser from using a cached
+  // version when "Upload an image" is used multiple times.
+  std::string time_string = std::to_string(base::Time::Now().ToTimeT());
+  std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
+  GURL timestamped_url(local_string + "?ts=" + time_string);
+  profile_->GetPrefs()->SetString(prefs::kNTPCustomBackgroundURL,
+                                  timestamped_url.spec());
+  UpdateThemeInfo();
+}
+
+void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&CopyFileToProfilePath, path),
+      base::BindOnce(&InstantService::SetBackgroundToLocalResource,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InstantService::Shutdown() {

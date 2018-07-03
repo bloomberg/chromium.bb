@@ -82,6 +82,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     // Called when a custom background is selected on the NTP.
     virtual void OnSetCustomBackgroundURL(const GURL& url) = 0;
+
+    // Called to open the file select dialog for selecting a
+    // NTP background image.
+    virtual void OnSelectLocalBackgroundImage() = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -106,6 +110,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
+    virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
   };
 
   // Creates chrome::mojom::EmbeddedSearchClient connections on request.
@@ -170,6 +175,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void HistorySyncCheck(int page_seq_no,
                         HistorySyncCheckCallback callback) override;
   void SetCustomBackgroundURL(const GURL& url) override;
+  void SelectLocalBackgroundImage() override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {
     embedded_search_client_factory_ = std::move(factory);

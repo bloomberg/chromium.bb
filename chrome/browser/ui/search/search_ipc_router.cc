@@ -268,6 +268,13 @@ void SearchIPCRouter::SetCustomBackgroundURL(const GURL& url) {
   delegate_->OnSetCustomBackgroundURL(url);
 }
 
+void SearchIPCRouter::SelectLocalBackgroundImage() {
+  if (!policy_->ShouldProcessSelectLocalBackgroundImage())
+    return;
+
+  delegate_->OnSelectLocalBackgroundImage();
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

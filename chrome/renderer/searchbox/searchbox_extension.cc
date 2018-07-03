@@ -594,6 +594,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
   static void SetCustomBackgroundURL(const std::string& background_url);
+  static void SelectLocalBackgroundImage();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
 };
@@ -631,7 +632,9 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("logMostVisitedNavigation",
                  &NewTabPageBindings::LogMostVisitedNavigation)
       .SetMethod("setBackgroundURL",
-                 &NewTabPageBindings::SetCustomBackgroundURL);
+                 &NewTabPageBindings::SetCustomBackgroundURL)
+      .SetMethod("selectLocalBackgroundImage",
+                 &NewTabPageBindings::SelectLocalBackgroundImage);
 }
 
 // static
@@ -834,6 +837,12 @@ void NewTabPageBindings::SetCustomBackgroundURL(
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   GURL url(background_url);
   search_box->SetCustomBackgroundURL(url);
+}
+
+// static
+void NewTabPageBindings::SelectLocalBackgroundImage() {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  search_box->SelectLocalBackgroundImage();
 }
 
 }  // namespace
