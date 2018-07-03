@@ -22,6 +22,7 @@ NightLightFeaturePodController::~NightLightFeaturePodController() = default;
 FeaturePodButton* NightLightFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
+  button_->SetVectorIcon(kUnifiedMenuNightLightIcon);
   button_->SetVisible(
       features::IsNightLightEnabled() &&
       Shell::Get()->session_controller()->ShouldEnableSettings());
@@ -47,8 +48,6 @@ void NightLightFeaturePodController::UpdateButton() {
 
   bool is_enabled = Shell::Get()->night_light_controller()->GetEnabled();
   button_->SetToggled(is_enabled);
-  button_->SetVectorIcon(is_enabled ? kSystemMenuNightLightOnIcon
-                                    : kSystemMenuNightLightOffIcon);
   button_->SetSubLabel(l10n_util::GetStringUTF16(
       is_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE
                  : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE));

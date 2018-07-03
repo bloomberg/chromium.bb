@@ -20,11 +20,11 @@ const float kSliderIgnoreUpdateThreshold = 0.01;
 
 // References to the icons that correspond to different volume levels.
 const gfx::VectorIcon* const kVolumeLevelIcons[] = {
-    &kSystemMenuVolumeMuteIcon,    // Muted.
-    &kSystemMenuVolumeLowIcon,     // Low volume.
-    &kSystemMenuVolumeMediumIcon,  // Medium volume.
-    &kSystemMenuVolumeHighIcon,    // High volume.
-    &kSystemMenuVolumeHighIcon,    // Full volume.
+    &kUnifiedMenuVolumeMuteIcon,    // Muted.
+    &kUnifiedMenuVolumeLowIcon,     // Low volume.
+    &kUnifiedMenuVolumeMediumIcon,  // Medium volume.
+    &kUnifiedMenuVolumeHighIcon,    // High volume.
+    &kUnifiedMenuVolumeHighIcon,    // Full volume.
 };
 
 // The maximum index of kVolumeLevelIcons.

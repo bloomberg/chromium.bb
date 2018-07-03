@@ -47,7 +47,7 @@ IMEFeaturePodController::~IMEFeaturePodController() = default;
 
 FeaturePodButton* IMEFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
-  button_->SetVectorIcon(kSystemMenuKeyboardIcon);
+  button_->SetVectorIcon(kUnifiedMenuKeyboardIcon);
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_SHORT));
   button_->ShowDetailedViewArrow();
   Update();

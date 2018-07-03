@@ -19,7 +19,7 @@ class UnifiedKeyboardBrightnessView : public UnifiedSliderView,
       UnifiedKeyboardBrightnessSliderController* controller,
       UnifiedSystemTrayModel* model)
       : UnifiedSliderView(controller,
-                          kSystemMenuKeyboardBrightnessIcon,
+                          kUnifiedMenuKeyboardBrightnessIcon,
                           IDS_ASH_STATUS_TRAY_BRIGHTNESS,
                           true /* readonly*/),
         model_(model) {

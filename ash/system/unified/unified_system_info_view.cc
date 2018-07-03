@@ -311,7 +311,7 @@ EnterpriseManagedView::EnterpriseManagedView(
     UnifiedSystemTrayController* controller)
     : ManagedStateView(this,
                        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT,
-                       kSystemMenuBusinessIcon),
+                       kUnifiedMenuManagedIcon),
       controller_(controller) {
   DCHECK(Shell::Get());
   set_id(VIEW_ID_TRAY_ENTERPRISE);

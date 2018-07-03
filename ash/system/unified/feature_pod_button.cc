@@ -26,9 +26,6 @@ namespace ash {
 
 namespace {
 
-// TODO(tetsui): Remove when the asset arrives.
-constexpr int kDetailedViewArrowSize = 10;
-
 void ConfigureFeaturePodLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
@@ -111,8 +108,7 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 
   detailed_view_arrow_->set_can_process_events_within_subtree(false);
   detailed_view_arrow_->SetImage(
-      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
-                            kDetailedViewArrowSize, kUnifiedMenuIconColor));
+      gfx::CreateVectorIcon(kUnifiedMenuMoreIcon, kUnifiedMenuIconColor));
   detailed_view_arrow_->SetVisible(false);
 
   AddChildView(label_);
