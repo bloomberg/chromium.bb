@@ -15,11 +15,21 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/platform_locale_settings.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/suggestions_service.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/base/escape.h"
+#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,6 +39,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace {
@@ -39,9 +50,14 @@ const char kSizeParameter[] = "size/";
 // Size of the fallback icon (letter + circle), in dp.
 const int kFallbackIconSizeDip = 40;
 
+// URL to the server favicon service. "alt=404" means the service will return a
+// 404 if an icon can't be found.
+const char kServerFaviconURL[] =
+    "https://s2.googleusercontent.com/s2/favicons?domain_url=%s&alt=404&sz=32";
+
 // Used to parse the specification from the path.
 struct ParsedNtpIconPath {
-  // The URL from which the icon is being requested.
+  // The URL for which the icon is being requested.
   GURL url;
 
   // The size of the requested icon in dip.
@@ -149,17 +165,17 @@ void DrawFavicon(const SkBitmap& bitmap, gfx::Canvas* canvas, int size) {
 // For the given |icon_url|, will render a fallback icon with an appropriate
 // letter in a circle.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
-                                            const SkBitmap& local_favicon,
+                                            const SkBitmap& favicon,
                                             int size) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size, size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-  if (!local_favicon.empty()) {
+  if (!favicon.empty()) {
     constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
     DrawCircleInCanvas(&canvas, size, /*background_color=*/kFaviconBackground);
-    DrawFavicon(local_favicon, &canvas, size);
+    DrawFavicon(favicon, &canvas, size);
   } else {
     // TODO(crbug.com/853780): Set the appropriate fallback background color.
     DrawCircleInCanvas(&canvas, size, /*background_color=*/SK_ColorGRAY);
@@ -176,23 +192,31 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
 struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
                  const GURL& path,
-                 int size,
+                 int icon_size_in_pixels,
                  float scale)
       : callback(cb),
         path(path),
-        size_in_dip(size),
+        icon_size_in_pixels(icon_size_in_pixels),
         device_scale_factor(scale) {}
   NtpIconRequest(const NtpIconRequest& other) = default;
   ~NtpIconRequest() {}
 
   content::URLDataSource::GotDataCallback callback;
   GURL path;
-  int size_in_dip;
+  int icon_size_in_pixels;
   float device_scale_factor;
 };
 
 NtpIconSource::NtpIconSource(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile),
+      image_fetcher_(std::make_unique<image_fetcher::ImageFetcherImpl>(
+          std::make_unique<suggestions::ImageDecoderImpl>(),
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetURLLoaderFactoryForBrowserProcess())),
+      weak_ptr_factory_(this) {
+  image_fetcher_->SetDataUseServiceName(
+      data_use_measurement::DataUseUserData::NTP_TILES);
+}
 
 NtpIconSource::~NtpIconSource() = default;
 
@@ -212,41 +236,21 @@ void NtpIconSource::StartDataRequest(
 
   if (parsed.url.is_valid()) {
     // This will query for a local favicon. If not found, will take alternative
-    // action in OnFaviconDataAvailable.
+    // action in OnLocalFaviconAvailable.
     const bool fallback_to_host = true;
-    int desired_size_in_pixel =
+    int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     favicon_service->GetRawFaviconForPageURL(
-        parsed.url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
+        parsed.url, {favicon_base::IconType::kFavicon}, icon_size_in_pixels,
         fallback_to_host,
-        base::Bind(&NtpIconSource::OnFaviconDataAvailable,
+        base::Bind(&NtpIconSource::OnLocalFaviconAvailable,
                    weak_ptr_factory_.GetWeakPtr(),
-                   NtpIconRequest(callback, parsed.url, parsed.size_in_dip,
+                   NtpIconRequest(callback, parsed.url, icon_size_in_pixels,
                                   parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   } else {
     callback.Run(nullptr);
   }
-}
-
-void NtpIconSource::OnFaviconDataAvailable(
-    const NtpIconRequest& request,
-    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  SkBitmap bitmap;
-  if (bitmap_result.is_valid()) {
-    // A local favicon was found. Decode it to an SkBitmap so it can be passed
-    // as valid image data to RenderIconBitmap.
-    bool result =
-        gfx::PNGCodec::Decode(bitmap_result.bitmap_data.get()->front(),
-                              bitmap_result.bitmap_data.get()->size(), &bitmap);
-    DCHECK(result);
-  }
-
-  int desired_size_in_pixel =
-      std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
-  std::vector<unsigned char> bitmap_data =
-      RenderIconBitmap(request.path, bitmap, desired_size_in_pixel);
-  request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }
 
 std::string NtpIconSource::GetMimeType(const std::string&) const {
@@ -269,4 +273,110 @@ bool NtpIconSource::ShouldServiceRequest(
   }
   return URLDataSource::ShouldServiceRequest(url, resource_context,
                                              render_process_id);
+}
+
+void NtpIconSource::OnLocalFaviconAvailable(
+    const NtpIconRequest& request,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  if (bitmap_result.is_valid()) {
+    // A local favicon was found. Decode it to an SkBitmap so it can eventually
+    // be passed as valid image data to RenderIconBitmap.
+    SkBitmap bitmap;
+    bool result =
+        gfx::PNGCodec::Decode(bitmap_result.bitmap_data.get()->front(),
+                              bitmap_result.bitmap_data.get()->size(), &bitmap);
+    DCHECK(result);
+    ReturnRenderedIconForRequest(request, bitmap);
+  } else {
+    // Since a local favicon was not found, attempt to fetch a server icon if
+    // the url is known to the server (this last check is important to avoid
+    // leaking private history to the server).
+    RequestServerFavicon(request);
+  }
+}
+
+bool NtpIconSource::IsRequestedUrlInServerSuggestions(const GURL& url) {
+  suggestions::SuggestionsService* suggestions_service =
+      suggestions::SuggestionsServiceFactory::GetForProfile(profile_);
+  if (!suggestions_service)
+    return false;
+
+  suggestions::SuggestionsProfile profile =
+      suggestions_service->GetSuggestionsDataFromCache().value_or(
+          suggestions::SuggestionsProfile());
+  auto position =
+      std::find_if(profile.suggestions().begin(), profile.suggestions().end(),
+                   [url](const suggestions::ChromeSuggestion& suggestion) {
+                     return suggestion.url() == url.spec();
+                   });
+  return position != profile.suggestions().end();
+}
+
+void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
+  // Only fetch a server icon if the page url is known to the server. This check
+  // is important to avoid leaking private history to the server.
+  const GURL server_favicon_url =
+      GURL(base::StringPrintf(kServerFaviconURL, request.path.spec().c_str()));
+  if (!server_favicon_url.is_valid() ||
+      !IsRequestedUrlInServerSuggestions(request.path)) {
+    ReturnRenderedIconForRequest(request, SkBitmap());
+    return;
+  }
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("ntp_icon_source", R"(
+      semantics {
+        sender: "NTP Icon Source"
+        description:
+          "Retrieves icons for site suggestions based on the user's browsing "
+          "history, for use e.g. on the New Tab page."
+        trigger:
+          "Triggered when an icon for a suggestion is required (e.g. on "
+          "the New Tab page), no local icon is available and the URL is known "
+          "to the server (hence no private information is revealed)."
+        data: "The URL for which to retrieve an icon."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "Users cannot disable this feature. The feature is enabled by "
+          "default."
+        policy_exception_justification: "Not implemented."
+      })");
+  image_fetcher_->SetDesiredImageFrameSize(
+      gfx::Size(request.icon_size_in_pixels, request.icon_size_in_pixels));
+  image_fetcher_->FetchImage(
+      /*id=*/std::string(), server_favicon_url,
+      base::Bind(&NtpIconSource::OnServerFaviconAvailable,
+                 weak_ptr_factory_.GetWeakPtr(), request),
+      traffic_annotation);
+}
+
+void NtpIconSource::OnServerFaviconAvailable(
+    const NtpIconRequest& request,
+    const std::string& id,
+    const gfx::Image& fetched_image,
+    const image_fetcher::RequestMetadata& metadata) {
+  // If a server icon was not found, |fetched_bitmap| will be empty and a
+  // fallback icon will be eventually drawn.
+  SkBitmap fetched_bitmap = fetched_image.AsBitmap();
+  if (!fetched_bitmap.empty()) {
+    // The received server icon bitmap may still be bigger than our desired
+    // size, so resize it.
+    fetched_bitmap = skia::ImageOperations::Resize(
+        fetched_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+        request.icon_size_in_pixels, request.icon_size_in_pixels);
+  }
+
+  ReturnRenderedIconForRequest(request, fetched_bitmap);
+}
+
+void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
+                                                 const SkBitmap& bitmap) {
+  int desired_overall_size_in_pixel =
+      std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
+  std::vector<unsigned char> bitmap_data =
+      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel);
+  request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

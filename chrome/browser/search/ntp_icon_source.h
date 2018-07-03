@@ -5,18 +5,26 @@
 #ifndef CHROME_BROWSER_SEARCH_NTP_ICON_SOURCE_H_
 #define CHROME_BROWSER_SEARCH_NTP_ICON_SOURCE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher_types.h"
 #include "content/public/browser/url_data_source.h"
 
 class GURL;
 class Profile;
+class SkBitmap;
 
 namespace favicon_base {
 struct FaviconRawBitmapResult;
+}
+
+namespace gfx {
+class Image;
 }
 
 // NTP Icon Source is the gateway between network-level chrome: requests for
@@ -40,12 +48,26 @@ class NtpIconSource : public content::URLDataSource {
 
  private:
   struct NtpIconRequest;
-  void OnFaviconDataAvailable(
+  void OnLocalFaviconAvailable(
       const NtpIconRequest& request,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
+  // Returns whether |url| is in the set of server suggestions.
+  bool IsRequestedUrlInServerSuggestions(const GURL& url);
+  void RequestServerFavicon(const NtpIconRequest& request);
+  void OnServerFaviconAvailable(const NtpIconRequest& request,
+                                const std::string& id,
+                                const gfx::Image& fetched_image,
+                                const image_fetcher::RequestMetadata& metadata);
+
+  // Will call |request.callback| with the rendered icon. |bitmap| can be empty,
+  // in which case the returned icon is a fallback circle with a letter drawn
+  // into it.
+  void ReturnRenderedIconForRequest(const NtpIconRequest& request,
+                                    const SkBitmap& bitmap);
 
   base::CancelableTaskTracker cancelable_task_tracker_;
   Profile* profile_;
+  std::unique_ptr<image_fetcher::ImageFetcher> const image_fetcher_;
 
   base::WeakPtrFactory<NtpIconSource> weak_ptr_factory_;
 
