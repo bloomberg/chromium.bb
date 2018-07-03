@@ -239,6 +239,7 @@ source_set("perf_tests") {
 
   sources = [
     "base/sequence_manager_perftest.cc",
+    "test/scheduler_perftest.cc",
   ]
 
   deps = [

@@ -370,7 +370,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
@@ -384,7 +384,8 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   return loading_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
+scoped_refptr<MainThreadTaskQueue>
+FrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
@@ -397,7 +398,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
   return loading_control_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
@@ -427,7 +428,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   return throttleable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
@@ -446,7 +447,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   return deferrable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!pausable_task_queue_) {
     pausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
@@ -464,7 +465,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   return pausable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
@@ -812,6 +813,11 @@ void FrameSchedulerImpl::RemovePauseSubresourceLoadingHandle() {
     subresource_loading_paused_ = false;
     UpdatePolicy();
   }
+}
+
+scoped_refptr<MainThreadTaskQueue>
+FrameSchedulerImpl::GetTaskQueueForTesting() {
+  return UnpausableTaskQueue();
 }
 
 }  // namespace scheduler
