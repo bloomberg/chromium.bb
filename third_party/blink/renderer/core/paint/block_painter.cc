@@ -33,7 +33,13 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
   auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
   auto& local_paint_info = adjustment.MutablePaintInfo();
 
-  if (!IntersectsPaintRect(local_paint_info, adjusted_paint_offset))
+  // We can't early return if there is no fragment to paint for this block,
+  // because there may be overflowing children that exist in the painting
+  // fragment. We also can't check IntersectsPaintRect() in the case because we
+  // don't have a meaningful paint offset. TODO(wangxianzhu): only paint
+  // children if !adjustment.FragmentToPaint().
+  if (adjustment.FragmentToPaint() &&
+      !IntersectsPaintRect(local_paint_info, adjusted_paint_offset))
     return;
 
   PaintPhase original_phase = local_paint_info.phase;
