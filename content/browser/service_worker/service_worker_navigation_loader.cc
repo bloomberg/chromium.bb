@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
@@ -81,6 +82,11 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker",
+      "ServiceWorkerNavigationLoader::ServiceWorkerNavigationloader", this,
+      TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request_.url.spec());
+
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
 
@@ -88,9 +94,17 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
   response_head_.load_timing.request_start_time = base::Time::Now();
 }
 
-ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() = default;
+ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerNavigationLoader::~ServiceWorkerNavigationloader", this,
+      TRACE_EVENT_FLAG_FLOW_IN);
+};
 
 void ServiceWorkerNavigationLoader::FallbackToNetwork() {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   // This could be called multiple times in some cases because we simply
   // call this synchronously here and don't wait for a separate async
@@ -101,6 +115,9 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
 }
 
 void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::ForwardToServiceWorker",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
   StartRequest();
 }
@@ -134,6 +151,10 @@ void ServiceWorkerNavigationLoader::StartRequest() {
   DCHECK_EQ(ResponseType::FORWARD_TO_SERVICE_WORKER, response_type_);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
+
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerNavigationLoader::StartRequest", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
@@ -189,6 +210,11 @@ void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
 }
 
 void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerNavigationLoader::CommitCompleted", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "error_code", net::ErrorToString(error_code));
+
   DCHECK_LT(status_, Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
   status_ = Status::kCompleted;
@@ -201,6 +227,10 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
 }
 
 void ServiceWorkerNavigationLoader::ReturnNetworkError() {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::ReturnNetworkError",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   DCHECK(!url_loader_client_.is_bound());
   DCHECK(loader_callback_);
   std::move(loader_callback_)
@@ -211,6 +241,12 @@ void ServiceWorkerNavigationLoader::ReturnNetworkError() {
 void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version,
     EmbeddedWorkerStatus initial_worker_status) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::DidPrepareFetchEvent",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+      "initial_worker_status",
+      EmbeddedWorkerInstance::StatusToString(initial_worker_status));
+
   response_head_.service_worker_ready_time = base::TimeTicks::Now();
 
   // Note that we don't record worker preparation time in S13nServiceWorker
@@ -231,6 +267,10 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+      blink::ServiceWorkerStatusToString(status));
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
 
@@ -306,6 +346,11 @@ void ServiceWorkerNavigationLoader::StartResponse(
           resource_request_, response_head_,
           response_head_.ssl_info->token_binding_negotiated);
   if (redirect_info) {
+    TRACE_EVENT_WITH_FLOW2(
+        "ServiceWorker", "ServiceWorkerNavigationLoader::StartResponse", this,
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "result",
+        "redirect", "redirect url", redirect_info->new_url.spec());
+
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);
     // Our client is the navigation loader, which will start a new URLLoader for
@@ -319,6 +364,10 @@ void ServiceWorkerNavigationLoader::StartResponse(
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
+    TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                           "ServiceWorkerNavigationLoader::StartResponse", this,
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
         this, std::move(version), std::move(body_as_stream->callback_request));
     url_loader_client_->OnStartLoadingResponseBody(
@@ -340,10 +389,20 @@ void ServiceWorkerNavigationLoader::StartResponse(
       CommitCompleted(error);
       return;
     }
+    TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                           "ServiceWorkerNavigationLoader::StartResponse", this,
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "result", "blob response");
+
     url_loader_client_->OnStartLoadingResponseBody(std::move(data_pipe));
     // We continue in OnBlobReadingComplete().
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerNavigationLoader::StartResponse", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "result", "no body");
 
   // The response has no body.
   CommitCompleted(net::OK);
