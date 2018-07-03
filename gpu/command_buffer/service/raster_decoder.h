@@ -24,16 +24,19 @@ class Outputter;
 }  // namespace gles2
 
 namespace raster {
+struct RasterDecoderContextState;
 
 // This class implements the AsyncAPIInterface interface, decoding
 // RasterInterface commands and calling GL.
 class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
                                        public CommonDecoder {
  public:
-  static RasterDecoder* Create(DecoderClient* client,
-                               CommandBufferServiceBase* command_buffer_service,
-                               gles2::Outputter* outputter,
-                               gles2::ContextGroup* group);
+  static RasterDecoder* Create(
+      DecoderClient* client,
+      CommandBufferServiceBase* command_buffer_service,
+      gles2::Outputter* outputter,
+      gles2::ContextGroup* group,
+      scoped_refptr<RasterDecoderContextState> raster_decoder_context_state);
 
   ~RasterDecoder() override;
 
