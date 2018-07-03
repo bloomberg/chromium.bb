@@ -645,19 +645,20 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   }
   chrome::SelectNumberedTab(new_window, 0);
 
+  if (focused)
+    new_window->window()->Show();
+  else
+    new_window->window()->ShowInactive();
+
 #if defined(OS_CHROMEOS)
   // Lock the window fullscreen only after the new tab has been created
-  // (otherwise the tabstrip is empty).
+  // (otherwise the tabstrip is empty), and window()->show() has been called
+  // (otherwise that resets the locked mode for devices in tablet mode).
   if (create_data &&
       create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
     SetLockedFullscreenState(new_window, true);
   }
 #endif
-
-  if (focused)
-    new_window->window()->Show();
-  else
-    new_window->window()->ShowInactive();
 
   std::unique_ptr<base::Value> result;
   if (new_window->profile()->IsOffTheRecord() &&
