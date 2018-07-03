@@ -22,6 +22,18 @@ Polymer({
      */
     queryParams_: Object,
 
+    /** @private {string} */
+    query_: {
+      type: String,
+      observer: 'onQueryChanged_',
+    },
+
+    /** @private {string} */
+    urlQuery_: {
+      type: String,
+      observer: 'onUrlQueryChanged_',
+    },
+
     /** @private */
     searchTerm_: {
       type: String,
@@ -68,6 +80,21 @@ Polymer({
             bookmarks.actions.selectFolder(selectedId, this.getState().nodes));
       });
     }
+  },
+
+  /**
+   * @param {?string} current Current value of the query.
+   * @param {?string} previous Previous value of the query.
+   * @private
+   */
+  onQueryChanged_: function(current, previous) {
+    if (previous !== undefined)
+      this.urlQuery_ = this.query_;
+  },
+
+  /** @private */
+  onUrlQueryChanged_: function() {
+    this.query_ = this.urlQuery_;
   },
 
   /** @private */
