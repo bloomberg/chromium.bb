@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 #define CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 
+#include <string>
+
 #include "base/observer_list.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 
@@ -116,6 +118,9 @@ class AuthenticatorRequestDialogModel {
 
   // To be called when the Web Authentication request is complete.
   void OnRequestComplete();
+
+  // To be called when Web Authentication request times-out.
+  void OnRequestTimeout();
 
  private:
   // The current step of the request UX flow that is currently shown.

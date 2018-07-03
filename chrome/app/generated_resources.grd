@@ -10011,6 +10011,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBAUTHN_USB_INSERT_DESCRIPTION" desc="Contents of the dialog shown instructing the user to plug in their USB security key.">
       Plug in your Security Key and activate it
     </message>
+    <message name="IDS_WEBAUTHN_TIMEOUT_TITLE" desc="Title of the dialog shown when the Web Authentication request times out.">
+      Time out
+    </message>
+    <message name="IDS_WEBAUTHN_TIMEOUT_DESCRIPTION" desc="Contents of the dialog shown when Web Authentication request times out due to inactivity or error.">
+      The request timed out
+    </message>
   </messages>
  </release>
 </grit>
