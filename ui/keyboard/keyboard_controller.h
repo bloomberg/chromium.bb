@@ -104,7 +104,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.
-  // TODO
   void Reload();
 
   // Notifies observers that the visual or occluded bounds of the keyboard

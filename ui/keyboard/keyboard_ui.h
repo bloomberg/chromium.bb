@@ -24,7 +24,6 @@ namespace keyboard {
 class KeyboardController;
 
 // Interface representing a window containing virtual keyboard UI.
-// The window can load asynchronously.... blah.
 class KEYBOARD_EXPORT KeyboardUI {
  public:
   KeyboardUI();

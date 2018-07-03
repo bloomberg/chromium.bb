@@ -824,7 +824,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   ASSERT_EQ(root_window, controller->GetRootWindow());
 
   aura::Window* contents_window = controller->GetKeyboardWindow();
-  contents_window->SetName("KeyboardContentsWindow");
+  contents_window->SetName("KeyboardWindow");
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
   contents_window->Show();
