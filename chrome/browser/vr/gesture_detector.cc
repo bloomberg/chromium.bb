@@ -11,11 +11,7 @@ namespace vr {
 
 namespace {
 
-constexpr float kDisplacementScaleFactor = 215.0f;
-
-// This varies on the range [0, 1] and represents how much we favor predicted
-// positions over measured positions.
-constexpr float kSmoothingBias = 0.4f;
+constexpr float kDisplacementScaleFactor = 300.0f;
 
 constexpr int kMaxNumOfExtrapolations = 2;
 
@@ -54,8 +50,7 @@ std::unique_ptr<GestureList> GestureDetector::DetectGestures(
     UpdateOverallVelocity(touch_info);
 
   auto gesture_list = std::make_unique<GestureList>();
-  auto gesture =
-      GetGestureFromTouchInfo(touch_info, force_cancel, current_timestamp);
+  auto gesture = GetGestureFromTouchInfo(touch_info, force_cancel);
   gesture->SetSourceDevice(blink::kWebGestureDeviceTouchpad);
 
   if (gesture->GetType() == blink::WebInputEvent::kGestureScrollEnd)
@@ -68,8 +63,7 @@ std::unique_ptr<GestureList> GestureDetector::DetectGestures(
 
 std::unique_ptr<blink::WebGestureEvent>
 GestureDetector::GetGestureFromTouchInfo(const TouchInfo& touch_info,
-                                         bool force_cancel,
-                                         base::TimeTicks current_timestamp) {
+                                         bool force_cancel) {
   auto gesture = std::make_unique<blink::WebGestureEvent>();
   gesture->SetTimeStamp(touch_info.touch_point.timestamp);
 
@@ -84,14 +78,12 @@ GestureDetector::GetGestureFromTouchInfo(const TouchInfo& touch_info,
       break;
     // User is scrolling on touchpad
     case SCROLLING:
-      HandleScrollingState(touch_info, force_cancel, current_timestamp,
-                           gesture.get());
+      HandleScrollingState(touch_info, force_cancel, gesture.get());
       break;
     // The user has finished scrolling, but we'll hallucinate a few points
     // before really finishing.
     case POST_SCROLL:
-      HandlePostScrollingState(touch_info, force_cancel, current_timestamp,
-                               gesture.get());
+      HandlePostScrollingState(touch_info, force_cancel, gesture.get());
       break;
     default:
       NOTREACHED();
@@ -143,7 +135,6 @@ void GestureDetector::HandleDetectingState(const TouchInfo& touch_info,
 
 void GestureDetector::HandleScrollingState(const TouchInfo& touch_info,
                                            bool force_cancel,
-                                           base::TimeTicks current_timestamp,
                                            blink::WebGestureEvent* gesture) {
   if (force_cancel) {
     gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
@@ -156,14 +147,13 @@ void GestureDetector::HandleScrollingState(const TouchInfo& touch_info,
   if (touch_position_changed_) {
     gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
     UpdateGestureParameters(touch_info);
-    UpdateGestureWithScrollDelta(gesture, current_timestamp);
+    UpdateGestureWithScrollDelta(gesture);
   }
 }
 
 void GestureDetector::HandlePostScrollingState(
     const TouchInfo& touch_info,
     bool force_cancel,
-    base::TimeTicks current_timestamp,
     blink::WebGestureEvent* gesture) {
   if (extrapolated_touch_ == 0 || force_cancel) {
     gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
@@ -171,40 +161,16 @@ void GestureDetector::HandlePostScrollingState(
   } else {
     gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
     UpdateGestureParameters(touch_info);
-    UpdateGestureWithScrollDelta(gesture, current_timestamp);
+    UpdateGestureWithScrollDelta(gesture);
   }
 }
 
 void GestureDetector::UpdateGestureWithScrollDelta(
-    blink::WebGestureEvent* gesture,
-    base::TimeTicks current_timestamp) {
+    blink::WebGestureEvent* gesture) {
   gesture->data.scroll_update.delta_x =
       state_->displacement.x() * kDisplacementScaleFactor;
   gesture->data.scroll_update.delta_y =
       state_->displacement.y() * kDisplacementScaleFactor;
-
-  // Attempt to smooth the scroll deltas. This depends on a velocity vector.
-  // If we have one, we will use it to compute a predicted scroll and,
-  // ultimately, we will produce a scroll update that blends the predicted and
-  // measured scroll deltas per |kSmoothingBias|.
-  if (!state_->overall_velocity.IsZero()) {
-    gfx::PointF predicted_point;
-    float duration = (current_timestamp - last_timestamp_).InSecondsF();
-    predicted_point.set_x(state_->overall_velocity.x() * duration *
-                          kDisplacementScaleFactor);
-    predicted_point.set_y(state_->overall_velocity.y() * duration *
-                          kDisplacementScaleFactor);
-
-    gfx::PointF measured_point(gesture->data.scroll_update.delta_x,
-                               gesture->data.scroll_update.delta_y);
-
-    gfx::Vector2dF delta =
-        ScaleVector2d(predicted_point - measured_point, kSmoothingBias);
-    gfx::PointF interpolated_point = measured_point + delta;
-
-    gesture->data.scroll_update.delta_x = interpolated_point.x();
-    gesture->data.scroll_update.delta_y = interpolated_point.y();
-  }
 }
 
 bool GestureDetector::UpdateCurrentTouchPoint(const TouchInfo& touch_info) {

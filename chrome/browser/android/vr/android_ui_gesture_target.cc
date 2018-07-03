@@ -16,9 +16,6 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using content::MotionEventAction;
 
-static constexpr int kFrameDurationMs = 16;
-static constexpr int kScrollEventsPerFrame = 2;
-
 namespace vr {
 
 AndroidUiGestureTarget::AndroidUiGestureTarget(JNIEnv* env,
@@ -80,21 +77,12 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
-    case blink::WebGestureEvent::kGestureScrollUpdate: {
-      float scale = scroll_ratio_ / kScrollEventsPerFrame;
-      scroll_x_ += gesture->data.scroll_update.delta_x * scale;
-      scroll_y_ += gesture->data.scroll_update.delta_y * scale;
-
+    case blink::WebGestureEvent::kGestureScrollUpdate:
+      scroll_x_ += (scroll_ratio_ * gesture->data.scroll_update.delta_x);
+      scroll_y_ += (scroll_ratio_ * gesture->data.scroll_update.delta_y);
       SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
-
-      scroll_x_ += gesture->data.scroll_update.delta_x * scale;
-      scroll_y_ += gesture->data.scroll_update.delta_y * scale;
-      SetDelayedEvent(scroll_x_, scroll_y_, content::MOTION_EVENT_ACTION_MOVE,
-                      event_time_ms, kFrameDurationMs / kScrollEventsPerFrame);
-
       break;
-    }
     case blink::WebGestureEvent::kGestureTapDown:
       SetPointer(gesture->PositionInWidget().x, gesture->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
@@ -156,21 +144,6 @@ void AndroidUiGestureTarget::SetPointer(int x, int y) {
 
   Java_AndroidUiGestureTarget_setPointer(env, obj, x * scale_factor_,
                                          y * scale_factor_);
-}
-
-void AndroidUiGestureTarget::SetDelayedEvent(int x,
-                                             int y,
-                                             MotionEventAction action,
-                                             int64_t time_ms,
-                                             int delay_ms) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_AndroidUiGestureTarget_setDelayedEvent(env, obj, x * scale_factor_,
-                                              y * scale_factor_, action,
-                                              time_ms, delay_ms);
 }
 
 // static
