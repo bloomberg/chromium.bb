@@ -145,6 +145,17 @@ fuchsia_sdk_pkg("fit") {
   ]
 }
 
+fuchsia_sdk_fidl_pkg("fonts") {
+  namespace = "fuchsia"
+  namespace_path = "fuchsia"
+  sources = [
+    "font_provider.fidl",
+  ]
+  deps = [
+    ":mem",
+  ]
+}
+
 fuchsia_sdk_fidl_pkg("gfx") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"
