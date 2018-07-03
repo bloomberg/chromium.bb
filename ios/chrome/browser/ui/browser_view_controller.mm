@@ -180,6 +180,7 @@
 #import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
 #import "ios/chrome/browser/ui/reading_list/legacy_reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -487,7 +488,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   scoped_refptr<VoiceSearchController> _voiceSearchController;
 
   // Used to display the Reading List.
-  LegacyReadingListCoordinator* _readingListCoordinator;
+  ChromeCoordinator* _readingListCoordinator;
 
   // Used to display the Find In Page UI. Nil if not visible.
   FindBarControllerIOS* _findBarController;
@@ -4694,10 +4695,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)showReadingList {
-  _readingListCoordinator = [[LegacyReadingListCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState
-                          loader:self];
+  _readingListCoordinator =
+      experimental_flags::IsReadingListUIRebootEnabled()
+          ? [[ReadingListCoordinator alloc]
+                initWithBaseViewController:self
+                              browserState:self.browserState
+                                    loader:self]
+          : [[LegacyReadingListCoordinator alloc]
+                initWithBaseViewController:self
+                              browserState:self.browserState
+                                    loader:self];
 
   [_readingListCoordinator start];
 }
