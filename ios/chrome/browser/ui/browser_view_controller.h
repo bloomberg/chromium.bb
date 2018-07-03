@@ -113,16 +113,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Add a new tab with the given url, appends it to the end of the model,
 // and makes it the selected tab. The selected tab is returned.
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition
-                       opener:(Tab*)parentTab;
+                   transition:(ui::PageTransition)transition;
 
 // Add a new tab with the given url, at the given |position|,
 // and makes it the selected tab. The selected tab is returned.
 // If |position| == NSNotFound the tab will be added at the end of the stack.
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-                       opener:(Tab*)parentTab;
+                   transition:(ui::PageTransition)transition;
 
 // Add a new tab with the given url, at the given |position|,
 // and makes it the selected tab. The selected tab is returned.
@@ -131,7 +129,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition
-                       opener:(Tab*)parentTab
            tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
 
 // Informs the BVC that a new foreground tab is about to be opened. This is

@@ -2193,7 +2193,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:NSNotFound
                                  transition:transition
-                                     opener:nil
                          tabAddedCompletion:tabOpenedCompletion];
   }
 
@@ -2290,7 +2289,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       tab = [targetBVC addSelectedTabWithURL:url
                                      atIndex:tabIndex
                                   transition:transition
-                                      opener:nil
                           tabAddedCompletion:tabOpenedCompletion];
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
