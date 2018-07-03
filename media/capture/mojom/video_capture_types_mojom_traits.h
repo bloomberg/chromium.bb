@@ -41,6 +41,16 @@ struct EnumTraits<media::mojom::VideoCapturePixelFormat,
 };
 
 template <>
+struct EnumTraits<media::mojom::VideoCaptureBufferType,
+                  media::VideoCaptureBufferType> {
+  static media::mojom::VideoCaptureBufferType ToMojom(
+      media::VideoCaptureBufferType buffer_type);
+
+  static bool FromMojom(media::mojom::VideoCaptureBufferType input,
+                        media::VideoCaptureBufferType* out);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi> {
   static media::mojom::VideoCaptureApi ToMojom(media::VideoCaptureApi input);
   static bool FromMojom(media::mojom::VideoCaptureApi input,
@@ -82,6 +92,11 @@ struct StructTraits<media::mojom::VideoCaptureParamsDataView,
   static media::VideoCaptureFormat requested_format(
       const media::VideoCaptureParams& params) {
     return params.requested_format;
+  }
+
+  static media::VideoCaptureBufferType buffer_type(
+      const media::VideoCaptureParams& params) {
+    return params.buffer_type;
   }
 
   static media::ResolutionChangePolicy resolution_change_policy(

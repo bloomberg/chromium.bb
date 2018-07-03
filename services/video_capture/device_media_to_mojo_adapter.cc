@@ -59,6 +59,15 @@ void DeviceMediaToMojoAdapter::Start(
   auto media_receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
       receiver_->GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 
+  if (requested_settings.buffer_type !=
+          media::VideoCaptureBufferType::kSharedMemory &&
+      requested_settings.buffer_type !=
+          media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor) {
+    // Buffer types other than shared memory are not supported.
+    media_receiver->OnError();
+    return;
+  }
+
   // Create a dedicated buffer pool for the device usage session.
   auto buffer_tracker_factory =
       std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>();
@@ -67,7 +76,7 @@ void DeviceMediaToMojoAdapter::Start(
                                             max_buffer_pool_buffer_count()));
 
   auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
-      std::move(media_receiver), buffer_pool,
+      requested_settings.buffer_type, std::move(media_receiver), buffer_pool,
       base::BindRepeating(
           &CreateGpuJpegDecoder, jpeg_decoder_task_runner_,
           jpeg_decoder_factory_callback_,

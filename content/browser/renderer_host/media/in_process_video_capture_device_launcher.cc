@@ -114,7 +114,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           &InProcessVideoCaptureDeviceLauncher::
               DoStartDeviceCaptureOnDeviceThread,
           base::Unretained(this), device_id, params,
-          CreateDeviceClient(kMaxNumberOfBuffers, std::move(receiver),
+          CreateDeviceClient(media::VideoCaptureBufferType::kSharedMemory,
+                             kMaxNumberOfBuffers, std::move(receiver),
                              std::move(receiver_on_io_thread)),
           std::move(after_start_capture_callback));
       break;
@@ -181,7 +182,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           &InProcessVideoCaptureDeviceLauncher::
               DoStartDesktopCaptureOnDeviceThread,
           base::Unretained(this), desktop_id, params,
-          CreateDeviceClient(kMaxNumberOfBuffers, std::move(receiver),
+          CreateDeviceClient(media::VideoCaptureBufferType::kSharedMemory,
+                             kMaxNumberOfBuffers, std::move(receiver),
                              std::move(receiver_on_io_thread)),
           std::move(after_start_capture_callback));
       break;
@@ -207,6 +209,7 @@ void InProcessVideoCaptureDeviceLauncher::AbortLaunch() {
 
 std::unique_ptr<media::VideoCaptureDeviceClient>
 InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
+    media::VideoCaptureBufferType requested_buffer_type,
     int buffer_pool_max_buffer_count,
     std::unique_ptr<media::VideoFrameReceiver> receiver,
     base::WeakPtr<media::VideoFrameReceiver> receiver_on_io_thread) {
@@ -218,7 +221,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
           buffer_pool_max_buffer_count);
 
   return std::make_unique<media::VideoCaptureDeviceClient>(
-      std::move(receiver), std::move(buffer_pool),
+      requested_buffer_type, std::move(receiver), std::move(buffer_pool),
       base::BindRepeating(
           &CreateGpuJpegDecoder,
           base::BindRepeating(&media::VideoFrameReceiver::OnFrameReadyInBuffer,

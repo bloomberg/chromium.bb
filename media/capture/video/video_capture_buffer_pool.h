@@ -50,6 +50,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
       int buffer_id) = 0;
 
+  virtual uint32_t GetMemorySizeInBytes(int buffer_id) = 0;
+
   // Try and obtain a read/write access to the buffer.
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) = 0;

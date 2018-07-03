@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device.h"
@@ -35,10 +36,18 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
   // if the operation failed.
   bool InitFromMojoHandle(mojo::ScopedSharedBufferHandle buffer_handle);
 
+// This requires platforms where base::SharedMemoryHandle is backed by a
+// file descriptor.
+#if defined(OS_LINUX)
+  bool InitAsReadOnlyFromRawFileDescriptor(mojo::ScopedHandle fd_handle,
+                                           uint32_t memory_size_in_bytes);
+#endif  // defined(OS_LINUX)
+
   // Implementation of Buffer::HandleProvider:
   mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
       bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
+  uint32_t GetMemorySizeInBytes() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override;
 

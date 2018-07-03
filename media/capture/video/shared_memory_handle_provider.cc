@@ -63,6 +63,25 @@ bool SharedMemoryHandleProvider::InitFromMojoHandle(
   return true;
 }
 
+#if defined(OS_LINUX)
+bool SharedMemoryHandleProvider::InitAsReadOnlyFromRawFileDescriptor(
+    mojo::ScopedHandle fd_handle,
+    uint32_t memory_size_in_bytes) {
+  base::PlatformFile platform_file;
+  const MojoResult result =
+      mojo::UnwrapPlatformFile(std::move(fd_handle), &platform_file);
+  if (result != MOJO_RESULT_OK)
+    return false;
+  base::UnguessableToken guid = base::UnguessableToken::Create();
+  base::SharedMemoryHandle memory_handle(
+      base::FileDescriptor(platform_file, true), 0u, guid);
+  mapped_size_ = memory_size_in_bytes;
+  read_only_flag_ = true;
+  shared_memory_.emplace(memory_handle, read_only_flag_);
+  return true;
+}
+#endif  // defined(OS_LINUX)
+
 mojo::ScopedSharedBufferHandle
 SharedMemoryHandleProvider::GetHandleForInterProcessTransit(bool read_only) {
   if (read_only_flag_ && !read_only) {
@@ -86,6 +105,10 @@ SharedMemoryHandleProvider::GetHandleForInterProcessTransit(bool read_only) {
 base::SharedMemoryHandle
 SharedMemoryHandleProvider::GetNonOwnedSharedMemoryHandleForLegacyIPC() {
   return shared_memory_->handle();
+}
+
+uint32_t SharedMemoryHandleProvider::GetMemorySizeInBytes() {
+  return static_cast<uint32_t>(mapped_size_);
 }
 
 std::unique_ptr<VideoCaptureBufferHandle>

@@ -234,6 +234,46 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
 }
 
 // static
+media::mojom::VideoCaptureBufferType
+EnumTraits<media::mojom::VideoCaptureBufferType,
+           media::VideoCaptureBufferType>::ToMojom(media::VideoCaptureBufferType
+                                                       input) {
+  switch (input) {
+    case media::VideoCaptureBufferType::kSharedMemory:
+      return media::mojom::VideoCaptureBufferType::kSharedMemory;
+    case media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
+      return media::mojom::VideoCaptureBufferType::
+          kSharedMemoryViaRawFileDescriptor;
+    case media::VideoCaptureBufferType::kMailboxHolder:
+      return media::mojom::VideoCaptureBufferType::kMailboxHolder;
+  }
+  NOTREACHED();
+  return media::mojom::VideoCaptureBufferType::kSharedMemory;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoCaptureBufferType,
+                media::VideoCaptureBufferType>::
+    FromMojom(media::mojom::VideoCaptureBufferType input,
+              media::VideoCaptureBufferType* output) {
+  switch (input) {
+    case media::mojom::VideoCaptureBufferType::kSharedMemory:
+      *output = media::VideoCaptureBufferType::kSharedMemory;
+      return true;
+    case media::mojom::VideoCaptureBufferType::
+        kSharedMemoryViaRawFileDescriptor:
+      *output =
+          media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor;
+      return true;
+    case media::mojom::VideoCaptureBufferType::kMailboxHolder:
+      *output = media::VideoCaptureBufferType::kMailboxHolder;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 media::mojom::VideoCaptureApi
 EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
     media::VideoCaptureApi input) {
@@ -364,6 +404,8 @@ bool StructTraits<media::mojom::VideoCaptureParamsDataView,
     Read(media::mojom::VideoCaptureParamsDataView data,
          media::VideoCaptureParams* out) {
   if (!data.ReadRequestedFormat(&out->requested_format))
+    return false;
+  if (!data.ReadBufferType(&out->buffer_type))
     return false;
   if (!data.ReadResolutionChangePolicy(&out->resolution_change_policy))
     return false;

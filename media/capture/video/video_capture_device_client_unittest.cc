@@ -54,8 +54,8 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
     gpu_memory_buffer_manager_ =
         std::make_unique<unittest_internal::MockGpuMemoryBufferManager>();
     device_client_ = std::make_unique<VideoCaptureDeviceClient>(
-        std::move(controller), buffer_pool,
-        base::Bind(&ReturnNullPtrAsJpecDecoder));
+        VideoCaptureBufferType::kSharedMemory, std::move(controller),
+        buffer_pool, base::BindRepeating(&ReturnNullPtrAsJpecDecoder));
   }
   ~VideoCaptureDeviceClientTest() override = default;
 

@@ -71,6 +71,18 @@ enum VideoCaptureTransportType {
   OTHER_TRANSPORT
 };
 
+enum VideoCaptureBufferType {
+  kSharedMemory,
+
+  // Warning: This case is a workaround for compatibility with an older version
+  // of Mojo only and will be deleted as soon as the Mojo version of ChromiumOS
+  // becomes compatible with the |kSharedMemory|.
+  // TODO(chfremer): Remove this when https://crbug.com/857537 is resolved.
+  kSharedMemoryViaRawFileDescriptor,
+
+  kMailboxHolder
+};
+
 struct VideoCaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;
@@ -79,6 +91,7 @@ struct VideoCaptureFormat {
 
 struct VideoCaptureParams {
   VideoCaptureFormat requested_format;
+  VideoCaptureBufferType buffer_type;
   ResolutionChangePolicy resolution_change_policy;
   PowerLineFrequency power_line_frequency;
 };
@@ -117,8 +130,14 @@ struct MailboxBufferHandleSet {
   array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
 };
 
+struct SharedMemoryViaRawFileDescriptor {
+  handle file_descriptor_handle;
+  uint32 shared_memory_size_in_bytes;
+};
+
 union VideoBufferHandle {
   handle<shared_buffer> shared_buffer_handle;
+  SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
 };
 
