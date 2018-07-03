@@ -26,10 +26,6 @@ PROPERTIES = {
   'patch_repository_url': Property(default=None),
   'patch_ref': Property(default=None),
 
-  # TODO(tAndrii): remove legacy Gerrit fields.
-  # Legacy Gerrit fields.
-  'event.patchSet.ref': Property(default=None, param_name='gerrit_ref'),
-
   # Rietveld-only (?) fields.
   'repository': Property(default=None),
 

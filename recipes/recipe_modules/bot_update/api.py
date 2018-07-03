@@ -10,7 +10,7 @@ from recipe_engine import recipe_api
 class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, properties, patch_issue, patch_set,
-               repository, patch_repository_url, gerrit_ref, patch_ref,
+               repository, patch_repository_url, patch_ref,
                patch_gerrit_url, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._apply_patch_on_gclient = properties.get(
@@ -18,7 +18,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._issue = patch_issue
     self._patchset = patch_set
     self._repository = repository or patch_repository_url
-    self._gerrit_ref = gerrit_ref or patch_ref
+    self._gerrit_ref = patch_ref
     self._gerrit = patch_gerrit_url
     self._revision = revision
     self._parent_got_revision = parent_got_revision
