@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -191,7 +192,11 @@ UIFont* InfoBarMessageFont() {
 
 - (void)setupSubviews {
   [self setAccessibilityViewIsModal:YES];
-  [self setBackgroundColor:[UIColor whiteColor]];
+  if (IsUIRefreshPhase1Enabled()) {
+    self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  } else {
+    self.backgroundColor = [UIColor whiteColor];
+  }
   id<LayoutGuideProvider> safeAreaLayoutGuide =
       SafeAreaLayoutGuideForView(self);
 
