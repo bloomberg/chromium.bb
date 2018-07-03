@@ -125,11 +125,11 @@ def main(args):
   else:
     dashboard_json = _GetDashboardHistogramData(options)
 
-  if dashboard_json:
-    if options.output_json_file:
-      json.dump(dashboard_json, options.output_json_file,
-          indent=4, separators=(',', ': '))
+  if options.output_json_file:
+    json.dump(dashboard_json, options.output_json_file,
+        indent=4, separators=(',', ': '))
 
+  if dashboard_json:
     if options.output_json_dashboard_url:
       # Dump dashboard url to file.
       dashboard_url = GetDashboardUrl(options.name,
@@ -147,9 +147,8 @@ def main(args):
         oauth_token=oauth_token):
       return 1
   else:
-    print 'Error: No perf dashboard JSON was produced.'
-    print '@@@STEP_FAILURE@@@'
-    return 1
+    # The upload didn't fail since there was no data to upload.
+    print 'Warning: No perf dashboard JSON was produced.'
   return 0
 
 if __name__ == '__main__':
