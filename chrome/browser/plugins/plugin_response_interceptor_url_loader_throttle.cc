@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_utils.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
@@ -29,6 +30,11 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     const network::ResourceResponseHead& response_head,
     bool* defer) {
+  if (content::download_utils::MustDownload(
+          response_url, response_head.headers.get(), response_head.mime_type)) {
+    return;
+  }
+
   std::string extension_id = PluginUtils::GetExtensionIdForMimeType(
       resource_context_, response_head.mime_type);
   if (extension_id.empty())

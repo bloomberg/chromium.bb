@@ -22,7 +22,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
-#include "content/browser/loader/navigation_loader_util.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_utils.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -899,7 +899,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
     if (IsLoaderInterceptionEnabled()) {
-      bool must_download = navigation_loader_util::MustDownload(
+      bool must_download = download_utils::MustDownload(
           url_, head.headers.get(), head.mime_type);
       bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
 
