@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -133,6 +134,31 @@ TEST(LifecycleContextTest, observerRemovedDuringNotifyDestroyed) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(nullptr));
   EXPECT_TRUE(observer->ContextDestroyedCalled());
+}
+
+// This is a regression test for http://crbug.com/854639.
+TEST(LifecycleContextTest, shouldNotHitCFICheckOnIncrementalMarking) {
+  bool was_enabled = RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
+  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(true);
+  ThreadState* thread_state = ThreadState::Current();
+  thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
+
+  DummyContext* context = DummyContext::Create();
+
+  // This should not cause a CFI check failure.
+  Persistent<TestingObserver> observer = TestingObserver::Create(context);
+
+  EXPECT_FALSE(observer->ContextDestroyedCalled());
+  context->NotifyContextDestroyed();
+  EXPECT_TRUE(observer->ContextDestroyedCalled());
+  context = nullptr;
+
+  while (thread_state->GetGCState() ==
+         ThreadState::kIncrementalMarkingStepScheduled)
+    thread_state->IncrementalMarkingStep();
+  thread_state->IncrementalMarkingFinalize();
+
+  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(was_enabled);
 }
 
 }  // namespace blink
