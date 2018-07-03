@@ -304,5 +304,40 @@ Maintainers and committers should encourage contributors to request commit
 rights, especially junior contributors tend to underestimate their skills.
 
 
+Stabilising for releases
+========================
+
+A release cycle ends with a stable release which also starts a new cycle and
+lifts any code freezes. Gradual code freezing towards a stable release starts
+with an alpha release. The release stages of a cycle are:
+
+- **Alpha release**:
+    Signified by version number #.#.91.
+    Major features must have landed before this. Major features include
+    invasive code motion and refactoring, high risk changes, and new stable
+    library ABI.
+
+- **Beta release**:
+    Signified by version number #.#.92.
+    Minor features must have landed before this. Minor features include all
+    new features that are not major, low risk changes, clean-ups, and
+    documentation. Stable ABI that was new in the alpha release can be removed
+    before a beta release if necessary.
+
+- **Release candidates (RC)**:
+    Signified by version number #.#.93 and up to #.#.99.
+    Bug fixes that are not release critical must have landed before this.
+    Release critical bug fixes can still be landed after this, but they may
+    call for another RC.
+
+- **Stable release**:
+    Signified by version number #.#.0.
+    Ideally no changes since the last RC.
+
+Mind that version #.#.90 is never released. It is used during development when
+no code freeze is in effect. Stable branches and point releases are not covered
+by the above.
+
+
 [git documentation]: http://git-scm.com/documentation
 [notes on commit messages]: http://who-t.blogspot.de/2009/12/on-commit-messages.html
