@@ -15,13 +15,13 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/grit/theme_resources.h"
-#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
@@ -110,7 +110,7 @@ class FakeTabController : public TabController {
   DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };
 
-class TabTest : public ChromeViewsTestBase {
+class TabTest : public views::ViewsTestBase {
  public:
   TabTest() {}
   ~TabTest() override {}

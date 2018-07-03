@@ -18,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/views/chrome_views_test_base.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
@@ -29,6 +28,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,7 +47,7 @@ constexpr char kNotificationKey[] = "unit.test.notification";
 
 }  // namespace
 
-class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
+class ArcAccessibilityHelperBridgeTest : public views::ViewsTestBase {
  public:
   class TestArcAccessibilityHelperBridge : public ArcAccessibilityHelperBridge {
    public:
@@ -117,7 +117,7 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
   ArcAccessibilityHelperBridgeTest() = default;
 
   void SetUp() override {
-    ChromeViewsTestBase::SetUp();
+    views::ViewsTestBase::SetUp();
 
     testing_profile_ = std::make_unique<TestingProfile>();
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -135,7 +135,7 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
     bridge_service_.reset();
     testing_profile_.reset();
 
-    ChromeViewsTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
   TestArcAccessibilityHelperBridge* accessibility_helper_bridge() {

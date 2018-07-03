@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/nav_button_provider.h"
-#include "chrome/test/views/chrome_views_test_base.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace {
 
@@ -132,13 +132,13 @@ class TestNavButtonProvider : public views::NavButtonProvider {
 
 }  // namespace
 
-class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
+class DesktopLinuxBrowserFrameViewLayoutTest : public views::ViewsTestBase {
  public:
   DesktopLinuxBrowserFrameViewLayoutTest() {}
   ~DesktopLinuxBrowserFrameViewLayoutTest() override {}
 
   void SetUp() override {
-    ChromeViewsTestBase::SetUp();
+    views::ViewsTestBase::SetUp();
 
     delegate_.reset(new TestLayoutDelegate);
     nav_button_provider_ = std::make_unique<::TestNavButtonProvider>();
@@ -162,7 +162,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   void TearDown() override {
     widget_->CloseNow();
 
-    ChromeViewsTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
  protected:
