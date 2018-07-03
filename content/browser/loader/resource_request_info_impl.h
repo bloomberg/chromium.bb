@@ -192,6 +192,12 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   void SetBlobHandles(BlobHandles blob_handles);
 
+  bool blocked_response_from_reaching_renderer() const {
+    return blocked_response_from_reaching_renderer_;
+  }
+  void set_blocked_response_from_reaching_renderer(bool value) {
+    blocked_response_from_reaching_renderer_ = value;
+  }
   bool should_report_corb_blocking() const {
     return should_report_corb_blocking_;
   }
@@ -249,6 +255,12 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<network::ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
+
+  // Whether response details (response headers, timing information, metadata)
+  // have been blocked from reaching the renderer process (e.g. by Cross-Origin
+  // Read Blocking).
+  bool blocked_response_from_reaching_renderer_;
+
   bool should_report_corb_blocking_;
   bool first_auth_attempt_;
 

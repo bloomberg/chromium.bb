@@ -53,7 +53,6 @@ void TestURLLoaderClient::OnReceiveCachedMetadata(
 }
 
 void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  EXPECT_TRUE(has_received_response_);
   EXPECT_FALSE(has_received_completion_);
   EXPECT_GT(transfer_size_diff, 0);
   body_transfer_size_ += transfer_size_diff;
