@@ -4276,6 +4276,11 @@ crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.html [ Failure
 crbug.com/843945 external/wpt/cookies/samesite/window-open.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/secure/create-cookie-http.html [ Failure ]
 
+# Client hint tests that fail in content_shell but pass when run manually using
+# full browser.
+crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime_same_origin_iframe.tentative.https.html [ Skip ]
+crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime.tentative.https.html [ Skip ]
+
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
 
