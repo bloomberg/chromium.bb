@@ -33,11 +33,8 @@ from devil.android.sdk import intent # pylint: disable=import-error
 # iterations as needed without being affected by pageset-repeat being set by
 # bisect/Pinpoint.
 #
-# Note: this benchmark is not yet ready for FYI bots because:
-# 1. The requests are not routed through WPR yet.
-# 2. The benchmark is not yet careful with evicting OS pagecache at proper
-#    times.
-# As soon as these two functions are implemented, we will replace
+# Note: this benchmark is not yet ready for FYI bots. When we ensure that
+# evicting OS pagecache happens at proper times, we will replace
 # 'experimental.startup.android.coldish' with 'experimental.startup.mobile'.
 # After adding warm starts the resulting benchmark can replace the
 # 'start_with_url.*' family that has aged quite a bit.
@@ -61,15 +58,12 @@ class _MobileStartupSharedState(story_module.SharedState):
     self._finder_options = finder_options
     self._possible_browser = browser_finder.FindBrowser(self._finder_options)
     self._current_story = None
-
-    # This is an Android-only shared state.
+    # Allow using this shared state only on Android.
     assert isinstance(self.platform, android_platform.AndroidPlatform)
     self._finder_options.browser_options.browser_user_agent_type = 'mobile'
-
-    # TODO(pasko): This will always use live sites. Should use options to
-    # configure network_controller properly. See e.g.: https://goo.gl/nAsyFr
-    self.platform.network_controller.Open(wpr_modes.WPR_OFF)
     self.platform.Initialize()
+    self.platform.network_controller.Open(wpr_modes.WPR_REPLAY)
+    self._story_set = story_set
 
   @property
   def platform(self):
@@ -109,8 +103,10 @@ class _MobileStartupSharedState(story_module.SharedState):
       self.CloseBrowser(browser)
 
   def WillRunStory(self, story):
-    # TODO(pasko): Should start replay to use WPR recordings.
-    # See e.g.: https://goo.gl/UJuu8a
+    self.platform.network_controller.StartReplay(
+        self._story_set.WprFilePathForStory(story))
+    # Note: There is no need in StopReplay(), the |network_controller| will do
+    # it on Close().
     self._possible_browser.SetUpEnvironment(
         self._finder_options.browser_options)
     self._current_story = story
@@ -136,7 +132,6 @@ class _MobileStartupSharedState(story_module.SharedState):
     # that occur when closing the browser while tracing is running.  When the
     # linked bug is fixed, it should be possible to replace this with just
     # browser.Close().
-
     try:
       # a) Explicitly call flush tracing so that we retain a copy of the
       # trace from this browser before it's closed.
@@ -159,6 +154,9 @@ class _MobileStartupWithIntentStory(story_module.Story):
     self._action_runner = None
 
   def Run(self, state):
+    """Drives the benchmark with repetitions."""
+    # TODO(pasko): Find a way to fail the benchmark when WPR is set up
+    # incorrectly and error pages get loaded.
     for _ in xrange(10):
       state.LaunchBrowser('http://bbc.co.uk')
       with state.FindBrowser() as browser:
@@ -168,7 +166,9 @@ class _MobileStartupWithIntentStory(story_module.Story):
 
 class _MobileStartupStorySet(story_module.StorySet):
   def __init__(self):
-    super(_MobileStartupStorySet, self).__init__()
+    super(_MobileStartupStorySet, self).__init__(
+          archive_data_file='../page_sets/data/startup_pages.json',
+          cloud_storage_bucket=story_module.PARTNER_BUCKET)
     self.AddStory(_MobileStartupWithIntentStory())
 
 
