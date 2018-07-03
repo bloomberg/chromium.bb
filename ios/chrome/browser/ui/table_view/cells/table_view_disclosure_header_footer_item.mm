@@ -79,13 +79,16 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
         preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline];
     UIFontDescriptor* styleDescriptor = [baseDescriptor
         fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-
     _titleLabel.font =
         [UIFont fontWithDescriptor:styleDescriptor size:kUseDefaultFontSize];
+
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _subtitleLabel.textColor = [UIColor lightGrayColor];
+    [_subtitleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+                                        forAxis:UILayoutConstraintAxisVertical];
 
     // Vertical StackView.
     UIStackView* verticalStack = [[UIStackView alloc]
@@ -112,8 +115,6 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:
-                                         kTableViewHeaderFooterViewHeight],
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],

@@ -94,8 +94,7 @@ const float kImageWidth = 28.0f;
     [self.contentView addSubview:horizontalStack];
 
     [NSLayoutConstraint activateConstraints:@[
-      // The favicon view is a fixed size.
-      [_imageView.heightAnchor constraintEqualToConstant:kImageWidth],
+      // The favicon view has fixed width.
       [_imageView.widthAnchor constraintEqualToConstant:kImageWidth],
       // Horizontal Stack constraints.
       [horizontalStack.leadingAnchor
