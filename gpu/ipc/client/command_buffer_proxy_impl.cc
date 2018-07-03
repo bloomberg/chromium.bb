@@ -411,7 +411,7 @@ void CommandBufferProxyImpl::DestroyTransferBuffer(int32_t id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  channel_->DestroyTransferBuffer(route_id_, id);
+  last_flush_id_ = channel_->DestroyTransferBuffer(route_id_, id);
 }
 
 void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
