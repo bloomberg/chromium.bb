@@ -818,7 +818,6 @@ void ResourceLoader::ResponseCompleted() {
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
-  RecordHistograms();
 
   ScopedDeferral scoped_deferral(this, DEFERRED_FINISH);
   handler_->OnResponseCompleted(request_->status(),
@@ -829,57 +828,6 @@ void ResourceLoader::CallDidFinishLoading() {
   TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::CallDidFinishLoading",
                          this, TRACE_EVENT_FLAG_FLOW_IN);
   delegate_->DidFinishLoading(this);
-}
-
-void ResourceLoader::RecordHistograms() {
-  if (request_->load_flags() & net::LOAD_PREFETCH) {
-    // Note that RESOURCE_TYPE_PREFETCH requests are a subset of
-    // net::LOAD_PREFETCH requests. In the histograms below, "Prefetch" means
-    // RESOURCE_TYPE_PREFETCH and "LoadPrefetch" means net::LOAD_PREFETCH.
-    bool is_resource_type_prefetch =
-        GetRequestInfo()->GetResourceType() == RESOURCE_TYPE_PREFETCH;
-    PrefetchStatus prefetch_status = STATUS_UNDEFINED;
-    TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
-
-    switch (request_->status().status()) {
-      case net::URLRequestStatus::SUCCESS:
-        if (request_->was_cached()) {
-          prefetch_status = request_->response_info().unused_since_prefetch
-                                ? STATUS_SUCCESS_ALREADY_PREFETCHED
-                                : STATUS_SUCCESS_FROM_CACHE;
-          if (is_resource_type_prefetch) {
-            UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentPrefetchingFromCache",
-                                total_time);
-          }
-        } else {
-          prefetch_status = STATUS_SUCCESS_FROM_NETWORK;
-          if (is_resource_type_prefetch) {
-            UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentPrefetchingFromNetwork",
-                                total_time);
-          }
-        }
-        break;
-      case net::URLRequestStatus::CANCELED:
-        prefetch_status = STATUS_CANCELED;
-        if (is_resource_type_prefetch)
-          UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeBeforeCancel", total_time);
-        break;
-      case net::URLRequestStatus::IO_PENDING:
-      case net::URLRequestStatus::FAILED:
-        prefetch_status = STATUS_UNDEFINED;
-        break;
-    }
-
-    UMA_HISTOGRAM_ENUMERATION("Net.LoadPrefetch.Pattern", prefetch_status,
-                              STATUS_MAX);
-    if (is_resource_type_prefetch) {
-      UMA_HISTOGRAM_ENUMERATION("Net.Prefetch.Pattern", prefetch_status,
-                                STATUS_MAX);
-    }
-  } else if (request_->response_info().unused_since_prefetch) {
-    TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
-    UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentOnPrefetchHit", total_time);
-  }
 }
 
 void ResourceLoader::SetRawResponseHeaders(
