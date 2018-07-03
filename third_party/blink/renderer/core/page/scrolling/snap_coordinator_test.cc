@@ -642,12 +642,10 @@ TEST_F(SnapCoordinatorTest, SnapsIfScrolledAndSnappingAxesMatch) {
 
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_TRUE(snap_position.has_value());
-  EXPECT_EQ(200 - 8 - 10, snap_position.value().X());
-  EXPECT_EQ(150, snap_position.value().Y());
+  FloatPoint snap_position = snap_coordinator->GetSnapPositionForPoint(
+      *snap_container, FloatPoint(150, 150), true, false);
+  EXPECT_EQ(200 - 8 - 10, snap_position.X());
+  EXPECT_EQ(150, snap_position.Y());
 }
 
 TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
@@ -660,10 +658,10 @@ TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
 
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_FALSE(snap_position.has_value());
+  FloatPoint snap_position = snap_coordinator->GetSnapPositionForPoint(
+      *snap_container, FloatPoint(150, 150), true, false);
+  EXPECT_EQ(150, snap_position.X());
+  EXPECT_EQ(150, snap_position.Y());
 }
 
 TEST_F(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
@@ -676,11 +674,10 @@ TEST_F(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
 
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  ;
-  EXPECT_FALSE(snap_position.has_value());
+  FloatPoint snap_position = snap_coordinator->GetSnapPositionForPoint(
+      *snap_container, FloatPoint(150, 150), true, false);
+  EXPECT_EQ(150, snap_position.X());
+  EXPECT_EQ(150, snap_position.Y());
 }
 
 TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnapContainer) {
@@ -693,10 +690,10 @@ TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnapContainer) {
 
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_FALSE(snap_position.has_value());
+  FloatPoint snap_position = snap_coordinator->GetSnapPositionForPoint(
+      *snap_container, FloatPoint(150, 150), true, false);
+  EXPECT_EQ(150, snap_position.X());
+  EXPECT_EQ(150, snap_position.Y());
 }
 
 }  // namespace

@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
@@ -31,38 +30,8 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_customization.h"
 
 namespace blink {
-namespace {
-
-SnapFlingController::GestureScrollType ToGestureScrollType(
-    WebInputEvent::Type web_event_type) {
-  switch (web_event_type) {
-    case WebInputEvent::kGestureScrollBegin:
-      return SnapFlingController::GestureScrollType::kBegin;
-    case WebInputEvent::kGestureScrollUpdate:
-      return SnapFlingController::GestureScrollType::kUpdate;
-    case WebInputEvent::kGestureScrollEnd:
-      return SnapFlingController::GestureScrollType::kEnd;
-    default:
-      NOTREACHED();
-      return SnapFlingController::GestureScrollType::kBegin;
-  }
-}
-
-SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
-    const WebGestureEvent& event) {
-  return {.delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
-                                  -event.data.scroll_update.delta_y),
-          .is_in_inertial_phase = event.data.scroll_update.inertial_phase ==
-                                  WebGestureEvent::kMomentumPhase,
-          .event_time = event.TimeStamp()};
-}
-
-}  // namespace
 
 ScrollManager::ScrollManager(LocalFrame& frame) : frame_(frame) {
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled())
-    snap_fling_controller_ = std::make_unique<cc::SnapFlingController>(this);
-
   Clear();
 }
 
@@ -487,12 +456,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
       return WebInputEventResult::kNotHandled;
     }
   }
-  if (snap_fling_controller_) {
-    if (snap_fling_controller_->HandleGestureScrollUpdate(
-            GetGestureScrollUpdateInfo(gesture_event))) {
-      return WebInputEventResult::kHandledSystem;
-    }
-  }
 
   // Negate the deltas since the gesture event stores finger movement and
   // scrolling occurs in the direction opposite the finger's movement
@@ -575,6 +538,25 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   return WebInputEventResult::kNotHandled;
 }
 
+void ScrollManager::SnapAtGestureScrollEnd() {
+  if (!previous_gesture_scrolled_element_)
+    return;
+  SnapCoordinator* snap_coordinator =
+      frame_->GetDocument()->GetSnapCoordinator();
+  Element* document_element = frame_->GetDocument()->documentElement();
+  LayoutBox* layout_box =
+      previous_gesture_scrolled_element_ == document_element
+          ? frame_->GetDocument()->GetLayoutView()
+          : previous_gesture_scrolled_element_->GetLayoutBox();
+  if (!snap_coordinator || !layout_box || !layout_box->GetScrollableArea() ||
+      (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
+    return;
+
+  snap_coordinator->PerformSnapping(*layout_box,
+                                    did_scroll_x_for_scroll_gesture_,
+                                    did_scroll_y_for_scroll_gesture_);
+}
+
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
@@ -605,101 +587,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
 
   ClearGestureScrollState();
   return WebInputEventResult::kNotHandled;
-}
-
-LayoutBox* ScrollManager::LayoutBoxForSnapping() const {
-  Element* document_element = frame_->GetDocument()->documentElement();
-  return previous_gesture_scrolled_element_ == document_element
-             ? frame_->GetDocument()->GetLayoutView()
-             : previous_gesture_scrolled_element_->GetLayoutBox();
-}
-
-ScrollableArea* ScrollManager::ScrollableAreaForSnapping() const {
-  Element* document_element = frame_->GetDocument()->documentElement();
-  return previous_gesture_scrolled_element_ == document_element
-             ? frame_->View()->GetScrollableArea()
-             : previous_gesture_scrolled_element_->GetLayoutBox()
-                   ->GetScrollableArea();
-}
-
-void ScrollManager::SnapAtGestureScrollEnd() {
-  if (!previous_gesture_scrolled_element_ ||
-      (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
-    return;
-  SnapCoordinator* snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
-
-  LayoutBox* layout_box = LayoutBoxForSnapping();
-  snap_coordinator->PerformSnapping(*layout_box,
-                                    did_scroll_x_for_scroll_gesture_,
-                                    did_scroll_y_for_scroll_gesture_);
-}
-
-bool ScrollManager::GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                                     gfx::Vector2dF* out_initial_offset,
-                                     gfx::Vector2dF* out_target_offset) const {
-  if (!previous_gesture_scrolled_element_)
-    return false;
-
-  SnapCoordinator* snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
-  LayoutBox* layout_box = LayoutBoxForSnapping();
-  if (!snap_coordinator || !layout_box || !layout_box->GetScrollableArea())
-    return false;
-  return snap_coordinator->GetSnapFlingInfo(
-      *layout_box, natural_displacement, out_initial_offset, out_target_offset);
-}
-
-gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
-    const gfx::Vector2dF& delta) {
-  DCHECK(previous_gesture_scrolled_element_);
-  std::unique_ptr<ScrollStateData> scroll_state_data =
-      std::make_unique<ScrollStateData>();
-
-  // TODO(sunyunjia): Plumb the velocity of the snap curve as well.
-  scroll_state_data->delta_x = delta.x();
-  scroll_state_data->delta_y = delta.y();
-  scroll_state_data->is_in_inertial_phase = true;
-  scroll_state_data->from_user_input = true;
-  scroll_state_data->delta_granularity =
-      static_cast<double>(ScrollGranularity::kScrollByPrecisePixel);
-  scroll_state_data->delta_consumed_for_scroll_sequence =
-      delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
-  scroll_state->SetCurrentNativeScrollingElement(
-      previous_gesture_scrolled_element_);
-
-  CustomizedScroll(*scroll_state);
-
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping();
-  FloatPoint end_position = scrollable_area->ScrollPosition();
-  return gfx::Vector2dF(end_position.X(), end_position.Y());
-}
-
-void ScrollManager::ScrollEndForSnapFling() {
-  std::unique_ptr<ScrollStateData> scroll_state_data =
-      std::make_unique<ScrollStateData>();
-  scroll_state_data->is_ending = true;
-  scroll_state_data->is_in_inertial_phase = true;
-  scroll_state_data->from_user_input = true;
-  scroll_state_data->delta_consumed_for_scroll_sequence =
-      delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
-  CustomizedScroll(*scroll_state);
-  NotifyScrollPhaseEndForCustomizedScroll();
-  ClearGestureScrollState();
-}
-
-void ScrollManager::RequestAnimationForSnapFling() {
-  if (Page* page = frame_->GetPage())
-    page->GetChromeClient().ScheduleAnimation(frame_->View());
-}
-
-void ScrollManager::AnimateSnapFling(base::TimeTicks monotonic_time) {
-  DCHECK(snap_fling_controller_);
-  snap_fling_controller_->Animate(monotonic_time);
 }
 
 Page* ScrollManager::GetPage() const {
@@ -810,13 +697,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     }
   }
 
-  if (snap_fling_controller_) {
-    if (gesture_event.IsGestureScroll() &&
-        (snap_fling_controller_->FilterEventForSnap(
-            ToGestureScrollType(gesture_event.GetType())))) {
-      return WebInputEventResult::kNotHandled;
-    }
-  }
   switch (gesture_event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
       return HandleGestureScrollBegin(gesture_event);

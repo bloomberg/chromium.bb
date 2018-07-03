@@ -272,8 +272,6 @@ class CORE_EXPORT EventHandler final
     return *event_handler_registry_;
   }
 
-  void AnimateSnapFling(base::TimeTicks monotonic_time);
-
  private:
   enum NoCursorChangeType { kNoCursorChange };
 

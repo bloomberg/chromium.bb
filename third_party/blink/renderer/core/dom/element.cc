@@ -971,11 +971,9 @@ void Element::setScrollLeft(double new_left) {
 
     FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
                          box->ScrollTop().ToFloat());
-    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      end_point = GetDocument()
-                      .GetSnapCoordinator()
-                      ->GetSnapPositionForPoint(*box, end_point, true, false)
-                      .value_or(end_point);
+    if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+      end_point =
+          coordinator->GetSnapPositionForPoint(*box, end_point, true, false);
     }
     box->SetScrollLeft(LayoutUnit::FromFloatRound(end_point.X()));
   }
@@ -1002,11 +1000,9 @@ void Element::setScrollTop(double new_top) {
 
     FloatPoint end_point(box->ScrollLeft().ToFloat(),
                          new_top * box->Style()->EffectiveZoom());
-    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      end_point = GetDocument()
-                      .GetSnapCoordinator()
-                      ->GetSnapPositionForPoint(*box, end_point, false, true)
-                      .value_or(end_point);
+    if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+      end_point =
+          coordinator->GetSnapPositionForPoint(*box, end_point, false, true);
     }
     box->SetScrollTop(LayoutUnit::FromFloatRound(end_point.Y()));
   }
@@ -1123,14 +1119,10 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions& scroll_to_options) {
         top * box->Style()->EffectiveZoom() + current_scaled_top;
 
     FloatPoint new_scaled_position(new_scaled_left, new_scaled_top);
-    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      new_scaled_position =
-          GetDocument()
-              .GetSnapCoordinator()
-              ->GetSnapPositionForPoint(*box, new_scaled_position,
-                                        scroll_to_options.hasLeft(),
-                                        scroll_to_options.hasTop())
-              .value_or(new_scaled_position);
+    if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+      new_scaled_position = coordinator->GetSnapPositionForPoint(
+          *box, new_scaled_position, scroll_to_options.hasLeft(),
+          scroll_to_options.hasTop());
     }
     box->ScrollToPosition(new_scaled_position, scroll_behavior);
   }
@@ -1155,14 +1147,10 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions& scroll_to_options) {
           box->Style()->EffectiveZoom();
 
     FloatPoint new_scaled_position(scaled_left, scaled_top);
-    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      new_scaled_position =
-          GetDocument()
-              .GetSnapCoordinator()
-              ->GetSnapPositionForPoint(*box, new_scaled_position,
-                                        scroll_to_options.hasLeft(),
-                                        scroll_to_options.hasTop())
-              .value_or(new_scaled_position);
+    if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+      new_scaled_position = coordinator->GetSnapPositionForPoint(
+          *box, new_scaled_position, scroll_to_options.hasLeft(),
+          scroll_to_options.hasTop());
     }
     box->ScrollToPosition(new_scaled_position, scroll_behavior);
   }
@@ -1201,14 +1189,10 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
 
   FloatPoint new_scaled_position = viewport->ScrollOffsetToPosition(
       ScrollOffset(new_scaled_left, new_scaled_top));
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        GetDocument()
-            .GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *GetDocument().GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+  if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *GetDocument().GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
@@ -1246,14 +1230,10 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_left, scaled_top));
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        GetDocument()
-            .GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *GetDocument().GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+  if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *GetDocument().GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),

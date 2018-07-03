@@ -1139,14 +1139,10 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
                             y * GetFrame()->PageZoomFactor());
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(scaled_delta + current_offset);
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        document()
-            ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+  if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *document()->GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
@@ -1214,14 +1210,10 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        document()
-            ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+  if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *document()->GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
