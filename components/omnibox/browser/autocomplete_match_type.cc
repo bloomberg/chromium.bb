@@ -72,13 +72,13 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
 
       // HISTORY_KEYWORD is a custom search engine with no %s in its string - so
       // more or less a regular URL.
-      0,                                      // HISTORY_KEYWORD
-      0,                                      // NAVSUGGEST
-      IDS_ACC_AUTOCOMPLETE_SEARCH,            // SEARCH_WHAT_YOU_TYPED
-      IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY,    // SEARCH_HISTORY
-      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH,  // SEARCH_SUGGEST
-      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH,  // SEARCH_SUGGEST_ENTITY
-      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH,  // SEARCH_SUGGEST_TAIL
+      0,                                             // HISTORY_KEYWORD
+      0,                                             // NAVSUGGEST
+      IDS_ACC_AUTOCOMPLETE_SEARCH,                   // SEARCH_WHAT_YOU_TYPED
+      IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY,           // SEARCH_HISTORY
+      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH,         // SEARCH_SUGGEST
+      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH_ENTITY,  // SEARCH_SUGGEST_ENTITY
+      IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH,         // SEARCH_SUGGEST_TAIL
 
       // SEARCH_SUGGEST_PERSONALIZED are searches from history elsewhere, maybe
       // on other machines via Sync, or when signed in to Google.
@@ -126,7 +126,16 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
         message = IDS_ACC_AUTOCOMPLETE_QUICK_ANSWER;
       }
       break;
-
+    case IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH_ENTITY:
+      if (match.description.empty()) {
+        // No description, so fall back to ordinary search suggestion format.
+        message = IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH;
+      } else {
+        // Full entity search suggestion with description.
+        description = match.description;
+        has_description = true;
+      }
+      break;
     case IDS_ACC_AUTOCOMPLETE_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_BOOKMARK:
     case IDS_ACC_AUTOCOMPLETE_CLIPBOARD:
