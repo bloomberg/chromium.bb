@@ -27,9 +27,17 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) override;
   std::vector<const char*> GetRequiredDeviceExtensions() override;
+  VkFence CreateVkFenceForGpuFence(VkDevice vk_device) override;
+  virtual std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
+      VkDevice vk_device,
+      VkFence vk_fence) override;
 
  private:
   gpu::VulkanInstance vulkan_instance_;
+
+  PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR
+      vkGetPhysicalDeviceExternalFencePropertiesKHR_ = nullptr;
+  PFN_vkGetFenceFdKHR vkGetFenceFdKHR_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationGbm);
 };

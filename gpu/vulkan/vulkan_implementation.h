@@ -12,6 +12,10 @@
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class GpuFence;
+}
+
 namespace gpu {
 
 class VulkanDeviceQueue;
@@ -38,6 +42,16 @@ class VULKAN_EXPORT VulkanImplementation {
       uint32_t queue_family_index) = 0;
 
   virtual std::vector<const char*> GetRequiredDeviceExtensions() = 0;
+
+  // Creates a VkFence that is exportable to a gfx::GpuFence.
+  virtual VkFence CreateVkFenceForGpuFence(VkDevice vk_device) = 0;
+
+  // Exports a VkFence to a gfx::GpuFence.
+  //
+  // The fence should have been created via CreateVkFenceForGpuFence().
+  virtual std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
+      VkDevice vk_device,
+      VkFence vk_fence) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);

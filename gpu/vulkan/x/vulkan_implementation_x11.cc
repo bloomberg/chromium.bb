@@ -8,6 +8,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
@@ -94,6 +95,18 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
   return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+}
+
+VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {
+  NOTREACHED();
+  return VK_NULL_HANDLE;
+}
+
+std::unique_ptr<gfx::GpuFence> VulkanImplementationX11::ExportVkFenceToGpuFence(
+    VkDevice vk_device,
+    VkFence vk_fence) {
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace gpu

@@ -26,6 +26,7 @@ component("x") {
   configs += [ "//build/config/linux:x11" ]
 
   deps = [
+    "//ui/gfx",
     "//ui/gfx/x",
   ]
 
