@@ -283,6 +283,34 @@ TEST_F(UseCounterTest,
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
+TEST_F(UseCounterTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='display: inline-grid; grid-template-columns: 50%;'>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='display: inline-grid; grid-template-rows: 50%;'>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
 class DeprecationTest : public testing::Test {
  public:
   DeprecationTest()
