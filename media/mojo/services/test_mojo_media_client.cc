@@ -57,6 +57,7 @@ void TestMojoMediaClient::Initialize(
 }
 
 std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
+    service_manager::mojom::InterfaceProvider* host_interfaces,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     const std::string& /* audio_device_id */) {
