@@ -711,6 +711,7 @@ TEST_F(WebStateImplTest, GlobalObserverTest) {
 MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
   return ui::PageTransitionTypeIncludingQualifiersIs(
              arg.transition_type, expected_request_info.transition_type) &&
+         arg.source_url == expected_request_info.source_url &&
          arg.target_frame_is_main ==
              expected_request_info.target_frame_is_main &&
          arg.has_user_gesture == expected_request_info.has_user_gesture;
@@ -731,7 +732,8 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
 
   // Test that ShouldAllowRequest() is called for the same parameters.
   WebStatePolicyDecider::RequestInfo request_info_main_frame(
-      ui::PageTransition::PAGE_TRANSITION_LINK, /*target_main_frame=*/true,
+      ui::PageTransition::PAGE_TRANSITION_LINK,
+      /*source_url=*/GURL::EmptyGURL(), /*target_main_frame=*/true,
       /*has_user_gesture=*/false);
   EXPECT_CALL(decider, ShouldAllowRequest(
                            request, RequestInfoMatch(request_info_main_frame)))
@@ -745,7 +747,8 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   EXPECT_TRUE(web_state_->ShouldAllowRequest(request, request_info_main_frame));
 
   WebStatePolicyDecider::RequestInfo request_info_iframe(
-      ui::PageTransition::PAGE_TRANSITION_LINK, /*target_main_frame=*/false,
+      ui::PageTransition::PAGE_TRANSITION_LINK,
+      /*source_url=*/GURL::EmptyGURL(), /*target_main_frame=*/false,
       /*has_user_gesture=*/false);
 
   EXPECT_CALL(decider, ShouldAllowRequest(
