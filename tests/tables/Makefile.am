@@ -7,11 +7,6 @@ EXTRA_DIST =					\
 	emphasis-full.utb			\
 	emphasis-no-context.utb			\
 	empty.ctb				\
-	inpos_match_replace.ctb			\
-	inpos_pass0.ctb				\
-	inpos_pass1.ctb				\
-	inpos_pass2.ctb				\
-	inpos_pass3.ctb				\
 	large.ctb				\
 	loop.ctb				\
 	lowercase_with_unicode.ctb		\

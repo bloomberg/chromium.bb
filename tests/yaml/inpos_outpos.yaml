@@ -258,39 +258,143 @@ tests:
 #     pass3      zy    deeeg
 #                00    56668
                 
-table: [tests/tables/inpos_pass0.ctb]
+table: | # inpos_pass0.ctb
+  sign a 1
+  sign b 2
+  sign c 3
+  sign d 4
+  sign e 5
+  sign f 6
+  sign g 7
+  sign w 13
+  sign x 12
+  sign y 34
+  sign z 56
+
+  noback correct ["aaa"] "a"
+  noback correct ["d"] "dd"
+
 tests:
   - - aaabcdefg
     - abcddefg
     - inputPos: [0,3,4,5,5,6,7,8]
 
-table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb]
+table: | # inpos_pass0.ctb,inpos_pass1.ctb
+  sign a 1
+  sign b 2
+  sign c 3
+  sign d 4
+  sign e 5
+  sign f 6
+  sign g 7
+  sign w 13
+  sign x 12
+  sign y 34
+  sign z 56
+
+  noback correct ["aaa"] "a"
+  noback correct ["d"] "dd"
+
+  noback context ["ab"] @12
+  always ef 13
+
 tests:
   - - aaabcdefg
     - xcddwg
     - inputPos: [0,4,5,5,6,8]
 
-table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb,tests/tables/inpos_pass2.ctb]
+table: | # inpos_pass0.ctb, inpos_pass1.ctb,tests/tables/inpos_pass2.ctb
+  sign a 1
+  sign b 2
+  sign c 3
+  sign d 4
+  sign e 5
+  sign f 6
+  sign g 7
+  sign w 13
+  sign x 12
+  sign y 34
+  sign z 56
+
+  noback correct ["aaa"] "a"
+  noback correct ["d"] "dd"
+
+  noback context ["ab"] @12
+  always ef 13
+
+  noback pass2 @12-3-4 @56-34
+
 tests:
   - - aaabcdefg
     - zydwg
     - inputPos: [0,0,5,6,8]
 
-table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb,tests/tables/inpos_pass2.ctb,tests/tables/inpos_pass3.ctb]
+table: | # inpos_pass0.ctb, inpos_pass1.ctb,tests/tables/inpos_pass2.ctb,tests/tables/inpos_pass3.ctb
+  sign a 1
+  sign b 2
+  sign c 3
+  sign d 4
+  sign e 5
+  sign f 6
+  sign g 7
+  sign w 13
+  sign x 12
+  sign y 34
+  sign z 56
+
+  noback correct ["aaa"] "a"
+  noback correct ["d"] "dd"
+
+  noback context ["ab"] @12
+  always ef 13
+
+  noback pass2 @12-3-4 @56-34
+
+  noback pass3 [@13] @5-5-5
+
 tests:
   - - aaabcdefg
     - zydeeeg
     - inputPos: [0,0,5,6,6,6,8]
 
-# Converted from inpos_compbrl.c
-table: [tables/en-us-g2.ctb]
-tests:
-  - - 'user@example.com'
-    - '_+user@example.com_:'
-    - inputPos: [0,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,15]
-
 # Converted from inpos_match_replace.c
-table: [tests/tables/inpos_match_replace.ctb]
+table: |
+  display A 1
+  display B 12
+  display E 15
+  display F 124
+  display G 1245
+  display I 24
+  display L 123
+  display N 1345
+  display R 1235
+  display S 234
+  display U 136
+  display V 1236
+  display 7 12456
+  display - 36
+  display - 36a
+
+  uplow       \x0041\x0061  1        Aa
+  uplow       \x0042\x0062  12       Bb
+  uplow       \x0045\x0065  15       Ee
+  uplow       \x0046\x0066  124      Ff
+  uplow       \x0047\x0067  1245     Gg
+  uplow       \x0049\x0069  24       Ii
+  uplow       \x004C\x006C  123      Ll
+  uplow       \x004E\x006E  1345     Nn
+  uplow       \x0052\x0072  1235     Rr
+  uplow       \x0053\x0073  234      Ss
+  uplow       \x0055\x0075  136      Uu
+  uplow       \x0056\x0076  1236     Vv
+  digit       \x0037        12456    7
+  punctuation \x002D        36       -
+  math        \x2212        36a      -
+
+  begword ver 36a
+
+  noback pass2 @36[@36a] @1236-12456
+
 tests:
   - - Fussball-Vereinigung
     - FUSSBALL-V7EINIGUNG
@@ -298,7 +402,18 @@ tests:
 
 # Converted from pass2_inpos.c
 
-table: [tests/tables/pass2.ctb]
+table: |
+  uplow       Ee  15                  LATIN CAPITAL LETTER E - LATIN SMALL LETTER E
+  uplow       Nn  1345                LATIN CAPITAL LETTER N - LATIN SMALL LETTER N
+  uplow       Rr  1235                LATIN CAPITAL LETTER R - LATIN SMALL LETTER R
+  uplow       Oo  135      	    LATIN CAPITAL LETTER O - LATIN SMALL LETTER O
+  uplow       Xx  1346
+
+  punctuation ' 6               	    APOSTROPHE APOSTROPHE-QUOTE
+
+  noback pass2 @135   @6-135
+  noback pass2 @1346  ?
+
 tests:
 
 # First check a plain word to see if inpos handling generally works
