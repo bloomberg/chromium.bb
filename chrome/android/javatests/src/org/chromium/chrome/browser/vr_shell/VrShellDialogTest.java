@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Manual;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -157,7 +156,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and launch the Microphone dialog.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testMicrophonePermissionPrompt() throws InterruptedException, TimeoutException {
@@ -175,7 +173,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and launch the Camera dialog.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testCameraPermissionPrompt() throws InterruptedException, TimeoutException {
@@ -191,7 +188,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and launch the Location dialog.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testLocationPermissionPrompt() throws InterruptedException, TimeoutException {
@@ -207,7 +203,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and launch the Notifications dialog.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testNotificationPermissionPrompt() throws InterruptedException, TimeoutException {
@@ -223,7 +218,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and launch the MIDI dialog.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testMidiPermisionPrompt() throws InterruptedException, TimeoutException {
@@ -239,7 +233,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and display a JavaScript alert().
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testJavaScriptAlert() throws InterruptedException, TimeoutException {
@@ -255,7 +248,6 @@ public class VrShellDialogTest {
      * Test navigate to 2D page and display a JavaScript confirm();
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testJavaScriptConfirm() throws InterruptedException, TimeoutException {
@@ -282,7 +274,6 @@ public class VrShellDialogTest {
      * it would outside of VR.
      */
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testJavaScriptPrompt() throws InterruptedException, TimeoutException {
@@ -307,7 +298,6 @@ public class VrShellDialogTest {
     }
 
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, TimeoutException {
@@ -316,7 +306,6 @@ public class VrShellDialogTest {
     }
 
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testOverflowMenuAppears() throws InterruptedException, TimeoutException {
@@ -325,7 +314,6 @@ public class VrShellDialogTest {
     }
 
     @Test
-    @Manual
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testPageInfoAppearsOnSecurityTokenClick()
