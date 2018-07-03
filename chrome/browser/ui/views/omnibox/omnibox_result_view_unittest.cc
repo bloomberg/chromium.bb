@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
-#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -18,6 +17,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -49,10 +49,10 @@ class TestOmniboxPopupContentsView : public OmniboxPopupContentsView {
 
 }  // namespace
 
-class OmniboxResultViewTest : public ChromeViewsTestBase {
+class OmniboxResultViewTest : public views::ViewsTestBase {
  public:
   void SetUp() override {
-    ChromeViewsTestBase::SetUp();
+    ViewsTestBase::SetUp();
 
     edit_model_ = std::make_unique<OmniboxEditModel>(
         nullptr, nullptr, std::make_unique<TestOmniboxClient>());
@@ -77,7 +77,7 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
 
   void TearDown() override {
     widget_.reset();
-    ChromeViewsTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
   ui::MouseEvent CreateEvent(ui::EventType type, int flags) {
