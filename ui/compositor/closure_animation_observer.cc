@@ -6,8 +6,8 @@
 
 namespace ui {
 
-ClosureAnimationObserver::ClosureAnimationObserver(base::OnceClosure closure)
-    : closure_(std::move(closure)) {
+ClosureAnimationObserver::ClosureAnimationObserver(const base::Closure& closure)
+    : closure_(closure) {
   DCHECK(!closure_.is_null());
 }
 
@@ -15,7 +15,7 @@ ClosureAnimationObserver::~ClosureAnimationObserver() {
 }
 
 void ClosureAnimationObserver::OnImplicitAnimationsCompleted() {
-  std::move(closure_).Run();
+  closure_.Run();
   delete this;
 }
 
