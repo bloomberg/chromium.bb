@@ -9,11 +9,17 @@
 
 namespace blink {
 
-// Mocked Blob implementation for testing. You can't read from a FakeBlob, but
-// it does have a UUID.
+// Mocked Blob implementation for testing. Implements all methods except for
+// ReadRange and ReadSideData.
 class FakeBlob : public mojom::blink::Blob {
  public:
-  explicit FakeBlob(const String& uuid);
+  struct State {
+    bool did_initiate_read_operation = false;
+  };
+
+  FakeBlob(const String& uuid,
+           const String& body = String(),
+           State* state = nullptr);
 
   void Clone(mojom::blink::BlobRequest) override;
   void AsDataPipeGetter(network::mojom::blink::DataPipeGetterRequest) override;
@@ -25,9 +31,10 @@ class FakeBlob : public mojom::blink::Blob {
                mojom::blink::BlobReaderClientPtr) override;
   void ReadSideData(ReadSideDataCallback) override;
   void GetInternalUUID(GetInternalUUIDCallback) override;
-
  private:
   String uuid_;
+  String body_;
+  State* state_;
 };
 
 }  // namespace blink
