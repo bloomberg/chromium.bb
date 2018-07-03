@@ -228,11 +228,21 @@ include tests excercising the additions in the test suite.
 - The code fits the existing software architecture, e.g. no layering
 violations.
 
-- The code is correct and does not ignore corner-cases.
+- The code is correct and does not introduce new failures for existing users,
+does not add new corner-case bugs, and does not introduce new compiler
+warnings.
 
-- In a patch series, every intermediate step produces correct code as well.
+- The patch does what it says in the commit message and changes nothing else.
 
-- The code does what it says in the commit message and changes nothing else.
+- The patch is a single logical change. If the commit message addresses
+multiple points, it is a hint that the commit might need splitting up.
+
+- A bug fix should target the underlying root cause instead of hiding symptoms.
+If a complete fix is not practical, partial fixes are acceptable if they come
+with code comments and filed Gitlab issues for the remaining bugs.
+
+- The bug root cause rule applies to external software components as well, e.g.
+do not work around kernel driver issues in userspace.
 
 - The test suite passes.
 
@@ -249,6 +259,8 @@ enough on its own there are code comments to explain it.
 clarity suffers.
 
 - The code adheres to the style guidelines.
+
+- In a patch series, every intermediate step adheres to the above guidelines.
 
 
 Commit rights
