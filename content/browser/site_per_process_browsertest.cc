@@ -11830,7 +11830,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that OOPIF select element popup menu coordinates account for scroll
 // offset in containers embedding frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuInTallIframeTest) {
+// TODO(crbug.com/859552): Reenable this.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DISABLED_PopupMenuInTallIframeTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_tall_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
