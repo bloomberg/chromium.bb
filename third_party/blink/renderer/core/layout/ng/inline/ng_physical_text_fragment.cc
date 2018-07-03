@@ -58,24 +58,31 @@ LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
                                  AdjustMidCluster::kToEnd);
 }
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
-    unsigned start_offset,
-    unsigned end_offset) const {
+std::pair<LayoutUnit, LayoutUnit>
+NGPhysicalTextFragment::LineLeftAndRightForOffsets(unsigned start_offset,
+                                                   unsigned end_offset) const {
   DCHECK_LE(start_offset, end_offset);
   DCHECK_GE(start_offset, start_offset_);
   DCHECK_LE(end_offset, end_offset_);
 
-  LayoutUnit start_position = InlinePositionForOffset(
+  const LayoutUnit start_position = InlinePositionForOffset(
       start_offset, LayoutUnit::FromFloatFloor, AdjustMidCluster::kToStart);
-  LayoutUnit end_position = InlinePositionForOffset(
+  const LayoutUnit end_position = InlinePositionForOffset(
       end_offset, LayoutUnit::FromFloatCeil, AdjustMidCluster::kToEnd);
 
   // Swap positions if RTL.
-  if (UNLIKELY(start_position > end_position))
-    std::swap(start_position, end_position);
+  return (UNLIKELY(start_position > end_position))
+             ? std::make_pair(end_position, start_position)
+             : std::make_pair(start_position, end_position);
+}
 
-  LayoutUnit inline_size = end_position - start_position;
-
+NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
+    unsigned start_offset,
+    unsigned end_offset) const {
+  LayoutUnit start_position, end_position;
+  std::tie(start_position, end_position) =
+      LineLeftAndRightForOffsets(start_offset, end_offset);
+  const LayoutUnit inline_size = end_position - start_position;
   switch (LineOrientation()) {
     case NGLineOrientation::kHorizontal:
       return {{start_position, LayoutUnit()}, {inline_size, Size().height}};

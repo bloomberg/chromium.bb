@@ -143,6 +143,13 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   UBiDiLevel BidiLevel() const override;
   TextDirection ResolvedDirection() const override;
 
+  // Compute line-relative coordinates for given offsets, this is not
+  // flow-relative:
+  // https://drafts.csswg.org/css-writing-modes-3/#line-directions
+  std::pair<LayoutUnit, LayoutUnit> LineLeftAndRightForOffsets(
+      unsigned start_offset,
+      unsigned end_offset) const;
+
  private:
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
