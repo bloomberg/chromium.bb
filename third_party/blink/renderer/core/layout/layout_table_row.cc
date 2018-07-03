@@ -266,9 +266,8 @@ LayoutBox::PaginationBreakability LayoutTableRow::GetPaginationBreakability()
   return breakability;
 }
 
-void LayoutTableRow::Paint(const PaintInfo& paint_info,
-                           const LayoutPoint& paint_offset) const {
-  TableRowPainter(*this).Paint(paint_info, paint_offset);
+void LayoutTableRow::Paint(const PaintInfo& paint_info) const {
+  TableRowPainter(*this).Paint(paint_info);
 }
 
 LayoutTableRow* LayoutTableRow::CreateAnonymous(Document* document) {

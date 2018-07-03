@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class LayoutPoint;
 struct PaintInfo;
 class LayoutInline;
 
@@ -21,7 +20,7 @@ class InlinePainter {
   InlinePainter(const LayoutInline& layout_inline)
       : layout_inline_(layout_inline) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&);
 
  private:
   const LayoutInline& layout_inline_;

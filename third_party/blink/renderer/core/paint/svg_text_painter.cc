@@ -22,12 +22,12 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
       block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
-  BlockPainter(layout_svg_text_).Paint(block_info, LayoutPoint());
+  BlockPainter(layout_svg_text_).Paint(block_info);
 
   // Paint the outlines, if any
   if (paint_info.phase == PaintPhase::kForeground) {
     block_info.phase = PaintPhase::kOutline;
-    BlockPainter(layout_svg_text_).Paint(block_info, LayoutPoint());
+    BlockPainter(layout_svg_text_).Paint(block_info);
   }
 }
 

@@ -70,8 +70,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
       !paint_context.ApplyClipMaskAndFilterIfNecessary())
     return;
 
-  BoxPainter(layout_svg_root_)
-      .PaintChildren(paint_context.GetPaintInfo(), LayoutPoint());
+  BoxPainter(layout_svg_root_).PaintChildren(paint_context.GetPaintInfo());
 
   PaintTiming& timing = PaintTiming::From(
       layout_svg_root_.GetNode()->GetDocument().TopDocument());

@@ -63,7 +63,8 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   void UpdateGeometry(EmbeddedContentView&);
 
   bool IsLayoutEmbeddedContent() const final { return true; }
-  virtual void PaintContents(const PaintInfo&, const LayoutPoint&) const;
+  virtual void PaintContents(const PaintInfo&,
+                             const LayoutPoint& paint_offset) const;
 
   bool IsThrottledFrameView() const;
 
@@ -72,7 +73,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   void UpdateLayout() override;
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 
   bool CanBeSelectionLeafInternal() const final { return true; }

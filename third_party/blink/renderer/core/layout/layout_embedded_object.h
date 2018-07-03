@@ -50,9 +50,11 @@ class LayoutEmbeddedObject final : public LayoutEmbeddedContent {
   }
 
  private:
-  void PaintContents(const PaintInfo&, const LayoutPoint&) const final;
-  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const final;
-  void Paint(const PaintInfo&, const LayoutPoint&) const final;
+  void PaintContents(const PaintInfo&,
+                     const LayoutPoint& paint_offset) const final;
+  void PaintReplaced(const PaintInfo&,
+                     const LayoutPoint& paint_offset) const final;
+  void Paint(const PaintInfo&) const final;
   PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const final;
 

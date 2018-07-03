@@ -70,7 +70,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   static const int kDefaultWidth;
   static const int kDefaultHeight;
   bool CanHaveChildren() const override { return false; }
-  virtual void PaintReplaced(const PaintInfo&, const LayoutPoint&) const {}
+  virtual void PaintReplaced(const PaintInfo&,
+                             const LayoutPoint& paint_offset) const {}
   LayoutRect LocalSelectionRect() const final;
 
   bool HasObjectFit() const {
@@ -78,7 +79,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
            ComputedStyleInitialValues::InitialObjectFit();
   }
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
 
   // Replaced objects often have contents to paint.
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {

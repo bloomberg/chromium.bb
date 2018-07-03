@@ -106,7 +106,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
                     CanDeferInvalidation,
                     const IntRect* = nullptr) override;
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const final;
+  void Paint(const PaintInfo&) const final;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutImage || LayoutReplaced::IsOfType(type);
@@ -121,7 +121,8 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
  private:
   bool IsImage() const override { return true; }
 
-  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintReplaced(const PaintInfo&,
+                     const LayoutPoint& paint_offset) const override;
 
   bool ForegroundIsKnownToBeOpaqueInRect(
       const LayoutRect& local_rect,

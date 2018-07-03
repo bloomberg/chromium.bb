@@ -1609,9 +1609,8 @@ bool LayoutBox::HitTestClippedOutByBorder(
       Style()->GetRoundedBorderFor(border_rect));
 }
 
-void LayoutBox::Paint(const PaintInfo& paint_info,
-                      const LayoutPoint& paint_offset) const {
-  BoxPainter(*this).Paint(paint_info, paint_offset);
+void LayoutBox::Paint(const PaintInfo& paint_info) const {
+  BoxPainter(*this).Paint(paint_info);
 }
 
 void LayoutBox::PaintBoxDecorationBackground(
@@ -5484,20 +5483,6 @@ LayoutPoint LayoutBox::FlipForWritingModeForChild(
   return LayoutPoint(point.X() + Size().Width() - child->Size().Width() -
                          (2 * child->Location().X()),
                      point.Y());
-}
-
-LayoutPoint LayoutBox::FlipForWritingModeForChildForPaint(
-    const LayoutBox* child,
-    const LayoutPoint& point) const {
-  // Do nothing unless in FlippedBlocks(). Fast path optimization
-  if (!Style()->IsFlippedBlocksWritingMode())
-    return point;
-  // If child will be painted by LayoutNG, and will use fragment.Offset(),
-  // flip is not needed.
-  if (!AdjustPaintOffsetScope::WillUseLegacyLocation(child))
-    return point;
-
-  return FlipForWritingModeForChild(child, point);
 }
 
 LayoutBox* LayoutBox::LocationContainer() const {

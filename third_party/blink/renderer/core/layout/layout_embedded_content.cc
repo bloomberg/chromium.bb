@@ -268,9 +268,8 @@ void LayoutEmbeddedContent::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutEmbeddedContent::Paint(const PaintInfo& paint_info,
-                                  const LayoutPoint& paint_offset) const {
-  EmbeddedContentPainter(*this).Paint(paint_info, paint_offset);
+void LayoutEmbeddedContent::Paint(const PaintInfo& paint_info) const {
+  EmbeddedContentPainter(*this).Paint(paint_info);
 }
 
 void LayoutEmbeddedContent::PaintContents(

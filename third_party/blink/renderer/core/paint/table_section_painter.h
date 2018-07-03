@@ -24,23 +24,21 @@ class TableSectionPainter {
   TableSectionPainter(const LayoutTableSection& layout_table_section)
       : layout_table_section_(layout_table_section) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
-  void PaintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
+  void PaintCollapsedBorders(const PaintInfo&);
 
  private:
-  void PaintObject(const PaintInfo&, const LayoutPoint&);
+  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&,
                                     const CellSpan& dirtied_rows,
                                     const CellSpan& dirtied_columns);
-  void PaintBackgroundsBehindCell(const LayoutTableCell&,
-                                  const PaintInfo&,
-                                  const LayoutPoint&);
-  void PaintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
+  void PaintBackgroundsBehindCell(const LayoutTableCell&, const PaintInfo&);
+  void PaintCell(const LayoutTableCell&, const PaintInfo&);
 
-  void PaintSection(const PaintInfo&, const LayoutPoint&);
-  void PaintCollapsedSectionBorders(const PaintInfo&, const LayoutPoint&);
+  void PaintSection(const PaintInfo&);
+  void PaintCollapsedSectionBorders(const PaintInfo&);
 
   const LayoutTableSection& layout_table_section_;
 };

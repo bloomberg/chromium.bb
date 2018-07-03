@@ -34,7 +34,7 @@ class InlineTextBoxPainter {
   InlineTextBoxPainter(const InlineTextBox& inline_text_box)
       : inline_text_box_(inline_text_box) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
   // We don't paint composition or spelling markers that overlap a suggestion
   // marker (to match the native Android behavior). This method lets us throw

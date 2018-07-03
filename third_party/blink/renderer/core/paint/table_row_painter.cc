@@ -17,8 +17,7 @@
 
 namespace blink {
 
-void TableRowPainter::Paint(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) {
+void TableRowPainter::Paint(const PaintInfo& paint_info) {
   DCHECK(layout_table_row_.HasSelfPaintingLayer());
 
   // TODO(crbug.com/805514): Paint mask for table row.
@@ -28,13 +27,13 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
   // TODO(crbug.com/577282): This painting order is inconsistent with other
   // outlines.
   if (ShouldPaintSelfOutline(paint_info.phase))
-    PaintOutline(paint_info, paint_offset);
+    PaintOutline(paint_info);
   if (paint_info.phase == PaintPhase::kSelfOutlineOnly)
     return;
 
   if (ShouldPaintSelfBlockBackground(paint_info.phase)) {
     PaintBoxDecorationBackground(
-        paint_info, paint_offset,
+        paint_info,
         layout_table_row_.Section()->FullTableEffectiveColumnSpan());
   }
 
@@ -45,18 +44,15 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
   for (LayoutTableCell* cell = layout_table_row_.FirstCell(); cell;
        cell = cell->NextCell()) {
     if (!cell->HasSelfPaintingLayer())
-      cell->Paint(paint_info_for_cells, paint_offset);
+      cell->Paint(paint_info_for_cells);
   }
 }
 
-void TableRowPainter::PaintOutline(const PaintInfo& paint_info,
-                                   const LayoutPoint& paint_offset) {
+void TableRowPainter::PaintOutline(const PaintInfo& paint_info) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
-  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info,
-                                    paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info);
   ObjectPainter(layout_table_row_)
-      .PaintOutline(adjustment.GetPaintInfo(),
-                    adjustment.AdjustedPaintOffset());
+      .PaintOutline(adjustment.GetPaintInfo(), adjustment.PaintOffset());
 }
 
 void TableRowPainter::HandleChangedPartialPaint(
@@ -73,7 +69,6 @@ void TableRowPainter::HandleChangedPartialPaint(
 
 void TableRowPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
     const CellSpan& dirtied_columns) {
   bool has_background = layout_table_row_.StyleRef().HasBackground();
   bool has_box_shadow = layout_table_row_.StyleRef().BoxShadow();
@@ -87,13 +82,12 @@ void TableRowPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info,
-                                    paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+  auto paint_offset = adjustment.PaintOffset();
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
                            DisplayItem::kBoxDecorationBackground);
-  LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.Size());
+  LayoutRect paint_rect(paint_offset, layout_table_row_.Size());
 
   if (has_box_shadow) {
     BoxPainterBase::PaintNormalBoxShadow(local_paint_info, paint_rect,
@@ -105,8 +99,10 @@ void TableRowPainter::PaintBoxDecorationBackground(
     PaintInfo paint_info_for_cells = local_paint_info.ForDescendants();
     for (auto c = dirtied_columns.Start(); c < dirtied_columns.End(); c++) {
       if (const auto* cell =
-              section->OriginatingCellAt(layout_table_row_.RowIndex(), c))
-        PaintBackgroundBehindCell(*cell, paint_info_for_cells, paint_offset);
+              section->OriginatingCellAt(layout_table_row_.RowIndex(), c)) {
+        TableCellPainter(*cell).PaintContainerBackgroundBehindCell(
+            paint_info_for_cells, layout_table_row_);
+      }
     }
   }
 
@@ -116,26 +112,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
   }
 }
 
-void TableRowPainter::PaintBackgroundBehindCell(
-    const LayoutTableCell& cell,
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
-  DCHECK(layout_table_row_.StyleRef().HasBackground());
-  LayoutPoint cell_point = paint_offset;
-  // If the row is self painting, paintOffset is in row's coordinates, so
-  // doesn't need to flip in section's blocks direction. A row doesn't have
-  // flipped blocks direction.
-  if (!layout_table_row_.HasSelfPaintingLayer()) {
-    cell_point =
-        layout_table_row_.Section()->FlipForWritingModeForChildForPaint(
-            &cell, cell_point);
-  }
-  TableCellPainter(cell).PaintContainerBackgroundBehindCell(
-      paint_info, cell_point, layout_table_row_);
-}
-
 void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
-                                            const LayoutPoint& paint_offset,
                                             const CellSpan& dirtied_columns) {
   base::Optional<DrawingRecorder> recorder;
 
@@ -156,12 +133,8 @@ void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
   unsigned row = layout_table_row_.RowIndex();
   for (unsigned c = std::min(dirtied_columns.End(), section->NumCols(row));
        c > dirtied_columns.Start(); c--) {
-    if (const auto* cell = section->OriginatingCellAt(row, c - 1)) {
-      LayoutPoint cell_point =
-          section->FlipForWritingModeForChildForPaint(cell, paint_offset);
-      CollapsedBorderPainter(*cell).PaintCollapsedBorders(paint_info,
-                                                          cell_point);
-    }
+    if (const auto* cell = section->OriginatingCellAt(row, c - 1))
+      CollapsedBorderPainter(*cell).PaintCollapsedBorders(paint_info);
   }
 }
 

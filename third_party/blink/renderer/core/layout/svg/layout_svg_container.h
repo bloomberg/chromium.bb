@@ -48,7 +48,7 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
     return Children()->LastChild();
   }
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SetNeedsBoundariesUpdate() final { needs_boundaries_update_ = true; }
   bool DidScreenScaleFactorChange() const {

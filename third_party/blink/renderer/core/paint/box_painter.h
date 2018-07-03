@@ -13,29 +13,30 @@
 
 namespace blink {
 
+struct PaintInfo;
+class Color;
+class LayoutBox;
 class LayoutPoint;
 class LayoutRect;
-struct PaintInfo;
-class LayoutBox;
-class Color;
 
 class BoxPainter {
   STACK_ALLOCATED();
 
  public:
   BoxPainter(const LayoutBox& layout_box) : layout_box_(layout_box) {}
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
 
-  void PaintChildren(const PaintInfo&, const LayoutPoint&);
-  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void PaintMask(const PaintInfo&, const LayoutPoint&);
+  void PaintChildren(const PaintInfo&);
+  void PaintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint& paint_offset);
+  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const LayoutPoint&,
                                             const LayoutRect&);
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjusted_paint_offset);
+                                      const LayoutPoint& paint_offset);
 
  private:
   void PaintBackground(const PaintInfo&,

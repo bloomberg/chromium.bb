@@ -59,7 +59,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset) const override;
+  void Paint(const PaintInfo&) const override;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,

@@ -21,7 +21,7 @@ class DetailsMarkerPainter {
   DetailsMarkerPainter(const LayoutDetailsMarker& layout_details_marker)
       : layout_details_marker_(layout_details_marker) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&);
 
  private:
   Path GetCanonicalPath() const;

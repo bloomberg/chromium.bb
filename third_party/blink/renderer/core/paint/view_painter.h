@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class LayoutPoint;
 struct PaintInfo;
 class LayoutView;
 
@@ -19,7 +18,7 @@ class ViewPainter {
  public:
   ViewPainter(const LayoutView& layout_view) : layout_view_(layout_view) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&);
   void PaintBoxDecorationBackground(const PaintInfo&);
 
  private:

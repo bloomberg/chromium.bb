@@ -78,7 +78,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
           SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
               .PaintLayer(paint_context.GetPaintInfo());
         } else {
-          child->Paint(paint_context.GetPaintInfo(), IntPoint());
+          child->Paint(paint_context.GetPaintInfo());
         }
       }
     }

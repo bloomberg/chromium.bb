@@ -1325,7 +1325,7 @@ IntRect LayoutObject::AbsoluteBoundingBoxRectIncludingDescendants() const {
   return result;
 }
 
-void LayoutObject::Paint(const PaintInfo&, const LayoutPoint&) const {}
+void LayoutObject::Paint(const PaintInfo&) const {}
 
 const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
     const {

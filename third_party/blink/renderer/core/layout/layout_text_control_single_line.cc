@@ -63,9 +63,8 @@ inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
       ShadowElementNames::SpinButton()));
 }
 
-void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
-                                        const LayoutPoint& paint_offset) const {
-  TextControlSingleLinePainter(*this).Paint(paint_info, paint_offset);
+void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info) const {
+  TextControlSingleLinePainter(*this).Paint(paint_info);
 }
 
 void LayoutTextControlSingleLine::UpdateLayout() {

@@ -9,9 +9,9 @@
 
 namespace blink {
 
-class LayoutPoint;
 struct PaintInfo;
 class LayoutBlockFlow;
+class LayoutPoint;
 
 class BlockFlowPainter {
   STACK_ALLOCATED();
@@ -19,8 +19,8 @@ class BlockFlowPainter {
  public:
   BlockFlowPainter(const LayoutBlockFlow& layout_block_flow)
       : layout_block_flow_(layout_block_flow) {}
-  void PaintContents(const PaintInfo&, const LayoutPoint&);
-  void PaintFloats(const PaintInfo&, const LayoutPoint&);
+  void PaintContents(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintFloats(const PaintInfo&);
 
  private:
   const LayoutBlockFlow& layout_block_flow_;

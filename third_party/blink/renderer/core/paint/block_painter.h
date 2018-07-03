@@ -22,28 +22,24 @@ class BlockPainter {
  public:
   BlockPainter(const LayoutBlock& block) : layout_block_(block) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
-  void PaintObject(const PaintInfo&, const LayoutPoint&);
-  void PaintContents(const PaintInfo&, const LayoutPoint&);
-  void PaintChildren(const PaintInfo&, const LayoutPoint&);
-  void PaintChild(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
-  void PaintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
+  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintContents(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintChildren(const PaintInfo&);
+  void PaintChild(const LayoutBox&, const PaintInfo&);
+  void PaintOverflowControlsIfNeeded(const PaintInfo&,
+                                     const LayoutPoint& paint_offset);
 
   // See ObjectPainter::paintAllPhasesAtomically().
-  void PaintAllChildPhasesAtomically(const LayoutBox&,
-                                     const PaintInfo&,
-                                     const LayoutPoint&);
+  void PaintAllChildPhasesAtomically(const LayoutBox&, const PaintInfo&);
   static void PaintChildrenOfFlexibleBox(const LayoutFlexibleBox&,
-                                         const PaintInfo&,
-                                         const LayoutPoint& paint_offset);
-  static void PaintInlineBox(const InlineBox&,
-                             const PaintInfo&,
-                             const LayoutPoint& paint_offset);
+                                         const PaintInfo&);
+  static void PaintInlineBox(const InlineBox&, const PaintInfo&);
 
   // The adjustedPaintOffset should include the location (offset) of the object
   // itself.
   bool IntersectsPaintRect(const PaintInfo&,
-                           const LayoutPoint& adjusted_paint_offset) const;
+                           const LayoutPoint& paint_offset) const;
 
  private:
   // Paint scroll hit test placeholders in the correct paint order (see:
@@ -53,7 +49,7 @@ class BlockPainter {
   // called in the background paint phase even if there is no other painted
   // content.
   void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
-  void PaintCarets(const PaintInfo&, const LayoutPoint&);
+  void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
 
   const LayoutBlock& layout_block_;
 };

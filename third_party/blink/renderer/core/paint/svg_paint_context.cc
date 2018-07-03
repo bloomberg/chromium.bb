@@ -189,7 +189,7 @@ void SVGPaintContext::PaintResourceSubtree(GraphicsContext& context,
   PaintInfo info(context, LayoutRect::InfiniteIntRect(),
                  PaintPhase::kForeground, kGlobalPaintNormalPhase,
                  kPaintLayerPaintingRenderingResourceSubtree);
-  item->Paint(info, IntPoint());
+  item->Paint(info);
 }
 
 bool SVGPaintContext::PaintForLayoutObject(

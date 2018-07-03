@@ -508,9 +508,8 @@ void LayoutListItem::PositionListMarker() {
   }
 }
 
-void LayoutListItem::Paint(const PaintInfo& paint_info,
-                           const LayoutPoint& paint_offset) const {
-  ListItemPainter(*this).Paint(paint_info, paint_offset);
+void LayoutListItem::Paint(const PaintInfo& paint_info) const {
+  ListItemPainter(*this).Paint(paint_info);
 }
 
 const String& LayoutListItem::MarkerText() const {

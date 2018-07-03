@@ -10,11 +10,10 @@
 namespace blink {
 
 struct PaintInfo;
-class LayoutListMarker;
-class LayoutPoint;
-class LayoutObject;
 class ComputedStyle;
 class IntRect;
+class LayoutListMarker;
+class LayoutObject;
 
 class ListMarkerPainter {
   STACK_ALLOCATED();
@@ -23,7 +22,7 @@ class ListMarkerPainter {
   ListMarkerPainter(const LayoutListMarker& layout_list_marker)
       : layout_list_marker_(layout_list_marker) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&);
 
   static void PaintSymbol(const PaintInfo&,
                           const LayoutObject*,

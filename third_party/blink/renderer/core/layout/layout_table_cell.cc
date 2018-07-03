@@ -1063,11 +1063,6 @@ bool LayoutTableCell::IsFirstColumnCollapsed() const {
   return Table()->IsAbsoluteColumnCollapsed(AbsoluteColumnIndex());
 }
 
-void LayoutTableCell::Paint(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) const {
-  TableCellPainter(*this).Paint(paint_info, paint_offset);
-}
-
 void LayoutTableCell::UpdateCollapsedBorderValues() const {
   bool changed = false;
 

@@ -236,10 +236,10 @@ void InlineBox::Move(const LayoutSize& delta) {
 }
 
 void InlineBox::Paint(const PaintInfo& paint_info,
-                      const LayoutPoint& paint_offset,
-                      LayoutUnit /* lineTop */,
-                      LayoutUnit /* lineBottom */) const {
-  BlockPainter::PaintInlineBox(*this, paint_info, paint_offset);
+                      const LayoutPoint&,
+                      LayoutUnit,
+                      LayoutUnit) const {
+  BlockPainter::PaintInlineBox(*this, paint_info);
 }
 
 bool InlineBox::NodeAtPoint(HitTestResult& result,

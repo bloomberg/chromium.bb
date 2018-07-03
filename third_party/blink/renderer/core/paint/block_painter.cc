@@ -27,10 +27,9 @@
 namespace blink {
 
 DISABLE_CFI_PERF
-void BlockPainter::Paint(const PaintInfo& paint_info,
-                         const LayoutPoint& paint_offset) {
-  AdjustPaintOffsetScope adjustment(layout_block_, paint_info, paint_offset);
-  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+void BlockPainter::Paint(const PaintInfo& paint_info) {
+  AdjustPaintOffsetScope adjustment(layout_block_, paint_info);
+  auto paint_offset = adjustment.PaintOffset();
   auto& local_paint_info = adjustment.MutablePaintInfo();
 
   // We can't early return if there is no fragment to paint for this block,
@@ -39,7 +38,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
   // don't have a meaningful paint offset. TODO(wangxianzhu): only paint
   // children if !adjustment.FragmentToPaint().
   if (adjustment.FragmentToPaint() &&
-      !IntersectsPaintRect(local_paint_info, adjusted_paint_offset))
+      !IntersectsPaintRect(local_paint_info, paint_offset))
     return;
 
   PaintPhase original_phase = local_paint_info.phase;
@@ -48,7 +47,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
     local_paint_info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
     local_paint_info.phase = PaintPhase::kSelfBlockBackgroundOnly;
-    layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
+    layout_block_.PaintObject(local_paint_info, paint_offset);
     if (ShouldPaintDescendantBlockBackgrounds(original_phase))
       local_paint_info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
@@ -56,19 +55,19 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
     BoxClipper clipper(layout_block_, local_paint_info);
-    layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
+    layout_block_.PaintObject(local_paint_info, paint_offset);
   }
 
   if (ShouldPaintSelfOutline(original_phase)) {
     local_paint_info.phase = PaintPhase::kSelfOutlineOnly;
-    layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
+    layout_block_.PaintObject(local_paint_info, paint_offset);
   }
 
   // Our scrollbar widgets paint exactly when we tell them to, so that they work
   // properly with z-index. We paint after we painted the background/border, so
   // that the scrollbars will sit above the background/border.
   local_paint_info.phase = original_phase;
-  PaintOverflowControlsIfNeeded(local_paint_info, adjusted_paint_offset);
+  PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
 }
 
 void BlockPainter::PaintOverflowControlsIfNeeded(
@@ -83,46 +82,37 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
   }
 }
 
-void BlockPainter::PaintChildren(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
   for (LayoutBox* child = layout_block_.FirstChildBox(); child;
        child = child->NextSiblingBox())
-    PaintChild(*child, paint_info, paint_offset);
+    PaintChild(*child, paint_info);
 }
 
 void BlockPainter::PaintChild(const LayoutBox& child,
-                              const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset) {
-  LayoutPoint child_point =
-      layout_block_.FlipForWritingModeForChildForPaint(&child, paint_offset);
+                              const PaintInfo& paint_info) {
   if (!child.HasSelfPaintingLayer() && !child.IsFloating() &&
       !child.IsColumnSpanAll())
-    child.Paint(paint_info, child_point);
+    child.Paint(paint_info);
 }
 
 void BlockPainter::PaintChildrenOfFlexibleBox(
     const LayoutFlexibleBox& layout_flexible_box,
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+    const PaintInfo& paint_info) {
   for (const LayoutBox* child = layout_flexible_box.GetOrderIterator().First();
-       child; child = layout_flexible_box.GetOrderIterator().Next())
+       child; child = layout_flexible_box.GetOrderIterator().Next()) {
     BlockPainter(layout_flexible_box)
-        .PaintAllChildPhasesAtomically(*child, paint_info, paint_offset);
+        .PaintAllChildPhasesAtomically(*child, paint_info);
+  }
 }
 
-void BlockPainter::PaintAllChildPhasesAtomically(
-    const LayoutBox& child,
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
-  LayoutPoint child_point =
-      layout_block_.FlipForWritingModeForChildForPaint(&child, paint_offset);
+void BlockPainter::PaintAllChildPhasesAtomically(const LayoutBox& child,
+                                                 const PaintInfo& paint_info) {
   if (!child.HasSelfPaintingLayer() && !child.IsFloating())
-    ObjectPainter(child).PaintAllPhasesAtomically(paint_info, child_point);
+    ObjectPainter(child).PaintAllPhasesAtomically(paint_info);
 }
 
 void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
-                                  const PaintInfo& paint_info,
-                                  const LayoutPoint& paint_offset) {
+                                  const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kSelection)
     return;
@@ -131,24 +121,9 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
   // that has a text clip style on it, not block children.
   DCHECK(paint_info.phase != PaintPhase::kTextClip);
 
-  LayoutPoint child_point = paint_offset;
-  if (inline_box.Parent()
-          ->GetLineLayoutItem()
-          .Style()
-          ->IsFlippedBlocksWritingMode()) {
-    // Faster than calling containingBlock().
-    child_point =
-        LineLayoutAPIShim::LayoutObjectFrom(inline_box.GetLineLayoutItem())
-            ->ContainingBlock()
-            ->FlipForWritingModeForChildForPaint(
-                ToLayoutBox(LineLayoutAPIShim::LayoutObjectFrom(
-                    inline_box.GetLineLayoutItem())),
-                child_point);
-  }
-
   ObjectPainter(
       *LineLayoutAPIShim::ConstLayoutObjectFrom(inline_box.GetLineLayoutItem()))
-      .PaintAllPhasesAtomically(paint_info, child_point);
+      .PaintAllPhasesAtomically(paint_info);
 }
 
 void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
@@ -271,7 +246,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
       if (paint_phase == PaintPhase::kFloat ||
           paint_phase == PaintPhase::kSelection ||
           paint_phase == PaintPhase::kTextClip)
-        block_flow_painter.PaintFloats(contents_paint_info, paint_offset);
+        block_flow_painter.PaintFloats(contents_paint_info);
     } else {
       PaintContents(contents_paint_info, paint_offset);
     }
@@ -301,9 +276,8 @@ void BlockPainter::PaintCarets(const PaintInfo& paint_info,
 }
 
 DISABLE_CFI_PERF
-bool BlockPainter::IntersectsPaintRect(
-    const PaintInfo& paint_info,
-    const LayoutPoint& adjusted_paint_offset) const {
+bool BlockPainter::IntersectsPaintRect(const PaintInfo& paint_info,
+                                       const LayoutPoint& paint_offset) const {
   LayoutRect overflow_rect;
   if (paint_info.IsPrinting() && layout_block_.IsAnonymousBlock() &&
       layout_block_.ChildrenInline()) {
@@ -333,7 +307,7 @@ bool BlockPainter::IntersectsPaintRect(
     overflow_rect.Move(-layout_block_.ScrolledContentOffset());
   }
 
-  overflow_rect.MoveBy(adjusted_paint_offset);
+  overflow_rect.MoveBy(paint_offset);
   return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
 }
 

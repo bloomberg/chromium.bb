@@ -143,8 +143,7 @@ void LayoutSVGImage::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutSVGImage::Paint(const PaintInfo& paint_info,
-                           const LayoutPoint&) const {
+void LayoutSVGImage::Paint(const PaintInfo& paint_info) const {
   SVGImagePainter(*this).Paint(paint_info);
 }
 

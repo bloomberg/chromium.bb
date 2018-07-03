@@ -155,7 +155,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
            LayoutSVGModelObject::IsOfType(type);
   }
   void UpdateLayout() final;
-  void Paint(const PaintInfo&, const LayoutPoint&) const final;
+  void Paint(const PaintInfo&) const final;
 
   bool NodeAtFloatPoint(HitTestResult&,
                         const FloatPoint& point_in_parent,

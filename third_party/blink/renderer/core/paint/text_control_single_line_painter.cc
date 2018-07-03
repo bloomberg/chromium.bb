@@ -13,9 +13,8 @@
 
 namespace blink {
 
-void TextControlSingleLinePainter::Paint(const PaintInfo& paint_info,
-                                         const LayoutPoint& paint_offset) {
-  BlockPainter(text_control_).Paint(paint_info, paint_offset);
+void TextControlSingleLinePainter::Paint(const PaintInfo& paint_info) {
+  BlockPainter(text_control_).Paint(paint_info);
 
   if (!ShouldPaintSelfBlockBackground(paint_info.phase) ||
       !text_control_.ShouldDrawCapsLockIndicator())
@@ -39,9 +38,9 @@ void TextControlSingleLinePainter::Paint(const PaintInfo& paint_info,
   }
 
   // Convert the rect into the coords used for painting the content.
-  AdjustPaintOffsetScope adjustment(text_control_, paint_info, paint_offset);
+  AdjustPaintOffsetScope adjustment(text_control_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
-  contents_rect.MoveBy(adjustment.AdjustedPaintOffset());
+  contents_rect.MoveBy(adjustment.PaintOffset());
   IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
   LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(
       text_control_, local_paint_info, snapped_rect);

@@ -21,16 +21,15 @@
 
 namespace blink {
 
-void ReplacedPainter::Paint(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) {
-  AdjustPaintOffsetScope adjustment(layout_replaced_, paint_info, paint_offset);
+void ReplacedPainter::Paint(const PaintInfo& paint_info) {
+  AdjustPaintOffsetScope adjustment(layout_replaced_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+  auto paint_offset = adjustment.PaintOffset();
 
-  if (!ShouldPaint(local_paint_info, adjusted_paint_offset))
+  if (!ShouldPaint(local_paint_info, paint_offset))
     return;
 
-  LayoutRect border_rect(adjusted_paint_offset, layout_replaced_.Size());
+  LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintSelfBlockBackground(local_paint_info.phase)) {
     if (layout_replaced_.Style()->Visibility() == EVisibility::kVisible &&
@@ -44,7 +43,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
         return;
 
       layout_replaced_.PaintBoxDecorationBackground(local_paint_info,
-                                                    adjusted_paint_offset);
+                                                    paint_offset);
     }
     // We're done. We don't bother painting any children.
     if (local_paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly)
@@ -52,13 +51,13 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
   }
 
   if (local_paint_info.phase == PaintPhase::kMask) {
-    layout_replaced_.PaintMask(local_paint_info, adjusted_paint_offset);
+    layout_replaced_.PaintMask(local_paint_info, paint_offset);
     return;
   }
 
   if (ShouldPaintSelfOutline(local_paint_info.phase)) {
     ObjectPainter(layout_replaced_)
-        .PaintOutline(local_paint_info, adjusted_paint_offset);
+        .PaintOutline(local_paint_info, paint_offset);
     return;
   }
 
@@ -104,7 +103,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     }
 
     if (!completely_clipped_out)
-      layout_replaced_.PaintReplaced(local_paint_info, adjusted_paint_offset);
+      layout_replaced_.PaintReplaced(local_paint_info, paint_offset);
   }
 
   // The selection tint never gets clipped by border-radius rounding, since we
@@ -117,7 +116,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
                                  local_paint_info.context, layout_replaced_,
                                  DisplayItem::kSelectionTint)) {
     LayoutRect selection_painting_rect = layout_replaced_.LocalSelectionRect();
-    selection_painting_rect.MoveBy(adjusted_paint_offset);
+    selection_painting_rect.MoveBy(paint_offset);
     IntRect selection_painting_int_rect =
         PixelSnappedIntRect(selection_painting_rect);
 
@@ -131,9 +130,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
   }
 }
 
-bool ReplacedPainter::ShouldPaint(
-    const PaintInfo& paint_info,
-    const LayoutPoint& adjusted_paint_offset) const {
+bool ReplacedPainter::ShouldPaint(const PaintInfo& paint_info,
+                                  const LayoutPoint& paint_offset) const {
   if (paint_info.phase != PaintPhase::kForeground &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
       paint_info.phase != PaintPhase::kSelection &&
@@ -153,7 +151,7 @@ bool ReplacedPainter::ShouldPaint(
 
   LayoutRect paint_rect(layout_replaced_.VisualOverflowRect());
   paint_rect.Unite(layout_replaced_.LocalSelectionRect());
-  paint_rect.MoveBy(adjusted_paint_offset);
+  paint_rect.MoveBy(paint_offset);
 
   if (!paint_info.GetCullRect().IntersectsCullRect(paint_rect))
     return false;

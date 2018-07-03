@@ -10,12 +10,11 @@
 
 namespace blink {
 
-void ListItemPainter::Paint(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) {
+void ListItemPainter::Paint(const PaintInfo& paint_info) {
   if (!layout_list_item_.LogicalHeight() && layout_list_item_.HasOverflowClip())
     return;
 
-  BlockPainter(layout_list_item_).Paint(paint_info, paint_offset);
+  BlockPainter(layout_list_item_).Paint(paint_info);
 }
 
 }  // namespace blink

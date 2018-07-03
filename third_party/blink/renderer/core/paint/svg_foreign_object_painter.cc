@@ -50,7 +50,7 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
       !paint_context.ApplyClipMaskAndFilterIfNecessary())
     return;
 
-  BlockPainter(layout_svg_foreign_object_).Paint(paint_info, LayoutPoint());
+  BlockPainter(layout_svg_foreign_object_).Paint(paint_info);
 }
 
 }  // namespace blink

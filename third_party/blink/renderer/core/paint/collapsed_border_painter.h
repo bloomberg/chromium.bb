@@ -12,7 +12,6 @@
 namespace blink {
 
 struct PaintInfo;
-class LayoutPoint;
 
 class CollapsedBorderPainter {
   STACK_ALLOCATED();
@@ -21,7 +20,7 @@ class CollapsedBorderPainter {
   CollapsedBorderPainter(const LayoutTableCell& cell)
       : cell_(cell), table_(*cell.Table()) {}
 
-  void PaintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
+  void PaintCollapsedBorders(const PaintInfo&);
 
  private:
   void SetupBorders();

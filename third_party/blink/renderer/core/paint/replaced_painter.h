@@ -20,12 +20,9 @@ class ReplacedPainter {
   ReplacedPainter(const LayoutReplaced& layout_replaced)
       : layout_replaced_(layout_replaced) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
 
-  // The adjustedPaintOffset should include the location (offset) of the object
-  // itself.
-  bool ShouldPaint(const PaintInfo&,
-                   const LayoutPoint& adjusted_paint_offset) const;
+  bool ShouldPaint(const PaintInfo&, const LayoutPoint& paint_offset) const;
 
  private:
   const LayoutReplaced& layout_replaced_;

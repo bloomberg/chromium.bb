@@ -21,19 +21,13 @@
 
 namespace blink {
 
-void ViewPainter::Paint(const PaintInfo& paint_info,
-                        const LayoutPoint& paint_offset) {
+void ViewPainter::Paint(const PaintInfo& paint_info) {
   // If we ever require layout but receive a paint anyway, something has gone
   // horribly wrong.
   DCHECK(!layout_view_.NeedsLayout());
-  // LayoutViews should never be called to paint with an offset not on device
-  // pixels.
-  DCHECK(LayoutPoint(IntPoint(paint_offset.X().ToInt(),
-                              paint_offset.Y().ToInt())) == paint_offset);
-
   DCHECK(!layout_view_.GetFrameView()->ShouldThrottleRendering());
 
-  BlockPainter(layout_view_).Paint(paint_info, paint_offset);
+  BlockPainter(layout_view_).Paint(paint_info);
 }
 
 void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
