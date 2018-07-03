@@ -35,13 +35,18 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/cors.mojom-shared.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
+
+namespace network {
+namespace mojom {
+enum class CORSPreflightPolicy : int32_t;
+enum class FetchCredentialsMode : int32_t;
+enum class FetchRedirectMode : int32_t;
+enum class FetchRequestMode : int32_t;
+enum class RequestContextFrameType : int32_t;
+}  // namespace mojom
+}  // namespace network
 
 namespace blink {
 

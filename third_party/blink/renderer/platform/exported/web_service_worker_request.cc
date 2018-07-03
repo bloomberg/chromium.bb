@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 
+#include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"

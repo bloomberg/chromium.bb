@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "base/time/time.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"

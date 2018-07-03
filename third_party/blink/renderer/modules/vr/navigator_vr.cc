@@ -6,6 +6,7 @@
 
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"

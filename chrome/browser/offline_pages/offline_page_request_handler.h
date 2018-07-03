@@ -19,6 +19,7 @@
 
 namespace base {
 class FilePath;
+class TaskRunner;
 }
 
 namespace net {
