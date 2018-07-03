@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/common/buffer.h"
@@ -36,13 +37,11 @@ class GPU_EXPORT TransferBufferInterface {
   // Otherwise, this returns an invalid handle.
   virtual base::SharedMemoryHandle shared_memory_handle() const = 0;
 
-  virtual bool Initialize(
-      unsigned int buffer_size,
-      unsigned int result_size,
-      unsigned int min_buffer_size,
-      unsigned int max_buffer_size,
-      unsigned int alignment,
-      unsigned int size_to_flush) = 0;
+  virtual bool Initialize(unsigned int buffer_size,
+                          unsigned int result_size,
+                          unsigned int min_buffer_size,
+                          unsigned int max_buffer_size,
+                          unsigned int alignment) = 0;
 
   virtual int GetShmId() = 0;
   virtual void* GetResultBuffer() = 0;
@@ -86,8 +85,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
                   unsigned int result_size,
                   unsigned int min_buffer_size,
                   unsigned int max_buffer_size,
-                  unsigned int alignment,
-                  unsigned int size_to_flush) override;
+                  unsigned int alignment) override;
   int GetShmId() override;
   void* GetResultBuffer() override;
   int GetResultOffset() override;
@@ -107,14 +105,25 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   unsigned int GetCurrentMaxAllocationWithoutRealloc() const;
   unsigned int GetMaxAllocation() const;
 
+  // We will attempt to shrink the ring buffer once the number of bytes
+  // allocated reaches this threshold times the high water mark.
+  static const int kShrinkThreshold = 120;
+
  private:
   // Tries to reallocate the ring buffer if it's not large enough for size.
-  void ReallocateRingBuffer(unsigned int size);
+  void ReallocateRingBuffer(unsigned int size, bool shrink = false);
 
   void AllocateRingBuffer(unsigned int size);
 
+  void ShrinkOrExpandRingBufferIfNecessary(unsigned int size);
+
+  // Returns the number of bytes that are still in use in ring buffers that we
+  // previously freed.
+  unsigned int GetPreviousRingBufferUsedBytes();
+
   CommandBufferHelper* helper_;
   std::unique_ptr<RingBuffer> ring_buffer_;
+  base::circular_deque<std::unique_ptr<RingBuffer>> previous_ring_buffers_;
 
   // size reserved for results
   unsigned int result_size_;
@@ -128,14 +137,17 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   // max size we'll let the buffer grow
   unsigned int max_buffer_size_;
 
+  // Size of the currently allocated ring buffer.
+  unsigned int last_allocated_size_ = 0;
+
+  // The size to shrink the ring buffer to next time shrinking happens.
+  unsigned int high_water_mark_ = 0;
+
   // alignment for allocations
   unsigned int alignment_;
 
-  // Size at which to do an async flush. 0 = never.
-  unsigned int size_to_flush_;
-
-  // Number of bytes since we last flushed.
-  unsigned int bytes_since_last_flush_;
+  // Number of bytes since we last attempted to shrink the ring buffer.
+  unsigned int bytes_since_last_shrink_ = 0;
 
   // the current buffer.
   scoped_refptr<gpu::Buffer> buffer_;

@@ -43,10 +43,11 @@ int32_t FakeCommandBufferServiceBase::GetNextFreeTransferBufferId() {
   return -1;
 }
 
-void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id) {
+void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id,
+                                                      int32_t token) {
   ++state_.set_get_buffer_count;
   state_.get_offset = 0;
-  state_.token = 10000;  // All token checks in the tests should pass.
+  state_.token = token;
 }
 
 scoped_refptr<gpu::Buffer>
@@ -131,7 +132,7 @@ CommandBuffer::State MockClientCommandBuffer::WaitForGetOffsetInRange(
 }
 
 void MockClientCommandBuffer::SetGetBuffer(int transfer_buffer_id) {
-  SetGetBufferHelper(transfer_buffer_id);
+  SetGetBufferHelper(transfer_buffer_id, token_);
 }
 
 scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(

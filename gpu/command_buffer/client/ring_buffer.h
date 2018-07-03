@@ -80,6 +80,9 @@ class GPU_EXPORT RingBuffer {
     return size_ - size_ % alignment_;
   }
 
+  // Total size minus usable size.
+  unsigned int GetUsedSize() { return size_ - GetLargestFreeSizeNoWaiting(); }
+
   // Gets a pointer to a memory block given the base memory and the offset.
   void* GetPointer(RingBuffer::Offset offset) const {
     return static_cast<int8_t*>(base_) + offset;

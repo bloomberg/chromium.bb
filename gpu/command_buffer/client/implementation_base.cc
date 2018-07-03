@@ -156,7 +156,7 @@ gpu::ContextResult ImplementationBase::Initialize(
   if (!transfer_buffer_->Initialize(
           limits.start_transfer_buffer_size, kStartingOffset,
           limits.min_transfer_buffer_size, limits.max_transfer_buffer_size,
-          kAlignment, kSizeToFlush)) {
+          kAlignment)) {
     // TransferBuffer::Initialize doesn't fail for transient reasons such as if
     // the context was lost. See http://crrev.com/c/720269
     LOG(ERROR) << "ContextResult::kFatalFailure: "

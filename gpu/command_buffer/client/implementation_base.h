@@ -51,9 +51,6 @@ class GLES2_IMPL_EXPORT ImplementationBase
   // used for testing only. If more things are reseved add them here.
   static const unsigned int kStartingOffset = kMaxSizeOfSimpleResult;
 
-  // Size in bytes to issue async flush for transfer buffer.
-  static const unsigned int kSizeToFlush = 256 * 1024;
-
   // Alignment of allocations.
   static const unsigned int kAlignment = 16;
 
