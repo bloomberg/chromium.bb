@@ -107,6 +107,11 @@ void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
   base::UmaHistogramSparse("Arc.OptInSilentAuthCode", static_cast<int>(state));
 }
 
+void UpdateSupervisionTransitionResultUMA(
+    mojom::SupervisionChangeStatus result) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.Supervision.Transition.Result", result);
+}
+
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {
   base::UmaHistogramSparse("Arc.OptInSilentAuthCode.Reauthorization",
                            static_cast<int>(state));

@@ -197,6 +197,8 @@ void UpdateReauthorizationResultUMA(ProvisioningResult result,
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
                              const Profile* profile);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
+void UpdateSupervisionTransitionResultUMA(
+    mojom::SupervisionChangeStatus result);
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state);
 void UpdateAuthTiming(const char* histogram_name, base::TimeDelta elapsed_time);
 void UpdateAuthCheckinAttempts(int32_t num_attempts);
