@@ -51,7 +51,7 @@ gpu::ContextCreationAttribs CreateAttributes() {
 }  // namespace
 
 VizProcessContextProvider::VizProcessContextProvider(
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -60,7 +60,7 @@ VizProcessContextProvider::VizProcessContextProvider(
     : attributes_(CreateAttributes()),
       context_(std::make_unique<gpu::GLInProcessContext>()),
       context_result_(
-          context_->Initialize(std::move(service),
+          context_->Initialize(std::move(task_executor),
                                nullptr,
                                (surface_handle == gpu::kNullSurfaceHandle),
                                surface_handle,

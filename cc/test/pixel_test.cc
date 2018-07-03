@@ -255,7 +255,7 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
-  gpu_command_service_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group(),
       gpu_service_->gpu_feature_info(),
@@ -304,7 +304,7 @@ void PixelTest::SetUpSkiaRendererDDL() {
   auto* gpu_channel_manager_delegate = gpu_channel_manager->delegate();
   child_context_provider_ =
       base::MakeRefCounted<viz::VizProcessContextProvider>(
-          gpu_command_service_, gpu::kNullSurfaceHandle,
+          task_executor_, gpu::kNullSurfaceHandle,
           gpu_memory_buffer_manager_.get(), image_factory,
           gpu_channel_manager_delegate, gpu::SharedMemoryLimits());
   child_context_provider_->BindToCurrentThread();
@@ -313,7 +313,7 @@ void PixelTest::SetUpSkiaRendererDDL() {
 }
 
 void PixelTest::TearDownGpuServiceOnGpuThread(base::WaitableEvent* event) {
-  gpu_command_service_ = nullptr;
+  task_executor_ = nullptr;
   gpu_service_ = nullptr;
   event->Signal();
 }
@@ -330,7 +330,7 @@ void PixelTest::TearDown() {
   resource_provider_ = nullptr;
   output_surface_ = nullptr;
 
-  if (gpu_command_service_) {
+  if (task_executor_) {
     // Tear down the GPU service.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);

@@ -4,7 +4,6 @@
 
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 
-#include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace gpu {
@@ -16,10 +15,10 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     scoped_refptr<gl::GLShareGroup> share_group,
     const GpuFeatureInfo& gpu_feature_info,
     const GpuPreferences& gpu_preferences)
-    : gpu::InProcessCommandBuffer::Service(gpu_preferences,
-                                           mailbox_manager,
-                                           share_group,
-                                           gpu_feature_info),
+    : gpu::CommandBufferTaskExecutor(gpu_preferences,
+                                     gpu_feature_info,
+                                     mailbox_manager,
+                                     share_group),
       task_runner_(task_runner),
       sync_point_manager_(sync_point_manager) {}
 
@@ -38,14 +37,6 @@ bool GpuInProcessThreadService::ForceVirtualizedGLContexts() {
 
 gpu::SyncPointManager* GpuInProcessThreadService::sync_point_manager() {
   return sync_point_manager_;
-}
-
-void GpuInProcessThreadService::AddRef() const {
-  base::RefCountedThreadSafe<GpuInProcessThreadService>::AddRef();
-}
-
-void GpuInProcessThreadService::Release() const {
-  base::RefCountedThreadSafe<GpuInProcessThreadService>::Release();
 }
 
 bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() const {

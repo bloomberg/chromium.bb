@@ -82,11 +82,11 @@ DeferredGpuCommandService::DeferredGpuCommandService(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info)
-    : gpu::InProcessCommandBuffer::Service(gpu_preferences,
-                                           nullptr,
-                                           nullptr,
-                                           gpu_feature_info),
-      sync_point_manager_(new gpu::SyncPointManager()),
+    : gpu::CommandBufferTaskExecutor(gpu_preferences,
+                                     gpu_feature_info,
+                                     nullptr,
+                                     nullptr),
+      sync_point_manager_(std::make_unique<gpu::SyncPointManager>()),
       gpu_info_(gpu_info) {}
 
 DeferredGpuCommandService::~DeferredGpuCommandService() {
@@ -198,14 +198,6 @@ void DeferredGpuCommandService::RunTasks() {
       has_more_tasks = tasks_.size() > 0;
     }
   }
-}
-
-void DeferredGpuCommandService::AddRef() const {
-  base::RefCountedThreadSafe<DeferredGpuCommandService>::AddRef();
-}
-
-void DeferredGpuCommandService::Release() const {
-  base::RefCountedThreadSafe<DeferredGpuCommandService>::Release();
 }
 
 bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() const {
