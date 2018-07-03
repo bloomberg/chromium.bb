@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -304,7 +303,6 @@ public class VrShellTransitionTest {
      * Tests that entering WebVR presentation from the VR browser, exiting presentation, and
      * re-entering presentation works. This is a regression test for crbug.com/799999.
      */
-    @DisabledTest(message = "crbug.com/856546")
     @Test
     @CommandLineFlags.Add("enable-features=WebXR")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
