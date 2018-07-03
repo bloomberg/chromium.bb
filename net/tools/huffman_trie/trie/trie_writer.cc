@@ -123,7 +123,7 @@ bool TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
                                      uint32_t* position) {
   DCHECK(start != end) << "No entries passed to WriteDispatchTables";
 
-  huffman_trie::TrieBitBuffer writer;
+  TrieBitBuffer writer;
 
   std::vector<uint8_t> prefix = LongestCommonPrefix(start, end);
   for (size_t i = 0; i < prefix.size(); ++i) {

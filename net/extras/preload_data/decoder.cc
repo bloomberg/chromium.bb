@@ -5,52 +5,6 @@
 #include "net/extras/preload_data/decoder.h"
 #include "base/logging.h"
 
-namespace {
-
-// HuffmanDecoder is a very simple Huffman reader. The input Huffman tree is
-// simply encoded as a series of two-byte structures. The first byte determines
-// the "0" pointer for that node and the second the "1" pointer. Each byte
-// either has the MSB set, in which case the bottom 7 bits are the value for
-// that position, or else the bottom seven bits contain the index of a node.
-//
-// The tree is decoded by walking rather than a table-driven approach.
-class HuffmanDecoder {
- public:
-  HuffmanDecoder(const uint8_t* tree, size_t tree_bytes)
-      : tree_(tree), tree_bytes_(tree_bytes) {}
-
-  bool Decode(net::extras::PreloadDecoder::BitReader* reader, char* out) {
-    const uint8_t* current = &tree_[tree_bytes_ - 2];
-
-    for (;;) {
-      bool bit;
-      if (!reader->Next(&bit)) {
-        return false;
-      }
-
-      uint8_t b = current[bit];
-      if (b & 0x80) {
-        *out = static_cast<char>(b & 0x7f);
-        return true;
-      }
-
-      unsigned offset = static_cast<unsigned>(b) * 2;
-      DCHECK_LT(offset, tree_bytes_);
-      if (offset >= tree_bytes_) {
-        return false;
-      }
-
-      current = &tree_[offset];
-    }
-  }
-
- private:
-  const uint8_t* const tree_;
-  const size_t tree_bytes_;
-};
-
-}  // namespace
-
 namespace net {
 
 namespace extras {
@@ -131,26 +85,49 @@ bool PreloadDecoder::BitReader::Seek(size_t offset) {
   return true;
 }
 
+PreloadDecoder::HuffmanDecoder::HuffmanDecoder(const uint8_t* tree,
+                                               size_t tree_bytes)
+    : tree_(tree), tree_bytes_(tree_bytes) {}
+
+bool PreloadDecoder::HuffmanDecoder::Decode(PreloadDecoder::BitReader* reader,
+                                            char* out) const {
+  const uint8_t* current = &tree_[tree_bytes_ - 2];
+
+  for (;;) {
+    bool bit;
+    if (!reader->Next(&bit)) {
+      return false;
+    }
+
+    uint8_t b = current[bit];
+    if (b & 0x80) {
+      *out = static_cast<char>(b & 0x7f);
+      return true;
+    }
+
+    unsigned offset = static_cast<unsigned>(b) * 2;
+    DCHECK_LT(offset, tree_bytes_);
+    if (offset >= tree_bytes_) {
+      return false;
+    }
+
+    current = &tree_[offset];
+  }
+}
+
 PreloadDecoder::PreloadDecoder(const uint8_t* huffman_tree,
                                size_t huffman_tree_size,
                                const uint8_t* trie,
                                size_t trie_bits,
                                size_t trie_root_position)
-    : huffman_tree_(huffman_tree),
-      huffman_tree_size_(huffman_tree_size),
-      trie_(trie),
-      trie_bits_(trie_bits),
+    : huffman_decoder_(huffman_tree, huffman_tree_size),
+      bit_reader_(trie, trie_bits),
       trie_root_position_(trie_root_position) {}
 
 PreloadDecoder::~PreloadDecoder() {}
 
 bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
-  HuffmanDecoder huffman(huffman_tree_, huffman_tree_size_);
-  BitReader reader(trie_, trie_bits_);
   size_t bit_offset = trie_root_position_;
-  static const char kEndOfString = 0;
-  static const char kEndOfTable = 127;
-
   *out_found = false;
 
   // current_search_offset contains one more than the index of the current
@@ -161,13 +138,13 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
 
   for (;;) {
     // Seek to the desired location.
-    if (!reader.Seek(bit_offset)) {
+    if (!bit_reader_.Seek(bit_offset)) {
       return false;
     }
 
     // Decode the unary length of the common prefix.
     size_t prefix_length;
-    if (!reader.Unary(&prefix_length)) {
+    if (!bit_reader_.Unary(&prefix_length)) {
       return false;
     }
 
@@ -179,7 +156,7 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
       }
 
       char c;
-      if (!huffman.Decode(&reader, &c)) {
+      if (!huffman_decoder_.Decode(&bit_reader_, &c)) {
         return false;
       }
       if (search[current_search_offset - 1] != c) {
@@ -194,7 +171,7 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
     // Next is the dispatch table.
     for (;;) {
       char c;
-      if (!huffman.Decode(&reader, &c)) {
+      if (!huffman_decoder_.Decode(&bit_reader_, &c)) {
         return false;
       }
       if (c == kEndOfTable) {
@@ -203,7 +180,8 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
       }
 
       if (c == kEndOfString) {
-        if (!ReadEntry(&reader, search, current_search_offset, out_found)) {
+        if (!ReadEntry(&bit_reader_, search, current_search_offset,
+                       out_found)) {
           return false;
         }
         if (current_search_offset == 0) {
@@ -223,8 +201,8 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
         // The first offset is backwards from the current position.
         uint32_t jump_delta_bits;
         uint32_t jump_delta;
-        if (!reader.Read(5, &jump_delta_bits) ||
-            !reader.Read(jump_delta_bits, &jump_delta)) {
+        if (!bit_reader_.Read(5, &jump_delta_bits) ||
+            !bit_reader_.Read(jump_delta_bits, &jump_delta)) {
           return false;
         }
 
@@ -237,19 +215,19 @@ bool PreloadDecoder::Decode(const std::string& search, bool* out_found) {
       } else {
         // Subsequent offsets are forward from the target of the first offset.
         uint32_t is_long_jump;
-        if (!reader.Read(1, &is_long_jump)) {
+        if (!bit_reader_.Read(1, &is_long_jump)) {
           return false;
         }
 
         uint32_t jump_delta;
         if (!is_long_jump) {
-          if (!reader.Read(7, &jump_delta)) {
+          if (!bit_reader_.Read(7, &jump_delta)) {
             return false;
           }
         } else {
           uint32_t jump_delta_bits;
-          if (!reader.Read(4, &jump_delta_bits) ||
-              !reader.Read(jump_delta_bits + 8, &jump_delta)) {
+          if (!bit_reader_.Read(4, &jump_delta_bits) ||
+              !bit_reader_.Read(jump_delta_bits + 8, &jump_delta)) {
             return false;
           }
         }
