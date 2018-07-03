@@ -62,8 +62,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
 
-  uint32_t GetCopyTextureInternalFormat();
-
   void SetUpdateVSyncParametersCallback(
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback);

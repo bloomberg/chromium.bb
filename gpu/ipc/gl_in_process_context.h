@@ -15,20 +15,21 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
+class TransferBuffer;
 struct GpuFeatureInfo;
 struct SharedMemoryLimits;
 
 namespace gles2 {
+class GLES2CmdHelper;
 class GLES2Implementation;
 }
 
+// Wraps everything needed to use an in process GL context.
 class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
  public:
-  virtual ~GLInProcessContext() = default;
-
-  // TODO(danakj): Devirtualize this class and remove this, just call the
-  // constructor.
-  static std::unique_ptr<GLInProcessContext> CreateWithoutInit();
+  // You must call Initialize() before using the context.
+  GLInProcessContext();
+  ~GLInProcessContext();
 
   // Initialize the GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be null or a NONE-terminated list
@@ -39,7 +40,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // not thread safe. If |surface| is null, then the other parameters are used
   // to correctly create a surface.
   // |gpu_channel_manager| should be non-null when used in the GPU process.
-  virtual ContextResult Initialize(
+  ContextResult Initialize(
       scoped_refptr<InProcessCommandBuffer::Service> service,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
@@ -49,20 +50,25 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  virtual const Capabilities& GetCapabilities() const = 0;
-  virtual const GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
+  const Capabilities& GetCapabilities() const;
+  const GpuFeatureInfo& GetGpuFeatureInfo() const;
 
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
-  virtual gles2::GLES2Implementation* GetImplementation() = 0;
+  gles2::GLES2Implementation* GetImplementation();
 
-  virtual void SetLock(base::Lock* lock) = 0;
+  void SetUpdateVSyncParametersCallback(
+      const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback);
 
-  virtual void SetUpdateVSyncParametersCallback(
-      const InProcessCommandBuffer::UpdateVSyncParametersCallback&
-          callback) = 0;
+ private:
+  std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
+  std::unique_ptr<InProcessCommandBuffer> command_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
 };
 
 }  // namespace gpu

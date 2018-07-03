@@ -11,12 +11,10 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -34,47 +32,9 @@
 
 namespace gpu {
 
-namespace {
+GLInProcessContext::GLInProcessContext() = default;
 
-class GLInProcessContextImpl
-    : public GLInProcessContext,
-      public base::SupportsWeakPtr<GLInProcessContextImpl> {
- public:
-  GLInProcessContextImpl();
-  ~GLInProcessContextImpl() override;
-
-  // GLInProcessContext implementation:
-  ContextResult Initialize(
-      scoped_refptr<InProcessCommandBuffer::Service> service,
-      scoped_refptr<gl::GLSurface> surface,
-      bool is_offscreen,
-      SurfaceHandle window,
-      const ContextCreationAttribs& attribs,
-      const SharedMemoryLimits& mem_limits,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      ImageFactory* image_factory,
-      GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  const Capabilities& GetCapabilities() const override;
-  const GpuFeatureInfo& GetGpuFeatureInfo() const override;
-  gles2::GLES2Implementation* GetImplementation() override;
-  void SetUpdateVSyncParametersCallback(
-      const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback)
-      override;
-  void SetLock(base::Lock* lock) override;
-
- private:
-  std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
-  std::unique_ptr<TransferBuffer> transfer_buffer_;
-  std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
-  std::unique_ptr<InProcessCommandBuffer> command_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
-};
-
-GLInProcessContextImpl::GLInProcessContextImpl() = default;
-
-GLInProcessContextImpl::~GLInProcessContextImpl() {
+GLInProcessContext::~GLInProcessContext() {
   if (gles2_implementation_) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,
@@ -91,28 +51,24 @@ GLInProcessContextImpl::~GLInProcessContextImpl() {
   command_buffer_.reset();
 }
 
-const Capabilities& GLInProcessContextImpl::GetCapabilities() const {
+const Capabilities& GLInProcessContext::GetCapabilities() const {
   return command_buffer_->GetCapabilities();
 }
 
-const GpuFeatureInfo& GLInProcessContextImpl::GetGpuFeatureInfo() const {
+const GpuFeatureInfo& GLInProcessContext::GetGpuFeatureInfo() const {
   return command_buffer_->GetGpuFeatureInfo();
 }
 
-gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
+gles2::GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
-void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
+void GLInProcessContext::SetUpdateVSyncParametersCallback(
     const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);
 }
 
-void GLInProcessContextImpl::SetLock(base::Lock* lock) {
-  NOTREACHED();
-}
-
-ContextResult GLInProcessContextImpl::Initialize(
+ContextResult GLInProcessContext::Initialize(
     scoped_refptr<InProcessCommandBuffer::Service> service,
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
@@ -170,13 +126,6 @@ ContextResult GLInProcessContextImpl::Initialize(
 
   result = gles2_implementation_->Initialize(mem_limits);
   return result;
-}
-
-}  // anonymous namespace
-
-// static
-std::unique_ptr<GLInProcessContext> GLInProcessContext::CreateWithoutInit() {
-  return std::make_unique<GLInProcessContextImpl>();
 }
 
 }  // namespace gpu
