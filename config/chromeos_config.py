@@ -2164,6 +2164,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # Template for Android NYC.
@@ -2298,7 +2299,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.mst_android_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'mst-android-pfq',
@@ -2318,14 +2318,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.pi_android_pfq,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
           _pi_no_hwtest_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
@@ -2333,7 +2331,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.pi_android_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
@@ -2341,7 +2338,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.pi_android_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
       ) +
       site_config.AddForBoards(
@@ -2349,7 +2345,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _pi_vmtest_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],
       ) +
@@ -2359,7 +2354,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.pi_android_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],
       )
@@ -2373,14 +2367,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.nyc_android_pfq,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
           _nyc_no_hwtest_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
@@ -2388,7 +2380,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.nyc_android_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
@@ -2397,7 +2388,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.nyc_android_pfq,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke'),],
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
