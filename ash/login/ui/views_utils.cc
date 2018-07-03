@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login/ui/layout_util.h"
+#include "ash/login/ui/views_utils.h"
 
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/shell.h"
@@ -11,7 +11,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace login_layout_util {
+namespace login_views_utils {
 
 views::View* WrapViewForPreferredSize(views::View* view) {
   auto* proxy = new NonAccessibleView();
@@ -52,5 +52,14 @@ bool ShouldShowLandscape(const views::Widget* widget) {
   return true;
 }
 
-}  // namespace login_layout_util
+bool HasFocusInAnyChildView(views::View* view) {
+  // Find the topmost ancestor of the focused view, or |view|, whichever comes
+  // first.
+  views::View* search = view->GetFocusManager()->GetFocusedView();
+  while (search && search != view)
+    search = search->parent();
+  return search == view;
+}
+
+}  // namespace login_views_utils
 }  // namespace ash

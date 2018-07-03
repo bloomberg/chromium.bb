@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
-#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
