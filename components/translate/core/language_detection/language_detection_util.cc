@@ -15,7 +15,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
@@ -152,7 +151,6 @@ std::string DeterminePageLanguage(const std::string& code,
                                   const base::string16& contents,
                                   std::string* cld_language_p,
                                   bool* is_cld_reliable_p) {
-  base::TimeTicks begin_time = base::TimeTicks::Now();
   bool is_cld_reliable;
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
@@ -172,7 +170,6 @@ std::string DeterminePageLanguage(const std::string& code,
   }
 
   std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
-  translate::ReportLanguageDetectionTime(begin_time, base::TimeTicks::Now());
 
   if (cld_language_p != nullptr)
     *cld_language_p = cld_language;

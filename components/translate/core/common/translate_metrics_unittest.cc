@@ -279,17 +279,6 @@ TEST(TranslateMetricsTest, ReportSimilarLanguageMatch) {
   EXPECT_EQ(1, recorder.GetCount(kFalse));
 }
 
-TEST(TranslateMetricsTest, ReportLanguageDetectionTime) {
-  MetricsRecorder recorder(
-      translate::metrics_internal::kRenderer4LanguageDetection);
-  recorder.CheckTotalCount(0);
-  TimeTicks begin = TimeTicks::Now();
-  TimeTicks end = begin + base::TimeDelta::FromMicroseconds(9009);
-  translate::ReportLanguageDetectionTime(begin, end);
-  recorder.CheckValueInLogs(9.009);
-  recorder.CheckTotalCount(1);
-}
-
 TEST(TranslateMetricsTest, ReportLanguageDetectionConflict) {
   MetricsRecorder recorder(
       translate::metrics_internal::kTranslateLanguageDetectionConflict);

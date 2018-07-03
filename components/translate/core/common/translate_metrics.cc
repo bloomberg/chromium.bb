@@ -18,7 +18,6 @@ namespace translate {
 
 namespace metrics_internal {
 
-const char kRenderer4LanguageDetection[] = "Renderer4.LanguageDetection";
 const char kTranslateContentLanguage[] = "Translate.ContentLanguage";
 const char kTranslateHtmlLang[] = "Translate.HtmlLang";
 const char kTranslateLanguageVerification[] = "Translate.LanguageVerification";
@@ -100,11 +99,6 @@ void ReportPageScheme(const std::string& scheme) {
     type = SCHEME_HTTPS;
   UMA_HISTOGRAM_ENUMERATION(metrics_internal::kTranslatePageScheme, type,
                             SCHEME_MAX);
-}
-
-void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end) {
-  UMA_HISTOGRAM_MEDIUM_TIMES(metrics_internal::kRenderer4LanguageDetection,
-                             end - begin);
 }
 
 void ReportSimilarLanguageMatch(bool match) {

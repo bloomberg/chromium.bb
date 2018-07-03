@@ -57,18 +57,6 @@ void FrameRateCounter::SaveTimeStamp(base::TimeTicks timestamp, bool software) {
   base::TimeDelta frame_interval_seconds =
       RecentFrameInterval(ring_buffer_.BufferSize() - 1);
 
-  if (has_impl_thread_ && ring_buffer_.CurrentIndex() > 0) {
-    if (software) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Renderer4.SoftwareCompositorThreadImplDrawDelay",
-          frame_interval_seconds.InMilliseconds(), 1, 120, 60);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.CompositorThreadImplDrawDelay",
-                                  frame_interval_seconds.InMilliseconds(), 1,
-                                  120, 60);
-    }
-  }
-
   if (!IsBadFrameInterval(frame_interval_seconds) &&
       frame_interval_seconds.InSecondsF() > kDroppedFrameTime)
     dropped_frame_count_ +=
