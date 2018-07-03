@@ -14,6 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
+import org.chromium.chromecast.base.Inheritance.Base;
+import org.chromium.chromecast.base.Inheritance.Derived;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +70,21 @@ public class BothTest {
     }
 
     @Test
+    public void testAdaptBiFunctionBaseArguments() {
+        // Compile error if generics are wrong.
+        Function<Both<Derived, Derived>, String> f = Both.adapt((Base a, Base b) -> "success");
+        assertEquals(f.apply(Both.both(new Derived(), new Derived())), "success");
+    }
+
+    @Test
+    public void testAdaptBiFunctionDerivedResult() {
+        // Compile error if generics are wrong.
+        Derived derived = new Derived();
+        Function<Both<String, String>, Base> f = Both.adapt((String a, String b) -> derived);
+        assertEquals(f.apply(Both.both("a", "b")), derived);
+    }
+
+    @Test
     public void testAdaptBiConsumer() {
         List<String> result = new ArrayList<>();
         Both.adapt((String a, String b) -> { result.add(a + b); }).accept(Both.both("A", "B"));
@@ -74,9 +92,31 @@ public class BothTest {
     }
 
     @Test
+    public void testAdaptBiConsumerBaseArguments() {
+        // Compile error if generics are wrong.
+        List<String> result = new ArrayList<>();
+        Consumer<Both<Derived, Derived>> c =
+                Both.adapt((Base a, Base b) -> { result.add("success"); });
+        c.accept(Both.both(new Derived(), new Derived()));
+        assertThat(result, contains("success"));
+    }
+
+    @Test
     public void testAdaptBiPredicate() {
         Predicate<Both<String, String>> p = Both.adapt(String::equals);
         assertTrue(p.test(Both.both("a", "a")));
         assertFalse(p.test(Both.both("a", "b")));
+    }
+
+    @Test
+    public void testAdaptBiPredicateBaseArguments() {
+        // Compile error if generics are wrong.
+        Predicate<Both<Derived, Derived>> p = Both.adapt((Base a, Base b) -> a.equals(b));
+        Derived derived1 = new Derived();
+        Derived derived2 = new Derived();
+        assertTrue(p.test(Both.both(derived1, derived1)));
+        assertTrue(p.test(Both.both(derived2, derived2)));
+        assertFalse(p.test(Both.both(derived1, derived2)));
+        assertFalse(p.test(Both.both(derived2, derived1)));
     }
 }
