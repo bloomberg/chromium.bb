@@ -15,7 +15,7 @@ UnifiedBrightnessView::UnifiedBrightnessView(
     UnifiedBrightnessSliderController* controller,
     UnifiedSystemTrayModel* model)
     : UnifiedSliderView(controller,
-                        kSystemMenuBrightnessIcon,
+                        kUnifiedMenuBrightnessIcon,
                         IDS_ASH_STATUS_TRAY_BRIGHTNESS),
       model_(model) {
   button()->SetEnabled(false);

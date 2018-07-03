@@ -26,7 +26,7 @@ FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
   auto* button = new FeaturePodButton(this);
   button->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY));
-  button->SetVectorIcon(kSystemMenuAccessibilityIcon);
+  button->SetVectorIcon(kUnifiedMenuAccessibilityIcon);
   button->ShowDetailedViewArrow();
 
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();

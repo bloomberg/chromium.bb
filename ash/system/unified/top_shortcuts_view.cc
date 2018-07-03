@@ -152,20 +152,20 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   sign_out_button_ = new SignOutButton(this);
   container_->AddSignOutButton(sign_out_button_);
 
-  lock_button_ = new TopShortcutButton(this, kSystemMenuLockIcon,
+  lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
                                        IDS_ASH_STATUS_TRAY_LOCK);
   lock_button_->SetEnabled(can_show_web_ui &&
                            Shell::Get()->session_controller()->CanLockScreen());
   container_->AddChildView(lock_button_);
 
-  settings_button_ = new TopShortcutButton(this, kSystemMenuSettingsIcon,
+  settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
                                            IDS_ASH_STATUS_TRAY_SETTINGS);
   settings_button_->SetEnabled(can_show_web_ui);
   container_->AddChildView(settings_button_);
 
   bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   power_button_ = new TopShortcutButton(
-      this, kSystemMenuPowerIcon,
+      this, kUnifiedMenuPowerIcon,
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
   power_button_->set_id(VIEW_ID_POWER_BUTTON);
   container_->AddChildView(power_button_);

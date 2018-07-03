@@ -25,9 +25,6 @@ namespace ash {
 
 namespace {
 
-// TODO(tetsui): Remove when the asset is arrived.
-const int kCollapseIconSize = 20;
-
 // Ink drop mask that masks non-standard shape of CustomShapeButton.
 class CustomShapeInkDropMask : public views::InkDropMask {
  public:
@@ -105,9 +102,9 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
 
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : CustomShapeButton(listener) {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
-                                 kCollapseIconSize, kUnifiedMenuIconColor));
+  SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor));
 }
 
 CollapseButton::~CollapseButton() = default;
@@ -140,9 +137,9 @@ void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::ScopedCanvas scoped(canvas);
   canvas->Translate(gfx::Vector2d(size().width() / 2, size().height() * 2 / 3));
-  canvas->sk_canvas()->rotate(expanded_amount_ * 180. + 180.);
-  canvas->DrawImageInt(GetImageToPaint(), -kCollapseIconSize / 2,
-                       -kCollapseIconSize / 2);
+  canvas->sk_canvas()->rotate(expanded_amount_ * 180.);
+  gfx::ImageSkia image = GetImageToPaint();
+  canvas->DrawImageInt(image, -image.width() / 2, -image.height() / 2);
 }
 
 }  // namespace ash

@@ -72,19 +72,19 @@ void RotationLockFeaturePodController::UpdateButton() {
   button_->SetToggled(rotation_locked);
 
   if (rotation_locked && is_portrait) {
-    button_->SetVectorIcon(kSystemMenuRotationLockPortraitIcon);
+    button_->SetVectorIcon(kUnifiedMenuRotationLockPortraitIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_LABEL));
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_VERTICAL_SUBLABEL));
   } else if (rotation_locked && !is_portrait) {
-    button_->SetVectorIcon(kSystemMenuRotationLockLandscapeIcon);
+    button_->SetVectorIcon(kUnifiedMenuRotationLockLandscapeIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_LABEL));
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_HORIZONTAL_SUBLABEL));
   } else {
-    button_->SetVectorIcon(kSystemMenuRotationLockAutoIcon);
+    button_->SetVectorIcon(kUnifiedMenuRotationLockAutoIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO_LABEL));
     button_->SetSubLabel(l10n_util::GetStringUTF16(

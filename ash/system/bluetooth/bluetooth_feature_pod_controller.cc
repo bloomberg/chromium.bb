@@ -29,7 +29,6 @@ BluetoothFeaturePodController::~BluetoothFeaturePodController() {
 FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
-  button_->SetVectorIcon(kSystemMenuBluetoothIcon);
   button_->ShowDetailedViewArrow();
   UpdateButton();
   return button_;
@@ -65,6 +64,7 @@ void BluetoothFeaturePodController::UpdateButton() {
   button_->SetToggled(is_enabled);
 
   if (!is_enabled) {
+    button_->SetVectorIcon(kUnifiedMenuBluetoothIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH));
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_SHORT));
@@ -81,14 +81,17 @@ void BluetoothFeaturePodController::UpdateButton() {
   }
 
   if (connected_devices.size() > 1) {
+    button_->SetVectorIcon(kUnifiedMenuBluetoothConnectedIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL));
     button_->SetSubLabel(base::FormatNumber(connected_devices.size()));
   } else if (connected_devices.size() == 1) {
+    button_->SetVectorIcon(kUnifiedMenuBluetoothConnectedIcon);
     button_->SetLabel(connected_devices.back().display_name);
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL));
   } else {
+    button_->SetVectorIcon(kUnifiedMenuBluetoothIcon);
     button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH));
     button_->SetSubLabel(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_SHORT));

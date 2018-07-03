@@ -30,6 +30,7 @@ QuietModeFeaturePodController::~QuietModeFeaturePodController() {
 FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
+  button_->SetVectorIcon(kUnifiedMenuDoNotDisturbIcon);
   button_->SetVisible(
       Shell::Get()->session_controller()->ShouldShowNotificationTray() &&
       !Shell::Get()->session_controller()->IsScreenLocked());
@@ -61,9 +62,6 @@ SystemTrayItemUmaType QuietModeFeaturePodController::GetUmaType() const {
 }
 
 void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
-  button_->SetVectorIcon(in_quiet_mode
-                             ? kNotificationCenterDoNotDisturbOnIcon
-                             : kNotificationCenterDoNotDisturbOffIcon);
   button_->SetToggled(in_quiet_mode);
   button_->SetSubLabel(l10n_util::GetStringUTF16(
       in_quiet_mode ? IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL
