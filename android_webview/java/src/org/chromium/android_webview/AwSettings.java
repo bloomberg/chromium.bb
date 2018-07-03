@@ -110,7 +110,7 @@ public class AwSettings {
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
     private boolean mAcceptThirdPartyCookies;
 
-    // if null, default to AwContentsStatics.getSafeBrowsingEnabledByManifest()
+    // if null, default to AwSafeBrowsingConfigHelper.getSafeBrowsingEnabledByManifest()
     private Boolean mSafeBrowsingEnabled;
 
     private final boolean mSupportLegacyQuirks;
@@ -378,7 +378,7 @@ public class AwSettings {
             if (userOptIn != null && !userOptIn) return false;
 
             if (mSafeBrowsingEnabled == null) {
-                return AwContentsStatics.getSafeBrowsingEnabledByManifest();
+                return AwSafeBrowsingConfigHelper.getSafeBrowsingEnabledByManifest();
             }
             return mSafeBrowsingEnabled;
         }

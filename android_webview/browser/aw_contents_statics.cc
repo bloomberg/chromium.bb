@@ -5,7 +5,6 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/android/jni_array.h"
@@ -95,21 +94,6 @@ ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
     const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(
       env, version_info::GetVersionNumber());
-}
-
-// static
-jboolean JNI_AwContentsStatics_GetSafeBrowsingEnabledByManifest(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
-  return AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabledByManifest();
-}
-
-// static
-void JNI_AwContentsStatics_SetSafeBrowsingEnabledByManifest(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&,
-    jboolean enable) {
-  AwSafeBrowsingConfigHelper::SetSafeBrowsingEnabledByManifest(enable);
 }
 
 // static

@@ -27,6 +27,7 @@ public class AwSafeBrowsingConfigHelper {
     private static final boolean DEFAULT_USER_OPT_IN = false;
 
     private static volatile Boolean sSafeBrowsingUserOptIn;
+    private static volatile boolean sEnabledByManifest;
 
     // Used to record the UMA histogram SafeBrowsing.WebView.AppOptIn. Since these values are
     // persisted to logs, they should never be renumbered nor reused.
@@ -60,6 +61,14 @@ public class AwSafeBrowsingConfigHelper {
                 "SafeBrowsing.WebView.UserOptIn", value, UserOptIn.COUNT);
     }
 
+    public static void setSafeBrowsingEnabledByManifest(boolean enabled) {
+        sEnabledByManifest = enabled;
+    }
+
+    public static boolean getSafeBrowsingEnabledByManifest() {
+        return sEnabledByManifest;
+    }
+
     // Should only be called once during startup. Calling this multiple times will skew UMA metrics.
     public static void maybeEnableSafeBrowsingFromManifest(final Context appContext) {
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
@@ -75,7 +84,7 @@ public class AwSafeBrowsingConfigHelper {
 
             // If the app specifies something, fallback to the app's preference, otherwise check for
             // the existence of the CLI switch.
-            AwContentsStatics.setSafeBrowsingEnabledByManifest(
+            setSafeBrowsingEnabledByManifest(
                     appOptIn == null ? !isDisabledByCommandLine() : appOptIn);
 
             Callback<Boolean> cb = verifyAppsValue -> {
