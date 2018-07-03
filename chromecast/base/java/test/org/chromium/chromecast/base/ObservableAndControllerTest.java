@@ -363,6 +363,15 @@ public class ObservableAndControllerTest {
     }
 
     @Test
+    public void testMapDropsNullResult() {
+        Controller<Unit> controller = new Controller<>();
+        ReactiveRecorder recorder = ReactiveRecorder.record(controller.map(x -> null));
+        controller.set(Unit.unit());
+        // Recorder should not get any events because the map function returned null.
+        recorder.verify().end();
+    }
+
+    @Test
     public void testFilter() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
