@@ -40,11 +40,14 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 
   default_containing_block_.style = &container_style;
   default_containing_block_.content_size = container_builder_->Size();
-  default_containing_block_.content_size.inline_size -=
-      borders_and_scrollers.InlineSum();
-  default_containing_block_.content_size.block_size -=
-      borders_and_scrollers.BlockSum();
-
+  default_containing_block_.content_size.inline_size =
+      std::max(default_containing_block_.content_size.inline_size -
+                   borders_and_scrollers.InlineSum(),
+               LayoutUnit());
+  default_containing_block_.content_size.block_size =
+      std::max(default_containing_block_.content_size.block_size -
+                   borders_and_scrollers.BlockSum(),
+               LayoutUnit());
   default_containing_block_.content_offset = NGLogicalOffset{
       borders_and_scrollers.inline_start, borders_and_scrollers.block_start};
   default_containing_block_.content_physical_offset =

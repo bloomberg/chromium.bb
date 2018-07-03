@@ -302,7 +302,6 @@ crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/591099 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-percentage.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/replaced-elements/svg-inline-sizing/svg-inline.html [ Failure ]
-crbug.com/591099 external/wpt/html/semantics/interactive-elements/the-dialog-element/centering.html [ Crash ]
 crbug.com/591099 external/wpt/payment-handler/can-make-payment-event-constructor.https.worker.html [ Pass ]
 crbug.com/591099 external/wpt/payment-request/payment-allowed-by-feature-policy.https.sub.html [ Pass ]
 crbug.com/591099 external/wpt/payment-request/payment-disabled-by-feature-policy.https.sub.html [ Pass ]
