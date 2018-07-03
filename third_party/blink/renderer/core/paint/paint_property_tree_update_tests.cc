@@ -1175,4 +1175,50 @@ TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClipOnCaretChange) {
   EXPECT_FALSE(PaintPropertiesForElement("target")->OverflowClip());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest,
+       FragmentClipUpdateOnMulticolContainerWidthChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body {margin: 0}</style>
+    <div id="container" style="width: 100px">
+      <div id="multicol" style="columns: 2; column-gap: 0; line-height: 500px">
+        <div><br></div>
+        <div><br></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* flow_thread = GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  ASSERT_EQ(2u, NumFragments(flow_thread));
+  EXPECT_EQ(50, FragmentAt(flow_thread, 0)
+                    .PaintProperties()
+                    ->FragmentClip()
+                    ->ClipRect()
+                    .Rect()
+                    .MaxX());
+  EXPECT_EQ(50, FragmentAt(flow_thread, 1)
+                    .PaintProperties()
+                    ->FragmentClip()
+                    ->ClipRect()
+                    .Rect()
+                    .X());
+
+  GetDocument()
+      .getElementById("container")
+      ->setAttribute(HTMLNames::styleAttr, "width: 500px");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_EQ(2u, NumFragments(flow_thread));
+  EXPECT_EQ(250, FragmentAt(flow_thread, 0)
+                     .PaintProperties()
+                     ->FragmentClip()
+                     ->ClipRect()
+                     .Rect()
+                     .MaxX());
+  EXPECT_EQ(250, FragmentAt(flow_thread, 1)
+                     .PaintProperties()
+                     ->FragmentClip()
+                     ->ClipRect()
+                     .Rect()
+                     .X());
+}
+
 }  // namespace blink

@@ -2189,20 +2189,27 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     new_fragment_contexts.push_back(
         ContextForFragment(fragment_clip, logical_top_in_flow_thread));
 
-    base::Optional<LayoutUnit> old_logical_top_in_flow_thread;
     if (current_fragment_data) {
-      if (const auto* old_fragment = current_fragment_data->NextFragment())
-        old_logical_top_in_flow_thread = old_fragment->LogicalTopInFlowThread();
+      if (!current_fragment_data->NextFragment())
+        fragments_changed = true;
       current_fragment_data = &current_fragment_data->EnsureNextFragment();
     } else {
       current_fragment_data = &object_.GetMutableForPainting().FirstFragment();
-      old_logical_top_in_flow_thread =
-          current_fragment_data->LogicalTopInFlowThread();
     }
 
-    if (!old_logical_top_in_flow_thread ||
-        *old_logical_top_in_flow_thread != logical_top_in_flow_thread)
-      fragments_changed = true;
+    fragments_changed |= logical_top_in_flow_thread !=
+                         current_fragment_data->LogicalTopInFlowThread();
+    if (!fragments_changed) {
+      const ClipPaintPropertyNode* old_fragment_clip = nullptr;
+      if (const auto* properties = current_fragment_data->PaintProperties())
+        old_fragment_clip = properties->FragmentClip();
+      const base::Optional<LayoutRect>& new_fragment_clip =
+          new_fragment_contexts.back().fragment_clip;
+      fragments_changed =
+          !!old_fragment_clip != !!new_fragment_clip ||
+          (old_fragment_clip && new_fragment_clip &&
+           old_fragment_clip->ClipRect() != ToClipRect(*new_fragment_clip));
+    }
 
     InitFragmentPaintProperties(
         *current_fragment_data,
