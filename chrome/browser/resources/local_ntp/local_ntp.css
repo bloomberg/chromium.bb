@@ -406,7 +406,6 @@ html[dir=rtl] #fakebox-cursor {
 }
 
 .md #fakebox-microphone {
-  background-size: 16px 16px;
   margin-right: 12px;
   width: 28px;
 }
