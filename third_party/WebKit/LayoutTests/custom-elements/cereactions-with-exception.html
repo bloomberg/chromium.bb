@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<body>
+<div id=log></div>
+<script>
+test(() => {
+  var upgraded = false;
+  class MyCustomElement extends HTMLElement {
+    constructor() { super(); upgraded = true; }
+  }
+  customElements.define('my-custom-element', MyCustomElement);
+  log.addEventListener('DOMNodeRemoved', function (e) {
+    if (document.querySelector('#log'))
+      document.adoptNode(log);
+  });
+  assert_throws('NotFoundError', () => { log.outerHTML = '<my-custom-element></my-custom-element>'; });
+  assert_true(upgraded, 'MyCustomElement constructor should be called');
+}, 'CEReactions should rethrow an exception by the originally-specified steps');
+</script>
+</body>
