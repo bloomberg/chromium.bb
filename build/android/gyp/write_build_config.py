@@ -342,6 +342,10 @@ to be used to load the native libraries).
 For `android_apk` and `dist_jar` targets, a list of all interface jar files
 that will be merged into the final `.jar` file for distribution.
 
+* `deps_info['final_dex']['path']:
+Path to the final classes.dex file (or classes.zip in case of multi-dex)
+for this APK.
+
 * `deps_info['final_dex']['dependency_dex_files']`:
 The list of paths to all `deps_info['dex_path']` entries for all library
 dependencies for this APK.
@@ -860,6 +864,9 @@ def main(argv):
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
 
+  parser.add_option('--final-dex-path',
+                    help='Path to final input classes.dex (or classes.zip) to '
+                    'use in final apk.')
   parser.add_option('--apk-proto-resources',
                     help='Path to resources compiled in protocol buffer format '
                          ' for this apk.')
@@ -884,7 +891,8 @@ def main(argv):
 
   jar_path_options = ['jar_path', 'unprocessed_jar_path', 'interface_jar_path']
   required_options_map = {
-      'android_apk': ['build_config','dex_path'] + jar_path_options,
+      'android_apk': ['build_config', 'dex_path', 'final_dex_path'] + \
+          jar_path_options,
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'dist_aar': ['build_config'],
@@ -1266,6 +1274,7 @@ def main(argv):
     config['final_dex'] = {}
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
+    dex_config['path'] = options.final_dex_path
 
   system_jars = [c['jar_path'] for c in system_library_deps]
   system_interface_jars = [c['interface_jar_path'] for c in system_library_deps]

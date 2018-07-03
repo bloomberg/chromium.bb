@@ -187,6 +187,12 @@ template("write_build_config") {
         rebase_path(invoker.dex_path, root_build_dir),
       ]
     }
+    if (defined(invoker.final_dex_path)) {
+      args += [
+        "--final-dex-path",
+        rebase_path(invoker.final_dex_path, root_build_dir),
+      ]
+    }
     if (defined(invoker.supports_android) && invoker.supports_android) {
       args += [ "--supports-android" ]
     }
@@ -1776,6 +1782,19 @@ if (enable_java_templates) {
       _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
     }
 
+    _proto_format = defined(invoker.proto_format) && invoker.proto_format
+
+    # NOTE: Regarding the names of the depfiles used by this template:
+    #       They all have the same prefix, related to invoker.target_name,
+    #       instead of $target_name, so it is important they have different
+    #       file paths. Otherwise, extra-rebuilds or even incorrect builds
+    #       may happen due to incorrect dependency information. The suffixes
+    #       used are:
+    #
+    #       _1.d for the unprocessed compiled resources.
+    #       _2.d for the optional processed compiled resources.
+    #       _3.d for the proto-compiled resources.
+
     action(_compile_resources_target_name) {
       set_sources_assignment_filter([])
       forward_variables_from(invoker,
@@ -1790,15 +1809,14 @@ if (enable_java_templates) {
       outputs = []
 
       _android_aapt_path = android_default_aapt_path
-      if (defined(invoker.proto_format) && invoker.proto_format) {
-        _android_aapt_path = "$android_sdk_app_bundle_build_tools/aapt"
+      if (_proto_format) {
+        _android_aapt2_path = android_sdk_tools_bundle_aapt2
+        depfile = "$target_gen_dir/${invoker.target_name}_3.d"
       }
-      _android_aapt2_path = android_default_aapt2_path
 
       inputs = [
         invoker.build_config,
         _android_aapt_path,
-        _android_aapt2_path,
       ]
       if (compute_inputs_for_analyze) {
         inputs += _compile_resources_py
@@ -1812,12 +1830,18 @@ if (enable_java_templates) {
         "--android-sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt-path",
         rebase_path(_android_aapt_path, root_build_dir),
-        "--aapt2-path",
-        rebase_path(_android_aapt2_path, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
       ]
+
+      if (_proto_format) {
+        inputs += [ _android_aapt2_path ]
+        args += [
+          "--aapt2-path",
+          rebase_path(_android_aapt2_path, root_build_dir),
+        ]
+      }
 
       inputs += [ invoker.android_manifest ]
       args += [
@@ -1884,7 +1908,6 @@ if (enable_java_templates) {
         ]
       }
 
-      _proto_format = defined(invoker.proto_format) && invoker.proto_format
       if (_proto_format) {
         args += [ "--proto-format" ]
       }
@@ -2993,6 +3016,7 @@ if (enable_java_templates) {
               "apk_path",
               "apk_under_test",
               "extra_shared_libraries",
+              "final_dex_path",
               "incremental_allowed",
               "incremental_apk_path",
               "incremental_install_json_path",

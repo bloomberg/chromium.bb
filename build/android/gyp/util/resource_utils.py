@@ -455,7 +455,8 @@ def ResourceArgsParser():
                          help='Path to the Android aapt tool')
 
   input_opts.add_argument('--aapt2-path',
-                          help='Path to the Android aapt2 tool')
+                          help='Path to the Android aapt2 tool. If in different'
+                          ' directory from --aapt-path.')
 
   input_opts.add_argument('--dependencies-res-zips', required=True,
                     help='Resources zip archives from dependents. Required to '
@@ -504,3 +505,6 @@ def HandleCommonOptions(options):
         build_utils.ParseGnList(options.extra_r_text_files))
   else:
     options.extra_r_text_files = []
+
+  if not options.aapt2_path:
+    options.aapt2_path = options.aapt_path + '2'
