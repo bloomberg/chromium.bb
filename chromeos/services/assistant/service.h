@@ -46,6 +46,12 @@ class Service : public service_manager::Service,
   Service();
   ~Service() override;
 
+  mojom::Client* client() { return client_.get(); }
+  mojom::DeviceActions* device_actions() { return device_actions_.get(); }
+  ash::mojom::AssistantController* assistant_controller() {
+    return assistant_controller_.get();
+  }
+
   void SetIdentityManagerForTesting(
       identity::mojom::IdentityManagerPtr identity_manager);
 
@@ -105,6 +111,7 @@ class Service : public service_manager::Service,
   mojo::Binding<ash::mojom::SessionActivationObserver>
       session_observer_binding_;
   mojom::ClientPtr client_;
+  mojom::DeviceActionsPtr device_actions_;
 
   identity::mojom::IdentityManagerPtr identity_manager_;
 

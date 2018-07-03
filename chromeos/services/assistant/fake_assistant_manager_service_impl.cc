@@ -55,8 +55,5 @@ void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(
     mojom::AssistantEventSubscriberPtr subscriber) {}
 
-void FakeAssistantManagerServiceImpl::SetAssistantController(
-    ash::mojom::AssistantController* controller) {}
-
 }  // namespace assistant
 }  // namespace chromeos

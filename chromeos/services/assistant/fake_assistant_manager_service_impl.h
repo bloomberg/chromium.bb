@@ -36,8 +36,6 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void SendUpdateSettingsUiRequest(
       const std::string& update,
       UpdateSettingsUiResponseCallback callback) override;
-  void SetAssistantController(
-      ash::mojom::AssistantController* controller) override;
 
   // mojom::Assistant overrides:
   void StartVoiceInteraction() override;
