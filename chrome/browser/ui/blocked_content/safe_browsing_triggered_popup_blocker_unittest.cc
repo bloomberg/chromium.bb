@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
+#include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -400,4 +401,57 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, WarningMatch_OnlyLogs) {
   EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveWarnMessage);
 
   EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+}
+
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
+  const GURL enforce_url("https://enforce.test/");
+  const GURL warn_url("https://warn.test/");
+  MarkUrlAsAbusiveEnforce(enforce_url);
+  MarkUrlAsAbusiveWarning(warn_url);
+
+  using subresource_filter::ActivationPosition;
+  struct {
+    std::vector<const char*> urls;
+    base::Optional<ActivationPosition> expected_position;
+  } kTestCases[] = {
+      {{"https://normal.test/"}, base::nullopt},
+      {{"https://enforce.test/"}, ActivationPosition::kOnly},
+      {{"https://warn.test/"}, ActivationPosition::kOnly},
+
+      {{"https://normal.test/", "https://warn.test/"},
+       ActivationPosition::kLast},
+      {{"https://normal.test/", "https://normal.test/",
+        "https://enforce.test/"},
+       ActivationPosition::kLast},
+
+      {{"https://enforce.test", "https://normal.test/", "https://warn.test/"},
+       ActivationPosition::kFirst},
+      {{"https://warn.test/", "https://normal.test/"},
+       ActivationPosition::kFirst},
+
+      {{"https://normal.test/", "https://enforce.test/",
+        "https://normal.test/"},
+       ActivationPosition::kMiddle},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::HistogramTester histograms;
+    const GURL& first_url = GURL(test_case.urls.front());
+    auto navigation_simulator =
+        content::NavigationSimulator::CreateRendererInitiated(first_url,
+                                                              main_rfh());
+    for (size_t i = 1; i < test_case.urls.size(); ++i) {
+      navigation_simulator->Redirect(GURL(test_case.urls[i]));
+    }
+    navigation_simulator->Commit();
+
+    histograms.ExpectTotalCount(
+        "ContentSettings.Popups.StrongBlockerActivationPosition",
+        test_case.expected_position.has_value() ? 1 : 0);
+    if (test_case.expected_position.has_value()) {
+      histograms.ExpectUniqueSample(
+          "ContentSettings.Popups.StrongBlockerActivationPosition",
+          static_cast<int>(test_case.expected_position.value()), 1);
+    }
+  }
 }
