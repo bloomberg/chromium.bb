@@ -354,6 +354,8 @@ public class MediaNotificationManager {
 
         @VisibleForTesting
         void stopListenerService() {
+            // Call stopForeground to guarantee  Android unset the foreground bit.
+            stopForeground(true /* removeNotification */);
             stopSelf();
         }
 
