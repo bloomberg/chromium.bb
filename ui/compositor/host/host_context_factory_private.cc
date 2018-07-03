@@ -4,6 +4,7 @@
 
 #include "ui/compositor/host/host_context_factory_private.h"
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
@@ -183,8 +184,8 @@ void HostContextFactoryPrivate::DisableSwapUntilResize(Compositor* compositor) {
     // Otherwise when we return from WM_WINDOWPOSCHANGING message handler and
     // receive a WM_WINDOWPOSCHANGED the resize is finalized and any swaps of
     // wrong size by Viz can cause the swapped content to get scaled.
-    // TODO(samans): Investigate nonblocking ways for solving
-    // https://crbug.com/811945.
+    // TODO(crbug.com/859168): Investigate nonblocking ways for solving.
+    TRACE_EVENT0("viz", "Blocked UI for DisableSwapUntilResize");
     mojo::SyncCallRestrictions::ScopedAllowSyncCall scoped_allow_sync_call;
     iter->second.display_private->DisableSwapUntilResize();
   }
