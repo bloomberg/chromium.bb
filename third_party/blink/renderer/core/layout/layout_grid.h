@@ -333,6 +333,7 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit min_content_height_{-1};
   LayoutUnit max_content_height_{-1};
 
+  bool has_any_orthogonal_item_{false};
   base::Optional<bool> has_definite_logical_height_;
 };
 
