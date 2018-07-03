@@ -15,13 +15,19 @@
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
+
+// Available in later point releases of 10.10. On 10.11+, use the public
+// -performWindowDragWithEvent: instead.
+- (void)beginWindowDragWithEvent:(NSEvent*)event;
 @end
 
-@interface NSThemeFrame (PrivateAPI)
+// Weak lets Chrome launch even if a future macOS doesn't have NSThemeFrame.
+WEAK_IMPORT_ATTRIBUTE
+@interface NSThemeFrame : NSView
 - (CGFloat)_titlebarHeight;
 @end
 
-@interface BrowserWindowFrame : NativeWidgetMacNSWindowTitledFrame
+@interface BrowserWindowFrame : NSThemeFrame
 @end
 
 @implementation BrowserWindowFrame
@@ -72,6 +78,20 @@
   return NSZeroRect;
 }
 
+// Lets the window be dragged by its title bar on 10.11 and older.
+- (void)mouseDown:(NSEvent*)event {
+  if (@available(macOS 10.12, *))
+    ;  // Not needed on 10.12 and up.
+  else if (@available(macOS 10.11, *))
+    [self.window performWindowDragWithEvent:event];
+  else if ([self.window
+               respondsToSelector:@selector(beginWindowDragWithEvent:)])
+    [self.window beginWindowDragWithEvent:event];
+  else
+    NOTREACHED();
+  [super mouseDown:event];
+}
+
 @end
 
 @implementation BrowserNativeWidgetWindow
@@ -85,6 +105,13 @@
     return [BrowserWindowFrame class];
   }
   return [super frameViewClassForStyleMask:windowStyle];
+}
+
+// The base implementation returns YES if the window's frame view is a custom
+// class, which causes undesirable changes in behavior. AppKit NSWindow
+// subclasses are known to override it and return NO.
+- (BOOL)_usesCustomDrawing {
+  return NO;
 }
 
 // Handle "Move focus to the window toolbar" configured in System Preferences ->
