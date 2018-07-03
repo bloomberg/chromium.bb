@@ -1,9 +1,9 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.7.6
-Date: 20180319
-Revision: 957e7756634a4fdf1654041e20e883cf964ecac9
+Version: 1.8.2
+Date: 20180703
+Revision: 2cb075fe26201f3e370fccfff6c1bc242b5acc79
 Security Critical: yes
 License: MIT
 License File: src/COPYING
@@ -31,16 +31,26 @@ Currently we are intentionally not building the following files from HarfBuzz.
     dump-khmer-data.cc
     dump-myanmar-data.cc
     dump-use-data.cc
+    hb-aat-fmtx-table.hh
+    hb-aat-gcid-table.hh
     hb-aat-layout-ankr-table.hh
+    hb-aat-layout-bsln-table.hh
     hb-aat-layout-common-private.hh
+    hb-aat-layout-feat-table.hh
     hb-aat-layout-kerx-table.hh
     hb-aat-layout-morx-table.hh
     hb-aat-layout-private.hh
     hb-aat-layout-trak-table.hh
     hb-aat-layout.cc
+    hb-aat-ltag-table.hh
     hb-directwrite.cc
     hb-directwrite.h
     hb-fallback-shape.cc
+    hb-map-private.hh
+    hb-map.cc
+    hb-map.h
+    hb-ot-color-sbix-table.hh
+    hb-ot-color-svg-table.hh
     hb-ot-color.cc
     hb-subset-glyf.cc
     hb-subset-input.cc
