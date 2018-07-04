@@ -61,6 +61,7 @@ const _KEYS = {
 
 const _NO_NAME = '(No path)';
 const _DIRECTORY_TYPE = 'D';
+const _COMPONENT_TYPE = 'C';
 const _FILE_TYPE = 'F';
 
 /**
@@ -71,8 +72,9 @@ const _FILE_TYPE = 'F';
  * @param {string} sep Path seperator, such as '/'.
  */
 function basename(path, sep) {
-  const idx = path.lastIndexOf(sep);
-  return path.substring(idx + 1);
+  const sepIndex = path.lastIndexOf(sep);
+  const pathIndex = path.lastIndexOf('/');
+  return path.substring(Math.max(sepIndex, pathIndex) + 1);
 }
 
 /**
@@ -82,33 +84,9 @@ function basename(path, sep) {
  * @param {string} sep Path seperator, such as '/'.
  */
 function dirname(path, sep) {
-  const idx = path.lastIndexOf(sep);
-  return path.substring(0, idx);
-}
-
-/**
- * Collapse "java"->"com"->"google" into "java/com/google". Nodes will only be
- * collapsed if they are the same type, most commonly by merging directories.
- * @param {TreeNode} node Node to potentially collapse. Will be modified by
- * this function.
- * @param {string} sep Path seperator, such as '/'.
- */
-function combineSingleChildNodes(node, sep) {
-  if (node.children.length > 0) {
-    const [child] = node.children;
-    // If there is only 1 child and its the same type, merge it in.
-    if (node.children.length === 1 && node.type === child.type) {
-      // size & type should be the same, so don't bother copying them.
-      node.shortName += sep + '\u200b' + child.shortName;
-      node.idPath = child.idPath;
-      node.children = child.children;
-      // Search children of this node.
-      combineSingleChildNodes(node, sep);
-    } else {
-      // Search children of this node.
-      node.children.forEach(child => combineSingleChildNodes(child, sep));
-    }
-  }
+  const sepIndex = path.lastIndexOf(sep);
+  const pathIndex = path.lastIndexOf('/');
+  return path.substring(0, Math.max(sepIndex, pathIndex));
 }
 
 /**
@@ -178,15 +156,23 @@ function createNode(options, sep) {
  * @param {(symbol: TreeNode) => boolean} options.filterTest Called to see if
  * a symbol should be included. If a symbol fails the test, it will not be
  * attached to the tree.
- * @param {string} options.sep Path seperator used to find parent names.
- * @param {boolean} options.methodCountMode If true, return number of dex
+ * @param {string} [options.sep] Path seperator used to find parent names.
+ * @param {boolean} [options.methodCountMode] If true, return number of dex
  * methods instead of size.
  * @returns {TreeNode} Root node of the new tree
  */
 function makeTree(options) {
-  const {symbols, sep, methodCountMode, getPath, filterTest} = options;
+  const {
+    symbols,
+    getPath,
+    filterTest,
+    sep = '/',
+    methodCountMode = false,
+  } = options;
+  if (!getPath) throw new TypeError('Missing getPath');
+
   const rootNode = createNode(
-    {idPath: '/', shortName: '/', type: _DIRECTORY_TYPE},
+    {idPath: sep, shortName: sep, type: _DIRECTORY_TYPE},
     sep
   );
 
@@ -213,8 +199,13 @@ function makeTree(options) {
       // get parent from cache if it exists, otherwise create it
       parentNode = parents.get(parentPath);
       if (parentNode == null) {
+        const useAltType =
+          node.idPath.lastIndexOf(sep) > node.idPath.lastIndexOf('/');
         parentNode = createNode(
-          {idPath: parentPath, type: _DIRECTORY_TYPE},
+          {
+            idPath: parentPath,
+            type: useAltType ? _COMPONENT_TYPE : _DIRECTORY_TYPE,
+          },
           sep
         );
         parents.set(parentPath, parentNode);
@@ -231,9 +222,13 @@ function makeTree(options) {
   // its parent directory node, or create it if missing.
   for (const fileNode of symbols) {
     // make path for this
+    const filePath = fileNode[_KEYS.SOURCE_PATH];
     const idPath = getPath(fileNode);
     // make node for this
-    const node = createNode({idPath, type: _FILE_TYPE}, sep);
+    const node = createNode(
+      {idPath, shortName: basename(filePath, sep), type: _FILE_TYPE},
+      sep
+    );
     // build child nodes for this file's symbols and attach to self
     for (const symbol of fileNode[_KEYS.FILE_SYMBOLS]) {
       const size = methodCountMode ? 1 : symbol[_KEYS.SIZE];
@@ -258,8 +253,6 @@ function makeTree(options) {
     getOrMakeParentNode(directory);
   }
 
-  // Collapse nodes such as "java"->"com"->"google" into "java/com/google".
-  combineSingleChildNodes(rootNode, sep);
   // Sort the tree so that larger items are higher.
   sortTree(rootNode);
 
@@ -279,7 +272,7 @@ self.onmessage = event => {
   const {tree, options} = JSON.parse(event.data);
 
   const params = new URLSearchParams(options);
-  const sep = params.get('sep') || '/';
+  const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
   let typeFilter;
   if (methodCountMode) typeFilter = new Set('m');
@@ -288,11 +281,25 @@ self.onmessage = event => {
     typeFilter = new Set(types.length === 0 ? 'bdrtv*xmpPo' : types);
   }
 
+  const getPathMap = {
+    component(fileEntry) {
+      const component = tree.components[fileEntry[_KEYS.COMPONENT_INDEX]];
+      const path = getPathMap.source_path(fileEntry);
+      return (component || '(No component)') + '>' + path;
+    },
+    source_path(fileEntry) {
+      return fileEntry[_KEYS.SOURCE_PATH];
+    },
+  };
+  const sepMap = {
+    component: '>',
+  };
+
   const rootNode = makeTree({
     symbols: tree.file_nodes,
-    sep,
+    sep: sepMap[groupBy],
     methodCountMode,
-    getPath: s => s[_KEYS.SOURCE_PATH],
+    getPath: getPathMap[groupBy],
     filterTest: s => typeFilter.has(s.type),
   });
 

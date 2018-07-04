@@ -120,10 +120,14 @@ function _initState() {
     if (input.name) {
       const value = _filterParams.get(input.name);
       if (value) {
-        if (input.type === 'checkbox') {
-          input.checked = value === input.value;
-        } else {
-          input.value = value;
+        switch (input.type) {
+          case 'checkbox':
+          case 'radio':
+            input.checked = value === input.value;
+            break;
+          default:
+            input.value = value;
+            break;
         }
       }
     }
