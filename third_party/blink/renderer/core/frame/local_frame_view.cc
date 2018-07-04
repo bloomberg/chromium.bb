@@ -222,9 +222,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       sticky_position_object_count_(0),
       input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
-      did_scroll_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
-                        this,
-                        &LocalFrameView::DidScrollTimerFired),
       needs_update_geometries_(false),
       root_layer_did_scroll_(false),
       frame_timing_requests_dirty_(true),
@@ -412,7 +409,6 @@ void LocalFrameView::Dispose() {
   auto_size_info_.Clear();
 
   post_layout_tasks_timer_.Stop();
-  did_scroll_timer_.Stop();
 
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
@@ -558,37 +554,6 @@ CompositorAnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline()
   // still live on ScrollingCoordinator. https://crbug.com/680606.
   ScrollingCoordinator* c = GetScrollingCoordinator();
   return c ? c->GetCompositorAnimationTimeline() : nullptr;
-}
-
-bool LocalFrameView::ShouldUseCustomScrollbars(
-    Element*& custom_scrollbar_element) const {
-  custom_scrollbar_element = nullptr;
-
-  if (Settings* settings = frame_->GetSettings()) {
-    if (!settings->GetAllowCustomScrollbarInMainFrame() &&
-        frame_->IsMainFrame())
-      return false;
-  }
-  Document* doc = frame_->GetDocument();
-
-  // Try the <body> element first as a scrollbar source.
-  Element* body = doc ? doc->body() : nullptr;
-  if (body && body->GetLayoutObject() &&
-      body->GetLayoutObject()->Style()->HasPseudoStyle(kPseudoIdScrollbar)) {
-    custom_scrollbar_element = body;
-    return true;
-  }
-
-  // If the <body> didn't have a custom style, then the root element might.
-  Element* doc_element = doc ? doc->documentElement() : nullptr;
-  if (doc_element && doc_element->GetLayoutObject() &&
-      doc_element->GetLayoutObject()->Style()->HasPseudoStyle(
-          kPseudoIdScrollbar)) {
-    custom_scrollbar_element = doc_element;
-    return true;
-  }
-
-  return false;
 }
 
 void LocalFrameView::SetLayoutOverflowSize(const IntSize& size) {
@@ -1626,13 +1591,6 @@ void LocalFrameView::SetLayoutSizeFixedToFrameSize(bool is_fixed) {
   layout_size_fixed_to_frame_size_ = is_fixed;
   if (is_fixed)
     SetLayoutSizeInternal(Size());
-}
-
-void LocalFrameView::DidScrollTimerFired(TimerBase*) {
-  if (frame_->GetDocument() && frame_->GetDocument()->GetLayoutView())
-    frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
-
-  GetFrame().Loader().SaveScrollAnchor();
 }
 
 static CompositedSelection ComputeCompositedSelection(LocalFrame& frame) {
@@ -3575,11 +3533,6 @@ void LocalFrameView::DidChangeScrollOffset() {
     GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged();
 }
 
-bool LocalFrameView::ShouldIgnoreOverflowHidden() const {
-  return frame_->GetSettings()->GetIgnoreMainFrameOverflowHiddenQuirk() &&
-         frame_->IsMainFrame();
-}
-
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
     const CompositorElementId& id) {
   // Check for the layout viewport, which may not be in scrollable_areas_ if it
@@ -3877,14 +3830,6 @@ PaintLayerScrollableArea* LocalFrameView::LayoutViewport() const {
 
 RootFrameViewport* LocalFrameView::GetRootFrameViewport() {
   return viewport_scrollable_area_.Get();
-}
-
-LayoutObject* LocalFrameView::ViewportLayoutObject() const {
-  if (Document* document = GetFrame().GetDocument()) {
-    if (Element* element = document->ViewportDefiningElement())
-      return element->GetLayoutObject();
-  }
-  return nullptr;
 }
 
 void LocalFrameView::CollectAnnotatedRegions(

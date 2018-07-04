@@ -711,17 +711,9 @@ class CORE_EXPORT LocalFrameView final
   bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
   bool ParseCSSFragmentIdentifier(const String&, String*);
   Element* FindCSSFragmentAnchor(const AtomicString&, Document*);
-  void DidScrollTimerFired(TimerBase*);
 
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
-
-  // Returns true if the frame should use custom scrollbars. If true, sets
-  // customScrollbarElement to the element that supplies the scrollbar's style
-  // information.
-  bool ShouldUseCustomScrollbars(Element*& custom_scrollbar_element) const;
-
-  bool ShouldIgnoreOverflowHidden() const;
 
   AXObjectCache* ExistingAXObjectCache() const;
 
@@ -731,10 +723,6 @@ class CORE_EXPORT LocalFrameView final
 
   void PrepareLayoutAnalyzer();
   std::unique_ptr<TracedValue> AnalyzerCounters();
-
-  // LayoutObject for the viewport-defining element (see
-  // Document::viewportDefiningElement).
-  LayoutObject* ViewportLayoutObject() const;
 
   void CollectAnnotatedRegions(LayoutObject&,
                                Vector<AnnotatedRegionValue>&) const;
@@ -821,8 +809,6 @@ class CORE_EXPORT LocalFrameView final
   IntSize layout_size_;
   IntSize initial_viewport_size_;
   bool layout_size_fixed_to_frame_size_;
-
-  TaskRunnerTimer<LocalFrameView> did_scroll_timer_;
 
   bool needs_update_geometries_;
 
