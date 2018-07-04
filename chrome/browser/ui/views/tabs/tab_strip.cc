@@ -494,7 +494,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   SwapLayoutIfNecessary();
 
-  if (was_single_tab_mode)
+  if (was_single_tab_mode != SingleTabMode())
     SingleTabModeChanged();
 
   for (TabStripObserver& observer : observers_)
