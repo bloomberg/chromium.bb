@@ -37,13 +37,17 @@ void UnifiedBrightnessSliderController::SliderValueChanged(
     views::SliderChangeReason reason) {
   if (reason != views::VALUE_CHANGED_BY_USER)
     return;
+
   BrightnessControlDelegate* brightness_control_delegate =
       Shell::Get()->brightness_control_delegate();
-  if (brightness_control_delegate) {
-    double percent =
-        std::max<float>(value * 100.f, tray::kMinBrightnessPercent);
-    brightness_control_delegate->SetBrightnessPercent(percent, true);
-  }
+  if (!brightness_control_delegate)
+    return;
+
+  double percent = value * 100.;
+  if (percent < tray::kMinBrightnessPercent)
+    return;
+
+  brightness_control_delegate->SetBrightnessPercent(percent, true);
 }
 
 }  // namespace ash
