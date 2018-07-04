@@ -1932,6 +1932,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"safeBrowsingEnableProtectionDesc",
        IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC},
       {"syncAndPersonalizationLink", IDS_SETTINGS_PRIVACY_MORE_SETTINGS},
+      {"urlKeyedAnonymizedDataCollection",
+       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
+      {"urlKeyedAnonymizedDataCollectionDesc",
+       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

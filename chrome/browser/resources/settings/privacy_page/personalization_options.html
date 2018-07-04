@@ -97,6 +97,12 @@
     </settings-toggle-button>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
+    <settings-toggle-button
+        pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
+        label="$i18n{urlKeyedAnonymizedDataCollection}"
+        sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}"
+        disabled="[[unifiedConsentGiven]]">
+    </settings-toggle-button>
   </template>
   <script src="personalization_options.js"></script>
 </dom-module>
