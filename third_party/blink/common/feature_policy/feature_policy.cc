@@ -186,9 +186,6 @@ FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
     : origin_(origin), feature_list_(feature_list) {}
 
-FeaturePolicy::FeaturePolicy(url::Origin origin)
-    : origin_(origin), feature_list_(GetDefaultFeatureList()) {}
-
 FeaturePolicy::~FeaturePolicy() = default;
 
 // static

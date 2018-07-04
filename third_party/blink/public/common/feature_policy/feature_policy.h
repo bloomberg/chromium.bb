@@ -198,7 +198,6 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
  private:
   friend class FeaturePolicyTest;
 
-  explicit FeaturePolicy(url::Origin origin);
   FeaturePolicy(url::Origin origin, const FeatureList& feature_list);
   static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent_policy,
