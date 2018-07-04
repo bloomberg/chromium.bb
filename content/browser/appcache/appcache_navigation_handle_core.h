@@ -48,6 +48,9 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
   AppCacheServiceImpl* GetAppCacheService();
 
   void AddRequestToDebugLog(const GURL& url);
+  void AddDefaultFactoryRunToDebugLog(bool was_request_intercepted);
+  void AddCreateURLLoaderToDebugLog();
+  void AddNavigationStartToDebugLog();
   std::string GetDebugLog();
 
  protected:
@@ -74,6 +77,8 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
 
  private:
+  std::string HostToString();
+
   std::unique_ptr<AppCacheHost> precreated_host_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   int appcache_host_id_;

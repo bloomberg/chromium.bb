@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -358,6 +359,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       bool was_request_intercepted) const {
+    if (appcache_handle_core)
+      appcache_handle_core->AddDefaultFactoryRunToDebugLog(
+          was_request_intercepted);
     return base::BindOnce(
         &URLLoaderRequestController::CreateNonNetworkServiceURLLoader,
         weak_factory_.GetWeakPtr(),
@@ -387,6 +391,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderClientPtr url_loader_client) {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    if (appcache_handle_core)
+      appcache_handle_core->AddCreateURLLoaderToDebugLog();
 
     default_loader_used_ = true;
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
@@ -452,6 +459,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
+    if (appcache_handle_core)
+      appcache_handle_core->AddNavigationStartToDebugLog();
+
     started_ = true;
     request_info_ = std::move(request_info);
     frame_tree_node_id_ = request_info_->frame_tree_node_id;
