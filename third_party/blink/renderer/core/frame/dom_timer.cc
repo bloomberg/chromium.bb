@@ -116,9 +116,10 @@ DOMTimer::~DOMTimer() {
 }
 
 void DOMTimer::Stop() {
+  const bool is_interval = !RepeatIntervalDelta().is_zero();
   probe::AsyncTaskCanceledBreakable(
-      GetExecutionContext(),
-      RepeatInterval() ? "clearInterval" : "clearTimeout", this);
+      GetExecutionContext(), is_interval ? "clearInterval" : "clearTimeout",
+      this);
 
   user_gesture_token_ = nullptr;
   // Need to release JS objects potentially protected by ScheduledAction
@@ -145,16 +146,14 @@ void DOMTimer::Fired() {
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
                InspectorTimerFireEvent::Data(context, timeout_id_));
-  probe::UserCallback probe(context,
-                            RepeatInterval() ? "setInterval" : "setTimeout",
-                            AtomicString(), true);
-  probe::AsyncTask async_task(context, this,
-                              RepeatInterval() ? "fired" : nullptr);
+  const bool is_interval = !RepeatIntervalDelta().is_zero();
+  probe::UserCallback probe(context, is_interval ? "setInterval" : "setTimeout",
+                            g_null_atom, true);
+  probe::AsyncTask async_task(context, this, is_interval ? "fired" : nullptr);
 
   // Simple case for non-one-shot timers.
   if (IsActive()) {
-    if (!RepeatIntervalDelta().is_zero() &&
-        RepeatIntervalDelta() < kMinimumInterval) {
+    if (is_interval && RepeatIntervalDelta() < kMinimumInterval) {
       nesting_level_++;
       if (nesting_level_ >= kMaxTimerNestingLevel)
         AugmentRepeatInterval(kMinimumInterval - RepeatIntervalDelta());
