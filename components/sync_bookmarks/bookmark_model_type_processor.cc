@@ -166,7 +166,7 @@ std::string BookmarkModelTypeProcessor::EncodeSyncMetadata() const {
   return metadata_str;
 }
 
-void BookmarkModelTypeProcessor::DecodeSyncMetadata(
+void BookmarkModelTypeProcessor::ModelReadyToSync(
     const std::string& metadata_str,
     const base::RepeatingClosure& schedule_save_closure,
     bookmarks::BookmarkModel* model) {

@@ -138,8 +138,9 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
     // TODO(crbug.com/516866): This class assumes model is loaded and sync has
     // started before running tests. We should test other variations (i.e. model
     // isn't loaded yet and/or sync didn't start yet).
-    processor_.DecodeSyncMetadata(std::string(), schedule_save_closure_.Get(),
-                                  bookmark_model_.get());
+    processor_.ModelReadyToSync(/*metadata_str=*/std::string(),
+                                schedule_save_closure_.Get(),
+                                bookmark_model_.get());
     syncer::DataTypeActivationRequest request;
     request.cache_guid = kCacheGuid;
     processor_.OnSyncStarting(request, base::DoNothing());
@@ -422,8 +423,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
       sync_client()->GetBookmarkUndoServiceIfExists());
   std::string metadata_str;
   model_metadata.SerializeToString(&metadata_str);
-  new_processor.DecodeSyncMetadata(metadata_str, base::DoNothing(),
-                                   bookmark_model());
+  new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
+                                 bookmark_model());
 
   AssertState(&new_processor, bookmarks);
 }
@@ -455,8 +456,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
   BookmarkModelTypeProcessor new_processor(
       sync_client()->GetBookmarkUndoServiceIfExists());
   model_metadata.SerializeToString(&metadata_str);
-  new_processor.DecodeSyncMetadata(metadata_str, base::DoNothing(),
-                                   bookmark_model());
+  new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
+                                 bookmark_model());
 
   AssertState(&new_processor, bookmarks);
 }
