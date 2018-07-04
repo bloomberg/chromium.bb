@@ -157,7 +157,8 @@ void UiController::OnBlockingStateChanged(NotificationBlocker* blocker) {
 }
 
 void UiController::OnMessageCenterChanged() {
-  if (message_center_visible_ && message_center_->NotificationCount() == 0) {
+  if (hide_on_last_notification_ && message_center_visible_ &&
+      message_center_->NotificationCount() == 0) {
     HideMessageCenterBubble();
     return;
   }

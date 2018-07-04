@@ -54,6 +54,9 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   UiDelegate* delegate() { return delegate_; }
   const MessageCenter* message_center() const { return message_center_; }
   MessageCenter* message_center() { return message_center_; }
+  void set_hide_on_last_notification(bool hide_on_last_notification) {
+    hide_on_last_notification_ = hide_on_last_notification;
+  }
 
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
@@ -79,6 +82,9 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   bool message_center_visible_ = false;
   bool popups_visible_ = false;
   UiDelegate* delegate_;
+
+  // Set true to hide MessageCenterView when the last notification is dismissed.
+  bool hide_on_last_notification_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UiController);
 };

@@ -61,6 +61,7 @@ class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : owner_(owner) {
   ui_controller_ = std::make_unique<message_center::UiController>(this);
+  ui_controller_->set_hide_on_last_notification(false);
   popup_alignment_delegate_ =
       std::make_unique<AshPopupAlignmentDelegate>(owner->shelf());
   message_popup_collection_ =
