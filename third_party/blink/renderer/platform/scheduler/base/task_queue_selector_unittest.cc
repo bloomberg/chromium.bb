@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
 
 using testing::_;

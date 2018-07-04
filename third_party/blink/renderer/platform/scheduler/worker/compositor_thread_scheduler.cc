@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"

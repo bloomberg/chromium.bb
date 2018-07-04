@@ -8,10 +8,6 @@ import("//third_party/protobuf/proto_library.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
-    "base/sequence_manager_forward.h",
-    "base/task_queue_forward.h",
-    "base/task_queue_impl_forward.h",
-    "base/time_domain_forward.h",
     "child/features.h",
     "child/pollable_thread_safe_flag.cc",
     "child/pollable_thread_safe_flag.h",

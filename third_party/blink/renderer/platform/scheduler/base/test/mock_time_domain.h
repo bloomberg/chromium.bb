@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_MOCK_TIME_DOMAIN_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_MOCK_TIME_DOMAIN_H_
 
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
+#include "base/task/sequence_manager/time_domain.h"
 
 namespace base {
 namespace sequence_manager {

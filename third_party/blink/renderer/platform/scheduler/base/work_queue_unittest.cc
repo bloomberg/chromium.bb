@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/task/sequence_manager/real_time_domain.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {
