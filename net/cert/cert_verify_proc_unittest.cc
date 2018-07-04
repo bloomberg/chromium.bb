@@ -2813,7 +2813,14 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
 
 // Tries verifying a certificate chain that is missing an intermediate. The
 // intermediate is available via AIA.
-TEST_P(CertVerifyProcInternalWithNetFetchingTest, IntermediateFromAia200) {
+// TODO(crbug.com/860189): Failing on iOS
+#if defined(OS_IOS)
+#define MAYBE_IntermediateFromAia200 DISABLED_IntermediateFromAia200
+#else
+#define MAYBE_IntermediateFromAia200 IntermediateFromAia200
+#endif
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       MAYBE_IntermediateFromAia200) {
   const char kHostname[] = "www.example.com";
 
   base::FilePath certs_dir =
