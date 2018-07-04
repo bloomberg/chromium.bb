@@ -677,8 +677,9 @@ test(() => {
   }, 'Used => clone');
 
 test(() => {
-  // We implement RequestInit manually so we need to test the functionality
-  // here.
+  // We used to implement RequestInit manually so we needed to test this
+  // functionality here. We now generate RequestInit with the IDL compiler,
+  // but it's still good to keep these around.
   function undefined_notpresent(property_name) {
     assert_not_equals(property_name, 'referrer', 'property_name');
     const request = new Request('/', {referrer: '/'});
@@ -709,8 +710,9 @@ test(() => {
 }, 'An undefined member should be treated as not-present');
 
 test(() => {
-  // We implement RequestInit manually so we need to test the functionality
-  // here.
+  // We used to implement RequestInit manually so we needed to test this
+  // functionality here. We now generate RequestInit with the IDL compiler,
+  // but it's still good to keep these around.
   const e = Error();
   assert_throws(e, () => {
     new Request('/', {get method() { throw e; }})}, 'method');
@@ -741,6 +743,21 @@ test(() => {
   // assert_throws(e, () => {
   //  new Request('/', {get window() { throw e; }})}, 'window');
 }, 'Getter exceptions should not be silently ignored');
+
+
+test(() => {
+  // At the time of writing this test, an `any` type is used to represent
+  // RequestInit's signal member instead of AbortSignal due to a bug in the IDL
+  // compiler; see https://crbug.com/855968. This test ensures that that we
+  // treat the `any` member exactly as an AbortSignal member would be treated.
+  const e = TypeError();
+  assert_throws(e, () => {
+    new Request('/', {signal: {}})}, 'signal');
+  assert_throws(e, () => {
+    new Request('/', {signal: new Request('/')})}, 'signal');
+  assert_throws(e, () => {
+    new Request('/', {signal: new Response('/')})}, 'signal');
+}, 'TypeError should be thrown when RequestInit\'s signal member does not implement the AbortSignal interface');
 
 promise_test(function() {
     var headers = new Headers;
