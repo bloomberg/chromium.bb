@@ -427,9 +427,10 @@ void TracingHandler::SetupProcessFilter(
     RenderFrameHost* frame_host = node->current_frame_host();
     if (!frame_host)
       continue;
-    base::ProcessId process_id = frame_host->GetProcess()->GetProcess().Pid();
-    if (process_id != base::kNullProcessId)
-      included_process_ids.insert(process_id);
+    const base::Process& process_handle =
+        frame_host->GetProcess()->GetProcess();
+    if (process_handle.IsValid())
+      included_process_ids.insert(process_handle.Pid());
   }
   trace_config_.SetProcessFilterConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig(
