@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <!--
  Copyright 2018 The Chromium Authors. All rights reserved.
  Use of this source code is governed by a BSD-style license that can be
@@ -17,9 +17,9 @@
             display: grid;
             grid-template-columns: auto 0;
             grid-template-rows: 64px 1fr;
-            grid-template-areas: 'appbar options' 'symbols options';
+            grid-template-areas: "appbar options" "symbols options";
             color: #3c4043;
-            font-family: 'Roboto', sans-serif;
+            font-family: "Roboto", sans-serif;
         }
 
         .appbar {
@@ -46,7 +46,7 @@
 
         .headline {
             margin: 0;
-            font-family: 'Google Sans', Arial, sans-serif;
+            font-family: "Google Sans", Arial, sans-serif;
             font-weight: normal;
             color: #202124;
             font-size: 22px;
@@ -59,7 +59,7 @@
         }
 
         .subhead {
-            font-family: 'Google Sans', Arial, sans-serif;
+            font-family: "Google Sans", Arial, sans-serif;
             font-weight: 500;
             font-size: 14px;
             color: #3c4043;
@@ -83,7 +83,7 @@
             border-bottom: 1px solid #dadce0;
         }
 
-        [role='group'] {
+        [role="group"] {
             padding-left: 13px;
             border-left: 1px solid #dadce0;
             margin-left: 10px;
@@ -107,7 +107,7 @@
             background: #f1f3f4;
         }
         .node::before {
-            content: '';
+            content: "";
             display: inline-block;
             margin: 10px;
             width: 0;
@@ -122,7 +122,7 @@
             border-color: transparent transparent transparent currentColor;
             transition: transform .1s ease-out;
         }
-        [aria-expanded='true']>.node::before {
+        [aria-expanded="true"]>.node::before {
             transform: rotate(90deg);
         }
 
@@ -206,9 +206,9 @@
             <button class="filled-button" type="submit">Update</button>
         </p>
     </form>
-    <div class='symbols'>
-        <div hidden id='icons'>
-            <svg class='icon foldericon' height='24' width='24' fill='#5f6368'>
+    <div class="symbols">
+        <div hidden id="icons">
+            <svg class="icon foldericon" height="24" width="24" fill="#5f6368">
                 <title>Directory</title>
                 <path d="M9.17,6l2,2H20v10L4,18V6H9.17 M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2
                             h-8L10,4L10,4z" />
@@ -272,30 +272,29 @@
                 />
             </svg>
         </div>
-
         <template id="treefolder">
             <li role="treeitem" aria-expanded="false">
-                <a class="node" href="#">
+                <a class="node" href="#" tabindex="-1">
                     <span class="symbol-name"></span>
                     <span class="size"></span>
                 </a>
-                <ul role="group" hidden></ul>
+                <ul role="group"></ul>
             </li>
         </template>
         <template id="treeitem">
             <li role="treeitem">
-                <span class="node">
+                <span class="node" tabindex="-1">
                     <span class="symbol-name"></span>
                     <span class="size"></span>
                 </span>
             </li>
         </template>
-        <main class='tree-container'>
-            <header class='tree-header'>
-                <span class='subtitle'>Name</span>
-                <span class='subtitle'>{{size_header}}</span>
+        <main class="tree-container">
+            <header class="tree-header">
+                <span class="subtitle">Name</span>
+                <span class="subtitle" id="size-header">{{size_header}}</span>
             </header>
-            <ul id='symboltree' class='tree' role='tree' aria-labelledby='headline'></ul>
+            <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
         </main>
     </div>
 </body>
