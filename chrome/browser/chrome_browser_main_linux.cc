@@ -64,6 +64,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
 
 #if !defined(OS_CHROMEOS)
+  // Set up crypt config. This should be kept in sync with the OSCrypt parts of
+  // SystemNetworkContextManager::OnNetworkServiceCreated.
   std::unique_ptr<os_crypt::Config> config(new os_crypt::Config());
   // Forward to os_crypt the flag to use a specific password store.
   config->store =

@@ -121,4 +121,10 @@ mojom("mojom") {
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
+
+  # This is only needed on desktop linux, but the defines make this difficult
+  # because IS_CHROMECAST is not available in build/build_config.h.
+  if (is_linux && !is_chromeos) {
+    enabled_features = [ "needs_crypt_config" ]
+  }
 }

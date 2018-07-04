@@ -49,6 +49,13 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
 namespace {
 
 // Called on IOThread to disable QUIC for HttpNetworkSessions not using the
@@ -431,6 +438,21 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
       stub_resolver_enabled, std::move(dns_over_https_servers));
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  // Set up crypt config. This should be kept in sync with the OSCrypt parts of
+  // ChromeBrowserMainPartsLinux::PreProfileInit.
+  network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
+  config->store = command_line.GetSwitchValueASCII(switches::kPasswordStore);
+  config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  config->should_use_preference =
+      command_line.HasSwitch(switches::kEnableEncryptionSelection);
+  chrome::GetDefaultUserDataDirectory(&config->user_data_path);
+  content::GetNetworkService()->SetCryptConfig(std::move(config));
+#endif
 }
 
 void SystemNetworkContextManager::DisableQuic() {

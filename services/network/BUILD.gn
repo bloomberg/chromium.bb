@@ -142,6 +142,7 @@ component("network_service") {
     "//components/cookie_config",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
+    "//components/os_crypt",
     "//components/prefs",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -186,6 +187,10 @@ component("network_service") {
   }
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
+
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+  }
 }
 
 source_set("tests") {
