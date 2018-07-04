@@ -939,7 +939,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoMemoryPressureLoadsAllTabs) {
       tab_strip_model->GetWebContentsAt(2)->GetRenderWidgetHostView());
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MemoryPressureLoadsNotAllTabs) {
+// Disable on CrOS since it's flaky: crbug.com/860111.
+#if defined(OS_CHROMEOS)
+#define MAYBE_MemoryPressureLoadsNotAllTabs \
+  DISABLED_MemoryPressureLoadsNotAllTabs
+#else
+#define MAYBE_MemoryPressureLoadsNotAllTabs MemoryPressureLoadsNotAllTabs
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       MAYBE_MemoryPressureLoadsNotAllTabs) {
   // Add several tabs to the browser. Restart the browser and check that all
   // tabs got loaded properly.
   ui_test_utils::NavigateToURLWithDisposition(
