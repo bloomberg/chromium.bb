@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/assist_ranker/fake_ranker_model_loader.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/ranker_model.h"
@@ -20,6 +21,8 @@ using ::assist_ranker::testing::FakeRankerModelLoader;
 
 class BinaryClassifierPredictorTest : public ::testing::Test {
  public:
+  void SetUp() override;
+
   std::unique_ptr<BinaryClassifierPredictor> InitPredictor(
       std::unique_ptr<RankerModel> ranker_model,
       const PredictorConfig& config);
@@ -33,7 +36,13 @@ class BinaryClassifierPredictorTest : public ::testing::Test {
   const std::string feature_ = "feature";
   const float weight_ = 1.0;
   const float threshold_ = 0.5;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+void BinaryClassifierPredictorTest::SetUp() {
+  ::testing::Test::SetUp();
+  scoped_feature_list_.Init();
+}
 
 std::unique_ptr<BinaryClassifierPredictor>
 BinaryClassifierPredictorTest::InitPredictor(

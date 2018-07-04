@@ -100,8 +100,8 @@ std::unique_ptr<FakePredictor> FakePredictor::Create() {
 class BasePredictorTest : public ::testing::Test {
  protected:
   BasePredictorTest() = default;
-  // Disables Query for the test predictor.
-  void DisableQuery();
+
+  void SetUp() override;
 
   ukm::SourceId GetSourceId();
 
@@ -120,14 +120,15 @@ class BasePredictorTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BasePredictorTest);
 };
 
+void BasePredictorTest::SetUp() {
+  ::testing::Test::SetUp();
+  scoped_feature_list_.Init();
+}
+
 ukm::SourceId BasePredictorTest::GetSourceId() {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   test_ukm_recorder_.UpdateSourceURL(source_id, GURL(kTestNavigationUrl));
   return source_id;
-}
-
-void BasePredictorTest::DisableQuery() {
-  scoped_feature_list_.InitWithFeatures({}, {kTestRankerQuery});
 }
 
 TEST_F(BasePredictorTest, BaseTest) {
@@ -139,7 +140,8 @@ TEST_F(BasePredictorTest, BaseTest) {
 }
 
 TEST_F(BasePredictorTest, QueryDisabled) {
-  DisableQuery();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kTestRankerQuery);
   auto predictor = FakePredictor::Create();
   EXPECT_EQ(kTestModelName, predictor->GetModelName());
   EXPECT_EQ(kTestDefaultModelUrl, predictor->GetModelUrl());
