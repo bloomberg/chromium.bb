@@ -66,10 +66,8 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.SetKeepEverythingSynced(false);
 
-  // Only device info is enabled by default.
-  ModelTypeSet expected(DEVICE_INFO);
   ModelTypeSet preferred_types = sync_prefs.GetPreferredDataTypes(UserTypes());
-  EXPECT_EQ(expected, preferred_types);
+  EXPECT_EQ(AlwaysPreferredUserTypes(), preferred_types);
 
   // Simulate an upgrade to delete directives + proxy tabs support. None of the
   // new types or their pref group types should be registering, ensuring they
@@ -165,8 +163,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(FAVICON_TRACKING);
     }
 
-    // Device info is always preferred.
-    expected_preferred_types.Put(DEVICE_INFO);
+    expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
 
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_EQ(expected_preferred_types,
@@ -229,6 +226,24 @@ TEST_F(SyncPrefsTest, DeviceInfo) {
   EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
   sync_prefs.SetKeepEverythingSynced(false);
   EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  sync_prefs.SetPreferredDataTypes(
+      /*registered_types=*/ModelTypeSet(DEVICE_INFO),
+      /*preferred_types=*/ModelTypeSet());
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+}
+
+// User Consents should always be enabled.
+TEST_F(SyncPrefsTest, UserConsents) {
+  SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs.SetKeepEverythingSynced(true);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs.SetKeepEverythingSynced(false);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs.SetPreferredDataTypes(
+      /*registered_types=*/ModelTypeSet(USER_CONSENTS),
+      /*preferred_types=*/ModelTypeSet());
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
 }
 
 // Verify that invalidation versions are persisted and loaded correctly.
