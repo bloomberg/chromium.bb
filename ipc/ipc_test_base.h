@@ -16,8 +16,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/core/test/mojo_test_base.h"
+#include "mojo/core/test/multiprocess_test_helper.h"
 
 namespace base {
 class MessageLoop;
@@ -54,7 +54,7 @@ class IPCChannelMojoTestBase : public testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   mojo::ScopedMessagePipeHandle handle_;
-  mojo::edk::test::MultiprocessTestHelper helper_;
+  mojo::core::test::MultiprocessTestHelper helper_;
 
   std::unique_ptr<IPC::Channel> channel_;
 
@@ -83,24 +83,24 @@ class IpcChannelMojoTestClient {
 // Use this to declare the client side for tests using IPCChannelMojoTestBase
 // when a custom test fixture class is required in the client. |test_base| must
 // be derived from IpcChannelMojoTestClient.
-#define DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(client_name,  \
-                                                                test_base)    \
-  class client_name##_MainFixture : public test_base {                        \
-   public:                                                                    \
-    void Main();                                                              \
-  };                                                                          \
-  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                          \
-      client_name##TestChildMain,                                             \
-      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {                \
-    client_name##_MainFixture test;                                           \
-    test.Init(                                                                \
-        std::move(mojo::edk::test::MultiprocessTestHelper::primordial_pipe)); \
-    test.Main();                                                              \
-    return (::testing::Test::HasFatalFailure() ||                             \
-            ::testing::Test::HasNonfatalFailure())                            \
-               ? 1                                                            \
-               : 0;                                                           \
-  }                                                                           \
+#define DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(client_name,   \
+                                                                test_base)     \
+  class client_name##_MainFixture : public test_base {                         \
+   public:                                                                     \
+    void Main();                                                               \
+  };                                                                           \
+  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                           \
+      client_name##TestChildMain,                                              \
+      ::mojo::core::test::MultiprocessTestHelper::ChildSetup) {                \
+    client_name##_MainFixture test;                                            \
+    test.Init(                                                                 \
+        std::move(mojo::core::test::MultiprocessTestHelper::primordial_pipe)); \
+    test.Main();                                                               \
+    return (::testing::Test::HasFatalFailure() ||                              \
+            ::testing::Test::HasNonfatalFailure())                             \
+               ? 1                                                             \
+               : 0;                                                            \
+  }                                                                            \
   void client_name##_MainFixture::Main()
 
 // Use this to declare the client side for tests using IPCChannelMojoTestBase.

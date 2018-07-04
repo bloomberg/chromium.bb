@@ -21,7 +21,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -49,13 +49,13 @@ class BadMessageObserver {
  public:
   BadMessageObserver()
       : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {
-    mojo::edk::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &BadMessageObserver::ReportBadMessage, base::Unretained(this)));
   }
 
   ~BadMessageObserver() {
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   const std::string& last_error() const { return last_error_; }

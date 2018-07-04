@@ -17,8 +17,8 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
-#include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/core/test/mojo_test_base.h"
+#include "mojo/core/test/multiprocess_test_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -81,7 +81,7 @@ class PerfCpuLogger {
 
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
-  int rv = mojo::edk::test::MultiprocessTestHelper::RunClientMain(
+  int rv = mojo::core::test::MultiprocessTestHelper::RunClientMain(
       base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)),
       true /* pass_pipe_ownership_to_main */);
 
@@ -264,7 +264,7 @@ TEST_F(ChannelSteadyPingPongTest, SyncPingPong) {
   RunPingPongServer("IPC_CPU_Sync", true);
 }
 
-class MojoSteadyPingPongTest : public mojo::edk::test::MojoTestBase {
+class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
  public:
   MojoSteadyPingPongTest() = default;
 

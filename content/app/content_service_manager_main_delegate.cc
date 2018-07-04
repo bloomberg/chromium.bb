@@ -65,7 +65,7 @@ ContentServiceManagerMainDelegate::OverrideProcessType() {
 }
 
 void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
-    mojo::edk::Configuration* config) {
+    mojo::core::Configuration* config) {
   // If this is the browser process and there's no remote service manager, we
   // will serve as the global Mojo broker.
   if (!service_manager::ServiceManagerIsRemote() &&

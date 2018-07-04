@@ -73,7 +73,7 @@ class MidiService;
 namespace mojo {
 namespace core {
 class ScopedIPCSupport;
-}  // namespace edk
+}  // namespace core
 }  // namespace mojo
 
 namespace net {

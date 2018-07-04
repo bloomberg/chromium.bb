@@ -21,9 +21,9 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/test/mojo_test_base.h"
+#include "mojo/core/test/multiprocess_test_helper.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -263,7 +263,7 @@ TEST_F(MojoChannelPerfTest, ChannelProxySyncPing) {
 
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
-  int rv = mojo::edk::test::MultiprocessTestHelper::RunClientMain(
+  int rv = mojo::core::test::MultiprocessTestHelper::RunClientMain(
       base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)),
       true /* pass_pipe_ownership_to_main */);
 
@@ -273,7 +273,7 @@ MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   return rv;
 }
 
-class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
+class MojoInterfacePerfTest : public mojo::core::test::MojoTestBase {
  public:
   MojoInterfacePerfTest() : message_count_(0), count_down_(0) {}
 
@@ -410,7 +410,7 @@ class InterfacePassingTestDriverImpl : public mojom::InterfacePassingTestDriver,
   base::Closure quit_closure_;
 };
 
-class MojoInterfacePassingPerfTest : public mojo::edk::test::MojoTestBase {
+class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
  public:
   MojoInterfacePassingPerfTest() = default;
 

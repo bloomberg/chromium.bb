@@ -12,7 +12,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/audio/stream_factory.h"
 #include "services/audio/test/mock_log.h"
@@ -115,13 +115,13 @@ class TestEnvironment {
         stream_factory_(&audio_manager_),
         stream_factory_binding_(&stream_factory_,
                                 mojo::MakeRequest(&stream_factory_ptr_)) {
-    mojo::edk::SetDefaultProcessErrorCallback(bad_message_callback_.Get());
+    mojo::core::SetDefaultProcessErrorCallback(bad_message_callback_.Get());
   }
 
   ~TestEnvironment() {
     audio_manager_.Shutdown();
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   using MockDeleteCallback = base::MockCallback<OutputStream::DeleteCallback>;

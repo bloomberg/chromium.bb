@@ -103,7 +103,7 @@ target(link_target_type, "child") {
     "//gpu/command_buffer/client",
     "//media",
     "//media/blink",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//net",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",

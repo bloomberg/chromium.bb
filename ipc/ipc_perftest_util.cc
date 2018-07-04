@@ -8,13 +8,13 @@
 #include "base/run_loop.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_perftest_messages.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/test/multiprocess_test_helper.h"
 
 namespace IPC {
 
 scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() {
-  scoped_refptr<base::TaskRunner> runner = mojo::edk::GetIOTaskRunner();
+  scoped_refptr<base::TaskRunner> runner = mojo::core::GetIOTaskRunner();
   return scoped_refptr<base::SingleThreadTaskRunner>(
       static_cast<base::SingleThreadTaskRunner*>(runner.get()));
 }
@@ -102,7 +102,7 @@ LockThreadAffinity::~LockThreadAffinity() {
 
 MojoPerfTestClient::MojoPerfTestClient()
     : listener_(new ChannelReflectorListener()) {
-  mojo::edk::test::MultiprocessTestHelper::ChildSetup();
+  mojo::core::test::MultiprocessTestHelper::ChildSetup();
 }
 
 MojoPerfTestClient::~MojoPerfTestClient() = default;
