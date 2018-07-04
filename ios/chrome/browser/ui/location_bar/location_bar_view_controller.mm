@@ -209,8 +209,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
     // Display a fake "placeholder".
     NSString* placeholderString =
         l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
-    UIColor* placeholderColor =
-        [LocationBarSteadyViewColorScheme incognitoScheme].placeholderColor;
+    LocationBarSteadyViewColorScheme* scheme =
+        self.incognito ? [LocationBarSteadyViewColorScheme incognitoScheme]
+                       : [LocationBarSteadyViewColorScheme standardScheme];
+    UIColor* placeholderColor = scheme.placeholderColor;
     self.locationBarSteadyView.locationLabel.attributedText = [
         [NSAttributedString alloc]
         initWithString:placeholderString

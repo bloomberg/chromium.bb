@@ -286,7 +286,7 @@ const CGFloat kFontSize = 17.0f;
   [self updateAccessibility];
 }
 
-#pragma mark - UIAccessibilityContainer]
+#pragma mark - UIAccessibilityContainer
 
 - (NSArray*)accessibilityElements {
   return self.accessibleElements;
