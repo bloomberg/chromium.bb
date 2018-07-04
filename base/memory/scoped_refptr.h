@@ -123,7 +123,7 @@ scoped_refptr<T> WrapRefCounted(T* t) {
 //   void some_other_function() {
 //     scoped_refptr<MyFoo> foo = MakeRefCounted<MyFoo>();
 //     ...
-//     foo = nullptr;  // explicitly releases |foo|
+//     foo.reset();  // explicitly releases |foo|
 //     ...
 //     if (foo)
 //       foo->Method(param);
@@ -227,6 +227,10 @@ class scoped_refptr {
     swap(r);
     return *this;
   }
+
+  // Sets managed object to null and releases reference to the previous managed
+  // object, if it existed.
+  void reset() { scoped_refptr().swap(*this); }
 
   void swap(scoped_refptr& r) noexcept { std::swap(ptr_, r.ptr_); }
 
