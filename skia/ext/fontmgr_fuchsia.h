@@ -17,7 +17,7 @@
 
 namespace skia {
 
-class FuchsiaFontManager : public SkFontMgr {
+class SK_API FuchsiaFontManager : public SkFontMgr {
  public:
   explicit FuchsiaFontManager(
       fuchsia::fonts::FontProviderSync2Ptr font_provider);
