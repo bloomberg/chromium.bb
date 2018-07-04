@@ -155,7 +155,9 @@ class TabStrip : public views::View,
 
   // Removes a tab at the specified index. If the tab with |contents| is being
   // dragged then the drag is completed.
-  void RemoveTabAt(content::WebContents* contents, int model_index);
+  void RemoveTabAt(content::WebContents* contents,
+                   int model_index,
+                   bool was_active);
 
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, TabRendererData data);
@@ -166,12 +168,6 @@ class TabStrip : public views::View,
   // changing that to the first tab would cause |tab| to be pushed over enough
   // to clip).
   bool ShouldTabBeVisible(const Tab* tab) const;
-
-  // Invoked from the controller when the close initiates from the TabController
-  // (the user clicked the tab close button or middle clicked the tab). This is
-  // invoked from Close. Because of unload handlers Close is not always
-  // immediately followed by RemoveTabAt.
-  void PrepareForCloseAt(int model_index, CloseTabSource source);
 
   // Invoked when the selection is updated.
   void SetSelection(const ui::ListSelectionModel& new_selection);
