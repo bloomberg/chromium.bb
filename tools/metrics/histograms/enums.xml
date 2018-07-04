@@ -29797,7 +29797,7 @@ Called by update_use_counter_css.py.-->
   <int value="161" label="width"/>
   <int value="162" label="word-break"/>
   <int value="163" label="word-spacing"/>
-  <int value="164" label="word-wrap"/>
+  <int value="164" label="alias-word-wrap"/>
   <int value="165" label="z-index"/>
   <int value="166" label="alias-webkit-animation"/>
   <int value="167" label="alias-webkit-animation-delay"/>
