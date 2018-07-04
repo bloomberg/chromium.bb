@@ -40,6 +40,8 @@ void NGTextFragmentBuilder::SetItem(
     const NGInlineItemsData& items_data,
     NGInlineItemResult* item_result,
     LayoutUnit line_height) {
+  DCHECK_NE(text_type, NGPhysicalTextFragment::kGeneratedText)
+      << "Please use SetText() instead.";
   DCHECK(item_result);
   DCHECK(item_result->item->Style());
 
@@ -65,7 +67,7 @@ void NGTextFragmentBuilder::SetText(
   DCHECK(style);
   DCHECK(shape_result);
 
-  text_type_ = NGPhysicalTextFragment::kNormalText;
+  text_type_ = NGPhysicalTextFragment::kGeneratedText;
   text_ = text;
   item_index_ = std::numeric_limits<unsigned>::max();
   start_offset_ = shape_result->StartIndexForResult();

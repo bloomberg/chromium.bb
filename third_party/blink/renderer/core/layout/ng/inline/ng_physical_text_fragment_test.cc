@@ -35,6 +35,10 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     }
     return result;
   }
+
+  static std::string GetText(const NGPhysicalTextFragment& fragment) {
+    return fragment.Text().ToString().Utf8().data();
+  }
 };
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
@@ -155,6 +159,32 @@ TEST_F(NGPhysicalTextFragmentTest, BeforeAndAfterAreAnonymousText) {
   EXPECT_TRUE(after.IsAnonymousText());
 }
 
+TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+      <style>
+      #sample {
+        font: 10px/1 Ahem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 4ch;
+      }
+      </style>
+      <p id="sample">abcdef</p>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("sample");
+  ASSERT_EQ(2u, text_fragments.size());
+
+  const NGPhysicalTextFragment& abcdef = *text_fragments[0];
+  const NGPhysicalTextFragment& ellipsis = *text_fragments[1];
+  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abcdef.TextType());
+  EXPECT_FALSE(abcdef.IsGeneratedText());
+  EXPECT_EQ(u8"abc", GetText(abcdef));
+  EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
+  EXPECT_TRUE(ellipsis.IsGeneratedText());
+  EXPECT_EQ(u8"\u2026", GetText(ellipsis));
+}
+
 TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsAnonymousText) {
   SetBodyInnerHTML(
       "<ol style='list-style-position:inside'>"
@@ -168,6 +198,37 @@ TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsAnonymousText) {
   const NGPhysicalTextFragment& text = *text_fragments[1];
   EXPECT_TRUE(marker.IsAnonymousText());
   EXPECT_FALSE(text.IsAnonymousText());
+}
+
+TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #sample {
+      font: 10px/1 Ahem;
+      width: 3ch;
+    }
+    </style>
+    <p id="sample">abc&shy;def</p>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("sample");
+  ASSERT_EQ(3u, text_fragments.size());
+
+  const NGPhysicalTextFragment& abc = *text_fragments[0];
+  const NGPhysicalTextFragment& shy = *text_fragments[1];
+  const NGPhysicalTextFragment& def = *text_fragments[2];
+  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abc.TextType());
+  EXPECT_FALSE(abc.IsGeneratedText());
+  // Note: ShapeResult::RunInfo.width_ == 0 for U+00AD
+  EXPECT_EQ(u8"abc\u00AD", GetText(abc));
+  EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, shy.TextType());
+  EXPECT_TRUE(shy.IsGeneratedText());
+  // Note: |ComputedStyle::HypenString()| returns "-" or U+2010 based on
+  // glyph availability.
+  if (GetText(shy) != "-")
+    EXPECT_EQ(u8"\u2010", GetText(shy));
+  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, def.TextType());
+  EXPECT_FALSE(def.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
