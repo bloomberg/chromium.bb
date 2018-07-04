@@ -287,7 +287,7 @@ std::unique_ptr<base::Value> NetLogServiceWorkerStatusCallback(
     blink::ServiceWorkerStatusCode status,
     net::NetLogCaptureMode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", ServiceWorkerStatusToString(status));
+  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
   return std::move(dict);
 }
 
@@ -296,7 +296,7 @@ std::unique_ptr<base::Value> NetLogFetchEventCallback(
     ServiceWorkerFetchDispatcher::FetchEventResult result,
     net::NetLogCaptureMode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", ServiceWorkerStatusToString(status));
+  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
   dict->SetBoolean(
       "has_response",
       result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse);
@@ -537,7 +537,7 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
   // before we could finish activation.
   if (version_->status() != ServiceWorkerVersion::ACTIVATED) {
     DCHECK_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
-    DidFail(blink::SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
+    DidFail(blink::ServiceWorkerStatusCode::kErrorActivateWorkerFailed);
     return;
   }
 
@@ -555,7 +555,7 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 
 void ServiceWorkerFetchDispatcher::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     EndNetLogEventWithServiceWorkerStatus(
         net_log_, net::NetLogEventType::SERVICE_WORKER_START_WORKER, status);
     DidFail(status);
@@ -628,7 +628,7 @@ void ServiceWorkerFetchDispatcher::DidFailToDispatch(
 
 void ServiceWorkerFetchDispatcher::DidFail(
     blink::ServiceWorkerStatusCode status) {
-  DCHECK_NE(blink::SERVICE_WORKER_OK, status);
+  DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
   Complete(status, FetchEventResult::kShouldFallback, ServiceWorkerResponse(),
            nullptr /* body_as_stream */, nullptr /* body_as_blob */);
 }
@@ -640,7 +640,7 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob) {
   net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
-  Complete(blink::SERVICE_WORKER_OK, fetch_result, response,
+  Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result, response,
            std::move(body_as_stream), std::move(body_as_blob));
 }
 

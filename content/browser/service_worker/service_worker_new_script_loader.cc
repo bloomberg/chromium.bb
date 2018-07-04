@@ -550,7 +550,8 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
     // entry wasn't actually replaced because the new entry was equivalent, the
     // new version didn't actually install because it already exists.
     if (!cache_writer_->did_replace()) {
-      version_->SetStartWorkerStatusCode(blink::SERVICE_WORKER_ERROR_EXISTS);
+      version_->SetStartWorkerStatusCode(
+          blink::ServiceWorkerStatusCode::kErrorExists);
       error_code = ServiceWorkerWriteToCacheJob::kIdenticalScriptError;
     }
     bytes_written = cache_writer_->bytes_written();

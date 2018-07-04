@@ -14,14 +14,14 @@ TypeConverter<blink::ServiceWorkerStatusCode,
     Convert(blink::mojom::ServiceWorkerEventStatus status) {
   switch (status) {
     case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
-      return blink::SERVICE_WORKER_OK;
+      return blink::ServiceWorkerStatusCode::kOk;
     case blink::mojom::ServiceWorkerEventStatus::REJECTED:
-      return blink::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+      return blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected;
     case blink::mojom::ServiceWorkerEventStatus::ABORTED:
-      return blink::SERVICE_WORKER_ERROR_ABORT;
+      return blink::ServiceWorkerStatusCode::kErrorAbort;
   }
   NOTREACHED() << status;
-  return blink::SERVICE_WORKER_ERROR_FAILED;
+  return blink::ServiceWorkerStatusCode::kErrorFailed;
 }
 
 }  // namespace mojo

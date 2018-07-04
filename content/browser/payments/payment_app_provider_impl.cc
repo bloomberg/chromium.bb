@@ -165,7 +165,7 @@ class RespondWithCallbacks
 
   void OnErrorStatus(blink::ServiceWorkerStatusCode service_worker_status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(service_worker_status != blink::SERVICE_WORKER_OK);
+    DCHECK(service_worker_status != blink::ServiceWorkerStatusCode::kOk);
 
     if (event_type_ == ServiceWorkerMetrics::EventType::PAYMENT_REQUEST) {
       BrowserThread::PostTask(
@@ -194,7 +194,7 @@ class RespondWithCallbacks
 
     service_worker_version_->FinishRequest(request_id_, false,
                                            base::Time::Now());
-    OnErrorStatus(blink::SERVICE_WORKER_ERROR_ABORT);
+    OnErrorStatus(blink::ServiceWorkerStatusCode::kErrorAbort);
   }
 
  private:
@@ -252,7 +252,7 @@ void DispatchAbortPaymentEvent(
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(callback), false));
     return;
@@ -281,7 +281,7 @@ void DispatchCanMakePaymentEvent(
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(callback), false));
     return;
@@ -310,7 +310,7 @@ void DispatchPaymentRequestEvent(
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -339,7 +339,7 @@ void DidFindRegistrationOnIO(
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(nullptr, service_worker_status);
     return;
   }

@@ -179,8 +179,8 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
                                 const std::string& status_message,
                                 int64_t service_worker_registration_id) {
     DCHECK(out_service_worker_registration_id);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-        << ServiceWorkerStatusToString(status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+        << blink::ServiceWorkerStatusToString(status);
 
     *out_service_worker_registration_id = service_worker_registration_id;
 
@@ -193,8 +193,8 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
     DCHECK(out_service_worker_registration);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-        << ServiceWorkerStatusToString(status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+        << blink::ServiceWorkerStatusToString(status);
 
     *out_service_worker_registration = service_worker_registration;
 

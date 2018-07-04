@@ -858,8 +858,9 @@ void ServiceWorkerProviderHost::RegistrationComplete(
     const std::string& status_message,
     int64_t registration_id) {
   TRACE_EVENT_ASYNC_END2("ServiceWorker", "ServiceWorkerProviderHost::Register",
-                         trace_id, "Status", status, "Registration ID",
-                         registration_id);
+                         trace_id, "Status",
+                         blink::ServiceWorkerStatusToString(status),
+                         "Registration ID", registration_id);
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
@@ -869,7 +870,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::string error_message;
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
@@ -955,7 +956,7 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
     scoped_refptr<ServiceWorkerRegistration> registration) {
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker", "ServiceWorkerProviderHost::GetRegistration", trace_id,
-      "Status", status, "Registration ID",
+      "Status", blink::ServiceWorkerStatusToString(status), "Registration ID",
       registration ? registration->id()
                    : blink::mojom::kInvalidServiceWorkerRegistrationId);
   if (!IsContextAlive()) {
@@ -967,8 +968,8 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK &&
-      status != blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status != blink::ServiceWorkerStatusCode::kOk &&
+      status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
     std::string error_message;
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
@@ -979,9 +980,10 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
     return;
   }
 
-  DCHECK(status != blink::SERVICE_WORKER_OK || registration);
+  DCHECK(status != blink::ServiceWorkerStatusCode::kOk || registration);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
-  if (status == blink::SERVICE_WORKER_OK && !registration->is_uninstalling())
+  if (status == blink::ServiceWorkerStatusCode::kOk &&
+      !registration->is_uninstalling())
     info = CreateServiceWorkerRegistrationObjectInfo(std::move(registration));
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
@@ -994,9 +996,9 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
     blink::ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
         registrations) {
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerProviderHost::GetRegistrations",
-                         trace_id, "Status", status);
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerProviderHost::GetRegistrations", trace_id,
+      "Status", blink::ServiceWorkerStatusToString(status));
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
@@ -1006,7 +1008,7 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::string error_message;
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
@@ -1056,7 +1058,7 @@ void ServiceWorkerProviderHost::StartControllerComplete(
     mojom::ControllerServiceWorkerRequest controller_request,
     blink::ServiceWorkerStatusCode status) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  if (status == blink::SERVICE_WORKER_OK)
+  if (status == blink::ServiceWorkerStatusCode::kOk)
     controller_->controller()->Clone(std::move(controller_request));
 }
 

@@ -32,16 +32,16 @@ void RegisterServiceWorkerCallback(bool* called,
                                    blink::ServiceWorkerStatusCode status,
                                    const std::string& status_message,
                                    int64_t registration_id) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
   *called = true;
   *out_registration_id = registration_id;
 }
 
 void UnregisterServiceWorkerCallback(bool* called,
                                      blink::ServiceWorkerStatusCode status) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
   *called = true;
 }
 

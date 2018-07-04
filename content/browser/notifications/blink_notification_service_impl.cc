@@ -224,7 +224,7 @@ void BlinkNotificationServiceImpl::
 
   // Display the notification if the Service Worker's origin matches the origin
   // of the notification's sender.
-  if (service_worker_status == blink::SERVICE_WORKER_OK &&
+  if (service_worker_status == blink::ServiceWorkerStatusCode::kOk &&
       registration->pattern().GetOrigin() == origin_.GetURL()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

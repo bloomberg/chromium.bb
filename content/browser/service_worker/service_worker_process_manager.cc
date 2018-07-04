@@ -98,11 +98,11 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
     out_info->process_id = result;
     out_info->start_situation =
         ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS;
-    return blink::SERVICE_WORKER_OK;
+    return blink::ServiceWorkerStatusCode::kOk;
   }
 
   if (IsShutdown()) {
-    return blink::SERVICE_WORKER_ERROR_ABORT;
+    return blink::ServiceWorkerStatusCode::kErrorAbort;
   }
 
   DCHECK(!base::ContainsKey(worker_process_map_, embedded_worker_id))
@@ -153,7 +153,7 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
 
   if (!rph->Init()) {
     LOG(ERROR) << "Couldn't start a new process!";
-    return blink::SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
+    return blink::ServiceWorkerStatusCode::kErrorProcessNotFound;
   }
 
   worker_process_map_.emplace(embedded_worker_id, std::move(site_instance));
@@ -162,7 +162,7 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
         RenderProcessHost::KeepAliveClientType::kServiceWorker);
   out_info->process_id = rph->GetID();
   out_info->start_situation = start_situation;
-  return blink::SERVICE_WORKER_OK;
+  return blink::ServiceWorkerStatusCode::kOk;
 }
 
 void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {

@@ -78,7 +78,7 @@ void FoundReadyRegistration(
     base::OnceClosure completion_callback,
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
-  DCHECK_EQ(blink::SERVICE_WORKER_OK, service_worker_status);
+  DCHECK_EQ(blink::ServiceWorkerStatusCode::kOk, service_worker_status);
   int64_t version_id =
       service_worker_registration->active_version()->version_id();
   scoped_refptr<StoppedObserver> observer(new StoppedObserver(

@@ -69,7 +69,7 @@ void CheckFetchHandlerOfInstalledServiceWorker(
 void SuccessCollectorCallback(base::OnceClosure done_closure,
                               bool* overall_success,
                               blink::ServiceWorkerStatusCode status) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     *overall_success = false;
   }
   std::move(done_closure).Run();
@@ -80,8 +80,9 @@ void SuccessReportingCallback(
     base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool result = *success;
-  std::move(callback).Run(result ? blink::SERVICE_WORKER_OK
-                                 : blink::SERVICE_WORKER_ERROR_FAILED);
+  std::move(callback).Run(result
+                              ? blink::ServiceWorkerStatusCode::kOk
+                              : blink::ServiceWorkerStatusCode::kErrorFailed);
 }
 
 bool IsSameOriginClientProviderHost(const GURL& origin,
@@ -135,7 +136,7 @@ class ClearAllServiceWorkersHelper
       const base::WeakPtr<ServiceWorkerContextCore>& context,
       blink::ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-    if (!context || status != blink::SERVICE_WORKER_OK)
+    if (!context || status != blink::ServiceWorkerStatusCode::kOk)
       return;
     // Make a copy of live versions map because StopWorker() removes the version
     // from it when we were starting up and don't have a process yet.
@@ -489,7 +490,7 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     blink::ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
         registrations) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(status);
     return;
   }
@@ -525,7 +526,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     ServiceWorkerRegistration* registration) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(!registration);
     std::move(callback).Run(status, status_message,
                             blink::mojom::kInvalidServiceWorkerRegistrationId);
@@ -546,7 +547,7 @@ void ServiceWorkerContextCore::UpdateComplete(
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     ServiceWorkerRegistration* registration) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(!registration);
     std::move(callback).Run(status, status_message,
                             blink::mojom::kInvalidServiceWorkerRegistrationId);
@@ -563,7 +564,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
     int64_t registration_id,
     blink::ServiceWorkerStatusCode status) {
   std::move(callback).Run(status);
-  if (status == blink::SERVICE_WORKER_OK) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
     observer_list_->Notify(
         FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationDeleted,
         registration_id, pattern);
@@ -685,7 +686,7 @@ void ServiceWorkerContextCore::UpdateVersionFailureCount(
     int64_t version_id,
     blink::ServiceWorkerStatusCode status) {
   // Don't count these, they aren't start worker failures.
-  if (status == blink::SERVICE_WORKER_ERROR_DISALLOWED)
+  if (status == blink::ServiceWorkerStatusCode::kErrorDisallowed)
     return;
 
   auto it = failure_counts_.find(version_id);
@@ -694,7 +695,7 @@ void ServiceWorkerContextCore::UpdateVersionFailureCount(
                                                         status);
   }
 
-  if (status == blink::SERVICE_WORKER_OK) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
     if (it != failure_counts_.end())
       failure_counts_.erase(it);
     return;
@@ -829,7 +830,7 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }

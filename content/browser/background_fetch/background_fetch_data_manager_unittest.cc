@@ -69,7 +69,7 @@ void DidGetRegistrationUserDataByKeyPrefix(
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
   DCHECK(out_data);
-  DCHECK_EQ(blink::SERVICE_WORKER_OK, status);
+  DCHECK_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   *out_data = data;
   std::move(quit_closure).Run();
 }
@@ -103,7 +103,7 @@ void GetNumUserData(base::Closure quit_closure,
                     const std::vector<std::string>& data,
                     blink::ServiceWorkerStatusCode status) {
   DCHECK(out_size);
-  DCHECK_EQ(blink::SERVICE_WORKER_OK, status);
+  DCHECK_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   *out_size = data.size();
   std::move(quit_closure).Run();
 }

@@ -476,7 +476,8 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   // equivalent, the new version didn't actually install because it already
   // exists.
   if (net_error == net::OK && !cache_writer_->did_replace()) {
-    version_->SetStartWorkerStatusCode(blink::SERVICE_WORKER_ERROR_EXISTS);
+    version_->SetStartWorkerStatusCode(
+        blink::ServiceWorkerStatusCode::kErrorExists);
     version_->script_cache_map()->NotifyFinishedCaching(
         url_, size, kIdenticalScriptError, std::string());
   } else {

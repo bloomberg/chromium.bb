@@ -116,7 +116,8 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
     bool last_chance,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<content::ServiceWorkerRegistration> registration) {
-  if (status != blink::SERVICE_WORKER_OK || !registration->active_version())
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
+      !registration->active_version())
     return;
   BackgroundSyncManager* background_sync_manager =
       sync_context->background_sync_manager();

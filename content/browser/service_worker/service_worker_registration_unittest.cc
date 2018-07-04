@@ -369,12 +369,12 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     blink::ServiceWorkerStatusCode status =
-        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+        blink::ServiceWorkerStatusCode::kMax;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
     // Give the active version a controllee.
     host_ = CreateProviderHostForWindow(
@@ -705,7 +705,7 @@ class ServiceWorkerRegistrationObjectHostTest
       int64_t registration_id,
       const GURL& scope) {
     blink::ServiceWorkerStatusCode status =
-        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+        blink::ServiceWorkerStatusCode::kMax;
     storage()->FindRegistrationForId(
         registration_id, scope,
         base::AdaptCallbackForRepeating(base::BindOnce(
@@ -746,12 +746,12 @@ class ServiceWorkerRegistrationObjectHostTest
     // Make the registration findable via storage functions.
     bool called = false;
     blink::ServiceWorkerStatusCode status =
-        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+        blink::ServiceWorkerStatusCode::kMax;
     storage()->StoreRegistration(registration.get(), version.get(),
                                  base::AdaptCallbackForRepeating(base::BindOnce(
                                      &SaveStatusCallback, &called, &status)));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
     return registration->id();
   }
@@ -899,12 +899,12 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   info->request = nullptr;
   info->waiting->request = nullptr;
 
-  EXPECT_EQ(blink::SERVICE_WORKER_OK,
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             FindRegistrationInStorage(registration_id, kScope));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
             CallUnregister(registration_host_ptr.get()));
 
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
             FindRegistrationInStorage(registration_id, kScope));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNotFound,
             CallUnregister(registration_host_ptr.get()));

@@ -311,7 +311,8 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
   // the fetch event again. If it has already been restarted, that means
   // starting worker failed. In that case, abort the request.
   if (fetch_request_restarted_) {
-    SettleFetchEventDispatch(blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+    SettleFetchEventDispatch(
+        blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed);
     CommitCompleted(net::ERR_FAILED);
     return;
   }
@@ -333,7 +334,7 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
   if (status) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
                               status.value(),
-                              blink::SERVICE_WORKER_ERROR_MAX_VALUE);
+                              blink::ServiceWorkerStatusCode::kMax);
   }
 }
 
@@ -343,7 +344,7 @@ void ServiceWorkerSubresourceLoader::OnResponse(
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   StartResponse(response, nullptr /* body_as_blob */,
                 nullptr /* body_as_stream */);
 }
@@ -355,7 +356,7 @@ void ServiceWorkerSubresourceLoader::OnResponseBlob(
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponseBlob", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   StartResponse(response, std::move(body_as_blob),
                 nullptr /* body_as_stream */);
 }
@@ -367,14 +368,14 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   StartResponse(response, nullptr /* body_as_blob */,
                 std::move(body_as_stream));
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
-  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
   // we can't simply fallback to the network here. It is because the CORS

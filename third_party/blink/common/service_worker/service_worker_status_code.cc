@@ -10,46 +10,46 @@ namespace blink {
 
 const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
   switch (status) {
-    case SERVICE_WORKER_OK:
+    case ServiceWorkerStatusCode::kOk:
       return "Operation has succeeded";
-    case SERVICE_WORKER_ERROR_FAILED:
+    case ServiceWorkerStatusCode::kErrorFailed:
       return "Operation has failed (unknown reason)";
-    case SERVICE_WORKER_ERROR_ABORT:
+    case ServiceWorkerStatusCode::kErrorAbort:
       return "Operation has been aborted";
-    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+    case ServiceWorkerStatusCode::kErrorProcessNotFound:
       return "Could not find a renderer process to run a service worker";
-    case SERVICE_WORKER_ERROR_NOT_FOUND:
+    case ServiceWorkerStatusCode::kErrorNotFound:
       return "Not found";
-    case SERVICE_WORKER_ERROR_EXISTS:
+    case ServiceWorkerStatusCode::kErrorExists:
       return "Already exists";
-    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case ServiceWorkerStatusCode::kErrorStartWorkerFailed:
       return "ServiceWorker cannot be started";
-    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
+    case ServiceWorkerStatusCode::kErrorInstallWorkerFailed:
       return "ServiceWorker failed to install";
-    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
+    case ServiceWorkerStatusCode::kErrorActivateWorkerFailed:
       return "ServiceWorker failed to activate";
-    case SERVICE_WORKER_ERROR_IPC_FAILED:
+    case ServiceWorkerStatusCode::kErrorIpcFailed:
       return "IPC connection was closed or IPC error has occurred";
-    case SERVICE_WORKER_ERROR_NETWORK:
+    case ServiceWorkerStatusCode::kErrorNetwork:
       return "Operation failed by network issue";
-    case SERVICE_WORKER_ERROR_SECURITY:
+    case ServiceWorkerStatusCode::kErrorSecurity:
       return "Operation failed by security issue";
-    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+    case ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
       return "ServiceWorker failed to handle event (event.waitUntil "
              "Promise rejected)";
-    case SERVICE_WORKER_ERROR_STATE:
+    case ServiceWorkerStatusCode::kErrorState:
       return "The ServiceWorker state was not valid";
-    case SERVICE_WORKER_ERROR_TIMEOUT:
+    case ServiceWorkerStatusCode::kErrorTimeout:
       return "The ServiceWorker timed out";
-    case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case ServiceWorkerStatusCode::kErrorScriptEvaluateFailed:
       return "ServiceWorker script evaluation failed";
-    case SERVICE_WORKER_ERROR_DISK_CACHE:
+    case ServiceWorkerStatusCode::kErrorDiskCache:
       return "Disk cache error";
-    case SERVICE_WORKER_ERROR_REDUNDANT:
+    case ServiceWorkerStatusCode::kErrorRedundant:
       return "Redundant worker";
-    case SERVICE_WORKER_ERROR_DISALLOWED:
+    case ServiceWorkerStatusCode::kErrorDisallowed:
       return "Worker disallowed";
-    case SERVICE_WORKER_ERROR_MAX_VALUE:
+    case ServiceWorkerStatusCode::kMax:
       NOTREACHED();
   }
   NOTREACHED();

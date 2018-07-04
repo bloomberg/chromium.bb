@@ -20,9 +20,9 @@ void CallStringCallbackFromIO(
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool success = service_worker_status == blink::SERVICE_WORKER_OK;
+  bool success = service_worker_status == blink::ServiceWorkerStatusCode::kOk;
   bool not_found =
-      service_worker_status == blink::SERVICE_WORKER_ERROR_NOT_FOUND;
+      service_worker_status == blink::ServiceWorkerStatusCode::kErrorNotFound;
   std::string result;
   if (success) {
     DCHECK_EQ(1u, data.size());

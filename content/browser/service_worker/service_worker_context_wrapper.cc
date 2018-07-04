@@ -54,7 +54,7 @@ void StartActiveWorkerOnIO(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status == blink::SERVICE_WORKER_OK) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
     // Pass the reference of |registration| to WorkerStarted callback to prevent
     // it from being deleted while starting the worker. If the refcount of
     // |registration| is 1, it will be deleted after WorkerStarted is called.
@@ -66,14 +66,15 @@ void StartActiveWorkerOnIO(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(std::move(callback),
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND));
+                     blink::ServiceWorkerStatusCode::kErrorNotFound));
 }
 
 void SkipWaitingWorkerOnIO(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != blink::SERVICE_WORKER_OK || !registration->waiting_version())
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
+      !registration->waiting_version())
     return;
 
   registration->waiting_version()->set_skip_waiting(true);
@@ -84,7 +85,7 @@ void DidStartWorker(scoped_refptr<ServiceWorkerVersion> version,
                     ServiceWorkerContext::StartWorkerCallback info_callback,
                     base::OnceClosure error_callback,
                     blink::ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(error_callback).Run();
     return;
   }
@@ -98,7 +99,7 @@ void FoundRegistrationForStartWorker(
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(failure_callback).Run();
     return;
   }
@@ -106,9 +107,9 @@ void FoundRegistrationForStartWorker(
   ServiceWorkerVersion* version_ptr = registration->active_version()
                                           ? registration->active_version()
                                           : registration->installing_version();
-  // Since FindRegistrationForPattern returned blink::SERVICE_WORKER_OK, there
-  // must be either: - an active version, which optionally might have activated
-  // from a waiting
+  // Since FindRegistrationForPattern returned
+  // blink::ServiceWorkerStatusCode::kOk, there must be either: -
+  // an active version, which optionally might have activated from a waiting
   //   version (as DidFindRegistrationForFindImpl will activate any waiting
   //   version).
   // - or an installing version.
@@ -128,7 +129,7 @@ void FoundRegistrationForStartWorker(
 void StatusCodeToBoolCallbackAdapter(
     ServiceWorkerContext::ResultCallback callback,
     blink::ServiceWorkerStatusCode code) {
-  std::move(callback).Run(code == blink::SERVICE_WORKER_OK);
+  std::move(callback).Run(code == blink::ServiceWorkerStatusCode::kOk);
 }
 
 void FinishRegistrationOnIO(ServiceWorkerContext::ResultCallback callback,
@@ -138,7 +139,8 @@ void FinishRegistrationOnIO(ServiceWorkerContext::ResultCallback callback,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), status == blink::SERVICE_WORKER_OK));
+      base::BindOnce(std::move(callback),
+                     status == blink::ServiceWorkerStatusCode::kOk));
 }
 
 void FinishUnregistrationOnIO(ServiceWorkerContext::ResultCallback callback,
@@ -146,7 +148,8 @@ void FinishUnregistrationOnIO(ServiceWorkerContext::ResultCallback callback,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), status == blink::SERVICE_WORKER_OK));
+      base::BindOnce(std::move(callback),
+                     status == blink::ServiceWorkerStatusCode::kOk));
 }
 
 }  // namespace
@@ -552,7 +555,8 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForDocument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     // FindRegistrationForDocument() can run the callback synchronously.
-    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT, nullptr);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort,
+                            nullptr);
     return;
   }
   context_core_->storage()->FindRegistrationForDocument(
@@ -585,7 +589,8 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     // FindRegistrationForId() can run the callback synchronously.
-    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT, nullptr);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort,
+                            nullptr);
     return;
   }
   context_core_->storage()->FindRegistrationForId(
@@ -601,7 +606,8 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForIdOnly(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     // FindRegistrationForIdOnly() can run the callback synchronously.
-    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT, nullptr);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort,
+                            nullptr);
     return;
   }
   context_core_->storage()->FindRegistrationForIdOnly(
@@ -617,7 +623,8 @@ void ServiceWorkerContextWrapper::GetAllRegistrations(
   if (!context_core_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT,
+        base::BindOnce(std::move(callback),
+                       blink::ServiceWorkerStatusCode::kErrorAbort,
                        std::vector<ServiceWorkerRegistrationInfo>()));
     return;
   }
@@ -633,7 +640,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserData(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<std::string>(),
-                       blink::SERVICE_WORKER_ERROR_ABORT));
+                       blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->GetUserData(registration_id, keys,
@@ -649,7 +656,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<std::string>(),
-                       blink::SERVICE_WORKER_ERROR_ABORT));
+                       blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->GetUserDataByKeyPrefix(registration_id, key_prefix,
@@ -665,7 +672,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserKeysAndDataByKeyPrefix(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   base::flat_map<std::string, std::string>(),
-                                  blink::SERVICE_WORKER_ERROR_ABORT));
+                                  blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->GetUserKeysAndDataByKeyPrefix(
@@ -680,8 +687,8 @@ void ServiceWorkerContextWrapper::StoreRegistrationUserData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->StoreUserData(registration_id, origin.GetOrigin(),
@@ -695,8 +702,8 @@ void ServiceWorkerContextWrapper::ClearRegistrationUserData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->ClearUserData(registration_id, keys,
@@ -710,8 +717,8 @@ void ServiceWorkerContextWrapper::ClearRegistrationUserDataByKeyPrefixes(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->ClearUserDataByKeyPrefixes(
@@ -727,7 +734,7 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        std::vector<std::pair<int64_t, std::string>>(),
-                       blink::SERVICE_WORKER_ERROR_ABORT));
+                       blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->GetUserDataForAllRegistrations(key,
@@ -743,7 +750,7 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        std::vector<std::pair<int64_t, std::string>>(),
-                       blink::SERVICE_WORKER_ERROR_ABORT));
+                       blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->GetUserDataForAllRegistrationsByKeyPrefix(
@@ -762,7 +769,8 @@ void ServiceWorkerContextWrapper::StartServiceWorker(const GURL& pattern,
   if (!context_core_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT));
+        base::BindOnce(std::move(callback),
+                       blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
   context_core_->storage()->FindRegistrationForPattern(
@@ -879,8 +887,9 @@ void ServiceWorkerContextWrapper::FindRegistrationForPatternImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::SERVICE_WORKER_ERROR_ABORT, nullptr));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
   context_core_->storage()->FindRegistrationForPattern(
@@ -902,7 +911,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForFindImpl(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(status, nullptr);
     return;
   }
@@ -923,16 +932,19 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForFindImpl(
       return;
     }
     DCHECK_EQ(ServiceWorkerVersion::ACTIVATED, active_version->status());
-    std::move(callback).Run(blink::SERVICE_WORKER_OK, std::move(registration));
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
+                            std::move(registration));
     return;
   }
 
   if (include_installing_version && registration->installing_version()) {
-    std::move(callback).Run(blink::SERVICE_WORKER_OK, std::move(registration));
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
+                            std::move(registration));
     return;
   }
 
-  std::move(callback).Run(blink::SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
+  std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorNotFound,
+                          nullptr);
 }
 
 void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
@@ -953,16 +965,17 @@ void ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration(
       registration->active_version();
   if (!active_version ||
       active_version->status() != ServiceWorkerVersion::ACTIVATED) {
-    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorNotFound,
+                            nullptr);
     return;
   }
-  std::move(callback).Run(blink::SERVICE_WORKER_OK, registration);
+  std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk, registration);
 }
 
 void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     context_core_.reset();
     return;
   }
@@ -1009,7 +1022,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status != blink::SERVICE_WORKER_OK)
+  if (status != blink::ServiceWorkerStatusCode::kOk)
     return;
   if (!context_core_)
     return;
@@ -1067,10 +1080,10 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   TRACE_EVENT1("ServiceWorker", "DidFindRegistrationForNavigationHint",
-               "status", ServiceWorkerStatusToString(status));
+               "status", blink::ServiceWorkerStatusToString(status));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!registration) {
-    DCHECK_NE(status, blink::SERVICE_WORKER_OK);
+    DCHECK_NE(status, blink::ServiceWorkerStatusCode::kOk);
     std::move(callback).Run(StartServiceWorkerForNavigationHintResult::
                                 NO_SERVICE_WORKER_REGISTRATION);
     return;
@@ -1105,10 +1118,11 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint(
     StartServiceWorkerForNavigationHintCallback callback,
     blink::ServiceWorkerStatusCode code) {
   TRACE_EVENT2("ServiceWorker", "DidStartServiceWorkerForNavigationHint", "url",
-               pattern.spec(), "code", ServiceWorkerStatusToString(code));
+               pattern.spec(), "code",
+               blink::ServiceWorkerStatusToString(code));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(callback).Run(
-      code == blink::SERVICE_WORKER_OK
+      code == blink::ServiceWorkerStatusCode::kOk
           ? StartServiceWorkerForNavigationHintResult::STARTED
           : StartServiceWorkerForNavigationHintResult::FAILED);
 }
