@@ -244,3 +244,22 @@ tests:
     - mode: [compbrlAtCursor]
       cursorPos: [1,1]
       xfail: true
+
+        # Converted from en_gb_g1_italics.c
+  - - This is a Test
+    - ⠠⠹ ⠊⠎ ⠁ ⠠⠞⠑⠌
+    - typeform:
+        italic: '              '
+  - - This is a Test in Italic.
+    - ⠨⠠⠹ ⠊⠎ ⠁ ⠠⠞⠑⠌ ⠔ ⠠⠊⠞⠁⠇⠊⠉⠲⠨⠄
+    - typeform:
+        italic: '+++++++++++++++++++++++++'
+  - - This is a Test
+    - ⠠⠹ ⠨⠊⠎ ⠁⠨⠄ ⠠⠞⠑⠌
+    - typeform:
+        italic: '     ++++     '
+  - - time and spirit
+    - ⠨⠐⠞ ⠯ ⠸⠎⠨⠄
+    - typeform:
+        italic: '+++++++++++++++'
+        

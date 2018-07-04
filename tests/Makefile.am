@@ -16,7 +16,6 @@ LDADD =							\
 
 checkTable_SOURCES = checkTable.c
 emphclass_SOURCES = emphclass.c
-en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
@@ -35,7 +34,6 @@ program_TESTS =					\
 	checkTable				\
 	check_metadata				\
 	emphclass				\
-	en_gb_g1_italics			\
 	findTable				\
 	getTable				\
 	hash_collision				\
@@ -67,8 +65,7 @@ endif
 # interest to fix it.
 XFAIL_TESTS =					\
 	present_progressive			\
-	lastworditalafter			\
-	en_gb_g1_italics
+	lastworditalafter
 
 dist_braille_specs_TESTS =				  \
 	braille-specs/ar-ar-g1_harness.yaml		  \
