@@ -124,7 +124,7 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
   // For example, this is called if |password_form| was filled
-  // upon in-page navigation.This often means history.pushState being
+  // upon in-page navigation. This often means history.pushState being
   // called from JavaScript.
   void OnPasswordFormSubmittedNoChecks(
       password_manager::PasswordManagerDriver* driver,
