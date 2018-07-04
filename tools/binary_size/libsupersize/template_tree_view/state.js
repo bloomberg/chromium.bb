@@ -42,7 +42,7 @@ function _initState() {
    * can be manipulated by this object. Keys in the query match with
    * input names.
    */
-  const _filterParams = new URLSearchParams(location.search.slice(1));
+  let _filterParams = new URLSearchParams(location.search.slice(1));
 
   const state = {
     /**
@@ -102,6 +102,15 @@ function _initState() {
      */
     set(name, value) {
       _filterParams.set(name, value);
+      state.setAll(_filterParams);
+    },
+    /**
+     * Replaces the current state with a new list of values. Afterwards
+     * display the new state in the URL by replacing the current history entry.
+     * @param {Iterable<[string, string]>} entries Iterator of key-value pairs
+     */
+    setAll(entries) {
+      _filterParams = new URLSearchParams(entries);
       history.replaceState(null, null, '?' + _filterParams.toString());
     },
   };
@@ -153,11 +162,21 @@ function _startListeners(state) {
     document.body.classList.add('show-options');
   }
 
-  // Disable some fields when method_count is set
-  if (state.has('method_count')) {
-    document.getElementById('size-header').textContent = 'Methods';
-    form.byteunit.setAttribute('disabled', '');
+  /**
+   * Disable some fields when method_count is set
+   */
+  function setMethodCountModeUI() {
+    const sizeHeader = document.getElementById('size-header');
+    if (form.method_count.checked) {
+      sizeHeader.textContent = 'Methods';
+      form.byteunit.setAttribute('disabled', '');
+    } else {
+      sizeHeader.textContent = sizeHeader.dataset.value;
+      form.byteunit.removeAttribute('disabled', '');
+    }
   }
+  setMethodCountModeUI();
+  form.method_count.addEventListener('change', setMethodCountModeUI);
 }
 
 /** Utilities for working with the state */
