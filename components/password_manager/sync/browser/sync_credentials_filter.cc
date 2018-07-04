@@ -77,9 +77,10 @@ std::vector<std::unique_ptr<PasswordForm>> SyncCredentialsFilter::FilterResults(
 
 bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
-  return !sync_util::IsSyncAccountCredential(
-      form, sync_service_factory_function_.Run(),
-      signin_manager_factory_function_.Run());
+  return !form.is_gaia_with_skip_save_password_form &&
+         !sync_util::IsSyncAccountCredential(
+             form, sync_service_factory_function_.Run(),
+             signin_manager_factory_function_.Run());
 }
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(

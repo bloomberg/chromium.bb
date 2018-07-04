@@ -3424,8 +3424,9 @@ TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving_PasswordChangeForm) {
   SimulateUserInputChangeForElement(&confirmation_password, "");
   EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
 }
-// Tests that information about Gaia reauthentication form is not sent to the
-// browser, nor on load nor on user click.
+
+// Tests that information about Gaia reauthentication form is sent to the
+// browser with information that the password should not be saved.
 TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   // HTML is already loaded in test SetUp method, so information about password
   // forms was already sent to the |fake_drive_|. Hence it should be reset.
@@ -3447,9 +3448,12 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   // Simulate a user clicking on the password element.
   autofill_agent_->FormControlElementClicked(password_element_, false);
 
-  // Check that no information about Gaia reauthentication is not sent.
-  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+  // Check that information about Gaia reauthentication is sent to the browser.
+  ASSERT_TRUE(fake_driver_.called_password_forms_parsed());
+  const std::vector<autofill::PasswordForm>& parsed_forms =
+      fake_driver_.password_forms_parsed().value();
+  ASSERT_EQ(1u, parsed_forms.size());
+  EXPECT_TRUE(parsed_forms[0].is_gaia_with_skip_save_password_form);
 }
 
 // Tests that "Show all saved passwords" option is shown on a password field.

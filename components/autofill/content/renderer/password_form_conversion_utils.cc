@@ -924,6 +924,9 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   password_form->action = form_util::GetCanonicalActionForForm(web_form);
   if (!password_form->action.is_valid())
     return nullptr;
+  password_form->is_gaia_with_skip_save_password_form =
+      IsGaiaWithSkipSavePasswordForm(web_form) ||
+      IsGaiaReauthenticationForm(web_form);
 
   blink::WebVector<blink::WebFormControlElement> control_elements;
   web_form.GetFormControlElements(control_elements);

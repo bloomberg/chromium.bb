@@ -565,6 +565,35 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
             user_action_tester.GetActionCount("PasswordManager_LoginPassed"));
 }
 
+// Tests that on Chrome sign-in form credentials are not saved.
+TEST_F(PasswordManagerTest, DoNotSaveOnChromeSignInForm) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form(MakeSimpleForm());
+  form.is_gaia_with_skip_save_password_form = true;
+  std::vector<PasswordForm> observed = {form};
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(*client_.GetStoreResultFilter(), ShouldSave(_))
+      .WillRepeatedly(Return(false));
+  // The user is typing a credential. No fallback should be available.
+  PasswordForm typed_credentials(form);
+  typed_credentials.password_value = ASCIIToUTF16("pw");
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _)).Times(0);
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+
+  // The user submits the form. No prompt should pop up.
+  OnPasswordFormSubmitted(form);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  observed.clear();
+  manager()->DidNavigateMainFrame();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
 // Tests that a UKM metric "Login Passed" is sent when the submitted credentials
 // are already in the store and OnPasswordFormsParsed is called multiple times.
 TEST_F(PasswordManagerTest,

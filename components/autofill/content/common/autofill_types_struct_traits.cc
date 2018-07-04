@@ -795,6 +795,8 @@ bool StructTraits<
   out->is_public_suffix_match = data.is_public_suffix_match();
   out->is_affiliation_based_match = data.is_affiliation_based_match();
   out->only_for_fallback_saving = data.only_for_fallback_saving();
+  out->is_gaia_with_skip_save_password_form =
+      data.is_gaia_with_skip_save_password_form();
 
   return true;
 }
