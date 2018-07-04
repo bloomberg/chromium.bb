@@ -1005,7 +1005,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
         EventTypeNames::mouseup, mouse_event);
   }
 
-  if (last_scrollbar_under_mouse_) {
+  // Only release scrollbar when left button up.
+  if (mouse_event.button == WebPointerProperties::Button::kLeft &&
+      last_scrollbar_under_mouse_) {
     mouse_event_manager_->InvalidateClick();
     last_scrollbar_under_mouse_->MouseUp(mouse_event);
     frame_->LocalFrameRoot().Client()->SetMouseCapture(false);
@@ -2119,14 +2121,9 @@ void EventHandler::CapsLockStateMayHaveChanged() {
 
 bool EventHandler::PassMousePressEventToScrollbar(
     MouseEventWithHitTestResults& mev) {
-  // Do not pass the mouse press to scrollbar if scrollbar pressed. If the
-  // user's left button is down, then the cursor moves outside the scrollbar
-  // and presses the middle button , we should not clear
-  // last_scrollbar_under_mouse_.
-  if (last_scrollbar_under_mouse_ &&
-      last_scrollbar_under_mouse_->PressedPart() != ScrollbarPart::kNoPart) {
+  // Only handle mouse left button as press.
+  if (mev.Event().button != WebPointerProperties::Button::kLeft)
     return false;
-  }
 
   Scrollbar* scrollbar = mev.GetScrollbar();
   UpdateLastScrollbarUnderMouse(scrollbar, true);
