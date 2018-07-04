@@ -66,7 +66,7 @@ class AutoclickTest : public AshTestBase {
     GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
 
     // Move mouse to deterministic location at the start of each test.
-    GetEventGenerator().MoveMouseTo(100, 100);
+    GetEventGenerator()->MoveMouseTo(100, 100);
 
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
@@ -80,9 +80,9 @@ class AutoclickTest : public AshTestBase {
   }
 
   void MoveMouseWithFlagsTo(int x, int y, ui::EventFlags flags) {
-    GetEventGenerator().set_flags(flags);
-    GetEventGenerator().MoveMouseTo(x, y);
-    GetEventGenerator().set_flags(ui::EF_NONE);
+    GetEventGenerator()->set_flags(flags);
+    GetEventGenerator()->MoveMouseTo(x, y);
+    GetEventGenerator()->set_flags(ui::EF_NONE);
   }
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
@@ -112,7 +112,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   // Enable autoclick, and we should see a mouse pressed and
   // a mouse released event, simulating a click.
   GetAutoclickController()->SetEnabled(true);
-  GetEventGenerator().MoveMouseTo(0, 0);
+  GetEventGenerator()->MoveMouseTo(0, 0);
   EXPECT_TRUE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
@@ -122,7 +122,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   // We should not get any more clicks until we move the mouse.
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
-  GetEventGenerator().MoveMouseTo(30, 30);
+  GetEventGenerator()->MoveMouseTo(30, 30);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
@@ -144,16 +144,16 @@ TEST_F(AutoclickTest, MouseMovement) {
   gfx::Point p3(40, 40);
 
   // Move mouse to p1.
-  GetEventGenerator().MoveMouseTo(p1);
+  GetEventGenerator()->MoveMouseTo(p1);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(p1.ToString(), events[0].root_location().ToString());
   EXPECT_EQ(p1.ToString(), events[1].root_location().ToString());
 
   // Move mouse to multiple locations and finally arrive at p3.
-  GetEventGenerator().MoveMouseTo(p2);
-  GetEventGenerator().MoveMouseTo(p1);
-  GetEventGenerator().MoveMouseTo(p3);
+  GetEventGenerator()->MoveMouseTo(p2);
+  GetEventGenerator()->MoveMouseTo(p1);
+  GetEventGenerator()->MoveMouseTo(p3);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(p3.ToString(), events[0].root_location().ToString());
@@ -171,19 +171,19 @@ TEST_F(AutoclickTest, MovementThreshold) {
     gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
     GetAutoclickController()->SetEnabled(true);
-    GetEventGenerator().MoveMouseTo(center);
+    GetEventGenerator()->MoveMouseTo(center);
     EXPECT_EQ(2u, WaitForMouseEvents().size());
 
     // Small mouse movements should not trigger an autoclick.
-    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(1, 1));
+    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(1, 1));
     EXPECT_EQ(0u, WaitForMouseEvents().size());
-    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(2, 2));
+    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(2, 2));
     EXPECT_EQ(0u, WaitForMouseEvents().size());
-    GetEventGenerator().MoveMouseTo(center);
+    GetEventGenerator()->MoveMouseTo(center);
     EXPECT_EQ(0u, WaitForMouseEvents().size());
 
     // A large mouse movement should trigger an autoclick.
-    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(100, 100));
+    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(100, 100));
     EXPECT_EQ(2u, WaitForMouseEvents().size());
   }
 }
@@ -216,10 +216,10 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
   MoveMouseWithFlagsTo(12, 12, modifier_flags);
 
   // Simulate releasing key modifiers by sending key released events.
-  GetEventGenerator().ReleaseKey(
+  GetEventGenerator()->ReleaseKey(
       ui::VKEY_CONTROL,
       static_cast<ui::EventFlags>(ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN));
-  GetEventGenerator().ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
 
   std::vector<ui::MouseEvent> events;
   events = WaitForMouseEvents();
@@ -234,38 +234,38 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
   std::vector<ui::MouseEvent> events;
 
   // Pressing a normal key should cancel the autoclick.
-  GetEventGenerator().MoveMouseTo(200, 200);
-  GetEventGenerator().PressKey(ui::VKEY_K, ui::EF_NONE);
-  GetEventGenerator().ReleaseKey(ui::VKEY_K, ui::EF_NONE);
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  GetEventGenerator()->PressKey(ui::VKEY_K, ui::EF_NONE);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_K, ui::EF_NONE);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
   // Pressing a modifier key should NOT cancel the autoclick.
-  GetEventGenerator().MoveMouseTo(100, 100);
-  GetEventGenerator().PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  GetEventGenerator().ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  GetEventGenerator()->PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
 
   // Performing a gesture should cancel the autoclick.
-  GetEventGenerator().MoveMouseTo(200, 200);
-  GetEventGenerator().GestureTapDownAndUp(gfx::Point(100, 100));
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  GetEventGenerator()->GestureTapDownAndUp(gfx::Point(100, 100));
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
   // Test another gesture.
-  GetEventGenerator().MoveMouseTo(100, 100);
-  GetEventGenerator().GestureScrollSequence(
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  GetEventGenerator()->GestureScrollSequence(
       gfx::Point(100, 100), gfx::Point(200, 200),
       base::TimeDelta::FromMilliseconds(200), 3);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
   // Test scroll events.
-  GetEventGenerator().MoveMouseTo(200, 200);
-  GetEventGenerator().ScrollSequence(gfx::Point(100, 100),
-                                     base::TimeDelta::FromMilliseconds(200), 0,
-                                     100, 3, 2);
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  GetEventGenerator()->ScrollSequence(gfx::Point(100, 100),
+                                      base::TimeDelta::FromMilliseconds(200), 0,
+                                      100, 3, 2);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 }
@@ -273,7 +273,7 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
 TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
   GetAutoclickController()->SetEnabled(true);
   std::vector<ui::MouseEvent> events;
-  GetEventGenerator().MoveMouseTo(100, 100);
+  GetEventGenerator()->MoveMouseTo(100, 100);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
 

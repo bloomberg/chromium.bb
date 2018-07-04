@@ -93,15 +93,15 @@ void PowerButtonTestBase::ReleasePowerButton() {
 }
 
 void PowerButtonTestBase::PressKey(ui::KeyboardCode key_code) {
-  GetEventGenerator().PressKey(key_code, ui::EF_NONE);
+  GetEventGenerator()->PressKey(key_code, ui::EF_NONE);
 }
 
 void PowerButtonTestBase::ReleaseKey(ui::KeyboardCode key_code) {
-  GetEventGenerator().ReleaseKey(key_code, ui::EF_NONE);
+  GetEventGenerator()->ReleaseKey(key_code, ui::EF_NONE);
 }
 
 void PowerButtonTestBase::GenerateMouseMoveEvent() {
-  GetEventGenerator().MoveMouseTo(10, 10);
+  GetEventGenerator()->MoveMouseTo(10, 10);
 }
 
 void PowerButtonTestBase::Initialize(

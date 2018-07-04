@@ -85,7 +85,7 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
-    generator_ = &AshTestBase::GetEventGenerator();
+    generator_ = AshTestBase::GetEventGenerator();
     CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &spoken_feedback_event_rewriter_);
     CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(

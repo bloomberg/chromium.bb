@@ -156,16 +156,16 @@ class AshTestBase : public testing::Test,
   void ParentWindowInPrimaryRootWindow(aura::Window* window);
 
   // Returns the EventGenerator that uses screen coordinates and works
-  // across multiple displays. It createse a new generator if it
+  // across multiple displays. It creates a new generator if it
   // hasn't been created yet.
-  ui::test::EventGenerator& GetEventGenerator();
+  ui::test::EventGenerator* GetEventGenerator();
 
   // Convenience method to return the DisplayManager.
   display::DisplayManager* display_manager();
 
   // Test if moving a mouse to |point_in_screen| warps it to another
   // display.
-  bool TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
+  bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                           const gfx::Point& point_in_screen);
 
  protected:

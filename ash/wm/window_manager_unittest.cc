@@ -759,75 +759,75 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 
 // Touch visually hides the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
-  generator.MoveMouseTo(gfx::Point(0, 0));
+  generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
   EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
-  generator.MoveMouseTo(gfx::Point(0, 0));
+  generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
 // Tests cursor visibility on key pressed event.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.
-  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
   // Moving mouse shows the cursor.
-  generator.MoveMouseTo(gfx::Point(0, 0));
+  generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
   // Releasing a key does does not hide the cursor and does not disable mouse
   // events.
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
   // Pressing a key with mouse button pressed does not hide the cursor and does
   // not disable mouse events.
-  generator.PressLeftButton();
-  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  generator.ReleaseLeftButton();
+  generator->PressLeftButton();
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  generator->ReleaseLeftButton();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
 // Test that pressing an accelerator does not hide the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   ASSERT_TRUE(cursor_manager->IsCursorVisible());
 
   // Press Ctrl+A, release A first.
-  generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
 
   // Press Ctrl+A, release Ctrl first.
-  generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
   std::unique_ptr<aura::Window> w1(
@@ -852,7 +852,7 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.did_cursor_size_change());
 
   // Keypress should hide the cursor.
-  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_TRUE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
@@ -868,7 +868,7 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   // Mouse move should show the cursor.
   observer_a.reset();
   observer_b.reset();
-  generator.MoveMouseTo(50, 50);
+  generator->MoveMouseTo(50, 50);
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_TRUE(observer_b.did_visibility_change());
   EXPECT_TRUE(observer_a.is_cursor_visible());
@@ -881,7 +881,7 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   // Gesture tap should hide the cursor.
   observer_a.reset();
   observer_b.reset();
-  generator.GestureTapAt(gfx::Point(25, 25));
+  generator->GestureTapAt(gfx::Point(25, 25));
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
@@ -895,7 +895,7 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   // Mouse move should show the cursor.
   observer_a.reset();
   observer_b.reset();
-  generator.MoveMouseTo(50, 50);
+  generator->MoveMouseTo(50, 50);
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_TRUE(observer_a.is_cursor_visible());

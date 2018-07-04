@@ -363,8 +363,8 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   // Pressing "Escape" while on the status area should
   // deactivate it, and activate the browser window.
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
-  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
 
@@ -372,7 +372,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   // should do the same thing.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
   EXPECT_TRUE(shelf_widget()->IsActive());
-  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  event_generator->PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
 }

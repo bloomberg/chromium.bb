@@ -71,10 +71,10 @@ TEST_F(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
   EXPECT_EQ(view_->height(), kBubbleTotalHeightDp);
 
   // Click on the show advanced button.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
       test_api.advanced_view_button()->GetBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  generator->ClickLeftButton();
 
   // Advanced view is hidden and the overall size does not change.
   EXPECT_FALSE(test_api.advanced_view()->visible());

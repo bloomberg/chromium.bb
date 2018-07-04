@@ -99,7 +99,7 @@ TEST_F(LoginAuthUserViewUnittest, ShowingPasswordForcesOpaque) {
 TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   LoginAuthUserView::TestApi test_auth_user_view(view_);
   LoginPasswordView* password_view(test_auth_user_view.password_view());
@@ -115,7 +115,7 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
                         LoginAuthUserView::AUTH_TAP);
   password_view->Clear();
 
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
   // Verify the "Signing in" placeholder text was set.

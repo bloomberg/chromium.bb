@@ -425,16 +425,16 @@ TEST_F(NotificationTrayTest, PopupAndFullscreen) {
   EXPECT_EQ(bottom_auto_hidden, bottom_fullscreen_hidden);
 
   // Move the mouse cursor at the bottom, which shows the shelf.
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Point bottom_right =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
-  generator.MoveMouseTo(bottom_right);
+  generator->MoveMouseTo(bottom_right);
   shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
-  generator.MoveMouseTo(
+  generator->MoveMouseTo(
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
   shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());

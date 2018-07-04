@@ -306,7 +306,7 @@ TEST_F(SystemGestureEventFilterTest,
   EXPECT_EQ(HTLEFT, toplevel->GetNonClientComponent(points[0]));
   EXPECT_EQ(HTRIGHT, toplevel->GetNonClientComponent(points[1]));
 
-  GetEventGenerator().GestureMultiFingerScrollWithDelays(
+  GetEventGenerator()->GestureMultiFingerScrollWithDelays(
       kTouchPoints, points, delays, 15, kSteps, 0, 40);
 
   // The window bounds should not have changed because neither of the fingers
@@ -467,11 +467,11 @@ TEST_F(SystemGestureEventFilterTest,
   aura::Env::GetInstance()->AddPreTargetHandler(
       &event_handler, ui::EventTarget::Priority::kSystem);
 
-  GetEventGenerator().MoveMouseTo(0, 0);
+  GetEventGenerator()->MoveMouseTo(0, 0);
   for (int i = 1; i <= 3; ++i)
-    GetEventGenerator().PressTouchId(i);
+    GetEventGenerator()->PressTouchId(i);
   for (int i = 1; i <= 3; ++i)
-    GetEventGenerator().ReleaseTouchId(i);
+    GetEventGenerator()->ReleaseTouchId(i);
   EXPECT_EQ(event_handler.num_gesture_events(),
             delegate.GetGestureCountAndReset());
 

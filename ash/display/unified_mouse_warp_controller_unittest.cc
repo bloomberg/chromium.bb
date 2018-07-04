@@ -120,7 +120,7 @@ class UnifiedMouseWarpControllerTest : public AshTestBase {
 
     // Let the UnifiedMouseWarpController compute the bounds by
     // generating a mouse move event.
-    GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
+    GetEventGenerator()->MoveMouseTo(gfx::Point(0, 0));
     const display::Displays& mirroring_displays =
         display_manager()->software_mirroring_display_list();
 

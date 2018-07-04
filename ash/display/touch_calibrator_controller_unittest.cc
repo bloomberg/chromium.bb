@@ -145,8 +145,8 @@ class TouchCalibratorControllerTest : public AshTestBase {
       }
     }
 
-    ui::test::EventGenerator& eg = GetEventGenerator();
-    eg.set_current_target(event_target);
+    ui::test::EventGenerator* eg = GetEventGenerator();
+    eg->set_current_target(event_target);
 
     ui::TouchEvent press_touch_event(
         ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
@@ -162,8 +162,8 @@ class TouchCalibratorControllerTest : public AshTestBase {
     press_touch_event.set_source_device_id(touch_device_id);
     release_touch_event.set_source_device_id(touch_device_id);
 
-    eg.Dispatch(&press_touch_event);
-    eg.Dispatch(&release_touch_event);
+    eg->Dispatch(&press_touch_event);
+    eg->Dispatch(&release_touch_event);
   }
 
   ui::TouchscreenDevice InitTouchDevice(
@@ -204,9 +204,9 @@ TEST_F(TouchCalibratorControllerTest, KeyEventIntercept) {
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
-  ui::test::EventGenerator& eg = GetEventGenerator();
+  ui::test::EventGenerator* eg = GetEventGenerator();
   EXPECT_TRUE(touch_calibrator_controller.IsCalibrating());
-  eg.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  eg->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(touch_calibrator_controller.IsCalibrating());
 }
 

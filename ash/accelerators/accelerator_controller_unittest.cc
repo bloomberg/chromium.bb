@@ -509,11 +509,11 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display::Rotation initial_rotation =
       GetActiveDisplayRotation(display.id());
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::VKEY_BROWSER_REFRESH,
-                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_BROWSER_REFRESH,
-                       ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_BROWSER_REFRESH,
+                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_BROWSER_REFRESH,
+                        ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   display::Display::Rotation new_rotation =
       GetActiveDisplayRotation(display.id());
   // |new_rotation| is determined by the AcceleratorController.
@@ -528,33 +528,33 @@ TEST_F(AcceleratorControllerTest, AutoRepeat) {
   ui::TestAcceleratorTarget target_b;
   GetController()->Register({accelerator_b}, &target_b);
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(1, target_a.accelerator_count());
   EXPECT_EQ(0, target_a.accelerator_repeat_count());
 
   // Long press should generate one
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_EQ(2, target_a.accelerator_non_repeat_count());
   EXPECT_EQ(1, target_a.accelerator_repeat_count());
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_EQ(2, target_a.accelerator_non_repeat_count());
   EXPECT_EQ(2, target_a.accelerator_repeat_count());
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(2, target_a.accelerator_non_repeat_count());
   EXPECT_EQ(2, target_a.accelerator_repeat_count());
 
   // Long press was intercepted by another key press.
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
-  generator.PressKey(ui::VKEY_B, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_B, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+  generator->PressKey(ui::VKEY_B, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_B, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(1, target_b.accelerator_non_repeat_count());
   EXPECT_EQ(0, target_b.accelerator_repeat_count());
@@ -563,15 +563,15 @@ TEST_F(AcceleratorControllerTest, AutoRepeat) {
 }
 
 TEST_F(AcceleratorControllerTest, Previous) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
-  generator.ReleaseKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
 
   EXPECT_EQ(ui::VKEY_VOLUME_MUTE, GetPreviousAccelerator().key_code());
   EXPECT_EQ(ui::EF_NONE, GetPreviousAccelerator().modifiers());
 
-  generator.PressKey(ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
-  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
+  generator->PressKey(ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(ui::VKEY_TAB, GetPreviousAccelerator().key_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, GetPreviousAccelerator().modifiers());
@@ -593,19 +593,19 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   widget->GetNativeView()->SetProperty(aura::client::kResizeBehaviorKey,
                                        ui::mojom::kResizeBehaviorCanMaximize);
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
 
   // Toggling not suppressed.
-  generator.PressKey(ui::VKEY_J, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_J, ui::EF_ALT_DOWN);
   EXPECT_TRUE(window_state->IsFullscreen());
 
   // The same accelerator - toggling suppressed.
-  generator.PressKey(ui::VKEY_J, ui::EF_ALT_DOWN | ui::EF_IS_REPEAT);
+  generator->PressKey(ui::VKEY_J, ui::EF_ALT_DOWN | ui::EF_IS_REPEAT);
   EXPECT_TRUE(window_state->IsFullscreen());
 
   // Different accelerator.
-  generator.PressKey(ui::VKEY_K, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_K, ui::EF_ALT_DOWN);
   EXPECT_FALSE(window_state->IsFullscreen());
 }
 
@@ -1009,20 +1009,20 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   w1_state->OnWMEvent(&fullscreen);
   ASSERT_TRUE(w1_state->IsFullscreen());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
   Shell::Get()->power_button_controller()->OnTabletModeStarted();
   PowerButtonControllerTestApi test_api(
       Shell::Get()->power_button_controller());
   EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
-  generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   auto press_and_release_alt_tab = [&generator]() {
-    generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+    generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
     // Release the alt key to trigger the window activation.
-    generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+    generator->ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
   };
 
   // A fullscreen window can consume ALT-TAB (preferred).
@@ -1033,8 +1033,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
 
   // ALT-TAB is non repeatable. Press A to cancel the
   // repeat record.
-  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
-  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
 
   // A normal window shouldn't consume preferred accelerator.
   wm::WMEvent normal(wm::WM_EVENT_NORMAL);
@@ -1059,20 +1059,20 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
     ASSERT_TRUE(w1_state->IsPinned());
   }
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
   Shell::Get()->power_button_controller()->OnTabletModeStarted();
   PowerButtonControllerTestApi test_api(
       Shell::Get()->power_button_controller());
   EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
-  generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
   ASSERT_EQ(w1, wm::GetActiveWindow());
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   ASSERT_EQ(w1, wm::GetActiveWindow());
   ASSERT_NE(w2, wm::GetActiveWindow());
 }

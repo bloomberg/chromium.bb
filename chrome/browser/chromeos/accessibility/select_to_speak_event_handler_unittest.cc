@@ -102,7 +102,7 @@ class SelectToSpeakEventHandlerTest : public ash::AshTestBase {
     mouse_event_delegate_.reset(new SelectToSpeakMouseEventDelegate());
     select_to_speak_event_handler_->CaptureForwardedEventsForTesting(
         mouse_event_delegate_.get());
-    generator_ = &AshTestBase::GetEventGenerator();
+    generator_ = AshTestBase::GetEventGenerator();
     CurrentContext()->AddPreTargetHandler(&event_capturer_);
     AutomationManagerAura::GetInstance()->Enable(&profile_);
   }

@@ -51,17 +51,17 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
 
 
   void PerformClick(const gfx::Point& point) {
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.MoveMouseTo(point.x(), point.y());
-    generator.ClickLeftButton();
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->MoveMouseTo(point.x(), point.y());
+    generator->ClickLeftButton();
 
     Shell::Get()->tray_action()->FlushMojoForTesting();
   }
 
   void GestureFling(const gfx::Point& start, const gfx::Point& end) {
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.GestureScrollSequence(start, end,
-                                    base::TimeDelta::FromMilliseconds(10), 2);
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->GestureScrollSequence(start, end,
+                                     base::TimeDelta::FromMilliseconds(10), 2);
 
     Shell::Get()->tray_action()->FlushMojoForTesting();
   }
@@ -109,8 +109,8 @@ TEST_F(NoteActionLaunchButtonTest, KeyboardTest) {
   // button sub-view the focus.
   EXPECT_TRUE(test_api.ActionButtonView()->HasFocus());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   Shell::Get()->tray_action()->FlushMojoForTesting();
 
   EXPECT_EQ(std::vector<mojom::LockScreenNoteOrigin>(
@@ -248,19 +248,19 @@ TEST_F(NoteActionLaunchButtonTest, TapTest) {
   const std::vector<mojom::LockScreenNoteOrigin> expected_actions = {
       mojom::LockScreenNoteOrigin::kLockScreenButtonTap};
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   // Tap in actionable area of the button requests action:
-  generator.GestureTapAt(view_bounds.top_right() +
-                         gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 + 2,
-                                       kSmallButtonRadiusDp / kSqrt2 - 2));
+  generator->GestureTapAt(view_bounds.top_right() +
+                          gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 + 2,
+                                        kSmallButtonRadiusDp / kSqrt2 - 2));
   Shell::Get()->tray_action()->FlushMojoForTesting();
   EXPECT_EQ(expected_actions, tray_action_client()->note_origins());
   tray_action_client()->ClearRecordedRequests();
 
   // Tap in non-actionable area of the button does not request action:
-  generator.GestureTapAt(view_bounds.top_right() +
-                         gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 - 2,
-                                       kSmallButtonRadiusDp / kSqrt2 + 2));
+  generator->GestureTapAt(view_bounds.top_right() +
+                          gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 - 2,
+                                        kSmallButtonRadiusDp / kSqrt2 + 2));
   Shell::Get()->tray_action()->FlushMojoForTesting();
   EXPECT_TRUE(tray_action_client()->note_origins().empty());
   tray_action_client()->ClearRecordedRequests();
@@ -352,8 +352,8 @@ TEST_F(NoteActionLaunchButtonTest, MultiFingerFling) {
   int delays_adding_fingers_ms[kTouchPoints] = {0, 4, 8};
   int delays_releasing_fingers_ms[kTouchPoints] = {20, 16, 18};
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.GestureMultiFingerScrollWithDelays(
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureMultiFingerScrollWithDelays(
       kTouchPoints, start_points, deltas, delays_adding_fingers_ms,
       delays_releasing_fingers_ms, 4 /* event_separaation_time_ms*/,
       5 /*steps*/);

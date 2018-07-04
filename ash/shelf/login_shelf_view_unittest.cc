@@ -360,19 +360,19 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
       login_shelf_view_->GetViewByID(LoginShelfView::kShutdown)->HasFocus());
 
   // Focus from the first button to the second button.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
       login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
 
   // Focus from the second button to the status area.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
   ExpectNotFocused(shelf);
   ExpectFocused(status_area);
 
   // A single shift+tab brings focus back to the second shelf button.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(

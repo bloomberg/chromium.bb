@@ -78,7 +78,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
     AshTestBase::SetUp();
     top_level_ = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
     ASSERT_TRUE(top_level_);
-    GetEventGenerator().PressLeftButton();
+    GetEventGenerator()->PressLeftButton();
   }
   void TearDown() override {
     // Ash owns the WindowTree, which also handles deleting |top_level_|. This
@@ -101,10 +101,10 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
       21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
-  GetEventGenerator().MoveMouseTo(gfx::Point(5, 6));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
   GetWindowTreeClientChanges()->clear();
-  GetEventGenerator().ReleaseLeftButton();
+  GetEventGenerator()->ReleaseLeftButton();
 
   // Releasing the mouse completes the move loop.
   EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
@@ -129,7 +129,7 @@ TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
       21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
-  GetEventGenerator().MoveMouseTo(gfx::Point(5, 6));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
   GetWindowTreeClientChanges()->clear();
   GetWindowTreeTestHelper()->window_tree()->CancelWindowMove(
@@ -155,9 +155,9 @@ TEST_F(WindowServiceDelegateImplTest, RunDragLoop) {
         ASSERT_TRUE(IsDragDropInProgress());
 
         // Move mouse to center of |top_level_|.
-        GetEventGenerator().MoveMouseTo(gfx::Point(150, 150));
+        GetEventGenerator()->MoveMouseTo(gfx::Point(150, 150));
         GetWindowTreeClientChanges()->clear();
-        GetEventGenerator().ReleaseLeftButton();
+        GetEventGenerator()->ReleaseLeftButton();
       }));
 
   // Let the drop loop task run.
@@ -186,9 +186,9 @@ TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressDragLoop) {
         top_level_.reset();
 
         // Move mouse and release the button and it should not crash.
-        GetEventGenerator().MoveMouseTo(gfx::Point(150, 150));
+        GetEventGenerator()->MoveMouseTo(gfx::Point(150, 150));
         GetWindowTreeClientChanges()->clear();
-        GetEventGenerator().ReleaseLeftButton();
+        GetEventGenerator()->ReleaseLeftButton();
       }));
 
   // Let the drop loop task run.

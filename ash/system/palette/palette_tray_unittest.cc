@@ -107,10 +107,11 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
 
   // Send a stylus event.
-  GetEventGenerator().EnterPenPointerMode();
-  GetEventGenerator().PressTouch();
-  GetEventGenerator().ReleaseTouch();
-  GetEventGenerator().ExitPenPointerMode();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->EnterPenPointerMode();
+  generator->PressTouch();
+  generator->ReleaseTouch();
+  generator->ExitPenPointerMode();
 
   EXPECT_TRUE(palette_tray_->visible());
 }
@@ -217,16 +218,16 @@ TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
 
   // Verify that the welcome bubble does not shown up after tapping the screen
   // with a finger.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressTouch();
-  generator.ReleaseTouch();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressTouch();
+  generator->ReleaseTouch();
   EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 
   // Verify that the welcome bubble shows up after tapping the screen with a
   // stylus for the first time.
-  generator.EnterPenPointerMode();
-  generator.PressTouch();
-  generator.ReleaseTouch();
+  generator->EnterPenPointerMode();
+  generator->PressTouch();
+  generator->ReleaseTouch();
   EXPECT_TRUE(test_api_->welcome_bubble()->bubble_shown());
 }
 
@@ -279,11 +280,11 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
                               bool expected_on_press) {
     SCOPED_TRACE(context);
 
-    ui::test::EventGenerator& generator = GetEventGenerator();
+    ui::test::EventGenerator* generator = GetEventGenerator();
     gfx::Point pos = origin;
-    generator.MoveTouch(pos);
-    generator.set_flags(event_flags);
-    generator.PressTouch();
+    generator->MoveTouch(pos);
+    generator->set_flags(event_flags);
+    generator->PressTouch();
     // If this gesture is supposed to enable the tool, it should have done it by
     // now.
     EXPECT_EQ(expected, metalayer_enabled());
@@ -291,17 +292,17 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
     // first move, hence a separate parameter to check against.
     EXPECT_EQ(expected_on_press, highlighter_showing());
     pos += gfx::Vector2d(1, 1);
-    generator.MoveTouch(pos);
+    generator->MoveTouch(pos);
     // If this gesture is supposed to show the highlighter, it should have done
     // it by now.
     EXPECT_EQ(expected, highlighter_showing());
     EXPECT_EQ(expected, metalayer_enabled());
-    generator.set_flags(ui::EF_NONE);
+    generator->set_flags(ui::EF_NONE);
     pos += gfx::Vector2d(1, 1);
-    generator.MoveTouch(pos);
+    generator->MoveTouch(pos);
     EXPECT_EQ(expected, highlighter_showing());
     EXPECT_EQ(expected, metalayer_enabled());
-    generator.ReleaseTouch();
+    generator->ReleaseTouch();
   }
 
   void WaitDragAndAssertMetalayer(const std::string& context,
@@ -335,8 +336,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(true);
   Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.EnterPenPointerMode();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->EnterPenPointerMode();
 
   const gfx::Point origin(1, 1);
   const gfx::Vector2d step(1, 1);
@@ -368,11 +369,11 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   // A successfull selection should exit the metalayer mode.
   SCOPED_TRACE("horizontal stroke");
   highlighter_test_api_->ResetSelection();
-  generator.MoveTouch(gfx::Point(100, 100));
-  generator.PressTouch();
+  generator->MoveTouch(gfx::Point(100, 100));
+  generator->PressTouch();
   EXPECT_TRUE(metalayer_enabled());
-  generator.MoveTouch(gfx::Point(300, 100));
-  generator.ReleaseTouch();
+  generator->MoveTouch(gfx::Point(300, 100));
+  generator->ReleaseTouch();
   EXPECT_TRUE(highlighter_test_api_->HandleSelectionCalled());
   EXPECT_FALSE(metalayer_enabled());
 
@@ -382,14 +383,14 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   // highlighter, but should disable the palette tool instead.
   gfx::Point palette_point = palette_tray_->GetBoundsInScreen().CenterPoint();
   EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
-  generator.MoveTouch(palette_point);
-  generator.PressTouch();
+  generator->MoveTouch(palette_point);
+  generator->PressTouch();
   EXPECT_FALSE(highlighter_showing());
   palette_point += gfx::Vector2d(1, 1);
   EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
-  generator.MoveTouch(palette_point);
+  generator->MoveTouch(palette_point);
   EXPECT_FALSE(highlighter_showing());
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_FALSE(metalayer_enabled());
 
   // Disabling metalayer support in the delegate should disable the palette
@@ -414,8 +415,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(false);
   Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.EnterPenPointerMode();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->EnterPenPointerMode();
 
   const gfx::Point origin(1, 1);
   const gfx::Vector2d step(1, 1);
@@ -631,12 +632,12 @@ TEST_F(PaletteTrayTestWithInternalStylus,
       prefs::kShownPaletteWelcomeBubble));
   EXPECT_FALSE(test_api_->welcome_bubble()->bubble_shown());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.EnterPenPointerMode();
-  generator.set_current_location(
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->EnterPenPointerMode();
+  generator->set_current_location(
       palette_tray_->GetBoundsInScreen().CenterPoint());
-  generator.PressTouch();
-  generator.ReleaseTouch();
+  generator->PressTouch();
+  generator->ReleaseTouch();
 
   EXPECT_TRUE(active_user_pref_service()->GetBoolean(
       prefs::kShownPaletteWelcomeBubble));

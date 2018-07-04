@@ -141,7 +141,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   // Tap outside of the menu view to dismiss the menu.
   void TapToDismissPowerButtonMenu() {
     gfx::Rect menu_bounds = power_button_test_api_->GetMenuBoundsInScreen();
-    GetEventGenerator().GestureTapAt(
+    GetEventGenerator()->GestureTapAt(
         gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
     EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
   }
@@ -779,10 +779,10 @@ TEST_F(PowerButtonControllerTest, TapToDismissMenu) {
 TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
   OpenPowerButtonMenu();
   gfx::Rect menu_bounds = power_button_test_api_->GetMenuBoundsInScreen();
-  ui::test::EventGenerator& generator(GetEventGenerator());
-  generator.MoveMouseTo(gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
-  generator.ClickLeftButton();
-  generator.ReleaseLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
+  generator->ClickLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
