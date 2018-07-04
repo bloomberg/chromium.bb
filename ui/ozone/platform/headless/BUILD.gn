@@ -10,6 +10,8 @@ source_set("headless") {
     "client_native_pixmap_factory_headless.h",
     "gl_surface_osmesa_png.cc",
     "gl_surface_osmesa_png.h",
+    "headless_native_display_delegate.cc",
+    "headless_native_display_delegate.h",
     "headless_surface_factory.cc",
     "headless_surface_factory.h",
     "headless_window.cc",
