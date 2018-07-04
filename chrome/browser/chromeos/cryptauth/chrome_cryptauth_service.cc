@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
@@ -46,8 +47,7 @@ namespace {
 std::unique_ptr<cryptauth::CryptAuthClientFactory>
 CreateCryptAuthClientFactoryImpl(Profile* profile) {
   return std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId(),
+      IdentityManagerFactory::GetForProfile(profile),
       profile->GetRequestContext(),
       cryptauth::device_classifier_util::GetDeviceClassifier());
 }

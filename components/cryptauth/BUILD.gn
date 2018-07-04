@@ -16,9 +16,6 @@ static_library("cryptauth") {
     "background_eid_generator.h",
     "connection.cc",
     "connection.h",
-    "cryptauth_access_token_fetcher.h",
-    "cryptauth_access_token_fetcher_impl.cc",
-    "cryptauth_access_token_fetcher_impl.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
     "cryptauth_client.h",
@@ -112,6 +109,7 @@ static_library("cryptauth") {
     "//crypto",
     "//google_apis",
     "//net",
+    "//services/identity/public/cpp",
   ]
 
   public_deps = [
@@ -185,7 +183,6 @@ source_set("unit_tests") {
   sources = [
     "background_eid_generator_unittest.cc",
     "connection_unittest.cc",
-    "cryptauth_access_token_fetcher_impl_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
     "cryptauth_device_manager_impl_unittest.cc",
@@ -220,6 +217,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//google_apis:test_support",
     "//net:test_support",
+    "//services/identity/public/cpp:test_support",
     "//testing/gtest",
   ]
 }

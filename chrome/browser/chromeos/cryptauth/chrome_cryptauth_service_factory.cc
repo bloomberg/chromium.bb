@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chromeos/chromeos_features.h"
@@ -32,6 +33,7 @@ ChromeCryptAuthServiceFactory::ChromeCryptAuthServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "CryptAuthService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());

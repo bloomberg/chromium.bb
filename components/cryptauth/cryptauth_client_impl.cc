@@ -10,8 +10,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "components/cryptauth/cryptauth_access_token_fetcher_impl.h"
 #include "components/cryptauth/switches.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace cryptauth {
 
@@ -53,11 +54,11 @@ GURL CreateRequestUrl(const std::string& request_path) {
 
 CryptAuthClientImpl::CryptAuthClientImpl(
     std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
-    std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
     const DeviceClassifier& device_classifier)
     : api_call_flow_(std::move(api_call_flow)),
-      access_token_fetcher_(std::move(access_token_fetcher)),
+      identity_manager_(identity_manager),
       url_request_context_(url_request_context),
       device_classifier_(device_classifier),
       has_call_started_(false),
@@ -277,17 +278,29 @@ void CryptAuthClientImpl::MakeApiCall(
 
   request_path_ = request_path;
   error_callback_ = error_callback;
-  access_token_fetcher_->FetchAccessToken(base::Bind(
-      &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
-      weak_ptr_factory_.GetWeakPtr(), serialized_request, response_callback));
+
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert("https://www.googleapis.com/auth/cryptauth");
+
+  access_token_fetcher_ =
+      identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+          "cryptauth_client", scopes,
+          base::BindOnce(
+              &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
+              weak_ptr_factory_.GetWeakPtr(), serialized_request,
+              response_callback),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 template <class ResponseProto>
 void CryptAuthClientImpl::OnAccessTokenFetched(
     const std::string& serialized_request,
     const base::Callback<void(const ResponseProto&)>& response_callback,
-    const std::string& access_token) {
-  if (access_token.empty()) {
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
     OnApiCallFailed("Failed to get a valid access token.");
     return;
   }
@@ -320,24 +333,19 @@ void CryptAuthClientImpl::OnApiCallFailed(const std::string& error_message) {
 
 // CryptAuthClientFactoryImpl
 CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
-    OAuth2TokenService* token_service,
-    const std::string& account_id,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
     const DeviceClassifier& device_classifier)
-    : token_service_(token_service),
-      account_id_(account_id),
+    : identity_manager_(identity_manager),
       url_request_context_(url_request_context),
-      device_classifier_(device_classifier) {
-}
+      device_classifier_(device_classifier) {}
 
 CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {
 }
 
 std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
   return std::make_unique<CryptAuthClientImpl>(
-      base::WrapUnique(new CryptAuthApiCallFlow()),
-      base::WrapUnique(
-          new CryptAuthAccessTokenFetcherImpl(token_service_, account_id_)),
+      base::WrapUnique(new CryptAuthApiCallFlow()), identity_manager_,
       url_request_context_, device_classifier_);
 }
 
