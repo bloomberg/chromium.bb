@@ -1170,7 +1170,9 @@ class RawDevtoolsProtocolTest
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("expression", "1+1");
     message.Set("params", std::move(params));
-    devtools_client_->SendRawDevToolsMessage(message);
+    std::string json_message;
+    base::JSONWriter::Write(message, &json_message);
+    devtools_client_->SendRawDevToolsMessage(json_message);
   }
 
   bool OnProtocolMessage(const std::string& json_message,

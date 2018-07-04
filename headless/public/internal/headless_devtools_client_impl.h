@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "headless/public/devtools/domains/accessibility.h"
@@ -96,9 +97,10 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   tracing::Domain* GetTracing() override;
   void SetRawProtocolListener(
       RawProtocolListener* raw_protocol_listener) override;
+  std::unique_ptr<HeadlessDevToolsClient> CreateSession(
+      const std::string& session_id) override;
   int GetNextRawDevToolsMessageId() override;
   void SendRawDevToolsMessage(const std::string& json_message) override;
-  void SendRawDevToolsMessage(const base::DictionaryValue& message) override;
   void DispatchMessageFromExternalHost(
       const std::string& json_message) override;
   void AttachToChannel(
@@ -170,15 +172,19 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
                          const EventHandler* event_handler,
                          const base::DictionaryValue* result_dict);
 
+  void ReceiveProtocolMessage(const std::string& json_message,
+                              std::unique_ptr<base::DictionaryValue> message);
+  void SendProtocolMessage(const base::DictionaryValue* message);
+
   std::unique_ptr<HeadlessDevToolsChannel> channel_;
   ExternalHost* external_host_ = nullptr;
   RawProtocolListener* raw_protocol_listener_ = nullptr;
 
-  int next_message_id_ = 0;
-  int next_raw_message_id_ = 1;
   std::unordered_map<int, Callback> pending_messages_;
   EventHandlerMap event_handlers_;
-
+  std::string session_id_;
+  HeadlessDevToolsClientImpl* parent_client_ = nullptr;
+  base::flat_map<std::string, HeadlessDevToolsClientImpl*> sessions_;
   bool renderer_crashed_ = false;
 
   accessibility::ExperimentalDomain accessibility_domain_;

@@ -21,6 +21,7 @@ class DevToolsAgentHostImpl;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
+class TargetRegistry;
 
 namespace protocol {
 
@@ -28,7 +29,9 @@ class TargetHandler : public DevToolsDomainHandler,
                       public Target::Backend,
                       public DevToolsAgentHostObserver {
  public:
-  TargetHandler(bool browser_only, const std::string& owner_target_id);
+  TargetHandler(bool browser_only,
+                const std::string& owner_target_id,
+                TargetRegistry* target_registry);
   ~TargetHandler() override;
 
   static std::vector<TargetHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -50,6 +53,7 @@ class TargetHandler : public DevToolsDomainHandler,
   Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<Target::RemoteLocation>>) override;
   Response AttachToTarget(const std::string& target_id,
+                          Maybe<bool> flatten,
                           std::string* out_session_id) override;
   Response DetachFromTarget(Maybe<std::string> session_id,
                             Maybe<std::string> target_id) override;
@@ -106,9 +110,9 @@ class TargetHandler : public DevToolsDomainHandler,
   std::map<std::string, std::unique_ptr<Session>> attached_sessions_;
   std::map<DevToolsAgentHost*, Session*> auto_attached_sessions_;
   std::set<DevToolsAgentHost*> reported_hosts_;
-  int last_session_id_ = 0;
   bool browser_only_;
   std::string owner_target_id_;
+  TargetRegistry* target_registry_;
   base::flat_set<Throttle*> throttles_;
   base::WeakPtrFactory<TargetHandler> weak_factory_;
 

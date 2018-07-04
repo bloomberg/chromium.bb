@@ -198,12 +198,14 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual void SetRawProtocolListener(
       RawProtocolListener* raw_protocol_listener) = 0;
 
+  virtual std::unique_ptr<HeadlessDevToolsClient> CreateSession(
+      const std::string& session_id) = 0;
+
   // Generates an odd numbered ID.
   virtual int GetNextRawDevToolsMessageId() = 0;
 
   // The id within the message must be odd to prevent collisions.
   virtual void SendRawDevToolsMessage(const std::string& json_message) = 0;
-  virtual void SendRawDevToolsMessage(const base::DictionaryValue& message) = 0;
 
   // TODO(dgozman): remove this method together with ExternalHost.
   virtual void DispatchMessageFromExternalHost(

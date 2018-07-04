@@ -9,11 +9,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -231,28 +233,41 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
  public:
   static std::string Attach(TargetHandler* handler,
                             DevToolsAgentHost* agent_host,
-                            bool waiting_for_debugger) {
-    std::string id = base::StringPrintf("%s:%d", agent_host->GetId().c_str(),
-                                        ++handler->last_session_id_);
-    Session* session = new Session(handler, agent_host, id);
+                            bool waiting_for_debugger,
+                            bool flatten_protocol) {
+    std::string id = base::UnguessableToken::Create().ToString();
+    Session* session = new Session(handler, agent_host, id, flatten_protocol);
     handler->attached_sessions_[id].reset(session);
-    agent_host->AttachClient(session);
+    DevToolsAgentHostImpl* agent_host_impl =
+        static_cast<DevToolsAgentHostImpl*>(agent_host);
+    if (flatten_protocol) {
+      handler->target_registry_->AttachSubtargetSession(id, agent_host_impl,
+                                                        session);
+    } else {
+      agent_host_impl->AttachClient(session);
+    }
     handler->frontend_->AttachedToTarget(id, CreateInfo(agent_host),
                                          waiting_for_debugger);
     return id;
   }
 
   ~Session() override {
-    if (agent_host_)
-      agent_host_->DetachClient(this);
+    if (!agent_host_)
+      return;
+    if (handler_->target_registry_)
+      handler_->target_registry_->DetachSubtargetSession(id_);
+    agent_host_->DetachClient(this);
   }
 
   void Detach(bool host_closed) {
     handler_->frontend_->DetachedFromTarget(id_, agent_host_->GetId());
     if (host_closed)
       handler_->auto_attacher_.AgentHostClosed(agent_host_.get());
-    else
+    else {
+      if (handler_->target_registry_)
+        handler_->target_registry_->DetachSubtargetSession(id_);
       agent_host_->DetachClient(this);
+    }
     handler_->auto_attached_sessions_.erase(agent_host_.get());
     agent_host_ = nullptr;
     handler_->attached_sessions_.erase(id_);
@@ -281,15 +296,26 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
  private:
+  friend class TargetHandler;
+
   Session(TargetHandler* handler,
           DevToolsAgentHost* agent_host,
-          const std::string& id)
-      : handler_(handler), agent_host_(agent_host), id_(id) {}
+          const std::string& id,
+          bool flatten_protocol)
+      : handler_(handler),
+        agent_host_(agent_host),
+        id_(id),
+        flatten_protocol_(flatten_protocol) {}
 
   // DevToolsAgentHostClient implementation.
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {
     DCHECK(agent_host == agent_host_.get());
+    if (flatten_protocol_) {
+      handler_->target_registry_->SendMessageToClient(id_, message);
+      return;
+    }
+
     handler_->frontend_->ReceivedMessageFromTarget(id_, message,
                                                    agent_host_->GetId());
   }
@@ -302,6 +328,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   TargetHandler* handler_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   std::string id_;
+  bool flatten_protocol_;
   Throttle* throttle_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
@@ -366,7 +393,8 @@ void TargetHandler::Throttle::Clear() {
 }
 
 TargetHandler::TargetHandler(bool browser_only,
-                             const std::string& owner_target_id)
+                             const std::string& owner_target_id,
+                             TargetRegistry* target_registry)
     : DevToolsDomainHandler(Target::Metainfo::domainName),
       auto_attacher_(
           base::Bind(&TargetHandler::AutoAttach, base::Unretained(this)),
@@ -374,6 +402,7 @@ TargetHandler::TargetHandler(bool browser_only,
       discover_(false),
       browser_only_(browser_only),
       owner_target_id_(owner_target_id),
+      target_registry_(target_registry),
       weak_factory_(this) {}
 
 TargetHandler::~TargetHandler() {
@@ -425,7 +454,8 @@ void TargetHandler::ClearThrottles() {
 
 void TargetHandler::AutoAttach(DevToolsAgentHost* host,
                                bool waiting_for_debugger) {
-  std::string session_id = Session::Attach(this, host, waiting_for_debugger);
+  std::string session_id =
+      Session::Attach(this, host, waiting_for_debugger, false);
   auto_attached_sessions_[host] = attached_sessions_[session_id].get();
 }
 
@@ -501,13 +531,19 @@ Response TargetHandler::SetRemoteLocations(
 }
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,
+                                       Maybe<bool> flatten,
                                        std::string* out_session_id) {
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
-  *out_session_id = Session::Attach(this, agent_host.get(), false);
+  if (flatten.fromMaybe(false) && !target_registry_) {
+    return Response::InvalidParams(
+        "Will only provide flatten access for browser endpoint");
+  }
+  *out_session_id =
+      Session::Attach(this, agent_host.get(), false, flatten.fromMaybe(false));
   return Response::OK();
 }
 
@@ -530,6 +566,11 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
       FindSession(std::move(session_id), std::move(target_id), &session, true);
   if (!response.isSuccess())
     return response;
+  if (session->flatten_protocol_) {
+    return Response::Error(
+        "When using flat protocol, messages are routed to the target "
+        "via the sessionId attribute.");
+  }
   session->SendMessageToAgentHost(message);
   return Response::OK();
 }

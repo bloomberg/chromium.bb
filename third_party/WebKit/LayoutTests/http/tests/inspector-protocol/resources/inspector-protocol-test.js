@@ -520,7 +520,7 @@ DevToolsAPI._sendCommand = function(method, params) {
 DevToolsAPI._sendCommandOrDie = function(method, params) {
   return DevToolsAPI._sendCommand(method, params).then(message => {
     if (message.error)
-      DevToolsAPI._die('Error communicating with harness', new Error(message.error));
+      DevToolsAPI._die('Error communicating with harness', new Error(JSON.stringify(message.error)));
     return message.result;
   });
 };

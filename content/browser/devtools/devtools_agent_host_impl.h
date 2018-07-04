@@ -23,6 +23,7 @@ namespace content {
 
 class BrowserContext;
 class DevToolsSession;
+class TargetRegistry;
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
@@ -65,10 +66,13 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   static bool ShouldForceCreation();
 
   // Returning |false| will block the attach.
-  virtual bool AttachSession(DevToolsSession* session);
+  virtual bool AttachSession(DevToolsSession* session,
+                             TargetRegistry* registry);
   virtual void DetachSession(DevToolsSession* session);
-  virtual void DispatchProtocolMessage(DevToolsSession* session,
-                                       const std::string& message);
+
+  virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
+                                       const std::string& message,
+                                       base::DictionaryValue* parsed_message);
 
   void NotifyCreated();
   void NotifyNavigated();
@@ -81,14 +85,22 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
 
  private:
-  friend class DevToolsAgentHost; // for static methods
+  friend class DevToolsAgentHost;  // for static methods
   friend class DevToolsSession;
-  bool InnerAttachClient(DevToolsAgentHostClient* client, bool restricted);
+  friend class TargetRegistry;  // for subtarget management
+
+  bool InnerAttachClient(DevToolsAgentHostClient* client,
+                         TargetRegistry* registry,
+                         bool restricted);
   void InnerDetachClient(DevToolsAgentHostClient* client);
   void NotifyAttached();
   void NotifyDetached();
   void NotifyDestroyed();
   DevToolsSession* SessionByClient(DevToolsAgentHostClient* client);
+
+  // TargetRegistry API for subtarget management.
+  void AttachSubtargetClient(DevToolsAgentHostClient* client,
+                             TargetRegistry* registry);
 
   const std::string id_;
   base::flat_set<DevToolsSession*> sessions_;
