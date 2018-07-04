@@ -1385,8 +1385,14 @@ void MediaStreamManager::InitializeMaybeAsync(
                               base::BindRepeating(&SendVideoCaptureLogMessage));
   video_capture_manager_->RegisterListener(this);
 
-  media_devices_manager_.reset(
-      new MediaDevicesManager(audio_system_, video_capture_manager_, this));
+  // Using base::Unretained(this) is safe because |this| owns and therefore
+  // outlives |media_devices_manager_|.
+  media_devices_manager_.reset(new MediaDevicesManager(
+      audio_system_, video_capture_manager_,
+      base::BindRepeating(&MediaStreamManager::StopRemovedDevice,
+                          base::Unretained(this)),
+      base::BindRepeating(&MediaStreamManager::NotifyDevicesChanged,
+                          base::Unretained(this))));
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
