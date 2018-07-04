@@ -38,9 +38,9 @@ public class TranslateOptionsTest {
         Assert.assertEquals("Spanish", options.targetLanguageName());
         Assert.assertEquals("en", options.sourceLanguageCode());
         Assert.assertEquals("es", options.targetLanguageCode());
-        Assert.assertFalse(options.neverTranslateLanguageState());
-        Assert.assertTrue(options.alwaysTranslateLanguageState());
-        Assert.assertFalse(options.neverTranslateDomainState());
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
+        Assert.assertTrue(options.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
         Assert.assertFalse(options.optionsChanged());
         Assert.assertNull(options.getUMAHashCodeFromCode("en"));
     }
@@ -101,21 +101,21 @@ public class TranslateOptionsTest {
                 "en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, false, null);
         Assert.assertFalse(options.optionsChanged());
         options.toggleNeverTranslateDomainState(true);
-        Assert.assertTrue(options.neverTranslateDomainState());
-        Assert.assertFalse(options.alwaysTranslateLanguageState());
-        Assert.assertFalse(options.neverTranslateLanguageState());
+        Assert.assertTrue(options.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
         Assert.assertTrue(options.optionsChanged());
         options.toggleNeverTranslateDomainState(false);
-        Assert.assertFalse(options.neverTranslateDomainState());
-        Assert.assertFalse(options.neverTranslateLanguageState());
-        Assert.assertFalse(options.alwaysTranslateLanguageState());
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
 
         // We are back to the original state
         Assert.assertFalse(options.optionsChanged());
         options.toggleAlwaysTranslateLanguageState(true);
-        Assert.assertFalse(options.neverTranslateDomainState());
-        Assert.assertFalse(options.neverTranslateLanguageState());
-        Assert.assertTrue(options.alwaysTranslateLanguageState());
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
+        Assert.assertFalse(options.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
+        Assert.assertTrue(options.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
         Assert.assertTrue(options.optionsChanged());
     }
 
@@ -129,14 +129,14 @@ public class TranslateOptionsTest {
         // Never translate language should not work, but never translate domain
         // should
         Assert.assertFalse(options.toggleNeverTranslateLanguageState(true));
-        Assert.assertTrue(options.toggleNeverTranslateDomainState(true));
+        options.toggleNeverTranslateDomainState(true);
         Assert.assertTrue(options.optionsChanged());
 
         Assert.assertTrue(options.toggleAlwaysTranslateLanguageState(false));
 
         // Never options are ok
         Assert.assertTrue(options.toggleNeverTranslateLanguageState(true));
-        Assert.assertTrue(options.toggleNeverTranslateDomainState(true));
+        options.toggleNeverTranslateDomainState(true);
 
         // But always is not now
         Assert.assertFalse(options.toggleAlwaysTranslateLanguageState(true));

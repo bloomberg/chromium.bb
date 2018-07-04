@@ -290,7 +290,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                     TintedImageView checkboxIcon =
                             (TintedImageView) menuItemView.findViewById(R.id.menu_item_icon);
                     if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE
-                            && mOptions.alwaysTranslateLanguageState()) {
+                            && mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE)) {
                         checkboxIcon.setVisibility(View.VISIBLE);
                     } else {
                         checkboxIcon.setVisibility(View.INVISIBLE);
