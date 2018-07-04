@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -60,6 +61,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   static ServiceWorkerGlobalScope* Create(
       ServiceWorkerThread*,
       std::unique_ptr<GlobalScopeCreationParams>,
+      mojom::blink::CacheStoragePtrInfo,
       base::TimeTicks time_origin);
 
   ~ServiceWorkerGlobalScope() override;
@@ -117,6 +119,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   void CountCacheStorageInstalledScript(uint64_t script_size,
                                         uint64_t script_metadata_size);
 
+  mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch);
@@ -134,6 +138,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
  private:
   ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                            ServiceWorkerThread*,
+                           mojom::blink::CacheStoragePtrInfo,
                            base::TimeTicks time_origin);
   void importScripts(const Vector<String>& urls, ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
@@ -158,6 +163,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   bool evaluate_script_ready_ = false;
   base::OnceClosure evaluate_script_;
+
+  // May be provided in the constructor as an optimization so InterfaceProvider
+  // doesn't need to be used. Taken at the initial call to
+  // ServiceWorkerGlobalScope#caches.
+  mojom::blink::CacheStoragePtrInfo cache_storage_info_;
 };
 
 DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope,

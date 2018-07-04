@@ -126,7 +126,8 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     mock_installed_scripts_manager_ = installed_scripts_manager.get();
     worker_ = WebEmbeddedWorker::Create(
         std::move(client), std::move(installed_scripts_manager),
-        mojo::ScopedMessagePipeHandle(), mojo::ScopedMessagePipeHandle());
+        mojo::ScopedMessagePipeHandle(), mojo::ScopedMessagePipeHandle(),
+        mojo::ScopedMessagePipeHandle());
 
     WebURL script_url = URLTestHelpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response;

@@ -44,12 +44,14 @@ ServiceWorkerThread::ServiceWorkerThread(
     ThreadableLoadingContext* loading_context,
     ServiceWorkerGlobalScopeProxy* global_scope_proxy,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager)
+        installed_scripts_manager,
+    mojom::blink::CacheStoragePtrInfo cache_storage_info)
     : WorkerThread(loading_context, *global_scope_proxy),
       global_scope_proxy_(global_scope_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
           WebThreadCreationParams(GetThreadType()))),
-      installed_scripts_manager_(std::move(installed_scripts_manager)) {}
+      installed_scripts_manager_(std::move(installed_scripts_manager)),
+      cache_storage_info_(std::move(cache_storage_info)) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {
   global_scope_proxy_->Detach();
@@ -71,6 +73,7 @@ void ServiceWorkerThread::TerminateForTesting() {
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return ServiceWorkerGlobalScope::Create(this, std::move(creation_params),
+                                          std::move(cache_storage_info_),
                                           time_origin_);
 }
 

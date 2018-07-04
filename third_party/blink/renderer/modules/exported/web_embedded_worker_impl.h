@@ -34,6 +34,7 @@
 #include <memory>
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/web/web_embedded_worker.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
@@ -61,6 +62,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
       std::unique_ptr<WebServiceWorkerContextClient>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManager>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
+      mojom::blink::CacheStoragePtrInfo,
       service_manager::mojom::blink::InterfaceProviderPtrInfo);
   ~WebEmbeddedWorkerImpl() override;
 
@@ -128,6 +130,8 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token_;
+
+  mojom::blink::CacheStoragePtrInfo cache_storage_info_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_info_;

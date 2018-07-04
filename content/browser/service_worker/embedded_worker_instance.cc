@@ -81,7 +81,8 @@ using SetupProcessCallback = base::OnceCallback<void(
     mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
-    std::unique_ptr<URLLoaderFactoryBundleInfo>)>;
+    std::unique_ptr<URLLoaderFactoryBundleInfo>,
+    blink::mojom::CacheStoragePtrInfo)>;
 
 // Allocates a renderer process for starting a worker and does setup like
 // registering with DevTools. Called on the UI thread. Calls |callback| on the
@@ -106,7 +107,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
         base::BindOnce(std::move(callback),
                        blink::ServiceWorkerStatusCode::kErrorAbort,
                        std::move(params), std::move(process_info),
-                       std::move(devtools_proxy), std::move(factory_bundle)));
+                       std::move(devtools_proxy), std::move(factory_bundle),
+                       nullptr /* cache_storage */));
     return;
   }
 
@@ -120,7 +122,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
-                       std::move(factory_bundle)));
+                       std::move(factory_bundle), nullptr /* cache_storage */));
     return;
   }
   const int process_id = process_info->process_id;
@@ -129,6 +131,17 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // crash reports agree. Consider also checking for
   // rph->IsInitializedAndNotDead().
   CHECK(rph);
+
+  // Create cache storage now as an optimization, so the service worker can use
+  // the Cache Storage API immediately on startup. Don't do this when
+  // byte-to-byte check will be performed on the worker (|pause_after_download|)
+  // as most of those workers will have byte-to-byte equality and abort instead
+  // of running.
+  blink::mojom::CacheStoragePtr cache_storage;
+  if (!params->pause_after_download) {
+    rph->BindCacheStorage(mojo::MakeRequest(&cache_storage),
+                          url::Origin::Create(params->script_url));
+  }
 
   // Bind |request|, which is attached to |EmbeddedWorkerInstance::client_|, to
   // the process. If the process dies, |client_|'s connection error callback
@@ -209,7 +222,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
-                     std::move(factory_bundle)));
+                     std::move(factory_bundle), cache_storage.PassInterface()));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -457,7 +470,8 @@ class EmbeddedWorkerInstance::StartTask {
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle) {
+      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle,
+      blink::mojom::CacheStoragePtrInfo cache_storage) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     std::unique_ptr<WorkerProcessHandle> process_handle;
@@ -513,7 +527,8 @@ class EmbeddedWorkerInstance::StartTask {
     }
 
     instance_->SendStartWorker(std::move(params),
-                               std::move(factory_for_new_scripts));
+                               std::move(factory_for_new_scripts),
+                               std::move(cache_storage));
 
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
                                       "INITIALIZING_ON_RENDERER", this);
@@ -684,7 +699,8 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 
 void EmbeddedWorkerInstance::SendStartWorker(
     mojom::EmbeddedWorkerStartParamsPtr params,
-    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
+    blink::mojom::CacheStoragePtrInfo cache_storage) {
   DCHECK(context_);
   DCHECK(params->dispatcher_request.is_pending());
   DCHECK(params->controller_request.is_pending());
@@ -700,6 +716,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
   params->provider_info =
       std::move(provider_info_getter_).Run(process_id(), std::move(factory));
+  params->provider_info->cache_storage = std::move(cache_storage);
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
 

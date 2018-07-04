@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -239,12 +240,16 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Sends the StartWorker message to the renderer.
   //
+  // |cache_storage| is an optional optimization so the service worker can
+  // use the Cache Storage API immediately upon startup.
+  //
   // S13nServiceWorker:
   // |factory| is used for loading non-installed scripts. It can internally be a
   // bundle of factories instead of just the direct network factory to support
   // non-NetworkService schemes like chrome-extension:// URLs.
   void SendStartWorker(mojom::EmbeddedWorkerStartParamsPtr params,
-                       scoped_refptr<network::SharedURLLoaderFactory> factory);
+                       scoped_refptr<network::SharedURLLoaderFactory> factory,
+                       blink::mojom::CacheStoragePtrInfo cache_storage);
 
   // Implements mojom::EmbeddedWorkerInstanceHost.
   // These functions all run on the IO thread.

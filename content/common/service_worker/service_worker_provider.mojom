@@ -10,6 +10,7 @@ import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
+import "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose service-worker-specific interfaces between renderer
@@ -39,6 +40,13 @@ struct ServiceWorkerProviderInfoForStartWorker {
   // The loader to use for loading the worker's main script and
   // importScripts().
   associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info;
+
+  // |cache_storage| is an optional optimization so the service worker can use
+  // the Cache Storage API immediately without using InterfaceProvider. May be
+  // null for service workers created for update checks, as the optimization
+  // would be wasteful because these workers usually are aborted after the
+  // byte-to-byte update check before running.
+  blink.mojom.CacheStorage? cache_storage;
 
   service_manager.mojom.InterfaceProvider interface_provider;
 };

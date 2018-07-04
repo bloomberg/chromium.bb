@@ -101,7 +101,8 @@ class EmbeddedWorkerInstanceClientImpl
   std::unique_ptr<WorkerWrapper> StartWorkerContext(
       mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerContextClient> context_client,
-      service_manager::mojom::InterfaceProviderPtr interface_provider);
+      blink::mojom::CacheStoragePtrInfo cache_storage,
+      service_manager::mojom::InterfaceProviderPtrInfo interface_provider);
 
   mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
 

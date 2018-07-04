@@ -55,8 +55,10 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
   start_timing->start_worker_received_time = base::TimeTicks::Now();
-  service_manager::mojom::InterfaceProviderPtr interface_provider(
-      std::move(params->provider_info->interface_provider));
+  blink::mojom::CacheStoragePtrInfo cache_storage =
+      std::move(params->provider_info->cache_storage);
+  service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
+      std::move(params->provider_info->interface_provider);
 
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params->embedded_worker_id, params->service_worker_version_id,
@@ -77,6 +79,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       "ServiceWorker.EmbeddedWorkerInstanceClient.StartWorker", metric,
       StartWorkerHistogramEnum::NUM_TYPES);
   wrapper_ = StartWorkerContext(std::move(params), std::move(client),
+                                std::move(cache_storage),
                                 std::move(interface_provider));
 }
 
@@ -133,7 +136,8 @@ std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     mojom::EmbeddedWorkerStartParamsPtr params,
     std::unique_ptr<ServiceWorkerContextClient> context_client,
-    service_manager::mojom::InterfaceProviderPtr interface_provider) {
+    blink::mojom::CacheStoragePtrInfo cache_storage,
+    service_manager::mojom::InterfaceProviderPtrInfo interface_provider) {
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
@@ -147,7 +151,7 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
       std::make_unique<WorkerWrapper>(blink::WebEmbeddedWorker::Create(
           std::move(context_client), std::move(manager),
           params->content_settings_proxy.PassHandle(),
-          interface_provider.PassInterface().PassHandle()));
+          cache_storage.PassHandle(), interface_provider.PassHandle()));
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.script_url = params->script_url;
