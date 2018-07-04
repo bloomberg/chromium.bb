@@ -37,7 +37,7 @@ if (enable_nacl) {
       "//base",
       "//base:base_static",
       "//content/public/common:service_names",
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//services/service_manager/public/cpp",
     ]
   }

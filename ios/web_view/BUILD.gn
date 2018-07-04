@@ -317,7 +317,7 @@ source_set("run_all_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
   ]
 }
 

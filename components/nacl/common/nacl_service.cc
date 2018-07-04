@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -58,7 +58,7 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager(
 class NaClService : public service_manager::Service {
  public:
   NaClService(IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
-              std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support);
+              std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support);
   ~NaClService() override;
 
   // Service overrides.
@@ -68,13 +68,13 @@ class NaClService : public service_manager::Service {
 
  private:
   IPC::mojom::ChannelBootstrapPtrInfo ipc_channel_bootstrap_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
   bool connected_ = false;
 };
 
 NaClService::NaClService(
     IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
-    std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support)
+    std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support)
     : ipc_channel_bootstrap_(std::move(bootstrap)),
       ipc_support_(std::move(ipc_support)) {}
 
@@ -100,9 +100,9 @@ void NaClService::OnBindInterface(
 std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojo::ScopedMessagePipeHandle* ipc_channel) {
-  auto ipc_support = std::make_unique<mojo::edk::ScopedIPCSupport>(
+  auto ipc_support = std::make_unique<mojo::core::ScopedIPCSupport>(
       std::move(io_task_runner),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
   auto invitation = EstablishMojoConnection();
   IPC::mojom::ChannelBootstrapPtr bootstrap;
   *ipc_channel = mojo::MakeRequest(&bootstrap).PassMessagePipe();

@@ -109,7 +109,7 @@ source_set("fuzzer_support") {
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//third_party/blink/public:blink",
   ]
 }

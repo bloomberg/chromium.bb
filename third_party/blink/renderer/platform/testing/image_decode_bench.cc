@@ -21,7 +21,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -157,6 +157,6 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
   base::MessageLoop message_loop;
-  mojo::edk::Init();
+  mojo::core::Init();
   return blink::ImageDecodeBenchMain(argc, argv);
 }

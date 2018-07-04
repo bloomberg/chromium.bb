@@ -33,8 +33,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
@@ -54,11 +54,11 @@ int main(int argc, char** argv) {
   {
     base::TestSuite testSuite(argc, argv);
 
-    mojo::edk::Init();
+    mojo::core::Init();
     base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
-    mojo::edk::ScopedIPCSupport ipcSupport(
+    mojo::core::ScopedIPCSupport ipcSupport(
         testIoThread.task_runner(),
-        mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
     result = base::LaunchUnitTests(
         argc, argv, base::BindOnce(runTestSuite, base::Unretained(&testSuite)));
   }

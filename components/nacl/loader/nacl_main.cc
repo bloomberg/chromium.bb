@@ -13,7 +13,7 @@
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 #include "content/public/common/main_function_params.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "services/service_manager/sandbox/switches.h"
 
 // main() routine for the NaCl loader process.
@@ -21,7 +21,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   const base::CommandLine& parsed_command_line = parameters.command_line;
 
   // The Mojo EDK must be initialized before using IPC.
-  mojo::edk::Init();
+  mojo::core::Init();
 
   // The main thread of the plugin services IO.
   base::MessageLoopForIO main_message_loop;

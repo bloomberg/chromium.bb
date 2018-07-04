@@ -14,7 +14,7 @@ include_rules = [
   "+services/service_manager/sandbox",
   "+ppapi/c",  # header files only
 
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
 
   "+native_client/src/include",
   "+native_client/src/public",

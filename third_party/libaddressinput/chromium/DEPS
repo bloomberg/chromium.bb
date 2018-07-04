@@ -11,7 +11,7 @@ include_rules = [
 
 specific_include_rules = {
   "chrome_metadata_source_unittest.cc": [
-    "+mojo/edk",
+    "+mojo/core/embedder",
 ],
 }
         
