@@ -780,7 +780,7 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // Overscroll is generally dependent on lock state, however, its behavior
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
-  if (keyboard_visible() && !keyboard::IsKeyboardOverscrollEnabled() &&
+  if (!keyboard::IsKeyboardOverscrollEnabled() &&
       container_behavior_->GetType() != ContainerType::FLOATING &&
       container_behavior_->GetType() != ContainerType::FULLSCREEN) {
     return visual_bounds_in_screen_;
