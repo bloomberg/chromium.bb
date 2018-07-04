@@ -1783,14 +1783,6 @@ void PaintLayer::CollectFragments(
   }
 }
 
-static inline LayoutRect FrameVisibleRect(LayoutObject& layout_object) {
-  LocalFrameView* frame_view = layout_object.GetDocument().View();
-  if (!frame_view)
-    return LayoutRect();
-
-  return LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
-}
-
 PaintLayer::HitTestRecursionData::HitTestRecursionData(
     const LayoutRect& rect_arg,
     const HitTestLocation& location_arg,
@@ -1801,7 +1793,8 @@ PaintLayer::HitTestRecursionData::HitTestRecursionData(
       intersects_location(location_arg.Intersects(rect_arg)) {}
 
 bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
-                         HitTestResult& result) {
+                         HitTestResult& result,
+                         const LayoutRect& hit_test_area) {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
 
   // LayoutView should make sure to update layout before entering hit testing
@@ -1809,15 +1802,6 @@ bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
   DCHECK(!GetLayoutObject().GetDocument().GetLayoutView()->NeedsLayout());
 
   const HitTestRequest& request = result.GetHitTestRequest();
-
-  // Start with frameVisibleRect to ensure we include the scrollbars.
-  LayoutRect hit_test_area = FrameVisibleRect(GetLayoutObject());
-  if (request.IgnoreClipping()) {
-    if (LocalFrameView* frame_view = GetLayoutObject().GetDocument().View()) {
-      hit_test_area.Unite(frame_view->DocumentToFrame(
-          LayoutRect(GetLayoutObject().View()->DocumentRect())));
-    }
-  }
 
   HitTestRecursionData recursion_data(hit_test_area, hit_test_location,
                                       hit_test_location);

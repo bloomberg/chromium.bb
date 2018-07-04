@@ -1375,21 +1375,21 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location((LayoutPoint(50, 25)));
   HitTestResult result(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(child, result.InnerNode());
 
   // Same hit test, with stop node.
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
                            hit->GetLayoutObject());
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(hit, result.InnerNode());
 
   // Regular hit test over 'overlap'
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   location = HitTestLocation((LayoutPoint(50, 75)));
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(overlap, result.InnerNode());
 
   // Same hit test, with stop node, should still hit 'overlap' because it's not
@@ -1397,7 +1397,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
                            hit->GetLayoutObject());
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(overlap, result.InnerNode());
 
   // List-based hit test with stop node
@@ -1406,7 +1406,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
                            hit->GetLayoutObject());
   location = HitTestLocation((LayoutRect(40, 15, 20, 20)));
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(1u, result.ListBasedTestResult().size());
   EXPECT_EQ(hit, *result.ListBasedTestResult().begin());
 }
@@ -1435,13 +1435,13 @@ TEST_P(PaintLayerTest, HitTestTableWithStopNode) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location((LayoutPoint(50, 50)));
   HitTestResult result(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(cell11, result.InnerNode());
 
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
                            table->GetLayoutObject());
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(table, result.InnerNode());
 }
 
@@ -1456,13 +1456,13 @@ TEST_P(PaintLayerTest, HitTestSVGWithStopNode) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location((LayoutPoint(50, 50)));
   HitTestResult result(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(circle, result.InnerNode());
 
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
                            svg->GetLayoutObject());
   result = HitTestResult(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(svg, result.InnerNode());
 }
 

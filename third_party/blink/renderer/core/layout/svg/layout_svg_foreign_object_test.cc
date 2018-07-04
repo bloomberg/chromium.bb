@@ -286,7 +286,7 @@ TEST_F(LayoutSVGForeignObjectTest,
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location((LayoutPoint(206, 206)));
   HitTestResult result(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
   EXPECT_EQ(LayoutPoint(206, 206), result.PointInInnerNodeFrame());
 }
@@ -310,19 +310,57 @@ TEST_F(LayoutSVGForeignObjectTest,
 
   const auto& svg = *GetDocument().getElementById("svg");
   const auto& target = *GetDocument().getElementById("target");
-  const auto& foreignObject = *GetDocument().getElementById("foreignObject");
+  const auto& foreign_object = *GetDocument().getElementById("foreignObject");
 
   EXPECT_EQ(svg, GetDocument().ElementFromPoint(1, 1));
-  EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(231, 201));
+  EXPECT_EQ(foreign_object, GetDocument().ElementFromPoint(231, 201));
   EXPECT_EQ(target, GetDocument().ElementFromPoint(236, 206));
-  EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(235, 255));
+  EXPECT_EQ(foreign_object, GetDocument().ElementFromPoint(235, 255));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location((LayoutPoint(236, 206)));
   HitTestResult result(request, location);
-  GetDocument().GetLayoutView()->Layer()->HitTest(location, result);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
   EXPECT_EQ(LayoutPoint(236, 206), result.PointInInnerNodeFrame());
+}
+
+TEST_F(LayoutSVGForeignObjectTest, HitTestUnderScrollingAncestor) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0
+      }
+    </style>
+    <div id=scroller style="width: 500px; height: 500px; overflow: auto">
+      <svg width="3000" height="3000">
+        <foreignObject width="3000" height="3000">
+          <div id="target" style="width: 3000px; height: 3000px; background: red">
+          </div>
+        </foreignObject>
+      </svg>
+    </div>
+  )HTML");
+
+  auto& scroller = *GetDocument().getElementById("scroller");
+  const auto& target = *GetDocument().getElementById("target");
+
+  EXPECT_EQ(target, GetDocument().ElementFromPoint(450, 450));
+
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location((LayoutPoint(450, 450)));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(LayoutPoint(450, 450), result.PointInInnerNodeFrame());
+
+  scroller.setScrollTop(3000);
+
+  EXPECT_EQ(target, GetDocument().ElementFromPoint(450, 450));
+
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(LayoutPoint(450, 450), result.PointInInnerNodeFrame());
 }
 
 }  // namespace blink
