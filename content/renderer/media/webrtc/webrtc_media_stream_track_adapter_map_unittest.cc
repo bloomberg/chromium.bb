@@ -53,8 +53,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   }
 
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-  GetOrCreateRemoteTrackAdapter(
-      webrtc::MediaStreamTrackInterface* webrtc_track) {
+  GetOrCreateRemoteTrackAdapter(webrtc::MediaStreamTrackInterface* webrtc_track,
+                                bool wait_for_initialization = true) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter;
     signaling_thread()->PostTask(
@@ -63,7 +63,13 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
                            GetOrCreateRemoteTrackAdapterOnSignalingThread,
                        base::Unretained(this), base::Unretained(webrtc_track),
                        &adapter));
-    RunMessageLoopsUntilIdle();
+    RunMessageLoopsUntilIdle(wait_for_initialization);
+    DCHECK(adapter);
+    if (wait_for_initialization) {
+      DCHECK(adapter->is_initialized());
+    } else {
+      DCHECK(!adapter->is_initialized());
+    }
     return adapter;
   }
 
@@ -76,7 +82,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   // Runs message loops on the webrtc signaling thread and the main thread until
   // idle.
-  void RunMessageLoopsUntilIdle() {
+  void RunMessageLoopsUntilIdle(bool run_loop_on_main_thread = true) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
@@ -86,7 +92,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
                                       RunMessageLoopUntilIdleOnSignalingThread,
                                   base::Unretained(this), &waitable_event));
     waitable_event.Wait();
-    base::RunLoop().RunUntilIdle();
+    if (run_loop_on_main_thread)
+      base::RunLoop().RunUntilIdle();
   }
 
   void RunMessageLoopUntilIdleOnSignalingThread(
@@ -158,6 +165,29 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
   EXPECT_TRUE(adapter_ref->GetAdapterForTesting()->is_initialized());
   EXPECT_EQ(1u, map_->GetRemoteTrackCount());
 
+  // Destroying all references to the adapter should remove it from the map and
+  // dispose it.
+  adapter_ref.reset();
+  EXPECT_EQ(0u, map_->GetRemoteTrackCount());
+  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track.get()));
+  // Allow the disposing of track to occur.
+  RunMessageLoopsUntilIdle();
+}
+
+TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
+       InitializeRemoteTrackAdapterExplicitly) {
+  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
+      MockWebRtcAudioTrack::Create("remote_track");
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref =
+      GetOrCreateRemoteTrackAdapter(webrtc_track.get(), false);
+  EXPECT_FALSE(adapter_ref->is_initialized());
+  adapter_ref->InitializeOnMainThread();
+  EXPECT_TRUE(adapter_ref->is_initialized());
+
+  EXPECT_EQ(1u, map_->GetRemoteTrackCount());
+  // Ensure the implicit initialization's posted task is run after it is already
+  // initialized.
+  RunMessageLoopsUntilIdle();
   // Destroying all references to the adapter should remove it from the map and
   // dispose it.
   adapter_ref.reset();

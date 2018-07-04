@@ -38,6 +38,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
     std::unique_ptr<AdapterRef> Copy() const;
     bool is_initialized() const { return adapter_->is_initialized(); }
+    void InitializeOnMainThread();
     const blink::WebMediaStreamTrack& web_track() const {
       return adapter_->web_track();
     }
@@ -136,8 +137,6 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
   // Invoke on the main thread.
   virtual ~WebRtcMediaStreamTrackAdapterMap();
-
-  void OnRemoteTrackAdapterInitialized(std::unique_ptr<AdapterRef> adapter_ref);
 
   // Pointer to a |PeerConnectionDependencyFactory| owned by the |RenderThread|.
   // It's valid for the lifetime of |RenderThread|.
