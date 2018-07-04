@@ -32,11 +32,20 @@ def main(argv):
       'targets',
       nargs='*',
       help='Additional targets to pass to ninja')
+  parser.add_argument(
+      '-o',
+      help='File to write the compilation database to. Defaults to stdout')
+
   args = parser.parse_args()
 
-  print json.dumps(
+  compdb_text = json.dumps(
       compile_db.ProcessCompileDatabaseIfNeeded(
           compile_db.GenerateWithNinja(args.p, args.targets))
+  if args.o is None:
+    print(compdb_text)
+  else:
+    with open(args.o, 'w') as f:
+      f.write(compdb_text)
 
 
 if __name__ == '__main__':
