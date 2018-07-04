@@ -1451,7 +1451,8 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(),
-        ThreadHeapStatsCollector::kIncrementalMarkingStartMarking);
+        ThreadHeapStatsCollector::kIncrementalMarkingStartMarking, "reason",
+        GcReasonString(reason));
     AtomicPauseScope atomic_pause_scope(this);
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
