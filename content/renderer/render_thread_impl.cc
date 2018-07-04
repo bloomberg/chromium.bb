@@ -76,6 +76,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -902,6 +903,8 @@ void RenderThreadImpl::Init(
   is_elastic_overscroll_enabled_ = false;
 #endif
 
+  is_zoom_for_dsf_enabled_ = content::IsUseZoomForDSFEnabled();
+
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
   } else if (command_line.HasSwitch(switches::kEnableLCDText)) {
@@ -1606,6 +1609,10 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
+bool RenderThreadImpl::IsUseZoomForDSFEnabled() {
+  return is_zoom_for_dsf_enabled_;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetCompositorMainThreadTaskRunner() {
   return main_thread_compositor_task_runner_;
@@ -1656,6 +1663,12 @@ RenderThreadImpl::CreateUkmRecorderFactory() {
 
   return std::make_unique<UkmRecorderFactoryImpl>(GetConnector()->Clone());
 }
+
+#ifdef OS_ANDROID
+bool RenderThreadImpl::UsingSynchronousCompositing() {
+  return GetContentClient()->UsingSynchronousCompositing();
+}
+#endif
 
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
   blink::MainThreadIsolate()->SetRAILMode(rail_mode);

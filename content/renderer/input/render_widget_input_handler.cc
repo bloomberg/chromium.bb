@@ -17,7 +17,6 @@
 #include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
@@ -194,7 +193,7 @@ RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     const gfx::Point& point) {
   gfx::PointF point_in_pixel(point);
-  if (IsUseZoomForDSFEnabled()) {
+  if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }

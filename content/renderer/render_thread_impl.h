@@ -248,6 +248,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
+  bool IsUseZoomForDSFEnabled() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -256,6 +257,9 @@ class CONTENT_EXPORT RenderThreadImpl
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsScrollAnimatorEnabled() override;
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
+#ifdef OS_ANDROID
+  bool UsingSynchronousCompositing() override;
+#endif
 
   bool IsThreadedAnimationEnabled();
 
@@ -739,6 +743,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
+  bool is_zoom_for_dsf_enabled_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
 

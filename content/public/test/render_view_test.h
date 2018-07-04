@@ -47,7 +47,7 @@ namespace content {
 class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
-class FakeCompositorDependencies;
+class CompositorDependencies;
 class MockRenderProcess;
 class PageState;
 class RendererMainPlatformDelegate;
@@ -190,6 +190,10 @@ class RenderViewTest : public testing::Test {
   // Allows a subclass to customize the initial size of the RenderView.
   virtual std::unique_ptr<VisualProperties> InitialVisualProperties();
 
+  // Override this to change the CompositorDependencies for the test.
+  virtual std::unique_ptr<CompositorDependencies>
+  CreateCompositorDependencies();
+
   // testing::Test
   void SetUp() override;
 
@@ -197,7 +201,7 @@ class RenderViewTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
+  std::unique_ptr<CompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
