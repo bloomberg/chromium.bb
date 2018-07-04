@@ -624,15 +624,14 @@ public class NotificationPlatformBridge {
 
             mNotificationManager.notify(notificationId, PLATFORM_ID, notificationBuilder.build());
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SITES, notificationBuilder.mChannelId);
+                    NotificationUmaTracker.SystemNotificationType.SITES,
+                    notificationBuilder.mChannelId);
         }
     }
 
     private NotificationBuilderBase createNotificationBuilder(Context context, boolean hasImage) {
-        if (useCustomLayouts(hasImage)) {
-            return new CustomNotificationBuilder(context);
-        }
-        return new StandardNotificationBuilder(context);
+        return useCustomLayouts(hasImage) ? new CustomNotificationBuilder(context)
+                                          : new StandardNotificationBuilder(context);
     }
 
     /** Returns whether to set a channel id when building a notification. */

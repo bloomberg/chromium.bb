@@ -193,12 +193,10 @@ public class ContentSuggestionsNotifier {
             builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
                     settingsIntent);
         }
-        if (priority >= 0) {
-            builder.setDefaults(Notification.DEFAULT_ALL);
-        }
+        if (priority >= 0) builder.setDefaults(Notification.DEFAULT_ALL);
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.CONTENT_SUGGESTION,
+                NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION,
                 ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
