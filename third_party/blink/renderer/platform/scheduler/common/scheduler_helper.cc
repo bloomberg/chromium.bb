@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 
 namespace blink {

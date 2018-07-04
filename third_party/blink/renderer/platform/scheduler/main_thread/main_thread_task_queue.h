@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
+#include "base/task/sequence_manager/task_queue.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
@@ -196,6 +196,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
 
+  // TODO(kraynov): Consider options to remove TaskQueueImpl reference here.
   MainThreadTaskQueue(
       std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
       const Spec& spec,

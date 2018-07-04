@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
+#include "base/task/sequence_manager/task_queue.h"
 
 namespace blink {
 namespace scheduler {

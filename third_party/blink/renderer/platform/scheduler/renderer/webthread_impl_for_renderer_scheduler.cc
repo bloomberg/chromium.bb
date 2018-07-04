@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 #include "base/location.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
 namespace blink {

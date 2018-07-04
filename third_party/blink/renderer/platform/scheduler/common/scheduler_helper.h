@@ -10,10 +10,10 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
 
 namespace blink {
 namespace scheduler {
