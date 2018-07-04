@@ -1037,8 +1037,6 @@ jumbo_source_set("browser") {
     "loader/stream_resource_handler.h",
     "loader/stream_writer.cc",
     "loader/stream_writer.h",
-    "loader/temporary_file_stream.cc",
-    "loader/temporary_file_stream.h",
     "loader/throttling_resource_handler.cc",
     "loader/throttling_resource_handler.h",
     "loader/upload_data_stream_builder.cc",

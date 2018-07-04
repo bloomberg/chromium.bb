@@ -1383,7 +1383,6 @@ test("content_unittests") {
     "../browser/loader/resource_dispatcher_host_unittest.cc",
     "../browser/loader/resource_loader_unittest.cc",
     "../browser/loader/source_stream_to_data_pipe_unittest.cc",
-    "../browser/loader/temporary_file_stream_unittest.cc",
     "../browser/loader/test_resource_handler.cc",
     "../browser/loader/test_resource_handler.h",
     "../browser/loader/throttling_resource_handler_unittest.cc",
