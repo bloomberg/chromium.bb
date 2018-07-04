@@ -864,4 +864,50 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
   }
 }
 
+TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUniqueOpaque();
+  Context()->SetSecurityOrigin(source_origin);
+  ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
+
+  KURL url("http://127.0.0.1:8000/foo.html");
+  FetchParameters fetch_params{ResourceRequest(url)};
+
+  ResourceResponse response(url);
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+                              "max-age=0, stale-while-revalidate=40");
+
+  RegisterMockedURLLoadWithCustomResponse(url, response);
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(GetMemoryCache()->Contains(resource));
+
+  fetcher->SetStaleWhileRevalidateEnabled(true);
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+  fetch_params = FetchParameters(resource_request);
+  Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  EXPECT_EQ(resource, new_resource);
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+
+  // Advance the clock, make sure the original resource gets removed from the
+  // memory cache after the revalidation completes.
+  platform_->AdvanceClockSeconds(1);
+  ResourceResponse revalidate_response(url);
+  revalidate_response.SetHTTPStatusCode(200);
+  platform_->GetURLLoaderMockFactory()->UnregisterURL(url);
+  RegisterMockedURLLoadWithCustomResponse(url, revalidate_response);
+  new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  EXPECT_EQ(resource, new_resource);
+  EXPECT_TRUE(GetMemoryCache()->Contains(resource));
+  platform_->RunUntilIdle();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_FALSE(GetMemoryCache()->Contains(resource));
+}
+
 }  // namespace blink

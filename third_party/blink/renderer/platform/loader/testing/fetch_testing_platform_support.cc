@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 
 namespace blink {
@@ -29,7 +30,8 @@ FetchTestingPlatformSupport::~FetchTestingPlatformSupport() {
 MockFetchContext* FetchTestingPlatformSupport::Context() {
   if (!context_) {
     context_ =
-        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource,
+                                 scheduler_->DefaultTaskRunner());
   }
   return context_;
 }

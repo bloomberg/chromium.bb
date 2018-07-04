@@ -142,12 +142,14 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
 // RawResources to MemoryCache.
-inline bool IsRawResource(const Resource& resource) {
-  Resource::Type type = resource.GetType();
+inline bool IsRawResource(Resource::Type type) {
   return type == Resource::kMainResource || type == Resource::kRaw ||
          type == Resource::kTextTrack || type == Resource::kAudio ||
          type == Resource::kVideo || type == Resource::kManifest ||
          type == Resource::kImportResource;
+}
+inline bool IsRawResource(const Resource& resource) {
+  return IsRawResource(resource.GetType());
 }
 inline RawResource* ToRawResource(Resource* resource) {
   SECURITY_DCHECK(!resource || IsRawResource(*resource));
