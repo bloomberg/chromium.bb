@@ -27,6 +27,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
@@ -233,6 +234,10 @@
 #include "crypto/nss_util.h"
 #endif
 
+#if defined(ENABLE_IPC_FUZZER) && defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -396,6 +401,40 @@ void InitDefaultJob() {
   base::SetDefaultJob(std::move(handle));
 }
 #endif  // defined(OS_FUCHSIA)
+
+#if defined(ENABLE_IPC_FUZZER)
+bool GetBuildDirectory(base::FilePath* result) {
+  if (!base::PathService::Get(base::DIR_EXE, result))
+    return false;
+
+#if defined(OS_MACOSX)
+  if (base::mac::AmIBundled()) {
+    // The bundled app executables (Chromium, TestShell, etc) live three
+    // levels down from the build directory, eg:
+    // Chromium.app/Contents/MacOS/Chromium
+    *result = result->DirName().DirName().DirName();
+  }
+#endif
+  return true;
+}
+
+void SetFileUrlPathAliasForIpcFuzzer() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFileUrlPathAlias))
+    return;
+
+  base::FilePath build_directory;
+  if (!GetBuildDirectory(&build_directory)) {
+    LOG(ERROR) << "Failed to get build directory for /gen path alias.";
+    return;
+  }
+
+  const base::CommandLine::StringType alias_switch =
+      FILE_PATH_LITERAL("/gen=") + build_directory.AppendASCII("gen").value();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
+      switches::kFileUrlPathAlias, alias_switch);
+}
+#endif
 
 }  // namespace
 
@@ -1422,6 +1461,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   media::SetMediaDrmBridgeClient(GetContentClient()->GetMediaDrmBridgeClient());
 #endif
 
+#if defined(ENABLE_IPC_FUZZER)
+  SetFileUrlPathAliasForIpcFuzzer();
+#endif
   return result_code_;
 }
 

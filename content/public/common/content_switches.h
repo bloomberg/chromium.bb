@@ -148,6 +148,7 @@ CONTENT_EXPORT extern const char kEnableWebVR[];
 CONTENT_EXPORT extern const char kEnableZeroCopy[];
 CONTENT_EXPORT extern const char kExplicitlyAllowedPorts[];
 CONTENT_EXPORT extern const char kFieldTrialHandle[];
+CONTENT_EXPORT extern const char kFileUrlPathAlias[];
 CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kForceGpuRasterization[];
 CONTENT_EXPORT extern const char kDisableOopRasterization[];

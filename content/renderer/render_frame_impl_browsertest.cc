@@ -19,6 +19,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -619,6 +620,29 @@ TEST_F(RenderFrameImplTest, AutoplayFlags_WrongOrigin) {
   // Check the flags have been not been set.
   EXPECT_EQ(blink::mojom::kAutoplayFlagNone,
             AutoplayFlagsForFrame(GetMainRenderFrame()));
+}
+
+TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
+  const struct {
+    const char* original;
+    const char* transformed;
+  } kTestCases[] = {
+      {"file:///alias", "file:///replacement"},
+      {"file:///alias/path/to/file", "file:///replacement/path/to/file"},
+      {"file://alias/path/to/file", "file://alias/path/to/file"},
+      {"file:///notalias/path/to/file", "file:///notalias/path/to/file"},
+      {"file:///root/alias/path/to/file", "file:///root/alias/path/to/file"},
+      {"file:///", "file:///"},
+  };
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kFileUrlPathAlias, "/alias=/replacement");
+
+  for (const auto& test_case : kTestCases) {
+    WebURLRequest request;
+    request.SetURL(GURL(test_case.original));
+    GetMainRenderFrame()->WillSendRequest(request);
+    EXPECT_EQ(test_case.transformed, request.Url().GetString().Utf8());
+  }
 }
 
 // RenderFrameRemoteInterfacesTest ------------------------------------
