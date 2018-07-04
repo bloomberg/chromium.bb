@@ -73,18 +73,10 @@ UChar TextIteratorTextState::CharacterAt(unsigned index) const {
   return text_[text_start_offset_ + index];
 }
 
-String TextIteratorTextState::Substring(unsigned position,
-                                        unsigned length) const {
-  SECURITY_DCHECK(position <= this->length());
-  SECURITY_DCHECK(position + length <= this->length());
-  if (!length)
-    return g_empty_string;
-  if (single_character_buffer_) {
-    DCHECK_EQ(position, 0u);
-    DCHECK_EQ(length, 1u);
+String TextIteratorTextState::GetTextForTesting() const {
+  if (single_character_buffer_)
     return String(&single_character_buffer_, 1);
-  }
-  return text_.Substring(text_start_offset_ + position, length);
+  return text_.Substring(text_start_offset_, length());
 }
 
 void TextIteratorTextState::AppendTextToStringBuilder(
