@@ -2417,8 +2417,11 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC" desc="Checkbox label: should Chrome protect user and user's device from dangerous sites">
     Protects you and your device from dangerous sites
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Checkbox label: should Chrome upload some system information and page content to detect dangerous apps and sites">
-    Sends some system information and page content to Google to help detect dangerous apps and sites
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING" desc="The section title of the extended safe browsing checkbox to help improve safe browsing">
+    Help improve Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Description for extended safe browsing">
+    Sends some system information and page content to Google
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
     Use a web service to help resolve spelling errors
@@ -2427,10 +2430,7 @@
     Smarter spell-checking by sending what you type in the browser to Google
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT" desc="The documentation string of the 'Use Spelling' preference">
-    Spell check
-  </message>
-  <message name="IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT" desc="Description of using a web serviced to help resolve spelling errors. It is important to convey that what the user types will be sent to Google.">
-    Control this setting in <ph name="BEGIN_LINK">&lt;a href=&quot;chrome://settings/languages&quot;&gt;<ex>&lt;a href=&quot;chrome://settings/languages&quot;&gt;</ex></ph>Languages<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Enhanced spell check
   </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
     Automatically send usage statistics and crash reports to Google
@@ -2442,7 +2442,7 @@
     Help improve Chrome's features and performance
   </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT" desc="The description of the checkbox to enable/disable crash and user metrics logging">
-    Automatically sends usage statistics and crash reports to Google
+    Automatically send usage statistics and crash reports to Google
   </message>
   <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION" desc="The label of the checkbox to enable/disable url keyed anonymized data collection.">
     Make searches and browsing better
@@ -3470,16 +3470,13 @@
     Passwords, bookmarks, history, and more are synced to your account
   </message>
   <message name="IDS_SETTINGS_SYNC_DESCRIPTION_UNIFIED_CONSENT" desc="Text explaining what the sync system does, when unified consent is enabled.">
-    Your browsing data and activity, synced to your Google account.
+    Your browsing data and activity, synced to your Google Account
   </message>
   <message name="IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the sync settings. Only visible by screen reader software.">
     Show sync settings
   </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
     Non-personalized services
-  </message>
-  <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_DESC" desc="Brief explanation of the capability of Google services.">
-    Communicate with Google to improve browsing and Chrome
   </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the google services settings. Only visible by screen reader software.">
     Show Google services settings
@@ -3584,10 +3581,7 @@
     Use default settings
   </message>
   <message name="IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
-    Personalize Google services
-  </message>
-  <message name="IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TEXT" desc="Text of the personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
-    Control how your browsing history personalizes Search, ads, and other Google services
+    Control how your browsing history is used to personalize Search, ads, and more
   </message>
 
   <if expr="not chromeos">

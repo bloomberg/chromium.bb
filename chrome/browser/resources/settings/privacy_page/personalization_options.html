@@ -22,15 +22,27 @@
         border-top: none;
       }
     </style>
+    <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
+        pref="{{prefs.search.suggest_enabled}}"
+        label="$i18n{searchSuggestPref}"
+        sub-label="$i18n{searchSuggestPrefDesc}"
+        disabled="[[unifiedConsentGiven]]">
+    </settings-toggle-button>
+    <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
+        pref="{{prefs.net.network_prediction_options}}"
+        label="$i18n{networkPredictionEnabled}"
+        sub-label="$i18n{networkPredictionEnabledDesc}"
+        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]"
+        disabled="[[unifiedConsentGiven]]">
+    </settings-toggle-button>
     <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}"
         disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
-    <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
-        pref="{{prefs.search.suggest_enabled}}"
-        label="$i18n{searchSuggestPref}"
-        sub-label="$i18n{searchSuggestPrefDesc}"
+    <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
+        label="$i18n{safeBrowsingEnableProtection}"
+        sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
         disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
     <settings-toggle-button id="safeBrowsingExtendedReportingControl"
@@ -41,40 +53,7 @@
         no-set-pref
         disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
-    <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
-        pref="{{prefs.net.network_prediction_options}}"
-        label="$i18n{networkPredictionEnabled}"
-        sub-label="$i18n{networkPredictionEnabledDesc}"
-        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]"
-        disabled="[[unifiedConsentGiven]]">
-    </settings-toggle-button>
-    <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
-        label="$i18n{safeBrowsingEnableProtection}"
-        sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
-        disabled="[[unifiedConsentGiven]]">
-    </settings-toggle-button>
 <if expr="_google_chrome">
-    <template is="dom-if" if="[[!unifiedConsentEnabled]]">
-      <settings-toggle-button id="spellCheckControl"
-          pref="{{prefs.spellcheck.use_spelling_service}}"
-          label="$i18n{spellingPref}"
-          sub-label="$i18n{spellingDescription}"
-          disabled="[[unifiedConsentGiven]]">
-      </settings-toggle-button>
-    </template>
-    <template is="dom-if" if="[[unifiedConsentEnabled]]">
-      <div class="settings-box two-line" id="spellCheckLinkBox">
-        <div class="start">
-          $i18n{spellingPref}
-          <div class="secondary" on-click="onLanguageLinkBoxClick_">
-            $i18nRaw{spellingDescription}
-          </div>
-        </div>
-        <cr-toggle checked="[[prefs.spellcheck.use_spelling_service]]"
-            disabled="[[unifiedConsentGiven]]">
-        </cr-toggle>
-      </div>
-    </template>
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
         label="$i18n{enableLogging}"
@@ -96,6 +75,27 @@
       </template>
     </settings-toggle-button>
 </if><!-- not chromeos -->
+    <template is="dom-if" if="[[!unifiedConsentEnabled]]">
+      <settings-toggle-button id="spellCheckControl"
+          pref="{{prefs.spellcheck.use_spelling_service}}"
+          label="$i18n{spellingPref}"
+          sub-label="$i18n{spellingDescription}"
+          disabled="[[unifiedConsentGiven]]">
+      </settings-toggle-button>
+    </template>
+    <template is="dom-if" if="[[unifiedConsentEnabled]]">
+      <div class="settings-box two-line" id="spellCheckLinkBox">
+        <div class="start">
+          $i18n{spellingPref}
+          <div class="secondary" on-click="onLanguageLinkBoxClick_">
+            $i18nRaw{spellingDescription}
+          </div>
+        </div>
+        <cr-toggle checked="[[prefs.spellcheck.use_spelling_service]]"
+            disabled="[[unifiedConsentGiven]]">
+        </cr-toggle>
+      </div>
+    </template>
 </if><!-- _google_chrome -->
     <settings-toggle-button
         pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
