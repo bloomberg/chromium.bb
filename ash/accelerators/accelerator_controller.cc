@@ -880,7 +880,13 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
   } else {
     RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
   }
-  Shell::Get()->magnification_controller()->SetEnabled(enabled);
+
+  // TODO (afakhry): Move the below into a single call (crbug/817157).
+  // Necessary to make magnification controller in ash observe changes to the
+  // prefs iteself.
+  Shell* shell = Shell::Get();
+  shell->accessibility_controller()->SetFullscreenMagnifierEnabled(enabled);
+  shell->magnification_controller()->SetEnabled(enabled);
 }
 
 void SetHighContrastEnabled(bool enabled) {

@@ -80,6 +80,8 @@ class ASH_EXPORT AccessibilityController
   void SetFocusHighlightEnabled(bool enabled);
   bool IsFocusHighlightEnabled() const;
 
+  void SetFullscreenMagnifierEnabled(bool enabled);
+
   void SetHighContrastEnabled(bool enabled);
   bool IsHighContrastEnabled() const;
 
