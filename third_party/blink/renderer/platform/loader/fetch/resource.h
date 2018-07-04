@@ -268,9 +268,17 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool HasCacheControlNoStoreHeader() const;
   bool MustReloadDueToVaryHeader(const ResourceRequest& new_request) const;
 
-  // Returns true if any resource in the request chain has revalidation
-  // requested.
-  bool AsyncRevalidationRequested() const;
+  // Returns true if any response returned from the upstream in the redirect
+  // chain is stale and requires triggering async stale revalidation. Once
+  // revalidation is started SetStaleRevalidationStarted() should be called.
+  bool StaleRevalidationRequested() const;
+
+  // Set that stale revalidation has been started so that subsequent
+  // requests won't trigger it again. When stale revalidation is completed
+  // this resource will be removed from the MemoryCache so there is no
+  // need to reset it back to false.
+  bool StaleRevalidationStarted() const { return stale_revalidation_started_; }
+  void SetStaleRevalidationStarted() { stale_revalidation_started_ = true; }
 
   const IntegrityMetadataSet& IntegrityMetadata() const {
     return options_.integrity_metadata;
@@ -521,6 +529,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool is_add_remove_client_prohibited_;
   bool is_revalidation_start_forbidden_ = false;
   bool is_unused_preload_ = false;
+  bool stale_revalidation_started_ = false;
 
   ResourceIntegrityDisposition integrity_disposition_;
   SubresourceIntegrity::ReportInfo integrity_report_info_;

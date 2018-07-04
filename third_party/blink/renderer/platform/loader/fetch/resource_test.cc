@@ -484,7 +484,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));
   EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(true));
   EXPECT_TRUE(resource->ShouldRevalidateStaleResponse());
-  EXPECT_TRUE(resource->AsyncRevalidationRequested());
+  EXPECT_TRUE(resource->StaleRevalidationRequested());
 }
 
 }  // namespace blink

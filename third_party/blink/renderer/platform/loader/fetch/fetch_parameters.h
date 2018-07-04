@@ -139,6 +139,11 @@ class PLATFORM_EXPORT FetchParameters {
     options_.initiator_info.is_link_preload = is_link_preload;
   }
 
+  bool IsStaleRevalidation() const { return is_stale_revalidation_; }
+  void SetStaleRevalidation(bool is_stale_revalidation) {
+    is_stale_revalidation_ = is_stale_revalidation;
+  }
+
   void SetContentSecurityCheck(
       ContentSecurityPolicyDisposition content_security_policy_option) {
     options_.content_security_policy_option = content_security_policy_option;
@@ -206,6 +211,7 @@ class PLATFORM_EXPORT FetchParameters {
   ResourceWidth resource_width_;
   ClientHintsPreferences client_hint_preferences_;
   PlaceholderImageRequestType placeholder_image_request_type_;
+  bool is_stale_revalidation_ = false;
 };
 
 // This class is needed to copy a FetchParameters across threads, because it

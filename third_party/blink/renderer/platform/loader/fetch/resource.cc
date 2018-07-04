@@ -1105,7 +1105,7 @@ bool Resource::ShouldRevalidateStaleResponse() const {
       GetResourceRequest(), GetResponse(), response_timestamp_);
 }
 
-bool Resource::AsyncRevalidationRequested() const {
+bool Resource::StaleRevalidationRequested() const {
   if (GetResponse().AsyncRevalidationRequested())
     return true;
 

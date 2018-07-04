@@ -279,6 +279,9 @@ class PLATFORM_EXPORT ResourceFetcher
                               const ResourceFactory&,
                               bool is_static_data) const;
 
+  void ScheduleStaleRevalidate(Resource* stale_resource);
+  void RevalidateStaleResource(Resource* stale_resource);
+
   Member<FetchContext> context_;
   Member<ResourceLoadScheduler> scheduler_;
 
