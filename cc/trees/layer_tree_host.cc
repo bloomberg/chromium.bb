@@ -1207,10 +1207,7 @@ void LayerTreeHost::SetRasterColorSpace(
 }
 
 void LayerTreeHost::SetContentSourceId(uint32_t id) {
-  if (content_source_id_ == id)
-    return;
   content_source_id_ = id;
-  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetLocalSurfaceIdFromParent(
