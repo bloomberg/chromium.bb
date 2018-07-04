@@ -433,20 +433,14 @@ void SyncPrefs::RegisterDataTypePreferredPref(
     ModelType type,
     bool is_preferred) {
   const char* pref_name = GetPrefNameForDataType(type);
-  if (!pref_name) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(pref_name);
   registry->RegisterBooleanPref(pref_name, is_preferred);
 }
 
 bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const char* pref_name = GetPrefNameForDataType(type);
-  if (!pref_name) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK(pref_name);
 
   if (AlwaysPreferredUserTypes().Has(type))
     return true;
@@ -465,10 +459,7 @@ bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
 void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const char* pref_name = GetPrefNameForDataType(type);
-  if (!pref_name) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(pref_name);
 
   if (AlwaysPreferredUserTypes().Has(type))
     return;
