@@ -276,6 +276,9 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
              // This is to exclude some objects (e.g. LayoutText) inheriting
              // stacked style from parent but aren't actually stacked.
              object.HasLayer() &&
+             !ToLayoutBoxModelObject(object)
+                  .Layer()
+                  ->IsReplacedNormalFlowStacking() &&
              context.paint_invalidation_container !=
                  context.paint_invalidation_container_for_stacked_contents) {
     // The current object is stacked, so we should use

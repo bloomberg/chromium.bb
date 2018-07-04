@@ -1068,6 +1068,8 @@ LayoutPoint PaintLayer::ComputeOffsetFromAncestor(
 }
 
 PaintLayer* PaintLayer::CompositingContainer() const {
+  if (IsReplacedNormalFlowStacking())
+    return Parent();
   if (!GetLayoutObject().StyleRef().IsStacked())
     return IsSelfPaintingLayer() ? Parent() : ContainingLayer();
   if (PaintLayerStackingNode* ancestor_stacking_node =
@@ -2354,7 +2356,7 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
   return true;
 }
 
-bool PaintLayer::IsReplacedNormalFlowStacking() {
+bool PaintLayer::IsReplacedNormalFlowStacking() const {
   if (!GetLayoutObject().IsSVGForeignObject())
     return false;
   if (!GetLayoutObject().StyleRef().HasAutoZIndex())
@@ -2851,9 +2853,8 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (EnclosingPaginationLayer())
     return false;
 
-  // SVG documents paint atomically.
-  if (GetLayoutObject().IsSVGRoot() &&
-      GetLayoutObject().GetDocument().IsSVGDocument())
+  // SVG paints atomically.
+  if (GetLayoutObject().IsSVGRoot())
     return true;
 
   // Create subsequence for only stacking contexts whose painting are atomic.
