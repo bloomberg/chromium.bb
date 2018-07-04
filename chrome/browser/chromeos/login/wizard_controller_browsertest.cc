@@ -1619,8 +1619,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
       5 /* NotRequiredInEmbargoPeriod*/, 1 /* count */);
 }
 
+// Disabled because it's flaky: crbug.com/860092.
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
-                       ControlFlowWaitSystemClockSyncTimeout) {
+                       DISABLED_ControlFlowWaitSystemClockSyncTimeout) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
 
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
