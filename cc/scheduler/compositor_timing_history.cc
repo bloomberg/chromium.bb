@@ -282,10 +282,9 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~BrowserUMAReporter() override = default;
 
-  void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser.BeginMainFrameIntervalCritical", interval);
-  }
+  // BeginMainFrameIntervalCritical is not meaningful to measure on browser
+  // side because browser rendering fps is not at 60.
+  void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
 
   void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
