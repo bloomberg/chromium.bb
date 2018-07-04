@@ -13,9 +13,9 @@
     <script src="../js/view.js"></script>
     <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
+    <script src="../js/views/camera/gallerybutton.js"></script>
     <script src="../js/views/camera_toast.js"></script>
     <script src="../js/views/dialog.js"></script>
-    <script src="../js/views/album.js"></script>
     <script src="../js/views/browser.js"></script>
     <script src="../js/router.js"></script>
     <script src="../js/main.js"></script>
@@ -35,7 +35,7 @@
             <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
                    i18n-label="toggleMirrorButton" checked hidden>
           </div>
-          <div id="buttons">
+          <div class="one-button">
             <button id="take-picture" disabled tabindex="0"
                     i18n-label="takePictureButton"></button>
           </div>
@@ -43,11 +43,11 @@
             <input type="checkbox" id="toggle-timer" disabled tabindex="0"
                    i18n-label="toggleTimerButton">
           </div>
-          <div class="buttons">
-            <button id="album-enter" disabled tabindex="0"
-                    i18n-label="galleryButton"></button>
-          </div>
         </div>
+      </div>
+      <div class="one-button">
+        <button id="gallery-enter" disabled tabindex="0"
+                i18n-label="galleryButton" hidden></button>
       </div>
       <div id="toast" class="visible">
         <div id="toast-message"></div>
@@ -55,19 +55,6 @@
       <div id="recording-timer"></div>
     </div>
     <div id="spinner"></div>
-    <div id="album" aria-role="listbox" i18n-aria-label="galleryImages">
-      <div class="padder"></div>
-      <div class="buttons">
-        <button id="album-print" disabled tabindex="0"
-                i18n-label="printButton"></button>
-        <button id="album-export" disabled tabindex="0"
-                i18n-label="exportButton"></button>
-        <button id="album-delete" disabled tabindex="0"
-                i18n-label="deleteButton"></button>
-        <button id="album-back" tabindex="0"
-                i18n-label="backButton"></button>
-      </div>
-    </div>
     <div id="browser" aria-role="listbox" i18n-aria-label="galleryImages">
       <div class="padder">
         <div class="bounds-padder"></div>

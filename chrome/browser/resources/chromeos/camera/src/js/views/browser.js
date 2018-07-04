@@ -16,15 +16,16 @@ camera.views = camera.views || {};
 
 /**
  * Creates the Browser view controller.
- *
+ * TODO(yuli): Merge GalleryBase into Browser.
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
+ * @param {camera.models.Gallery} model Model object.
  * @extends {camera.view.GalleryBase}
  * @constructor
  */
-camera.views.Browser = function(context, router) {
-  camera.views.GalleryBase.call(
-      this, context, router, document.querySelector('#browser'), 'browser');
+camera.views.Browser = function(context, router, model) {
+  camera.views.GalleryBase.call(this, context, router, model,
+      document.querySelector('#browser'), 'browser');
 
   /**
    * @type {camera.util.SmoothScroller}
@@ -66,18 +67,8 @@ camera.views.Browser = function(context, router) {
    */
   this.lastPictureIndex_ = 0;
 
-  /**
-   * @type {?function()}
-   * @private
-   */
-  this.selectionChanged_ = null;
-
   // End of properties, seal the object.
   Object.seal(this);
-
-  // Register clicking on the background to close the browser view.
-  document.querySelector('#browser').addEventListener('click',
-      this.onBackgroundClicked_.bind(this));
 
   // Listen for clicking on the browser buttons.
   document.querySelector('#browser-print').addEventListener(
@@ -95,16 +86,13 @@ camera.views.Browser.prototype = {
 };
 
 /**
- * @override
+ * Prepares the view.
  */
-camera.views.Browser.prototype.initialize = function(callback) {
-  camera.views.GalleryBase.prototype.initialize.call(this, function() {
-    // Hide export-button if using external file system.
-    if (camera.models.FileSystem.externalFs) {
-      document.querySelector('#browser-export').hidden = true;
-    }
-    callback();
-  }.bind(this));
+camera.views.Browser.prototype.prepare = function() {
+  // Hide export-button if using external file system.
+  if (camera.models.FileSystem.externalFs) {
+    document.querySelector('#browser-export').hidden = true;
+  }
 };
 
 /**
@@ -114,15 +102,13 @@ camera.views.Browser.prototype.initialize = function(callback) {
  */
 camera.views.Browser.prototype.onEnter = function(opt_arguments) {
   var index = null;
-  if (opt_arguments) {
-    if (opt_arguments.picture)
-      index = this.pictureIndex(opt_arguments.picture);
-    if (opt_arguments.selectionChanged)
-      this.selectionChanged_ = opt_arguments.selectionChanged;
+  if (opt_arguments && opt_arguments.picture) {
+    index = this.pictureIndex(opt_arguments.picture);
   }
-  // Navigate to the newest picture if no arguments are provided.
-  if (index == null && this.pictures.length)
+  // Navigate to the newest picture if the given picture isn't found.
+  if (index == null && this.pictures.length) {
     index = this.pictures.length - 1;
+  }
   this.setSelectedIndex(index);
 
   this.onResize();
@@ -139,12 +125,10 @@ camera.views.Browser.prototype.onActivate = function() {
 };
 
 /**
- * Leaves the view.
  * @override
  */
 camera.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
-  this.selectionChanged_ = null;
   this.setSelectedIndex(null);
 };
 
@@ -163,16 +147,6 @@ camera.views.Browser.prototype.onResize = function() {
                                this.scroller_,
                                camera.util.SmoothScroller.Mode.INSTANT);
   }
-};
-
-/**
- * Handles clicking (or touching) on the background.
- * @param {Event} event Click event.
- * @private
- */
-camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
-  if (event.target == document.querySelector('#browser'))
-    this.router.back();
 };
 
 /**
@@ -370,10 +344,6 @@ camera.views.Browser.prototype.setSelectedIndex = function(index) {
   if (selectedPicture) {
     camera.util.scrollToCenter(selectedPicture.element, this.scroller_);
   }
-  if (this.selectionChanged_) {
-    this.selectionChanged_(selectedPicture ? selectedPicture.picture : null);
-  }
-
   this.updateButtons_();
 
   // Update resolutions only if updating the selected index didn't cause any
@@ -435,8 +405,8 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
 /**
  * @override
  */
-camera.views.Browser.prototype.onPictureDeleting = function(picture) {
-  camera.views.GalleryBase.prototype.onPictureDeleting.apply(this, arguments);
+camera.views.Browser.prototype.onPictureDeleted = function(picture) {
+  camera.views.GalleryBase.prototype.onPictureDeleted.apply(this, arguments);
   this.updateScrollbarThumb_();
 };
 
@@ -499,9 +469,7 @@ camera.views.Browser.prototype.updateElementSize = function(wrapper) {
   // TODO(yuli): Fix the blurriness in CSS scaled-up content.
   var maxWidth = wrapper.parentElement.clientWidth * 0.72;
   var maxHeight = wrapper.parentElement.clientHeight * 0.72;
-
-  camera.views.GalleryBase.prototype.updateElementSize.call(
-      this, wrapper, maxWidth, maxHeight, false);
+  camera.util.updateElementSize(wrapper, maxWidth, maxHeight, false);
 };
 
 /**

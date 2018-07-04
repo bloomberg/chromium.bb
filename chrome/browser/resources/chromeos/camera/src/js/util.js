@@ -23,13 +23,27 @@ camera.util.TooltipManager = function() {
    * @type {camera.util.StyleEffect}
    * @private
    */
-  this.effect_ = new camera.util.StyleEffect(
-      function(args, callback) {
-        this.setTooltipVisibility_(args.element, args.visibility, callback);
-      }.bind(this));
+  this.effect_ = new camera.util.StyleEffect((args, callback) => {
+    this.setTooltipVisibility_(args.element, args.visibility, callback);
+  });
 
   // No more properties. Freeze the object.
   Object.freeze(this);
+};
+
+/**
+ * Initializes the tooltip manager.
+ */
+camera.util.TooltipManager.initialize = function() {
+  // Add tooltip handlers to every element with the i18n-label attribute.
+  var manager = new camera.util.TooltipManager();
+  var selectors = document.querySelectorAll('*[i18n-label]');
+  for (var index = 0; index < selectors.length; index++) {
+    var element = selectors[index];
+    var handler = manager.showTooltip_.bind(manager, element);
+    element.addEventListener('mouseover', handler);
+    element.addEventListener('focus', handler);
+  }
 };
 
 /**
@@ -38,27 +52,6 @@ camera.util.TooltipManager = function() {
  * @const
  */
 camera.util.TooltipManager.EDGE_MARGIN = 10;
-
-camera.util.TooltipManager.prototype = {
-  get animating() {
-    return this.effect_.animating;
-  }
-};
-
-/**
- * Initializes the manager by adding tooltip handlers to every element which
- * has the i18n-label attribute.
- */
-camera.util.TooltipManager.prototype.initialize = function() {
-  var selectors = document.querySelectorAll('*[i18n-label]');
-  for (var index = 0; index < selectors.length; index++) {
-    var element = selectors[index];
-    element.addEventListener(
-        'mouseover', this.showTooltip_.bind(this, element));
-    element.addEventListener(
-        'focus', this.showTooltip_.bind(this, element));
-  }
-};
 
 /**
  * Positions the tooltip on the screen and toggles its visibility.
@@ -1233,37 +1226,6 @@ camera.util.getShortcutIdentifier = function(event) {
                    (event.altKey ? 'Alt-' : '') +
                    (event.shiftKey ? 'Shift-' : '') +
                    (event.metaKey ? 'Meta-' : '');
-
-  // Handle both KeyboardEvent keyIdentifier and key as keyIdentifier is
-  // deprecated since Chrome M54 and key is not supported prior Chrome M51.
-  if (event.keyIdentifier && !event.key) {
-    switch (event.keyIdentifier) {
-      case 'U+001B':
-        identifier += 'Escape';
-        break;
-      case 'U+007F':
-        identifier += 'Delete';
-        break;
-      case 'U+0020':
-        identifier += 'Space';
-        break;
-      case 'U+0041':
-        identifier += 'A';
-        break;
-      case 'U+0050':
-        identifier += 'P';
-        break;
-      case 'U+0053':
-        identifier += 'S';
-        break;
-      case 'U+0047':
-        identifier += 'G';
-        break;
-      default:
-        identifier += event.keyIdentifier;
-    }
-  }
-
   if (event.key) {
     switch (event.key) {
       case 'ArrowLeft':
@@ -1278,9 +1240,6 @@ camera.util.getShortcutIdentifier = function(event) {
       case 'ArrowUp':
         identifier += 'Up';
         break;
-      case ' ':
-        identifier += 'Space';
-        break;
       case 'a':
         identifier += 'A';
         break;
@@ -1290,14 +1249,10 @@ camera.util.getShortcutIdentifier = function(event) {
       case 's':
         identifier += 'S';
         break;
-      case 'g':
-        identifier += 'G';
-        break;
       default:
         identifier += event.key;
     }
   }
-
   return identifier;
 };
 
@@ -1311,6 +1266,30 @@ camera.util.makeElementsUnfocusableByMouse = function() {
       event.preventDefault();
     });
   }
+};
+
+/**
+ * Updates the wrapped element size according to the given bounds. The wrapped
+ * content (either img or video child element) should keep the aspect ratio and
+ * is either filled up or letterboxed inside the wrapper element.
+ * @param {HTMLElement}  wrapper Element whose wrapped child to be updated.
+ * @param {number} boundWidth Bound width in pixels.
+ * @param {number} boundHeight Bound height in pixels.
+ * @param {boolean} fill True to fill up and crop the content to the bounds,
+ *     false to letterbox the content within the bounds.
+ */
+camera.util.updateElementSize = function(
+    wrapper, boundWidth, boundHeight, fill) {
+  // Assume the wrapped child is either img or video element.
+  var child = wrapper.firstElementChild;
+  var srcWidth = child.naturalWidth ? child.naturalWidth : child.videoWidth;
+  var srcHeight = child.naturalHeight ? child.naturalHeight : child.videoHeight;
+  var f = fill ? Math.max : Math.min;
+  var scale = f(boundHeight / srcHeight, boundWidth / srcWidth);
+
+  // Corresponding CSS should handle the adjusted sizes for proper display.
+  child.width = scale * srcWidth;
+  child.height = scale * srcHeight;
 };
 
 /*

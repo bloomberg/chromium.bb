@@ -43,9 +43,8 @@ camera.Router = function(navigateCallback, backCallback) {
  */
 camera.Router.ViewIdentifier = {
   CAMERA: 0,
-  ALBUM: 1,
-  BROWSER: 2,
-  DIALOG: 3
+  BROWSER: 1,
+  DIALOG: 2
 };
 
 /**

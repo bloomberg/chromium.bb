@@ -90,19 +90,34 @@ body {
   position: relative;
 }
 
-#toolbar #album-enter.flash {
-  -webkit-animation: flashButton 300ms linear 0.5s 3;
+.one-button #gallery-enter {
+  /* TODO(yuli): Make a circle button. */
+  position: absolute;
+  right: 24px;
+  bottom: 32px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+}
+
+.one-button #gallery-enter img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+}
+
+.one-button #gallery-enter.flash {
+  /* TODO(yuli): Improve animation. */
+  -webkit-animation: flashButton 300ms linear 0.5s;
 }
 
 @-webkit-keyframes flashButton {
   from {
     opacity: 0;
   }
-  50% {
-    opacity: 1;
-  }
   to {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
@@ -134,12 +149,6 @@ body {
   justify-content: flex-start;
 }
 
-.buttons #album-enter {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_album.png) 1x,
-      url(../images/2x/camera_button_album.png) 2x);
-}
-
 #toolbar .buttons {
   align-items: center;
   padding: 0 10px;
@@ -149,28 +158,24 @@ body {
   background-color: transparent;
 }
 
-.buttons #album-print,
 .buttons #browser-print {
   background-image: -webkit-image-set(
       url(../images/browser_button_print.png) 1x,
       url(../images/2x/browser_button_print.png) 2x);
 }
 
-.buttons #album-export,
 .buttons #browser-export {
   background-image: -webkit-image-set(
       url(../images/browser_button_export.png) 1x,
       url(../images/2x/browser_button_export.png) 2x);
 }
 
-.buttons #album-back,
 .buttons #browser-back {
   background-image: -webkit-image-set(
       url(../images/gallery_button_back.png) 1x,
       url(../images/2x/gallery_button_back.png) 2x);
 }
 
-.buttons #album-delete,
 .buttons #browser-delete {
   background-image: -webkit-image-set(
       url(../images/gallery_button_delete.png) 1x,
@@ -257,15 +262,15 @@ body.mirror #main-preview {
   height: 0;
 }
 
-#buttons {
+.one-button {
   align-items: center;
   display: flex;
   justify-content: center;
   margin-bottom: 5px;
 }
 
-#buttons button,
-#buttons input {
+.one-button button,
+.one-button input {
   background-color: transparent;
   border: none;
   display: flex;
@@ -273,15 +278,15 @@ body.mirror #main-preview {
   padding: 0;
 }
 
-#buttons button[disabled],
-#buttons input[disabled],
+.one-button button[disabled],
+.one-button input[disabled],
 .buttons button[disabled],
 .buttons input[disabled] {
   opacity: 0.65;
   pointer-events: none;
 }
 
-#buttons #take-picture {
+.one-button #take-picture {
   background-image: -webkit-image-set(
       url(../images/camera_button_picture.png) 1x,
       url(../images/2x/camera_button_picture.png) 2x);
@@ -289,30 +294,30 @@ body.mirror #main-preview {
   width: 73px;
 }
 
-#buttons #take-picture.motion-picture {
+.one-button #take-picture.motion-picture {
   background-image: -webkit-image-set(
       url(../images/camera_button_video.png) 1x,
       url(../images/2x/camera_button_video.png) 2x);
 }
 
-#buttons #take-picture:hover {
+.one-button #take-picture:hover {
   background-position: 0 -37px;
 }
 
-#buttons #take-picture:active {
+.one-button #take-picture:active {
   background-position: 0 -74px;
 }
 
-#buttons #take-picture[disabled] {
+.one-button #take-picture[disabled] {
   background-position: 0 -111px;
 }
 
-#buttons #take-picture:focus {
+.one-button #take-picture:focus {
   outline: none;
   position: relative;
 }
 
-#buttons #take-picture:focus::after {
+.one-button #take-picture:focus::after {
   border: 2px solid rgba(229, 151, 0, 0.5);
   border-radius: 20px;
   bottom: -2px;
@@ -324,7 +329,7 @@ body.mirror #main-preview {
   top: -2px;
 }
 
-#buttons #take-picture.flash {
+.one-button #take-picture.flash {
   -webkit-animation: flashTake 600ms linear infinite;
 }
 
@@ -391,7 +396,6 @@ body.mirror #main-preview {
 }
 
 #camera,
-#album,
 #browser {
   bottom: 0;
   left: 0;
@@ -403,12 +407,10 @@ body.mirror #main-preview {
   top: 0;
   transition: opacity 100ms, visibility 0 100ms;
   visibility: hidden;
-  z-index: 1;  /* Hack to enable touch scrolling in album. */
 }
 
 body.camera #camera,
-body.browser #browser,
-body.album #album {
+body.browser #browser {
   opacity: 1;
   transition: opacity 100ms;
   visibility: visible;
@@ -460,12 +462,10 @@ body.album #album {
   color: white;
   display: flex;
   font-size: 16px;
-  left: 0;
   justify-content: center;
   opacity: 0;
   position: absolute;
-  right: 0;
-  top: 56px;
+  top: 24px;
   z-index: 1;
 }
 
@@ -473,73 +473,18 @@ body.album #album {
   opacity: 1;
 }
 
-#album .buttons,
 #browser .buttons {
   position: fixed;
   /* Fix crbug.com/638500: button background flickers when hovered. */
   transform: translate3d(0, 0, 0);
 }
 
-#album .buttons button[disabled],
 #browser .buttons button[disabled] {
   display: none;
 }
 
-#album {
-  background: black;
-}
-
-#album .padder {
-  padding: 15px;
-}
-
-#album div.media-wrapper {
-  -webkit-app-region: no-drag;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  margin: 10px;
-  vertical-align: middle;
-  display: inline-block;
-  position: relative;
-  width: 220px;
-  height: 200px;
-  overflow: hidden;
-}
-
-#album div.media-wrapper img {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  -webkit-transform: translate(-50%, -50%);
-}
-
-#album div.media-wrapper.selected::after {
-  border: 4px solid rgb(66, 129, 244);
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  content: '';
-  display: block;
-  position: absolute;
-}
-
-#album div.media-wrapper.motion-picture::after {
-  background-image: -webkit-image-set(
-      url(../images/album_video_overlay.png) 1x,
-      url(../images/2x/album_video_overlay.png) 2x);
-  background-repeat: no-repeat;
-  background-position: center;
-  content: '';
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
 #browser {
-  background: rgba(0, 0, 0, 0.8);
+  background: black;
 }
 
 #browser .padder {
@@ -572,7 +517,6 @@ body.album #album {
 
 /* Printing in the browser view. */
 @media print {
-  /* For the album view, do not restrict to one page. */
   html {
     height: 100%;  /* Required for printing. */
   }
@@ -584,13 +528,8 @@ body.album #album {
     width: 100%;
   }
 
-  body.album:not(.browser) #album {
-    bottom: auto;
-  }
-
   /* Reset background colors. */
   body,
-  #album,
   #browser {
     background: transparent;
   }
@@ -602,14 +541,12 @@ body.album #album {
   }
 
   /* Hide all root elements, except the printed view. */
-  body.browser > :not(#browser),
-  body.album:not(.browser) > :not(#album) {
+  body.browser > :not(#browser) {
     display: none;
   }
 
-  /* Hide everything from the browser/album view, but the selected one(s). */
-  #browser .padder > :not(.selected),
-  #album .padder > :not(.selected) {
+  /* Hide everything from the browser view, but the selected one(s). */
+  #browser .padder > :not(.selected) {
     display: none;
   }
 
@@ -638,21 +575,6 @@ body.album #album {
 
   #browser video::-webkit-media-controls {
     display: none;
-  }
-
-  /* Reset styles to default on the album view. */
-  #album div.media-wrapper {
-    -webkit-transform: scale(1);
-    box-shadow: none;
-  }
-
-  #album div.media-wrapper.selected::after {
-    border: none;
-  }
-
-  /* Hide the overlay icons to print video thumbnial images. */
-  #album div.media-wrapper.motion-picture::after {
-    background-image: none;
   }
 }
 
