@@ -24,6 +24,7 @@
 #include "base/process/process_info.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -269,7 +270,7 @@ void CopyAnnotationsToProto(uint32_t new_milestones,
        ++bit) {
     const uint32_t flag = 1U << bit;
     if (new_milestones & flag) {
-      if (bit >= arraysize(kProtoPhases)) {
+      if (bit >= base::size(kProtoPhases)) {
         NOTREACHED();
         continue;
       }
@@ -288,7 +289,7 @@ void CopyProfileToProto(
     return;
 
   const bool preserve_order =
-      (ordering_spec == CallStackProfileParams::PRESERVE_ORDER);
+      ordering_spec == CallStackProfileParams::PRESERVE_ORDER;
 
   std::map<StackSamplingProfiler::Sample, int> sample_index;
   uint32_t milestones = 0;
