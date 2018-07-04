@@ -2794,14 +2794,18 @@ void LayerTreeHostImpl::ActivateStateForImages() {
 
 void LayerTreeHostImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
+  // Only work for low-end devices for now.
+  if (!base::SysInfo::IsLowEndDevice())
+    return;
+
   switch (level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      ClearUIResources();
-      ReleaseTreeResources();
       ReleaseTileResources();
+      ReleaseTreeResources();
+      ClearUIResources();
       if (image_decode_cache_) {
         image_decode_cache_->SetShouldAggressivelyFreeResources(true);
         image_decode_cache_->SetShouldAggressivelyFreeResources(false);
