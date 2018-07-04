@@ -260,7 +260,6 @@ class DriveIntegrationService::DriveFsHolder
   void OnMounted(const base::FilePath& path) override;
   std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
   CreateMojoConnectionDelegate() override;
-  bool AreRefreshTokensReady() override;
 
   Profile* const profile_;
 
@@ -307,14 +306,6 @@ DriveIntegrationService::DriveFsHolder::CreateMojoConnectionDelegate() {
   if (test_drivefs_mojo_connection_delegate_factory_)
     return test_drivefs_mojo_connection_delegate_factory_.Run();
   return Delegate::CreateMojoConnectionDelegate();
-}
-
-bool DriveIntegrationService::DriveFsHolder::AreRefreshTokensReady() {
-  const auto state = ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-                         ->GetDelegate()
-                         ->GetLoadCredentialsState();
-  return state != OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS &&
-         state != OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED;
 }
 
 void DriveIntegrationService::DriveFsHolder::OnMounted(
