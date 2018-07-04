@@ -128,11 +128,11 @@ class CertVerifierRequest : public base::LinkNode<CertVerifierRequest>,
                             public CertVerifier::Request {
  public:
   CertVerifierRequest(CertVerifierJob* job,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback callback,
                       CertVerifyResult* verify_result,
                       const NetLogWithSource& net_log)
       : job_(job),
-        callback_(callback),
+        callback_(std::move(callback)),
         verify_result_(verify_result),
         net_log_(net_log) {
     net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_REQUEST);
@@ -173,7 +173,7 @@ class CertVerifierRequest : public base::LinkNode<CertVerifierRequest>,
 
  private:
   CertVerifierJob* job_;  // Not owned.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   CertVerifyResult* verify_result_;
   const NetLogWithSource net_log_;
 };
@@ -254,11 +254,11 @@ class CertVerifierJob {
 
   // Creates and attaches a request to the Job.
   std::unique_ptr<CertVerifierRequest> CreateRequest(
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       CertVerifyResult* verify_result,
       const NetLogWithSource& net_log) {
-    std::unique_ptr<CertVerifierRequest> request(
-        new CertVerifierRequest(this, callback, verify_result, net_log));
+    std::unique_ptr<CertVerifierRequest> request(new CertVerifierRequest(
+        this, std::move(callback), verify_result, net_log));
 
     request->net_log().AddEvent(
         NetLogEventType::CERT_VERIFIER_REQUEST_BOUND_TO_JOB,
@@ -351,7 +351,7 @@ MultiThreadedCertVerifier::CreateForDualVerificationTrial(
 int MultiThreadedCertVerifier::Verify(const RequestParams& params,
                                       CRLSet* crl_set,
                                       CertVerifyResult* verify_result,
-                                      const CompletionCallback& callback,
+                                      CompletionOnceCallback callback,
                                       std::unique_ptr<Request>* out_req,
                                       const NetLogWithSource& net_log) {
   out_req->reset();
@@ -384,7 +384,7 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
   }
 
   std::unique_ptr<CertVerifierRequest> request =
-      job->CreateRequest(callback, verify_result, net_log);
+      job->CreateRequest(std::move(callback), verify_result, net_log);
   *out_req = std::move(request);
   return ERR_IO_PENDING;
 }

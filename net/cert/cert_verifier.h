@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
@@ -154,7 +154,7 @@ class NET_EXPORT CertVerifier {
   virtual int Verify(const RequestParams& params,
                      CRLSet* crl_set,
                      CertVerifyResult* verify_result,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* out_req,
                      const NetLogWithSource& net_log) = 0;
 

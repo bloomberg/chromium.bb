@@ -75,7 +75,7 @@ IgnoreErrorsCertVerifier::~IgnoreErrorsCertVerifier() {}
 int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
                                      net::CRLSet* crl_set,
                                      net::CertVerifyResult* verify_result,
-                                     const net::CompletionCallback& callback,
+                                     net::CompletionOnceCallback callback,
                                      std::unique_ptr<Request>* out_req,
                                      const net::NetLogWithSource& net_log) {
   SPKIHashSet spki_fingerprints;
@@ -131,8 +131,8 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
     return net::OK;
   }
 
-  return verifier_->Verify(params, crl_set, verify_result, callback, out_req,
-                           net_log);
+  return verifier_->Verify(params, crl_set, verify_result, std::move(callback),
+                           out_req, net_log);
 }
 
 void IgnoreErrorsCertVerifier::set_whitelist(const SPKIHashSet& whitelist) {

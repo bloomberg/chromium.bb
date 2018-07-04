@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 
+#include "net/base/completion_once_callback.h"
 #include "net/cert/client_cert_verifier.h"
 
 namespace net {
@@ -26,7 +27,7 @@ class MockClientCertVerifier : public ClientCertVerifier {
 
   // ClientCertVerifier implementation
   int Verify(X509Certificate* cert,
-             const CompletionCallback& callback,
+             CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req) override;
 
   // Sets the default return value for Verify() for certificates/hosts that do
