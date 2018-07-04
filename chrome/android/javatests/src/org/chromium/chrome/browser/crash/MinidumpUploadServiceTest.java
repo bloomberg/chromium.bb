@@ -4,11 +4,6 @@
 
 package org.chromium.chrome.browser.crash;
 
-import static org.chromium.chrome.browser.crash.MinidumpUploadService.BROWSER;
-import static org.chromium.chrome.browser.crash.MinidumpUploadService.GPU;
-import static org.chromium.chrome.browser.crash.MinidumpUploadService.OTHER;
-import static org.chromium.chrome.browser.crash.MinidumpUploadService.RENDERER;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.job.JobInfo;
@@ -585,8 +580,8 @@ public class MinidumpUploadServiceTest {
         final File minidumpFile =
                 new File(mTestRule.getCrashDir(), "chromium_renderer-123.dmp.try0");
         CrashTestRule.setUpMinidumpFile(minidumpFile, BOUNDARY, "browser");
-        Assert.assertEquals(
-                BROWSER, MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+        Assert.assertEquals(MinidumpUploadService.ProcessType.BROWSER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
     }
 
     @Test
@@ -596,8 +591,8 @@ public class MinidumpUploadServiceTest {
         final File minidumpFile =
                 new File(mTestRule.getCrashDir(), "chromium_renderer-123.dmp.try0");
         CrashTestRule.setUpMinidumpFile(minidumpFile, BOUNDARY, "renderer");
-        Assert.assertEquals(
-                RENDERER, MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+        Assert.assertEquals(MinidumpUploadService.ProcessType.RENDERER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
     }
 
     @Test
@@ -607,8 +602,8 @@ public class MinidumpUploadServiceTest {
         final File minidumpFile =
                 new File(mTestRule.getCrashDir(), "chromium_renderer-123.dmp.try0");
         CrashTestRule.setUpMinidumpFile(minidumpFile, BOUNDARY, "gpu-process");
-        Assert.assertEquals(
-                GPU, MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+        Assert.assertEquals(MinidumpUploadService.ProcessType.GPU,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
     }
 
     @Test
@@ -618,8 +613,8 @@ public class MinidumpUploadServiceTest {
         final File minidumpFile =
                 new File(mTestRule.getCrashDir(), "chromium_renderer-123.dmp.try0");
         CrashTestRule.setUpMinidumpFile(minidumpFile, BOUNDARY, "weird test type");
-        Assert.assertEquals(
-                OTHER, MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+        Assert.assertEquals(MinidumpUploadService.ProcessType.OTHER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
     }
 
     private class MinidumpPreparationContext extends AdvancedMockContext {
