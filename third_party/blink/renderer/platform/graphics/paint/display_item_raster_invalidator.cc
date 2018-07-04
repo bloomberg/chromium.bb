@@ -22,13 +22,13 @@ void DisplayItemRasterInvalidator::Generate() {
 
   Vector<bool> old_display_items_matched;
   old_display_items_matched.resize(old_chunk_.size());
-  size_t old_index = old_chunk_.begin_index;
-  size_t max_cached_old_index = old_index;
+  size_t next_old_item_to_match = old_chunk_.begin_index;
+  size_t max_cached_old_index = next_old_item_to_match;
 
   for (const auto& new_item :
        new_paint_artifact_.GetDisplayItemList().ItemsInPaintChunk(new_chunk_)) {
     size_t matched_old_index =
-        MatchNewDisplayItemInOldChunk(new_item, old_index);
+        MatchNewDisplayItemInOldChunk(new_item, next_old_item_to_match);
     if (matched_old_index == kNotFound) {
       if (new_item.DrawsContent()) {
         // Will invalidate for the new display item which doesn't match any old
@@ -73,10 +73,6 @@ void DisplayItemRasterInvalidator::Generate() {
     DCHECK(!old_display_items_matched[offset]);
     old_display_items_matched[offset] = true;
 
-    old_index = matched_old_index + 1;
-    if (old_index == old_chunk_.end_index)
-      old_index = old_chunk_.begin_index;
-
     // |old_item.IsTombstone()| is true means that |new_item| was copied from
     // cached |old_item|.
     if (old_item.IsTombstone())
@@ -103,18 +99,29 @@ void DisplayItemRasterInvalidator::Generate() {
 
 size_t DisplayItemRasterInvalidator::MatchNewDisplayItemInOldChunk(
     const DisplayItem& new_item,
-    size_t old_index) {
+    size_t& next_old_item_to_match) {
   if (!new_item.IsCacheable())
     return kNotFound;
-
-  for (size_t i = old_index; i < old_chunk_.end_index; i++) {
-    const auto& old_item = old_paint_artifact_.GetDisplayItemList()[i];
-    if (old_item.IsCacheable() && old_item.GetId() == new_item.GetId())
-      return i;
+  for (; next_old_item_to_match < old_chunk_.end_index;
+       next_old_item_to_match++) {
+    const auto& old_item =
+        old_paint_artifact_.GetDisplayItemList()[next_old_item_to_match];
+    if (!old_item.IsCacheable())
+      continue;
+    if (old_item.GetId() == new_item.GetId())
+      return next_old_item_to_match++;
+    // Add the skipped old item into index.
+    old_display_items_index_.insert(&old_item.Client(), Vector<size_t>())
+        .stored_value->value.push_back(next_old_item_to_match);
   }
-  for (size_t i = old_chunk_.begin_index; i < old_index; i++) {
+
+  // Didn't find matching old item in sequential matching. Look up the index.
+  auto it = old_display_items_index_.find(&new_item.Client());
+  if (it == old_display_items_index_.end())
+    return kNotFound;
+  for (size_t i : it->value) {
     const auto& old_item = old_paint_artifact_.GetDisplayItemList()[i];
-    if (old_item.IsCacheable() && old_item.GetId() == new_item.GetId())
+    if (old_item.GetId() == new_item.GetId())
       return i;
   }
   return kNotFound;
