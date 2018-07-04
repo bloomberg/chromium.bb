@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
@@ -460,7 +461,7 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     return false;
 
   if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE &&
-      !base::FeatureList::IsEnabled(drive::kDriveFs)) {
+      !base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {

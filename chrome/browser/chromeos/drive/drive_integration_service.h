@@ -54,8 +54,6 @@ class ResourceMetadata;
 class ResourceMetadataStorage;
 }  // namespace internal
 
-extern const base::Feature kDriveFs;
-
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
 class DriveIntegrationServiceObserver {
