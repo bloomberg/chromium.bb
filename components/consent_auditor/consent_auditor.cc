@@ -90,11 +90,12 @@ ConsentAuditor::ConsentAuditor(
       user_event_service_(user_event_service),
       app_version_(app_version),
       app_locale_(app_locale) {
-  DCHECK(!IsSeparateConsentTypeEnabled() || consent_sync_bridge_);
+  if (IsSeparateConsentTypeEnabled()) {
+    DCHECK(consent_sync_bridge_);
+  } else {
+    DCHECK(user_event_service_);
+  }
   DCHECK(pref_service_);
-  // TODO(vitaliii): Don't require user_event_service when the separate datatype
-  // is enabled.
-  DCHECK(user_event_service_);
 }
 
 ConsentAuditor::~ConsentAuditor() {}
