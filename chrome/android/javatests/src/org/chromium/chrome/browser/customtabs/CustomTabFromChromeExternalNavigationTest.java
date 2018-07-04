@@ -151,10 +151,9 @@ public class CustomTabFromChromeExternalNavigationTest {
         });
 
         CriteriaHelper.pollUiThread(Criteria.equals(
-                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                new Callable<OverrideUrlLoadingResult>() {
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, new Callable<Integer>() {
                     @Override
-                    public OverrideUrlLoadingResult call() throws Exception {
+                    public @OverrideUrlLoadingResult Integer call() throws Exception {
                         return navigationDelegate.get().getLastOverrideUrlLoadingResultForTests();
                     }
                 }));
