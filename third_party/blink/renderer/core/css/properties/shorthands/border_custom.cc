@@ -19,43 +19,14 @@ bool Border::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValue* width = nullptr;
+  const CSSValue* width = nullptr;
   const CSSValue* style = nullptr;
-  CSSValue* color = nullptr;
+  const CSSValue* color = nullptr;
 
-  while (!width || !style || !color) {
-    if (!width) {
-      width = CSSPropertyParserHelpers::ConsumeLineWidth(
-          range, context.Mode(),
-          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
-      if (width)
-        continue;
-    }
-    if (!style) {
-      bool needs_legacy_parsing = false;
-      style = CSSPropertyParserHelpers::ParseLonghand(
-          CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
-      DCHECK(!needs_legacy_parsing);
-      if (style)
-        continue;
-    }
-    if (!color) {
-      color = CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
-      if (color)
-        continue;
-    }
-    break;
-  }
-
-  if (!width && !style && !color)
+  if (!CSSPropertyParserHelpers::ConsumeBorderShorthand(range, context, width,
+                                                        style, color)) {
     return false;
-
-  if (!width)
-    width = CSSInitialValue::Create();
-  if (!style)
-    style = CSSInitialValue::Create();
-  if (!color)
-    color = CSSInitialValue::Create();
+  };
 
   CSSPropertyParserHelpers::AddExpandedPropertyForValue(
       CSSPropertyBorderWidth, *width, important, properties);
