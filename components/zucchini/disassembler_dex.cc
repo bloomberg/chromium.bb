@@ -1446,12 +1446,17 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteMethodId32(
 std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode8(
     MutableBufferView image) {
   auto writer = base::BindRepeating([](Reference ref, MutableBufferView image) {
-    ptrdiff_t byte_diff = static_cast<ptrdiff_t>(ref.target) - ref.location;
-    DCHECK_EQ(0, byte_diff % kInstrUnitSize);
+    ptrdiff_t unsafe_byte_diff =
+        static_cast<ptrdiff_t>(ref.target) - ref.location;
+    DCHECK_EQ(0, unsafe_byte_diff % kInstrUnitSize);
     // |delta| is relative to start of instruction, which is 1 unit before
     // |ref.location|. The subtraction above removed too much, so +1 to fix.
-    ptrdiff_t delta = (byte_diff / kInstrUnitSize) + 1;
-    image.write<int8_t>(ref.location, base::checked_cast<int8_t>(delta));
+    base::CheckedNumeric<int8_t> delta((unsafe_byte_diff / kInstrUnitSize) + 1);
+    if (!delta.IsValid()) {
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      return;
+    }
+    image.write<int8_t>(ref.location, delta.ValueOrDie());
   });
   return std::make_unique<ReferenceWriterAdaptor>(image, std::move(writer));
 }
@@ -1459,12 +1464,18 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode8(
 std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode16(
     MutableBufferView image) {
   auto writer = base::BindRepeating([](Reference ref, MutableBufferView image) {
-    ptrdiff_t byte_diff = static_cast<ptrdiff_t>(ref.target) - ref.location;
-    DCHECK_EQ(0, byte_diff % kInstrUnitSize);
+    ptrdiff_t unsafe_byte_diff =
+        static_cast<ptrdiff_t>(ref.target) - ref.location;
+    DCHECK_EQ(0, unsafe_byte_diff % kInstrUnitSize);
     // |delta| is relative to start of instruction, which is 1 unit before
     // |ref.location|. The subtraction above removed too much, so +1 to fix.
-    ptrdiff_t delta = (byte_diff / kInstrUnitSize) + 1;
-    image.write<int16_t>(ref.location, base::checked_cast<int16_t>(delta));
+    base::CheckedNumeric<int16_t> delta((unsafe_byte_diff / kInstrUnitSize) +
+                                        1);
+    if (!delta.IsValid()) {
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      return;
+    }
+    image.write<int16_t>(ref.location, delta.ValueOrDie());
   });
   return std::make_unique<ReferenceWriterAdaptor>(image, std::move(writer));
 }
@@ -1472,10 +1483,18 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode16(
 std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode32(
     MutableBufferView image) {
   auto writer = base::BindRepeating([](Reference ref, MutableBufferView image) {
-    ptrdiff_t byte_diff = static_cast<ptrdiff_t>(ref.target) - ref.location;
-    DCHECK_EQ(0, byte_diff % kInstrUnitSize);
-    ptrdiff_t delta = (byte_diff / kInstrUnitSize) + 1;
-    image.write<int32_t>(ref.location, base::checked_cast<int32_t>(delta));
+    ptrdiff_t unsafe_byte_diff =
+        static_cast<ptrdiff_t>(ref.target) - ref.location;
+    DCHECK_EQ(0, unsafe_byte_diff % kInstrUnitSize);
+    // |delta| is relative to start of instruction, which is 1 unit before
+    // |ref.location|. The subtraction above removed too much, so +1 to fix.
+    base::CheckedNumeric<int32_t> delta((unsafe_byte_diff / kInstrUnitSize) +
+                                        1);
+    if (!delta.IsValid()) {
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      return;
+    }
+    image.write<int32_t>(ref.location, delta.ValueOrDie());
   });
   return std::make_unique<ReferenceWriterAdaptor>(image, std::move(writer));
 }
