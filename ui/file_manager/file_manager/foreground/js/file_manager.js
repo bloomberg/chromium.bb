@@ -1474,7 +1474,8 @@ FileManager.prototype = /** @struct */ {
 
   /**
    * Return DirectoryEntry of the current directory or null.
-   * @return {DirectoryEntry|FakeEntry} DirectoryEntry of the current directory.
+   * @return {DirectoryEntry|FakeEntry|FilesAppDirEntry} DirectoryEntry of the
+   *     current directory.
    *     Returns null if the directory model is not ready or the current
    *     directory is not set.
    */

@@ -183,7 +183,7 @@ importer.isEligibleEntry = function(volumeInfoProvider, entry) {
  * Returns true if the entry represents a media directory for the purposes
  * of Cloud Import.
  *
- * @param {Entry|FakeEntry} entry
+ * @param {Entry|FakeEntry|FilesAppEntry} entry
  * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
  * @return {boolean}
  */

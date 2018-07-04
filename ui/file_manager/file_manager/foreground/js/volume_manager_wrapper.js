@@ -300,7 +300,7 @@ VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
 /**
  * Obtains location information from an entry.
  *
- * @param {(!Entry|!FakeEntry)} entry File or directory entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry File or directory entry.
  * @return {EntryLocation} Location information.
  */
 VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {

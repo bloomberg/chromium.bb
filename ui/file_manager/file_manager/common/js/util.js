@@ -649,16 +649,16 @@ Object.freeze(util.EntryChangedKind);
 
 /**
  * Obtains whether an entry is fake or not.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is fake.
  */
 util.isFakeEntry = function(entry) {
-  return !('getParent' in entry);
+  return (entry.getParent === undefined);
 };
 
 /**
  * Obtains whether an entry is the root directory of a Team Drive.
- * @param {(!Entry|!FakeEntry)|null} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)|null} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is root of a Team Drive.
  */
 util.isTeamDriveRoot = function(entry) {
@@ -684,7 +684,7 @@ util.isTeamDrivesGrandRoot = function(entry) {
 
 /**
  * Obtains whether an entry is descendant of the Team Drives directory.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is under Team Drives.
  */
 util.isTeamDriveEntry = function(entry) {
@@ -712,7 +712,7 @@ util.getTeamDriveName = function(entry) {
 
 /**
  * Returns true if the given entry is the root folder of recent files.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
  * @returns {boolean}
  */
 util.isRecentRoot = function(entry) {
@@ -772,8 +772,10 @@ util.UserDOMError.prototype = {
 
 /**
  * Compares two entries.
- * @param {Entry|FakeEntry} entry1 The entry to be compared. Can be a fake.
- * @param {Entry|FakeEntry} entry2 The entry to be compared. Can be a fake.
+ * @param {Entry|FakeEntry|FilesAppEntry} entry1 The entry to be compared. Can
+ *     be a fake.
+ * @param {Entry|FakeEntry|FilesAppEntry} entry2 The entry to be compared. Can
+ *     be a fake.
  * @return {boolean} True if the both entry represents a same file or
  *     directory. Returns true if both entries are null.
  */
@@ -871,7 +873,8 @@ util.comparePath = function(entry1, entry2) {
  * Checks if {@code entry} is an immediate child of {@code directory}.
  *
  * @param {Entry} entry The presumptive child.
- * @param {DirectoryEntry|FakeEntry} directory The presumptive parent.
+ * @param {DirectoryEntry|FakeEntry|FilesAppEntry} directory The presumptive
+ *     parent.
  * @return {!Promise<boolean>} Resolves with true if {@code directory} is
  *     parent of {@code entry}.
  */

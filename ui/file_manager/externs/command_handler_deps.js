@@ -6,7 +6,7 @@
  * Interface on which |CommandHandler| depends.
  * @interface
  */
-function CommandHandlerDeps(){};
+function CommandHandlerDeps() {}
 
 /**
  * @type {ActionsController}
@@ -94,7 +94,7 @@ CommandHandlerDeps.prototype.ui;
 CommandHandlerDeps.prototype.volumeManager;
 
 /**
- * @return {DirectoryEntry|FakeEntry}
+ * @return {DirectoryEntry|FakeEntry|FilesAppEntry}
  */
 CommandHandlerDeps.prototype.getCurrentDirectoryEntry = function() {};
 

@@ -327,7 +327,7 @@ DirectoryModel.prototype.getFileFilter = function() {
 };
 
 /**
- * @return {DirectoryEntry|FakeEntry} Current directory.
+ * @return {DirectoryEntry|FakeEntry|FilesAppDirEntry} Current directory.
  */
 DirectoryModel.prototype.getCurrentDirEntry = function() {
   return this.currentDirContents_.getDirectoryEntry();
@@ -1205,7 +1205,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
  * Creates directory contents for the entry and query.
  *
  * @param {FileListContext} context File list context.
- * @param {!DirectoryEntry|!FakeEntry} entry Current directory.
+ * @param {!DirectoryEntry|!FakeEntry|!FilesAppEntry} entry Current directory.
  * @param {string=} opt_query Search query string.
  * @return {DirectoryContents} Directory contents.
  * @private
