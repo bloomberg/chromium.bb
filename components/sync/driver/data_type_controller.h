@@ -67,6 +67,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
 
   using ModelLoadCallback = base::Callback<void(ModelType, const SyncError&)>;
 
+  using StopCallback = base::OnceClosure;
+
   using AllNodesCallback =
       base::Callback<void(const ModelType, std::unique_ptr<base::ListValue>)>;
 
@@ -127,9 +129,12 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // See comments for ModelAssociationManager::OnSingleDataTypeWillStop.
   virtual void DeactivateDataType(ModelTypeConfigurer* configurer) = 0;
 
-  // Synchronously stops the data type. If StartAssociating has already been
-  // called but is not done yet it will be aborted. Similarly if LoadModels
-  // has not completed it will also be aborted.
+  // Stops the data type. If StartAssociating has already been called but is not
+  // done yet it will be aborted. Similarly if LoadModels has not completed it
+  // will also be aborted. Implementations may enter STOPPING state
+  // transitionaly but should eventually become STOPPED. At this point,
+  // |callback| will be run. |callback| must not be null.
+  //
   // NOTE: Stop() should be called after sync backend machinery has stopped
   // routing changes to this data type. Stop() should ensure the data type
   // logic shuts down gracefully by flushing remaining changes and calling
@@ -137,7 +142,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // propagate from sync again from point where Stop() is called.
   // KEEP_METADATA is used when the engine just stops sync, and CLEAR_METADATA
   // is used when the user disables sync for data type.
-  virtual void Stop(SyncStopMetadataFate metadata_fate) = 0;
+  virtual void Stop(SyncStopMetadataFate metadata_fate,
+                    StopCallback callback) = 0;
 
   // Name of this data type.  For logging purposes only.
   std::string name() const { return ModelTypeToString(type()); }

@@ -60,6 +60,13 @@ void DirectoryDataTypeController::DeactivateDataType(
   configurer->UnregisterDirectoryDataType(type());
 }
 
+void DirectoryDataTypeController::Stop(SyncStopMetadataFate metadata_fate,
+                                       StopCallback callback) {
+  DCHECK(CalledOnValidThread());
+  Stop(metadata_fate);
+  std::move(callback).Run();
+}
+
 void DirectoryDataTypeController::GetAllNodes(
     const AllNodesCallback& callback) {
   std::unique_ptr<base::ListValue> node_list = GetAllNodesForTypeFromDirectory(

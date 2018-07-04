@@ -85,6 +85,19 @@ void RunModelTask(DelegateProvider delegate_provider, ModelTask task) {
     std::move(task).Run(delegate);
 }
 
+// Takes the strictest policy for clearing sync metadata.
+SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
+                                               SyncStopMetadataFate fate2) {
+  switch (fate1) {
+    case CLEAR_METADATA:
+      return CLEAR_METADATA;
+    case KEEP_METADATA:
+      return fate2;
+  }
+  NOTREACHED();
+  return KEEP_METADATA;
+}
+
 }  // namespace
 
 ModelTypeController::ModelTypeController(
@@ -146,15 +159,27 @@ void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
 void ModelTypeController::LoadModelsDone(ConfigureResult result,
                                          const SyncError& error) {
   DCHECK(CalledOnValidThread());
+  DCHECK_NE(NOT_RUNNING, state_);
 
-  if (state_ == NOT_RUNNING) {
-    // The callback arrived on the UI thread after the type has been already
-    // stopped.
+  if (state_ == STOPPING) {
+    DCHECK(!model_stop_callbacks_.empty());
+    // This reply to OnSyncStarting() has arrived after the type has been
+    // requested to stop.
     DVLOG(1) << "Sync start completion received late for "
              << ModelTypeToString(type()) << ", it has been stopped meanwhile";
-    // TODO(mastiz): Call to Stop() here, but think through if that's enough,
-    // because perhaps the datatype was reenabled.
     RecordStartFailure(ABORTED);
+    PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
+                                            model_stop_metadata_fate_));
+    state_ = NOT_RUNNING;
+
+    // We make a copy in case running the callbacks has side effects and
+    // modifies the vector, although we don't expect that in practice.
+    std::vector<StopCallback> model_stop_callbacks =
+        std::move(model_stop_callbacks_);
+    DCHECK(model_stop_callbacks_.empty());
+    for (StopCallback& stop_callback : model_stop_callbacks) {
+      std::move(stop_callback).Run();
+    }
     return;
   }
 
@@ -234,13 +259,13 @@ void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
   }
 }
 
-void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
+void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate,
+                               StopCallback callback) {
   DCHECK(CalledOnValidThread());
 
   switch (state()) {
     case ASSOCIATING:
-    case STOPPING:
-      // We don't really use these states in this class.
+      // We don't really use this state in this class.
       NOTREACHED();
       break;
 
@@ -251,9 +276,23 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
       // realistic scenario (disable sync during shutdown?).
       return;
 
+    case STOPPING:
+      DCHECK(!model_stop_callbacks_.empty());
+      model_stop_metadata_fate_ =
+          TakeStrictestMetadataFate(model_stop_metadata_fate_, metadata_fate);
+      model_stop_callbacks_.push_back(std::move(callback));
+      break;
+
     case MODEL_STARTING:
-      DLOG(WARNING) << "Shortcutting stop for " << ModelTypeToString(type())
+      DCHECK(!model_load_callback_.is_null());
+      DCHECK(model_stop_callbacks_.empty());
+      DLOG(WARNING) << "Deferring stop for " << ModelTypeToString(type())
                     << " because it's still starting";
+      model_stop_metadata_fate_ = metadata_fate;
+      model_stop_callbacks_.push_back(std::move(callback));
+      // The actual stop will be executed in LoadModelsDone(), when the starting
+      // process is finished.
+      state_ = STOPPING;
       break;
 
     case MODEL_LOADED:
@@ -261,10 +300,10 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
       DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
       PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
                                               metadata_fate));
+      state_ = NOT_RUNNING;
+      std::move(callback).Run();
       break;
   }
-
-  state_ = NOT_RUNNING;
 }
 
 DataTypeController::State ModelTypeController::state() const {
