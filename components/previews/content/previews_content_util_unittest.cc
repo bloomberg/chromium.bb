@@ -57,8 +57,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
         return params::IsOfflinePreviewsEnabled();
       case previews::PreviewsType::LOFI:
         return params::IsClientLoFiEnabled();
-      case previews::PreviewsType::AMP_REDIRECTION:
-        return params::IsAMPRedirectionPreviewEnabled();
+      case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+        return false;
       case previews::PreviewsType::NOSCRIPT:
         return params::IsNoScriptPreviewsEnabled();
       case previews::PreviewsType::RESOURCE_LOADING_HINTS:

@@ -239,13 +239,6 @@ class TestLoFiDecider : public LoFiDecider {
     return false;
   }
 
-  void MaybeApplyAMPPreview(
-      net::URLRequest* request,
-      GURL* new_url,
-      previews::PreviewsDecider* previews_decider) const override {
-    return;
-  }
-
   void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const override {
     if (ignore_is_using_data_reduction_proxy_check_)

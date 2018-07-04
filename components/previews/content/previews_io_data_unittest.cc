@@ -64,8 +64,9 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
-    case PreviewsType::AMP_REDIRECTION:
       return params::IsOfflinePreviewsEnabled();
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+      return false;
     case PreviewsType::LOFI:
       return params::IsClientLoFiEnabled();
     case PreviewsType::NOSCRIPT:
@@ -376,7 +377,6 @@ class PreviewsIODataTest : public testing::Test {
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
-    allowed_types[static_cast<int>(PreviewsType::AMP_REDIRECTION)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
         io_data_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
         std::make_unique<TestOptOutStore>(),

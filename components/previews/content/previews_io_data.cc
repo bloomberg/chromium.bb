@@ -47,7 +47,6 @@ bool AllowedOnReload(PreviewsType type) {
     // These types return new content on refresh.
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
-    case PreviewsType::AMP_REDIRECTION:
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return true;
@@ -56,6 +55,7 @@ bool AllowedOnReload(PreviewsType type) {
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
   }
@@ -72,10 +72,10 @@ bool IsServerWhitelistedType(PreviewsType type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
-    case PreviewsType::AMP_REDIRECTION:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
   }

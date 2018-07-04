@@ -27,8 +27,9 @@ enum class PreviewsType {
   // The user is shown a server lite page.
   LITE_PAGE = 3,
 
-  // AMP version of the page is shown as a preview.
-  AMP_REDIRECTION = 4,
+  // AMP version of the page is shown as a preview. Deprecated, and should not
+  // be used.
+  DEPRECATED_AMP_REDIRECTION = 4,
 
   // Preview that disables JavaScript for the navigation.
   NOSCRIPT = 5,
@@ -95,14 +96,12 @@ bool ArePreviewsAllowed();
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
 bool IsClientLoFiEnabled();
-bool IsAMPRedirectionPreviewEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
 int ClientLoFiVersion();
-int AMPRedirectionPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 

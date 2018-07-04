@@ -37,10 +37,10 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
       return server_previews_enabled || previews::params::IsClientLoFiEnabled();
     case previews::PreviewsType::LITE_PAGE:
       return server_previews_enabled;
-    case previews::PreviewsType::AMP_REDIRECTION:
-      return previews::params::IsAMPRedirectionPreviewEnabled();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
+    case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+      return false;
     case previews::PreviewsType::UNSPECIFIED:
       // Not a real previews type so treat as false.
       return false;
@@ -64,8 +64,6 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
       return previews::params::ClientLoFiVersion();
     case previews::PreviewsType::LITE_PAGE:
       return data_reduction_proxy::params::LitePageVersion();
-    case previews::PreviewsType::AMP_REDIRECTION:
-      return previews::params::AMPRedirectionPreviewsVersion();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -73,6 +71,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
+    case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
       break;
   }
   NOTREACHED();
