@@ -18,8 +18,6 @@
 #include "content/common/content_export.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
-class SkString;
-
 namespace content {
 
 class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
@@ -32,47 +30,12 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
   void Run() override;
 
-  class TestObserver {
-   public:
-    virtual void OnGetFallbackFontForChar(UChar32 c,
-                                          std::string name,
-                                          int id) = 0;
-    virtual void OnFontOpen(int id) = 0;
-  };
-  CONTENT_EXPORT static void SetObserverForTests(TestObserver* observer);
-
  private:
-  int FindOrAddPath(const SkString& path);
-
   void HandleRequestFromChild(int fd);
-
-  void HandleFontMatchRequest(int fd,
-                              base::PickleIterator iter,
-                              const std::vector<base::ScopedFD>& fds);
-
-  void HandleFontOpenRequest(int fd,
-                             base::PickleIterator iter,
-                             const std::vector<base::ScopedFD>& fds);
-
-  void HandleGetFallbackFontForChar(int fd,
-                                    base::PickleIterator iter,
-                                    const std::vector<base::ScopedFD>& fds);
-
-  void HandleGetStyleForStrike(int fd,
-                               base::PickleIterator iter,
-                               const std::vector<base::ScopedFD>& fds);
-
-  void HandleLocaltime(int fd,
-                       base::PickleIterator iter,
-                       const std::vector<base::ScopedFD>& fds);
 
   void HandleMakeSharedMemorySegment(int fd,
                                      base::PickleIterator iter,
                                      const std::vector<base::ScopedFD>& fds);
-
-  void HandleMatchWithFallback(int fd,
-                               base::PickleIterator iter,
-                               const std::vector<base::ScopedFD>& fds);
 
   void SendRendererReply(const std::vector<base::ScopedFD>& fds,
                          const base::Pickle& reply,
@@ -80,7 +43,6 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
   const int lifeline_fd_;
   const int browser_socket_;
-  std::vector<SkString> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxIPCHandler);
 };

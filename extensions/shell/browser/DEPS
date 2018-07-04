@@ -8,6 +8,7 @@ include_rules = [
   "+components/network_session_configurator/common",
   "+components/pref_registry",
   "+components/sessions",
+  "+components/services/font",
   "+components/update_client",
   "+components/user_prefs",
   "+components/web_modal",

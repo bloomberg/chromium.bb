@@ -29,7 +29,6 @@ jumbo_source_set("child_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "child_process_sandbox_support_linux.h",
     "child_thread.h",
     "dwrite_font_proxy_init_win.h",
     "image_decoder_utils.h",

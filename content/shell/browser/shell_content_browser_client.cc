@@ -65,6 +65,11 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/services/font/font_service_app.h"  // nogncheck
+#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
+#endif
+
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
@@ -227,6 +232,10 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Test Service");
   (*services)[echo::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
+#if defined(OS_LINUX)
+  (*services)[font_service::mojom::kServiceName] =
+      base::BindRepeating(&base::ASCIIToUTF16, "Font Service");
+#endif
 }
 
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
