@@ -6,11 +6,11 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -98,42 +98,25 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   }
 }
 
-// static
-void ClientHintsPreferences::UpdatePersistentHintsFromHeaders(
-    const ResourceResponse& response,
-    Context* context,
-    WebEnabledClientHints& enabled_hints,
-    TimeDelta* persist_duration) {
-  *persist_duration = base::TimeDelta();
-
-  if (response.WasCached())
+void ClientHintsPreferences::UpdateFromAcceptClientHintsLifetimeHeader(
+    const String& header_value,
+    const KURL& url,
+    Context* context) {
+  if (header_value.IsEmpty())
     return;
 
-  String accept_ch_header_value =
-      response.HttpHeaderField(HTTPNames::Accept_CH);
-  String accept_ch_lifetime_header_value =
-      response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime);
-
-  if (accept_ch_header_value.IsEmpty() ||
-      accept_ch_lifetime_header_value.IsEmpty()) {
-    return;
-  }
-
-  const KURL url = response.Url();
+  // Client hints should be allowed only on secure URLs.
   if (!IsClientHintsAllowed(url))
     return;
 
   bool conversion_ok = false;
-  int64_t persist_duration_seconds =
-      accept_ch_lifetime_header_value.ToInt64Strict(&conversion_ok);
+  int64_t persist_duration_seconds = header_value.ToInt64Strict(&conversion_ok);
   if (!conversion_ok || persist_duration_seconds <= 0)
     return;
 
-  *persist_duration = TimeDelta::FromSeconds(persist_duration_seconds);
+  persist_duration_ = TimeDelta::FromSeconds(persist_duration_seconds);
   if (context)
     context->CountPersistentClientHintHeaders();
-
-  ParseAcceptChHeader(accept_ch_header_value, enabled_hints);
 }
 
 // static
@@ -141,6 +124,14 @@ bool ClientHintsPreferences::IsClientHintsAllowed(const KURL& url) {
   return (url.ProtocolIs("http") || url.ProtocolIs("https")) &&
          (SecurityOrigin::IsSecure(url) ||
           SecurityOrigin::Create(url)->IsLocalhost());
+}
+
+WebEnabledClientHints ClientHintsPreferences::GetWebEnabledClientHints() const {
+  return enabled_hints_;
+}
+
+base::TimeDelta ClientHintsPreferences::GetPersistDuration() const {
+  return persist_duration_;
 }
 
 }  // namespace blink
