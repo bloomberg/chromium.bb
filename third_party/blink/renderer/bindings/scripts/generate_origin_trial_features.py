@@ -162,6 +162,7 @@ def origin_trial_features_context(generator_name, feature_info):
         'core/origin_trials/origin_trials.h',
         'platform/bindings/origin_trial_features.h',
         'platform/bindings/script_state.h',
+        'platform/bindings/v8_per_context_data.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is
         # here because the ContextFeatureSettings code needs it.
         'bindings/core/v8/v8_window.h',

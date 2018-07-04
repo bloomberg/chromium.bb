@@ -43,6 +43,7 @@ namespace blink {
 
 class DOMWindow;
 class Frame;
+struct WrapperTypeInfo;
 
 // WindowProxy implements the split window model of a window for a frame. In the
 // HTML standard, the split window model is composed of the Window interface

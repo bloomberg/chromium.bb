@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class V0CustomElementBinding;
 class V0CustomElementLifecycleCallbacks;
 class Element;
 class V8PerContextData;

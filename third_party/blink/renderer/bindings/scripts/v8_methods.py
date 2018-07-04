@@ -178,6 +178,10 @@ def method_context(interface, method, is_visible=True):
     else:
         side_effect_type = 'V8DOMConfiguration::kHasSideEffect'
 
+    # [LogActivity]
+    if 'LogActivity' in extended_attributes:
+        includes.add('platform/bindings/v8_per_context_data.h')
+
     argument_contexts = [
         argument_context(interface, method, argument, index, is_visible=is_visible)
         for index, argument in enumerate(arguments)]
