@@ -4,7 +4,17 @@
 
 package org.chromium.chrome.browser.webauth;
 
+import android.annotation.TargetApi;
+import android.app.KeyguardManager;
+import android.content.Context;
+import android.os.Build;
+
+import org.chromium.base.PackageUtils;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.webauth.mojom.Authenticator;
 import org.chromium.webauth.mojom.AuthenticatorStatus;
@@ -18,6 +28,10 @@ import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
  */
 public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback {
     private final RenderFrameHost mRenderFrameHost;
+    private final WebContents mWebContents;
+
+    private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
+    private static final int GMSCORE_MIN_VERSION = 12800000;
 
     /** Ensures only one request is processed at a time. */
     boolean mIsOperationPending = false;
@@ -35,6 +49,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     public AuthenticatorImpl(RenderFrameHost renderFrameHost) {
         assert renderFrameHost != null;
         mRenderFrameHost = renderFrameHost;
+        mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
     }
 
     @Override
@@ -64,9 +79,23 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public void isUserVerifyingPlatformAuthenticatorAvailable(
             IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
-        callback.call(false);
+        Context context = ChromeActivity.fromWebContents(mWebContents);
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+            < GMSCORE_MIN_VERSION) {
+            callback.call(false);
+            return;
+        }
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH)) {
+            callback.call(false);
+            return;
+        }
+
+        KeyguardManager keyguardManager =
+                (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        callback.call(keyguardManager != null && keyguardManager.isDeviceSecure());
     }
 
     /**
