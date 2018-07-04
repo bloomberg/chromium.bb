@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
+#define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 
 #include <list>
 #include <map>
@@ -26,13 +26,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/graceful_queue_shutdown_helper.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
+#include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace base {
 
@@ -68,7 +68,7 @@ class TaskQueueImpl;
 //    the incoming task queue (if any) are moved here. The work queues are
 //    registered with the selector as input to the scheduling decision.
 //
-class PLATFORM_EXPORT SequenceManagerImpl
+class BASE_EXPORT SequenceManagerImpl
     : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
@@ -304,7 +304,7 @@ class PLATFORM_EXPORT SequenceManagerImpl
   }
 
   // A check to bail out early during memory corruption.
-  // crbug.com/757940
+  // https://crbug.com/757940
   bool Validate();
 
   int32_t memory_corruption_sentinel_;
@@ -329,4 +329,4 @@ class PLATFORM_EXPORT SequenceManagerImpl
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_

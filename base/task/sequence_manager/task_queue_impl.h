@@ -69,7 +69,7 @@ struct IncomingImmediateWorkList {
 // queue is selected, it round-robins between the |immediate_work_queue| and
 // |delayed_work_queue|.  The reason for this is we want to make sure delayed
 // tasks (normally the most common type) don't starve out immediate work.
-class PLATFORM_EXPORT TaskQueueImpl {
+class BASE_EXPORT TaskQueueImpl {
  public:
   TaskQueueImpl(SequenceManagerImpl* sequence_manager,
                 TimeDomain* time_domain,
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
     }
   };
 
-  class PLATFORM_EXPORT Task : public TaskQueue::Task {
+  class BASE_EXPORT Task : public TaskQueue::Task {
    public:
     Task(TaskQueue::PostedTask task,
          TimeTicks desired_run_time,

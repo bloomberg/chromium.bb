@@ -103,6 +103,13 @@ class SequenceManager {
       const TaskQueue::Spec& spec) = 0;
 };
 
+// Create SequenceManager using MessageLoop on the current thread.
+// Implementation is located in sequence_manager_impl.cc.
+// TODO(scheduler-dev): Rename to TakeOverCurrentThread when we'll stop using
+// MessageLoop and will actually take over a thread.
+BASE_EXPORT std::unique_ptr<SequenceManager>
+CreateSequenceManagerOnCurrentThread();
+
 }  // namespace sequence_manager
 }  // namespace base
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "base/task/sequence_manager/task_queue_selector.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/work_queue.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {
 namespace sequence_manager {

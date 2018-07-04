@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_LOGIC_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_LOGIC_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_LOGIC_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_LOGIC_H_
 
 namespace base {
 namespace sequence_manager {
@@ -34,4 +34,4 @@ enum class TaskQueueSelectorLogic {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_LOGIC_H_

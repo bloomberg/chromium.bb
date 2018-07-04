@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
+#define BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
 
 #include <map>
 #include <vector>
 
+#include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/sequence_manager/intrusive_heap.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/work_queue.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {
 namespace sequence_manager {
@@ -26,7 +26,7 @@ namespace internal {
 // TaskQueueSelector chooses to run a task a given priority).  The reason this
 // works is because std::map is a tree based associative container and all the
 // values are kept in sorted order.
-class PLATFORM_EXPORT WorkQueueSets {
+class BASE_EXPORT WorkQueueSets {
  public:
   WorkQueueSets(size_t num_sets, const char* name);
   ~WorkQueueSets();
@@ -99,4 +99,4 @@ class PLATFORM_EXPORT WorkQueueSets {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_

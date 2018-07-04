@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
 
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/time/tick_clock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
 
 namespace base {
 class MessageLoop;

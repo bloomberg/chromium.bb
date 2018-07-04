@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 
-#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
+#include "base/task/sequence_manager/thread_controller_impl.h"
 
 namespace base {
 namespace sequence_manager {

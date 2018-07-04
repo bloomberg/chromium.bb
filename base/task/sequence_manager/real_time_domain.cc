@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "base/task/sequence_manager/real_time_domain.h"
 
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 
 namespace base {
 namespace sequence_manager {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 
 #include <queue>
 #include <vector>
@@ -13,16 +13,15 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_time_observer.h"
+#include "base/task/sequence_manager/thread_controller_impl.h"
+#include "base/task/sequence_manager/work_queue.h"
+#include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 namespace base {
 namespace sequence_manager {
