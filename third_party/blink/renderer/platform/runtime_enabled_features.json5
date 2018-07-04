@@ -286,6 +286,10 @@
       status: "experimental",
     },
     {
+      name: "CSSLogical",
+      status: "experimental",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },

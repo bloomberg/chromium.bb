@@ -30249,6 +30249,18 @@ Called by update_use_counter_css.py.-->
   <int value="615" label="border-block-end"/>
   <int value="616" label="border-inline-start"/>
   <int value="617" label="border-inline-end"/>
+  <int value="618" label="margin-block"/>
+  <int value="619" label="margin-inline"/>
+  <int value="620" label="padding-block"/>
+  <int value="621" label="padding-inline"/>
+  <int value="622" label="border-block-color"/>
+  <int value="623" label="border-block-style"/>
+  <int value="624" label="border-block-width"/>
+  <int value="625" label="border-inline-color"/>
+  <int value="626" label="border-inline-style"/>
+  <int value="627" label="border-inline-width"/>
+  <int value="628" label="border-block"/>
+  <int value="629" label="border-inline"/>
 </enum>
 
 <enum name="MappedEditingCommands">

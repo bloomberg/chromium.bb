@@ -101,6 +101,11 @@ bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange&,
                                    UnitlessQuirk,
                                    CSSValue*& result_x,
                                    CSSValue*& result_y);
+bool ConsumeBorderShorthand(CSSParserTokenRange&,
+                            const CSSParserContext&,
+                            const CSSValue*& result_width,
+                            const CSSValue*& result_style,
+                            const CSSValue*& result_color);
 
 enum class ConsumeGeneratedImagePolicy { kAllow, kForbid };
 

@@ -1186,6 +1186,30 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 616;
     case CSSPropertyBorderInlineEnd:
       return 617;
+    case CSSPropertyMarginBlock:
+      return 618;
+    case CSSPropertyMarginInline:
+      return 619;
+    case CSSPropertyPaddingBlock:
+      return 620;
+    case CSSPropertyPaddingInline:
+      return 621;
+    case CSSPropertyBorderBlockColor:
+      return 622;
+    case CSSPropertyBorderBlockStyle:
+      return 623;
+    case CSSPropertyBorderBlockWidth:
+      return 624;
+    case CSSPropertyBorderInlineColor:
+      return 625;
+    case CSSPropertyBorderInlineStyle:
+      return 626;
+    case CSSPropertyBorderInlineWidth:
+      return 627;
+    case CSSPropertyBorderBlock:
+      return 628;
+    case CSSPropertyBorderInline:
+      return 629;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

@@ -955,6 +955,46 @@ bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange& range,
   return true;
 }
 
+bool ConsumeBorderShorthand(CSSParserTokenRange& range,
+                            const CSSParserContext& context,
+                            const CSSValue*& result_width,
+                            const CSSValue*& result_style,
+                            const CSSValue*& result_color) {
+  while (!result_width || !result_style || !result_color) {
+    if (!result_width) {
+      result_width = CSSPropertyParserHelpers::ConsumeLineWidth(
+          range, context.Mode(),
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      if (result_width)
+        continue;
+    }
+    if (!result_style) {
+      result_style = CSSPropertyParserHelpers::ParseLonghand(
+          CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
+      if (result_style)
+        continue;
+    }
+    if (!result_color) {
+      result_color =
+          CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+      if (result_color)
+        continue;
+    }
+    break;
+  }
+
+  if (!result_width && !result_style && !result_color)
+    return false;
+
+  if (!result_width)
+    result_width = CSSInitialValue::Create();
+  if (!result_style)
+    result_style = CSSInitialValue::Create();
+  if (!result_color)
+    result_color = CSSInitialValue::Create();
+  return true;
+}
+
 // This should go away once we drop support for -webkit-gradient
 static CSSPrimitiveValue* ConsumeDeprecatedGradientPoint(
     CSSParserTokenRange& args,

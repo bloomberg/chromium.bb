@@ -450,6 +450,12 @@ All changes to this list should go through Blink's feature review process: http:
         border-top-color
         border-top-style
         border-top-width
+    border-block
+        border-block-end
+        border-block-start
+    border-block-color
+        border-block-end-color
+        border-block-start-color
     border-block-end
         border-block-end-color
         border-block-end-style
@@ -457,6 +463,12 @@ All changes to this list should go through Blink's feature review process: http:
     border-block-start
         border-block-start-color
         border-block-start-style
+        border-block-start-width
+    border-block-style
+        border-block-end-style
+        border-block-start-style
+    border-block-width
+        border-block-end-width
         border-block-start-width
     border-bottom
         border-bottom-color
@@ -473,6 +485,12 @@ All changes to this list should go through Blink's feature review process: http:
         border-image-slice
         border-image-source
         border-image-width
+    border-inline
+        border-inline-end
+        border-inline-start
+    border-inline-color
+        border-inline-end-color
+        border-inline-start-color
     border-inline-end
         border-inline-end-color
         border-inline-end-style
@@ -480,6 +498,12 @@ All changes to this list should go through Blink's feature review process: http:
     border-inline-start
         border-inline-start-color
         border-inline-start-style
+        border-inline-start-width
+    border-inline-style
+        border-inline-end-style
+        border-inline-start-style
+    border-inline-width
+        border-inline-end-width
         border-inline-start-width
     border-left
         border-left-color
@@ -582,6 +606,12 @@ All changes to this list should go through Blink's feature review process: http:
         margin-left
         margin-right
         margin-top
+    margin-block
+        margin-block-end
+        margin-block-start
+    margin-inline
+        margin-inline-end
+        margin-inline-start
     marker
         marker-end
         marker-mid
@@ -607,6 +637,12 @@ All changes to this list should go through Blink's feature review process: http:
         padding-left
         padding-right
         padding-top
+    padding-block
+        padding-block-end
+        padding-block-start
+    padding-inline
+        padding-inline-end
+        padding-inline-start
     page-break-after
         break-after
     page-break-before
