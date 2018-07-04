@@ -17,12 +17,11 @@
 #include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
+#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
@@ -976,6 +975,17 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
 }
 
 // static
+bool DevToolsWindow::AllowDevToolsFor(Profile* profile,
+                                      content::WebContents* web_contents) {
+  // Don't allow DevTools UI in kiosk mode, because the DevTools UI would be
+  // broken there. See https://crbug.com/514551 for context.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return false;
+
+  return ChromeDevToolsManagerDelegate::AllowInspection(profile, web_contents);
+}
+
+// static
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
     content::WebContents* inspected_web_contents,
@@ -985,25 +995,8 @@ DevToolsWindow* DevToolsWindow::Create(
     const std::string& settings,
     const std::string& panel,
     bool has_other_clients) {
-  using DTPH = policy::DeveloperToolsPolicyHandler;
-  // TODO(pfeldman): Implement handling for
-  // Availability::kDisallowedForForceInstalledExtensions
-  // (https://crbug.com/838146).
-  if (DTPH::GetDevToolsAvailability(profile->GetPrefs()) ==
-          DTPH::Availability::kDisallowed ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode)) {
+  if (!AllowDevToolsFor(profile, inspected_web_contents))
     return nullptr;
-  }
-
-#if defined(OS_CHROMEOS)
-  // Do not create DevTools if it's disabled for primary profile.
-  const Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
-  if (primary_profile &&
-      DTPH::GetDevToolsAvailability(primary_profile->GetPrefs()) ==
-          DTPH::Availability::kDisallowed) {
-    return nullptr;
-  }
-#endif
 
   if (inspected_web_contents) {
     // Check for a place to dock.

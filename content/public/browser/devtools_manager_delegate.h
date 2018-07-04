@@ -36,6 +36,9 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Returns DevToolsAgentHost title to use for given |web_contents| target.
   virtual std::string GetTargetDescription(WebContents* web_contents);
 
+  // Returns whether embedder allows to inspect given |web_contents|.
+  virtual bool AllowInspectingWebContents(WebContents* web_contents);
+
   // Returns all targets embedder would like to report as debuggable
   // remotely.
   virtual DevToolsAgentHost::List RemoteDebuggingTargets();
