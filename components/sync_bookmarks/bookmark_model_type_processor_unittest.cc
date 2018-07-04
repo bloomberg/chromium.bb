@@ -25,9 +25,6 @@ namespace sync_bookmarks {
 
 namespace {
 
-// The parent tag for children of the root entity. Entities with this parent are
-// referred to as top level enities.
-const char kRootParentTag[] = "0";
 const char kBookmarkBarTag[] = "bookmark_bar";
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
@@ -119,12 +116,6 @@ syncer::UpdateResponseData CreateTombstone(const std::string& server_id) {
   return response_data;
 }
 
-syncer::UpdateResponseData CreateBookmarkRootUpdateData() {
-  return CreateUpdateData({syncer::ModelTypeToRootTag(syncer::BOOKMARKS),
-                           std::string(), std::string(), kRootParentTag,
-                           syncer::ModelTypeToRootTag(syncer::BOOKMARKS)});
-}
-
 class TestSyncClient : public syncer::FakeSyncClient {
  public:
   explicit TestSyncClient(bookmarks::BookmarkModel* bookmark_model)
@@ -169,38 +160,6 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   BookmarkModelTypeProcessor processor_;
 };
 
-TEST(BookmarkModelTypeProcessorReorderUpdatesTest, ShouldIgnoreRootNodes) {
-  syncer::UpdateResponseDataList updates;
-  updates.push_back(CreateBookmarkRootUpdateData());
-  std::vector<const syncer::UpdateResponseData*> ordered_updates =
-      BookmarkModelTypeProcessor::ReorderUpdatesForTest(updates);
-  // Root node update should be filtered out.
-  EXPECT_THAT(ordered_updates.size(), Eq(0U));
-}
-
-// TODO(crbug.com/516866): This should change to cover the general case of
-// parents before children for non-deletions, and another test should be added
-// for children before parents for deletions.
-TEST(BookmarkModelTypeProcessorReorderUpdatesTest,
-     ShouldPlacePermanentNodesFirstForNonDeletions) {
-  const std::string kNode1Id = "node1";
-  const std::string kNode2Id = "node2";
-  syncer::UpdateResponseDataList updates;
-  updates.push_back(CreateUpdateData(
-      {kNode1Id, std::string(), std::string(), kNode2Id, std::string()}));
-  updates.push_back(CreateUpdateData({kNode2Id, std::string(), std::string(),
-                                      kBookmarksRootId, kBookmarkBarTag}));
-  std::vector<const syncer::UpdateResponseData*> ordered_updates =
-      BookmarkModelTypeProcessor::ReorderUpdatesForTest(updates);
-
-  // No update should be dropped.
-  ASSERT_THAT(ordered_updates.size(), Eq(2U));
-
-  // Updates should be ordered such that parent node update comes first.
-  EXPECT_THAT(ordered_updates[0]->entity.value().id, Eq(kNode2Id));
-  EXPECT_THAT(ordered_updates[1]->entity.value().id, Eq(kNode1Id));
-}
-
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
   syncer::UpdateResponseDataList updates;
   // Add update for the permanent folder "Bookmarks bar".
@@ -219,9 +178,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
       bookmark_model()->bookmark_bar_node();
   EXPECT_TRUE(bookmarkbar->empty());
 
-  // Save will be scheduled in the model upon model change. No save should be
-  // scheduled from the processor.
-  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   ASSERT_THAT(bookmarkbar->GetChild(0), NotNull());
@@ -255,9 +211,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
       CreateUpdateData({kNodeId, kNewTitle, kNewUrl, kBookmarkBarId,
                         /*server_tag=*/std::string()}));
 
-  // Save will be scheduled in the model upon model change. No save should be
-  // scheduled from the processor.
-  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   // Check if the bookmark has been updated properly.
@@ -347,9 +300,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   updates.push_back(CreateTombstone(kTitle1Id));
   updates.push_back(CreateTombstone(kFolder1Id));
 
-  // Save will be scheduled in the model upon model change. No save should be
-  // scheduled from the processor.
-  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   // The structure should be
