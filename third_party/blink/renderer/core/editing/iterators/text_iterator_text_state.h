@@ -49,7 +49,7 @@ class CORE_EXPORT TextIteratorTextState {
   // Return properties of the current text.
   unsigned length() const { return text_length_; }
   UChar CharacterAt(unsigned index) const;
-  String Substring(unsigned position, unsigned length) const;
+  String GetTextForTesting() const;
   void AppendTextToStringBuilder(StringBuilder&,
                                  unsigned position = 0,
                                  unsigned max_length = UINT_MAX) const;
