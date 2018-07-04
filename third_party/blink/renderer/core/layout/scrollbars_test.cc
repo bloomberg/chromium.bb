@@ -1958,7 +1958,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
   EXPECT_FALSE(hit_test_result.GetScrollbar());
 }
 
-TEST_F(ScrollbarsTest, AllowMiddleButtonPressOnScrollbar) {
+TEST_F(ScrollbarsTest, NotAllowMiddleButtonPressOnScrollbar) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   WebView().Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -1985,12 +1985,12 @@ TEST_F(ScrollbarsTest, AllowMiddleButtonPressOnScrollbar) {
   // Not allow press scrollbar with middle button.
   HandleMouseMoveEvent(195, 5);
   HandleMouseMiddlePressEvent(195, 5);
-  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
   HandleMouseMiddleReleaseEvent(195, 5);
 }
 
-// Ensure Scrollbar not release press by middle button down.
-TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
+// Ensure Scrollbar not release press by middle click.
+TEST_F(ScrollbarsTest, MiddleClickShouldNotAffectScrollbarPress) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   WebView().Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -2036,8 +2036,11 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   HandleMouseMiddlePressEvent(5, 5);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
 
-  // Middle button release should release scrollbar press state.
   HandleMouseMiddleReleaseEvent(5, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // Relase mouse left button should release scrollbar press state.
+  HandleMouseReleaseEvent(5, 5);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
 }
 
