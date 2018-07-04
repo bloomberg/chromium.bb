@@ -4045,6 +4045,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kDriveFs)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"background-task-component-update",
+     flag_descriptions::kBackgroundTaskComponentUpdateName,
+     flag_descriptions::kBackgroundTaskComponentUpdateDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBackgroundTaskComponentUpdate)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

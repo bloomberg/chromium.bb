@@ -2078,6 +2078,11 @@ const char kBackgroundLoaderForDownloadsDescription[] =
     "Enables downloading pages in the background in case page is not yet "
     "loaded in current tab.";
 
+const char kBackgroundTaskComponentUpdateName[] =
+    "Background Task Component Updates";
+const char kBackgroundTaskComponentUpdateDescription[] =
+    "Schedule component updates with BackgroundTaskScheduler";
+
 const char kCCTModuleName[] = "Chrome Custom Tabs Module";
 const char kCCTModuleDescription[] =
     "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";

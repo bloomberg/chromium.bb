@@ -32,8 +32,9 @@ class BackgroundTaskSchedulerUma {
     static final int BACKGROUND_TASK_WEBAPK_UPDATE = 12;
     static final int BACKGROUND_TASK_DOWNLOAD_RESUMPTION = 13;
     static final int BACKGROUND_TASK_FEED_REFRESH = 14;
+    static final int BACKGROUND_TASK_COMPONENT_UPDATE = 15;
     // Keep this one at the end and increment appropriately when adding new tasks.
-    static final int BACKGROUND_TASK_COUNT = 15;
+    static final int BACKGROUND_TASK_COUNT = 16;
 
     static final String KEY_CACHED_UMA = "bts_cached_uma";
 
@@ -250,6 +251,8 @@ class BackgroundTaskSchedulerUma {
                 return BACKGROUND_TASK_DOWNLOAD_RESUMPTION;
             case TaskIds.FEED_REFRESH_JOB_ID:
                 return BACKGROUND_TASK_FEED_REFRESH;
+            case TaskIds.COMPONENT_UPDATE_JOB_ID:
+                return BACKGROUND_TASK_COMPONENT_UPDATE;
             default:
                 assert false;
         }

@@ -84,7 +84,10 @@ public class BackgroundTaskSchedulerUmaTest {
                         TaskIds.DOWNLOAD_RESUMPTION_JOB_ID));
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_FEED_REFRESH,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(TaskIds.FEED_REFRESH_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 15);
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COMPONENT_UPDATE,
+                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
+                        TaskIds.COMPONENT_UPDATE_JOB_ID));
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 16);
     }
 
     @Test
