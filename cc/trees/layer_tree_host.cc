@@ -1213,6 +1213,13 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
     const viz::LocalSurfaceId& local_surface_id_from_parent) {
   if (local_surface_id_from_parent_ == local_surface_id_from_parent)
     return;
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(local_surface_id_from_parent.submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SetLocalSurfaceIdFromParent", "surface_id",
+      local_surface_id_from_parent.ToString());
   local_surface_id_from_parent_ = local_surface_id_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
   UpdateDeferCommitsInternal();

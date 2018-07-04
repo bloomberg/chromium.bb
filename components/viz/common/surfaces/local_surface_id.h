@@ -109,6 +109,14 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
     return embed_token_;
   }
 
+  // The |embed_trace_id| is used as the id for trace events associated with
+  // embedding this LocalSurfaceId.
+  uint64_t embed_trace_id() const { return hash() << 1; }
+
+  // The |submission_trace_id| is used as the id for trace events associated
+  // with submission of a CompositorFrame to a surface with this LocalSurfaceId.
+  uint64_t submission_trace_id() const { return (hash() << 1) | 1; }
+
   bool operator==(const LocalSurfaceId& other) const {
     return parent_sequence_number_ == other.parent_sequence_number_ &&
            child_sequence_number_ == other.child_sequence_number_ &&

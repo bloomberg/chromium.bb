@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/rand_util.h"
+#include "base/trace_event/trace_event.h"
 
 namespace viz {
 
@@ -36,6 +37,22 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
             kInvalidParentSequenceNumber);
 
   ++current_local_surface_id_.child_sequence_number_;
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_.ToString());
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_.submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_.ToString());
+
   return current_local_surface_id_;
 }
 

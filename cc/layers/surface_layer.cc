@@ -29,6 +29,14 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
       deadline_policy.use_existing_deadline()) {
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(surface_id.local_surface_id().embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SetPrimarySurfaceId", "surface_id", surface_id.ToString());
+
   primary_surface_id_ = surface_id;
   // We should never block or set a deadline on an invalid
   // |primary_surface_id_|.
@@ -44,6 +52,13 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
 void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
   if (fallback_surface_id_ == surface_id)
     return;
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(surface_id.local_surface_id().submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SetFallbackSurfaceId", "surface_id", surface_id.ToString());
 
   if (layer_tree_host())
     layer_tree_host()->RemoveSurfaceLayerId(fallback_surface_id_);

@@ -29,7 +29,15 @@ Surface::Surface(const SurfaceInfo& surface_info,
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      needs_sync_tokens_(needs_sync_tokens) {}
+      needs_sync_tokens_(needs_sync_tokens) {
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(
+          surface_info.id().local_surface_id().submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SurfaceCreated", "surface_id", surface_info.id().ToString());
+}
 
 Surface::~Surface() {
   ClearCopyRequests();
@@ -324,6 +332,14 @@ void Surface::ActivateFrame(FrameData frame_data,
     surface_client_->OnSurfaceActivated(this);
 
   if (!seen_first_frame_activation_) {
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Submission.Flow",
+        TRACE_ID_GLOBAL(
+            surface_info_.id().local_surface_id().submission_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN, "step", "FirstSurfaceActivation",
+        "surface_id", surface_info_.id().ToString());
+
     seen_first_frame_activation_ = true;
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
