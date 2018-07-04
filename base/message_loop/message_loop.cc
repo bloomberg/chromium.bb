@@ -428,7 +428,7 @@ bool MessageLoop::DoWork() {
 bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   if (!task_execution_allowed_ ||
       !incoming_task_queue_->delayed_tasks().HasTasks()) {
-    recent_time_ = *next_delayed_work_time = TimeTicks();
+    *next_delayed_work_time = TimeTicks();
 
     // It's possible to be woken up by a system event and have it cancel the
     // upcoming delayed task from under us before DoDelayedWork() -- see comment
