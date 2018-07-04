@@ -86,7 +86,7 @@ class LockLayoutManagerTest : public AshTestBase {
   void ShowKeyboard(bool show) {
     auto* keyboard = keyboard::KeyboardController::Get();
     ASSERT_TRUE(keyboard->enabled());
-    if (show == keyboard->keyboard_visible())
+    if (show == keyboard->IsKeyboardVisible())
       return;
 
     if (show) {
@@ -102,7 +102,7 @@ class LockLayoutManagerTest : public AshTestBase {
       keyboard->HideKeyboardByUser();
     }
 
-    DCHECK_EQ(show, keyboard->keyboard_visible());
+    DCHECK_EQ(show, keyboard->IsKeyboardVisible());
   }
 };
 

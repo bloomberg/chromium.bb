@@ -265,7 +265,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     aura::Window* contents_window = controller_.ui()->GetKeyboardWindow();
     return (contents_window->GetRootWindow() == window->GetRootWindow() &&
             keyboard::IsKeyboardOverscrollEnabled() &&
-            contents_window->IsVisible() && controller_.keyboard_visible());
+            contents_window->IsVisible() && controller_.IsKeyboardVisible());
   }
 
   void RunLoop(base::RunLoop* run_loop) {

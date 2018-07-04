@@ -84,7 +84,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   }
 
   bool IsKeyboardVisible() const {
-    return keyboard::KeyboardController::Get()->keyboard_visible();
+    return keyboard::KeyboardController::Get()->IsKeyboardVisible();
   }
 
  private:

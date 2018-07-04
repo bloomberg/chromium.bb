@@ -706,7 +706,7 @@ TEST_P(AppListPresenterDelegateTest,
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
   keyboard_controller->NotifyKeyboardWindowLoaded();
-  EXPECT_TRUE(keyboard_controller->keyboard_visible());
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
 
   // Tap or click outside the searchbox, the virtual keyboard should hide.
   if (test_click) {
@@ -716,7 +716,7 @@ TEST_P(AppListPresenterDelegateTest,
   } else {
     generator->GestureTapAt(GetPointOutsideSearchbox());
   }
-  EXPECT_FALSE(keyboard_controller->keyboard_visible());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 
   // The searchbox should still be active and the AppListView should still be in
   // FULLSCREEN_SEARCH.

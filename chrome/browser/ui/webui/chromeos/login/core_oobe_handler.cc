@@ -550,7 +550,7 @@ void CoreOobeHandler::UpdateKeyboardState() {
   if (features::IsAshInBrowserProcess()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
-      const bool is_keyboard_shown = keyboard_controller->keyboard_visible();
+      const bool is_keyboard_shown = keyboard_controller->IsKeyboardVisible();
       ShowControlBar(!is_keyboard_shown);
       SetVirtualKeyboardShown(is_keyboard_shown);
     }

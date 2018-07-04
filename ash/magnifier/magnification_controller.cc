@@ -727,7 +727,7 @@ void MagnificationController::OnMouseMove(const gfx::Point& location) {
   bool reduce_bottom_margin = false;
   if (keyboard::KeyboardController::Get()->enabled()) {
     reduce_bottom_margin =
-        keyboard::KeyboardController::Get()->keyboard_visible();
+        keyboard::KeyboardController::Get()->IsKeyboardVisible();
   }
 
   MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin,
