@@ -106,8 +106,11 @@ VolumeManagerCommon.RootType = {
   // Root for crostini 'Linux Files'.
   CROSTINI: 'crostini',
 
-  // Root for android files,
+  // Root for android files.
   ANDROID_FILES: 'android_files',
+
+  // My Files root, which aggregates DOWNLOADS, ANDROID_FILES and CROSTINI.
+  MY_FILES: 'my_files',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -139,6 +142,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU,
   VolumeManagerCommon.RootType.CROSTINI,
   VolumeManagerCommon.RootType.ANDROID_FILES,
+  VolumeManagerCommon.RootType.MY_FILES,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -223,6 +227,7 @@ VolumeManagerCommon.VolumeType = {
   MEDIA_VIEW: 'media_view',
   CROSTINI: 'crostini',
   ANDROID_FILES: 'android_files',
+  MY_FILES: 'my_files',
 };
 
 /**
@@ -284,6 +289,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
       return VolumeManagerCommon.VolumeType.CROSTINI;
     case VolumeManagerCommon.RootType.ANDROID_FILES:
       return VolumeManagerCommon.VolumeType.ANDROID_FILES;
+    case VolumeManagerCommon.RootType.MY_FILES:
+      return VolumeManagerCommon.VolumeType.MY_FILES;
   }
   assertNotReached('Unknown root type: ' + rootType);
 };

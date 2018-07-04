@@ -256,6 +256,9 @@
   <message name="IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL" desc="A label for the 'Linux Files' root which shows crostini files.">
     Linux Files
   </message>
+  <message name="IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL" desc="A label for the 'My Files' root which is parent of Downloads, Linux and Android files.">
+    My Files
+  </message>
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_IMAGES_ROOT_LABEL" desc="A label for the 'Images' root of media views.">
     Images
   </message>

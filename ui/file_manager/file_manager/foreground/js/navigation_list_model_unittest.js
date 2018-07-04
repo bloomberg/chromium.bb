@@ -11,8 +11,18 @@ var hoge;
 // Set up string assets.
 loadTimeData.data = {
   DRIVE_DIRECTORY_LABEL: 'My Drive',
+  DRIVE_MY_DRIVE_LABEL: 'My Drive',
+  DRIVE_TEAM_DRIVES_LABEL: 'Team Drives',
+  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
+  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
+  DRIVE_RECENT_COLLECTION_LABEL: 'Recents',
   DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
   LINUX_FILES_ROOT_LABEL: 'Linux Files',
+  MY_FILES_ROOT_LABEL: 'My Files',
+  RECENT_ROOT_LABEL: 'Recent',
+  MEDIA_VIEW_IMAGES_ROOT_LABEL: 'Images',
+  MEDIA_VIEW_VIDEOS_ROOT_LABEL: 'Videos',
+  MEDIA_VIEW_AUDIO_ROOT_LABEL: 'Audio',
 };
 
 function setUp() {

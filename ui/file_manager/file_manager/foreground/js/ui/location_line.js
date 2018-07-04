@@ -60,7 +60,7 @@ LocationLine.prototype.replaceRootName_ = function(url, newRoot) {
 
 /**
  * Get components for the path of entry.
- * @param {!Entry|!FakeEntry} entry An entry.
+ * @param {!Entry|!FakeEntry|!FilesAppEntry} entry An entry.
  * @return {!Array<!LocationLine.PathComponent>} Components.
  * @private
  */

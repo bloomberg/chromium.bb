@@ -651,9 +651,16 @@ Object.freeze(util.EntryChangedKind);
  * Obtains whether an entry is fake or not.
  * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is fake.
+ * @suppress {missingProperties} Closure compiler doesn't allow to call isNative
+ * on Entry which is native and thus doesn't define this property, however we
+ * handle undefined accordingly.
+ * TODO(lucmult): Remove @suppress once all entries are sub-type of
+ * FilesAppEntry.
  */
 util.isFakeEntry = function(entry) {
-  return (entry.getParent === undefined);
+  return (
+      entry.getParent === undefined ||
+      (entry.isNativeType !== undefined && !entry.isNativeType));
 };
 
 /**
@@ -905,6 +912,14 @@ util.isChildEntry = function(entry, directory) {
 util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (!ancestorEntry.isDirectory)
     return false;
+  if (ancestorEntry instanceof EntryList) {
+    let entryList = /** @type {EntryList} */ (ancestorEntry);
+    return entryList.children.some(ancestorChild => {
+      let volumeEntry = ancestorChild.rootEntry;
+      return util.isSameEntry(volumeEntry, childEntry) ||
+          util.isDescendantEntry(volumeEntry, childEntry);
+    });
+  }
   if (!util.isSameFileSystem(ancestorEntry.filesystem, childEntry.filesystem))
     return false;
   if (util.isSameEntry(ancestorEntry, childEntry))
@@ -1121,6 +1136,8 @@ util.getRootTypeLabel = function(locationInfo) {
       return str('RECENT_ROOT_LABEL');
     case VolumeManagerCommon.RootType.CROSTINI:
       return str('LINUX_FILES_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.MY_FILES:
+      return str('MY_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
       var mediaViewRootType =
           VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(

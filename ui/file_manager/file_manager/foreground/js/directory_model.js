@@ -1226,6 +1226,10 @@ DirectoryModel.prototype.createDirectoryContents_ =
     return DirectoryContents.createForCrostiniMounter(
         context, /** @type {!FakeEntry} */ (entry));
   }
+  if (entry.rootType == VolumeManagerCommon.RootType.MY_FILES) {
+    return DirectoryContents.createForDirectory(
+        context, /** @type {!FilesAppDirEntry} */ (entry));
+  }
   if (query && canUseDriveSearch) {
     // Drive search.
     return DirectoryContents.createForDriveSearch(

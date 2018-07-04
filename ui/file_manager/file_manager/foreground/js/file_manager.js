@@ -351,6 +351,14 @@ function FileManager() {
    * @private
    */
   this.initBackgroundPagePromise_ = null;
+
+  /**
+   * Flags async retrieved once at startup and can be used to switch behaviour
+   * on sync functions.
+   * @dict
+   * @private
+   */
+  this.commandLineFlags_ = {};
 }
 
 FileManager.prototype = /** @struct */ {
@@ -506,12 +514,16 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.startInitSettings_ = function() {
     metrics.startInterval('Load.InitSettings');
     this.appStateController_ = new AppStateController(this.dialogType);
-    return new Promise(function(resolve) {
-      this.appStateController_.loadInitialViewOptions().then(function() {
-        metrics.recordInterval('Load.InitSettings');
-        resolve();
-      });
-    }.bind(this));
+    return Promise
+        .all([
+          this.appStateController_.loadInitialViewOptions(),
+          util.isNewNavigationEnabled(),
+        ])
+        .then(values => {
+          this.commandLineFlags_['new-files-app-navigation'] =
+              /** @type {boolean} */ (values[1]);
+          metrics.recordInterval('Load.InitSettings');
+        });
   };
 
   /**
@@ -797,20 +809,20 @@ FileManager.prototype = /** @struct */ {
     this.document_ = this.dialogDom_.ownerDocument;
 
     metrics.startInterval('Load.InitDocuments');
-    return Promise.all([
-      this.initBackgroundPagePromise_,
-      window.importElementsPromise
-    ]).then(function() {
-      metrics.recordInterval('Load.InitDocuments');
-      metrics.startInterval('Load.InitUI');
-      this.initEssentialUI_();
-      this.initAdditionalUI_();
-      return this.initSettingsPromise_;
-    }.bind(this)).then(function() {
-      this.initFileSystemUI_();
-      this.initUIFocus_();
-      metrics.recordInterval('Load.InitUI');
-    }.bind(this));
+    return Promise
+        .all([this.initBackgroundPagePromise_, window.importElementsPromise])
+        .then(function() {
+          metrics.recordInterval('Load.InitDocuments');
+          metrics.startInterval('Load.InitUI');
+          this.initEssentialUI_();
+          this.initAdditionalUI_();
+          return this.initSettingsPromise_;
+        }.bind(this))
+        .then(function() {
+          this.initFileSystemUI_();
+          this.initUIFocus_();
+          metrics.recordInterval('Load.InitUI');
+        }.bind(this));
   };
 
   /**
@@ -1207,7 +1219,8 @@ FileManager.prototype = /** @struct */ {
             new NavigationModelMenuItem(
                 str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
                 'add-new-services') :
-            null);
+            null,
+        this.commandLineFlags_['new-files-app-navigation']);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
   };
