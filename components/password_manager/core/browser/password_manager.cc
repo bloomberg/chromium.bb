@@ -510,7 +510,8 @@ void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (!client_->IsSavingAndFillingEnabledForCurrentPage() ||
-      ShouldBlockPasswordForSameOriginButDifferentScheme(password_form))
+      ShouldBlockPasswordForSameOriginButDifferentScheme(password_form) ||
+      !client_->GetStoreResultFilter()->ShouldSave(password_form))
     return;
 
   PasswordFormManager* matched_manager = FindMatchedManager(

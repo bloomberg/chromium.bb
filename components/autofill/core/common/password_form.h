@@ -342,6 +342,9 @@ struct PasswordForm {
   // fields were found). But this form can be saved only with the fallback.
   bool only_for_fallback_saving;
 
+  // True iff this is Gaia form which should be skipped on saving.
+  bool is_gaia_with_skip_save_password_form;
+
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;
