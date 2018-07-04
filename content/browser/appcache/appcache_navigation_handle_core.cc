@@ -93,7 +93,30 @@ AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
 void AppCacheNavigationHandleCore::AddRequestToDebugLog(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (debug_log_)
-    debug_log_->emplace_back("Req:" + url.spec().substr(0, 64));
+    debug_log_->emplace_back("Req:host=" + HostToString() +
+                             ",url=" + url.spec().substr(0, 64));
+}
+
+void AppCacheNavigationHandleCore::AddDefaultFactoryRunToDebugLog(
+    bool was_request_intercepted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (debug_log_) {
+    debug_log_->emplace_back(
+        base::StringPrintf("Fac:host=%s,int=%s", HostToString().c_str(),
+                           was_request_intercepted ? "T" : "F"));
+  }
+}
+
+void AppCacheNavigationHandleCore::AddCreateURLLoaderToDebugLog() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (debug_log_)
+    debug_log_->emplace_back("Load:host=" + HostToString());
+}
+
+void AppCacheNavigationHandleCore::AddNavigationStartToDebugLog() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (debug_log_)
+    debug_log_->emplace_back("Start:host=" + HostToString());
 }
 
 std::string AppCacheNavigationHandleCore::GetDebugLog() {
@@ -159,6 +182,11 @@ void AppCacheNavigationHandleCore::OnSetSubresourceFactory(
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   // Should never be called.
   DCHECK(false);
+}
+
+std::string AppCacheNavigationHandleCore::HostToString() {
+  return precreated_host_ ? std::to_string(precreated_host_->host_id())
+                          : "null";
 }
 
 }  // namespace content
