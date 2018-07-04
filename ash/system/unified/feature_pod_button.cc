@@ -269,7 +269,8 @@ void FeaturePodButton::SetToggled(bool toggled) {
 }
 
 void FeaturePodButton::SetExpandedAmount(double expanded_amount) {
-  label_button_->layer()->SetOpacity(expanded_amount);
+  // TODO(tetsui): Confirm the animation curve with UX.
+  label_button_->layer()->SetOpacity(std::max(0., 5. * expanded_amount - 4.));
   label_button_->SetVisible(expanded_amount > 0.0);
 }
 
