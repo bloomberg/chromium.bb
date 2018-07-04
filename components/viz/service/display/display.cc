@@ -294,11 +294,12 @@ bool Display::DrawAndSwap() {
   }
 
   // Run callbacks early to allow pipelining and collect presented callbacks.
-  for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-    Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+  for (const auto& surface_id : surfaces_to_ack_on_next_draw_) {
+    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
     if (surface)
       surface->RunDrawCallback();
   }
+  surfaces_to_ack_on_next_draw_.clear();
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                      stored_latency_info_.begin(),
@@ -485,25 +486,19 @@ void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
 
 bool Display::SurfaceDamaged(const SurfaceId& surface_id,
                              const BeginFrameAck& ack) {
+  if (!ack.has_damage)
+    return false;
   bool display_damaged = false;
-  if (ack.has_damage) {
-    if (aggregator_ &&
-        aggregator_->previous_contained_surfaces().count(surface_id)) {
-      Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-      if (surface) {
-        DCHECK(surface->HasActiveFrame());
-        if (surface->GetActiveFrame().resource_list.empty())
-          aggregator_->ReleaseResources(surface_id);
-      }
-      display_damaged = true;
-      if (surface_id == current_surface_id_)
-        UpdateRootSurfaceResourcesLocked();
-    } else if (surface_id == current_surface_id_) {
-      display_damaged = true;
-      UpdateRootSurfaceResourcesLocked();
-    }
+  if (aggregator_) {
+    display_damaged |=
+        aggregator_->NotifySurfaceDamageAndCheckForDisplayDamage(surface_id);
   }
-
+  if (surface_id == current_surface_id_) {
+    display_damaged = true;
+    UpdateRootSurfaceResourcesLocked();
+  }
+  if (display_damaged)
+    surfaces_to_ack_on_next_draw_.push_back(surface_id);
   return display_damaged;
 }
 
