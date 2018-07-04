@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -271,6 +272,15 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     protected void doLayoutInflation() {
+        // Because we delay the layout inflation, the CompositorSurfaceManager and its
+        // SurfaceView(s) are created and attached late (ie after the first draw). At the time of
+        // the first attach of a SurfaceView to the view hierarchy (regardless of the SurfaceView's
+        // actual opacity), the window transparency hint changes (because the window creates a
+        // transparent hole and attaches the SurfaceView to that hole). This may cause older android
+        // versions to destroy the window and redraw it causing a flicker. This line sets the window
+        // transparency hint early so that when the SurfaceView gets attached later, the
+        // transparency hint need not change and no flickering occurs.
+        getWindow().setFormat(PixelFormat.TRANSLUCENT);
         // No need to inflate layout synchronously since splash screen is displayed.
         new Thread() {
             @Override
