@@ -80,7 +80,7 @@ bool BufferSource::GetSleb128(int32_t* ret) {
   for (int shift = 0; shift < shift_lim; shift += 7, ++cur) {
     uint32_t b = *cur;
     // When |shift == 28|, |(b & 0x7F) << shift| discards the "???" bits.
-    value |= static_cast<int32_t>(b & 0x7F) << shift;
+    value |= static_cast<int32_t>(static_cast<uint32_t>(b & 0x7F) << shift);
     if (!(b & 0x80)) {
       *ret = (shift == 28) ? value : SignExtend(shift + 6, value);
       seek(cur + 1);
