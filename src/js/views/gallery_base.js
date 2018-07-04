@@ -19,6 +19,7 @@ camera.views = camera.views || {};
  *
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
+ * @param {camera.models.Gallery} model Model object.
  * @param {HTMLElement} rootElement Root element containing elements of the
  *     view.
  * @param {string} name View name.
@@ -26,14 +27,14 @@ camera.views = camera.views || {};
  * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
-camera.views.GalleryBase = function(context, router, rootElement, name) {
+camera.views.GalleryBase = function(context, router, model, rootElement, name) {
   camera.View.call(this, context, router, rootElement, name);
 
   /**
    * @type {camera.models.Gallery}
-   * @protected
+   * @private
    */
-  this.model = null;
+  this.model_ = model;
 
   /**
    * Contains pictures' views.
@@ -96,40 +97,10 @@ camera.views.GalleryBase.prototype = {
 };
 
 /**
- * Initializes the view. Call the callback on completion.
- * @param {function()} callback Completion callback.
- */
-camera.views.GalleryBase.prototype.initialize = function(callback) {
-  camera.models.Gallery.getInstance(function(model) {
-    this.model = model;
-    this.model.addObserver(this);
-    this.renderPictures_();
-    callback();
-  }.bind(this), function() {
-    // TODO(yuli): Add error handling.
-    callback();
-  });
-};
-
-/**
- * Renders pictures from the model onto the DOM.
- * @private
- */
-camera.views.GalleryBase.prototype.renderPictures_ = function() {
-  for (var index = 0; index < this.model.length; index++) {
-    this.addPictureToDOM(this.model.pictures[index]);
-  }
-};
-
-/**
  * Exports the selected pictures. If nothing selected, then nothing happens.
  * @protected
  */
 camera.views.GalleryBase.prototype.exportSelection = function() {
-  // Exporting is no longer applicable if the model uses the external file system.
-  if (this.model.useExternalFs)
-    return;
-
   var selectedIndexes = this.selectedIndexes;
   if (!selectedIndexes.length)
     return;
@@ -145,10 +116,9 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
   }.bind(this);
 
   var exportPicture = function(fileEntry, picture) {
-    this.model.exportPicture(
+    this.model_.exportPicture(
         picture,
         fileEntry,
-        function() {},
         function() { onError(fileEntry.name); });
   }.bind(this);
 
@@ -198,23 +168,9 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
     var selectedPictures = this.selectedPictures();
     var lastDeleteIndex = this.pictures.indexOf(selectedPictures[0]);
     for (var i = selectedPictures.length - 1; i >= 0; i--) {
-      this.model.deletePicture(selectedPictures[i].picture,
-          function() {
-            // Update the selection after all selected pictures are deleted.
-            if (!this.selectedIndexes.length) {
-              if (this.pictures.length > 0) {
-                this.setSelectedIndex(Math.max(0, lastDeleteIndex - 1));
-              }
-              else {
-                this.setSelectedIndex(null);
-                if (this.entered)
-                  this.router.back();
-              }
-            }
-          }.bind(this),
-          function() {
-            // TODO(mtomasz): Handle errors.
-          });
+      this.model_.deletePicture(selectedPictures[i].picture, function() {
+        // TODO(yuli): Move Toast out of views/ and show a toast message here.
+      });
     }
   }.bind(this));
 };
@@ -327,12 +283,18 @@ camera.views.GalleryBase.prototype.setSelectedIndex = function(index) {
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onPictureDeleting = function(picture) {
+camera.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
   var index = this.pictureIndex(picture);
   if (index == null)
     return;
 
+  // Hack to restore focus after removing an element. Note, that we restore
+  // focus only if there was something focused before. However, if the focus
+  // was on the selected element, then after removing it from DOM, there will
+  // be nothing focused, while we still want to restore the focus.
   var element = this.pictures[index].element;
+  this.forceUpcomingFocusSync_ = document.activeElement == element;
+  element.parentNode.removeChild(element);
   this.pictures.splice(index, 1);
 
   // Update the selection if the deleted picture is selected.
@@ -344,14 +306,16 @@ camera.views.GalleryBase.prototype.onPictureDeleting = function(picture) {
         this.selectedIndexes[i]--;
     }
   }
-
-  // Hack to restore focus after removing an element. Note, that we restore
-  // focus only if there was something focused before. However, if the focus
-  // was on the selected element, then after removing it from DOM, there will
-  // be nothing focused, while we still want to restore the focus.
-  this.forceUpcomingFocusSync_ = document.activeElement == element;
-
-  element.parentNode.removeChild(element);
+  if (!this.selectedIndexes.length) {
+    if (this.pictures.length > 0) {
+      this.setSelectedIndex(Math.max(0, index - 1));
+    } else {
+      this.setSelectedIndex(null);
+      if (this.entered) {
+        this.router.back();
+      }
+    }
+  }
 };
 
 /**
@@ -394,32 +358,6 @@ camera.views.GalleryBase.prototype.onPictureAdded = function(picture) {
  */
 camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
   throw new Error('Not implemented.');
-};
-
-/**
- * Updates the picture's content element size according to the given bounds.
- * The wrapped content (either img or video child element) should keep the
- * aspect ratio and is either filled up or letterboxed inside the picture's
- * wrapper element.
- * @param {HTMLElement}  wrapper Picture element to be updated.
- * @param {number} boundWidth Bound width in pixels.
- * @param {number} boundHeight Bound height in pixels.
- * @param {boolean} fill True to fill up and crop the content to the bounds,
- *     false to letterbox the content within the bounds.
- * @protected
- */
-camera.views.GalleryBase.prototype.updateElementSize = function(
-    wrapper, boundWidth, boundHeight, fill) {
-  // Assume the wrapped child is either img or video element.
-  var child = wrapper.firstElementChild;
-  var srcWidth = child.naturalWidth ? child.naturalWidth : child.videoWidth;
-  var srcHeight = child.naturalHeight ? child.naturalHeight : child.videoHeight;
-  var f = fill ? Math.max : Math.min;
-  var scale = f(boundHeight / srcHeight, boundWidth / srcWidth);
-
-  // Corresponding CSS should handle the adjusted sizes for proper display.
-  child.width = scale * srcWidth;
-  child.height = scale * srcHeight;
 };
 
 /**

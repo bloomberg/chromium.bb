@@ -20,10 +20,6 @@ The script must be able to execute sudo without a password.
 
 The automated tests run chromium with a testing package of the Camera app. The Camera app communicates with the python test runner via web sockets. Note, that you will need a usb web camera to be plugged in. Embedded notebook cameras may also work, depending on the model.
 
-Shortcuts
----------
-* Space - take a picture.
-
 Known issues
 ------------
 <http:///crbug.com/?q=Cr%3DPlatform-Apps-Camera>

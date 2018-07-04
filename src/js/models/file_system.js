@@ -131,24 +131,21 @@ camera.models.FileSystem.initialize = function(onSuccess, onFailure) {
   };
 
   Promise.all([
-    initInternalFs(), initExternalFs(),readLocalStorage()
+    initInternalFs(), initExternalFs(), readLocalStorage()
   ]).then(onSuccess).catch(onFailure);
 };
 
 /**
  * Reloads the file entries from internal and external file system.
- * @param {function(Array.<FileEntry>, Array.<FileEntry>)} onSuccess Success
- *     callback with internal and external entries.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<!Array.<!Array.<FileEntry>>} Promise for the internal and
+       external entries.
  * @private
  */
-camera.models.FileSystem.reloadEntries_ = function(onSuccess, onFailure) {
-  Promise.all([
+camera.models.FileSystem.reloadEntries_ = function() {
+  return Promise.all([
     camera.models.FileSystem.readFs_(camera.models.FileSystem.internalFs),
     camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs)
-  ]).then(values => {
-    onSuccess(values[0], values[1]);
-  }).catch(onFailure);
+  ]);
 };
 
 /**
@@ -176,6 +173,26 @@ camera.models.FileSystem.readFs_ = function(fs) {
     } else {
       resolve([]);
     }
+  });
+};
+
+/**
+ * Checks if there is a picture by the given name in the external file system.
+ * @param {string} name Name of the picture.
+ * @return {!Promise<boolean>} Promise for the result.
+ */
+camera.models.FileSystem.hasExternalPicture = function(name) {
+  return new Promise(resolve => {
+    var fs = camera.models.FileSystem.externalFs;
+    fs.root.getFile(name, {create: false}, entry => {
+      resolve(true);
+    }, error => {
+      if (error.name == 'NotFoundError') {
+        resolve(false);
+      } else {
+        reject();
+      }
+    });
   });
 };
 
@@ -272,8 +289,8 @@ camera.models.FileSystem.migratePictures = function(onSuccess, onFailure) {
   };
 
   camera.models.FileSystem.ackMigrate_();
-  camera.models.FileSystem.reloadEntries_(
-      function(internalEntries, externalEntries) {
+  camera.models.FileSystem.reloadEntries_().then(
+      ([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
     camera.models.FileSystem.parseInternalEntries_(
@@ -291,11 +308,11 @@ camera.models.FileSystem.migratePictures = function(onSuccess, onFailure) {
       var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
       migrated.push(migratePicture(entry, thumbnailEntry));
     }
-    Promise.all(migrated).then(function() {
-      camera.models.FileSystem.doneMigrate_();
-      onSuccess();
-    }).catch(onFailure);
-  }, onFailure);
+    return Promise.all(migrated);
+  }).then(() => {
+    camera.models.FileSystem.doneMigrate_();
+    onSuccess();
+  }).catch(onFailure);
 };
 
 /**
@@ -371,8 +388,7 @@ camera.models.FileSystem.saveToFile_ = function(
     },
     onFailure);
   }, function(error) {
-    if (error instanceof DOMException &&
-        error.name == 'InvalidModificationError') {
+    if (error.name == 'InvalidModificationError') {
       fileName = camera.models.FileSystem.incrementFileName_(fileName);
       camera.models.FileSystem.saveToFile_(
           fs, fileName, blob, onSuccess, onFailure);
@@ -453,16 +469,17 @@ camera.models.FileSystem.getThumbnailName = function(entry) {
 
 /**
  * Creates and saves the thumbnail of the given picture.
+ * @param {boolean} isVideo Picture is a video.
  * @param {FileEntry} entry Picture's file entry whose thumbnail to be saved.
  * @param {function(FileEntry)} onSuccess Success callback with the file entry
  *     of the saved thumbnail.
  * @param {function(*=)} onFailure Failure callback.
  */
-camera.models.FileSystem.saveThumbnail = function(entry, onSuccess, onFailure) {
+camera.models.FileSystem.saveThumbnail = function(
+    isVideo, entry, onSuccess, onFailure) {
   camera.models.FileSystem.pictureURL(entry).then(url => {
     return new Promise((resolve, reject) => {
-      camera.models.FileSystem.createThumbnail_(
-          camera.models.FileSystem.hasVideoPrefix(entry), url, resolve, reject);
+      camera.models.FileSystem.createThumbnail_(isVideo, url, resolve, reject);
     });
   }).then(blob => {
     return new Promise((resolve, reject) => {
@@ -534,15 +551,14 @@ camera.models.FileSystem.parseInternalEntries_ = function(
 };
 
 /**
- * Returns the picture and thumbnail entries.
- * @param {function(Array.<FileEntry>, Object{string, FileEntry})} onSuccess
- *     Success callback with the picture entries and the thumbnail entries
- *     mapped by thumbnail names.
- * @param {function(*=)} onFailure Failure callback
+ * Gets the picture and thumbnail entries.
+ * @return {!Promise<!Array.<!Array.<FileEntry>|!Object{string, FileEntry}>}
+ *     Promise for the picture entries and the thumbnail entries mapped by
+ *     thumbnail names.
  */
-camera.models.FileSystem.getEntries = function(onSuccess, onFailure) {
-  camera.models.FileSystem.reloadEntries_(
-      function(internalEntries, externalEntries) {
+camera.models.FileSystem.getEntries = function() {
+  return camera.models.FileSystem.reloadEntries_().then(
+      ([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
 
@@ -560,8 +576,8 @@ camera.models.FileSystem.getEntries = function(onSuccess, onFailure) {
       camera.models.FileSystem.parseInternalEntries_(
           internalEntries, thumbnailEntriesByName, pictureEntries);
     }
-    onSuccess(pictureEntries, thumbnailEntriesByName);
-  }, onFailure);
+    return [pictureEntries, thumbnailEntriesByName];
+  });
 };
 
 /**

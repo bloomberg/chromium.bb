@@ -61,10 +61,8 @@ SRC_RESOURCES= \
 	src/_locales/zh_CN/messages.json \
 	src/_locales/zh_TW/messages.json \
 	src/css/main.css \
-	src/images/2x/album_video_overlay.png \
 	src/images/2x/browser_button_export.png \
 	src/images/2x/browser_button_print.png \
-	src/images/2x/camera_button_album.png \
 	src/images/2x/camera_button_mirror.png \
 	src/images/2x/camera_button_picture.png \
         src/images/2x/camera_button_record.png \
@@ -74,7 +72,6 @@ SRC_RESOURCES= \
 	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
         src/images/2x/dialog_button_close.png \
-	src/images/album_video_overlay.png \
 	src/images/browser_button_export.png \
 	src/images/browser_button_print.png \
 	src/images/camera_app_icons_128.png \
@@ -85,7 +82,6 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_96.png \
 	src/images/camera_app_icons_favicon_16.png \
 	src/images/camera_app_icons_favicon_32.png \
-	src/images/camera_button_album.png \
 	src/images/camera_button_mirror.png \
 	src/images/camera_button_picture.png \
         src/images/camera_button_record.png \
@@ -107,9 +103,9 @@ SRC_RESOURCES= \
 	src/js/test_cases.js \
 	src/js/util.js \
 	src/js/view.js \
-	src/js/views/album.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
+        src/js/views/camera/gallerybutton.js \
         src/js/views/camera_toast.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \

@@ -41,37 +41,25 @@ camera.Camera = function() {
    * @type {camera.views.Camera}
    * @private
    */
-  this.cameraView_ = new camera.views.Camera(this.context_, this.router_);
-
-  /**
-   * @type {camera.views.Album}
-   * @private
-   */
-  this.albumView_ = new camera.views.Album(this.context_, this.router_);
+  this.cameraView_ = null;
 
   /**
    * @type {camera.views.Browser}
    * @private
    */
-  this.browserView_ = new camera.views.Browser(this.context_, this.router_);
+  this.browserView_ = null;
 
   /**
    * @type {camera.views.Dialog}
    * @private
    */
-  this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
+  this.dialogView_ = null;
 
   /**
    * @type {?number}
    * @private
    */
   this.resizeCompleteTimer_ = null;
-
-  /**
-   * @type {camera.util.TooltipManager}
-   * @private
-   */
-  this.tooltipManager_ = new camera.util.TooltipManager();
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -94,7 +82,6 @@ camera.Camera = function() {
 
 /**
  * Creates context for the views.
- *
  * @param {function(number)} onAspectRatio Callback to be called, when setting a
  *     new aspect ratio. The argument is the aspect ratio.
  * @param {function(string, string, opt_string)} onError Callback to be called,
@@ -162,7 +149,6 @@ camera.Camera.ViewsStack.prototype = {
 /**
  * Adds the view on the stack and hence makes it the current one. Optionally,
  * passes the arguments to the view.
- *
  * @param {camera.View} view View to be pushed on top of the stack.
  * @param {Object=} opt_arguments Optional arguments.
  * @param {function(Object=)} opt_callback Optional result callback to be called
@@ -170,6 +156,8 @@ camera.Camera.ViewsStack.prototype = {
  */
 camera.Camera.ViewsStack.prototype.push = function(
     view, opt_arguments, opt_callback) {
+  if (!view)
+    return;
   if (this.current)
     this.current.inactivate();
 
@@ -186,7 +174,6 @@ camera.Camera.ViewsStack.prototype.push = function(
  * Removes the current view from the stack and hence makes the previous one
  * the current one. Calls the callback passed to the previous view's navigate()
  * method with the result.
- *
  * @param {Object=} opt_result Optional result. If not passed, then undefined
  *     will be passed to the callback.
  */
@@ -219,19 +206,21 @@ camera.Camera.prototype.start = function() {
         chrome.i18n.getMessage('errorMsgFileSystemFailed'));
   }.bind(this);
 
-  var initAllViews = function() {
-    // Initialize all views, and then start the app.
-    // TODO(yuli): Make views' initialize() throw no error.
-    Promise.all([
-      new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
-      new Promise(this.albumView_.initialize.bind(this.albumView_)),
-      new Promise(this.browserView_.initialize.bind(this.browserView_))
-    ]).then(() => {
-      this.tooltipManager_.initialize();
-      this.viewsStack_.push(this.cameraView_);
-      camera.util.makeElementsUnfocusableByMouse();
-      camera.util.setAriaAttributes();
-    }).catch(onFailure);
+  var model = new camera.models.Gallery();
+  this.cameraView_ = new camera.views.Camera(this.context_, this.router_, model);
+  this.browserView_ = new camera.views.Browser(this.context_, this.router_, model);
+  this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
+
+  var prepare = function() {
+    // Prepare the views and model, and then make the app ready.
+    this.cameraView_.prepare();
+    this.browserView_.prepare();
+    model.load([this.cameraView_.galleryButton, this.browserView_]);
+
+    camera.util.TooltipManager.initialize();
+    camera.util.makeElementsUnfocusableByMouse();
+    camera.util.setAriaAttributes();
+    this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);
   }.bind(this);
 
   camera.models.FileSystem.initialize(function() {
@@ -244,7 +233,7 @@ camera.Camera.prototype.start = function() {
           chrome.app.window.current().close();
           return;
         }
-        camera.models.FileSystem.migratePictures(initAllViews, onFailure);
+        camera.models.FileSystem.migratePictures(prepare, onFailure);
       });
     }.bind(this);
 
@@ -253,15 +242,14 @@ camera.Camera.prototype.start = function() {
       if (!camera.models.FileSystem.ackMigratePictures) {
         promptMigrate();
       } else {
-        camera.models.FileSystem.migratePictures(initAllViews, onFailure);
+        camera.models.FileSystem.migratePictures(prepare, onFailure);
       }
-    }, initAllViews, onFailure);
+    }, prepare, onFailure);
   }.bind(this), onFailure);
 };
 
 /**
  * Switches the view using a router's view identifier.
- *
  * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
  * @param {Object=} opt_arguments Optional arguments for the view.
  * @param {function(Object=)} opt_callback Optional result callback to be called
@@ -273,9 +261,6 @@ camera.Camera.prototype.navigateById_ = function(
   switch (viewIdentifier) {
     case camera.Router.ViewIdentifier.CAMERA:
       this.viewsStack_.push(this.cameraView_, opt_arguments, opt_callback);
-      break;
-    case camera.Router.ViewIdentifier.ALBUM:
-      this.viewsStack_.push(this.albumView_, opt_arguments, opt_callback);
       break;
     case camera.Router.ViewIdentifier.BROWSER:
       this.viewsStack_.push(this.browserView_, opt_arguments, opt_callback);

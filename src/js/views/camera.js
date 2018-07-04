@@ -18,10 +18,10 @@ camera.views = camera.views || {};
  * Creates the Camera view controller.
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
- * @implements {camera.models.Gallery.Observer}
+ * @param {camera.models.Gallery} model Model object.
  * @constructor
  */
-camera.views.Camera = function(context, router) {
+camera.views.Camera = function(context, router, model) {
   camera.View.call(
       this, context, router, document.querySelector('#camera'), 'camera');
 
@@ -30,7 +30,7 @@ camera.views.Camera = function(context, router) {
    * @type {camera.models.Gallery}
    * @private
    */
-  this.model_ = null;
+  this.model_ = model;
 
   /**
    * Video element to capture the stream.
@@ -121,6 +121,13 @@ camera.views.Camera = function(context, router) {
   this.toast_ = new camera.views.Toast();
 
   /**
+   * Button for going to the gallery.
+   * @type {camera.views.camera.GalleryButton}
+   * @private
+   */
+  this.galleryButton_ = new camera.views.camera.GalleryButton(router, model);
+
+  /**
    * Timer for elapsed recording time for video recording.
    * @type {number?}
    * @private
@@ -195,9 +202,6 @@ camera.views.Camera = function(context, router) {
   document.querySelector('#take-picture').addEventListener(
       'click', this.onTakePictureClicked_.bind(this));
 
-  document.querySelector('#album-enter').addEventListener(
-      'click', this.onAlbumEnterClicked_.bind(this));
-
   document.querySelector('#toggle-record').addEventListener(
       'click', this.onToggleRecordClicked_.bind(this));
   document.querySelector('#toggle-camera').addEventListener(
@@ -235,14 +239,16 @@ camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
   get capturing() {
     return (this.stream_ != null);
+  },
+  get galleryButton() {
+    return this.galleryButton_;
   }
 };
 
 /**
- * Initializes the view. Call the callback on completion.
- * @param {function()} callback Completion callback.
+ * Prepares the view.
  */
-camera.views.Camera.prototype.initialize = function(callback) {
+camera.views.Camera.prototype.prepare = function() {
   // Show the mirror toggle on flipping-camera chromebooks (crbug.com/847737).
   camera.util.isChromeOSDevice(
       ['LENOVO-REKS1', 'LENOVO-REKS3', 'LENOVO-REKS4']).then(result => {
@@ -260,31 +266,17 @@ camera.views.Camera.prototype.initialize = function(callback) {
   // Remove the deprecated values.
   chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
 
-  // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
+  // Monitor the locked state to avoid retrying camera connection when locked.
+  chrome.idle.onStateChanged.addListener(newState => {
+    this.locked_ = (newState == 'locked');
+  });
+
+  // TODO(yuli): Replace with devicechanged event.
   this.maybeRefreshVideoDeviceIds_();
   setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
 
   // Start the camera after refreshing the device ids.
   this.start_();
-
-  // Monitor the locked state to avoid retrying camera connection when locked.
-  chrome.idle.onStateChanged.addListener(function(newState) {
-    if (newState == 'locked')
-      this.locked_ = true;
-    else if (newState == 'active')
-      this.locked_ = false;
-  }.bind(this));
-
-  // Acquire the gallery model.
-  camera.models.Gallery.getInstance(function(model) {
-    this.model_ = model;
-    this.model_.addObserver(this);
-    this.updateAlbumButton_();
-    callback();
-  }.bind(this), function() {
-    // TODO(yuli): Add error handling.
-    callback();
-  });
 };
 
 /**
@@ -298,17 +290,8 @@ camera.views.Camera.prototype.onEnter = function() {
  * @override
  */
 camera.views.Camera.prototype.onActivate = function() {
-  if (document.activeElement != document.body)
+  if (document.activeElement != document.body) {
     document.querySelector('#take-picture').focus();
-  this.updateAlbumButton_();
-};
-
-/**
- * @override
- */
-camera.views.Camera.prototype.onInactivate = function() {
-  if (this.taking_) {
-    this.endTakePicture_();
   }
 };
 
@@ -339,15 +322,6 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
     }
   }
   this.takePicture_();
-};
-
-/**
- * Handles clicking on the album button.
- * @param {Event} event Mouse event
- * @private
- */
-camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
-  this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
 };
 
 /**
@@ -453,16 +427,6 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
 };
 
 /**
- * Updates the album-button enabled/disabled UI for model changes.
- * @private
- */
-camera.views.Camera.prototype.updateAlbumButton_ = function() {
-  // Album-button would also be disabled if camera isn't capturing.
-  document.querySelector('#album-enter').disabled =
-      !this.model_ || this.model_.length == 0 || !this.capturing;
-};
-
-/**
  * Updates the toolbar enabled/disabled UI for capturing or taking-picture
  * state changes.
  * @private
@@ -474,8 +438,7 @@ camera.views.Camera.prototype.updateToolbar_ = function() {
   document.querySelector('#toggle-camera').disabled = disabled;
   document.querySelector('#toggle-record').disabled = disabled;
   document.querySelector('#take-picture').disabled = disabled;
-
-  this.updateAlbumButton_();
+  this.galleryButton_.disabled = disabled;
 };
 
 /**
@@ -528,18 +491,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     }
     this.keyBuffer_ = '';
   }
-
-  switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Space':  // Space key for taking the picture.
-      document.querySelector('#take-picture').click();
-      event.stopPropagation();
-      event.preventDefault();
-      break;
-    case 'G':  // G key for the gallery.
-      document.querySelector('#album-enter').click();
-      event.preventDefault();
-      break;
-  }
 };
 
 /**
@@ -572,7 +523,7 @@ camera.views.Camera.prototype.showRecordingTimer_ = function() {
       hr = '0' + hr;
     }
     return hr + ':' + min + ':' + sec;
-  }
+  };
 
   var timerElement = document.querySelector('#recording-timer');
   timerElement.classList.add('visible');
@@ -674,22 +625,13 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
  */
 camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
   this.doTakePictureTimer_ = setTimeout(function() {
-    // Add picture to the model.
-    var addPicture = function(blob, isMotionPicture) {
-      var saveFailure = function(error) {
+    var savePicture = function(blob, isMotionPicture) {
+      this.model_.savePicture(blob, isMotionPicture, error => {
         if (error) {
           console.error(error);
         }
         this.showToastMessage_('errorMsgSaveFileFailed', true);
-      }.bind(this);
-      if (!this.model_) {
-        saveFailure();
-        return;
-      }
-      var albumButton = document.querySelector('#toolbar #album-enter');
-      camera.util.setAnimationClass(albumButton, albumButton, 'flash');
-
-      this.model_.addPicture(blob, isMotionPicture, saveFailure);
+      });
     }.bind(this);
 
     // Update toolbar after finishing taking-photo/recording-video.
@@ -712,7 +654,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         this.recordEndSound_.currentTime = 0;
         this.recordEndSound_.play();
         stopRecordingUI();
-        addPicture(blob, true);
+        savePicture(blob, true);
       }.bind(this), function() {
         stopRecordingUI();
         // The recording may have no data available because it's too short or
@@ -731,7 +673,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         // Play a shutter sound.
         this.shutterSound_.currentTime = 0;
         this.shutterSound_.play();
-        addPicture(blob, false);
+        savePicture(blob, false);
       }.bind(this), function() {
         this.showToastMessage_('errorMsgTakePhotoFailed', true);
       }.bind(this), onFinish);
@@ -1151,20 +1093,3 @@ camera.views.Camera.prototype.start_ = function() {
     tryStartWithConstraints(0);
   }.bind(this)).catch(onFailure);
 };
-
-/**
- * @override
- */
-camera.views.Camera.prototype.onPictureDeleting = function(picture) {
-  // No-op here (right before deleting a picure) as no picture would be deleted
-  // when camera view is active and onActivate() already handles updating the
-  // album-button.
-};
-
-/**
- * @override
- */
-camera.views.Camera.prototype.onPictureAdded = function(picture) {
-  this.updateAlbumButton_();
-};
-
