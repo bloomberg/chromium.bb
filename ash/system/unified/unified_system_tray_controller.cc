@@ -177,7 +177,22 @@ void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
   UpdateExpandedAmount();
 }
 
+void UnifiedSystemTrayController::StartAnimation(bool expand) {
+  if (expand) {
+    animation_->Show();
+  } else {
+    // To animate to hidden state, first set SlideAnimation::IsShowing() to
+    // true.
+    animation_->Show();
+    animation_->Hide();
+  }
+}
+
 void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+  if (animation_->is_animating()) {
+    // Prevent overwriting the state right after fling event
+    return;
+  }
   bool expanded = GetDragExpandedAmount(location) > 0.5;
   if (was_expanded_ != expanded) {
     UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
@@ -186,14 +201,12 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
   }
 
   // If dragging is finished, animate to closer state.
-  if (expanded) {
-    animation_->Show();
-  } else {
-    // To animate to hidden state, first set SlideAnimation::IsShowing() to
-    // true.
-    animation_->Show();
-    animation_->Hide();
-  }
+  StartAnimation(expanded);
+}
+
+void UnifiedSystemTrayController::Fling(int velocity) {
+  // Expand when flinging up. Collapse otherwise.
+  StartAnimation(velocity < 0);
 }
 
 void UnifiedSystemTrayController::ShowUserChooserWidget() {
