@@ -66,7 +66,7 @@ NGLogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
     const LayoutSelectionStatus& selection_status) {
   // Expand paint rect if selection covers multiple lines and
   // this fragment is at the end of line.
-  if (selection_status.line_break == SelectLineBreak::kNotSelected)
+  if (selection_status.line_break == SelectSoftLineBreak::kNotSelected)
     return rect;
   if (paint_fragment.GetLayoutObject()
           ->EnclosingNGBlockFlow()

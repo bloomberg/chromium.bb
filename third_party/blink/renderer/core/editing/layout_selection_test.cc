@@ -928,7 +928,7 @@ class NGLayoutSelectionTest
         GetNGPaintFragment(first_text->GetLayoutObject());
     const LayoutSelectionStatus& status =
         Selection().ComputeLayoutSelectionStatus(fragment);
-    return status.line_break == SelectLineBreak::kSelected;
+    return status.line_break == SelectSoftLineBreak::kSelected;
   }
 
   LayoutSelectionStatus ComputeLayoutSelectionStatus(const Node& node) {
@@ -946,9 +946,9 @@ class NGLayoutSelectionTest
 
 std::ostream& operator<<(std::ostream& ostream,
                          const LayoutSelectionStatus& status) {
-  const String line_break = (status.line_break == SelectLineBreak::kSelected)
-                                ? "kSelected"
-                                : "kNotSelected";
+  const String line_break =
+      (status.line_break == SelectSoftLineBreak::kSelected) ? "kSelected"
+                                                            : "kNotSelected";
   return ostream << status.start << ", " << status.end << ", " << std::boolalpha
                  << line_break;
 }
@@ -964,7 +964,7 @@ TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
 
   LayoutObject* const foo =
       GetDocument().body()->firstChild()->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(0u, 0u, SelectLineBreak::kNotSelected),
+  EXPECT_EQ(LayoutSelectionStatus(0u, 0u, SelectSoftLineBreak::kNotSelected),
             Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo)));
   LayoutObject* const bar = GetDocument()
                                 .body()
@@ -972,7 +972,7 @@ TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
                                 ->nextSibling()
                                 ->firstChild()
                                 ->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(4u, 5u, SelectLineBreak::kNotSelected),
+  EXPECT_EQ(LayoutSelectionStatus(4u, 5u, SelectSoftLineBreak::kNotSelected),
             Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(bar)));
 }
 
@@ -988,12 +988,12 @@ TEST_F(NGLayoutSelectionTest, FirstLetterInAnotherBlockFlow) {
   const LayoutTextFragment* const foo_f =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 0));
   EXPECT_EQ(
-      LayoutSelectionStatus(0u, 1u, SelectLineBreak::kSelected),
+      LayoutSelectionStatus(0u, 1u, SelectSoftLineBreak::kSelected),
       Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo_f)));
   const LayoutTextFragment* const foo_oo =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 1));
   EXPECT_EQ(
-      LayoutSelectionStatus(1u, 2u, SelectLineBreak::kNotSelected),
+      LayoutSelectionStatus(1u, 2u, SelectSoftLineBreak::kNotSelected),
       Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo_oo)));
 }
 
@@ -1008,7 +1008,7 @@ TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
   TEST_CHECK();
   LayoutObject* const foo =
       GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(1u, 3u, SelectLineBreak::kSelected),
+  EXPECT_EQ(LayoutSelectionStatus(1u, 3u, SelectSoftLineBreak::kSelected),
             Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo)));
   LayoutObject* const bar = GetDocument()
                                 .body()
@@ -1016,7 +1016,7 @@ TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
                                 ->nextSibling()
                                 ->firstChild()
                                 ->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(0u, 2u, SelectLineBreak::kNotSelected),
+  EXPECT_EQ(LayoutSelectionStatus(0u, 2u, SelectSoftLineBreak::kNotSelected),
             Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(bar)));
 }
 
@@ -1101,10 +1101,10 @@ TEST_F(NGLayoutSelectionTest, LineBreakImage) {
       "bar<img id=img2 width=10px height=10px>|</div>");
   Node* const foo =
       GetDocument().body()->firstChild()->firstChild()->nextSibling();
-  EXPECT_EQ(SelectLineBreak::kNotSelected,
+  EXPECT_EQ(SelectSoftLineBreak::kNotSelected,
             ComputeLayoutSelectionStatus(*foo).line_break);
   Node* const bar = foo->nextSibling()->nextSibling();
-  EXPECT_EQ(SelectLineBreak::kNotSelected,
+  EXPECT_EQ(SelectSoftLineBreak::kNotSelected,
             ComputeLayoutSelectionStatus(*bar).line_break);
 }
 
@@ -1117,7 +1117,7 @@ TEST_F(NGLayoutSelectionTest, BRStatus) {
       GetDocument().QuerySelector("br")->GetLayoutObject();
   CHECK(layout_br->IsBR());
   EXPECT_EQ(
-      LayoutSelectionStatus(3u, 4u, SelectLineBreak::kNotSelected),
+      LayoutSelectionStatus(3u, 4u, SelectSoftLineBreak::kNotSelected),
       Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(layout_br)));
 }
 
