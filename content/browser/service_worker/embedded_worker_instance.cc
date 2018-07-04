@@ -407,6 +407,7 @@ class EmbeddedWorkerInstance::StartTask {
              StatusCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(instance_->context_);
+    base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     state_ = ProcessAllocationState::ALLOCATING;
     start_callback_ = std::move(callback);
     is_installed_ = params->is_installed;
@@ -415,12 +416,11 @@ class EmbeddedWorkerInstance::StartTask {
       started_during_browser_startup_ = true;
 
     bool can_use_existing_process =
-        instance_->context_->GetVersionFailureCount(
-            params->service_worker_version_id) < kMaxSameProcessFailureCount;
+        context->GetVersionFailureCount(params->service_worker_version_id) <
+        kMaxSameProcessFailureCount;
     DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
                                       this);
-    base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     base::WeakPtr<ServiceWorkerProcessManager> process_manager =
         context->process_manager()->AsWeakPtr();
 
@@ -558,12 +558,8 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
                                    ProviderInfoGetter provider_info_getter,
                                    StatusCallback callback) {
+  DCHECK(context_);
   restart_count_++;
-  if (!context_) {
-    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
-    // |this| may be destroyed by the callback.
-    return;
-  }
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, status_);
 
   DCHECK(!params->pause_after_download || !params->is_installed);
@@ -776,7 +772,7 @@ void EmbeddedWorkerInstance::OnWorkerVersionDoomed() {
 }
 
 void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
-  if (!context_ || !inflight_start_task_)
+  if (!inflight_start_task_)
     return;
 
   starting_phase_ = THREAD_STARTED;
