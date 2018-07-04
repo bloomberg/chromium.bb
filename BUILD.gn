@@ -850,8 +850,8 @@ if (is_chromeos) {
     # https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#actions-and-copies
     data_deps = [
       "//chrome:xdg_mime",
-      "//mojo/edk:mojo_core_arc32",
-      "//mojo/edk:mojo_core_arc64",
+      "//mojo/core:shared_library_arc32",
+      "//mojo/core:shared_library_arc64",
     ]
 
     # TODO(bpastene): Figure out what's generating resources/chromeos/ and

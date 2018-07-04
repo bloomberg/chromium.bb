@@ -257,7 +257,7 @@ test("google_apis_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
   ]

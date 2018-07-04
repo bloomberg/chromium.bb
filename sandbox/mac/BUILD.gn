@@ -69,7 +69,7 @@ test("sandbox_mac_unittests") {
     ":seatbelt_proto",
     "mojom:test_interfaces",
     "//base",
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
     "//testing/gtest",
   ]
 }

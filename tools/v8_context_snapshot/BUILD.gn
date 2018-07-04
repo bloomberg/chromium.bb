@@ -100,7 +100,7 @@ if (use_v8_context_snapshot) {
 
     deps = [
       "//gin:gin",
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//services/service_manager/public/cpp",
       "//third_party/blink/public:blink",
       "//v8",

@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "base/at_exit.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/irt_core.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
@@ -35,7 +35,7 @@ void nacl_irt_start(uint32_t* info) {
                               MakeIPCHandle(NACL_CHROME_DESC_BASE + 1),
                               MakeIPCHandle(NACL_CHROME_DESC_BASE + 2));
   // The Mojo EDK must be initialized before using IPC.
-  mojo::edk::Init();
+  mojo::core::Init();
   ppapi::StartUpPlugin();
 
   nacl_irt_enter_user_code(info, chrome_irt_query);

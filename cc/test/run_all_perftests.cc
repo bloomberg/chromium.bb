@@ -6,12 +6,12 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "cc/test/cc_test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 int main(int argc, char** argv) {
   cc::CCTestSuite test_suite(argc, argv);
 
-  mojo::edk::Init();
+  mojo::core::Init();
 
   // Always run the perf tests serially, to avoid distorting
   // perf measurements with randomness resulting from running

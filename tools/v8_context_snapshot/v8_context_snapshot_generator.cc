@@ -10,7 +10,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/v8_initializer.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/blink.h"
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
   // Set up environment to make Blink and V8 workable.
   base::MessageLoop message_loop;
   base::TaskScheduler::CreateAndStartWithDefaultParams("TakeSnapshot");
-  mojo::edk::Init();
+  mojo::core::Init();
 
   // Take a snapshot.
   SnapshotPlatform platform;

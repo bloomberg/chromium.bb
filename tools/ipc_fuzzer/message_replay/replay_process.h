@@ -27,7 +27,7 @@ namespace mojo {
 class IncomingInvitation;
 namespace core {
 class ScopedIPCSupport;
-}  // namespace edk
+}  // namespace core
 }  // namespace mojo
 
 namespace ipc_fuzzer {

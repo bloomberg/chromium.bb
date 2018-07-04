@@ -17,7 +17,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -71,7 +71,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    mojo::edk::Init();
+    mojo::core::Init();
     auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>(
         new net::TestURLRequestContextGetter(message_loop_.task_runner()));
     test_url_loader_factory_ = delegate->test_url_loader_factory();

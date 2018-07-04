@@ -787,7 +787,7 @@ test("skia_unittests") {
     ":skia",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
     "//testing/gtest",
     "//ui/gfx",
     "//ui/gfx/geometry",

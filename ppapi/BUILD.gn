@@ -393,7 +393,7 @@ test("ppapi_perftests") {
 
   deps = [
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//ppapi/proxy",
     "//ppapi/proxy:test_support",
     "//ppapi/shared_impl",

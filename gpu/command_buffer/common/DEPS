@@ -4,7 +4,7 @@ include_rules = [
 ]
 specific_include_rules = {
   "unittest_main\.cc": [
-    "+mojo/edk/embedder/embedder.h",
+    "+mojo/core/embedder/embedder.h",
   ],
   "activity_flags.h": [
     "+mojo/public/cpp/system/buffer.h",

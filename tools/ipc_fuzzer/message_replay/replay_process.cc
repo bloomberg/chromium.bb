@@ -21,9 +21,9 @@
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
-#include "mojo/edk/embedder/configuration.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/configuration.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -64,9 +64,9 @@ class IPCChannelBootstrapper : public content::ConnectionFilter {
 }  // namespace
 
 void InitializeMojo() {
-  mojo::edk::Configuration config;
+  mojo::core::Configuration config;
   config.max_message_num_bytes = 64 * 1024 * 1024;
-  mojo::edk::Init(config);
+  mojo::core::Init(config);
 }
 
 mojo::IncomingInvitation InitializeMojoIPCChannel() {
@@ -128,9 +128,9 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
                  base::GlobalDescriptors::kBaseDescriptor);
 #endif
 
-  mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+  mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
       io_thread_.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
   mojo_invitation_ =
       std::make_unique<mojo::IncomingInvitation>(InitializeMojoIPCChannel());
 

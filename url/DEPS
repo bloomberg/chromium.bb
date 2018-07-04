@@ -14,6 +14,6 @@ specific_include_rules = {
     "+third_party/icu",
   ],
   "run_all_unittests\.cc": [
-    "+mojo/edk/embedder",
+    "+mojo/core/embedder",
   ],
 }

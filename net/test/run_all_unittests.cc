@@ -13,7 +13,7 @@
 #include "url/url_features.h"
 
 #if !defined(OS_IOS)
-#include "mojo/edk/embedder/embedder.h"  // nogncheck
+#include "mojo/core/embedder/embedder.h"  // nogncheck
 #endif
 
 using net::internal::ClientSocketPoolBaseHelper;
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
 
 #if !defined(OS_IOS)
-  mojo::edk::Init();
+  mojo::core::Init();
 #endif
 
   return base::LaunchUnitTests(

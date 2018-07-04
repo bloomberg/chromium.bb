@@ -283,7 +283,7 @@ component("proxy") {
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:command_buffer_traits",
     "//media:shared_memory_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//ppapi/c",
     "//ppapi/shared_impl",
     "//ui/gfx/geometry",
