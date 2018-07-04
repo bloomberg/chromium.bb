@@ -59,8 +59,13 @@ void CompositorMutatorImpl::Mutate(
           [](const CompositorAnimators* animators,
              std::unique_ptr<CompositorMutatorInputState> state,
              std::unique_ptr<AutoSignal> completion, Outputs* output) {
-            for (CompositorAnimator* animator : *animators)
-              output->push_back(animator->Mutate(*state));
+
+            for (CompositorAnimator* animator : *animators) {
+              std::unique_ptr<AnimationWorkletInput> worklet_input =
+                  state->TakeWorkletState(animator->GetScopeId());
+              if (worklet_input)
+                output->push_back(animator->Mutate(std::move(worklet_input)));
+            }
           },
           CrossThreadUnretained(&animators_), WTF::Passed(std::move(state)),
           WTF::Passed(std::make_unique<AutoSignal>(&done)),

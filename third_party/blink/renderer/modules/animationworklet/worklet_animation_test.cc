@@ -40,15 +40,17 @@ KeyframeEffect* CreateKeyframeEffect(Element* element) {
   return KeyframeEffect::Create(element, CreateEffectModel(), timing);
 }
 
-WorkletAnimation* CreateWorkletAnimation(Element* element) {
+WorkletAnimation* CreateWorkletAnimation(ExecutionContext* context,
+                                         Element* element) {
   AnimationEffectOrAnimationEffectSequence effects;
   AnimationEffect* effect = CreateKeyframeEffect(element);
   effects.SetAnimationEffect(effect);
   DocumentTimelineOrScrollTimeline timeline;
   scoped_refptr<SerializedScriptValue> options;
   DummyExceptionStateForTesting exception_state;
-  return WorkletAnimation::Create("WorkletAnimation", effects, timeline,
-                                  std::move(options), exception_state);
+  return WorkletAnimation::Create(context, "WorkletAnimation", effects,
+                                  timeline, std::move(options),
+                                  exception_state);
 }
 
 }  // namespace
@@ -61,7 +63,7 @@ class WorkletAnimationTest : public RenderingTest {
   void SetUp() override {
     RenderingTest::SetUp();
     element_ = GetDocument().CreateElementForBinding("test");
-    worklet_animation_ = CreateWorkletAnimation(element_);
+    worklet_animation_ = CreateWorkletAnimation(&GetDocument(), element_);
   }
 
   Persistent<Element> element_;

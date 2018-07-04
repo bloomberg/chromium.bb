@@ -9,9 +9,12 @@
 
 namespace blink {
 
+using AnimationWorkletInput = cc::AnimationWorkletInput;
+using AnimationWorkletOutput = cc::AnimationWorkletOutput;
 using CompositorMutatorInputState = cc::MutatorInputState;
 
 using CompositorMutatorOutputState = cc::MutatorOutputState;
+using WorkletAnimationId = cc::WorkletAnimationId;
 
 }  // namespace blink
 

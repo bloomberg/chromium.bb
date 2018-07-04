@@ -42,8 +42,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
   // Invokes the |animate| function of all of its active animators.
-  std::unique_ptr<CompositorMutatorOutputState> Mutate(
-      const CompositorMutatorInputState&);
+  std::unique_ptr<AnimationWorkletOutput> Mutate(const AnimationWorkletInput&);
 
   // Registers a animator definition with the given name and constructor.
   void registerAnimator(const String& name,

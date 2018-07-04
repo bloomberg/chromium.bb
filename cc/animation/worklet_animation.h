@@ -24,18 +24,20 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
     : public SingleKeyframeEffectAnimation {
  public:
   enum class State { PENDING, RUNNING, REMOVED };
-  WorkletAnimation(int id,
+  WorkletAnimation(int cc_animation_id,
+                   WorkletAnimationId worklet_animation_id,
                    const std::string& name,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
                    bool is_controlling_instance);
   static scoped_refptr<WorkletAnimation> Create(
-      int id,
+      WorkletAnimationId worklet_animation_id,
       const std::string& name,
       std::unique_ptr<ScrollTimeline> scroll_timeline,
       std::unique_ptr<AnimationOptions> options);
   scoped_refptr<Animation> CreateImplInstance() const override;
 
+  WorkletAnimationId worklet_animation_id() { return worklet_animation_id_; }
   const std::string& name() const { return name_; }
   const ScrollTimeline* scroll_timeline() const {
     return scroll_timeline_.get();
@@ -83,6 +85,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
     return options_ ? options_->Clone() : nullptr;
   }
 
+  WorkletAnimationId worklet_animation_id_;
   std::string name_;
 
   // The ScrollTimeline associated with the underlying animation. If null, the

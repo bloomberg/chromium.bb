@@ -35,6 +35,7 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
   explicit AnimationWorkletProxyClientImpl(
+      int scope_id,
       base::WeakPtr<CompositorMutatorImpl> mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> mutatee_runner);
   void Trace(blink::Visitor*) override;
@@ -45,12 +46,14 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
 
   // CompositorAnimator:
   // These methods are invoked on the animation worklet thread.
-  std::unique_ptr<CompositorMutatorOutputState> Mutate(
-      const CompositorMutatorInputState&) override;
+  int GetScopeId() const override { return scope_id_; }
+  std::unique_ptr<AnimationWorkletOutput> Mutate(
+      std::unique_ptr<AnimationWorkletInput> input) override;
 
-  static AnimationWorkletProxyClientImpl* FromDocument(Document*);
+  static AnimationWorkletProxyClientImpl* FromDocument(Document*, int scope_id);
 
  private:
+  const int scope_id_;
   base::WeakPtr<CompositorMutatorImpl> mutator_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_runner_;
 
