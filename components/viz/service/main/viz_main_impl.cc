@@ -195,7 +195,7 @@ VizMainImpl::~VizMainImpl() {
                                   base::Unretained(this)));
     compositor_thread_->Stop();
     compositor_thread_.reset();
-    compositor_thread_task_runner_ = nullptr;
+    compositor_thread_task_runner_.reset();
   }
 
   if (ukm_recorder_)
