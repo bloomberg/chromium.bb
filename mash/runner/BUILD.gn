@@ -13,7 +13,7 @@ executable("runner") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//services/service_manager",
     "//services/service_manager/runner:init",
     "//services/service_manager/standalone",

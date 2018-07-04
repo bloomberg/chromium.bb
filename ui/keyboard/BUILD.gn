@@ -157,7 +157,7 @@ test("keyboard_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura:test_support",

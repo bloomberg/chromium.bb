@@ -16,8 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -214,16 +214,16 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kOnStartup)
     exit(kDeliberateCrashExitCode);
 
-  mojo::edk::Init();
+  mojo::core::Init();
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   base::Thread io_thread("IPCThread");
   EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
 
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       io_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
   auto channel_endpoint =
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(

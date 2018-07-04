@@ -3,7 +3,7 @@ include_rules = [
   "+components/gpu",
   "+mojo/cc",
   "+mojo/converters",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+mojo/public",
   "+services/catalog",
   "+services/service_manager/public",

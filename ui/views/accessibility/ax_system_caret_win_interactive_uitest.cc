@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -36,7 +36,7 @@ class AXSystemCaretWinTest : public test::WidgetTest {
   ~AXSystemCaretWinTest() override {}
 
   void SetUp() override {
-    mojo::edk::Init();
+    mojo::core::Init();
     gl::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;

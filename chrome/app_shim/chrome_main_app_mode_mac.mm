@@ -36,8 +36,8 @@
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/grit/generated_resources.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
@@ -616,10 +616,10 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   io_thread->StartWithOptions(io_thread_options);
   g_io_thread = io_thread;
 
-  mojo::edk::Init();
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::Init();
+  mojo::core::ScopedIPCSupport ipc_support(
       io_thread->task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   // Find already running instances of Chrome.
   pid_t pid = -1;

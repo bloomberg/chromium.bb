@@ -19,7 +19,7 @@ source_set("app_shim") {
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//ipc",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//ui/base",
   ]
 }

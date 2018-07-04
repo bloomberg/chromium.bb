@@ -6,7 +6,7 @@
 #include "base/macros.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_suite.h"
 #include "ui/gl/gl_surface.h"
@@ -62,7 +62,7 @@ EnvReinstaller::~EnvReinstaller() {
 int main(int argc, char** argv) {
   AuraTestSuite test_suite(argc, argv);
 
-  mojo::edk::Init();
+  mojo::core::Init();
   return base::LaunchUnitTests(
       argc, argv,
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));

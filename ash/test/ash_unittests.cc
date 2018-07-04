@@ -5,12 +5,12 @@
 #include "ash/test/ash_test_suite.h"
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 int main(int argc, char** argv) {
   ash::AshTestSuite test_suite(argc, argv);
 
-  mojo::edk::Init();
+  mojo::core::Init();
   return base::LaunchUnitTests(
       argc, argv,
       base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));

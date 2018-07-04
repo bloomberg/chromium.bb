@@ -17,7 +17,7 @@
 
 #if defined(USE_OZONE)
 #include "base/command_line.h"
-#include "mojo/edk/embedder/embedder.h"                   // nogncheck
+#include "mojo/core/embedder/embedder.h"                  // nogncheck
 #include "services/service_manager/public/cpp/service.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
@@ -117,7 +117,7 @@ class GlTestSuite : public base::TestSuite {
 
 int main(int argc, char** argv) {
 #if defined(USE_OZONE)
-  mojo::edk::Init();
+  mojo::core::Init();
 #endif
 
   GlTestSuite test_suite(argc, argv);

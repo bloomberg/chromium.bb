@@ -206,7 +206,7 @@ jumbo_source_set("test_support_internal") {
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",

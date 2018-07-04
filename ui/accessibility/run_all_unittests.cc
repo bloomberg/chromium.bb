@@ -6,10 +6,10 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 int main(int argc, char** argv) {
-  mojo::edk::Init();
+  mojo::core::Init();
 
   base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
