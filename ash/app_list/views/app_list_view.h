@@ -229,7 +229,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
-  bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Returns true if the home launcher is enabled in tablet mode.
   bool IsHomeLauncherEnabledInTabletMode() const;
