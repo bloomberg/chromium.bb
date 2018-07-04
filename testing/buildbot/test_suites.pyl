@@ -1840,6 +1840,7 @@
   'linux_specific_chromium_gtests': {
     # Linux only.
     # TODO(kbr): unclear why some of these aren't run more broadly.
+    'blink_fuzzer_unittests': {},
     'filesystem_service_unittests': {},
     'leveldb_service_unittests': {},
     'traffic_annotation_auditor_unittests': {},

@@ -2051,6 +2051,15 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
+test("blink_fuzzer_unittests") {
+  deps = [
+    "//third_party/blink/renderer/platform:test_support",
+  ]
+  sources = [
+    "testing/run_all_tests.cc",
+  ]
+}
+
 # This source set is used for fuzzers that need an environment similar to unit
 # tests.
 jumbo_source_set("blink_fuzzer_test_support") {
