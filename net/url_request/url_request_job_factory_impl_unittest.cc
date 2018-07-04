@@ -74,7 +74,8 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
 }
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestDelegate delegate;
   URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
