@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/devtools/devtools_session.h"
@@ -18,6 +19,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
+#include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 
 namespace content {
@@ -48,30 +50,37 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
 BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
-bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                             TargetRegistry* parent_registry) {
+  DCHECK(!parent_registry);
+
   if (session->restricted())
     return false;
 
+  auto registry = std::make_unique<TargetRegistry>(session);
+  TargetRegistry* registry_ptr = registry.get();
+  target_registries_[session->client()] = std::move(registry);
   session->SetBrowserOnly(true);
-  session->AddHandler(base::WrapUnique(
-      new protocol::TargetHandler(true /* browser_only */, GetId())));
+  session->AddHandler(std::make_unique<protocol::TargetHandler>(
+      true /* browser_only */, GetId(), registry_ptr));
   if (only_discovery_)
     return true;
 
-  session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::IOHandler(
-      GetIOContext())));
-  session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::SystemInfoHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::TetheringHandler(
-      socket_callback_, tethering_task_runner_)));
+  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::MemoryHandler>());
+  session->AddHandler(std::make_unique<protocol::SecurityHandler>());
+  session->AddHandler(std::make_unique<protocol::SystemInfoHandler>());
+  session->AddHandler(std::make_unique<protocol::TetheringHandler>(
+      socket_callback_, tethering_task_runner_));
   session->AddHandler(
-      base::WrapUnique(new protocol::TracingHandler(nullptr, GetIOContext())));
+      std::make_unique<protocol::TracingHandler>(nullptr, GetIOContext()));
   return true;
 }
 
-void BrowserDevToolsAgentHost::DetachSession(DevToolsSession* session) {}
+void BrowserDevToolsAgentHost::DetachSession(DevToolsSession* session) {
+  target_registries_.erase(session->client());
+}
 
 std::string BrowserDevToolsAgentHost::GetType() {
   return kTypeBrowser;
@@ -96,10 +105,15 @@ bool BrowserDevToolsAgentHost::Close() {
 void BrowserDevToolsAgentHost::Reload() {
 }
 
-void BrowserDevToolsAgentHost::DispatchProtocolMessage(
-    DevToolsSession* session,
-    const std::string& message) {
-  session->DispatchProtocolMessage(message);
+bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
+    DevToolsAgentHostClient* client,
+    const std::string& message,
+    base::DictionaryValue* parsed_message) {
+  auto* target_registry = target_registries_[client].get();
+  if (target_registry->DispatchMessageOnAgentHost(message, parsed_message))
+    return true;
+  return DevToolsAgentHostImpl::DispatchProtocolMessage(client, message,
+                                                        parsed_message);
 }
 
 }  // content

@@ -28,8 +28,10 @@ class DevToolsSession : public protocol::FrontendChannel,
                   DevToolsAgentHostClient* client,
                   bool restricted);
   ~DevToolsSession() override;
+  void Dispose();
 
   bool restricted() { return restricted_; }
+  DevToolsAgentHost* agent_host() { return agent_host_; };
   DevToolsAgentHostClient* client() { return client_; };
 
   // Browser-only sessions do not talk to mojom::DevToolsAgent, but instead
@@ -41,7 +43,8 @@ class DevToolsSession : public protocol::FrontendChannel,
   void SetRenderer(int process_host_id, RenderFrameHostImpl* frame_host);
 
   void AttachToAgent(const blink::mojom::DevToolsAgentAssociatedPtr& agent);
-  void DispatchProtocolMessage(const std::string& message);
+  void DispatchProtocolMessage(const std::string& message,
+                               base::DictionaryValue* parsed_message);
   void SuspendSendingMessagesToAgent();
   void ResumeSendingMessagesToAgent();
 

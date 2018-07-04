@@ -47,10 +47,9 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Close() override;
 
   // DevToolsAgentHostImpl overrides.
-  bool AttachSession(DevToolsSession* session) override;
+  bool AttachSession(DevToolsSession* session,
+                     TargetRegistry* registry) override;
   void DetachSession(DevToolsSession* session) override;
-  void DispatchProtocolMessage(DevToolsSession* session,
-                               const std::string& message) override;
 
   void WorkerRestarted(int worker_process_id, int worker_route_id);
   void WorkerReadyForInspection(

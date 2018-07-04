@@ -66,7 +66,8 @@ bool SharedWorkerDevToolsAgentHost::Close() {
   return true;
 }
 
-bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                                  TargetRegistry* registry) {
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(
       GetId(), devtools_worker_token_, GetIOContext()));
@@ -79,12 +80,6 @@ bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
 void SharedWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
-}
-
-void SharedWorkerDevToolsAgentHost::DispatchProtocolMessage(
-    DevToolsSession* session,
-    const std::string& message) {
-  session->DispatchProtocolMessage(message);
 }
 
 bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {

@@ -16,6 +16,11 @@
 
 namespace headless {
 
+namespace {
+int g_next_message_id = 0;
+int g_next_raw_message_id = 1;
+}  // namespace
+
 // static
 std::unique_ptr<HeadlessDevToolsClient> HeadlessDevToolsClient::Create() {
   auto result = std::make_unique<HeadlessDevToolsClientImpl>();
@@ -67,7 +72,10 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       tracing_domain_(this),
       weak_ptr_factory_(this) {}
 
-HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() = default;
+HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() {
+  if (parent_client_)
+    parent_client_->sessions_.erase(session_id_);
+};
 
 void HeadlessDevToolsClientImpl::AttachToExternalHost(
     ExternalHost* external_host) {
@@ -102,35 +110,34 @@ void HeadlessDevToolsClientImpl::SetRawProtocolListener(
   raw_protocol_listener_ = raw_protocol_listener;
 }
 
+std::unique_ptr<HeadlessDevToolsClient>
+HeadlessDevToolsClientImpl::CreateSession(const std::string& session_id) {
+  std::unique_ptr<HeadlessDevToolsClientImpl> client =
+      std::make_unique<HeadlessDevToolsClientImpl>();
+  client->parent_client_ = this;
+  client->session_id_ = session_id;
+  sessions_[session_id] = client.get();
+  return client;
+}
+
 int HeadlessDevToolsClientImpl::GetNextRawDevToolsMessageId() {
-  int id = next_raw_message_id_;
-  next_raw_message_id_ += 2;
+  int id = g_next_raw_message_id;
+  g_next_raw_message_id += 2;
   return id;
 }
 
 void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
     const std::string& json_message) {
-#ifndef NDEBUG
-  std::unique_ptr<base::Value> message =
-      base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
-  const base::Value* id_value = message->FindKey("id");
-  if (!id_value) {
-    NOTREACHED() << "Badly formed message " << json_message;
+  std::unique_ptr<base::Value> message = base::JSONReader::Read(json_message);
+  if (!message->is_dict()) {
+    LOG(ERROR) << "Malformed raw message";
     return;
   }
-#endif
-  DCHECK(channel_ || external_host_);
-  if (channel_)
-    channel_->SendProtocolMessage(json_message);
-  else
-    external_host_->SendProtocolMessage(json_message);
-}
-
-void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
-    const base::DictionaryValue& message) {
-  std::string json_message;
-  base::JSONWriter::Write(message, &json_message);
-  SendRawDevToolsMessage(json_message);
+  std::unique_ptr<base::DictionaryValue> dict =
+      base::DictionaryValue::From(std::move(message));
+  if (!session_id_.empty())
+    dict->SetString("sessionId", session_id_);
+  SendProtocolMessage(dict.get());
 }
 
 void HeadlessDevToolsClientImpl::DispatchMessageFromExternalHost(
@@ -141,8 +148,30 @@ void HeadlessDevToolsClientImpl::DispatchMessageFromExternalHost(
 
 void HeadlessDevToolsClientImpl::ReceiveProtocolMessage(
     const std::string& json_message) {
+  // LOG(ERROR) << "[RECV] " << json_message;
   std::unique_ptr<base::Value> message =
       base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
+  if (!message || !message->is_dict()) {
+    NOTREACHED() << "Badly formed reply " << json_message;
+    return;
+  }
+  std::unique_ptr<base::DictionaryValue> message_dict =
+      base::DictionaryValue::From(std::move(message));
+
+  std::string session_id;
+  if (message_dict->GetString("sessionId", &session_id)) {
+    auto it = sessions_.find(session_id);
+    if (it != sessions_.end()) {
+      it->second->ReceiveProtocolMessage(json_message, std::move(message_dict));
+      return;
+    }
+  }
+  ReceiveProtocolMessage(json_message, std::move(message_dict));
+}
+
+void HeadlessDevToolsClientImpl::ReceiveProtocolMessage(
+    const std::string& json_message,
+    std::unique_ptr<base::DictionaryValue> message) {
   const base::DictionaryValue* message_dict;
   if (!message || !message->GetAsDictionary(&message_dict)) {
     NOTREACHED() << "Badly formed reply " << json_message;
@@ -415,13 +444,25 @@ void HeadlessDevToolsClientImpl::FinalizeAndSendMessage(
     CallbackType callback) {
   if (renderer_crashed_)
     return;
-  DCHECK(channel_ || external_host_);
-  int id = next_message_id_;
-  next_message_id_ += 2;  // We only send even numbered messages.
+  int id = g_next_message_id;
+  g_next_message_id += 2;  // We only send even numbered messages.
   message->SetInteger("id", id);
+  if (!session_id_.empty())
+    message->SetString("sessionId", session_id_);
+  pending_messages_[id] = Callback(std::move(callback));
+  SendProtocolMessage(message);
+}
+
+void HeadlessDevToolsClientImpl::SendProtocolMessage(
+    const base::DictionaryValue* message) {
+  if (parent_client_) {
+    parent_client_->SendProtocolMessage(message);
+    return;
+  }
+
   std::string json_message;
   base::JSONWriter::Write(*message, &json_message);
-  pending_messages_[id] = Callback(std::move(callback));
+  // LOG(ERROR) << "[SEND] " << json_message;
   if (channel_)
     channel_->SendProtocolMessage(json_message);
   else

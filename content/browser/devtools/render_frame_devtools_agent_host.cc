@@ -426,7 +426,8 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                                 TargetRegistry* registry) {
   const bool is_webui =
       frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
   if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
@@ -455,8 +456,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
   if (!session->restricted()) {
-    session->AddHandler(base::WrapUnique(
-        new protocol::TargetHandler(false /* browser_only */, GetId())));
+    session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
+        false /* browser_only */, GetId(), registry)));
   }
   session->AddHandler(
       base::WrapUnique(new protocol::PageHandler(emulation_handler)));
@@ -493,12 +494,6 @@ void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
     GetWakeLock()->CancelWakeLock();
 #endif
   }
-}
-
-void RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
-    DevToolsSession* session,
-    const std::string& message) {
-  session->DispatchProtocolMessage(message);
 }
 
 void RenderFrameDevToolsAgentHost::InspectElement(RenderFrameHost* frame_host,
