@@ -414,6 +414,12 @@ CrostiniManager* CrostiniManager::GetInstance() {
   return base::Singleton<CrostiniManager>::get();
 }
 
+bool CrostiniManager::IsVmRunning(Profile* profile, std::string vm_name) {
+  return running_vms_.find(std::make_pair(CryptohomeIdForProfile(profile),
+                                          std::move(vm_name))) !=
+         running_vms_.end();
+}
+
 CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
   // Cicerone/ConciergeClient and its observer_list_ will be destroyed together.
   // We add, but don't need to remove the observer. (Doing so would force a
@@ -632,7 +638,8 @@ void CrostiniManager::StartTerminaVm(std::string owner_id,
   GetConciergeClient()->StartTerminaVm(
       request,
       base::BindOnce(&CrostiniManager::OnStartTerminaVm,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request.owner_id(),
+                     request.name(), std::move(callback)));
 }
 
 void CrostiniManager::StopVm(Profile* profile,
@@ -644,13 +651,16 @@ void CrostiniManager::StopVm(Profile* profile,
     return;
   }
 
+  std::string owner_id = CryptohomeIdForProfile(profile);
+
   vm_tools::concierge::StopVmRequest request;
-  request.set_owner_id(CryptohomeIdForProfile(profile));
-  request.set_name(std::move(name));
+  request.set_owner_id(owner_id);
+  request.set_name(name);
 
   GetConciergeClient()->StopVm(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStopVm, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(owner_id), std::move(name),
                      std::move(callback)));
 }
 
@@ -920,6 +930,8 @@ void CrostiniManager::OnListVmDisks(
 }
 
 void CrostiniManager::OnStartTerminaVm(
+    std::string owner_id,
+    std::string vm_name,
     StartTerminaVmCallback callback,
     base::Optional<vm_tools::concierge::StartVmResponse> reply) {
   if (!reply.has_value()) {
@@ -934,10 +946,13 @@ void CrostiniManager::OnStartTerminaVm(
     std::move(callback).Run(ConciergeClientResult::VM_START_FAILED);
     return;
   }
+  running_vms_.emplace(std::move(owner_id), std::move(vm_name));
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
 void CrostiniManager::OnStopVm(
+    std::string owner_id,
+    std::string vm_name,
     StopVmCallback callback,
     base::Optional<vm_tools::concierge::StopVmResponse> reply) {
   if (!reply.has_value()) {
@@ -960,6 +975,8 @@ void CrostiniManager::OnStopVm(
       return;
     }
   }
+  // Remove from running_vms_.
+  running_vms_.erase(std::make_pair(std::move(owner_id), std::move(vm_name)));
 
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }

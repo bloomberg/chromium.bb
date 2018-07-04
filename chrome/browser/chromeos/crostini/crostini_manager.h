@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_MANAGER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -276,6 +277,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();
 
+  bool IsVmRunning(Profile* profile, std::string vm_name);
+
  private:
   friend struct base::DefaultSingletonTraits<CrostiniManager>;
 
@@ -303,12 +306,16 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
   // service method finishes.
   void OnStartTerminaVm(
+      std::string owner_id,
+      std::string vm_name,
       StartTerminaVmCallback callback,
       base::Optional<vm_tools::concierge::StartVmResponse> reply);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
-  void OnStopVm(StopVmCallback callback,
+  void OnStopVm(std::string owner_id,
+                std::string vm_name,
+                StopVmCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> reply);
 
   // Callback for CrostiniClient::StartConcierge. Called after the
@@ -366,6 +373,9 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   std::multimap<std::tuple<std::string, std::string, std::string>,
                 ShutdownContainerCallback>
       shutdown_container_callbacks_;
+
+  // Running vms as <owner_id, vm_name> pairs.
+  std::set<std::pair<std::string, std::string>> running_vms_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

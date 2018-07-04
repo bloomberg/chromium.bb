@@ -5025,6 +5025,9 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of
   <message name="IDS_CROSTINI_UNINSTALLER_ERROR" desc="Text shown in the Crostini uninstaller dialog when the Linux uninstall process fails.">
     Error uninstalling Linux. Please try again.
   </message>
+  <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
+    Shut Down Linux
+  </message>
 
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
