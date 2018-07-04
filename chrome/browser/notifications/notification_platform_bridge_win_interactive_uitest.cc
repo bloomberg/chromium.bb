@@ -249,12 +249,12 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
   // Simulate clicks on the toast.
   NotificationPlatformBridgeWin* bridge = GetBridge();
   ASSERT_TRUE(bridge);
-  bridge->ForwardHandleEventForTesting(NotificationCommon::CLICK, &toast, &args,
-                                       base::nullopt);
+  bridge->ForwardHandleEventForTesting(NotificationCommon::OPERATION_CLICK,
+                                       &toast, &args, base::nullopt);
   run_loop.Run();
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleActivation) {
   run_loop.Run();
 
   // Validate the values.
-  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -320,12 +320,12 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleSettings) {
   // Simulate clicks on the toast.
   NotificationPlatformBridgeWin* bridge = GetBridge();
   ASSERT_TRUE(bridge);
-  bridge->ForwardHandleEventForTesting(NotificationCommon::SETTINGS, &toast,
-                                       &args, base::nullopt);
+  bridge->ForwardHandleEventForTesting(NotificationCommon::OPERATION_SETTINGS,
+                                       &toast, &args, base::nullopt);
   run_loop.Run();
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::SETTINGS, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_SETTINGS, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineClick) {
   ASSERT_NO_FATAL_FAILURE(ProcessLaunchIdViaCmdLine(kLaunchId, /*reply=*/""));
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest,
       ProcessLaunchIdViaCmdLine(kLaunchIdButtonClick, "Inline reply"));
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineButton) {
       ProcessLaunchIdViaCmdLine(kLaunchIdButtonClick, /*reply=*/""));
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineSettings) {
       ProcessLaunchIdViaCmdLine(kLaunchIdSettings, /*reply=*/""));
 
   // Validate the click values.
-  EXPECT_EQ(NotificationCommon::SETTINGS, last_operation_);
+  EXPECT_EQ(NotificationCommon::OPERATION_SETTINGS, last_operation_);
   EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
   EXPECT_EQ(GURL("https://example.com/"), last_origin_);
   EXPECT_EQ("notification_id", last_notification_id_);

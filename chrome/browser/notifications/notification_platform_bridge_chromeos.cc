@@ -126,7 +126,7 @@ void NotificationPlatformBridgeChromeOs::HandleNotificationClosed(
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(
-            NotificationCommon::CLOSE, notification->type(),
+            NotificationCommon::OPERATION_CLOSE, notification->type(),
             notification->notification().origin_url(),
             notification->original_id(), base::nullopt, base::nullopt, by_user);
   }
@@ -145,7 +145,7 @@ void NotificationPlatformBridgeChromeOs::HandleNotificationClicked(
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(
-            NotificationCommon::CLICK, notification->type(),
+            NotificationCommon::OPERATION_CLICK, notification->type(),
             notification->notification().origin_url(),
             notification->original_id(), base::nullopt, base::nullopt,
             base::nullopt);
@@ -165,7 +165,7 @@ void NotificationPlatformBridgeChromeOs::HandleNotificationButtonClicked(
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(
-            NotificationCommon::CLICK, notification->type(),
+            NotificationCommon::OPERATION_CLICK, notification->type(),
             notification->notification().origin_url(),
             notification->original_id(), button_index, reply, base::nullopt);
   }
@@ -182,7 +182,7 @@ void NotificationPlatformBridgeChromeOs::
   } else {
     NotificationDisplayServiceImpl::GetForProfile(notification->profile())
         ->ProcessNotificationOperation(
-            NotificationCommon::SETTINGS, notification->type(),
+            NotificationCommon::OPERATION_SETTINGS, notification->type(),
             notification->notification().origin_url(),
             notification->original_id(), base::nullopt, base::nullopt,
             base::nullopt);
@@ -197,11 +197,11 @@ void NotificationPlatformBridgeChromeOs::DisableNotification(
 
   DCHECK_NE(NotificationHandler::Type::TRANSIENT, notification->type());
   NotificationDisplayServiceImpl::GetForProfile(notification->profile())
-      ->ProcessNotificationOperation(NotificationCommon::DISABLE_PERMISSION,
-                                     notification->type(),
-                                     notification->notification().origin_url(),
-                                     notification->original_id(), base::nullopt,
-                                     base::nullopt, base::nullopt);
+      ->ProcessNotificationOperation(
+          NotificationCommon::OPERATION_DISABLE_PERMISSION,
+          notification->type(), notification->notification().origin_url(),
+          notification->original_id(), base::nullopt, base::nullopt,
+          base::nullopt);
 }
 
 ProfileNotification* NotificationPlatformBridgeChromeOs::GetProfileNotification(
