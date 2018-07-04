@@ -367,6 +367,8 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
   const float start_opacity = .7f;
   const float end_opacity = .3f;
 
+  const int filter_id = AddAnimatedFilterToAnimation(
+      animation_.get(), duration, 0.1f, 0.9f, keyframe_effect_id_);
   AddOpacityTransitionToAnimation(animation_.get(), duration, start_opacity,
                                   end_opacity, false, keyframe_effect_id_);
 
@@ -380,11 +382,18 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
                    ->needs_push_properties());
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations());
+  animation_->RemoveKeyframeModelForKeyframeEffect(filter_id,
+                                                   keyframe_effect_id_);
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
   animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
   EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->element_animations()
+                   ->HasAnyAnimationTargetingProperty(TargetProperty::FILTER));
   EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations()
                   ->HasAnyAnimationTargetingProperty(TargetProperty::OPACITY));
@@ -397,6 +406,11 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
                                          TargetProperty::OPACITY));
   EXPECT_FALSE(client_impl_.IsPropertyMutated(
       element_id_, ElementListType::ACTIVE, TargetProperty::OPACITY));
+
+  EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
+                                         TargetProperty::FILTER));
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(
+      element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
 
   host_impl_->ActivateAnimations();
 
@@ -413,6 +427,11 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
       element_id_, ElementListType::ACTIVE, end_opacity);
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::PENDING, end_opacity);
+
+  EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
+                                         TargetProperty::FILTER));
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(
+      element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
 }
 
 TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
@@ -427,17 +446,19 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
 
   EXPECT_FALSE(client_.mutators_need_commit());
 
-  AddOpacityTransitionToAnimation(animation_.get(), 1., .7f, .3f, false,
-                                  keyframe_effect_id_);
+  const int keyframe_model_id = AddOpacityTransitionToAnimation(
+      animation_.get(), 1., .7f, .3f, false, keyframe_effect_id_);
 
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  animation_->PauseKeyframeEffect(1., keyframe_effect_id_);
+  animation_->PauseKeyframeModelForKeyframeEffect(keyframe_model_id, 1.,
+                                                  keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  animation_->RemoveKeyframeModelsForKeyframeEffect(keyframe_effect_id_);
+  animation_->RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
+                                                   keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 }

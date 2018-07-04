@@ -205,30 +205,35 @@ void Animation::AddKeyframeModelForKeyframeEffect(
       ->AddKeyframeModel(std::move(keyframe_model));
 }
 
-void Animation::RemoveKeyframeModelsForKeyframeEffect(
+void Animation::PauseKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    double time_offset,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
-  GetKeyframeEffectById(keyframe_effect_id)->RemoveKeyframeModels();
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 
-void Animation::PauseKeyframeEffect(double time_offset,
-                                    KeyframeEffectId keyframe_effect_id) {
+void Animation::RemoveKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
   GetKeyframeEffectById(keyframe_effect_id)
-      ->Pause(base::TimeDelta::FromSecondsD(time_offset));
+      ->RemoveKeyframeModel(keyframe_model_id);
 }
 
-void Animation::AbortKeyframeEffect(KeyframeEffectId keyframe_effect_id) {
+void Animation::AbortKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
-  GetKeyframeEffectById(keyframe_effect_id)->Abort();
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->AbortKeyframeModel(keyframe_model_id);
 }
 
-void Animation::AbortKeyframeModelsWithProperty(
-    TargetProperty::Type target_property,
-    bool needs_completion) {
+void Animation::AbortKeyframeModels(TargetProperty::Type target_property,
+                                    bool needs_completion) {
   for (auto& keyframe_effect : keyframe_effects_)
-    keyframe_effect->AbortKeyframeModelsWithProperty(target_property,
-                                                     needs_completion);
+    keyframe_effect->AbortKeyframeModels(target_property, needs_completion);
 }
 
 void Animation::PushPropertiesTo(Animation* animation_impl) {

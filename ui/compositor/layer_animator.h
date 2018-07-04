@@ -371,9 +371,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
       std::unique_ptr<cc::AnimationCurve> curve) override {}
 
   // Implementation of LayerThreadedAnimationDelegate.
-  void AddThreadedKeyframeModel(
+  void AddThreadedAnimation(
       std::unique_ptr<cc::KeyframeModel> keyframe_model) override;
-  void RemoveThreadedKeyframeModels() override;
+  void RemoveThreadedAnimation(int keyframe_model_id) override;
 
   void AttachLayerToAnimation(int layer_id);
   void DetachLayerFromAnimation();

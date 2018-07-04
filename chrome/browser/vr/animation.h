@@ -44,8 +44,8 @@ class VR_EXPORT Animation final {
   void set_target(cc::AnimationTarget* target) { target_ = target; }
 
   void AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> keyframe_model);
-  void RemoveKeyframeModels();
-  void RemoveKeyframeModelsWithProperty(int target_property);
+  void RemoveKeyframeModel(int keyframe_model_id);
+  void RemoveKeyframeModels(int target_property);
 
   void Tick(base::TimeTicks monotonic_time);
 

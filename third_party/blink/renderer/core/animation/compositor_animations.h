@@ -98,10 +98,14 @@ class CORE_EXPORT CompositorAnimations {
       const Animation*,
       CompositorAnimation&,
       const EffectModel&,
+      Vector<int>& started_keyframe_model_ids,
       double animation_playback_rate);
-  static void CancelAnimationOnCompositor(const Element&, CompositorAnimation*);
+  static void CancelAnimationOnCompositor(const Element&,
+                                          CompositorAnimation*,
+                                          int id);
   static void PauseAnimationForTestingOnCompositor(const Element&,
                                                    const Animation&,
+                                                   int id,
                                                    double pause_time);
 
   static void AttachCompositedLayers(Element&, CompositorAnimation*);

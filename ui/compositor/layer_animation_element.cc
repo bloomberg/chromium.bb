@@ -294,11 +294,26 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     if (t < 1.0)
       return false;
+
+    if (Started() && IsThreaded(delegate)) {
+      LayerThreadedAnimationDelegate* threaded =
+          delegate->GetThreadedAnimationDelegate();
+      DCHECK(threaded);
+      threaded->RemoveThreadedAnimation(keyframe_model_id());
+    }
+
     OnEnd(delegate);
     return true;
   }
 
-  void OnAbort(LayerAnimationDelegate* delegate) override = 0;
+  void OnAbort(LayerAnimationDelegate* delegate) override {
+    if (delegate && Started() && IsThreaded(delegate)) {
+      LayerThreadedAnimationDelegate* threaded =
+          delegate->GetThreadedAnimationDelegate();
+      DCHECK(threaded);
+      threaded->RemoveThreadedAnimation(keyframe_model_id());
+    }
+  }
 
   void RequestEffectiveStart(LayerAnimationDelegate* delegate) override {
     DCHECK(animation_group_id());
@@ -313,9 +328,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     LayerThreadedAnimationDelegate* threaded =
         delegate->GetThreadedAnimationDelegate();
     DCHECK(threaded);
-    // The removal of the added threaded keyframe models happens at the layer
-    // animation sequence level because they can only be removed all together.
-    threaded->AddThreadedKeyframeModel(std::move(keyframe_model));
+    threaded->AddThreadedAnimation(std::move(keyframe_model));
   }
 
   virtual void OnEnd(LayerAnimationDelegate* delegate) = 0;
@@ -347,6 +360,7 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
+      ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetOpacityFromAnimation(
           gfx::Tween::FloatValueBetween(
               gfx::Tween::CalculateValue(tween_type(),
@@ -416,6 +430,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
+      ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetTransformFromAnimation(
           gfx::Tween::TransformValueBetween(
               gfx::Tween::CalculateValue(tween_type(),

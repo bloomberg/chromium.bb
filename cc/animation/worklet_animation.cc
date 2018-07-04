@@ -155,9 +155,9 @@ void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
     scroll_timeline_->PromoteScrollTimelinePendingToActive();
 }
 
-void WorkletAnimation::RemoveKeyframeModels() {
+void WorkletAnimation::RemoveKeyframeModel(int keyframe_model_id) {
   state_ = State::REMOVED;
-  SingleKeyframeEffectAnimation::RemoveKeyframeModels();
+  SingleKeyframeEffectAnimation::RemoveKeyframeModel(keyframe_model_id);
 }
 
 bool WorkletAnimation::IsWorkletAnimation() const {

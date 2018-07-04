@@ -233,8 +233,74 @@ void KeyframeEffect::Pause(base::TimeDelta pause_offset) {
   }
 }
 
-void KeyframeEffect::Abort() {
+void KeyframeEffect::AddKeyframeModel(
+    std::unique_ptr<KeyframeModel> keyframe_model) {
+  DCHECK(keyframe_model->target_property_id() !=
+             TargetProperty::SCROLL_OFFSET ||
+         (animation_->animation_host()->SupportsScrollAnimations()));
+  DCHECK(!keyframe_model->is_impl_only() ||
+         keyframe_model->target_property_id() == TargetProperty::SCROLL_OFFSET);
+
+  keyframe_models_.push_back(std::move(keyframe_model));
+
+  if (has_bound_element_animations()) {
+    KeyframeModelAdded();
+    SetNeedsPushProperties();
+  }
+}
+
+void KeyframeEffect::PauseKeyframeModel(int keyframe_model_id,
+                                        double time_offset) {
+  const base::TimeDelta time_delta = base::TimeDelta::FromSecondsD(time_offset);
   for (auto& keyframe_model : keyframe_models_) {
+    if (keyframe_model->id() == keyframe_model_id) {
+      keyframe_model->SetRunState(KeyframeModel::PAUSED,
+                                  time_delta + keyframe_model->start_time() +
+                                      keyframe_model->time_offset());
+    }
+  }
+
+  if (has_bound_element_animations()) {
+    animation_->SetNeedsCommit();
+    SetNeedsPushProperties();
+  }
+}
+
+void KeyframeEffect::RemoveKeyframeModel(int keyframe_model_id) {
+  bool keyframe_model_removed = false;
+
+  // Since we want to use the KeyframeModels that we're going to remove, we
+  // need to use a stable_parition here instead of remove_if. Remove_if leaves
+  // the removed items in an unspecified state.
+  auto keyframe_models_to_remove = std::stable_partition(
+      keyframe_models_.begin(), keyframe_models_.end(),
+      [keyframe_model_id](
+          const std::unique_ptr<KeyframeModel>& keyframe_model) {
+        return keyframe_model->id() != keyframe_model_id;
+      });
+  for (auto it = keyframe_models_to_remove; it != keyframe_models_.end();
+       ++it) {
+    if ((*it)->target_property_id() == TargetProperty::SCROLL_OFFSET) {
+      if (has_bound_element_animations())
+        scroll_offset_animation_was_interrupted_ = true;
+    } else if (!(*it)->is_finished()) {
+      keyframe_model_removed = true;
+    }
+  }
+
+  keyframe_models_.erase(keyframe_models_to_remove, keyframe_models_.end());
+
+  if (has_bound_element_animations()) {
+    UpdateTickingState(UpdateTickingType::NORMAL);
+    if (keyframe_model_removed)
+      element_animations_->UpdateClientAnimationState();
+    animation_->SetNeedsCommit();
+    SetNeedsPushProperties();
+  }
+}
+
+void KeyframeEffect::AbortKeyframeModel(int keyframe_model_id) {
+  if (KeyframeModel* keyframe_model = GetKeyframeModelById(keyframe_model_id)) {
     if (!keyframe_model->is_finished()) {
       keyframe_model->SetRunState(KeyframeModel::ABORTED, last_tick_time_);
       if (has_bound_element_animations())
@@ -248,9 +314,8 @@ void KeyframeEffect::Abort() {
   }
 }
 
-void KeyframeEffect::AbortKeyframeModelsWithProperty(
-    TargetProperty::Type target_property,
-    bool needs_completion) {
+void KeyframeEffect::AbortKeyframeModels(TargetProperty::Type target_property,
+                                         bool needs_completion) {
   if (needs_completion)
     DCHECK(target_property == TargetProperty::SCROLL_OFFSET);
 
@@ -272,45 +337,6 @@ void KeyframeEffect::AbortKeyframeModelsWithProperty(
 
   if (has_bound_element_animations()) {
     if (aborted_keyframe_model)
-      element_animations_->UpdateClientAnimationState();
-    animation_->SetNeedsCommit();
-    SetNeedsPushProperties();
-  }
-}
-
-void KeyframeEffect::AddKeyframeModel(
-    std::unique_ptr<KeyframeModel> keyframe_model) {
-  DCHECK(keyframe_model->target_property_id() !=
-             TargetProperty::SCROLL_OFFSET ||
-         animation_->animation_host()->SupportsScrollAnimations());
-  DCHECK(!keyframe_model->is_impl_only() ||
-         keyframe_model->target_property_id() == TargetProperty::SCROLL_OFFSET);
-
-  keyframe_models_.push_back(std::move(keyframe_model));
-
-  if (has_bound_element_animations()) {
-    KeyframeModelAdded();
-    SetNeedsPushProperties();
-  }
-}
-
-void KeyframeEffect::RemoveKeyframeModels() {
-  bool keyframe_model_removed = false;
-
-  for (auto it = keyframe_models_.begin(); it != keyframe_models_.end(); ++it) {
-    if ((*it)->target_property_id() == TargetProperty::SCROLL_OFFSET) {
-      if (has_bound_element_animations())
-        scroll_offset_animation_was_interrupted_ = true;
-    } else if (!(*it)->is_finished()) {
-      keyframe_model_removed = true;
-    }
-  }
-
-  keyframe_models_.clear();
-
-  if (has_bound_element_animations()) {
-    UpdateTickingState(UpdateTickingType::NORMAL);
-    if (keyframe_model_removed)
       element_animations_->UpdateClientAnimationState();
     animation_->SetNeedsCommit();
     SetNeedsPushProperties();

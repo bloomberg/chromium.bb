@@ -122,8 +122,7 @@ KeyframeEffect::KeyframeEffect(Element* target,
       target_(target),
       model_(model),
       sampled_effect_(nullptr),
-      priority_(priority),
-      has_animation_on_compositor_(false) {
+      priority_(priority) {
   DCHECK(model_);
 }
 
@@ -251,12 +250,13 @@ void KeyframeEffect::StartAnimationOnCompositor(
 
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),
-      GetAnimation(), *compositor_animation, *Model(), animation_playback_rate);
-  has_animation_on_compositor_ = true;
+      GetAnimation(), *compositor_animation, *Model(),
+      compositor_keyframe_model_ids_, animation_playback_rate);
+  DCHECK(!compositor_keyframe_model_ids_.IsEmpty());
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor() const {
-  return has_animation_on_compositor_;
+  return !compositor_keyframe_model_ids_.IsEmpty();
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor(
@@ -274,9 +274,12 @@ bool KeyframeEffect::CancelAnimationOnCompositor(
     return false;
   if (!target_ || !target_->GetLayoutObject())
     return false;
-  CompositorAnimations::CancelAnimationOnCompositor(*target_,
-                                                    compositor_animation);
-  has_animation_on_compositor_ = false;
+  for (const auto& compositor_keyframe_model_id :
+       compositor_keyframe_model_ids_) {
+    CompositorAnimations::CancelAnimationOnCompositor(
+        *target_, compositor_animation, compositor_keyframe_model_id);
+  }
+  compositor_keyframe_model_ids_.clear();
   return true;
 }
 
@@ -292,8 +295,11 @@ void KeyframeEffect::PauseAnimationForTestingOnCompositor(double pause_time) {
   if (!target_ || !target_->GetLayoutObject())
     return;
   DCHECK(GetAnimation());
-  CompositorAnimations::PauseAnimationForTestingOnCompositor(
-      *target_, *GetAnimation(), pause_time);
+  for (const auto& compositor_keyframe_model_id :
+       compositor_keyframe_model_ids_) {
+    CompositorAnimations::PauseAnimationForTestingOnCompositor(
+        *target_, *GetAnimation(), compositor_keyframe_model_id, pause_time);
+  }
 }
 
 void KeyframeEffect::AttachCompositedLayers() {
