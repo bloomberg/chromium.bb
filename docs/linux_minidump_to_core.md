@@ -13,7 +13,10 @@ Use `minidump-2-core` to convert the minidump file to a core file. On Linux, one
 can build the minidump-2-core target in a Chromium checkout, or alternatively,
 build it in a Google Breakpad checkout.
 
-    $ minidump-2-core foo.dmp > foo.core
+```shell
+$ ninja -C out/Release minidump-2-core
+$ ./out/Release/minidump-2-core foo.dmp > foo.core
+```
 
 ## Retrieving Chrome binaries
 
@@ -24,17 +27,24 @@ _debug link_ method to specify the debugging file. Either way be sure to put
 `chrome` and `chrome.debug` (the stripped debug information) in the same
 directory as the core file so that the debuggers can find them.
 
+For Chrome OS release binaries look for `debug-*.tgz` files on
+GoldenEye.
+
 ## Loading the core file into gdb/cgdb
 
 The recommended syntax for loading a core file into gdb/cgdb is as follows,
 specifying both the executable and the core file:
 
-    $ cgdb chrome foo.core
+```shell
+$ cgdb chrome foo.core
+```
 
 If the executable is not available then the core file can be loaded on its own
 but debugging options will be limited:
 
-    $ cgdb -c foo.core
+```shell
+$ cgdb -c foo.core
+```
 
 ## Loading the core file into Qtcreator
 
@@ -53,7 +63,9 @@ approximately) when the Chrome build was created then you can tell
 relative to the out/Release directory you just need to add that directory to
 your debugger search path, by adding a line similar to this to `~/.gdbinit`:
 
-    (gdb) directory /usr/local/chromium/src/out/Release/
+```
+(gdb) directory /usr/local/chromium/src/out/Release/
+```
 
 ## Notes
 
@@ -79,30 +91,41 @@ figure out the address, look near the end of `foo.dmp`, which contains a copy of
 One quick way to do this is with `grep`. For instance, if the executable is
 `/path/to/chrome`, one can simply run:
 
-    $ grep -a /path/to/chrome$ foo.dmp
+```shell
+$ grep -a /path/to/chrome$ foo.dmp
 
-    7fe749a90000-7fe74d28f000 r-xp 00000000 08:07 289158        /path/to/chrome
-    7fe74d290000-7fe74d4b7000 r--p 037ff000 08:07 289158        /path/to/chrome
-    7fe74d4b7000-7fe74d4e0000 rw-p 03a26000 08:07 289158        /path/to/chrome
+7fe749a90000-7fe74d28f000 r-xp 00000000 08:07 289158        /path/to/chrome
+7fe74d290000-7fe74d4b7000 r--p 037ff000 08:07 289158        /path/to/chrome
+7fe74d4b7000-7fe74d4e0000 rw-p 03a26000 08:07 289158        /path/to/chrome
+```
+
 
 In this case, `7fe749a90000` is the base address for `/path/to/chrome`, but gdb
 takes the start address of the file's text section. To calculate this, one will
 need a copy of `/path/to/chrome`, and run:
 
-    $ objdump -x /path/to/chrome | grep '\.text' | head -n 1 | tr -s ' ' | \
-      cut -d' ' -f 7
+```shell
+$ objdump -x /path/to/chrome | grep '\.text' | head -n 1 | tr -s ' ' | \
+    cut -d' ' -f 7
 
-    005282c0
+005282c0
+```
+
 
 Now add the two addresses: `7fe749a90000 + 005282c0 = 7fe749fb82c0` and in gdb, run:
 
-    (gdb) add-symbol-file /path/to/chrome 0x7fe749fb82c0
+```
+(gdb) add-symbol-file /path/to/chrome 0x7fe749fb82c0
+```
 
 Then use gdb as normal.
 
 ## Other resources
 
 For more discussion on this process see
-[Debugging a Minidump](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/crash-reporting/debugging-a-minidump).
+[Debugging a Minidump].
 This page discusses the same process in the context of Chrome OS and many of the
 concepts and techniques overlap.
+
+[Debugging a Minidump](
+https://www.chromium.org/chromium-os/packages/crash-reporting/debugging-a-minidump)
