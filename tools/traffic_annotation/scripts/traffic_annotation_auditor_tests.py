@@ -91,10 +91,13 @@ class TrafficAnnotationTestsChecker():
     _, stderr_text, return_code = self.tools.RunAuditor(
         args + ["--annotations-file=%s" % temp_filename])
 
-    # TODO(https://crbug.com/844014): Remove after debugging.
-    print("Return Code: %i" % return_code)
-    print("File Exists: %i" % os.path.exists(temp_filename))
     if os.path.exists(temp_filename):
+      # When tests are run on all files (without filtering), there might be some
+      # compile errors in irrelevant files on Windows that can be ignored.
+      if (return_code and "--no-filtering" in args and
+          sys.platform.startswith(('win', 'cygwin'))):
+        print("Ignoring return code: %i" % return_code)
+        return_code = 0
       annotations = None if return_code else open(temp_filename).read()
       os.remove(temp_filename)
     else:
