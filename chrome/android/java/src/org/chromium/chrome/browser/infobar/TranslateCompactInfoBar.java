@@ -383,7 +383,7 @@ public class TranslateCompactInfoBar extends InfoBar
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
                 // Only show snackbar when "Always Translate" is enabled.
-                if (!mOptions.alwaysTranslateLanguageState()) {
+                if (!mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE)) {
                     recordInfobarAction(INFOBAR_ALWAYS_TRANSLATE);
                     recordInfobarLanguageData(INFOBAR_HISTOGRAM_ALWAYS_TRANSLATE_LANGUAGE,
                             mOptions.sourceLanguageCode());
@@ -540,7 +540,7 @@ public class TranslateCompactInfoBar extends InfoBar
                 toggleAlwaysTranslate();
                 // Start translating if always translate is selected and if page is not already
                 // translated to the target language.
-                if (mOptions.alwaysTranslateLanguageState()
+                if (mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE)
                         && mTabLayout.getSelectedTabPosition() == SOURCE_TAB_INDEX) {
                     startTranslating(mTabLayout.getSelectedTabPosition());
                 }
@@ -567,9 +567,10 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void toggleAlwaysTranslate() {
-        mOptions.toggleAlwaysTranslateLanguageState(!mOptions.alwaysTranslateLanguageState());
+        mOptions.toggleAlwaysTranslateLanguageState(
+                !mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
         nativeApplyBoolTranslateOption(mNativeTranslateInfoBarPtr, TranslateOption.ALWAYS_TRANSLATE,
-                mOptions.alwaysTranslateLanguageState());
+                mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE));
     }
 
     private static void recordInfobarAction(int action) {
