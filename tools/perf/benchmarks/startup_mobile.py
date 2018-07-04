@@ -62,7 +62,12 @@ class _MobileStartupSharedState(story_module.SharedState):
     assert isinstance(self.platform, android_platform.AndroidPlatform)
     self._finder_options.browser_options.browser_user_agent_type = 'mobile'
     self.platform.Initialize()
-    self.platform.network_controller.Open(wpr_modes.WPR_REPLAY)
+    assert finder_options.browser_options.wpr_mode != wpr_modes.WPR_RECORD, (
+        'Recording WPR archives is not supported for this benchmark.')
+    wpr_mode = wpr_modes.WPR_REPLAY
+    if finder_options.use_live_sites:
+      wpr_mode = wpr_modes.WPR_OFF
+    self.platform.network_controller.Open(wpr_mode)
     self._story_set = story_set
 
   @property
