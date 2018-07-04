@@ -28,6 +28,8 @@ class BloatedRendererTabHelper
   ~BloatedRendererTabHelper() override = default;
 
   // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
@@ -42,6 +44,8 @@ class BloatedRendererTabHelper
  private:
   friend class content::WebContentsUserData<BloatedRendererTabHelper>;
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest, DetectReload);
+  FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest,
+                           IgnoreUnrelatedNavigation);
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest, CanReloadBloatedTab);
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest,
                            CannotReloadBloatedTabCrashed);
@@ -49,12 +53,31 @@ class BloatedRendererTabHelper
                            CannotReloadBloatedTabInvalidURL);
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest,
                            CannotReloadBloatedTabPendingUserInteraction);
+  enum class State { kInactive, kRequestingReload, kStartedNavigation };
 
   explicit BloatedRendererTabHelper(content::WebContents* contents);
 
   bool CanReloadBloatedTab();
 
-  bool reloading_bloated_renderer_ = false;
+  // The state transitions as follows:
+  // - kInactive is the initial state.
+  //
+  // - any state => kRequestingReload transition happens in
+  //   OnRendererIsBloated before invoking NavigationController::Reload.
+  //
+  // - kRequestingReload => kStartedNavigation transition happens in
+  //   NavigationController::Reload when it invokes DidStartNavigation.
+  //
+  // - kStartedNavigation => kInactive transitions happens in
+  //   DidFinishNavigation.
+  State state_ = State::kInactive;
+
+  // The navigation id is saved on DidStartNavigation event when the state is
+  // kRequestingReload. The infobar is shown on the subsequent
+  // DidFinishNavigation only if its navigation id matches the saved id. This
+  // ensures that the infobar is shown only for the reload that was requested
+  // in OnRendererIsBloated event.
+  int64_t saved_navigation_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BloatedRendererTabHelper);
 };
