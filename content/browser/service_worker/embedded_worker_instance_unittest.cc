@@ -948,4 +948,99 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
+// Records whether a CacheStoragePtr was sent as part of StartWorker.
+class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
+ public:
+  RecordCacheStorageHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~RecordCacheStorageHelper() override {}
+
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ControllerServiceWorkerRequest controller_request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      override {
+    had_cache_storage_ = !!provider_info->cache_storage;
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, service_worker_version_id, scope, script_url,
+        pause_after_download, std::move(dispatcher_request),
+        std::move(controller_request), std::move(instance_host),
+        std::move(provider_info), std::move(installed_scripts_info));
+  }
+
+  bool had_cache_storage() const { return had_cache_storage_; }
+
+ private:
+  bool had_cache_storage_ = false;
+};
+
+// Test that the worker is given a CacheStoragePtr during startup, when
+// |pause_after_download| is false.
+TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  auto helper = std::make_unique<RecordCacheStorageHelper>();
+  auto* helper_rawptr = helper.get();
+  helper_ = std::move(helper);
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  const int64_t version_id = pair.second->version_id();
+  std::unique_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker(pair.second.get());
+
+  // First, test a worker without pause after download.
+  {
+    // Start the worker.
+    blink::ServiceWorkerStatusCode status =
+        blink::ServiceWorkerStatusCode::kMax;
+    base::RunLoop run_loop;
+    mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(version_id, scope, url);
+    worker->Start(
+        std::move(params), CreateProviderInfoGetter(),
+        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+
+    // Cache storage should have been sent.
+    EXPECT_TRUE(helper_rawptr->had_cache_storage());
+
+    // Stop the worker.
+    worker->Stop();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Second, test a worker with pause after download.
+  {
+    // Start the worker until paused.
+    blink::ServiceWorkerStatusCode status =
+        blink::ServiceWorkerStatusCode::kMax;
+    mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(version_id, scope, url);
+    params->pause_after_download = true;
+    worker->Start(
+        std::move(params), CreateProviderInfoGetter(),
+        base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
+    base::RunLoop().RunUntilIdle();
+
+    // Finish starting.
+    worker->ResumeAfterDownload();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+
+    // Cache storage should not have been sent.
+    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+
+    // Stop the worker.
+    worker->Stop();
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
 }  // namespace content

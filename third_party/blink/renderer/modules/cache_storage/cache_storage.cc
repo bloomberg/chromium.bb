@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 
@@ -210,6 +211,18 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
     : scoped_fetcher_(fetcher) {
+  // Service workers may already have a CacheStoragePtr provided as an
+  // optimization.
+  if (context->IsServiceWorkerGlobalScope()) {
+    auto* service_worker = ToServiceWorkerGlobalScope(context);
+    mojom::blink::CacheStoragePtrInfo info = service_worker->TakeCacheStorage();
+    if (info) {
+      cache_storage_ptr_ = RevocableInterfacePtr<mojom::blink::CacheStorage>(
+          std::move(info), context->GetInterfaceInvalidator());
+      return;
+    }
+  }
+
   context->GetInterfaceProvider()->GetInterface(
       MakeRequest(&cache_storage_ptr_, context->GetInterfaceInvalidator()));
 }

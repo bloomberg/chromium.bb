@@ -77,13 +77,17 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
     mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle cache_storage,
     mojo::ScopedMessagePipeHandle interface_provider) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
+          // TODO(falken): Is that comment about versioning correct?
           mojom::blink::WorkerContentSettingsProxyPtrInfo(
               std::move(content_settings_handle), 0u)),
+      mojom::blink::CacheStoragePtrInfo(std::move(cache_storage),
+                                        mojom::blink::CacheStorage::Version_),
       service_manager::mojom::blink::InterfaceProviderPtrInfo(
           std::move(interface_provider),
           service_manager::mojom::blink::InterfaceProvider::Version_));
@@ -94,6 +98,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
+    mojom::blink::CacheStoragePtrInfo cache_storage_info,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info)
     : worker_context_client_(std::move(client)),
@@ -101,6 +106,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger),
+      cache_storage_info_(std::move(cache_storage_info)),
       interface_provider_info_(std::move(interface_provider_info)) {
   if (installed_scripts_manager) {
     installed_scripts_manager_ =
@@ -408,7 +414,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ThreadableLoadingContext::Create(*document),
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
-      std::move(installed_scripts_manager_));
+      std::move(installed_scripts_manager_), std::move(cache_storage_info_));
 
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we

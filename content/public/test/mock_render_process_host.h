@@ -144,6 +144,8 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   bool HostHasNotBeenUsed() override;
   void LockToOrigin(const GURL& lock_url) override;
+  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
+                        const url::Origin& origin) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -212,6 +214,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
+  blink::mojom::CacheStorageRequest cache_storage_request_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

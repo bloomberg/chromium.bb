@@ -424,6 +424,12 @@ void MockRenderProcessHost::LockToOrigin(const GURL& lock_url) {
     is_renderer_locked_to_site_ = true;
 }
 
+void MockRenderProcessHost::BindCacheStorage(
+    blink::mojom::CacheStorageRequest request,
+    const url::Origin& origin) {
+  cache_storage_request_ = std::move(request);
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }
