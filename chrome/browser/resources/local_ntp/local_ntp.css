@@ -297,6 +297,11 @@ body.alternate-logo #logo-non-white {
   box-shadow: none;
   margin: 0 auto;
   max-width: 560px;
+  transition: background-color 300ms ease-in-out;
+}
+
+.md #fakebox:hover {
+  background-color: rgb(232, 234, 237);
 }
 
 .non-google-page #fakebox-container {
