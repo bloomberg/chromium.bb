@@ -228,7 +228,7 @@ class ModelTypeControllerTest : public testing::Test {
 
   void DeactivateDataTypeAndStop(SyncStopMetadataFate metadata_fate) {
     controller_->DeactivateDataType(&configurer_);
-    controller_->Stop(metadata_fate);
+    controller_->Stop(metadata_fate, base::DoNothing());
   }
 
   // These threads can ping-pong for a bit so we run the model thread twice.
@@ -378,7 +378,7 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeDisabled) {
 TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 
-  controller()->Stop(CLEAR_METADATA);
+  controller()->Stop(CLEAR_METADATA, base::DoNothing());
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.

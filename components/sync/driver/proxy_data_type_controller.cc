@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/proxy_data_type_controller.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_configurer.h"
@@ -53,8 +55,10 @@ void ProxyDataTypeController::StartAssociating(
                      syncer_merge_result);
 }
 
-void ProxyDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
+void ProxyDataTypeController::Stop(SyncStopMetadataFate metadata_fate,
+                                   StopCallback callback) {
   state_ = NOT_RUNNING;
+  std::move(callback).Run();
 }
 
 DataTypeController::State ProxyDataTypeController::state() const {

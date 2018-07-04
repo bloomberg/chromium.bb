@@ -804,6 +804,11 @@ void DataTypeManagerImpl::StopImpl(ShutdownReason reason) {
   // callback will do nothing because state is set to STOPPING above.
   model_association_manager_.Stop(metadata_fate);
 
+  // Individual data type controllers might still be STOPPING, but we don't
+  // reflect that in |state_| because, for all practical matters, the manager is
+  // in a ready state and reconfguration can be triggered.
+  // TODO(mastiz): Reconsider waiting in STOPPING state until all datatypes have
+  // stopped.
   state_ = STOPPED;
 }
 

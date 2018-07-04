@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -46,7 +47,7 @@ class ModelTypeController : public DataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
-  void Stop(SyncStopMetadataFate metadata_fate) override;
+  void Stop(SyncStopMetadataFate metadata_fate, StopCallback callback) override;
   State state() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
@@ -89,8 +90,18 @@ class ModelTypeController : public DataTypeController {
   // State of this datatype controller.
   State state_;
 
-  // Callbacks for use when starting the datatype.
+  // Callback for use when starting the datatype (usually MODEL_STARTING, but
+  // STOPPING if abort requested while starting).
   ModelLoadCallback model_load_callback_;
+
+  // Callbacks for use when stopping the datatype (STOPPING), which also
+  // includes aborting a start. This is important because STOPPING is a state
+  // used to make sure we don't request two starts in parallel to the delegate,
+  // which is hard to support (most notably in ClientTagBasedProcessor). We
+  // use a vector because it's allowed to call Stop() multiple times (i.e. while
+  // STOPPING).
+  std::vector<StopCallback> model_stop_callbacks_;
+  SyncStopMetadataFate model_stop_metadata_fate_;
 
   // Controller receives |activation_response_| from
   // ClientTagBasedModelTypeProcessor callback and must temporarily own it until

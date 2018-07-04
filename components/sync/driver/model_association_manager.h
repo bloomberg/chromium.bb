@@ -111,10 +111,6 @@ class ModelAssociationManager {
   // round of association.
   void ResetForNextAssociation();
 
-  // Called by Initialize() to stop types that are not in |desired_types_|.
-  // For types that not in |preferred_types| also clears sync metadata.
-  void StopDisabledTypes(ModelTypeSet preferred_types);
-
   // Start loading non-running types that are in |desired_types_|.
   void LoadEnabledTypes();
 
@@ -138,7 +134,8 @@ class ModelAssociationManager {
   // A helper to stop an individual datatype.
   void StopDatatype(const SyncError& error,
                     SyncStopMetadataFate metadata_fate,
-                    DataTypeController* dtc);
+                    DataTypeController* dtc,
+                    DataTypeController::StopCallback callback);
 
   // Calls delegate's OnAllDataTypesReadyForConfigure when all datatypes from
   // desired_types_ are ready for configure. Ensures that for every call to
