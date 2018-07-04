@@ -11,8 +11,6 @@ source_set("autofill") {
     "card_unmask_prompt_view_bridge.mm",
     "chrome_autofill_client_ios.h",
     "chrome_autofill_client_ios.mm",
-    "storage_switch_tooltip.h",
-    "storage_switch_tooltip.mm",
   ]
   deps = [
     ":autofill_ui",

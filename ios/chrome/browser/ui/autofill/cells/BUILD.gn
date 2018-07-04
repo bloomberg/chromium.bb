@@ -10,8 +10,6 @@ source_set("cells") {
     "cvc_item.mm",
     "status_item.h",
     "status_item.mm",
-    "storage_switch_item.h",
-    "storage_switch_item.mm",
   ]
 
   deps = [
@@ -39,7 +37,6 @@ source_set("unit_tests") {
     "autofill_edit_item_unittest.mm",
     "cvc_item_unittest.mm",
     "status_item_unittest.mm",
-    "storage_switch_item_unittest.mm",
   ]
 
   deps = [
