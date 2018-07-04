@@ -21,6 +21,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.metrics.WebappUma;
@@ -108,6 +109,15 @@ class WebappSplashScreenController extends EmptyTabObserver {
                 initializeLayout(webappInfo, backgroundColor, splashImage);
             }
         });
+    }
+
+    /**
+     * Transfers a {@param viewHierarchy} to the splashscreen's parent view while keeping the
+     * splashscreen on top.
+     */
+    public void setViewHierarchyBelowSplashscreen(ViewGroup viewHierarchy) {
+        WarmupManager.transferViewHeirarchy(viewHierarchy, mParentView);
+        mParentView.bringChildToFront(mSplashScreen);
     }
 
     /** Should be called once native has loaded. */
