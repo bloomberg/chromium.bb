@@ -229,7 +229,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     }
 
     MinMaxSizeInput child_input;
-    if (!child.CreatesNewFormattingContext())
+    if (child.IsInline() || child.IsAnonymous())
       child_input = {float_left_inline_size, float_right_inline_size};
 
     MinMaxSize child_sizes;
