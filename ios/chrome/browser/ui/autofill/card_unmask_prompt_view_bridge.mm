@@ -14,16 +14,16 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
-#import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
-#import "ios/chrome/browser/ui/autofill/storage_switch_tooltip.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -126,12 +126,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   UIBarButtonItem* _verifyButton;
   CVCItem* _CVCItem;
   StatusItem* _statusItem;
-  StorageSwitchItem* _storageSwitchItem;
-
-  // The tooltip is added as a child of the collection view rather than the
-  // StorageSwitchContentView to allow it to overflow the bounds of the switch
-  // view.
-  StorageSwitchTooltip* _storageSwitchTooltip;
+  CollectionViewSwitchItem* _storageSwitchItem;
 
   // Owns |self|.
   autofill::CardUnmaskPromptViewBridge* _bridge;  // weak
@@ -222,14 +217,12 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
   if (controller->CanStoreLocally()) {
     _storageSwitchItem =
-        [[StorageSwitchItem alloc] initWithType:ItemTypeStorageSwitch];
+        [[CollectionViewSwitchItem alloc] initWithType:ItemTypeStorageSwitch];
+    _storageSwitchItem.text = l10n_util::GetNSString(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX);
     _storageSwitchItem.on = controller->GetStoreLocallyStartState();
     [model addItem:_storageSwitchItem
         toSectionWithIdentifier:SectionIdentifierMain];
-
-    _storageSwitchTooltip = [[StorageSwitchTooltip alloc] init];
-    [_storageSwitchTooltip setHidden:YES];
-    [self.collectionView addSubview:_storageSwitchTooltip];
   } else {
     _storageSwitchItem = nil;
   }
@@ -268,7 +261,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)showSpinner {
   [_verifyButton setEnabled:NO];
-  [_storageSwitchTooltip setHidden:YES];
 
   [self
       updateWithStatus:StatusItemState::VERIFYING
@@ -333,31 +325,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   // minimal status cell height.
   return MAX(preferredHeightForCVC + preferredHeightForStorageSwitch,
              preferredHeightForStatus);
-}
-
-- (void)layoutTooltipFromButton:(UIButton*)button {
-  const CGRect buttonFrameInCollectionView =
-      [self.collectionView convertRect:button.bounds fromView:button];
-  CGRect tooltipFrame = _storageSwitchTooltip.frame;
-
-  // First, set the width and use sizeToFit to have the label flow the text and
-  // set the height appropriately.
-  const CGFloat kTooltipMargin = 8;
-  CGFloat availableWidth =
-      CGRectGetMinX(buttonFrameInCollectionView) - 2 * kTooltipMargin;
-  const CGFloat kMaxTooltipWidth = 210;
-  tooltipFrame.size.width = MIN(availableWidth, kMaxTooltipWidth);
-  _storageSwitchTooltip.frame = tooltipFrame;
-  [_storageSwitchTooltip sizeToFit];
-
-  // Then use the size to position the tooltip appropriately, based on the
-  // button position.
-  tooltipFrame = _storageSwitchTooltip.frame;
-  tooltipFrame.origin.x = CGRectGetMinX(buttonFrameInCollectionView) -
-                          kTooltipMargin - CGRectGetWidth(tooltipFrame);
-  tooltipFrame.origin.y = CGRectGetMaxY(buttonFrameInCollectionView) -
-                          CGRectGetHeight(tooltipFrame);
-  _storageSwitchTooltip.frame = tooltipFrame;
 }
 
 - (BOOL)inputCVCIsValid:(CVCItem*)item {
@@ -451,19 +418,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)onCancel:(id)sender {
   _bridge->PerformClose();
-}
-
-- (void)onTooltipButtonTapped:(UIButton*)button {
-  BOOL shouldShowTooltip = !button.selected;
-  button.highlighted = shouldShowTooltip;
-  if (shouldShowTooltip) {
-    button.selected = YES;
-    [self layoutTooltipFromButton:button];
-    [_storageSwitchTooltip setHidden:NO];
-  } else {
-    button.selected = NO;
-    [_storageSwitchTooltip setHidden:YES];
-  }
 }
 
 - (void)onStorageSwitchChanged:(UISwitch*)switchView {
@@ -565,12 +519,11 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
       break;
     }
     case ItemTypeStorageSwitch: {
-      StorageSwitchCell* storageSwitchCell =
-          base::mac::ObjCCastStrict<StorageSwitchCell>(cell);
-      [storageSwitchCell.tooltipButton
-                 addTarget:self
-                    action:@selector(onTooltipButtonTapped:)
-          forControlEvents:UIControlEventTouchUpInside];
+      CollectionViewSwitchCell* storageSwitchCell =
+          base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+      storageSwitchCell.textLabel.font = [MDCTypography body2Font];
+      storageSwitchCell.textLabel.textColor =
+          [[MDCPalette greyPalette] tint500];
       [storageSwitchCell.switchView addTarget:self
                                        action:@selector(onStorageSwitchChanged:)
                              forControlEvents:UIControlEventValueChanged];

@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
-#import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -90,7 +89,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillDynamicHeight,
   ItemTypeAutofillCVC,
   ItemTypeAutofillStatus,
-  ItemTypeAutofillStorageSwitch,
   ItemTypeAccountControlDynamicHeight,
   ItemTypeFooter,
   ItemTypeContentSuggestions,
@@ -245,8 +243,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self statusItemError]
       toSectionWithIdentifier:SectionIdentifierAutofill];
-  [model addItem:[self storageSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierAutofill];
 
   // Payments cells.
   [model addSectionWithIdentifier:SectionIdentifierPayments];
@@ -367,7 +363,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeTextError:
     case ItemTypeAutofillCVC:
     case ItemTypeAutofillStatus:
-    case ItemTypeAutofillStorageSwitch:
     case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
     case ItemTypeColdStateSigninPromo:
@@ -427,7 +422,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypeApp:
-    case ItemTypeAutofillStorageSwitch:
     case ItemTypeColdStateSigninPromo:
     case ItemTypeSwitchBasic:
     case ItemTypeSwitchDynamicHeight:
@@ -692,13 +686,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   item.state = StatusItemState::ERROR;
   item.text = @"There was a really long error. We can't tell you more, but we "
               @"will still display this long string.";
-  return item;
-}
-
-- (CollectionViewItem*)storageSwitchItem {
-  StorageSwitchItem* item =
-      [[StorageSwitchItem alloc] initWithType:ItemTypeAutofillStorageSwitch];
-  item.on = YES;
   return item;
 }
 
