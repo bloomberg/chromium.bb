@@ -136,6 +136,8 @@ ExternalMetadataProvider.prototype.convertResults_ =
       item.canRename = prop.canRename;
     if (prop.canAddChildren !== undefined || nameMap['canAddChildren'])
       item.canAddChildren = prop.canAddChildren;
+    if (prop.canShare !== undefined || nameMap['canShare'])
+      item.canShare = prop.canShare;
     results.push(item);
   }
   return results;

@@ -108,6 +108,9 @@ function testDriveDirectoryEntry(callback) {
 
   var model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
+  metadataModel.properties = {
+    canShare: true,
+  };
   var invalidated = 0;
   model.addEventListener('invalidated', function() {
     invalidated++;
@@ -266,6 +269,9 @@ function testTeamDriveRootEntry(callback) {
   var model = new ActionsModel(
       volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
       [driveFileSystem.entries['/team_drives/ABC Team']]);
+  metadataModel.properties = {
+    canShare: true,
+  };
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
@@ -296,6 +302,9 @@ function testTeamDriveDirectoryEntry(callback) {
   var model = new ActionsModel(
       volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
       [driveFileSystem.entries['/team_drives/ABC Team/Folder 1']]);
+  metadataModel.properties = {
+    canShare: true,
+  };
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
