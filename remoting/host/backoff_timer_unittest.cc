@@ -19,7 +19,7 @@ void IncrementCounter(int* counter) {
 }  // namespace
 
 TEST(BackoffTimer, Basic) {
-  base::MockTimer* mock_timer = new base::MockTimer(false, false);
+  base::MockOneShotTimer* mock_timer = new base::MockOneShotTimer();
   BackoffTimer backoff_timer;
   backoff_timer.SetTimerForTest(base::WrapUnique(mock_timer));
   ASSERT_FALSE(backoff_timer.IsRunning());

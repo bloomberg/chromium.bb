@@ -15,7 +15,7 @@ void CallMeMaybe(int *number) {
 
 TEST(MockTimerTest, FiresOnce) {
   int calls = 0;
-  base::MockTimer timer(false, false);
+  base::MockOneShotTimer timer;
   base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
   timer.Start(FROM_HERE, delay,
               base::Bind(&CallMeMaybe,
@@ -29,7 +29,7 @@ TEST(MockTimerTest, FiresOnce) {
 
 TEST(MockTimerTest, FiresRepeatedly) {
   int calls = 0;
-  base::MockTimer timer(true, true);
+  base::MockRepeatingTimer timer;
   base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
   timer.Start(FROM_HERE, delay,
               base::Bind(&CallMeMaybe,
@@ -44,7 +44,7 @@ TEST(MockTimerTest, FiresRepeatedly) {
 
 TEST(MockTimerTest, Stops) {
   int calls = 0;
-  base::MockTimer timer(true, true);
+  base::MockRepeatingTimer timer;
   base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
   timer.Start(FROM_HERE, delay,
               base::Bind(&CallMeMaybe,
@@ -66,7 +66,7 @@ class HasWeakPtr : public base::SupportsWeakPtr<HasWeakPtr> {
 TEST(MockTimerTest, DoesNotRetainClosure) {
   HasWeakPtr *has_weak_ptr = new HasWeakPtr();
   base::WeakPtr<HasWeakPtr> weak_ptr(has_weak_ptr->AsWeakPtr());
-  base::MockTimer timer(false, false);
+  base::MockOneShotTimer timer;
   base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
   ASSERT_TRUE(weak_ptr.get());
   timer.Start(FROM_HERE, delay,

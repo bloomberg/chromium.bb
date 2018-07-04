@@ -17,10 +17,10 @@ namespace resource_coordinator {
 class TestIPCVolumeReporter : public IPCVolumeReporter {
  public:
   TestIPCVolumeReporter()
-      : IPCVolumeReporter(std::make_unique<base::MockTimer>(false, false)) {}
+      : IPCVolumeReporter(std::make_unique<base::MockOneShotTimer>()) {}
 
-  base::MockTimer* mock_timer() const {
-    return reinterpret_cast<base::MockTimer*>(timer());
+  base::MockOneShotTimer* mock_timer() const {
+    return static_cast<base::MockOneShotTimer*>(timer());
   }
 };
 

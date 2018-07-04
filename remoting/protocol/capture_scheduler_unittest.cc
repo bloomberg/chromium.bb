@@ -32,7 +32,7 @@ class CaptureSchedulerTest : public testing::Test {
     scheduler_->set_minimum_interval(
         base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
     scheduler_->SetTickClockForTest(&tick_clock_);
-    capture_timer_ = new base::MockTimer(false, false);
+    capture_timer_ = new base::MockOneShotTimer();
     scheduler_->SetTimerForTest(base::WrapUnique(capture_timer_));
     scheduler_->Start();
   }
@@ -79,7 +79,7 @@ class CaptureSchedulerTest : public testing::Test {
   base::SimpleTestTickClock tick_clock_;
 
   // Owned by |scheduler_|.
-  base::MockTimer* capture_timer_;
+  base::MockOneShotTimer* capture_timer_;
 
   bool capture_called_;
 };
