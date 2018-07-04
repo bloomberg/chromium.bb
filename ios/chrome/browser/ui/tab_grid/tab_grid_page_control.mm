@@ -97,9 +97,9 @@ const NSTimeInterval kSliderMoveDuration = 0.2;
 // Color for the slider
 const int kSliderColor = 0xF8F9FA;
 // Color for the background view.
-const int kBackgroundColor = 0x5F6368;
+const int kBackgroundColor = 0xFFFFFF;
 // Alpha for the background view.
-const CGFloat kBackgroundAlpha = 1.0;
+const CGFloat kBackgroundAlpha = 0.3;
 // Color for the regular tab count label and icons.
 const CGFloat kSelectedColor = 0x3C4043;
 
