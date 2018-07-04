@@ -248,8 +248,24 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   constexpr int kDialogSpacingVertical = 32;
   constexpr gfx::Size kLogoImageSize(32, 32);
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, gfx::Insets(), kDialogSpacingVertical));
+
+  views::View* upper_container_view = new views::View();
+  upper_container_view->SetSize(gfx::Size(
+      kOOBEWindowWidth, kOOBEWindowHeight - kLinuxIllustrationHeight));
+  upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kDialogInsets, kDialogSpacingVertical));
+  AddChildView(upper_container_view);
+
+  views::View* lower_container_view = new views::View();
+  lower_container_view->SetSize(
+      gfx::Size(kOOBEWindowWidth, kLinuxIllustrationHeight));
+  views::BoxLayout* lower_container_layout =
+      lower_container_view->SetLayoutManager(
+          std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  AddChildView(lower_container_view);
 
   logo_image_ = new views::ImageView();
   logo_image_->SetImageSize(kLogoImageSize);
@@ -257,7 +273,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_DEFAULT));
   logo_image_->SetHorizontalAlignment(views::ImageView::LEADING);
-  AddChildView(logo_image_);
+  upper_container_view->AddChildView(logo_image_);
 
   const base::string16 device_type = ui::GetChromeOSDeviceName();
 
@@ -266,7 +282,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
       ash::AshTextContext::CONTEXT_HEADLINE_OVERSIZED);
   big_message_label_->SetMultiLine(true);
   big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(big_message_label_);
+  upper_container_view->AddChildView(big_message_label_);
 
   // TODO(timloh): Descenders in the message appear to be clipped, re-visit once
   // the UI has been fleshed out more.
@@ -278,11 +294,11 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   message_label_ = new views::Label(message);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(message_label_);
+  upper_container_view->AddChildView(message_label_);
 
   // Make a slot for the progress bar, but it's not initially visible.
   progress_bar_ = new views::ProgressBar();
-  AddChildView(progress_bar_);
+  upper_container_view->AddChildView(progress_bar_);
   progress_bar_->SetVisible(false);
 
   big_image_ = new views::ImageView();
@@ -291,7 +307,12 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   big_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LINUX_ILLUSTRATION));
-  AddChildView(big_image_);
+  lower_container_view->AddChildView(big_image_);
+
+  // Make sure the lower_container_view is pinned to the bottom of the dialog.
+  lower_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->SetFlexForView(lower_container_view, 1, true);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_INSTALLER);
 }
