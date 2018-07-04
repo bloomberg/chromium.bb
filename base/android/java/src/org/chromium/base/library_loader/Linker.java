@@ -5,7 +5,6 @@
 package org.chromium.base.library_loader;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -13,6 +12,7 @@ import android.os.Parcelable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.AccessedByNative;
@@ -185,7 +185,7 @@ public class Linker {
     // Indicates if this is a low-memory device or not. The default is to
     // determine this by probing the system at runtime, but this can be forced
     // for testing by calling setMemoryDeviceConfigForTesting().
-    protected int mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_INIT;
+    private int mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_INIT;
 
     // Set to true to enable debug logs.
     protected static final boolean DEBUG = false;
@@ -203,13 +203,13 @@ public class Linker {
     // Size of reserved Breakpad guard region. Should match the value of
     // kBreakpadGuardRegionBytes on the JNI side. Used when computing the load
     // addresses of multiple loaded libraries. Set to 0 to disable the guard.
-    protected static final int BREAKPAD_GUARD_REGION_BYTES = 16 * 1024 * 1024;
+    private static final int BREAKPAD_GUARD_REGION_BYTES = 16 * 1024 * 1024;
 
     // Size of the area requested when using ASLR to obtain a random load address.
     // Should match the value of kAddressSpaceReservationSize on the JNI side.
     // Used when computing the load addresses of multiple loaded libraries to
     // ensure that we don't try to load outside the area originally requested.
-    protected static final int ADDRESS_SPACE_RESERVATION = 192 * 1024 * 1024;
+    private static final int ADDRESS_SPACE_RESERVATION = 192 * 1024 * 1024;
 
     // Becomes true after linker initialization.
     private boolean mInitialized;
@@ -242,11 +242,13 @@ public class Linker {
     private HashMap<String, LibInfo> mLoadedLibraries;
 
     // Singleton.
-    private static Linker sSingleton;
-    private static Object sSingletonLock = new Object();
+    private static final Linker sSingleton = new Linker();
 
     // Private singleton constructor.
-    private Linker() {}
+    private Linker() {
+        // Ensure this class is not referenced unless it's used.
+        assert LibraryLoader.useCrazyLinker();
+    }
 
     /**
      * Get singleton instance. Returns a Linker.
@@ -261,14 +263,8 @@ public class Linker {
      *
      * @return the Linker implementation instance.
      */
-    public static final Linker getInstance() {
-        // TODO(digit): The linker is created dynamically for historical reasons. Remove this.
-        synchronized (sSingletonLock) {
-            if (sSingleton == null) {
-                sSingleton = new Linker();
-            }
-            return sSingleton;
-        }
+    public static Linker getInstance() {
+        return sSingleton;
     }
 
     /**
@@ -283,16 +279,6 @@ public class Linker {
     }
 
     /**
-     * Assert for testing.
-     * Hard assertion. Cannot be disabled. Used only by testing methods.
-     */
-    private static void assertForTesting(boolean flag) {
-        if (!flag) {
-            throw new AssertionError();
-        }
-    }
-
-    /**
      * Assert NativeLibraries.sEnableLinkerTests is true.
      * Hard assertion that we are in a testing context. Cannot be disabled. The
      * test methods in this module permit injection of runnable code by class
@@ -301,9 +287,7 @@ public class Linker {
      * any is called.
      */
     private static void assertLinkerTestsAreEnabled() {
-        if (!NativeLibraries.sEnableLinkerTests) {
-            throw new AssertionError("Testing method called in non-testing context");
-        }
+        assert NativeLibraries.sEnableLinkerTests : "Testing method called in non-testing context";
     }
 
     /**
@@ -321,26 +305,6 @@ public class Linker {
          * @return true if all checks pass.
          */
         public boolean runChecks(int memoryDeviceConfig, boolean inBrowserProcess);
-    }
-
-    /**
-     * Set the TestRunner by its class name. It will be instantiated at
-     * runtime after all libraries are loaded.
-     *
-     * @param testRunnerClassName null or a String for the class name of the
-     * TestRunner to use.
-     */
-    public final void setTestRunnerClassNameForTesting(String testRunnerClassName) {
-        if (DEBUG) {
-            Log.i(TAG, "setTestRunnerClassNameForTesting(" + testRunnerClassName + ") called");
-        }
-        // Sanity check. This method may only be called during tests.
-        assertLinkerTestsAreEnabled();
-
-        synchronized (mLock) {
-            assertForTesting(mTestRunnerClassName == null);
-            mTestRunnerClassName = testRunnerClassName;
-        }
     }
 
     /**
@@ -374,23 +338,8 @@ public class Linker {
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
 
-        synchronized (sSingletonLock) {
-            // If this is the first call, instantiate the Linker and the test class.
-            if (sSingleton == null) {
-                assertLinkerTestsAreEnabled();
-                assertForTesting(sSingleton == null);
-                sSingleton = new Linker();
-                sSingleton.setTestRunnerClassNameForTesting(testRunnerClassName);
-                return;
-            }
-
-            // If not the first call, check that the Linker configuration matches this request.
-            String ourTestRunnerClassName = sSingleton.getTestRunnerClassNameForTesting();
-            if (testRunnerClassName == null) {
-                assertForTesting(ourTestRunnerClassName == null);
-            } else {
-                assertForTesting(ourTestRunnerClassName.equals(testRunnerClassName));
-            }
+        synchronized (sSingleton) {
+            sSingleton.mTestRunnerClassName = testRunnerClassName;
         }
     }
 
@@ -402,8 +351,8 @@ public class Linker {
      * @param memoryDeviceConfig Linker memory config, or 0 if unused
      * @param inBrowserProcess true if in the browser process
      */
-    protected final void runTestRunnerClassForTesting(int memoryDeviceConfig,
-                                                      boolean inBrowserProcess) {
+    private final void runTestRunnerClassForTesting(
+            int memoryDeviceConfig, boolean inBrowserProcess) {
         if (DEBUG) {
             Log.i(TAG, "runTestRunnerClassForTesting called");
         }
@@ -413,7 +362,7 @@ public class Linker {
         synchronized (mLock) {
             if (mTestRunnerClassName == null) {
                 Log.wtf(TAG, "Linker runtime tests not set up for this process");
-                assertForTesting(false);
+                assert false;
             }
             if (DEBUG) {
                 Log.i(TAG, "Instantiating " + mTestRunnerClassName);
@@ -425,12 +374,12 @@ public class Linker {
                                      .newInstance();
             } catch (Exception e) {
                 Log.wtf(TAG, "Could not instantiate test runner class by name", e);
-                assertForTesting(false);
+                assert false;
             }
 
             if (!testRunner.runChecks(memoryDeviceConfig, inBrowserProcess)) {
                 Log.wtf(TAG, "Linker runtime tests failed in this process");
-                assertForTesting(false);
+                assert false;
             }
 
             Log.i(TAG, "All linker tests passed");
@@ -449,11 +398,11 @@ public class Linker {
         }
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
-        assertForTesting(memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW
-                         || memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL);
+        assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW
+                || memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL;
 
         synchronized (mLock) {
-            assertForTesting(mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT);
+            assert mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT;
 
             mMemoryDeviceConfig = memoryDeviceConfig;
             if (DEBUG) {
@@ -472,7 +421,7 @@ public class Linker {
      * @param library the name of the library.
      * @return true is the library is the Linker's own JNI library.
      */
-    public boolean isChromiumLinkerLibrary(String library) {
+    boolean isChromiumLinkerLibrary(String library) {
         return library.equals(LINKER_JNI_LIBRARY);
     }
 
@@ -480,7 +429,7 @@ public class Linker {
      * Load the Linker JNI library. Throws UnsatisfiedLinkError on error.
      */
     @SuppressLint({"UnsafeDynamicallyLoadedCode"})
-    protected static void loadLinkerJniLibrary() {
+    private static void loadLinkerJniLibrary() {
         LibraryLoader.setEnvForNative();
         if (DEBUG) {
             String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
@@ -503,7 +452,7 @@ public class Linker {
      *
      * @return new base load address
      */
-    protected long getRandomBaseLoadAddress() {
+    private long getRandomBaseLoadAddress() {
         // nativeGetRandomBaseLoadAddress() returns an address at which it has previously
         // successfully mapped an area larger than the largest library we expect to load,
         // on the basis that we will be able, with high probability, to map our library
@@ -533,7 +482,7 @@ public class Linker {
      *
      * @param libFilePath The path of the library (possibly in the zip file).
      */
-    public void loadLibrary(String libFilePath) {
+    void loadLibrary(String libFilePath) {
         if (DEBUG) {
             Log.i(TAG, "loadLibrary: " + libFilePath);
         }
@@ -549,7 +498,7 @@ public class Linker {
      *
      * @param libFilePath The path of the library (possibly in the zip file).
      */
-    public void loadLibraryNoFixedAddress(String libFilePath) {
+    void loadLibraryNoFixedAddress(String libFilePath) {
         if (DEBUG) {
             Log.i(TAG, "loadLibraryAtAnyAddress: " + libFilePath);
         }
@@ -557,46 +506,12 @@ public class Linker {
         loadLibraryImpl(libFilePath, isFixedAddressPermitted);
     }
 
-    /**
-     * Call this method to determine if the chromium project must load the library
-     * directly from a zip file.
-     */
-    public static boolean isInZipFile() {
-        // The auto-generated NativeLibraries.sUseLibraryInZipFile variable will be true
-        // iff the library remains embedded in the APK zip file on the target.
-        return NativeLibraries.sUseLibraryInZipFile;
-    }
-
-    /**
-     * Call this method to determine if this chromium project must
-     * use this linker. If not, System.loadLibrary() should be used to load
-     * libraries instead.
-     */
-    public static boolean isUsed() {
-        // A non-monochrome APK (such as ChromePublic.apk or ChromeModernPublic.apk) on N+ cannot
-        // use the Linker because the latter is incompatible with the GVR library. Fall back
-        // to using System.loadLibrary() or System.load() at the cost of no RELRO sharing.
-        //
-        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
-        // circumstances:
-        // * installing APK manually
-        // * after OTA from M to N
-        // * side-installing Chrome (possibly from another release channel)
-        // * Play Store bugs leading to incorrect APK flavor being installed
-        //
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) return false;
-
-        // The auto-generated NativeLibraries.sUseLinker variable will be true if the
-        // build has not explicitly disabled Linker features.
-        return NativeLibraries.sUseLinker;
-    }
-
     // Used internally to initialize the linker's data. Assumes lock is held.
     // Loads JNI, and sets mMemoryDeviceConfig and mBrowserUsesSharedRelro.
     private void ensureInitializedLocked() {
         assert Thread.holdsLock(mLock);
 
-        if (mInitialized || !NativeLibraries.sUseLinker) {
+        if (mInitialized) {
             return;
         }
 
@@ -679,7 +594,7 @@ public class Linker {
      * Note that when in a service process, this will block until the RELRO bundle is
      * received, i.e. when another thread calls useSharedRelros().
      */
-    public void finishLibraryLoad() {
+    void finishLibraryLoad() {
         if (DEBUG) {
             Log.i(TAG, "finishLibraryLoad() called");
         }
@@ -1058,38 +973,27 @@ public class Linker {
      * don't change them without modifying the corresponding C++ sources.
      * Also, the LibInfo instance owns the shared RELRO file descriptor.
      */
-    public static class LibInfo implements Parcelable {
-
-        public LibInfo() {
-            mLoadAddress = 0;
-            mLoadSize = 0;
-            mRelroStart = 0;
-            mRelroSize = 0;
-            mRelroFd = -1;
-        }
-
-        public void close() {
-            if (mRelroFd >= 0) {
-                try {
-                    ParcelFileDescriptor.adoptFd(mRelroFd).close();
-                } catch (java.io.IOException e) {
-                    if (DEBUG) {
-                        Log.e(TAG, "Failed to close fd: " + mRelroFd);
-                    }
-                }
-                mRelroFd = -1;
-            }
-        }
+    private static class LibInfo implements Parcelable {
+        LibInfo() {}
 
         // from Parcelable
-        public LibInfo(Parcel in) {
+        LibInfo(Parcel in) {
             mLoadAddress = in.readLong();
             mLoadSize = in.readLong();
             mRelroStart = in.readLong();
             mRelroSize = in.readLong();
             ParcelFileDescriptor fd = ParcelFileDescriptor.CREATOR.createFromParcel(in);
             // If CreateSharedRelro fails, the OS file descriptor will be -1 and |fd| will be null.
-            mRelroFd = (fd == null) ? -1 : fd.detachFd();
+            if (fd != null) {
+                mRelroFd = fd.detachFd();
+            }
+        }
+
+        public void close() {
+            if (mRelroFd >= 0) {
+                StreamUtil.closeQuietly(ParcelFileDescriptor.adoptFd(mRelroFd));
+                mRelroFd = -1;
+            }
         }
 
         // from Parcelable
@@ -1130,17 +1034,6 @@ public class Linker {
                     }
                 };
 
-        @Override
-        public String toString() {
-            return String.format(Locale.US,
-                                 "[load=0x%x-0x%x relro=0x%x-0x%x fd=%d]",
-                                 mLoadAddress,
-                                 mLoadAddress + mLoadSize,
-                                 mRelroStart,
-                                 mRelroStart + mRelroSize,
-                                 mRelroFd);
-        }
-
         // IMPORTANT: Don't change these fields without modifying the
         // native code that accesses them directly!
         @AccessedByNative
@@ -1152,11 +1045,11 @@ public class Linker {
         @AccessedByNative
         public long mRelroSize;   // page-aligned size in memory, or 0.
         @AccessedByNative
-        public int  mRelroFd;     // shared RELRO file descriptor, or -1
+        public int mRelroFd = -1; // shared RELRO file descriptor, or -1
     }
 
     // Create a Bundle from a map of LibInfo objects.
-    protected Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
+    private Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
         Bundle bundle = new Bundle(map.size());
         for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             bundle.putParcelable(entry.getKey(), entry.getValue());
@@ -1165,7 +1058,7 @@ public class Linker {
     }
 
     // Create a new LibInfo map from a Bundle.
-    protected HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
+    private HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
         HashMap<String, LibInfo> map = new HashMap<String, LibInfo>();
         for (String library : bundle.keySet()) {
             LibInfo libInfo = bundle.getParcelable(library);
@@ -1175,7 +1068,7 @@ public class Linker {
     }
 
     // Call the close() method on all values of a LibInfo map.
-    protected void closeLibInfoMap(HashMap<String, LibInfo> map) {
+    private void closeLibInfoMap(HashMap<String, LibInfo> map) {
         for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             entry.getValue().close();
         }
@@ -1190,7 +1083,7 @@ public class Linker {
      */
     @CalledByNative
     @MainDex
-    public static void postCallbackOnMainThread(final long opaque) {
+    private static void postCallbackOnMainThread(final long opaque) {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {

@@ -83,10 +83,11 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
-        Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
-        if (sharedRelros != null) {
-            getLinker().useSharedRelros(sharedRelros);
-            sharedRelros = null;
+        if (LibraryLoader.useCrazyLinker()) {
+            Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
+            if (sharedRelros != null) {
+                getLinker().useSharedRelros(sharedRelros);
+            }
         }
     }
 
@@ -109,7 +110,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         Linker linker = null;
         boolean requestedSharedRelro = false;
-        if (Linker.isUsed()) {
+        if (LibraryLoader.useCrazyLinker()) {
             assert mLinkerParams != null;
             linker = getLinker();
             if (mLinkerParams.mWaitForSharedRelro) {

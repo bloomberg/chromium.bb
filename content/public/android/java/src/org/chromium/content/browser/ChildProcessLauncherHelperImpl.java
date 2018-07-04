@@ -23,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
 import org.chromium.base.process_launcher.ChildProcessConnection;
@@ -122,7 +123,7 @@ public final class ChildProcessLauncherHelperImpl {
                             ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
                     connectionBundle.putLong(
                             ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-                    if (Linker.isUsed()) {
+                    if (LibraryLoader.useCrazyLinker()) {
                         connectionBundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
                                 Linker.getInstance().getSharedRelros());
                     }
@@ -541,7 +542,7 @@ public final class ChildProcessLauncherHelperImpl {
     private static void initLinker() {
         assert LauncherThread.runningOnLauncherThread();
         if (sLinkerInitialized) return;
-        if (Linker.isUsed()) {
+        if (LibraryLoader.useCrazyLinker()) {
             sLinkerLoadAddress = Linker.getInstance().getBaseLoadAddress();
             if (sLinkerLoadAddress == 0) {
                 Log.i(TAG, "Shared RELRO support disabled!");
