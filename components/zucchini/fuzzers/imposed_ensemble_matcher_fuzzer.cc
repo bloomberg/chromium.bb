@@ -63,7 +63,7 @@ DEFINE_BINARY_PROTO_FUZZER(const zucchini::fuzzers::FilePair& file_pair) {
   // as it is a failure in Zucchini's patch performance that is worth
   // investigating.
   size_t patch_size = patch_writer.SerializedSize();
-  CHECK_LE(patch_size, kMaxImageSize * 2);
+  CHECK_LE(patch_size, kMaxImageSize * 3);
 
   // Write to buffer to avoid IO.
   std::unique_ptr<uint8_t[]> patch_data(new uint8_t[patch_size]);
