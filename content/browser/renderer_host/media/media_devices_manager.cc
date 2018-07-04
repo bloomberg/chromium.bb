@@ -194,8 +194,8 @@ std::string GuessVideoGroupID(const MediaDeviceInfoArray& audio_infos,
 
 struct MediaDevicesManager::EnumerationRequest {
   EnumerationRequest(const BoolDeviceTypes& requested_types,
-                     const EnumerationCallback& callback)
-      : callback(callback) {
+                     EnumerationCallback callback)
+      : callback(std::move(callback)) {
     requested = requested_types;
     has_seen_result.fill(false);
   }
@@ -389,11 +389,11 @@ MediaDevicesManager::~MediaDevicesManager() {
 
 void MediaDevicesManager::EnumerateDevices(
     const BoolDeviceTypes& requested_types,
-    const EnumerationCallback& callback) {
+    EnumerationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartMonitoring();
 
-  requests_.emplace_back(requested_types, callback);
+  requests_.emplace_back(requested_types, std::move(callback));
   bool all_results_cached = true;
   for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
     if (requested_types[i] && cache_policies_[i] == CachePolicy::NO_CACHE) {
@@ -655,11 +655,10 @@ void MediaDevicesManager::OnPermissionsCheckDone(
 
   EnumerateDevices(
       internal_requested_types,
-      base::BindRepeating(&MediaDevicesManager::OnDevicesEnumerated,
-                          weak_factory_.GetWeakPtr(), requested_types,
-                          request_video_input_capabilities,
-                          base::Passed(&callback), std::move(salt_and_origin),
-                          has_permissions));
+      base::BindOnce(&MediaDevicesManager::OnDevicesEnumerated,
+                     weak_factory_.GetWeakPtr(), requested_types,
+                     request_video_input_capabilities, base::Passed(&callback),
+                     std::move(salt_and_origin), has_permissions));
 }
 
 void MediaDevicesManager::OnDevicesEnumerated(
@@ -860,15 +859,16 @@ void MediaDevicesManager::ProcessRequests() {
                    false /* ignore_group_id */);
   }
 
-  requests_.erase(std::remove_if(requests_.begin(), requests_.end(),
-                                 [this](const EnumerationRequest& request) {
-                                   if (IsEnumerationRequestReady(request)) {
-                                     request.callback.Run(current_snapshot_);
-                                     return true;
-                                   }
-                                   return false;
-                                 }),
-                  requests_.end());
+  requests_.erase(
+      std::remove_if(requests_.begin(), requests_.end(),
+                     [this](EnumerationRequest& request) {
+                       if (IsEnumerationRequestReady(request)) {
+                         std::move(request.callback).Run(current_snapshot_);
+                         return true;
+                       }
+                       return false;
+                     }),
+      requests_.end());
 }
 
 bool MediaDevicesManager::IsEnumerationRequestReady(

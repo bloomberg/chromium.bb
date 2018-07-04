@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 
+#include <string>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -45,8 +46,8 @@ void EnumerateOutputDevices(MediaStreamManager* media_stream_manager,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
   device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
-  media_stream_manager->media_devices_manager()->EnumerateDevices(device_types,
-                                                                  cb);
+  media_stream_manager->media_devices_manager()->EnumerateDevices(
+      device_types, std::move(cb));
 }
 
 void TranslateDeviceId(const std::string& device_id,

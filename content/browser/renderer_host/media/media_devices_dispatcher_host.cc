@@ -205,9 +205,10 @@ void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
   requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       requested_types,
-      base::Bind(&MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
-                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
-                 std::move(salt_and_origin), std::move(default_device_id)));
+      base::BindOnce(
+          &MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
+          weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+          std::move(salt_and_origin), std::move(default_device_id)));
 }
 
 void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
@@ -325,8 +326,8 @@ void MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       devices_to_enumerate,
-      base::Bind(&MediaDevicesDispatcherHost::GotAudioInputEnumeration,
-                 weak_factory_.GetWeakPtr(), default_device_id));
+      base::BindOnce(&MediaDevicesDispatcherHost::GotAudioInputEnumeration,
+                     weak_factory_.GetWeakPtr(), default_device_id));
 }
 
 void MediaDevicesDispatcherHost::GotAudioInputEnumeration(

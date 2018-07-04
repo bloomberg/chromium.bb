@@ -254,8 +254,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInput) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -273,8 +273,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheVideoInput) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -292,8 +292,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioOutput) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -312,8 +312,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudio) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -334,8 +334,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudio) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -354,8 +354,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideo) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 }
@@ -383,8 +383,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
@@ -410,8 +410,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
@@ -433,8 +433,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
@@ -465,8 +465,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
@@ -486,8 +486,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
@@ -511,8 +511,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
@@ -549,8 +549,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
@@ -587,8 +587,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                   base::Unretained(this), &run_loop));
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
@@ -625,8 +625,8 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   base::RunLoop run_loop;
   media_devices_manager_->EnumerateDevices(
       devices_to_enumerate,
-      base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
-                 base::Unretained(this), &run_loop));
+      base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                     base::Unretained(this), &run_loop));
   run_loop.Run();
 
   // Add device-change event listeners.

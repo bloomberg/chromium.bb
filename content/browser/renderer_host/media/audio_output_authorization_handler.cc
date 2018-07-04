@@ -253,10 +253,10 @@ void AudioOutputAuthorizationHandler::AccessChecked(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       devices_to_enumerate,
-      base::Bind(&AudioOutputAuthorizationHandler::TranslateDeviceID,
-                 weak_factory_.GetWeakPtr(), base::Passed(&trace_scope),
-                 base::Passed(&cb), device_id, std::move(salt),
-                 std::move(security_origin)));
+      base::BindOnce(&AudioOutputAuthorizationHandler::TranslateDeviceID,
+                     weak_factory_.GetWeakPtr(), base::Passed(&trace_scope),
+                     base::Passed(&cb), device_id, std::move(salt),
+                     std::move(security_origin)));
 }
 
 void AudioOutputAuthorizationHandler::TranslateDeviceID(
