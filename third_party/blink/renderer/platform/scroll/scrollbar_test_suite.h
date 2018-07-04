@@ -49,6 +49,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
 
   MOCK_CONST_METHOD0(VisualRectForScrollbarParts, LayoutRect());
   MOCK_CONST_METHOD0(IsActive, bool());
+  MOCK_CONST_METHOD0(IsThrottled, bool());
   MOCK_CONST_METHOD1(ScrollSize, int(ScrollbarOrientation));
   MOCK_CONST_METHOD0(IsScrollCornerVisible, bool());
   MOCK_CONST_METHOD0(ScrollCornerRect, IntRect());

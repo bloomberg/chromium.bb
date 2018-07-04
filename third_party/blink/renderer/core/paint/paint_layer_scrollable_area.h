@@ -262,6 +262,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return scrollbar_manager_.VerticalScrollbar();
   }
 
+  bool IsThrottled() const override;
   PlatformChromeClient* GetChromeClient() const override;
 
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;

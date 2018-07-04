@@ -171,6 +171,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // synchronization.
   virtual void SetNeedsCommit();
 
+  // Returns true after SetNeedsAnimate(), SetNeedsUpdateLayers() or
+  // SetNeedsCommit(), until it is satisfied.
+  bool RequestedMainFramePending();
+
   // Requests that the next frame re-chooses crisp raster scales for all layers.
   void SetNeedsRecalculateRasterScales();
 
@@ -181,6 +185,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Enables/disables the compositor from requesting main frame updates from the
   // client.
   void SetDeferCommits(bool defer_commits);
+  // Returns the value last passed to SetDeferCommits(), though commits may be
+  // deferred also when the local_surface_id_from_parent() is not valid.
+  bool defer_commits() const { return defer_commits_; }
 
   // Synchronously performs a main frame update and layer updates. Used only in
   // single threaded mode when the compositor's internal scheduling is disabled.

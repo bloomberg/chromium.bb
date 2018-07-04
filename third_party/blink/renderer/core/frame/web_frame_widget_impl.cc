@@ -38,6 +38,7 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -1034,7 +1035,7 @@ void WebFrameWidgetImpl::InitializeLayerTreeView() {
   DCHECK(!mutator_);
   layer_tree_view_ = Client()->InitializeLayerTreeView();
   DCHECK(layer_tree_view_);
-  if (layer_tree_view_->CompositorAnimationHost()) {
+  if (Platform::Current()->IsThreadedAnimationEnabled()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());
   }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -20,12 +21,17 @@
 
 namespace blink {
 
-SimCompositor::SimCompositor()
-    : needs_begin_frame_(false),
-      defer_commits_(true),
-      has_selection_(false),
-      web_view_(nullptr) {
+SimCompositor::SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
+
+  // SimCompositor overrides the RenderWidgetCompositorDelegate to respond to
+  // BeginMainFrame(), which will update and paint the WebViewImpl given to
+  // SetWebView().
+  compositor_ = compositor_factory_.Initialize(this);
+  // SimCompositor starts with defer commits enabled, but uses synchronous
+  // compositing which does not use defer commits anyhow, it only uses it for
+  // reading defered state in tests.
+  compositor_->SetDeferCommits(true);
 }
 
 SimCompositor::~SimCompositor() {
@@ -36,35 +42,21 @@ void SimCompositor::SetWebView(WebViewImpl& web_view) {
   web_view_ = &web_view;
 }
 
-void SimCompositor::SetNeedsBeginFrame() {
-  needs_begin_frame_ = true;
-}
-
-void SimCompositor::SetDeferCommits(bool defer_commits) {
-  defer_commits_ = defer_commits;
-}
-
-void SimCompositor::RegisterSelection(const WebSelection&) {
-  has_selection_ = true;
-}
-
-void SimCompositor::ClearSelection() {
-  has_selection_ = false;
-}
-
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK(web_view_);
-  DCHECK(!defer_commits_);
-  DCHECK(needs_begin_frame_);
+  DCHECK(!compositor_->layer_tree_host()->defer_commits());
+  DCHECK(compositor_->layer_tree_host()->RequestedMainFramePending());
   DCHECK_GT(time_delta_in_seconds, 0);
-  needs_begin_frame_ = false;
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 
-  web_view_->BeginFrame(last_frame_time_);
-  web_view_->UpdateAllLifecyclePhases();
+  SimCanvas::Commands commands;
+  paint_commands_ = &commands;
 
-  return PaintFrame();
+  compositor_->layer_tree_host()->Composite(last_frame_time_, /*raster=*/false);
+
+  paint_commands_ = nullptr;
+  return commands;
 }
 
 SimCanvas::Commands SimCompositor::PaintFrame() {
@@ -81,6 +73,21 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   SimCanvas canvas(infinite_rect.Width(), infinite_rect.Height());
   builder.EndRecording()->Playback(&canvas);
   return canvas.GetCommands();
+}
+
+void SimCompositor::RequestNewLayerTreeFrameSink(
+    const content::LayerTreeFrameSinkCallback& callback) {
+  // Make a valid LayerTreeFrameSink so the compositor will generate begin main
+  // frames.
+  callback.Run(cc::FakeLayerTreeFrameSink::Create3d());
+}
+
+void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
+  // There is no WebWidget like RenderWidget would have..? So go right to the
+  // WebViewImpl.
+  web_view_->BeginFrame(last_frame_time_);
+  web_view_->UpdateAllLifecyclePhases();
+  *paint_commands_ = PaintFrame();
 }
 
 }  // namespace blink

@@ -1006,13 +1006,11 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
 void ScrollingCoordinator::LayerTreeViewInitialized(
     WebLayerTreeView& layer_tree_view,
     LocalFrameView* view) {
-  if (Platform::Current()->IsThreadedAnimationEnabled() &&
-      layer_tree_view.CompositorAnimationHost()) {
+  if (Platform::Current()->IsThreadedAnimationEnabled()) {
     std::unique_ptr<CompositorAnimationTimeline> timeline =
         CompositorAnimationTimeline::Create();
-    std::unique_ptr<CompositorAnimationHost> host =
-        std::make_unique<CompositorAnimationHost>(
-            layer_tree_view.CompositorAnimationHost());
+    auto host = std::make_unique<CompositorAnimationHost>(
+        layer_tree_view.CompositorAnimationHost());
     if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
       view->GetScrollingContext()->SetAnimationHost(std::move(host));
       view->GetScrollingContext()->SetAnimationTimeline(std::move(timeline));

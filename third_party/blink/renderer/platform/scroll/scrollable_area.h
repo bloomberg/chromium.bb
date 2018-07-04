@@ -172,6 +172,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   }
 
   virtual bool IsActive() const = 0;
+  // Returns true if the frame this ScrollableArea is attached to is being
+  // throttled for lifecycle updates. In this case it should also not be
+  // painted.
+  virtual bool IsThrottled() const = 0;
   virtual int ScrollSize(ScrollbarOrientation) const = 0;
   void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
   virtual bool IsScrollCornerVisible() const = 0;

@@ -245,6 +245,10 @@ void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
   ScrollableArea::Trace(visitor);
 }
 
+bool PaintLayerScrollableArea::IsThrottled() const {
+  return GetLayoutBox()->GetFrame()->ShouldThrottleRendering();
+}
+
 PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
   if (HasBeenDisposed())
     return nullptr;

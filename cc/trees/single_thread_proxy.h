@@ -49,6 +49,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsCommit() override;
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override;
   void SetNextCommitWaitsForActivation() override;
+  bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferCommits(bool defer_commits) override;
   bool CommitRequested() const override;

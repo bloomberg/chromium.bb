@@ -544,8 +544,12 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual bool IsThreadedCompositingEnabled() { return false; }
-  virtual bool IsThreadedAnimationEnabled() { return true; }
+  // When true, animations will run on a compositor thread independently from
+  // the blink main thread.
+  // This is true when there exists a renderer compositor in this process. But
+  // for unit tests, a single-threaded compositor may be used so it may remain
+  // false.
+  virtual bool IsThreadedAnimationEnabled() { return false; }
 
   // Creates a new fling animation curve instance for device |device_source|
   // with |velocity| and already scrolled |cumulative_scroll| pixels.

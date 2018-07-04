@@ -6,7 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_COMPOSITOR_H_
 
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/test/stub_render_widget_compositor_delegate.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
 
 namespace blink {
@@ -22,11 +24,18 @@ class WebViewImpl;
 // only part of the layer was invalid.
 //
 // Note: This also does not support compositor driven animations.
-class SimCompositor final : public WebLayerTreeView {
+class SimCompositor final : public content::StubRenderWidgetCompositorDelegate {
  public:
   explicit SimCompositor();
   ~SimCompositor() override;
 
+  // This compositor should be given to the WebViewImpl passed to SetWebView.
+  content::RenderWidgetCompositor& compositor() { return *compositor_; }
+
+  // When the compositor asks for a main frame, this WebViewImpl will have its
+  // lifecycle updated and be painted. The compositor() should have also been
+  // given to the WebViewImpl so that its using the same compositor() for its
+  // layer tree.
   void SetWebView(WebViewImpl&);
 
   // Executes the BeginMainFrame processing steps, an approximation of what
@@ -42,29 +51,43 @@ class SimCompositor final : public WebLayerTreeView {
   // we don't schedule a BeginFrame).
   SimCanvas::Commands PaintFrame();
 
-  bool NeedsBeginFrame() const { return needs_begin_frame_; }
-  bool DeferCommits() const { return defer_commits_; }
-
-  bool HasSelection() const { return has_selection_; }
-
-  void SetBackgroundColor(SkColor background_color) override {
-    background_color_ = background_color;
+  // Helpers to query the state of the compositor from tests.
+  //
+  // Returns true if a main frame has been requested from blink, until the
+  // BeginFrame() step occurs.
+  bool NeedsBeginFrame() const {
+    return compositor_->layer_tree_host()->RequestedMainFramePending();
+  }
+  // Returns true if commits are deferred in the compositor. Since these tests
+  // use synchronous compositing through BeginFrame(), the deferred state has no
+  // real effect.
+  bool DeferCommits() const {
+    return compositor_->layer_tree_host()->defer_commits();
+  }
+  // Returns true if a selection is set on the compositor.
+  bool HasSelection() const {
+    return compositor_->layer_tree_host()->selection() != cc::LayerSelection();
+  }
+  // Returns the background color set on the compositor.
+  SkColor background_color() {
+    return compositor_->layer_tree_host()->background_color();
   }
 
-  SkColor background_color() { return background_color_; }
-
  private:
-  void SetNeedsBeginFrame() override;
-  void SetDeferCommits(bool) override;
-  void RegisterSelection(const WebSelection&) override;
-  void ClearSelection() override;
+  // RenderWidgetCompositorDelegate implementation.
+  void RequestNewLayerTreeFrameSink(
+      const content::LayerTreeFrameSinkCallback& callback) override;
+  void BeginMainFrame(base::TimeTicks frame_time) override;
 
-  bool needs_begin_frame_;
-  bool defer_commits_;
-  bool has_selection_;
-  WebViewImpl* web_view_;
+  WebViewImpl* web_view_ = nullptr;
   base::TimeTicks last_frame_time_;
-  SkColor background_color_;
+
+  // During BeginFrame(), painting is done, and the result is stored here to
+  // be returned from BeginFrame().
+  SimCanvas::Commands* paint_commands_;
+
+  content::RenderWidgetCompositor* compositor_ = nullptr;
+  FrameTestHelpers::RenderWidgetCompositorFactory compositor_factory_;
 };
 
 }  // namespace blink

@@ -280,10 +280,9 @@ void KeyframeEffect::AbortKeyframeModelsWithProperty(
 
 void KeyframeEffect::AddKeyframeModel(
     std::unique_ptr<KeyframeModel> keyframe_model) {
-  AnimationHost* animation_host = animation_->animation_host();
   DCHECK(keyframe_model->target_property_id() !=
              TargetProperty::SCROLL_OFFSET ||
-         (animation_host && animation_host->SupportsScrollAnimations()));
+         animation_->animation_host()->SupportsScrollAnimations());
   DCHECK(!keyframe_model->is_impl_only() ||
          keyframe_model->target_property_id() == TargetProperty::SCROLL_OFFSET);
 

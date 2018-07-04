@@ -216,6 +216,48 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
 
+class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillBeginMainFrame() override {
+    // Post NextStep() so it happens after the MainFrame completes.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestRequestedMainFrame::NextStep,
+                       base::Unretained(this)));
+  }
+
+  void NextStep() {
+    // The MainFrame request is cleared once a MainFrame happens.
+    EXPECT_FALSE(layer_tree_host()->RequestedMainFramePending());
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 0:
+        ADD_FAILURE()
+            << "Case 0 is the initial commit used to send the test here";
+        FALLTHROUGH;
+      case 1:
+        layer_tree_host()->SetNeedsAnimate();
+        break;
+      case 2:
+        layer_tree_host()->SetNeedsUpdateLayers();
+        break;
+      case 3:
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 4:
+        EndTest();
+        return;
+    }
+    // SetNeeds{Animate,UpdateLayers,Commit}() will mean a MainFrame is pending.
+    EXPECT_TRUE(layer_tree_host()->RequestedMainFramePending());
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestedMainFrame);
+
 class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

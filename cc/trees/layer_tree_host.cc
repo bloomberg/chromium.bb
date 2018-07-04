@@ -537,6 +537,10 @@ void LayerTreeHost::SetNeedsCommit() {
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
+bool LayerTreeHost::RequestedMainFramePending() {
+  return proxy_->RequestedAnimatePending();
+}
+
 void LayerTreeHost::SetNeedsRecalculateRasterScales() {
   next_commit_forces_recalculate_raster_scales_ = true;
   proxy_->SetNeedsCommit();
