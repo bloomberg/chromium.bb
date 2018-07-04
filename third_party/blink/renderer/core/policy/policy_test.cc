@@ -69,6 +69,8 @@ TEST_F(DocumentPolicyTest, TestAllowsFeature) {
   EXPECT_TRUE(GetPolicy()->allowsFeature("camera", kOriginB));
   EXPECT_FALSE(GetPolicy()->allowsFeature("camera", "https://badorigin.com"));
   EXPECT_TRUE(GetPolicy()->allowsFeature("geolocation", kSelfOrigin));
+  EXPECT_TRUE(GetPolicy()->allowsFeature("sync-xhr"));
+  EXPECT_TRUE(GetPolicy()->allowsFeature("sync-xhr", kOriginA));
 }
 
 TEST_F(DocumentPolicyTest, TestGetAllowList) {
@@ -82,6 +84,8 @@ TEST_F(DocumentPolicyTest, TestGetAllowList) {
               UnorderedElementsAre("*"));
   EXPECT_TRUE(GetPolicy()->getAllowlistForFeature("badfeature").IsEmpty());
   EXPECT_TRUE(GetPolicy()->getAllowlistForFeature("midi").IsEmpty());
+  EXPECT_THAT(GetPolicy()->getAllowlistForFeature("sync-xhr"),
+              UnorderedElementsAre("*"));
 }
 
 TEST_F(DocumentPolicyTest, TestAllowedFeatures) {
@@ -93,6 +97,8 @@ TEST_F(DocumentPolicyTest, TestAllowedFeatures) {
   EXPECT_TRUE(allowed_features.Contains("geolocation"));
   EXPECT_FALSE(allowed_features.Contains("badfeature"));
   EXPECT_FALSE(allowed_features.Contains("midi"));
+  // "sync-xhr" is allowed on all origins
+  EXPECT_TRUE(allowed_features.Contains("sync-xhr"));
 }
 
 TEST_F(IFramePolicyTest, TestAllowsFeature) {
@@ -110,6 +116,8 @@ TEST_F(IFramePolicyTest, TestAllowsFeature) {
   EXPECT_FALSE(GetPolicy()->allowsFeature("camera", kOriginB));
   EXPECT_FALSE(GetPolicy()->allowsFeature("camera", "https://badorigin.com"));
   EXPECT_TRUE(GetPolicy()->allowsFeature("geolocation", kSelfOrigin));
+  EXPECT_TRUE(GetPolicy()->allowsFeature("sync-xhr"));
+  EXPECT_TRUE(GetPolicy()->allowsFeature("sync-xhr", kOriginA));
 }
 
 TEST_F(IFramePolicyTest, TestGetAllowList) {
@@ -123,6 +131,8 @@ TEST_F(IFramePolicyTest, TestGetAllowList) {
               UnorderedElementsAre(kSelfOrigin));
   EXPECT_TRUE(GetPolicy()->getAllowlistForFeature("badfeature").IsEmpty());
   EXPECT_TRUE(GetPolicy()->getAllowlistForFeature("midi").IsEmpty());
+  EXPECT_THAT(GetPolicy()->getAllowlistForFeature("sync-xhr"),
+              UnorderedElementsAre("*"));
 }
 
 TEST_F(IFramePolicyTest, TestAllowedFeatures) {
@@ -134,6 +144,8 @@ TEST_F(IFramePolicyTest, TestAllowedFeatures) {
   EXPECT_TRUE(allowed_features.Contains("geolocation"));
   EXPECT_FALSE(allowed_features.Contains("badfeature"));
   EXPECT_FALSE(allowed_features.Contains("midi"));
+  // "sync-xhr" is allowed on all origins
+  EXPECT_TRUE(allowed_features.Contains("sync-xhr"));
 }
 
 TEST_F(IFramePolicyTest, TestCombinedPolicy) {
@@ -151,6 +163,8 @@ TEST_F(IFramePolicyTest, TestCombinedPolicy) {
   EXPECT_TRUE(allowed_features.Contains("camera"));
   // "geolocation" has default policy as allowed on self origin.
   EXPECT_FALSE(allowed_features.Contains("badfeature"));
+  // "sync-xhr" is still implicitly allowed on all origins
+  EXPECT_TRUE(allowed_features.Contains("sync-xhr"));
 }
 
 }  // namespace blink
