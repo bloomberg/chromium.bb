@@ -481,7 +481,11 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       break;
 
     case ui::ET_MOUSE_EXITED:
-      UpdateControlsVisibility(false);
+      // On Windows, ui::ET_MOUSE_EXITED is triggered when hovering over the
+      // media controls because of the HitTest. This check ensures the controls
+      // are visible if the mouse is still over the window.
+      if (!GetVideoBounds().Contains(event->location()))
+        UpdateControlsVisibility(false);
       break;
 
     case ui::ET_MOUSE_RELEASED:
