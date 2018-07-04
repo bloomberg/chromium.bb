@@ -140,11 +140,6 @@ public interface LocationBar extends UrlBarDelegate {
     void revertChanges();
 
     /**
-     * @return The timestamp for the {@link UrlBar} gaining focus for the first time.
-     */
-    long getFirstUrlBarFocusTime();
-
-    /**
      * Updates the security icon displayed in the LocationBar.
      */
     void updateSecurityIcon();

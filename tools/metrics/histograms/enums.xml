@@ -31380,6 +31380,13 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Intent for new page load"/>
 </enum>
 
+<enum name="MobileStartupToolbarFirstFocusStartupState">
+  <int value="0" label="Before native initialization complete"/>
+  <int value="1" label="After native initialization complete"/>
+  <int value="2" label="After first meaningful paint"/>
+  <int value="3" label="After first pageload finished"/>
+</enum>
+
 <enum name="ModuleBlacklistCacheReadResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open the file"/>
