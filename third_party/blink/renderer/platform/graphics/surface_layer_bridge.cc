@@ -40,78 +40,100 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
                                       std::move(client));
 }
 
-SurfaceLayerBridge::~SurfaceLayerBridge() {
-  observer_ = nullptr;
+cc::Layer* SurfaceLayerBridge::GetCcLayer() const {
+  if (surface_layer_)
+    return surface_layer_.get();
+
+  return solid_color_layer_.get();
 }
+
+void SurfaceLayerBridge::CreateSurfaceLayer() {
+  surface_layer_ = cc::SurfaceLayer::Create();
+
+  // This surface_id is essentially just a placeholder for the real one we will
+  // get in OnFirstSurfaceActivation. We need it so that we properly get a
+  // WillDraw, which then pushes the first compositor frame.
+  current_surface_id_ = viz::SurfaceId(
+      frame_sink_id_, parent_local_surface_id_allocator_.GenerateId());
+  surface_layer_->SetPrimarySurfaceId(current_surface_id_,
+                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetStretchContentToFillBounds(true);
+  surface_layer_->SetIsDrawable(true);
+
+  if (observer_) {
+    observer_->RegisterContentsLayer(surface_layer_.get());
+  }
+  // We ignore our opacity until we are sure that we have something to show,
+  // as indicated by getting an OnFirstSurfaceActivation call.
+  surface_layer_->SetContentsOpaque(false);
+}
+
+SurfaceLayerBridge::~SurfaceLayerBridge() = default;
 
 void SurfaceLayerBridge::ClearSurfaceId() {
   current_surface_id_ = viz::SurfaceId();
-  cc::SurfaceLayer* surface_layer =
-      static_cast<cc::SurfaceLayer*>(cc_layer_.get());
 
-  if (!surface_layer)
+  if (!surface_layer_)
     return;
 
   // We reset the Ids if we lose the context_provider (case: GPU process ended)
   // If we destroyed the surface_layer before that point, we need not update
   // the ids.
-  surface_layer->SetPrimarySurfaceId(viz::SurfaceId(),
-                                     cc::DeadlinePolicy::UseDefaultDeadline());
-  surface_layer->SetFallbackSurfaceId(viz::SurfaceId());
+  surface_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
+                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetFallbackSurfaceId(viz::SurfaceId());
 }
 
 void SurfaceLayerBridge::CreateSolidColorLayer() {
-  cc_layer_ = cc::SolidColorLayer::Create();
-  cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
-
+  // TODO(lethalantidote): Remove this logic. It should be covered by setting
+  // the layer's opacity to false.
+  solid_color_layer_ = cc::SolidColorLayer::Create();
+  solid_color_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
   if (observer_)
-    observer_->RegisterContentsLayer(cc_layer_.get());
+    observer_->RegisterContentsLayer(solid_color_layer_.get());
 }
 
 void SurfaceLayerBridge::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
-    // First time a SurfaceId is received.
-    current_surface_id_ = surface_info.id();
-    if (cc_layer_) {
-      if (observer_)
-        observer_->UnregisterContentsLayer(cc_layer_.get());
-      cc_layer_->RemoveFromParent();
-    }
+  DCHECK(surface_info.is_valid());
 
-    scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create();
-    surface_layer->SetPrimarySurfaceId(
-        surface_info.id(), cc::DeadlinePolicy::UseDefaultDeadline());
-    surface_layer->SetFallbackSurfaceId(surface_info.id());
-    surface_layer->SetStretchContentToFillBounds(true);
-    surface_layer->SetIsDrawable(true);
-    cc_layer_ = surface_layer;
-
+  surface_activated_ = true;
+  if (solid_color_layer_) {
     if (observer_)
-      observer_->RegisterContentsLayer(cc_layer_.get());
-  } else if (current_surface_id_ != surface_info.id()) {
-    // A different SurfaceId is received, prompting change to existing
-    // SurfaceLayer.
-    current_surface_id_ = surface_info.id();
-    cc::SurfaceLayer* surface_layer =
-        static_cast<cc::SurfaceLayer*>(cc_layer_.get());
-    surface_layer->SetPrimarySurfaceId(
-        surface_info.id(), cc::DeadlinePolicy::UseDefaultDeadline());
-    surface_layer->SetFallbackSurfaceId(surface_info.id());
+      observer_->UnregisterContentsLayer(solid_color_layer_.get());
+    solid_color_layer_->RemoveFromParent();
+    solid_color_layer_ = nullptr;
   }
+  if (!surface_layer_) {
+    // This covers non-video cases, where we don't create the SurfaceLayer
+    // early.
+    // TODO(lethalantidote): Eliminate this case. Once you do that, you can
+    // also just store the surface_id and not the frame_sink_id.
+    CreateSurfaceLayer();
+  }
+
+  current_surface_id_ = surface_info.id();
+
+  surface_layer_->SetPrimarySurfaceId(surface_info.id(),
+                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetFallbackSurfaceId(surface_info.id());
 
   if (observer_) {
     observer_->OnWebLayerUpdated();
     observer_->OnSurfaceIdUpdated(surface_info.id());
   }
 
-  cc_layer_->SetBounds(surface_info.size_in_pixels());
-  cc_layer_->SetContentsOpaque(opaque_);
+  // TODO(lethalantidote): Discuss and remove for both Canvas and Video uses.
+  surface_layer_->SetBounds(surface_info.size_in_pixels());
+
+  surface_layer_->SetContentsOpaque(opaque_);
 }
 
 void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
-  if (cc_layer_ && opaque_ != opaque)
-    cc_layer_->SetContentsOpaque(opaque);
+  // If the surface isn't activated, we have nothing to show, do not change
+  // opacity (defaults to false on surface_layer creation).
+  if (surface_layer_ && surface_activated_)
+    surface_layer_->SetContentsOpaque(opaque);
   opaque_ = opaque;
 }
 

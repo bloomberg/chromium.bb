@@ -29,7 +29,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     bool enable_instant_source_buffer_gc,
     bool embedded_media_experience_enabled,
     mojom::MediaMetricsProviderPtr metrics_provider,
-    base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+    base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
         blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback,
     scoped_refptr<viz::ContextProvider> context_provider,
     bool use_surface_layer_for_video)
@@ -52,7 +52,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       enable_instant_source_buffer_gc_(enable_instant_source_buffer_gc),
       embedded_media_experience_enabled_(embedded_media_experience_enabled),
       metrics_provider_(std::move(metrics_provider)),
-      create_bridge_callback_(create_bridge_callback),
+      create_bridge_callback_(std::move(create_bridge_callback)),
       context_provider_(std::move(context_provider)),
       use_surface_layer_for_video_(use_surface_layer_for_video) {}
 

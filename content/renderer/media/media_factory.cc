@@ -322,7 +322,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           max_keyframe_distance_to_disable_background_video_mse,
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),
-          base::Bind(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
+          base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
+                         layer_tree_view),
           RenderThreadImpl::current()->SharedMainThreadContextProvider(),
           use_surface_layer_for_video));
 
