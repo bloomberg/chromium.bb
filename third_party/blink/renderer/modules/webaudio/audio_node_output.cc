@@ -170,7 +170,7 @@ void AudioNodeOutput::AddInput(AudioNodeInput& input) {
 
 void AudioNodeOutput::RemoveInput(AudioNodeInput& input) {
   DCHECK(GetDeferredTaskHandler().IsGraphOwner());
-  input.Handler().BreakConnection();
+  input.Handler().BreakConnectionWithLock();
   inputs_.erase(&input);
 }
 
