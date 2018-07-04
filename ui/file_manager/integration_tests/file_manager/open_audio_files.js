@@ -76,7 +76,8 @@ function audioTimeLeapForward(audioAppId) {
 }
 
 /**
- * Tests opening then closing the Audio Player from Files app.
+ * Tests opening then closing the Audio Player from Files app. Also tests that
+ * an audio file from |path| opens and auto-plays.
  *
  * @param {string} path Directory path to be tested.
  */
@@ -84,12 +85,14 @@ function audioOpenClose(path) {
   let appId;
   let audioAppId;
 
+  const track = [ENTRIES.beautiful];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add an audio file to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(null, path, this.next, track, track);
     },
-    // Open an audio file.
+    // Open an audio file from |path|.
     function(result) {
       appId = result.windowId;
       remoteCall.callRemoteTestUtil(
@@ -122,33 +125,72 @@ function audioOpenClose(path) {
 }
 
 /**
- * Tests if the audio player shows up for the selected image and that the audio
- * is loaded successfully.
- *
- * @param {string} path Directory path to be tested.
+ * Tests an audio file opened from Downloads 1) auto-plays and 2) has the
+ * correct track and artist details.
  */
-function audioOpen(path) {
+function audioOpenTrackDownloads() {
   let appId;
   let audioAppId;
 
+  const track = [ENTRIES.beautiful];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on Downloads, add an audio track to Downloads.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next, track, []);
     },
-    // Add an additional audio file.
+    // Open an audio file from Downloads.
     function(results) {
       appId = results.windowId;
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
+      remoteCall.callRemoteTestUtil(
+          'openFile', appId, ['Beautiful Song.ogg'], this.next);
     },
-    // Wait for the file list to change.
+    // Wait for the Audio Player window.
     function(result) {
       chrome.test.assertTrue(result);
-      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
-      remoteCall.waitForFiles(appId, expected).then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
-    // Open an audio file.
+    // Check: Audio Player should automatically play the file.
+    function(windowId) {
+      audioAppId = windowId;
+      const playFile = audioPlayingQuery('Beautiful Song.ogg');
+      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
+    },
+    // Check: track 0 should be active.
     function() {
+      getTrackText(audioAppId, '.track[index="0"][active]').then(this.next);
+    },
+    // Check: track 0 should have the correct title and artist.
+    function(song) {
+      chrome.test.assertEq('Beautiful Song', song.title);
+      chrome.test.assertEq('Unknown Artist', song.artist);
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
+ * Tests an audio file opened from Drive 1) auto-plays and 2) has the correct
+ * track and artist details. Tests the same when another Drive audio track is
+ * opened from Files app.
+ */
+function audioOpenMultipleTracksDrive() {
+  let appId;
+  let audioAppId;
+
+  const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
+  StepsRunner.run([
+    // Open Files.App on Drive, add the audio tracks to Drive.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], tracks);
+    },
+    // Open an audio file from Drive.
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['Beautiful Song.ogg'], this.next);
     },
@@ -178,7 +220,7 @@ function audioOpen(path) {
       const inactive = '.track[index="1"]:not([active])';
       audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
     },
-    // Open another file.
+    // Open another audio file from Drive.
     function(element) {
       chrome.test.assertTrue(!!element);
       remoteCall.callRemoteTestUtil(
@@ -681,11 +723,11 @@ testcase.audioOpenCloseDrive = function() {
 };
 
 testcase.audioOpenDownloads = function() {
-  audioOpen(RootPath.DOWNLOADS);
+  audioOpenTrackDownloads();
 };
 
 testcase.audioOpenDrive = function() {
-  audioOpen(RootPath.DRIVE);
+  audioOpenMultipleTracksDrive();
 };
 
 testcase.audioAutoAdvanceDrive = function() {
