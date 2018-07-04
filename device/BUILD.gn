@@ -114,7 +114,7 @@ test("device_unittests") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",
     "//device/gamepad/public/mojom:gamepad_mojom_traits_test",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net",
     "//testing/gmock",

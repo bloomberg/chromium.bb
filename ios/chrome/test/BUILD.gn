@@ -91,7 +91,7 @@ source_set("run_all_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
   ]
 }
 

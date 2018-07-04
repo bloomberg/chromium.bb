@@ -7,14 +7,14 @@
 #include "base/test/launcher/unit_test_launcher.h"
 
 #if !defined(OS_IOS)
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #endif
 
 int main(int argc, char** argv) {
   ash::AshTestSuite test_suite(argc, argv);
 
 #if !defined(OS_IOS)
-  mojo::edk::Init();
+  mojo::core::Init();
 #endif
 
   return base::LaunchUnitTestsSerially(

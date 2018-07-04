@@ -7,20 +7,20 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/threading/thread.h"
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 
 int main(int argc, char** argv) {
   IOSChromeUnitTestSuite test_suite(argc, argv);
 
-  mojo::edk::Init();
+  mojo::core::Init();
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
   return base::LaunchUnitTests(
       argc, argv,

@@ -20,7 +20,7 @@ source_set("app") {
     "//crypto",
     "//ios/web",
     "//ios/web/public/global_state",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//net",
     "//ui/base",
     "//ui/gfx",

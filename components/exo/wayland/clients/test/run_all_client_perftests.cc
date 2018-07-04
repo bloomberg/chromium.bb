@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/exo/wayland/clients/test/wayland_client_test.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 namespace exo {
 namespace {
@@ -107,7 +107,7 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
 }  // namespace exo
 
 int main(int argc, char** argv) {
-  mojo::edk::Init();
+  mojo::core::Init();
 
   exo::ExoClientPerfTestSuite test_suite(argc, argv);
 

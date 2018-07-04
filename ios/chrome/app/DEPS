@@ -26,7 +26,7 @@ include_rules = [
   "+ios/chrome/browser/feature_engagement",
   "+ios/net",
   "+ios/public/provider/chrome",
-  "+mojo/edk/embedder/embedder.h",
+  "+mojo/core/embedder/embedder.h",
   "+third_party/breakpad/breakpad/src/client/ios",
 
   # Strings and resources.

@@ -18,7 +18,7 @@ include_rules = [
   "+ios/chrome/browser",
   "+ios/public/provider/chrome",
   "+ios/public/test",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+net/url_request",
   "+services/network/public/cpp",
   "+third_party/breakpad/breakpad/src/client/ios",
