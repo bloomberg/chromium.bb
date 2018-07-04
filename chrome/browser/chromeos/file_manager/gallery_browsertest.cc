@@ -71,9 +71,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   StartTest();
 }
 
-// Flaky in RELEASE crbug.com/857021
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       DISABLED_CheckAvailabilityOfEditAndPrintButtons) {
+                       CheckAvailabilityOfEditAndPrintButtons) {
   set_test_case_name("checkAvailabilityOfEditAndPrintButtons");
   StartTest();
 }
