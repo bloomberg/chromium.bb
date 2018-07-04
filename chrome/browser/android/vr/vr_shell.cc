@@ -1322,7 +1322,7 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
   helper->GetSecurityInfo(&security_info);
 
   return std::make_unique<PageInfo>(
-      this, ProfileManager::GetActiveUserProfile(),
+      this, Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
       entry->GetVirtualURL(), security_info);
 }
