@@ -7,8 +7,8 @@
 
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/thread_controller_impl.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
 // TODO(kraynov): Move to //base/task/sequence_manager/test to avoid
 // cross-component exposure of internal ThreadControllerImpl.

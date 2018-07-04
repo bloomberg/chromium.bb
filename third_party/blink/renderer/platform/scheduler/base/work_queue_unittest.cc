@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
+#include "base/task/sequence_manager/work_queue.h"
 
 #include <stddef.h>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/task/sequence_manager/real_time_domain.h"
+#include "base/task/sequence_manager/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 namespace base {
 namespace sequence_manager {

@@ -15,14 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
-// Currently the implementation is located in Blink because scheduler/base move
-// is in progress https://crbug.com/783309.
-// TODO(kraynov): Remove this hack ASAP.
-#ifndef HACKDEF_INCLUDED_FROM_BLINK
-// Need PLATFORM_EXPORT macro.
-#error Use third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h.
-#endif
-
 namespace base {
 
 namespace trace_event {
@@ -39,7 +31,7 @@ class TaskQueueImpl;
 
 class TimeDomain;
 
-class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
+class BASE_EXPORT TaskQueue : public SingleThreadTaskRunner {
  public:
   class Observer {
    public:
@@ -60,7 +52,7 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   // A wrapper around OnceClosure with additional metadata to be passed
   // to PostTask and plumbed until PendingTask is created.
-  struct PLATFORM_EXPORT PostedTask {
+  struct BASE_EXPORT PostedTask {
     PostedTask(OnceClosure callback,
                Location posted_from,
                TimeDelta delay = TimeDelta(),
@@ -143,7 +135,7 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
   };
 
   // Interface to pass per-task metadata to RendererScheduler.
-  class PLATFORM_EXPORT Task : public PendingTask {
+  class BASE_EXPORT Task : public PendingTask {
    public:
     Task(PostedTask posted_task, TimeTicks desired_run_time);
 

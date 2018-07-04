@@ -32,7 +32,7 @@ class TaskQueueImpl;
 // TaskQueue maintains its own next wake-up time and communicates it
 // to the TimeDomain, which aggregates wake-ups across registered TaskQueues
 // into a global wake-up, which ultimately gets passed to the ThreadController.
-class PLATFORM_EXPORT TimeDomain {
+class BASE_EXPORT TimeDomain {
  public:
   virtual ~TimeDomain();
 

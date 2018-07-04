@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_IMPL_H_
+#define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_IMPL_H_
 
 #include "base/cancelable_callback.h"
 #include "base/debug/task_annotator.h"
@@ -13,7 +13,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/thread_controller.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 
@@ -24,8 +23,8 @@ class MessageLoop;
 namespace sequence_manager {
 namespace internal {
 
-class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
-                                             public RunLoop::NestingObserver {
+class BASE_EXPORT ThreadControllerImpl : public ThreadController,
+                                         public RunLoop::NestingObserver {
  public:
   ~ThreadControllerImpl() override;
 
@@ -127,4 +126,4 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_IMPL_H_

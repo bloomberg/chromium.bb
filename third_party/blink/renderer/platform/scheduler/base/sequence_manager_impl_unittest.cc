@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 
 #include <stddef.h>
 #include <memory>
@@ -16,6 +16,10 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequence_manager/real_time_domain.h"
+#include "base/task/sequence_manager/task_queue_selector.h"
+#include "base/task/sequence_manager/work_queue.h"
+#include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -24,17 +28,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_count_uses_time_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 using testing::AnyNumber;
 using testing::Contains;

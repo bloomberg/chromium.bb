@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_H_
 
 #include <stddef.h>
 
+#include "base/base_export.h"
 #include "base/macros.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/task_queue_selector_logic.h"
+#include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector_logic.h"
-#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 namespace base {
 namespace sequence_manager {
@@ -19,7 +20,7 @@ namespace internal {
 
 // TaskQueueSelector is used by the SchedulerHelper to enable prioritization
 // of particular task queues.
-class PLATFORM_EXPORT TaskQueueSelector {
+class BASE_EXPORT TaskQueueSelector {
  public:
   TaskQueueSelector();
   ~TaskQueueSelector();
@@ -53,7 +54,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
   // Serialize the selector state for tracing.
   void AsValueInto(trace_event::TracedValue* state) const;
 
-  class PLATFORM_EXPORT Observer {
+  class BASE_EXPORT Observer {
    public:
     virtual ~Observer() = default;
 
@@ -70,7 +71,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
   bool AllEnabledWorkQueuesAreEmpty() const;
 
  protected:
-  class PLATFORM_EXPORT PrioritizingSelector {
+  class BASE_EXPORT PrioritizingSelector {
    public:
     PrioritizingSelector(TaskQueueSelector* task_queue_selector,
                          const char* name);
@@ -213,7 +214,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
   size_t normal_priority_starvation_score_;
   size_t low_priority_starvation_score_;
 
-  Observer* task_queue_selector_observer_;  // NOT OWNED
+  Observer* task_queue_selector_observer_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSelector);
 };
 
@@ -221,4 +222,4 @@ class PLATFORM_EXPORT TaskQueueSelector {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_SELECTOR_H_

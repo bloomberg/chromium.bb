@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_H_
+#define BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_H_
 
+#include "base/base_export.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {
@@ -27,7 +28,7 @@ class WorkQueueSets;
 // API subset used by WorkQueueSets pretends the WorkQueue is empty until the
 // fence is removed.  This functionality is a primitive intended for use by
 // throttling mechanisms.
-class PLATFORM_EXPORT WorkQueue {
+class BASE_EXPORT WorkQueue {
  public:
   using QueueType = internal::TaskQueueImpl::WorkQueueType;
 
@@ -148,4 +149,4 @@ class PLATFORM_EXPORT WorkQueue {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_H_
