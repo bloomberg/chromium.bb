@@ -185,29 +185,30 @@ function updateAppList(appList) {
   }
 }
 
-/**
- * Updates the local cache information about account metadata.
- * @param {Object} localMetadata Dictionary describing account metadata.
- */
-function updateLocalMetadata(localMetadata) {
-  var startPageToken = localMetadata['account-start-page-token-local'];
-
-  $('account-start-page-token-local').textContent = startPageToken +
-      (startPageToken ? ' (loaded)' : ' (not loaded)') +
-      (localMetadata['account-metadata-refreshing'] ? ' (refreshing)' : '');
-}
-
-/**
+/*
  * Updates the summary about delta update status.
  * @param {Object} deltaUpdateStatus Dictionary describing delta update status.
  */
 function updateDeltaUpdateStatus(deltaUpdateStatus) {
   $('push-notification-enabled').textContent =
       deltaUpdateStatus['push-notification-enabled'];
-  $('last-update-check-time').textContent =
-      deltaUpdateStatus['last-update-check-time'];
-  $('last-update-check-error').textContent =
-      deltaUpdateStatus['last-update-check-error'];
+
+  var itemContainer = $('delta-update-status');
+  for (var i = 0; i < deltaUpdateStatus['items'].length; i++) {
+    var update = deltaUpdateStatus['items'][i];
+    var tr = document.createElement('tr');
+    tr.className = 'delta-update';
+    tr.appendChild(createElementFromText('td', update.id));
+    var startPageToken = update.start_page_token;
+    tr.appendChild(createElementFromText(
+        'td',
+        startPageToken + (startPageToken ? ' (loaded)' : ' (not loaded)')));
+    tr.appendChild(createElementFromText('td', update.last_check_time));
+    tr.appendChild(createElementFromText('td', update.last_check_result));
+    tr.appendChild(createElementFromText('td', update.refreshing));
+
+    itemContainer.appendChild(tr);
+  }
 }
 
 /**

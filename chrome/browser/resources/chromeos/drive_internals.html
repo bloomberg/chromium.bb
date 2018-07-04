@@ -44,9 +44,6 @@
       <span id="reset-status-text"></span>
     </div>
     <ul>
-      <li>Local Start Page Token:
-        <span id="account-start-page-token-local"></span>
-      </li>
       <li>Local Free Space:
         <span id="local-storage-freespace"></span> MB
       </li>
@@ -56,11 +53,18 @@
     <ul>
       <li>Push notification is enabled:
         <span id="push-notification-enabled"></span></li>
-      <li>Last update check time:
-        <span id="last-update-check-time"></span></li>
-      <li>Last update check result:
-        <span id="last-update-check-error"></span></li>
     </ul>
+    <table>
+      <tbody id="delta-update-status">
+        <tr>
+          <th>Source</th>
+          <th>Start Page Token</th>
+          <th>Last Update Check Time</th>
+          <th>Last Update Check Result</th>
+          <th>Refreshing</th>
+        </tr>
+      </tbody>
+    </table>
 
     <h2 id="in-flight-operations-section">In-flight Operations</h2>
     <table>
