@@ -28,11 +28,15 @@ def main(argv):
       '-p',
       required=True,
       help='Path to build directory')
+  parser.add_argument(
+      'targets',
+      nargs='*',
+      help='Additional targets to pass to ninja')
   args = parser.parse_args()
 
   print json.dumps(
       compile_db.ProcessCompileDatabaseIfNeeded(
-          compile_db.GenerateWithNinja(args.p)))
+          compile_db.GenerateWithNinja(args.p, args.targets))
 
 
 if __name__ == '__main__':
