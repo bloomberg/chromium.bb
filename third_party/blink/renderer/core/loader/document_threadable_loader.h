@@ -72,7 +72,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   static std::unique_ptr<ResourceRequest>
   CreateAccessControlPreflightRequestForTesting(const ResourceRequest&);
 
-  static DocumentThreadableLoader* Create(ThreadableLoadingContext&,
+  static DocumentThreadableLoader* Create(ModuleId,
+                                          ThreadableLoadingContext&,
                                           ThreadableLoaderClient*,
                                           const ThreadableLoaderOptions&,
                                           const ResourceLoaderOptions&);
@@ -99,7 +100,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
       const ResourceRequest&,
       const SecurityOrigin*);
 
-  DocumentThreadableLoader(ThreadableLoadingContext&,
+  DocumentThreadableLoader(ModuleId,
+                           ThreadableLoadingContext&,
                            ThreadableLoaderClient*,
                            BlockingBehavior,
                            const ThreadableLoaderOptions&,
@@ -176,6 +178,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
 
+  const ModuleId module_id_;
   ThreadableLoaderClient* client_;
   Member<ThreadableLoadingContext> loading_context_;
 
