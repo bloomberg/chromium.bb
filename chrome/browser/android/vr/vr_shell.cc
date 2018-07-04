@@ -69,7 +69,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
@@ -1112,7 +1111,7 @@ void VrShell::ClearFocusedElement() {
   web_contents_->ClearFocusedElement();
 }
 
-void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
+void VrShell::ProcessContentGesture(std::unique_ptr<InputEvent> event,
                                     int content_id) {
   // Block the events if they don't belong to the current content
   if (content_id_ != content_id)
@@ -1121,15 +1120,14 @@ void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
   if (!android_ui_gesture_target_)
     return;
 
-  android_ui_gesture_target_->DispatchWebInputEvent(std::move(event));
+  android_ui_gesture_target_->DispatchInputEvent(std::move(event));
 }
 
-void VrShell::ProcessDialogGesture(
-    std::unique_ptr<blink::WebInputEvent> event) {
+void VrShell::ProcessDialogGesture(std::unique_ptr<InputEvent> event) {
   if (!dialog_gesture_target_)
     return;
 
-  dialog_gesture_target_->DispatchWebInputEvent(std::move(event));
+  dialog_gesture_target_->DispatchInputEvent(std::move(event));
 }
 
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {

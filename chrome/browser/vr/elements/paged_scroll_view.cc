@@ -4,8 +4,8 @@
 
 #include "chrome/browser/vr/elements/paged_scroll_view.h"
 
+#include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/target_property.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 
@@ -23,23 +23,19 @@ PagedScrollView::PagedScrollView(float page_width) : page_width_(page_width) {
 
 PagedScrollView::~PagedScrollView() {}
 
-void PagedScrollView::OnScrollBegin(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PagedScrollView::OnScrollBegin(std::unique_ptr<InputEvent> gesture,
+                                    const gfx::PointF& position) {
   animation().RemoveKeyframeModelsWithProperty(SCROLL_OFFSET);
   scroll_drag_delta_ = 0.0f;
 }
 
-void PagedScrollView::OnScrollUpdate(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
-  scroll_drag_delta_ +=
-      gesture->data.scroll_update.delta_x * kScrollScaleFactor;
+void PagedScrollView::OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
+                                     const gfx::PointF& position) {
+  scroll_drag_delta_ += gesture->scroll_data.delta_x * kScrollScaleFactor;
 }
 
-void PagedScrollView::OnScrollEnd(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PagedScrollView::OnScrollEnd(std::unique_ptr<InputEvent> gesture,
+                                  const gfx::PointF& position) {
   size_t next_page = current_page_;
   if (next_page + 1 < NumPages() && scroll_drag_delta_ < -kScrollThreshold) {
     next_page++;

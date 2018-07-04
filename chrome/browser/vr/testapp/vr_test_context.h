@@ -125,7 +125,7 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   PlatformController::Handedness handedness_ = PlatformController::kRightHanded;
 
-  std::queue<GestureList> gesture_lists_;
+  std::queue<InputEventList> input_event_lists_;
 
   DISALLOW_COPY_AND_ASSIGN(VrTestContext);
 };

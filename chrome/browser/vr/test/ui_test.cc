@@ -12,7 +12,6 @@
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace vr {
@@ -251,7 +250,7 @@ void UiTest::ClickElement(UiElement* element) {
 
   RenderInfo render_info;
   ReticleModel reticle_model;
-  GestureList gesture_list;
+  InputEventList input_event_list;
   ControllerModel controller_model;
   controller_model.laser_direction = direction;
   controller_model.laser_origin = origin;
@@ -259,13 +258,13 @@ void UiTest::ClickElement(UiElement* element) {
   controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
   ui_->input_manager()->HandleInput(current_time_, render_info,
                                     controller_model, &reticle_model,
-                                    &gesture_list);
+                                    &input_event_list);
   OnBeginFrame();
 
   controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
   ui_->input_manager()->HandleInput(current_time_, render_info,
                                     controller_model, &reticle_model,
-                                    &gesture_list);
+                                    &input_event_list);
   OnBeginFrame();
 }
 

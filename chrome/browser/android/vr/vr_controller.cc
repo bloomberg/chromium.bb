@@ -10,8 +10,7 @@
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/ranges.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "chrome/browser/vr/input_event.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
 
@@ -336,9 +335,9 @@ void VrController::UpdateState(const gfx::Transform& head_pose) {
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
 }
 
-std::unique_ptr<GestureList> VrController::DetectGestures() {
+std::unique_ptr<InputEventList> VrController::DetectGestures() {
   if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {
-    return std::make_unique<GestureList>();
+    return std::make_unique<InputEventList>();
   }
 
   UpdateCurrentTouchInfo();

@@ -5,7 +5,7 @@
 #include "chrome/browser/vr/gesture_detector.h"
 
 #include "base/numerics/math_constants.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "chrome/browser/vr/input_event.h"
 
 namespace vr {
 
@@ -39,7 +39,7 @@ GestureDetector::GestureDetector() {
 }
 GestureDetector::~GestureDetector() = default;
 
-std::unique_ptr<GestureList> GestureDetector::DetectGestures(
+std::unique_ptr<InputEventList> GestureDetector::DetectGestures(
     const TouchInfo& input_touch_info,
     base::TimeTicks current_timestamp,
     bool force_cancel) {
@@ -49,51 +49,57 @@ std::unique_ptr<GestureList> GestureDetector::DetectGestures(
   if (touch_position_changed_)
     UpdateOverallVelocity(touch_info);
 
-  auto gesture_list = std::make_unique<GestureList>();
+  auto gesture_list = std::make_unique<InputEventList>();
   auto gesture = GetGestureFromTouchInfo(touch_info, force_cancel);
-  gesture->SetSourceDevice(blink::kWebGestureDeviceTouchpad);
 
-  if (gesture->GetType() == blink::WebInputEvent::kGestureScrollEnd)
+  if (!gesture)
+    return gesture_list;
+
+  if (gesture->type() == InputEvent::kScrollEnd)
     Reset();
 
-  if (gesture->GetType() != blink::WebInputEvent::kUndefined)
+  if (gesture->type() != InputEvent::kTypeUndefined)
     gesture_list->push_back(std::move(gesture));
+
   return gesture_list;
 }
 
-std::unique_ptr<blink::WebGestureEvent>
-GestureDetector::GetGestureFromTouchInfo(const TouchInfo& touch_info,
-                                         bool force_cancel) {
-  auto gesture = std::make_unique<blink::WebGestureEvent>();
-  gesture->SetTimeStamp(touch_info.touch_point.timestamp);
+std::unique_ptr<InputEvent> GestureDetector::GetGestureFromTouchInfo(
+    const TouchInfo& touch_info,
+    bool force_cancel) {
+  std::unique_ptr<InputEvent> gesture;
 
   switch (state_->label) {
     // User has not put finger on touch pad.
     case WAITING:
-      HandleWaitingState(touch_info, gesture.get());
+      gesture = HandleWaitingState(touch_info);
       break;
     // User has not started a gesture (by moving out of slop).
     case TOUCHING:
-      HandleDetectingState(touch_info, force_cancel, gesture.get());
+      gesture = HandleDetectingState(touch_info, force_cancel);
       break;
     // User is scrolling on touchpad
     case SCROLLING:
-      HandleScrollingState(touch_info, force_cancel, gesture.get());
+      gesture = HandleScrollingState(touch_info, force_cancel);
       break;
     // The user has finished scrolling, but we'll hallucinate a few points
     // before really finishing.
     case POST_SCROLL:
-      HandlePostScrollingState(touch_info, force_cancel, gesture.get());
+      gesture = HandlePostScrollingState(touch_info, force_cancel);
       break;
     default:
       NOTREACHED();
       break;
   }
+
+  if (gesture)
+    gesture->set_time_stamp(touch_info.touch_point.timestamp);
+
   return gesture;
 }
 
-void GestureDetector::HandleWaitingState(const TouchInfo& touch_info,
-                                         blink::WebGestureEvent* gesture) {
+std::unique_ptr<InputEvent> GestureDetector::HandleWaitingState(
+    const TouchInfo& touch_info) {
   // User puts finger on touch pad (or when the touch down for current gesture
   // is missed, initiate gesture from current touch point).
   if (touch_info.touch_down || touch_info.is_touching) {
@@ -103,18 +109,18 @@ void GestureDetector::HandleWaitingState(const TouchInfo& touch_info,
     state_->cur_touch_point = touch_info.touch_point;
     state_->label = TOUCHING;
 
-    gesture->SetType(blink::WebInputEvent::kGestureFlingCancel);
-    gesture->data.fling_cancel.prevent_boosting = false;
+    return std::make_unique<InputEvent>(InputEvent::kFlingCancel);
   }
+  return nullptr;
 }
 
-void GestureDetector::HandleDetectingState(const TouchInfo& touch_info,
-                                           bool force_cancel,
-                                           blink::WebGestureEvent* gesture) {
+std::unique_ptr<InputEvent> GestureDetector::HandleDetectingState(
+    const TouchInfo& touch_info,
+    bool force_cancel) {
   // User lifts up finger from touch pad.
   if (touch_info.touch_up || !touch_info.is_touching) {
     Reset();
-    return;
+    return nullptr;
   }
 
   // Touch position is changed, the touch point moves outside of slop,
@@ -122,54 +128,51 @@ void GestureDetector::HandleDetectingState(const TouchInfo& touch_info,
   if (touch_position_changed_ && touch_info.is_touching &&
       !InSlop(touch_info.touch_point.position) && !force_cancel) {
     state_->label = SCROLLING;
-    gesture->SetType(blink::WebInputEvent::kGestureScrollBegin);
+    auto gesture = std::make_unique<InputEvent>(InputEvent::kScrollBegin);
     UpdateGestureParameters(touch_info);
-    gesture->data.scroll_begin.delta_x_hint =
-        state_->displacement.x() * kDisplacementScaleFactor;
-    gesture->data.scroll_begin.delta_y_hint =
-        state_->displacement.y() * kDisplacementScaleFactor;
-    gesture->data.scroll_begin.delta_hint_units =
-        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+    UpdateGestureWithScrollDelta(gesture.get());
+    return gesture;
   }
+  return nullptr;
 }
 
-void GestureDetector::HandleScrollingState(const TouchInfo& touch_info,
-                                           bool force_cancel,
-                                           blink::WebGestureEvent* gesture) {
+std::unique_ptr<InputEvent> GestureDetector::HandleScrollingState(
+    const TouchInfo& touch_info,
+    bool force_cancel) {
   if (force_cancel) {
-    gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
     UpdateGestureParameters(touch_info);
-    return;
+    return std::make_unique<InputEvent>(InputEvent::kScrollEnd);
   }
   if (touch_info.touch_up || !(touch_info.is_touching)) {
     state_->label = POST_SCROLL;
   }
   if (touch_position_changed_) {
-    gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
+    auto gesture = std::make_unique<InputEvent>(InputEvent::kScrollUpdate);
     UpdateGestureParameters(touch_info);
-    UpdateGestureWithScrollDelta(gesture);
+    UpdateGestureWithScrollDelta(gesture.get());
+    return gesture;
   }
+  return nullptr;
 }
 
-void GestureDetector::HandlePostScrollingState(
+std::unique_ptr<InputEvent> GestureDetector::HandlePostScrollingState(
     const TouchInfo& touch_info,
-    bool force_cancel,
-    blink::WebGestureEvent* gesture) {
+    bool force_cancel) {
   if (extrapolated_touch_ == 0 || force_cancel) {
-    gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
     UpdateGestureParameters(touch_info);
+    return std::make_unique<InputEvent>(InputEvent::kScrollEnd);
   } else {
-    gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
+    auto gesture = std::make_unique<InputEvent>(InputEvent::kScrollUpdate);
     UpdateGestureParameters(touch_info);
-    UpdateGestureWithScrollDelta(gesture);
+    UpdateGestureWithScrollDelta(gesture.get());
+    return gesture;
   }
 }
 
-void GestureDetector::UpdateGestureWithScrollDelta(
-    blink::WebGestureEvent* gesture) {
-  gesture->data.scroll_update.delta_x =
+void GestureDetector::UpdateGestureWithScrollDelta(InputEvent* gesture) {
+  gesture->scroll_data.delta_x =
       state_->displacement.x() * kDisplacementScaleFactor;
-  gesture->data.scroll_update.delta_y =
+  gesture->scroll_data.delta_y =
       state_->displacement.y() * kDisplacementScaleFactor;
 }
 

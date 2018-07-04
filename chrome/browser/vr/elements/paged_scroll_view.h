@@ -19,11 +19,11 @@ class PagedScrollView : public UiElement {
   ~PagedScrollView() override;
 
   // UiElement overrides.
-  void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                      const gfx::PointF& position) override;
-  void OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
                       const gfx::PointF& position) override;
-  void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollEnd(std::unique_ptr<InputEvent> gesture,
                    const gfx::PointF& position) override;
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,

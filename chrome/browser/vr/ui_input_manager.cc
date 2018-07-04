@@ -8,15 +8,14 @@
 
 #include "base/containers/adapters.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
-// TODO(tiborg): Remove include once we use a generic type to pass scroll/fling
-// gestures.
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 
@@ -42,19 +41,14 @@ bool IsCentroidInViewport(const gfx::Transform& view_proj_matrix,
   return o.x() > -1.0f && o.x() < 1.0f && o.y() > -1.0f && o.y() < 1.0f;
 }
 
-bool IsScrollEvent(const GestureList& list) {
+bool IsScrollOrFling(const InputEventList& list) {
   if (list.empty()) {
     return false;
   }
   // We assume that we only need to consider the first gesture in the list.
-  blink::WebInputEvent::Type type = list.front()->GetType();
-  if (type == blink::WebInputEvent::kGestureScrollBegin ||
-      type == blink::WebInputEvent::kGestureScrollEnd ||
-      type == blink::WebInputEvent::kGestureScrollUpdate ||
-      type == blink::WebInputEvent::kGestureFlingCancel) {
-    return true;
-  }
-  return false;
+  auto type = list.front()->type();
+  return InputEvent::IsScrollEventType(type) ||
+         type == InputEvent::kFlingCancel;
 }
 
 void HitTestElements(UiScene* scene,
@@ -91,13 +85,13 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
                                  const RenderInfo& render_info,
                                  const ControllerModel& controller_model,
                                  ReticleModel* reticle_model,
-                                 GestureList* gesture_list) {
+                                 InputEventList* input_event_list) {
   UpdateQuiescenceState(current_time, controller_model);
   UpdateControllerFocusState(current_time, render_info, controller_model);
   reticle_model->target_element_id = 0;
   reticle_model->target_local_point = kInvalidTargetPoint;
   UiElement* target_element =
-      GetTargetElement(controller_model, reticle_model, *gesture_list);
+      GetTargetElement(controller_model, reticle_model, *input_event_list);
 
   auto element_local_point = reticle_model->target_local_point;
   if (input_capture_element_id_)
@@ -105,8 +99,8 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
         GetCapturedElementHitPoint(reticle_model->target_point);
 
   // Sending end and cancel events.
-  SendFlingCancel(gesture_list, element_local_point);
-  SendScrollEnd(gesture_list, element_local_point,
+  SendFlingCancel(input_event_list, element_local_point);
+  SendScrollEnd(input_event_list, element_local_point,
                 controller_model.touchpad_button_state);
   SendButtonUp(element_local_point, controller_model.touchpad_button_state,
                controller_model.last_button_timestamp);
@@ -114,7 +108,7 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
 
   // Sending update events.
   if (in_scroll_) {
-    SendScrollUpdate(gesture_list, element_local_point);
+    SendScrollUpdate(input_event_list, element_local_point);
   } else if (in_click_) {
     SendTouchMove(element_local_point,
                   controller_model.last_orientation_timestamp);
@@ -126,7 +120,7 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
   // Sending begin events.
   SendHoverEnter(target_element, reticle_model->target_local_point,
                  controller_model.last_orientation_timestamp);
-  SendScrollBegin(target_element, gesture_list, element_local_point);
+  SendScrollBegin(target_element, input_event_list, element_local_point);
   SendButtonDown(target_element, reticle_model->target_local_point,
                  controller_model.touchpad_button_state,
                  controller_model.last_button_timestamp);
@@ -143,13 +137,13 @@ void UiInputManager::OnPause() {
   }
 }
 
-void UiInputManager::SendFlingCancel(GestureList* gesture_list,
+void UiInputManager::SendFlingCancel(InputEventList* input_event_list,
                                      const gfx::PointF& target_point) {
   if (!fling_target_id_) {
     return;
   }
-  if (gesture_list->empty() || (gesture_list->front()->GetType() !=
-                                blink::WebInputEvent::kGestureFlingCancel)) {
+  if (input_event_list->empty() ||
+      (input_event_list->front()->type() != InputEvent::kFlingCancel)) {
     return;
   }
 
@@ -157,13 +151,13 @@ void UiInputManager::SendFlingCancel(GestureList* gesture_list,
   UiElement* element = scene_->GetUiElementById(fling_target_id_);
   if (element) {
     DCHECK(element->scrollable());
-    element->OnFlingCancel(std::move(gesture_list->front()), target_point);
+    element->OnFlingCancel(std::move(input_event_list->front()), target_point);
   }
-  gesture_list->erase(gesture_list->begin());
+  input_event_list->erase(input_event_list->begin());
   fling_target_id_ = 0;
 }
 
-void UiInputManager::SendScrollEnd(GestureList* gesture_list,
+void UiInputManager::SendScrollEnd(InputEventList* input_event_list,
                                    const gfx::PointF& target_point,
                                    ButtonState button_state) {
   if (!in_scroll_) {
@@ -174,53 +168,52 @@ void UiInputManager::SendScrollEnd(GestureList* gesture_list,
 
   if (previous_button_state_ != button_state &&
       button_state == ButtonState::DOWN) {
-    DCHECK_GT(gesture_list->size(), 0LU);
-    DCHECK_EQ(gesture_list->front()->GetType(),
-              blink::WebInputEvent::kGestureScrollEnd);
+    DCHECK_GT(input_event_list->size(), 0LU);
+    DCHECK_EQ(input_event_list->front()->type(), InputEvent::kScrollEnd);
   }
   DCHECK(!element || element->scrollable());
-  if (gesture_list->empty() || gesture_list->front()->GetType() !=
-                                   blink::WebInputEvent::kGestureScrollEnd) {
+  if (input_event_list->empty() ||
+      input_event_list->front()->type() != InputEvent::kScrollEnd) {
     return;
   }
-  DCHECK_LE(gesture_list->size(), 1LU);
+  DCHECK_LE(input_event_list->size(), 1LU);
   fling_target_id_ = input_capture_element_id_;
-  element->OnScrollEnd(std::move(gesture_list->front()), target_point);
-  gesture_list->erase(gesture_list->begin());
+  element->OnScrollEnd(std::move(input_event_list->front()), target_point);
+  input_event_list->erase(input_event_list->begin());
   input_capture_element_id_ = 0;
   in_scroll_ = false;
 }
 
 void UiInputManager::SendScrollBegin(UiElement* target,
-                                     GestureList* gesture_list,
+                                     InputEventList* input_event_list,
                                      const gfx::PointF& target_point) {
   if (in_scroll_ || !target || !target->scrollable())
     return;
 
-  if (gesture_list->empty() || (gesture_list->front()->GetType() !=
-                                blink::WebInputEvent::kGestureScrollBegin)) {
+  if (input_event_list->empty() ||
+      input_event_list->front()->type() != InputEvent::kScrollBegin) {
     return;
   }
   input_capture_element_id_ = target->id();
   in_scroll_ = true;
-  target->OnScrollBegin(std::move(gesture_list->front()), target_point);
-  gesture_list->erase(gesture_list->begin());
+  target->OnScrollBegin(std::move(input_event_list->front()), target_point);
+  input_event_list->erase(input_event_list->begin());
 }
 
-void UiInputManager::SendScrollUpdate(GestureList* gesture_list,
+void UiInputManager::SendScrollUpdate(InputEventList* input_event_list,
                                       const gfx::PointF& target_point) {
   DCHECK(input_capture_element_id_);
-  if (gesture_list->empty() || (gesture_list->front()->GetType() !=
-                                blink::WebInputEvent::kGestureScrollUpdate)) {
+  if (input_event_list->empty() ||
+      (input_event_list->front()->type() != InputEvent::kScrollUpdate)) {
     return;
   }
   // Scrolling currently only supported on content window.
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
   if (element) {
     DCHECK(element->scrollable());
-    element->OnScrollUpdate(std::move(gesture_list->front()), target_point);
+    element->OnScrollUpdate(std::move(input_event_list->front()), target_point);
   }
-  gesture_list->erase(gesture_list->begin());
+  input_event_list->erase(input_event_list->begin());
 }
 
 void UiInputManager::SendHoverLeave(UiElement* current_target,
@@ -302,7 +295,7 @@ void UiInputManager::SendTouchMove(const gfx::PointF& target_point,
 UiElement* UiInputManager::GetTargetElement(
     const ControllerModel& controller_model,
     ReticleModel* reticle_model,
-    const GestureList& gesture_list) const {
+    const InputEventList& input_event_list) const {
   // If we place the reticle based on elements intersecting the controller beam,
   // we can end up with the reticle hiding behind elements, or jumping laterally
   // in the field of view. This is physically correct, but hard to use. For
@@ -347,7 +340,7 @@ UiElement* UiInputManager::GetTargetElement(
   UiElement* target_element =
       scene_->GetUiElementById(reticle_model->target_element_id);
   if (target_element) {
-    if (IsScrollEvent(gesture_list) && !input_capture_element_id_) {
+    if (IsScrollOrFling(input_event_list) && !input_capture_element_id_) {
       DCHECK(!in_scroll_ && !in_click_);
       UiElement* ancestor = target_element;
       while (!ancestor->scrollable() && ancestor->parent())

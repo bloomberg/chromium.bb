@@ -22,10 +22,6 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 
-namespace blink {
-class WebGestureEvent;
-}
-
 namespace gfx {
 class Transform;
 }
@@ -38,8 +34,6 @@ namespace vr {
 
 // Angle (radians) the beam down from the controller axis, for wrist comfort.
 constexpr float kErgoAngleOffset = 0.26f;
-
-using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
 class VrController : public PlatformController {
  public:
@@ -59,7 +53,7 @@ class VrController : public PlatformController {
   // Called once per frame to update controller state.
   void UpdateState(const gfx::Transform& head_pose);
 
-  std::unique_ptr<GestureList> DetectGestures();
+  std::unique_ptr<InputEventList> DetectGestures();
 
   bool IsTouching();
 

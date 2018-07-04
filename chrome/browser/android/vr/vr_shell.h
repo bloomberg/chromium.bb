@@ -38,10 +38,6 @@ namespace base {
 class Version;
 }  // namespace base
 
-namespace blink {
-class WebInputEvent;
-}  // namespace blink
-
 namespace content {
 class WebContents;
 }  // namespace content
@@ -216,10 +212,9 @@ class VrShell : device::GvrGamepadDataProvider,
   bool HasAudioPermission();
 
   void ClearFocusedElement();
-  void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
-                             int content_id);
+  void ProcessContentGesture(std::unique_ptr<InputEvent> event, int content_id);
 
-  void ProcessDialogGesture(std::unique_ptr<blink::WebInputEvent> event);
+  void ProcessDialogGesture(std::unique_ptr<InputEvent> event);
 
   void SetAlertDialog(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,

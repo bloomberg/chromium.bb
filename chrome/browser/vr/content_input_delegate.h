@@ -16,7 +16,6 @@
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace vr {
 
@@ -54,8 +53,7 @@ class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
   void ClearTextInputState();
 
  protected:
-  void SendGestureToTarget(
-      std::unique_ptr<blink::WebInputEvent> event) override;
+  void SendGestureToTarget(std::unique_ptr<InputEvent> event) override;
 
  private:
   enum TextRequestState {
@@ -63,7 +61,7 @@ class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
     kRequested,
     kResponseReceived,
   };
-  bool ContentGestureIsLocked(blink::WebInputEvent::Type type);
+  bool ContentGestureIsLocked(InputEvent::Type type);
   void OnWebInputTextChanged(const base::string16& text);
 
   int content_id_ = 0;

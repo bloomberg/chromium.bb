@@ -8,8 +8,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/platform_input_handler.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace vr {
 
@@ -48,26 +46,21 @@ void ContentInputDelegate::OnSwapContents(int new_content_id) {
 }
 
 void ContentInputDelegate::SendGestureToTarget(
-    std::unique_ptr<blink::WebInputEvent> event) {
-  if (!event || !input_handler() || ContentGestureIsLocked(event->GetType()))
+    std::unique_ptr<InputEvent> event) {
+  if (!event || !input_handler() || ContentGestureIsLocked(event->type()))
     return;
 
   input_handler()->ForwardEventToContent(std::move(event), content_id_);
 }
 
-bool ContentInputDelegate::ContentGestureIsLocked(
-    blink::WebInputEvent::Type type) {
-  // TODO (asimjour) create a new MouseEnter event when we swap webcontents and
+bool ContentInputDelegate::ContentGestureIsLocked(InputEvent::Type type) {
+  // TODO (asimjour) create a new HoverEnter event when we swap webcontents and
   // pointer is on the content quad.
-  if (type == blink::WebInputEvent::kGestureScrollBegin ||
-      type == blink::WebInputEvent::kMouseMove ||
-      type == blink::WebInputEvent::kMouseDown ||
-      type == blink::WebInputEvent::kMouseEnter)
+  if (type == InputEvent::kScrollBegin || type == InputEvent::kHoverMove ||
+      type == InputEvent::kButtonDown || type == InputEvent::kHoverEnter)
     locked_content_id_ = content_id_;
 
-  if (locked_content_id_ != content_id_)
-    return true;
-  return false;
+  return locked_content_id_ != content_id_;
 }
 
 void ContentInputDelegate::OnWebInputIndicesChanged(

@@ -17,7 +17,6 @@
 #include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -53,10 +52,8 @@ class TestPlatformInputHandler : public PlatformInputHandler {
   TestPlatformInputHandler() {}
   ~TestPlatformInputHandler() override {}
 
-  void ForwardEventToPlatformUi(
-      std::unique_ptr<blink::WebInputEvent>) override {}
-  void ForwardEventToContent(std::unique_ptr<blink::WebInputEvent>,
-                             int) override {}
+  void ForwardEventToPlatformUi(std::unique_ptr<InputEvent>) override {}
+  void ForwardEventToContent(std::unique_ptr<InputEvent>, int) override {}
 
   void ClearFocusedElement() override { clear_focus_called_ = true; }
   void OnWebInputEdited(const TextEdits& edits) override { edits_ = edits; }
