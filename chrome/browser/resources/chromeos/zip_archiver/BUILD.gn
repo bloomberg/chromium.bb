@@ -16,7 +16,6 @@ zip_archiver_dir = "$root_out_dir/resources/chromeos/zip_archiver"
 
 copy("zip_archiver_css") {
   sources = [
-    "css/passphrase-dialog.css",
     "css/passphrase.css",
   ]
 
