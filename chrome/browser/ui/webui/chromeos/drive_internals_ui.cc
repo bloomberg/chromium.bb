@@ -246,8 +246,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       drive::DriveServiceInterface* drive_service);
   void UpdateAppListSection(
       drive::DriveServiceInterface* drive_service);
-  void UpdateLocalMetadataSection(
-      drive::DebugInfoCollector* debug_info_collector);
   void UpdateDeltaUpdateStatusSection(
       drive::DebugInfoCollector* debug_info_collector);
   void UpdateInFlightOperationsSection(drive::JobListInterface* job_list);
@@ -289,10 +287,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetAppList() call to DriveService is complete.
   void OnGetAppList(google_apis::DriveApiErrorCode status,
                     std::unique_ptr<google_apis::AppList> app_list);
-
-  // Callback for DebugInfoCollector::GetMetadata for local update.
-  void OnGetFilesystemMetadataForLocal(
-      const drive::FileSystemMetadata& metadata);
 
   // Callback for DebugInfoCollector::GetMetadata for delta update.
   void OnGetFilesystemMetadataForDeltaUpdate(
@@ -450,7 +444,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   drive::DebugInfoCollector* debug_info_collector =
       integration_service->debug_info_collector();
   if (debug_info_collector) {
-    UpdateLocalMetadataSection(debug_info_collector);
     UpdateDeltaUpdateStatusSection(debug_info_collector);
     UpdateCacheContentsSection(debug_info_collector);
   }
@@ -547,27 +540,6 @@ void DriveInternalsWebUIHandler::UpdateAppListSection(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
-    drive::DebugInfoCollector* debug_info_collector) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(debug_info_collector);
-
-  debug_info_collector->GetMetadata(
-      base::Bind(&DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
-    const drive::FileSystemMetadata& metadata) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::DictionaryValue local_metadata;
-  local_metadata.SetString("account-start-page-token-local",
-                           metadata.start_page_token);
-  local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
-  web_ui()->CallJavascriptFunctionUnsafe("updateLocalMetadata", local_metadata);
-}
-
 void DriveInternalsWebUIHandler::ClearAccessToken(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -636,13 +608,24 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
   delta_update_status.SetBoolean(
       "push-notification-enabled",
       drive_notification_manager->push_notification_enabled());
-  delta_update_status.SetString(
-      "last-update-check-time",
-      google_apis::util::FormatTimeAsStringLocaltime(
-          metadata.last_update_check_time));
-  delta_update_status.SetString(
-      "last-update-check-error",
+
+  auto items = std::make_unique<base::ListValue>();
+  // Users default corpus first.
+  auto app_data = std::make_unique<base::DictionaryValue>();
+  app_data->SetString("id", "default corpus");
+  app_data->SetString("start_page_token", metadata.start_page_token);
+  app_data->SetString("last_check_time",
+                      google_apis::util::FormatTimeAsStringLocaltime(
+                          metadata.last_update_check_time));
+  app_data->SetString(
+      "last_check_result",
       drive::FileErrorToString(metadata.last_update_check_error));
+  app_data->SetString("refreshing", metadata.refreshing ? "Yes" : "No");
+
+  items->Append(std::move(app_data));
+
+  // TODO(slangley): Add data for each team drive.
+  delta_update_status.Set("items", std::move(items));
 
   web_ui()->CallJavascriptFunctionUnsafe("updateDeltaUpdateStatus",
                                          delta_update_status);
