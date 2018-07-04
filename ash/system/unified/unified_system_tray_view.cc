@@ -106,15 +106,20 @@ gfx::Size UnifiedSlidersContainerView::CalculatePreferredSize() const {
 }
 
 void UnifiedSlidersContainerView::UpdateOpacity() {
+  const int height = GetPreferredSize().height();
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
     double opacity = 1.0;
-    if (child->y() > height())
+    if (child->y() > height) {
       opacity = 0.0;
-    else if (child->bounds().bottom() < height())
+    } else if (child->bounds().bottom() < height) {
       opacity = 1.0;
-    else
-      opacity = static_cast<double>(height() - child->y()) / child->height();
+    } else {
+      const double ratio =
+          static_cast<double>(height - child->y()) / child->height();
+      // TODO(tetsui): Confirm the animation curve with UX.
+      opacity = std::max(0., 2. * ratio - 1.);
+    }
     child->layer()->SetOpacity(opacity);
   }
 }
