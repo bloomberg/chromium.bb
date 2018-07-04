@@ -17,14 +17,16 @@ import java.lang.annotation.RetentionPolicy;
 public class DirectoryOption {
     // Type to track user's selection of directory option. This enum is used in histogram and must
     // match DownloadLocationDirectoryType in enums.xml, so don't delete or reuse values.
+    @IntDef({DownloadLocationDirectoryType.DEFAULT, DownloadLocationDirectoryType.ADDITIONAL,
+            DownloadLocationDirectoryType.ERROR})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DEFAULT_OPTION, ADDITIONAL_OPTION, ERROR_OPTION, OPTION_COUNT})
-    public @interface DownloadLocationDirectoryType {}
+    public @interface DownloadLocationDirectoryType {
+        int DEFAULT = 0;
+        int ADDITIONAL = 1;
+        int ERROR = 2;
 
-    public static final int DEFAULT_OPTION = 0;
-    public static final int ADDITIONAL_OPTION = 1;
-    public static final int ERROR_OPTION = 2;
-    public static final int OPTION_COUNT = 3;
+        int NUM_ENTRIES = 3;
+    }
 
     /**
      * Name of the current download directory.
@@ -77,6 +79,6 @@ public class DirectoryOption {
      */
     public void recordDirectoryOptionType() {
         RecordHistogram.recordEnumeratedHistogram("MobileDownload.Location.Setting.DirectoryType",
-                type, DirectoryOption.OPTION_COUNT);
+                type, DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
     }
 }

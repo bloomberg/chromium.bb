@@ -33,9 +33,10 @@ public class StorageSummary {
         protected DirectoryOption doInBackground(Void... params) {
             File defaultDownloadDir =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            DirectoryOption directoryOption = new DirectoryOption("",
-                    defaultDownloadDir.getAbsolutePath(), defaultDownloadDir.getUsableSpace(),
-                    defaultDownloadDir.getTotalSpace(), DirectoryOption.DEFAULT_OPTION);
+            DirectoryOption directoryOption =
+                    new DirectoryOption("", defaultDownloadDir.getAbsolutePath(),
+                            defaultDownloadDir.getUsableSpace(), defaultDownloadDir.getTotalSpace(),
+                            DirectoryOption.DownloadLocationDirectoryType.DEFAULT);
             return directoryOption;
         }
     }
