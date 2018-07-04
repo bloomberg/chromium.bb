@@ -64,16 +64,13 @@ void SyncPrefs::RegisterProfilePrefs(
   // although they don't have sync representations.
   user_types.PutAll(ProxyTypes());
 
-  // Treat device info specially.
-  RegisterDataTypePreferredPref(registry, DEVICE_INFO, true);
-  user_types.Remove(DEVICE_INFO);
-
-  // All types are set to off by default, which forces a configuration to
-  // explicitly enable them. GetPreferredTypes() will ensure that any new
-  // implicit types are enabled when their pref group is, or via
-  // KeepEverythingSynced.
+  // All types except the always-preferred ones are set to off by default, which
+  // forces a configuration to explicitly enable them. GetPreferredTypes() will
+  // ensure that any new implicit types are enabled when their pref group is, or
+  // via KeepEverythingSynced.
   for (ModelTypeSet::Iterator it = user_types.First(); it.Good(); it.Inc()) {
-    RegisterDataTypePreferredPref(registry, it.Get(), false);
+    RegisterDataTypePreferredPref(registry, it.Get(),
+                                  AlwaysPreferredUserTypes().Has(it.Get()));
   }
 
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
@@ -451,8 +448,7 @@ bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
     return false;
   }
 
-  // Device info is always enabled.
-  if (pref_name == prefs::kSyncDeviceInfo)
+  if (AlwaysPreferredUserTypes().Has(type))
     return true;
 
   if (type == PROXY_TABS &&
@@ -474,8 +470,7 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
     return;
   }
 
-  // Device info is always preferred.
-  if (type == DEVICE_INFO)
+  if (AlwaysPreferredUserTypes().Has(type))
     return;
 
   pref_service_->SetBoolean(pref_name, is_preferred);
