@@ -93,10 +93,11 @@
 </if>
      <!-- A change of the unified consent toggle state is automatically handled
           in the C++ code after a change in the pref is observed. -->
-    <settings-toggle-button class="first" pref="{{prefs.unified_consent_given}}"
+    <settings-toggle-button id="unifiedConsentToggle" class="first"
+        pref="{{prefs.unified_consent_given}}"
         label="$i18n{syncUnifiedConsentToggleTitle}"
-        hidden="[[!shouldShowSyncControls_(unifiedConsentEnabled,
-                   syncStatus.disabled)]]">
+        hidden="[[!shouldShowUnifiedConsentToggle_(unifiedConsentEnabled,
+                   syncStatus.disabled, syncStatus.signedIn)]]">
     </settings-toggle-button>
     <div class="settings-box two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
