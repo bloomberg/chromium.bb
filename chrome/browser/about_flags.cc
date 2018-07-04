@@ -4041,6 +4041,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGamepadPollingRateDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kGamepadPollingRateChoices)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-drive-fs", flag_descriptions::kEnableDriveFsName,
+     flag_descriptions::kEnableDriveFsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDriveFs)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
@@ -885,7 +886,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.emplace_back(features::kExperimentalCrostiniUI);
   }
   if (IsDriveFsTest()) {
-    enabled_features.emplace_back(drive::kDriveFs);
+    enabled_features.emplace_back(chromeos::features::kDriveFs);
   }
   feature_list_.InitWithFeatures(enabled_features, {});
 
@@ -1225,7 +1226,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
-  if (base::FeatureList::IsEnabled(drive::kDriveFs)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
   } else {

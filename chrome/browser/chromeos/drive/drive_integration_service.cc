@@ -32,6 +32,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system.h"
 #include "components/drive/chromeos/resource_metadata.h"
@@ -207,8 +208,6 @@ FileError InitializeMetadata(
 
 }  // namespace
 
-const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Observes drive disable Preference's change.
 class DriveIntegrationService::PreferenceWatcher {
  public:
@@ -341,7 +340,7 @@ DriveIntegrationService::DriveIntegrationService(
                                 : util::GetCacheRootPath(profile)),
       preference_watcher_(preference_watcher),
       drivefs_holder_(
-          base::FeatureList::IsEnabled(kDriveFs)
+          base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
               ? std::make_unique<DriveFsHolder>(
                     profile_,
                     base::BindRepeating(&DriveIntegrationService::

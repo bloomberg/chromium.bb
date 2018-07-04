@@ -1843,6 +1843,9 @@ extern const char kEnableDragAppsInTabletModeDescription[];
 extern const char kEnableDragTabsInTabletModeName[];
 extern const char kEnableDragTabsInTabletModeDescription[];
 
+extern const char kEnableDriveFsName[];
+extern const char kEnableDriveFsDescription[];
+
 extern const char kEnableEhvInputName[];
 extern const char kEnableEhvInputDescription[];
 
