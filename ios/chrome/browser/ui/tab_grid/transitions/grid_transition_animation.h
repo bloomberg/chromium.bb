@@ -11,43 +11,35 @@
 
 // The directions the animation can take.
 typedef NS_ENUM(NSUInteger, GridAnimationDirection) {
-  // Moving from the expanded grid down into the regular grid.
+  // Moving from an expanded single tab down into the grid.
   GridAnimationDirectionContracting = 0,
-  // Moving from the regular grid out to the expanded grid.
+  // Moving from the grid out to an expanded single tab.
   GridAnimationDirectionExpanding = 1,
 };
 
-// Delegate for this animation, to be informed about animation events.
-@protocol GridTransitionAnimationDelegate
-// Tell the delegate thet the animation completed. If |finished| is YES, then
-// the animation was able to run its full duration.
-- (void)gridTransitionAnimationDidFinish:(BOOL)finished;
-@end
-
 // A view that encapsulates an animation used to transition into a grid.
 // A transition animator should place this view at the appropriate place in the
-// view hierarchy and then call -animateWithDuration: to trigger the animations.
-// TODO(crbug.com/804539): Update this class to be an  Orchestrator object
-// that the present and dismiss animations can both use.
+// view hierarchy and then call |-beginAnimations| on its |animator| property.
 @interface GridTransitionAnimation : UIView
+
+// The animator object this animation uses; it will have the same duration
+// that this object is initialized with.
+// This property is |nil| until this object is added to a view hierarchy. Any
+// animations or callbacks added to |animator| must be added *after* this object
+// is added as a subview of another view.
+@property(nonatomic, readonly) id<UIViewImplicitlyAnimating> animator;
 
 // Designated initializer. |layout| is a GridTransitionLayout object defining
 // the layout the animation should animate to. |delegate| is an object that will
-// be informed about events in this object's animation.
-// If |startsExpanded| is YES, the animation will start with the grid cells in
-// the expanded position and zoom down to the regular grid position. Otherwise
-// they will start in the grid position and zoom out to the expanded positions.
+// be informed about events in this object's animation. |direction| is the
+// direction that the transition will animate.
 - (instancetype)initWithLayout:(GridTransitionLayout*)layout
-                      delegate:(id<GridTransitionAnimationDelegate>)delegate
+                      duration:(NSTimeInterval)duration
                      direction:(GridAnimationDirection)direction
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-
-// Runs the animation for this object with the passed duration.
-// It's an error to call this more than once on any instance of this object.
-- (void)animateWithDuration:(NSTimeInterval)duration;
 
 @end
 

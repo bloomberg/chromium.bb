@@ -190,7 +190,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.collectionView layoutIfNeeded];
   NSMutableArray<GridTransitionLayoutItem*>* items =
       [[NSMutableArray alloc] init];
-  GridTransitionLayoutItem* selectedItem;
+  GridTransitionLayoutItem* activeItem;
+  GridTransitionLayoutItem* selectionItem;
   for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
     GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
         [self.collectionView cellForItemAtIndexPath:path]);
@@ -200,15 +201,24 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     // change to the other properties such as center, bounds, etc.
     attributes.frame =
         [self.collectionView convertRect:attributes.frame toView:nil];
+    GridCell* proxyCell = [cell proxyForTransitions];
     GridTransitionLayoutItem* item =
-        [GridTransitionLayoutItem itemWithCell:[cell proxyForTransitions]
+        [GridTransitionLayoutItem itemWithCell:proxyCell
+                                 auxillaryView:proxyCell.topBar
                                     attributes:attributes];
     [items addObject:item];
     if ([cell.itemIdentifier isEqualToString:self.selectedItemID]) {
-      selectedItem = item;
+      activeItem = item;
+
+      selectionItem =
+          [GridTransitionLayoutItem itemWithCell:[cell proxyForTransitions]
+                                   auxillaryView:nil
+                                      attributes:attributes];
     }
   }
-  return [GridTransitionLayout layoutWithItems:items selectedItem:selectedItem];
+  return [GridTransitionLayout layoutWithItems:items
+                                    activeItem:activeItem
+                                 selectionItem:selectionItem];
 }
 
 #pragma mark - UICollectionViewDataSource

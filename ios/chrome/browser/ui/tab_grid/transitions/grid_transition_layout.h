@@ -16,16 +16,25 @@
 
 // All of the items in the layout.
 @property(nonatomic, copy, readonly) NSArray<GridTransitionLayoutItem*>* items;
-// The item in the layout (if any) that's selected.
-// Note that |selectedItem.cell.selected| doesn't need to be YES; the transition
+// The item in the layout (if any) that's the 'active' item (the one that will
+// expand and contract).
+// Note that |activeItem.cell.selected| doesn't need to be YES; the transition
 // animation may set or unset that selection state as part of the animation.
-@property(nonatomic, strong, readonly) GridTransitionLayoutItem* selectedItem;
+@property(nonatomic, strong, readonly) GridTransitionLayoutItem* activeItem;
 
-// Creates a new layout object with |items|, and |selectedItem| selected.
+// An item that may be used to *only* show the selection state.
+// |selectionItem| is not one of the items in |items|.
+@property(nonatomic, strong, readonly) GridTransitionLayoutItem* selectionItem;
+
+// The rect, in UIWindow coordinates, that an "expanded" item should occupy.
+@property(nonatomic) CGRect expandedRect;
+
+// Creates a new layout object with |items|, and |activeItem| selected.
 // |items| should be non-nil, but it may be empty.
-// |selectedItem| must either be nil, or one of the members of |items|.
+// |activeItem| must either be nil, or one of the members of |items|.
 + (instancetype)layoutWithItems:(NSArray<GridTransitionLayoutItem*>*)items
-                   selectedItem:(GridTransitionLayoutItem*)selectedItem;
+                     activeItem:(GridTransitionLayoutItem*)activeItem
+                  selectionItem:(GridTransitionLayoutItem*)selectionItem;
 
 @end
 
@@ -38,6 +47,10 @@
 // ition, but the value of thie property should not be in any view hierarchy
 // when the layout item is created.
 @property(nonatomic, strong, readonly) UICollectionViewCell* cell;
+
+// An auxillary view in |cell|'s view hierarchy that may also be animated.
+@property(nonatomic, weak, readonly) UIView* auxillaryView;
+
 // The layout attributes for the cell in the collection view, normalized to
 // UIWindow coordinates. It's the responsibility of the setter to do this
 // normalization.
@@ -47,9 +60,11 @@
 // Creates a new layout item instance will |cell| and |attributes|, neither of
 // which can be nil.
 // It's an error if |cell| has a superview.
+// It's an error if |auxillaryView| is not a subview of |cell|; it may be nil.
 // The properties (size, etc) of |attributes| don't need to match the corres-
 // ponding properties of |cell| when the item is created.
 + (instancetype)itemWithCell:(UICollectionViewCell*)cell
+               auxillaryView:(UIView*)auxillaryView
                   attributes:(UICollectionViewLayoutAttributes*)attributes;
 
 @end

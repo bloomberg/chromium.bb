@@ -5,13 +5,17 @@
 #import "ios/chrome/browser/ui/tab_grid/transitions/tab_to_grid_animator.h"
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_state_providing.h"
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/property_animator_group.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TabToGridAnimator ()<GridTransitionAnimationDelegate>
+@interface TabToGridAnimator ()
 @property(nonatomic, weak) id<GridTransitionStateProviding> stateProvider;
 // Animation object for this transition.
 @property(nonatomic, strong) GridTransitionAnimation* animation;
@@ -35,7 +39,7 @@
 
 - (NSTimeInterval)transitionDuration:
     (id<UIViewControllerContextTransitioning>)transitionContext {
-  return 0.4;
+  return 0.5;
 }
 
 - (void)animateTransition:
@@ -53,6 +57,8 @@
   UIView* dismissingView =
       [transitionContext viewForKey:UITransitionContextFromViewKey];
 
+  // Find the rect for the animating tab by getting the content area layout
+  // guide.
   // Add the grid view to the container. This isn't just for the transition;
   // this is how the grid view controller's view is added to the view
   // hierarchy.
@@ -60,35 +66,52 @@
   gridView.frame =
       [transitionContext finalFrameForViewController:gridViewController];
 
+  // Ask the state provider for the views to use when inserting the animation.
+  UIView* proxyContainer =
+      [self.stateProvider proxyContainerForTransitionContext:transitionContext];
+
   // Get the layout of the grid for the transition.
   GridTransitionLayout* layout =
       [self.stateProvider layoutForTransitionContext:transitionContext];
 
+  // Get the initial rect for the snapshotted content of the active tab.
+  // Conceptually this transition is dismissing a tab (a BVC). However,
+  // currently the BVC instances are themselves contanted within a BVCContainer
+  // view controller. This means that the |dismissingView| is not the BVC's
+  // view; rather it's the view of the view controller that contains the BVC.
+  // Unfortunatley, the layout guide needed here is attached to the BVC's view,
+  // which is the first (and only) subview of the BVCContainerViewController's
+  // view.
+  // TODO(crbug.com/860234) Clean up this arrangement.
+  UIView* viewWithNamedGuides = dismissingView.subviews[0];
+  CGRect initialRect =
+      [NamedGuide guideWithName:kContentAreaGuide view:viewWithNamedGuides]
+          .layoutFrame;
+  layout.expandedRect =
+      [proxyContainer convertRect:initialRect fromView:viewWithNamedGuides];
+
+  NSTimeInterval duration = [self transitionDuration:transitionContext];
   // Create the animation view and insert it.
   self.animation = [[GridTransitionAnimation alloc]
       initWithLayout:layout
-            delegate:self
+            duration:duration
            direction:GridAnimationDirectionContracting];
 
-  // Ask the state provider for the views to use when inserting the animation.
-  UIView* proxyContainer =
-      [self.stateProvider proxyContainerForTransitionContext:transitionContext];
   UIView* viewBehindProxies =
       [self.stateProvider proxyPositionForTransitionContext:transitionContext];
-
   [proxyContainer insertSubview:self.animation aboveSubview:viewBehindProxies];
 
-  NSTimeInterval duration = [self transitionDuration:transitionContext];
+  [self.animation.animator addCompletion:^(UIViewAnimatingPosition position) {
+    BOOL finished = (position == UIViewAnimatingPositionEnd);
+    [self gridTransitionAnimationDidFinish:finished];
+  }];
 
-  // Fade out active tab view.
-  [UIView animateWithDuration:duration / 5
-                   animations:^{
-                     dismissingView.alpha = 0;
-                   }
-                   completion:nil];
+  // TODO(crbug.com/850507): Have the tab view animate itself out alongside this
+  // transition instead of just zeroing the alpha here.
+  dismissingView.alpha = 0;
 
   // Run the main animation.
-  [self.animation animateWithDuration:duration];
+  [self.animation.animator startAnimation];
 }
 
 - (void)gridTransitionAnimationDidFinish:(BOOL)finished {

@@ -16,8 +16,9 @@
 #endif
 
 @interface GridCell ()
+// Redeclare TopBar readwrite internally.
+@property(nonatomic, readwrite, weak) UIView* topBar;
 // Visual components of the cell.
-@property(nonatomic, weak) UIView* topBar;
 @property(nonatomic, weak) UIImageView* iconView;
 @property(nonatomic, weak) TopAlignedImageView* snapshotView;
 @property(nonatomic, weak) UILabel* titleLabel;
@@ -36,8 +37,8 @@
 @synthesize icon = _icon;
 @synthesize snapshot = _snapshot;
 @synthesize title = _title;
-// Private properties.
 @synthesize topBar = _topBar;
+// Private properties.
 @synthesize iconView = _iconView;
 @synthesize snapshotView = _snapshotView;
 @synthesize titleLabel = _titleLabel;
@@ -145,6 +146,8 @@
       UIColorFromRGB(kGridCellSnapshotBackgroundColor);
   switch (theme) {
     case GridThemeLight:
+      self.contentView.backgroundColor =
+          UIColorFromRGB(kGridLightThemeCellHeaderColor);
       self.topBar.backgroundColor =
           UIColorFromRGB(kGridLightThemeCellHeaderColor);
       self.titleLabel.textColor = UIColorFromRGB(kGridLightThemeCellTitleColor);
@@ -154,6 +157,8 @@
           UIColorFromRGB(kGridLightThemeCellSelectionColor).CGColor;
       break;
     case GridThemeDark:
+      self.contentView.backgroundColor =
+          UIColorFromRGB(kGridDarkThemeCellHeaderColor);
       self.topBar.backgroundColor =
           UIColorFromRGB(kGridDarkThemeCellHeaderColor);
       self.titleLabel.textColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
