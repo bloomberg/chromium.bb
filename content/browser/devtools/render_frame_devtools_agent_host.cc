@@ -428,6 +428,11 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 
 bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                                  TargetRegistry* registry) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate() && web_contents()) {
+    if (!manager->delegate()->AllowInspectingWebContents(web_contents()))
+      return false;
+  }
   const bool is_webui =
       frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
   if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
