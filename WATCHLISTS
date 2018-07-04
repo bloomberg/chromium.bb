@@ -1620,6 +1620,9 @@
                   '|third_party/blink/public/platform/modules/webshare/'\
                   '|third_party/blink/renderer/modules/webshare/',
     },
+    'webgpu': {
+        'filepath': 'third_party/blink/renderer/modules/webgpu/',
+    },
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
@@ -2081,8 +2084,7 @@
            'dpranke@chromium.org',
            'tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
-    'gpu_passthrough_cmd_decoder': ['cwallez+watch@chromium.org',
-                                    'geofflang+watch@chromium.org'],
+    'gpu_passthrough_cmd_decoder': ['geofflang+watch@chromium.org'],
     'headless': ['headless-reviews@chromium.org'],
     'history_ui': ['pam+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
@@ -2344,6 +2346,8 @@
     'wake_lock': ['mattreynolds+watch@chromium.org'],
     'web_package': ['twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
+    'webgpu': ['cwallez+watch@chromium.org',
+               'kainino+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['dullweber+watch@chromium.org',
                          'markusheintz@chromium.org',
