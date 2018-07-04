@@ -576,6 +576,16 @@ void Surface::TakeLatencyInfoFromFrame(
 }
 
 void Surface::OnWillBeDrawn() {
+  if (!seen_first_surface_embedding_) {
+    seen_first_surface_embedding_ = true;
+
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Embed.Flow",
+        TRACE_ID_GLOBAL(surface_info_.id().local_surface_id().embed_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN, "step", "FirstSurfaceEmbedding", "surface_id",
+        surface_info_.id().ToString());
+  }
   surface_manager_->SurfaceWillBeDrawn(this);
 }
 
