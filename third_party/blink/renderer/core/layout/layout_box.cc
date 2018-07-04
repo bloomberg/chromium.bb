@@ -3985,6 +3985,12 @@ void LayoutBox::ComputeInlineStaticDistance(
     LayoutUnit static_position = child->Layer()->StaticInlinePosition() +
                                  container_logical_width +
                                  container_block->BorderLogicalLeft();
+    if (container_block->IsBox() &&
+        ToLayoutBox(container_block)
+            ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+      static_position +=
+          ToLayoutBox(container_block)->OriginAdjustmentForScrollbars().Width();
+    }
     for (LayoutObject* curr = child->Parent(); curr; curr = curr->Container()) {
       if (curr->IsBox()) {
         if (curr == enclosing_box)
