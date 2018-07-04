@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 
 #include <memory>
 #include <string>
@@ -60,10 +60,9 @@ using variations::VariationsHttpHeaderProvider;
 
 namespace {
 
-class LocationBarLegacyCoordinatorTest : public PlatformTest {
+class LocationBarCoordinatorTest : public PlatformTest {
  protected:
-  LocationBarLegacyCoordinatorTest()
-      : web_state_list_(&web_state_list_delegate_) {}
+  LocationBarCoordinatorTest() : web_state_list_(&web_state_list_delegate_) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -87,7 +86,7 @@ class LocationBarLegacyCoordinatorTest : public PlatformTest {
     delegate_ = [[TestToolbarCoordinatorDelegate alloc] init];
     url_loader_ = [[FakeURLLoader alloc] init];
 
-    coordinator_ = [[LocationBarLegacyCoordinator alloc] init];
+    coordinator_ = [[LocationBarCoordinator alloc] init];
     coordinator_.browserState = browser_state_.get();
     coordinator_.webStateList = &web_state_list_;
     coordinator_.delegate = delegate_;
@@ -105,7 +104,7 @@ class LocationBarLegacyCoordinatorTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle web_thread_bundle_;
-  LocationBarLegacyCoordinator* coordinator_;
+  LocationBarCoordinator* coordinator_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
@@ -113,7 +112,7 @@ class LocationBarLegacyCoordinatorTest : public PlatformTest {
   FakeURLLoader* url_loader_;
 };
 
-TEST_F(LocationBarLegacyCoordinatorTest, Stops) {
+TEST_F(LocationBarCoordinatorTest, Stops) {
   EXPECT_TRUE(coordinator_.view == nil);
   [coordinator_ start];
   EXPECT_TRUE(coordinator_.view != nil);
@@ -124,7 +123,7 @@ TEST_F(LocationBarLegacyCoordinatorTest, Stops) {
 // Calls -loadGURLFromLocationBar:transition: with https://www.google.com/ URL.
 // Verifies that URLLoader receives correct load request, which also includes
 // variations header.
-TEST_F(LocationBarLegacyCoordinatorTest, LoadGoogleUrl) {
+TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
   ASSERT_EQ(VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
             VariationsHttpHeaderProvider::GetInstance()->ForceVariationIds(
                 /*variation_ids=*/{"100"}, /*command_line_variation_ids=*/""));
@@ -146,7 +145,7 @@ TEST_F(LocationBarLegacyCoordinatorTest, LoadGoogleUrl) {
 // Calls -loadGURLFromLocationBar:transition: with https://www.nongoogle.com/
 // URL. Verifies that URLLoader receives correct load request without variations
 // header.
-TEST_F(LocationBarLegacyCoordinatorTest, LoadNonGoogleUrl) {
+TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
   ASSERT_EQ(VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
             VariationsHttpHeaderProvider::GetInstance()->ForceVariationIds(
                 /*variation_ids=*/{"100"}, /*command_line_variation_ids=*/""));
