@@ -52,12 +52,13 @@ public class DownloadDirectoryProvider {
 
             // If no default directory, return an error option.
             if (defaultDirectory == null) {
-                dirs.add(new DirectoryOption(null, 0, 0, DirectoryOption.ERROR_OPTION));
+                dirs.add(new DirectoryOption(
+                        null, 0, 0, DirectoryOption.DownloadLocationDirectoryType.ERROR));
                 return dirs;
             }
 
-            DirectoryOption defaultOption =
-                    toDirectoryOption(defaultDirectory, DirectoryOption.DEFAULT_OPTION);
+            DirectoryOption defaultOption = toDirectoryOption(
+                    defaultDirectory, DirectoryOption.DownloadLocationDirectoryType.DEFAULT);
             dirs.add(defaultOption);
 
             // Retrieve additional directories, i.e. the external SD card directory.
@@ -78,7 +79,8 @@ public class DownloadDirectoryProvider {
 
                 // Skip primary storage directory.
                 if (files[i].getAbsolutePath().contains(mExternalStorageDirectory)) continue;
-                dirs.add(toDirectoryOption(files[i], DirectoryOption.ADDITIONAL_OPTION));
+                dirs.add(toDirectoryOption(
+                        files[i], DirectoryOption.DownloadLocationDirectoryType.ADDITIONAL));
             }
             return dirs;
         }
