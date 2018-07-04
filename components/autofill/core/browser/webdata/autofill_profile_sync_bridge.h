@@ -26,6 +26,7 @@ class ModelTypeChangeProcessor;
 
 namespace autofill {
 
+class AutofillProfileSyncDifferenceTracker;
 class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
@@ -86,6 +87,11 @@ class AutofillProfileSyncBridge
   // Respond to local autofill profile entry changing by notifying sync of the
   // changes.
   void ActOnLocalChange(const AutofillProfileChange& change);
+
+  // Flushes changes accumulated within |tracker| both to local and to sync.
+  base::Optional<syncer::ModelError> FlushSyncTracker(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      AutofillProfileSyncDifferenceTracker* tracker);
 
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.

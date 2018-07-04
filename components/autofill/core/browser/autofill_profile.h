@@ -122,6 +122,10 @@ class AutofillProfile : public AutofillDataModel,
                              const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
 
+  // Overwrites the data of |this| profile with data from the given |profile|.
+  // Expects that the profiles have the same guid.
+  void OverwriteDataFrom(const AutofillProfile& profile);
+
   // Merges the data from |this| profile and the given |profile| into |this|
   // profile. Expects that |this| and |profile| have already been deemed
   // mergeable by an AutofillProfileComparator.

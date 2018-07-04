@@ -21,13 +21,13 @@ namespace autofill {
 class AutofillProfile;
 
 // Converts the given |entry| into a syncer EntityData with equivalent
-// autofill profile specifics. Returns nullptr if |entry| has invalid guid.
+// autofill profile specifics. Returns nullptr if |entry| is invalid.
 // Shortens all string fields to AutofillTable::kMaxDataLength.
 std::unique_ptr<syncer::EntityData> CreateEntityDataFromAutofillProfile(
     const AutofillProfile& entry);
 
 // Converts the given autofill profile |specifics| into an equivalent
-// AutofillProfile. Returns nullptr if |specifics| has invalid guid.
+// AutofillProfile. Returns nullptr if |specifics| is invalid.
 std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
     const sync_pb::AutofillProfileSpecifics& specifics);
 

@@ -29,13 +29,17 @@ std::string TruncateUTF8(const std::string& data) {
   return trimmed_value;
 }
 
+bool IsAutofillProfileSpecificsValid(
+    const AutofillProfileSpecifics& specifics) {
+  return base::IsValidGUID(specifics.guid());
+}
+
 }  // namespace
 
 std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
     const AutofillProfile& entry) {
-  if (!base::IsValidGUID(entry.guid())) {
-    return nullptr;
-  }
+  // Validity of the guid is guaranteed by the database layer.
+  DCHECK(base::IsValidGUID(entry.guid()));
 
   auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name = entry.guid();
@@ -124,7 +128,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
 
 std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
     const AutofillProfileSpecifics& specifics) {
-  if (!base::IsValidGUID(specifics.guid())) {
+  if (!IsAutofillProfileSpecificsValid(specifics)) {
     return nullptr;
   }
   std::unique_ptr<AutofillProfile> profile =
@@ -215,15 +219,14 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
 }
 
 std::string GetStorageKeyFromAutofillProfile(const AutofillProfile& entry) {
-  if (!base::IsValidGUID(entry.guid())) {
-    return std::string();
-  }
+  // Validity of the guid is guaranteed by the database layer.
+  DCHECK(base::IsValidGUID(entry.guid()));
   return entry.guid();
 }
 
 std::string GetStorageKeyFromAutofillProfileSpecifics(
     const AutofillProfileSpecifics& specifics) {
-  if (!base::IsValidGUID(specifics.guid())) {
+  if (!IsAutofillProfileSpecificsValid(specifics)) {
     return std::string();
   }
   return specifics.guid();

@@ -142,14 +142,6 @@ TEST_F(AutofillProfileSyncUtilTest, CreateEntityDataFromAutofillProfile_Empty) {
   EXPECT_FALSE(entity_data->specifics.autofill_profile().has_company_name());
 }
 
-// Test that nullptr is produced if the input guid is invalid.
-TEST_F(AutofillProfileSyncUtilTest,
-       CreateEntityDataFromAutofillProfile_Invalid) {
-  AutofillProfile profile(kGuidInvalid, std::string());
-
-  EXPECT_EQ(nullptr, CreateEntityDataFromAutofillProfile(profile));
-}
-
 // Test that long fields get trimmed.
 TEST_F(AutofillProfileSyncUtilTest,
        CreateEntityDataFromAutofillProfile_Trimmed) {
@@ -273,13 +265,6 @@ TEST_F(AutofillProfileSyncUtilTest, GetStorageKeyFromAutofillProfile) {
   AutofillProfile profile(kGuid, std::string());
 
   EXPECT_EQ(kGuid, GetStorageKeyFromAutofillProfile(profile));
-}
-
-// Tests that empty string is returned for entry with invalid guid.
-TEST_F(AutofillProfileSyncUtilTest, GetStorageKeyFromAutofillProfile_Invalid) {
-  AutofillProfile profile(kGuidInvalid, std::string());
-
-  EXPECT_EQ(std::string(), GetStorageKeyFromAutofillProfile(profile));
 }
 
 // Tests that guid is returned as storage key.
