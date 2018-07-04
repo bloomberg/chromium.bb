@@ -826,12 +826,6 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
         provider_->DestroyChild(it->second);
         surface_id_to_resource_child_id_.erase(it);
       }
-
-      // Notify client of removed surface.
-      Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
-      if (surface_ptr) {
-        surface_ptr->RunDrawCallback();
-      }
     }
   }
 }
@@ -992,6 +986,25 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
+    if (will_draw) {
+      // We only pick a surface between primary and fallback if both SurfaceIds
+      // are provided and they have the same FrameSinkId and embed token,
+      // otherwise the only Surface other than fallback that can be shown is the
+      // primary.
+      if (!surface_info.fallback_id ||
+          surface_info.fallback_id->frame_sink_id() !=
+              surface_info.primary_id.frame_sink_id() ||
+          surface_info.fallback_id->local_surface_id().embed_token() !=
+              surface_info.primary_id.local_surface_id().embed_token()) {
+        damage_ranges_[surface_info.primary_id.frame_sink_id()] =
+            std::make_pair(surface_info.primary_id.local_surface_id(),
+                           surface_info.primary_id.local_surface_id());
+      } else if (surface_info.fallback_id != surface_info.primary_id) {
+        damage_ranges_[surface_info.primary_id.frame_sink_id()] =
+            std::make_pair(surface_info.fallback_id->local_surface_id(),
+                           surface_info.primary_id.local_surface_id());
+      }
+    }
     Surface* child_surface = manager_->GetSurfaceForId(surface_info.primary_id);
     gfx::Rect surface_damage;
     if (!child_surface || !child_surface->HasActiveFrame()) {
@@ -1178,6 +1191,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
+  damage_ranges_.clear();
   PrewalkResult prewalk_result;
   root_damage_rect_ =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
@@ -1273,6 +1287,29 @@ void SurfaceAggregator::SetOutputColorSpace(
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();
+}
+
+bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
+    const SurfaceId& surface_id) {
+  if (previous_contained_surfaces_.count(surface_id)) {
+    Surface* surface = manager_->GetSurfaceForId(surface_id);
+    if (surface) {
+      DCHECK(surface->HasActiveFrame());
+      if (surface->GetActiveFrame().resource_list.empty())
+        ReleaseResources(surface_id);
+    }
+    return true;
+  }
+
+  auto it = damage_ranges_.find(surface_id.frame_sink_id());
+  if (it == damage_ranges_.end())
+    return false;
+
+  const LocalSurfaceId& fallback = it->second.first;
+  const LocalSurfaceId& primary = it->second.second;
+  return (primary == surface_id.local_surface_id()) ||
+         (primary.IsNewerThan(surface_id.local_surface_id()) &&
+          surface_id.local_surface_id().IsNewerThan(fallback));
 }
 
 }  // namespace viz

@@ -23,4 +23,15 @@ std::ostream& operator<<(std::ostream& out,
   return out << local_surface_id.ToString();
 }
 
+bool LocalSurfaceId::IsNewerThan(const LocalSurfaceId& other) const {
+  // Sequence numbers can wrap around so look at their difference instead of
+  // their absolute values.
+  return embed_token_ == other.embed_token_ &&
+         (child_sequence_number_ - other.child_sequence_number_ < (1u << 31)) &&
+         (parent_sequence_number_ - other.parent_sequence_number_ <
+          (1u << 31)) &&
+         (child_sequence_number_ != other.child_sequence_number_ ||
+          parent_sequence_number_ != other.parent_sequence_number_);
+}
+
 }  // namespace viz

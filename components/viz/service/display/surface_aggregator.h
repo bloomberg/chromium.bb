@@ -54,6 +54,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
                            const gfx::ColorSpace& output_color_space);
 
+  bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
+
  private:
   struct ClipData {
     ClipData() : is_clipped(false) {}
@@ -277,6 +279,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
   SurfaceDrawQuadUmaStats uma_stats_;
+
+  // For each FrameSinkId, contains a range of LocalSurfaceIds that will damage
+  // the display if they're damaged.
+  base::flat_map<FrameSinkId, std::pair<LocalSurfaceId, LocalSurfaceId>>
+      damage_ranges_;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
 

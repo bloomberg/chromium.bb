@@ -166,6 +166,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
+  std::vector<SurfaceId> surfaces_to_ack_on_next_draw_;
 
   base::circular_deque<std::vector<Surface::PresentedCallback>>
       pending_presented_callbacks_;
