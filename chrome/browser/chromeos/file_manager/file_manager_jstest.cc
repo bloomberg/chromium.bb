@@ -209,3 +209,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
       "foreground/js/ui/file_list_selection_model_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("common/js/files_app_entry_types_unittest.html")));
+}
