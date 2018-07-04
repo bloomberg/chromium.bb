@@ -4,6 +4,8 @@
 
 #include "content/browser/web_package/signed_exchange_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -101,11 +103,20 @@ class MockSignedExchangeCertFetcherFactory
 
 class GMockCertVerifier : public net::CertVerifier {
  public:
-  MOCK_METHOD6(Verify,
+  // net::CompletionOnceCallback is move-only, which GMock does not support.
+  int Verify(const net::CertVerifier::RequestParams& params,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             net::CompletionOnceCallback callback,
+             std::unique_ptr<net::CertVerifier::Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    return VerifyImpl(params, crl_set, verify_result, out_req, net_log);
+  }
+
+  MOCK_METHOD5(VerifyImpl,
                int(const net::CertVerifier::RequestParams& params,
                    net::CRLSet* crl_set,
                    net::CertVerifyResult* verify_result,
-                   const net::CompletionCallback& callback,
                    std::unique_ptr<net::CertVerifier::Request>* out_req,
                    const net::NetLogWithSource& net_log));
 };
@@ -614,15 +625,16 @@ TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
       std::make_unique<GMockCertVerifier>();
   EXPECT_CALL(
       *gmock_cert_verifier,
-      Verify(AllOf(Property(&net::CertVerifier::RequestParams::ocsp_response,
-                            kDummyOCSPDer),
-                   Property(&net::CertVerifier::RequestParams::certificate,
-                            CertEqualsIncludingChain(original_cert)),
-                   Property(&net::CertVerifier::RequestParams::hostname,
-                            "test.example.org")),
-             _ /* crl_set */, _ /* verify_result */, _ /* callback */,
-             _ /* out_req */, _ /* net_log */
-             ))
+      VerifyImpl(
+          AllOf(Property(&net::CertVerifier::RequestParams::ocsp_response,
+                         kDummyOCSPDer),
+                Property(&net::CertVerifier::RequestParams::certificate,
+                         CertEqualsIncludingChain(original_cert)),
+                Property(&net::CertVerifier::RequestParams::hostname,
+                         "test.example.org")),
+          _ /* crl_set */, _ /* verify_result */, _ /* out_req */,
+          _ /* net_log */
+          ))
       .WillOnce(DoAll(SetArgPointee<2>(fake_result), Return(net::OK)));
   SetCertVerifier(std::move(gmock_cert_verifier));
 

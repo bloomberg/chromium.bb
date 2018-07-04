@@ -5,6 +5,7 @@
 #include "chrome/browser/net/trial_comparison_cert_verifier.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -233,8 +234,8 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     // destruction.
     int rv = cert_verifier_->trial_verifier()->Verify(
         params_, crl_set_.get(), &trial_result_,
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            &TrialVerificationJob::OnJobCompleted, base::Unretained(this))),
+        base::BindOnce(&TrialVerificationJob::OnJobCompleted,
+                       base::Unretained(this)),
         &trial_request_, net_log_);
     if (rv != net::ERR_IO_PENDING)
       OnJobCompleted(rv);
@@ -319,9 +320,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
 
       int rv = cert_verifier_->trial_verifier()->Verify(
           reverification_params, crl_set_.get(), &reverification_result_,
-          base::AdaptCallbackForRepeating(base::BindOnce(
+          base::BindOnce(
               &TrialVerificationJob::OnMacRevcheckingReverificationJobCompleted,
-              base::Unretained(this))),
+              base::Unretained(this)),
           &reverification_request_, net_log_);
       if (rv != net::ERR_IO_PENDING)
         OnMacRevcheckingReverificationJobCompleted(rv);
@@ -343,10 +344,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
 
       int rv = cert_verifier_->primary_reverifier()->Verify(
           reverification_params, crl_set_.get(), &reverification_result_,
-          base::AdaptCallbackForRepeating(
-              base::BindOnce(&TrialVerificationJob::
-                                 OnPrimaryReverifiyWithSecondaryChainCompleted,
-                             base::Unretained(this))),
+          base::BindOnce(&TrialVerificationJob::
+                             OnPrimaryReverifiyWithSecondaryChainCompleted,
+                         base::Unretained(this)),
           &reverification_request_, net_log_);
       if (rv != net::ERR_IO_PENDING)
         OnPrimaryReverifiyWithSecondaryChainCompleted(rv);
@@ -495,13 +495,13 @@ void TrialComparisonCertVerifier::SetFakeOfficialBuildForTesting() {
 int TrialComparisonCertVerifier::Verify(const RequestParams& params,
                                         net::CRLSet* crl_set,
                                         net::CertVerifyResult* verify_result,
-                                        const net::CompletionCallback& callback,
+                                        net::CompletionOnceCallback callback,
                                         std::unique_ptr<Request>* out_req,
                                         const net::NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  return primary_verifier_->Verify(params, crl_set, verify_result, callback,
-                                   out_req, net_log);
+  return primary_verifier_->Verify(params, crl_set, verify_result,
+                                   std::move(callback), out_req, net_log);
 }
 
 void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(

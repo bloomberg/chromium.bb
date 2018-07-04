@@ -43,7 +43,7 @@ MockCertVerifier::~MockCertVerifier() = default;
 int MockCertVerifier::Verify(const RequestParams& params,
                              CRLSet* crl_set,
                              CertVerifyResult* verify_result,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              std::unique_ptr<Request>* out_req,
                              const NetLogWithSource& net_log) {
   RuleList::const_iterator it;

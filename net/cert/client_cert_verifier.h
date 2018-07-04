@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -34,7 +34,7 @@ class NET_EXPORT ClientCertVerifier {
   // Verifies the given certificate as a client certificate.
   // Returns OK if successful or an error code upon failure.
   virtual int Verify(X509Certificate* cert,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* out_req) = 0;
 };
 

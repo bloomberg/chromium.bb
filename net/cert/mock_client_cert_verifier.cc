@@ -24,7 +24,7 @@ MockClientCertVerifier::MockClientCertVerifier()
 MockClientCertVerifier::~MockClientCertVerifier() = default;
 
 int MockClientCertVerifier::Verify(X509Certificate* cert,
-                                   const CompletionCallback& callback,
+                                   CompletionOnceCallback callback,
                                    std::unique_ptr<Request>* out_req) {
   for (const Rule& rule : rules_) {
     // Check just the client cert. Intermediates will be ignored.

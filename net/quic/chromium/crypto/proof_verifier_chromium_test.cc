@@ -4,8 +4,11 @@
 
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -43,7 +46,7 @@ class FailsTestCertVerifier : public CertVerifier {
   int Verify(const RequestParams& params,
              CRLSet* crl_set,
              CertVerifyResult* verify_result,
-             const CompletionCallback& callback,
+             CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override {
     ADD_FAILURE() << "CertVerifier::Verify() should not be called";

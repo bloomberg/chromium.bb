@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "net/base/completion_once_callback.h"
 #include "net/base/expiring_cache.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_database.h"
@@ -45,7 +46,7 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
   int Verify(const RequestParams& params,
              CRLSet* crl_set,
              CertVerifyResult* verify_result,
-             const CompletionCallback& callback,
+             CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
 
@@ -96,7 +97,7 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
   // cache, and then |callback| (the original caller's callback) is invoked.
   void OnRequestFinished(const RequestParams& params,
                          base::Time start_time,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          CertVerifyResult* verify_result,
                          int error);
 
