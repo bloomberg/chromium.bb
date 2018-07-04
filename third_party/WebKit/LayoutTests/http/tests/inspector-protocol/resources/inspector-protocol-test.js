@@ -171,18 +171,6 @@ var TestRunner = class {
     return this._start(description, null, url);
   }
 
-  async createTargetInNewContext(session, width, height, url, enableBeginFrameControl) {
-    const dp = session.protocol;
-    const browserContextId = (await dp.Target.createBrowserContext())
-        .result.browserContextId;
-    const targetId = (await dp.Target.createTarget(
-        {url, browserContextId, width, height, enableBeginFrameControl}))
-        .result.targetId;
-    const sessionId = (await dp.Target.attachToTarget({targetId}))
-        .result.sessionId;
-    return session.createChild(sessionId);
-  }
-
   async logStackTrace(debuggers, stackTrace, debuggerId) {
     while (stackTrace) {
       const {description, callFrames, parent, parentId} = stackTrace;
