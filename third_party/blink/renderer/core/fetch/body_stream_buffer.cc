@@ -423,6 +423,11 @@ bool BodyStreamBuffer::IsAborted() {
 }
 
 void BodyStreamBuffer::Abort() {
+  if (!Controller()) {
+    DCHECK(!GetExecutionContext());
+    DCHECK(!consumer_);
+    return;
+  }
   Controller()->GetError(DOMException::Create(DOMExceptionCode::kAbortError));
   CancelConsumer();
 }
