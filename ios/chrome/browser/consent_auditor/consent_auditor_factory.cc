@@ -57,12 +57,9 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
   ios::ChromeBrowserState* ios_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
-  // TODO(crbug.com/851438): Don't create user event service at all if it is not
-  // needed.
-  syncer::UserEventService* const user_event_service =
-      IOSUserEventServiceFactory::GetForBrowserState(ios_browser_state);
 
-  std::unique_ptr<syncer::ConsentSyncBridge> bridge;
+  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
+  syncer::UserEventService* user_event_service = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
     syncer::OnceModelTypeStoreFactory store_factory =
         browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
@@ -72,12 +69,16 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
             syncer::USER_CONSENTS,
             base::BindRepeating(&syncer::ReportUnrecoverableError,
                                 ::GetChannel()));
-    bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
+    consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
         std::move(store_factory), std::move(change_processor));
+  } else {
+    user_event_service =
+        IOSUserEventServiceFactory::GetForBrowserState(ios_browser_state);
   }
 
   return std::make_unique<consent_auditor::ConsentAuditor>(
-      ios_browser_state->GetPrefs(), std::move(bridge), user_event_service,
+      ios_browser_state->GetPrefs(), std::move(consent_sync_bridge),
+      user_event_service,
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),

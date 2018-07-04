@@ -51,7 +51,8 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  std::unique_ptr<syncer::ConsentSyncBridge> bridge;
+  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
+  syncer::UserEventService* user_event_service = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
     syncer::OnceModelTypeStoreFactory store_factory =
         browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
@@ -61,13 +62,15 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
             syncer::USER_CONSENTS,
             base::BindRepeating(&syncer::ReportUnrecoverableError,
                                 chrome::GetChannel()));
-    bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
+    consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
         std::move(store_factory), std::move(change_processor));
+  } else {
+    user_event_service =
+        browser_sync::UserEventServiceFactory::GetForProfile(profile);
   }
-  // TODO(vitaliii): Don't create UserEventService when it won't be used.
+
   return new consent_auditor::ConsentAuditor(
-      profile->GetPrefs(), std::move(bridge),
-      browser_sync::UserEventServiceFactory::GetForProfile(profile),
+      profile->GetPrefs(), std::move(consent_sync_bridge), user_event_service,
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),
