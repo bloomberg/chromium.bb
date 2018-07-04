@@ -515,6 +515,20 @@ void PaymentsClient::UploadCard(
       true);
 }
 
+void PaymentsClient::CancelRequest() {
+  request_.reset();
+  resource_request_.reset();
+  simple_url_loader_.reset();
+  token_fetcher_.reset();
+  access_token_.clear();
+  has_retried_authorization_ = false;
+}
+
+void PaymentsClient::set_url_loader_factory_for_testing(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = std::move(url_loader_factory);
+}
+
 void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
                                   bool authenticate) {
   request_ = std::move(request);
@@ -549,15 +563,6 @@ void PaymentsClient::InitializeResourceRequest() {
                            : variations::InIncognito::kNo,
         variations::SignedIn::kYes, &resource_request_->headers);
   }
-}
-
-void PaymentsClient::CancelRequest() {
-  request_.reset();
-  resource_request_.reset();
-  simple_url_loader_.reset();
-  token_fetcher_.reset();
-  access_token_.clear();
-  has_retried_authorization_ = false;
 }
 
 void PaymentsClient::OnSimpleLoaderComplete(
@@ -736,11 +741,6 @@ void PaymentsClient::StartRequest() {
       url_loader_factory_.get(),
       base::BindOnce(&PaymentsClient::OnSimpleLoaderComplete,
                      base::Unretained(this)));
-}
-
-void PaymentsClient::set_url_loader_factory_for_testing(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  url_loader_factory_ = std::move(url_loader_factory);
 }
 
 }  // namespace payments
