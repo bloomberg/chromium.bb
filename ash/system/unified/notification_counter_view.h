@@ -19,6 +19,12 @@ class NotificationCounterView : public TrayItemView {
   void Update();
 
  private:
+  // The type / number of the icon that is currently set to the image view.
+  // 0 indicates no icon is drawn yet.
+  // 1 through |kTrayNotificationMaxCount| indicates each number icons.
+  // |kTrayNotificationMaxCount| + 1 indicates the plus icon.
+  int count_for_display_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(NotificationCounterView);
 };
 
