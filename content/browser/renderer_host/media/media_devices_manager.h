@@ -59,7 +59,7 @@ class CONTENT_EXPORT MediaDevicesManager
   };
 
   using EnumerationCallback =
-      base::Callback<void(const MediaDeviceEnumeration&)>;
+      base::OnceCallback<void(const MediaDeviceEnumeration&)>;
   using EnumerateDevicesCallback =
       base::OnceCallback<void(const std::vector<MediaDeviceInfoArray>&,
                               std::vector<VideoInputDeviceCapabilitiesPtr>)>;
@@ -85,7 +85,7 @@ class CONTENT_EXPORT MediaDevicesManager
   // another call to EnumerateDevices, it must do so by posting a task to the
   // IO thread.
   void EnumerateDevices(const BoolDeviceTypes& requested_types,
-                        const EnumerationCallback& callback);
+                        EnumerationCallback callback);
 
   // Performs a possibly cached device enumeration for the requested device
   // types and reports the results to |callback|. The enumeration results are

@@ -46,8 +46,8 @@ void OldEnumerateOutputDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
   device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
-  media_devices_manager->EnumerateDevices(
-      device_types, base::BindRepeating(cb, salt_and_origin));
+  media_devices_manager->EnumerateDevices(device_types,
+                                          base::BindOnce(cb, salt_and_origin));
 }
 
 }  // namespace
