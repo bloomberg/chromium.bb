@@ -16,7 +16,6 @@
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
-        transition: visibility var(--cr-toolbar-overlay-animation-duration);
       }
 
       h1 {
@@ -64,6 +63,7 @@
       }
 
       :host([has-overlay]) {
+        transition: visibility var(--cr-toolbar-overlay-animation-duration);
         visibility: hidden;
       }
 
