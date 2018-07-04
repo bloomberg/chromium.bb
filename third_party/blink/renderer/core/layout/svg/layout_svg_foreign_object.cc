@@ -138,7 +138,8 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
   point_in_foreign_object.MoveBy(-Layer()->LayoutBoxLocation());
   HitTestLocation location(point_in_foreign_object);
   HitTestResult layer_result(result.GetHitTestRequest(), location);
-  bool retval = Layer()->HitTest(location, layer_result);
+  bool retval = Layer()->HitTest(location, layer_result,
+                                 LayoutRect(LayoutRect::InfiniteIntRect()));
 
   // Preserve the "point in inner node frame" from the original request,
   // since |layer_result| is a hit test rooted at the <foreignObject> element,

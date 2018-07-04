@@ -1665,7 +1665,8 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location(point);
   HitTestResult hit_test_result = HitTestResult(request, location);
-  layer->HitTest(location, hit_test_result);
+  layer->HitTest(location, hit_test_result,
+                 LayoutRect(LayoutRect::InfiniteIntRect()));
 
   Node* node = hit_test_result.InnerNode();
   if (!node)

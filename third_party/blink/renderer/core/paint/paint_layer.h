@@ -422,7 +422,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // The hitTest() method looks for mouse events by walking layers that
   // intersect the point from front to back.
-  bool HitTest(const HitTestLocation& location, HitTestResult&);
+  // |hit_test_area| is the rect in the space of this PaintLayer's
+  // LayoutObject to consider for hit testing.
+  bool HitTest(const HitTestLocation& location,
+               HitTestResult&,
+               const LayoutRect& hit_test_area);
 
   bool IntersectsDamageRect(const LayoutRect& layer_bounds,
                             const LayoutRect& damage_rect,

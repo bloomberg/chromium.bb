@@ -148,7 +148,19 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
     hit_layer = true;
     result = cache_result;
   } else {
-    hit_layer = Layer()->HitTest(location, result);
+    LocalFrameView* frame_view = GetFrameView();
+    LayoutRect hit_test_area;
+    if (frame_view) {
+      // Start with a rect sized to the frame, to ensure we include the
+      // scrollbars.
+      hit_test_area = LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
+      if (result.GetHitTestRequest().IgnoreClipping()) {
+        hit_test_area.Unite(
+            frame_view->DocumentToFrame(LayoutRect(DocumentRect())));
+      }
+    }
+
+    hit_layer = Layer()->HitTest(location, result, hit_test_area);
 
     // If hitTestResult include scrollbar, innerNode should be the parent of the
     // scrollbar.
