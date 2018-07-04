@@ -23,7 +23,7 @@ class BluetoothLocalGattServiceBlueZ;
 // The BluetoothLocalGattCharacteristicBlueZ class implements
 // BluetoothLocalGattCharacteristic for local GATT characteristics for
 // platforms that use BlueZ.
-class BluetoothLocalGattCharacteristicBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristicBlueZ
     : public BluetoothGattCharacteristicBlueZ,
       public device::BluetoothLocalGattCharacteristic {
  public:
