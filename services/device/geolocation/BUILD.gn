@@ -67,7 +67,7 @@ source_set("geolocation") {
 
   deps = [
     "//base",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net",
     "//ui/gfx",

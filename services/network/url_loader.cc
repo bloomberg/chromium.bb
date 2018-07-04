@@ -43,7 +43,8 @@ namespace network {
 namespace {
 constexpr size_t kDefaultAllocationSize = 512 * 1024;
 
-// Cannot use 0, because this means "default" in mojo::edk::Core::CreateDataPipe
+// Cannot use 0, because this means "default" in
+// mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
 // TODO: this duplicates some of PopulateResourceResponse in

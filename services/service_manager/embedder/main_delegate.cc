@@ -32,8 +32,8 @@ ProcessType MainDelegate::OverrideProcessType() {
   return ProcessType::kDefault;
 }
 
-void MainDelegate::OverrideMojoConfiguration(mojo::edk::Configuration* config) {
-}
+void MainDelegate::OverrideMojoConfiguration(
+    mojo::core::Configuration* config) {}
 
 std::unique_ptr<base::Value> MainDelegate::CreateServiceCatalog() {
   return nullptr;

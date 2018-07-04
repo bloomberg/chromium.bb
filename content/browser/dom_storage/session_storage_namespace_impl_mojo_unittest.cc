@@ -15,7 +15,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class SessionStorageNamespaceImplMojoTest : public testing::Test {
     security_policy->LockToOrigin(kTestProcessIdOrigin3,
                                   test_origin3_.GetURL());
 
-    mojo::edk::SetDefaultProcessErrorCallback(
+    mojo::core::SetDefaultProcessErrorCallback(
         base::BindRepeating(&SessionStorageNamespaceImplMojoTest::OnBadMessage,
                             base::Unretained(this)));
   }
@@ -91,8 +91,8 @@ class SessionStorageNamespaceImplMojoTest : public testing::Test {
     security_policy->Remove(kTestProcessIdAllOrigins);
     security_policy->Remove(kTestProcessIdOrigin3);
 
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   // Creates a SessionStorageNamespaceImplMojo, saves it in the namespaces_ map,

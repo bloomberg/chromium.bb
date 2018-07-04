@@ -55,7 +55,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -464,8 +464,8 @@ void ChildThreadImpl::Init(const Options& options) {
 
   mojo::ScopedMessagePipeHandle service_request_pipe;
   if (!IsInBrowserProcess()) {
-    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
-        GetIOTaskRunner(), mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
+    mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
+        GetIOTaskRunner(), mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     base::Optional<mojo::IncomingInvitation> invitation =
         InitializeMojoIPCChannel();
 

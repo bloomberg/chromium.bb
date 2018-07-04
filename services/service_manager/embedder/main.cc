@@ -26,9 +26,9 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "mojo/edk/embedder/configuration.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/configuration.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/service_manager/embedder/main_delegate.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/embedder/set_process_title.h"
@@ -228,9 +228,9 @@ int RunServiceManager(MainDelegate* delegate) {
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate(
       delegate);
@@ -384,7 +384,7 @@ int Main(const MainParams& params) {
   InitializeMac();
 #endif
 
-  mojo::edk::Configuration mojo_config;
+  mojo::core::Configuration mojo_config;
   ProcessType process_type = delegate->OverrideProcessType();
   if (process_type == ProcessType::kDefault) {
     std::string type_switch =
@@ -400,7 +400,7 @@ int Main(const MainParams& params) {
   }
   mojo_config.max_message_num_bytes = kMaximumMojoMessageSize;
   delegate->OverrideMojoConfiguration(&mojo_config);
-  mojo::edk::Init(mojo_config);
+  mojo::core::Init(mojo_config);
 
   ui::RegisterPathProvider();
 

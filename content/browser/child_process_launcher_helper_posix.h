@@ -18,7 +18,7 @@ class FilePath;
 
 namespace mojo {
 class PlatformChannelEndpoint;
-}  // namespace edk
+}  // namespace mojo
 
 // Contains the common functionalities between the various POSIX child process
 // launcher implementations.

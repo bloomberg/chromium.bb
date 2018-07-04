@@ -129,7 +129,7 @@ source_set("tests") {
     ":lib",
     "//base/test:test_support",
     "//media:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//services/audio/public/cpp",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",

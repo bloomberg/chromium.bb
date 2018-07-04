@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -45,7 +45,7 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Intercept Mojo bad-message errors.
-    mojo::edk::SetDefaultProcessErrorCallback(
+    mojo::core::SetDefaultProcessErrorCallback(
         base::Bind(&PublicIpAddressGeolocatorTest::OnMojoBadMessage,
                    base::Unretained(this)));
 
@@ -59,8 +59,8 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
 
   void TearDown() override {
     // Stop intercepting Mojo bad-message errors.
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   // Deal with mojo bad message.

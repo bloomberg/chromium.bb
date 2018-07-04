@@ -49,7 +49,7 @@ namespace mojo {
 class OutgoingInvitation;
 namespace core {
 class ScopedIPCSupport;
-}  // namespace edk
+}  // namespace core
 }  // namespace mojo
 
 namespace content {

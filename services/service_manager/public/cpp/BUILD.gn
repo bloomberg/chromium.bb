@@ -78,7 +78,7 @@ static_library("service_test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/background:lib",

@@ -11,7 +11,7 @@ source_set("standalone_service") {
   ]
 
   deps = [
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",

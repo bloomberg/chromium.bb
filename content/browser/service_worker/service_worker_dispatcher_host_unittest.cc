@@ -27,7 +27,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -76,7 +76,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   void SetUp() override {
     Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
-    mojo::edk::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &ServiceWorkerDispatcherHostTest::OnMojoError, base::Unretained(this)));
   }
 
@@ -84,8 +84,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     version_ = nullptr;
     registration_ = nullptr;
     helper_.reset();
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }

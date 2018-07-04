@@ -26,7 +26,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "services/file/file_service.h"
 #include "services/file/public/mojom/constants.mojom.h"
@@ -63,13 +63,13 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
 
   void SetUp() override {
     features_.InitAndEnableFeature(features::kMojoSessionStorage);
-    mojo::edk::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &SessionStorageContextMojoTest::OnBadMessage, base::Unretained(this)));
   }
 
   void TearDown() override {
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   void OnBadMessage(const std::string& reason) { bad_message_called_ = true; }
