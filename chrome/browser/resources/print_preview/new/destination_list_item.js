@@ -50,6 +50,10 @@ Polymer({
     // </if>
   },
 
+  hostAttributes: {
+    tabindex: 0,
+  },
+
   observers: [
     'onDestinationPropertiesChange_(' +
         'destination.displayName, destination.isOfflineOrInvalid, ' +
