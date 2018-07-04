@@ -893,6 +893,13 @@ SdpSemanticRequested GetSdpSemanticRequested(
   return kSdpSemanticRequestedDefault;
 }
 
+MediaStreamTrackMetrics::Kind MediaStreamTrackMetricsKind(
+    const blink::WebMediaStreamTrack& track) {
+  return track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio
+             ? MediaStreamTrackMetrics::Kind::kAudio
+             : MediaStreamTrackMetrics::Kind::kVideo;
+}
+
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
@@ -1826,6 +1833,9 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
                                         webrtc_streams);
   if (!webrtc_sender)
     return nullptr;
+  track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kSend,
+                          MediaStreamTrackMetricsKind(track),
+                          track.Id().Utf8());
   DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender)) == rtp_senders_.end());
   rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
       native_peer_connection_, task_runner_, signaling_thread(),
@@ -1840,8 +1850,6 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
     if (GetLocalStreamUsageCount(rtp_senders_,
                                  stream_ref->adapter().web_stream()) == 1u) {
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
-      track_metrics_.AddStream(MediaStreamTrackMetrics::SENT_STREAM,
-                               stream_ref->adapter().webrtc_stream().get());
     }
   }
   return rtp_senders_.back()->ShallowCopy();
@@ -1850,11 +1858,15 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
 bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
+  auto web_track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
     return false;
   if (!(*it)->RemoveFromPeerConnection(native_peer_connection_.get()))
     return false;
+  track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kSend,
+                             MediaStreamTrackMetricsKind(web_track),
+                             web_track.Id().Utf8());
   auto stream_refs = (*it)->stream_refs();
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackRemoveTransceiver(
@@ -1869,8 +1881,6 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
     if (GetLocalStreamUsageCount(rtp_senders_,
                                  stream_ref->adapter().web_stream()) == 0u) {
       PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
-      track_metrics_.RemoveStream(MediaStreamTrackMetrics::SENT_STREAM,
-                                  stream_ref->adapter().webrtc_stream().get());
     }
   }
   return true;
@@ -2062,7 +2072,10 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
         remote_stream_adapter_refs) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddRemoteTrack");
-
+  auto web_track = remote_track_adapter_ref->web_track();
+  track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kReceive,
+                          MediaStreamTrackMetricsKind(web_track),
+                          web_track.Id().Utf8());
   for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
     // New remote stream?
     if (GetRemoteStreamUsageCount(
@@ -2070,9 +2083,6 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
             remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
       // Update metrics.
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
-      track_metrics_.AddStream(
-          MediaStreamTrackMetrics::RECEIVED_STREAM,
-          remote_stream_adapter_ref->adapter().webrtc_stream().get());
     }
   }
 
@@ -2116,8 +2126,12 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
           nullptr /* sender */, it->second->ShallowCopy() /* receiver */);
     }
     remote_stream_adapter_refs = it->second->StreamAdapterRefs();
+    auto receiver = it->second->ShallowCopy();
+    track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kReceive,
+                               MediaStreamTrackMetricsKind(receiver->Track()),
+                               receiver->Track().Id().Utf8());
     if (!is_closed_)
-      client_->DidRemoveRemoteTrack(it->second->ShallowCopy());
+      client_->DidRemoveRemoteTrack(std::move(receiver));
     rtp_receivers_.erase(it);
   }
 
@@ -2127,9 +2141,6 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
             rtp_receivers_,
             remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
       // Update metrics.
-      track_metrics_.RemoveStream(
-          MediaStreamTrackMetrics::RECEIVED_STREAM,
-          remote_stream_adapter_ref->adapter().webrtc_stream().get());
       PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
     }
   }

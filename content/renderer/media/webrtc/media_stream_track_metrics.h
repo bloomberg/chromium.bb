@@ -15,10 +15,6 @@
 #include "content/common/media/media_stream.mojom.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
-namespace webrtc {
-class MediaStreamInterface;
-}
-
 namespace content {
 
 class MediaStreamTrackMetricsObserver;
@@ -36,19 +32,16 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   explicit MediaStreamTrackMetrics();
   ~MediaStreamTrackMetrics();
 
-  enum StreamType { SENT_STREAM, RECEIVED_STREAM };
+  enum class Direction { kSend, kReceive };
+  enum class Kind { kAudio, kVideo };
+  enum class LifetimeEvent { kConnected, kDisconnected };
 
-  enum TrackType { AUDIO_TRACK, VIDEO_TRACK };
+  // Starts tracking the lifetime of the track until |RemoveTrack| is called
+  // or this object's lifetime ends.
+  void AddTrack(Direction direction, Kind kind, const std::string& track_id);
 
-  enum LifetimeEvent { CONNECTED, DISCONNECTED };
-
-  // Starts tracking lifetimes of all the tracks in |stream| and any
-  // tracks added or removed to/from the stream until |RemoveStream|
-  // is called or this object's lifetime ends.
-  void AddStream(StreamType type, webrtc::MediaStreamInterface* stream);
-
-  // Stops tracking lifetimes of tracks in |stream|.
-  void RemoveStream(StreamType type, webrtc::MediaStreamInterface* stream);
+  // Stops tracking the lifetime of the track.
+  void RemoveTrack(Direction direction, Kind kind, const std::string& track_id);
 
   // Called to indicate changes in the ICE connection state for the
   // PeerConnection this object is associated with. Used to generate
@@ -71,9 +64,9 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   // PeerConnection), false for local streams (sent over a
   // PeerConnection).
   virtual void SendLifetimeMessage(const std::string& track_id,
-                                   TrackType track_type,
+                                   Kind kind,
                                    LifetimeEvent lifetime_event,
-                                   StreamType stream_type);
+                                   Direction direction);
 
  protected:
   // Calls SendLifetimeMessage for |observer| depending on |ice_state_|.
@@ -86,12 +79,12 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   // is a one-to-one relationship).
   uint64_t MakeUniqueIdImpl(uint64_t pc_id,
                             const std::string& track,
-                            StreamType stream_type);
+                            Direction direction);
 
  private:
   // Make a unique ID for the given track, that is valid while the
   // track object and the PeerConnection it is attached to both exist.
-  uint64_t MakeUniqueId(const std::string& track, StreamType stream_type);
+  uint64_t MakeUniqueId(const std::string& track_id, Direction direction);
 
   mojom::MediaStreamTrackMetricsHostPtr& GetMediaStreamTrackMetricsHost();
 
