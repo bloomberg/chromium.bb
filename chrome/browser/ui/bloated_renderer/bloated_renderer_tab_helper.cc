@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/page_importance_signals.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,13 +42,21 @@ BloatedRendererTabHelper::BloatedRendererTabHelper(
   }
 }
 
+void BloatedRendererTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (state_ == State::kRequestingReload) {
+    saved_navigation_id_ = navigation_handle->GetNavigationId();
+    state_ = State::kStartedNavigation;
+  }
+}
+
 void BloatedRendererTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(ulan): Use nagivation_handle to ensure that the finished navigation
-  // is the same nagivation started by reloading the bloated tab.
-  if (reloading_bloated_renderer_) {
+  if (state_ == State::kStartedNavigation &&
+      saved_navigation_id_ == navigation_handle->GetNavigationId()) {
     ShowInfoBar(InfoBarService::FromWebContents(web_contents()));
-    reloading_bloated_renderer_ = false;
+    state_ = State::kInactive;
+    saved_navigation_id_ = 0;
   }
 }
 
@@ -116,9 +125,12 @@ void BloatedRendererTabHelper::OnRendererIsBloated(
     if (renderer->FastShutdownIfPossible(expected_page_count,
                                          skip_unload_handlers)) {
       const bool check_for_repost = true;
-      reloading_bloated_renderer_ = true;
+      // Clear the state and the saved navigation id.
+      state_ = State::kRequestingReload;
+      saved_navigation_id_ = 0;
       web_contents()->GetController().Reload(content::ReloadType::NORMAL,
                                              check_for_repost);
+      DCHECK_EQ(State::kStartedNavigation, state_);
       RecordBloatedRendererHandling(
           BloatedRendererHandlingInBrowser::kReloaded);
     } else {
