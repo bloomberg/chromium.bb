@@ -42,12 +42,10 @@ ComponentContext* ComponentContext::GetDefault() {
   return component_context.get();
 }
 
-void ComponentContext::ConnectToService(FidlInterfaceRequest request) {
+zx_status_t ComponentContext::ConnectToService(FidlInterfaceRequest request) {
   DCHECK(request.is_valid());
-  zx_status_t result =
-      fdio_service_connect_at(service_root_.get(), request.interface_name(),
-                              request.TakeChannel().release());
-  ZX_CHECK(result == ZX_OK, result) << "fdio_service_connect_at()";
+  return fdio_service_connect_at(service_root_.get(), request.interface_name(),
+                                 request.TakeChannel().release());
 }
 
 }  // namespace fuchsia

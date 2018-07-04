@@ -36,7 +36,7 @@ class BASE_EXPORT ComponentContext {
   static ComponentContext* GetDefault();
 
   // Satisfies the interface |request| by binding the channel to a service.
-  void ConnectToService(FidlInterfaceRequest request);
+  zx_status_t ConnectToService(FidlInterfaceRequest request);
 
   // Same as above, but returns interface pointer instead of taking a request.
   template <typename Interface>

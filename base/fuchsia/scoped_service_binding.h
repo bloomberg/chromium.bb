@@ -5,7 +5,7 @@
 #ifndef BASE_FUCHSIA_SCOPED_SERVICE_BINDING_H_
 #define BASE_FUCHSIA_SCOPED_SERVICE_BINDING_H_
 
-#include <lib/fidl/cpp/binding.h>
+#include <lib/fidl/cpp/binding_set.h>
 
 #include "base/bind.h"
 #include "base/fuchsia/service_directory.h"
@@ -18,7 +18,7 @@ class ScopedServiceBinding {
  public:
   // |service_directory| and |impl| must outlive the binding.
   ScopedServiceBinding(ServiceDirectory* service_directory, Interface* impl)
-      : directory_(service_directory), binding_(impl) {
+      : directory_(service_directory), impl_(impl) {
     directory_->AddService(
         Interface::Name_,
         BindRepeating(&ScopedServiceBinding::BindClient, Unretained(this)));
@@ -28,12 +28,13 @@ class ScopedServiceBinding {
 
  private:
   void BindClient(zx::channel channel) {
-    binding_.Bind(
-        typename fidl::InterfaceRequest<Interface>(std::move(channel)));
+    bindings_.AddBinding(impl_,
+                         fidl::InterfaceRequest<Interface>(std::move(channel)));
   }
 
-  ServiceDirectory* directory_;
-  fidl::Binding<Interface> binding_;
+  ServiceDirectory* const directory_;
+  Interface* const impl_;
+  fidl::BindingSet<Interface> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedServiceBinding);
 };
