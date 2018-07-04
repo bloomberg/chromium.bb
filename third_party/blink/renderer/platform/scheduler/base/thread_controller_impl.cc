@@ -170,7 +170,16 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
     sequence_->DidRunTask();
 
-    // TODO(alexclarke): Find out why this is needed.
+    // NOTE: https://crbug.com/828835.
+    // When we're running inside a nested RunLoop it may quit anytime, so any
+    // outstanding pending tasks must run in the outer RunLoop
+    // (see SequenceManagerTestWithMessageLoop.QuitWhileNested test).
+    // Unfortunately, it's MessageLoop who's receving that signal and we can't
+    // know it before we return from DoWork, hence, OnExitNestedRunLoop
+    // will be called later. Since we must implement ThreadController and
+    // SequenceManager in conformance with MessageLoop task runners, we need
+    // to disable this batching optimization while nested.
+    // Implementing RunLoop::Delegate ourselves will help to resolve this issue.
     if (main_sequence_only().nesting_depth > 0)
       break;
   }
