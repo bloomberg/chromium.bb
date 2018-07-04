@@ -443,21 +443,21 @@ The launched process can in turn accept an `IncomingInvitation`:
 ``` cpp
 #include "base/command_line.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 int main(int argc, char** argv) {
   // Basic Mojo initialization for a new process.
-  mojo::edk::Init();
+  mojo::core::Init();
   base::Thread ipc_thread("ipc!");
   ipc_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
   // Accept an invitation.
   mojo::IncomingInvitation invitation = mojo::IncomingInvitation::Accept(

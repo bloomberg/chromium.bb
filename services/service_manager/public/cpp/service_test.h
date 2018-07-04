@@ -18,7 +18,7 @@ class Thread;
 }
 
 namespace mojo {
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }
 }
@@ -105,7 +105,7 @@ class ServiceTest : public testing::Test {
   // See constructor.
   std::string test_name_;
   std::unique_ptr<base::Thread> ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
 
   Connector* connector_ = nullptr;
   std::string initialize_name_;

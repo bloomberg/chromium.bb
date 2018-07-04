@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/tools/fuzzers/fuzz.mojom.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
@@ -21,7 +21,7 @@ struct Environment {
   Environment() : message_loop() {
     base::TaskScheduler::CreateAndStartWithDefaultParams(
         "MojoFuzzerMessageDumpProcess");
-    mojo::edk::Init();
+    mojo::core::Init();
   }
 
   /* Message loop to send messages on. */

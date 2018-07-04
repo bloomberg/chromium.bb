@@ -21,8 +21,8 @@ extern "C" {
 
 // Initializes Mojo in the calling application.
 //
-// With the exception of EDK embedders, applications using Mojo APIs must call
-// this function before any others.
+// With the exception of Mojo Core embedders, applications using Mojo APIs must
+// call this function before any others.
 //
 // |options| may be null.
 //
@@ -30,8 +30,8 @@ extern "C" {
 //   |MOJO_RESULT_OK| if Mojo intiailization was successful.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |options| was null or invalid.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if |MojoInitialize()| was already called
-//       once or if the application already explicitly initialized a Mojo EDK
-//       environment.
+//       once or if the application already explicitly initialized a Mojo Core
+//       environment as an embedder.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoInitialize(const struct MojoInitializeOptions* options);
 

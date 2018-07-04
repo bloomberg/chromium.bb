@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
@@ -482,7 +482,7 @@ TEST_P(BindingTest, ReportBadMessage) {
       &binding));
 
   std::string received_error;
-  edk::SetDefaultProcessErrorCallback(
+  core::SetDefaultProcessErrorCallback(
       base::Bind([](std::string* out_error,
                     const std::string& error) { *out_error = error; },
                  &received_error));
@@ -493,7 +493,7 @@ TEST_P(BindingTest, ReportBadMessage) {
   EXPECT_TRUE(called);
   EXPECT_EQ("received bad message", received_error);
 
-  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
+  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
 }
 
 TEST_P(BindingTest, GetBadMessageCallback) {
@@ -504,7 +504,7 @@ TEST_P(BindingTest, GetBadMessageCallback) {
   ReportBadMessageCallback bad_message_callback;
 
   std::string received_error;
-  edk::SetDefaultProcessErrorCallback(
+  core::SetDefaultProcessErrorCallback(
       base::Bind([](std::string* out_error,
                     const std::string& error) { *out_error = error; },
                  &received_error));
@@ -526,7 +526,7 @@ TEST_P(BindingTest, GetBadMessageCallback) {
   std::move(bad_message_callback).Run("delayed bad message");
   EXPECT_EQ("delayed bad message", received_error);
 
-  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
+  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
 }
 
 // StrongBindingTest -----------------------------------------------------------

@@ -85,7 +85,7 @@ class TaskService;  // https://crbug.com/796830
 namespace mojo {
 class CoreLibraryInitializer;
 class SyncCallRestrictions;
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }
 }
@@ -295,6 +295,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
+  friend class mojo::core::ScopedIPCSupport;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
   friend class rlz_lib::FinancialPing;
   friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -446,7 +447,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class PlatformThread;
   friend class android::JavaHandlerThread;
   friend class mojo::SyncCallRestrictions;
-  friend class mojo::edk::ScopedIPCSupport;
   friend class ui::CommandBufferClientImpl;
   friend class ui::CommandBufferLocal;
   friend class ui::GpuState;

@@ -845,7 +845,7 @@
     ],
   },
   "mojo_core_unittests": {
-    "label": "//mojo/edk:mojo_core_unittests",
+    "label": "//mojo/core:mojo_core_unittests",
     "type": "console_test_launcher",
   },
   "mojo_unittests": {

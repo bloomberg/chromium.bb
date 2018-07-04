@@ -100,8 +100,8 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
         task_runner_->RunsTasksInCurrentSequence() && weak_watcher_ &&
         weak_watcher_->is_default_task_runner_) {
       // System notifications will trigger from the task runner passed to
-      // mojo::edk::ScopedIPCSupport. In Chrome this happens to always be the
-      // default task runner for the IO thread.
+      // mojo::core::ScopedIPCSupport. In Chrome this happens to always be
+      // the default task runner for the IO thread.
       weak_watcher_->OnHandleReady(watch_id_, result, state);
     } else {
       task_runner_->PostTask(

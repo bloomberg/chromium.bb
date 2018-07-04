@@ -71,7 +71,7 @@ class MidiService;
 }  // namespace midi
 
 namespace mojo {
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }  // namespace edk
 }  // namespace mojo
@@ -338,7 +338,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<ServiceManagerContext> service_manager_context_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
