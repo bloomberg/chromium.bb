@@ -574,12 +574,6 @@ void FrameFetchContext::DispatchDidReceiveResponse(
       document_loader_ == document_loader_->GetFrame()
                               ->Loader()
                               .GetProvisionalDocumentLoader()) {
-    FrameClientHintsPreferencesContext hints_context(GetFrame());
-    document_loader_->GetClientHintsPreferences()
-        .UpdateFromAcceptClientHintsHeader(
-            response.HttpHeaderField(HTTPNames::Accept_CH), response.Url(),
-            &hints_context);
-
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
     resource_loading_policy = LinkLoader::kDoNotLoadResources;
@@ -1329,16 +1323,26 @@ bool FrameFetchContext::ShouldSendClientHint(
 
 void FrameFetchContext::ParseAndPersistClientHints(
     const ResourceResponse& response) {
-  ClientHintsPreferences hints_preferences;
-  WebEnabledClientHints enabled_client_hints;
-  TimeDelta persist_duration;
   FrameClientHintsPreferencesContext hints_context(GetFrame());
-  hints_preferences.UpdatePersistentHintsFromHeaders(
-      response, &hints_context, enabled_client_hints, &persist_duration);
 
+  document_loader_->GetClientHintsPreferences()
+      .UpdateFromAcceptClientHintsLifetimeHeader(
+          response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime),
+          response.Url(), &hints_context);
+
+  document_loader_->GetClientHintsPreferences()
+      .UpdateFromAcceptClientHintsHeader(
+          response.HttpHeaderField(HTTPNames::Accept_CH), response.Url(),
+          &hints_context);
+
+  // Notify content settings client of persistent client hints.
+  TimeDelta persist_duration =
+      document_loader_->GetClientHintsPreferences().GetPersistDuration();
   if (persist_duration.InSeconds() <= 0)
     return;
 
+  WebEnabledClientHints enabled_client_hints =
+      document_loader_->GetClientHintsPreferences().GetWebEnabledClientHints();
   if (!AllowScriptFromSourceWithoutNotifying(response.Url())) {
     // Do not persist client hint preferences if the JavaScript is disabled.
     return;

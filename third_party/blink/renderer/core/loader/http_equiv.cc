@@ -47,7 +47,7 @@ void HttpEquiv::Process(Document& document,
         kSecurityMessageSource, kErrorMessageLevel,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
-  } else if (EqualIgnoringASCIICase(equiv, "accept-ch")) {
+  } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Accept_CH)) {
     ProcessHttpEquivAcceptCH(document, content);
   } else if (EqualIgnoringASCIICase(equiv, "content-security-policy") ||
              EqualIgnoringASCIICase(equiv,

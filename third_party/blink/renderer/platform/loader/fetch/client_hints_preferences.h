@@ -14,7 +14,6 @@
 namespace blink {
 
 class KURL;
-class ResourceResponse;
 
 // TODO (tbansal): Remove PLATFORM_EXPORT, and pass WebClientHintsType
 // everywhere.
@@ -50,26 +49,25 @@ class PLATFORM_EXPORT ClientHintsPreferences {
     enabled_hints_.SetIsEnabled(type, true);
   }
 
-  // Parses the client hints headers, and populates |enabled_hints| with the
-  // client hint preferences that should be persisted for |persist_duration|.
-  // |persist_duration| should be non-null.
-  // If there are no client hints that need to be persisted,
-  // |persist_duration| is not set, otherwise it is set to the duration for
-  // which the client hint preferences should be persisted.
-  // UpdatePersistentHintsFromHeaders may be called for all responses
-  // received (including subresources). |context| may be null.
-  static void UpdatePersistentHintsFromHeaders(
-      const ResourceResponse&,
-      Context*,
-      WebEnabledClientHints& enabled_hints,
-      TimeDelta* persist_duration);
+  // Parses the accept-ch-lifetime header, and populates |this| with the client
+  // hints persistence duration. |url| is the URL of the resource whose response
+  // included the |header_value|. |context| may be null. If client hints are not
+  // allowed for |url|, then |this| would not be updated.
+  void UpdateFromAcceptClientHintsLifetimeHeader(const String& header_value,
+                                                 const KURL& url,
+                                                 Context* context);
 
   // Returns true if client hints are allowed for the provided KURL. Client
   // hints are allowed only on HTTP URLs that belong to secure contexts.
   static bool IsClientHintsAllowed(const KURL&);
 
+  WebEnabledClientHints GetWebEnabledClientHints() const;
+
+  base::TimeDelta GetPersistDuration() const;
+
  private:
   WebEnabledClientHints enabled_hints_;
+  base::TimeDelta persist_duration_;
 };
 
 }  // namespace blink
