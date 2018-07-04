@@ -253,7 +253,7 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
 
   aura::Window* wt;
   wt = ::wm::GetModalTransient(w1.get());
-  ASSERT_EQ(static_cast<aura::Window*>(NULL), wt);
+  ASSERT_EQ(nullptr, wt);
 
   // Parent w2 to w1. It should get parented to the parent of w1.
   ::wm::AddTransientChild(w1.get(), w2.get());
@@ -262,12 +262,12 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
 
   // Request the modal transient window for w1, it should be w2.
   wt = ::wm::GetModalTransient(w1.get());
-  ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
+  ASSERT_NE(nullptr, wt);
   EXPECT_EQ(-2, wt->id());
 
   // Request the modal transient window for w11, it should also be w2.
   wt = ::wm::GetModalTransient(w11.get());
-  ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
+  ASSERT_NE(nullptr, wt);
   EXPECT_EQ(-2, wt->id());
 }
 
@@ -463,7 +463,7 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   |child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  TestChildModalParent* delegate = new TestChildModalParent();
+  TestChildModalParent* delegate = new TestChildModalParent(nullptr);
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, nullptr /* context */, gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -472,7 +472,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
   EXPECT_TRUE(wm::IsActiveWindow(parent));
 
   aura::Window* modal_parent = delegate->GetModalParent();
-  EXPECT_NE(static_cast<aura::Window*>(NULL), modal_parent);
+  EXPECT_NE(nullptr, modal_parent);
   EXPECT_NE(parent, modal_parent);
   EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
 
@@ -522,7 +522,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  TestChildModalParent* delegate = new TestChildModalParent();
+  TestChildModalParent* delegate = new TestChildModalParent(nullptr);
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, nullptr /* context */, gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -531,13 +531,13 @@ TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
   EXPECT_TRUE(wm::IsActiveWindow(parent));
 
   aura::Window* modal_parent = delegate->GetModalParent();
-  EXPECT_NE(static_cast<aura::Window*>(NULL), modal_parent);
+  EXPECT_NE(nullptr, modal_parent);
   EXPECT_NE(parent, modal_parent);
   EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
 
   delegate->ShowChild();
   aura::Window* child = delegate->GetChild();
-  EXPECT_NE(static_cast<aura::Window*>(NULL), child);
+  EXPECT_NE(nullptr, child);
 
   EXPECT_TRUE(wm::IsActiveWindow(child));
   EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
