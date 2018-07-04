@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -25,9 +26,14 @@ class MODULES_EXPORT AnimationWorklet final : public Worklet {
   explicit AnimationWorklet(Document*);
   ~AnimationWorklet() override;
 
+  WorkletAnimationId NextWorkletAnimationId();
   void Trace(blink::Visitor*) override;
 
  private:
+  // Unique id associated with this worklet that is used by cc to identify all
+  // animations associated it.
+  int scope_id_;
+  int last_animation_id_;
 
   // Implements Worklet.
   bool NeedsToCreateGlobalScope() final;

@@ -18,7 +18,7 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
   explicit CompositorMutatorClient(std::unique_ptr<CompositorMutatorImpl>);
   ~CompositorMutatorClient() override;
 
-  void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
+  virtual void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
 
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*) override;

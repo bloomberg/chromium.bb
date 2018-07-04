@@ -222,10 +222,12 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
-    CompositorMutatorInputState state;
-    state.added_and_updated_animations.emplace_back(1, "test", 5000, nullptr);
+    cc::WorkletAnimationId animation_id = {1, 1};
+    AnimationWorkletInput state;
+    state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
+                                                    nullptr);
 
-    std::unique_ptr<CompositorMutatorOutputState> output =
+    std::unique_ptr<AnimationWorkletOutput> output =
         global_scope->Mutate(state);
     EXPECT_TRUE(output);
 
@@ -270,10 +272,12 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
-    CompositorMutatorInputState state;
-    state.added_and_updated_animations.emplace_back(1, "test", 5000, nullptr);
+    cc::WorkletAnimationId animation_id = {1, 1};
+    AnimationWorkletInput state;
+    state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
+                                                    nullptr);
 
-    std::unique_ptr<CompositorMutatorOutputState> output =
+    std::unique_ptr<AnimationWorkletOutput> output =
         global_scope->Mutate(state);
     EXPECT_TRUE(output);
 
@@ -311,8 +315,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             });
           )JS"));
 
-    int animation_id = 1;
-    CompositorMutatorInputState state;
+    cc::WorkletAnimationId animation_id = {1, 1};
+    AnimationWorkletInput state;
     state.updated_animations.push_back({animation_id, 5000});
     EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
     EXPECT_EQ(state.updated_animations.size(), 1u);
@@ -359,8 +363,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             });
           )JS"));
 
-    int animation_id = 1;
-    CompositorMutatorInputState state;
+    cc::WorkletAnimationId animation_id = {1, 1};
+    AnimationWorkletInput state;
     state.added_and_updated_animations.push_back(
         {animation_id, "test", 5000, nullptr});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);

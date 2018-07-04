@@ -14,9 +14,11 @@
 namespace blink {
 
 AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
+    int scope_id,
     base::WeakPtr<CompositorMutatorImpl> mutator,
     scoped_refptr<base::SingleThreadTaskRunner> mutator_runner)
-    : mutator_(std::move(mutator)),
+    : scope_id_(scope_id),
+      mutator_(std::move(mutator)),
       mutator_runner_(std::move(mutator_runner)),
       state_(RunState::kUninitialized) {
   DCHECK(IsMainThread());
@@ -71,29 +73,36 @@ void AnimationWorkletProxyClientImpl::Dispose() {
   state_ = RunState::kDisposed;
 }
 
-std::unique_ptr<CompositorMutatorOutputState>
-AnimationWorkletProxyClientImpl::Mutate(
-    const CompositorMutatorInputState& input_state) {
+std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClientImpl::Mutate(
+    std::unique_ptr<AnimationWorkletInput> input) {
+  DCHECK(input);
+#if DCHECK_IS_ON()
+  DCHECK(input->ValidateScope(scope_id_))
+      << "Input has state that does not belong to this global scope: "
+      << scope_id_;
+#endif
+
   if (!global_scope_)
     return nullptr;
 
-  auto output_state = global_scope_->Mutate(input_state);
+  auto output = global_scope_->Mutate(*input);
 
   // TODO(petermayo): https://crbug.com/791280 PostCrossThreadTask to supply
   // this rather than return it.
-  return output_state;
+  return output;
 }
 
 // static
 AnimationWorkletProxyClientImpl* AnimationWorkletProxyClientImpl::FromDocument(
-    Document* document) {
+    Document* document,
+    int scope_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
   scoped_refptr<base::SingleThreadTaskRunner> mutator_queue;
   base::WeakPtr<CompositorMutatorImpl> mutator =
       local_frame->LocalRootFrameWidget()->EnsureCompositorMutator(
           &mutator_queue);
-  return new AnimationWorkletProxyClientImpl(std::move(mutator),
+  return new AnimationWorkletProxyClientImpl(scope_id, std::move(mutator),
                                              std::move(mutator_queue));
 }
 

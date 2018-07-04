@@ -21,12 +21,12 @@ namespace {
 
 void UpdateAnimation(Animator* animator,
                      ScriptState* script_state,
-                     int id,
+                     WorkletAnimationId id,
                      double current_time,
                      CompositorMutatorOutputState* result) {
   CompositorMutatorOutputState::AnimationState animation_output;
   if (animator->Animate(script_state, current_time, &animation_output)) {
-    animation_output.animation_id = id;
+    animation_output.worklet_animation_id = id;
     result->animations.push_back(std::move(animation_output));
   }
 }
@@ -77,23 +77,22 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
   return animator;
 }
 
-std::unique_ptr<CompositorMutatorOutputState>
-AnimationWorkletGlobalScope::Mutate(
-    const CompositorMutatorInputState& mutator_input) {
+std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
+    const AnimationWorkletInput& mutator_input) {
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  std::unique_ptr<CompositorMutatorOutputState> result =
-      std::make_unique<CompositorMutatorOutputState>();
+  std::unique_ptr<AnimationWorkletOutput> result =
+      std::make_unique<AnimationWorkletOutput>();
 
-  for (const auto& id : mutator_input.removed_animations)
-    animators_.erase(id);
+  for (const auto& worklet_animation_id : mutator_input.removed_animations)
+    animators_.erase(worklet_animation_id.animation_id);
 
   for (const auto& animation : mutator_input.added_and_updated_animations) {
-    int id = animation.animation_id;
-    DCHECK(!animators_.at(id));
+    int id = animation.worklet_animation_id.animation_id;
+    DCHECK(!animators_.Contains(id));
     const String name =
         String::FromUTF8(animation.name.data(), animation.name.size());
 
@@ -105,19 +104,19 @@ AnimationWorkletGlobalScope::Mutate(
     if (!animator)
       continue;
 
-    UpdateAnimation(animator, script_state, id, animation.current_time,
-                    result.get());
+    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
+                    animation.current_time, result.get());
   }
 
   for (const auto& animation : mutator_input.updated_animations) {
-    int id = animation.animation_id;
+    int id = animation.worklet_animation_id.animation_id;
     Animator* animator = animators_.at(id);
     // We don't try to create an animator if there isn't any.
     if (!animator)
       continue;
 
-    UpdateAnimation(animator, script_state, id, animation.current_time,
-                    result.get());
+    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
+                    animation.current_time, result.get());
   }
 
   return result;

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
 
 namespace blink {
 
@@ -43,15 +44,18 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
  public:
   static WorkletAnimation* Create(
+      ExecutionContext*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       ExceptionState&);
   static WorkletAnimation* Create(
+      ExecutionContext*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
       ExceptionState&);
   static WorkletAnimation* Create(
+      ExecutionContext*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
@@ -106,7 +110,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkletAnimation(const String& animator_name,
+  WorkletAnimation(WorkletAnimationId id,
+                   const String& animator_name,
                    Document&,
                    const HeapVector<Member<KeyframeEffect>>&,
                    AnimationTimeline*,
@@ -122,6 +127,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void UpdateOnCompositor();
 
   unsigned sequence_number_;
+
+  WorkletAnimationId id_;
 
   const String animator_name_;
   Animation::AnimationPlayState play_state_;

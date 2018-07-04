@@ -620,12 +620,14 @@ void AnimationHost::SetMutationUpdate(
 
   TRACE_EVENT0("cc", "AnimationHost::SetMutationUpdate");
   for (auto& animation_state : output_state->animations) {
-    int id = animation_state.animation_id;
+    WorkletAnimationId id = animation_state.worklet_animation_id;
 
     // TODO(majidvp): Use a map to make lookup O(1)
-    auto to_update =
-        std::find_if(ticking_animations_.begin(), ticking_animations_.end(),
-                     [id](auto& it) { return it->id() == id; });
+    auto to_update = std::find_if(
+        ticking_animations_.begin(), ticking_animations_.end(), [id](auto& it) {
+          return it->IsWorkletAnimation() &&
+                 ToWorkletAnimation(it.get())->worklet_animation_id() == id;
+        });
 
     if (to_update == ticking_animations_.end())
       continue;

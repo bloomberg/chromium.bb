@@ -4,6 +4,7 @@
 
 #include "cc/animation/worklet_animation.h"
 
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/trees/animation_options.h"
@@ -11,12 +12,14 @@
 namespace cc {
 
 WorkletAnimation::WorkletAnimation(
-    int id,
+    int cc_animation_id,
+    WorkletAnimationId worklet_animation_id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
     bool is_controlling_instance)
-    : SingleKeyframeEffectAnimation(id),
+    : SingleKeyframeEffectAnimation(cc_animation_id),
+      worklet_animation_id_(worklet_animation_id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)),
       options_(std::move(options)),
@@ -28,12 +31,13 @@ WorkletAnimation::WorkletAnimation(
 WorkletAnimation::~WorkletAnimation() = default;
 
 scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
-    int id,
+    WorkletAnimationId worklet_animation_id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options) {
   return WrapRefCounted(new WorkletAnimation(
-      id, name, std::move(scroll_timeline), std::move(options), false));
+      AnimationIdProvider::NextAnimationId(), worklet_animation_id, name,
+      std::move(scroll_timeline), std::move(options), false));
 }
 
 scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
@@ -41,8 +45,9 @@ scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
   if (scroll_timeline_)
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
-  return WrapRefCounted(new WorkletAnimation(
-      id(), name(), std::move(impl_timeline), CloneOptions(), true));
+  return WrapRefCounted(new WorkletAnimation(id(), worklet_animation_id_,
+                                             name(), std::move(impl_timeline),
+                                             CloneOptions(), true));
 }
 
 void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
@@ -89,15 +94,15 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 
   switch (state_) {
     case State::PENDING:
-      input_state->added_and_updated_animations.push_back(
-          {id(), name(), current_time, CloneOptions()});
+      input_state->Add(
+          {worklet_animation_id(), name(), current_time, CloneOptions()});
       state_ = State::RUNNING;
       break;
     case State::RUNNING:
-      input_state->updated_animations.push_back({id(), current_time});
+      input_state->Update({worklet_animation_id(), current_time});
       break;
     case State::REMOVED:
-      input_state->removed_animations.push_back(id());
+      input_state->Remove(worklet_animation_id());
       break;
   }
 }
