@@ -25,7 +25,7 @@ class SystemHealthStorySet(story.StorySet):
 
     assert platform in platforms.ALL_PLATFORMS
 
-    for story_class in _IterAllSystemHealthStoryClasses():
+    for story_class in IterAllSystemHealthStoryClasses():
       if (story_class.ABSTRACT_STORY or
           platform not in story_class.SUPPORTED_PLATFORMS or
           case and not story_class.NAME.startswith(case + ':')):
@@ -67,7 +67,12 @@ class MobileSystemHealthStorySet(SystemHealthStorySet):
         'mobile', take_memory_measurement=False)
 
 
-def _IterAllSystemHealthStoryClasses():
+def IterAllSystemHealthStoryClasses():
+  """Generator for system health stories.
+
+  Yields:
+    All appropriate SystemHealthStory subclasses defining stories.
+  """
   start_dir = os.path.dirname(os.path.abspath(__file__))
   # Sort the classes by their names so that their order is stable and
   # deterministic.
