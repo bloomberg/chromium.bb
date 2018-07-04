@@ -241,9 +241,10 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   small_symbols = {}
   small_file_node = None
   if min_symbol_size > 0:
+    component_index = components.GetOrAdd('')
     small_file_node = {
       _COMPACT_FILE_PATH_KEY: _NAME_SMALL_SYMBOL_BUCKET,
-      _COMPACT_FILE_COMPONENT_INDEX_KEY: components.GetOrAdd(''),
+      _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
       _COMPACT_FILE_SYMBOLS_KEY: [],
     }
     file_nodes[_NAME_SMALL_SYMBOL_BUCKET] = small_file_node

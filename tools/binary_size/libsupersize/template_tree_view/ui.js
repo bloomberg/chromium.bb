@@ -30,6 +30,7 @@
    */
   const _SYMBOL_ICONS = {
     D: _icons.querySelector('.foldericon'),
+    C: _icons.querySelector('.componenticon'),
     F: _icons.querySelector('.fileicon'),
     b: _icons.querySelector('.bssicon'),
     d: _icons.querySelector('.dataicon'),
@@ -152,9 +153,14 @@
       dom.replace(group, null);
     } else {
       const data = _uiNodeData.get(link);
-      group.appendChild(
-        dom.createFragment(data.children.map(child => newTreeElement(child)))
-      );
+      const newElements = data.children.map(child => newTreeElement(child));
+      if (newElements.length === 1) {
+        // Open the inner element if it only has a single child.
+        // Ensures nodes like "java"->"com"->"google" are opened all at once.
+        newElements[0].querySelector('.node').click();
+      }
+
+      group.appendChild(dom.createFragment(newElements));
       element.setAttribute('aria-expanded', 'true');
     }
   }
