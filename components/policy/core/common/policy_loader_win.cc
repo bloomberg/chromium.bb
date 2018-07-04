@@ -100,7 +100,11 @@ enum DomainCheckErrors {
 // Encapculates logic to determine if enterprise policies should be honored.
 // This is used in various places below.
 bool ShouldHonorPolicies() {
-  return base::win::IsEnterpriseManaged();
+  bool is_enterprise_version =
+      base::win::OSInfo::GetInstance()->version_type() != base::win::SUITE_HOME;
+  return base::win::IsEnrolledToDomain() ||
+         (base::win::IsDeviceRegisteredWithManagement() &&
+          is_enterprise_version);
 }
 
 // Verifies that untrusted policies contain only safe values. Modifies the
