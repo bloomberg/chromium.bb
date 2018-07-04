@@ -96,14 +96,14 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 // static
-void TestChildModalParent::Create() {
+void TestChildModalParent::Create(aura::Window* context) {
   Widget::CreateWindowWithContextAndBounds(
-      new TestChildModalParent(), /*context=*/nullptr,
+      new TestChildModalParent(context), context,
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
       ->Show();
 }
 
-TestChildModalParent::TestChildModalParent()
+TestChildModalParent::TestChildModalParent(aura::Window* context)
     : widget_(std::make_unique<Widget>()),
       button_(new views::LabelButton(
           this,
@@ -113,6 +113,7 @@ TestChildModalParent::TestChildModalParent()
       child_(nullptr) {
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = context;
   widget_->Init(params);
   widget_->GetRootView()->SetBackground(
       views::CreateSolidBackground(kModalParentColor));
