@@ -2605,9 +2605,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, ResetDownloadState) {
   ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
 }
 
+// Flakly on ChromeOS https://crbug.com/860312
+#if defined(OS_CHROMEOS)
+#define MAYBE_MultiDownload DISABLED_MultiDownload
+#else
+#define MAYBE_MultiDownload MultiDownload
+#endif
 // Check that downloading multiple (in this case, 2) files does not result in
 // corrupted files.
-IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MultiDownload) {
+IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   base::ThreadRestrictions::SetIOAllowed(true);
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
