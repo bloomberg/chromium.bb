@@ -612,13 +612,7 @@ LayerTreeTest::LayerTreeTest()
   // specified (for running in a debugger).
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout))
-#if defined(THREAD_SANITIZER)
-    timeout_seconds_ = 35;
-#elif defined(ADDRESS_SANITIZER)
-    timeout_seconds_ = 10;
-#else
-    timeout_seconds_ = 6;
-#endif
+    timeout_seconds_ = 5;
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
 }

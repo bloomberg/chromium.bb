@@ -64,7 +64,10 @@ void InitializeOneOffHelper(bool init_extensions) {
 
   GLImplementation impl = allowed_impls[0];
   if (use_software_gl)
-    impl = gl::GetSoftwareGLImplementation();
+    impl = kGLImplementationOSMesaGL;  // FIXME(sugoi): change to
+                                       // gl::GetSoftwareGLImplementation() when
+                                       // SwiftShader is used for Layout Tests
+                                       // on all platforms
 
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
