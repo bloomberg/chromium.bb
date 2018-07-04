@@ -426,8 +426,15 @@ bool MessageLoop::DoWork() {
 }
 
 bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
-  if (!task_execution_allowed_ ||
-      !incoming_task_queue_->delayed_tasks().HasTasks()) {
+  if (!task_execution_allowed_) {
+    *next_delayed_work_time = TimeTicks();
+    // |scheduled_wakeup_| isn't used in nested loops that don't process
+    // application tasks.
+    DCHECK(scheduled_wakeup_.next_run_time.is_null());
+    return false;
+  }
+
+  if (!incoming_task_queue_->delayed_tasks().HasTasks()) {
     *next_delayed_work_time = TimeTicks();
 
     // It's possible to be woken up by a system event and have it cancel the
@@ -505,9 +512,14 @@ bool MessageLoop::DoIdleWork() {
   bool need_high_res_timers = false;
 #endif
 
+  // Do not report idle metrics nor do any logic related to delayed tasks if
+  // about to quit the loop and/or in a nested loop where
+  // |!task_execution_allowed_|. In the former case, the loop isn't going to
+  // sleep and in the latter case DoDelayedWork() will not actually do the work
+  // this is prepping for.
   if (ShouldQuitWhenIdle()) {
     pump_->Quit();
-  } else {
+  } else if (task_execution_allowed_) {
     incoming_task_queue_->ReportMetricsOnIdle();
 
     if (incoming_task_queue_->delayed_tasks().HasTasks()) {
