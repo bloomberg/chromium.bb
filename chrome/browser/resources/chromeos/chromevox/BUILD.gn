@@ -18,7 +18,7 @@ declare_args() {
 }
 
 closure_library_dir =
-    "//chrome/third_party/chromevox/third_party/closure-library/closure/goog"
+    "//third_party/chromevox/third_party/closure-library/closure/goog"
 
 # List of all modules that are included in one or more of the production
 # chromevox scripts.
@@ -239,7 +239,7 @@ group("chromevox") {
     ":chromevox_manifest",
     "//chrome/browser/resources/chromeos/braille_ime:braille_ime_manifest",
     "//chrome/browser/resources/chromeos/chromevox/strings:chromevox_strings",
-    "//chrome/third_party/chromevox:chromevox_third_party_resources",
+    "//third_party/chromevox:chromevox_third_party_resources",
   ]
   if (enable_nacl) {
     deps += [ "//third_party/liblouis" ]
@@ -571,7 +571,7 @@ test("chromevox_tests") {
     # copied one.
     "//chrome/browser/resources/chromeos/chromevox/",
     "//chrome/test/data/webui/test_api.js",
-    "//chrome/third_party/chromevox/",
+    "//third_party/chromevox/",
     "//chrome/third_party/mock4js/",
     "//third_party/accessibility-audit/axs_testing.js",
     "//third_party/chaijs/chai.js",

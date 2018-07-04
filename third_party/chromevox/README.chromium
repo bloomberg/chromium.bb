@@ -3,6 +3,7 @@ URL: http://code.google.com/p/google-axs-chrome/
 InfoURL: http://www.chromevox.com/
 Version: 1.31.4
 License: Apache 2.0
+Security Critical: Yes
 
 Description:
 ChromeVox is the screen reader for Chrome OS.  This directory contains pars of

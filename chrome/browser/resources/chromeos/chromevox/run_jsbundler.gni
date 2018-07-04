@@ -5,7 +5,7 @@
 assert(is_chromeos)
 
 closure_library_dir =
-    "//chrome/third_party/chromevox/third_party/closure-library/closure/goog"
+    "//third_party/chromevox/third_party/closure-library/closure/goog"
 
 jsbundler_modules = rebase_path([
                                   "depstree.py",

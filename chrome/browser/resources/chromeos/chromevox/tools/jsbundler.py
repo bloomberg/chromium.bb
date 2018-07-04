@@ -43,7 +43,7 @@ _CHROME_SOURCE = os.path.realpath(
 sys.path.insert(0, os.path.join(
     _CHROME_SOURCE, 'third_party/blink/renderer/devtools/scripts/build'))
 sys.path.insert(0, os.path.join(
-    _CHROME_SOURCE, ('chrome/third_party/chromevox/third_party/' +
+    _CHROME_SOURCE, ('third_party/chromevox/third_party/' +
                      'closure-library/closure/bin/build')))
 import depstree
 import rjsmin
