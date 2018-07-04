@@ -7,21 +7,6 @@
 (function() {
 
 /**
- * Returns an array of file entry row content, where the rows are the basic
- * file entry set for the given path, plus the given file |entries|.
- *
- * @param {string} path Directory path (Downloads or Drive).
- * @pram {Array<!TestEntryInfo>} entries Array of file TestEntryInfo.
- * @return {Array} File entry row content.
- */
-function getExpectedFileEntryRows(path, entries) {
-  const basicFileEntrySetForPath =
-      (path == RootPath.DRIVE) ? BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET;
-  return TestEntryInfo.getExpectedRows(basicFileEntrySetForPath)
-      .concat(TestEntryInfo.getExpectedRows(entries));
-}
-
-/**
  * Returns the title and artist text associated with the given audio track.
  *
  * @param {string} audioAppId The Audio Player window ID.
@@ -135,7 +120,7 @@ function audioOpenTrackDownloads() {
   const track = [ENTRIES.beautiful];
 
   StepsRunner.run([
-    // Open Files.App on Downloads, add an audio track to Downloads.
+    // Open Files.App on Downloads, add an audio file to Downloads.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next, track, []);
     },
@@ -184,7 +169,7 @@ function audioOpenMultipleTracksDrive() {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   StepsRunner.run([
-    // Open Files.App on Drive, add the audio tracks to Drive.
+    // Open Files.App on Drive, add the audio files to Drive.
     function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], tracks);
     },
@@ -255,7 +240,8 @@ function audioOpenMultipleTracksDrive() {
 }
 
 /**
- * Tests if the audio player play the next file after the current file.
+ * Tests that the audio player auto-advances viz., auto-plays the next audio
+ * track when the current track ends.
  *
  * @param {string} path Directory path to be tested.
  */
@@ -263,24 +249,16 @@ function audioAutoAdvance(path) {
   let appId;
   let audioAppId;
 
+  const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add audio files to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    // Add an additional audio file.
-    function(results) {
-      appId = results.windowId;
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait for the file list to change.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
-      remoteCall.waitForFiles(appId, expected).then(this.next);
+      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
     },
     // Open an audio file.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['Beautiful Song.ogg'], this.next);
     },
@@ -295,9 +273,13 @@ function audioAutoAdvance(path) {
       const playFile = audioPlayingQuery('Beautiful Song.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
-    // Leap forward and check: the same file should still be playing.
+    // Leap forward in time.
     function() {
       audioTimeLeapForward(audioAppId);
+      this.next();
+    },
+    // Check: the same file should still be playing.
+    function() {
       const playFile = audioPlayingQuery('Beautiful Song.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
@@ -321,10 +303,12 @@ function audioRepeatAllModeSingleFile(path) {
   let appId;
   let audioAppId;
 
+  const track = [ENTRIES.beautiful];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add an audio file to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(null, path, this.next, track, track);
     },
     // Open an audio file.
     function(results) {
@@ -382,10 +366,12 @@ function audioNoRepeatModeSingleFile(path) {
   let appId;
   let audioAppId;
 
+  const track = [ENTRIES.beautiful];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add an audio file to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(null, path, this.next, track, track);
     },
     // Open an audio file.
     function(results) {
@@ -435,10 +421,12 @@ function audioRepeatOneModeSingleFile(path) {
   let appId;
   let audioAppId;
 
+  const track = [ENTRIES.beautiful];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add an audio file to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(null, path, this.next, track, track);
     },
     // Open an audio file.
     function(results) {
@@ -503,24 +491,16 @@ function audioRepeatAllModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
+  const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add audio files to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    // Add an additional audio file.
-    function(results) {
-      appId = results.windowId;
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait for the file list to change.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
-      remoteCall.waitForFiles(appId, expected).then(this.next);
+      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
     },
     // Open an audio file.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
@@ -583,24 +563,16 @@ function audioNoRepeatModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
+  const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add audio files to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    // Add an additional audio file.
-    function(results) {
-      appId = results.windowId;
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait for the file list to change.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
-      remoteCall.waitForFiles(appId, expected).then(this.next);
+      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
     },
     // Open an audio file.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
@@ -646,23 +618,16 @@ function audioRepeatOneModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
+  const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
   StepsRunner.run([
-    // Open Files.App on the given (volume) path.
+    // Open Files.App on |path|, add audio files to Downloads and Drive.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    // Add an additional audio file.
-    function(results) {
-      appId = results.windowId;
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait for the file list to change.
-    function(result) {
-      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
-      remoteCall.waitForFiles(appId, expected).then(this.next);
+      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
     },
     // Open an audio file.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
