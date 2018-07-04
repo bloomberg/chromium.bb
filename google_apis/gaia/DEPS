@@ -10,6 +10,6 @@ specific_include_rules = {
   r"|oauth2_token_service_unittest\.cc"
   r")": [
     "+services/network/test/test_url_loader_factory.h",
-    "+mojo/edk",
+    "+mojo/core/embedder",
   ],
 }

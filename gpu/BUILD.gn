@@ -472,7 +472,7 @@ test("gpu_unittests") {
     "//gpu/ipc/host",
     "//gpu/ipc/service",
     "//ipc:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//skia",

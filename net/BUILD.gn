@@ -5449,7 +5449,7 @@ test("net_unittests") {
 
   if (enable_net_mojo) {
     deps += [
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//net/dns:mojo_client",
       "//net/dns:mojo_service",
     ]

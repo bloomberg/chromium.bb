@@ -19,6 +19,6 @@ test("chromeos_components_unittests") {
     "//chromeos/components/drivefs:unit_tests",
     "//chromeos/components/proximity_auth:unit_tests",
     "//chromeos/components/tether:unit_tests",
-    "//mojo/edk",
+    "//mojo/core/embedder",
   ]
 }

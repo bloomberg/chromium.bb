@@ -168,7 +168,7 @@ test("url_unittests") {
 
   if (!is_ios) {
     deps += [
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//url/mojom:test_url_mojom_gurl",
     ]
   }

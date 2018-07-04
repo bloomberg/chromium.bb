@@ -690,7 +690,7 @@ test("chromeos_unittests") {
     "//dbus:test_support",
     "//google_apis",
     "//media/base:video_facing",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//net",
     "//net:test_support",
     "//services/network:test_support",
