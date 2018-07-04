@@ -34,6 +34,11 @@ GLOutputSurface::GLOutputSurface(
       context_provider->ContextCapabilities().flips_vertically;
   capabilities_.supports_stencil =
       context_provider->ContextCapabilities().num_stencil_bits > 0;
+  // Since one of the buffers is used by the surface for presentation, there can
+  // be at most |num_surface_buffers - 1| pending buffers that the compositor
+  // can use.
+  capabilities_.max_frames_pending =
+      context_provider->ContextCapabilities().num_surface_buffers - 1;
   context_provider->SetUpdateVSyncParametersCallback(
       base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
                           weak_ptr_factory_.GetWeakPtr()));
