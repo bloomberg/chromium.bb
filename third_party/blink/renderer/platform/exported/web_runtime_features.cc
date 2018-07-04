@@ -176,6 +176,10 @@ void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {
   RuntimeEnabledFeatures::SetLayeredAPIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableLayoutNG(bool enable) {
+  RuntimeEnabledFeatures::SetLayoutNGEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLazyFrameLoading(bool enable) {
   RuntimeEnabledFeatures::SetLazyFrameLoadingEnabled(enable);
 }

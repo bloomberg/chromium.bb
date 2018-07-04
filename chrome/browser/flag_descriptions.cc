@@ -527,6 +527,10 @@ const char kLayeredAPIDescription[] =
     "layered APIs. The syntax and the APIs exposed are experimental and will "
     "change over time.";
 
+const char kEnableLayoutNGName[] = "Enable LayoutNG";
+const char kEnableLayoutNGDescription[] =
+    "Enable Blink's next generation layout engine.";
+
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of certain cross-origin frames until the page is "
