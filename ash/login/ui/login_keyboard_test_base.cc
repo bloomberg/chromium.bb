@@ -58,12 +58,12 @@ void LoginKeyboardTestBase::ShowKeyboard() {
             Shell::GetPrimaryRootWindow()->bounds(), height));
     keyboard_controller_->NotifyKeyboardWindowLoaded();
   }
-  ASSERT_TRUE(keyboard_controller_->keyboard_visible());
+  ASSERT_TRUE(keyboard_controller_->IsKeyboardVisible());
 }
 
 void LoginKeyboardTestBase::HideKeyboard() {
   keyboard_controller_->HideKeyboardByUser();
-  ASSERT_FALSE(keyboard_controller_->keyboard_visible());
+  ASSERT_FALSE(keyboard_controller_->IsKeyboardVisible());
 }
 
 gfx::Rect LoginKeyboardTestBase::GetKeyboardBoundsInScreen() const {

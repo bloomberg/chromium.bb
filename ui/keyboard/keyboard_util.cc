@@ -145,7 +145,7 @@ bool IsKeyboardEnabled() {
 bool IsKeyboardVisible() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   return keyboard_controller->enabled() &&
-         keyboard_controller->keyboard_visible();
+         keyboard_controller->IsKeyboardVisible();
 }
 
 bool IsKeyboardOverscrollEnabled() {

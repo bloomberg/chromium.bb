@@ -255,10 +255,6 @@ bool KeyboardController::HasInstance() {
   return g_keyboard_controller;
 }
 
-bool KeyboardController::keyboard_visible() const {
-  return state_ == KeyboardControllerState::SHOWN;
-}
-
 aura::Window* KeyboardController::GetKeyboardWindow() {
   return ui_ && ui_->HasKeyboardWindow() ? ui_->GetKeyboardWindow() : nullptr;
 }
@@ -287,7 +283,7 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
 }
 
 void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
-  DCHECK(keyboard_visible());
+  DCHECK(IsKeyboardVisible());
   SetKeyboardWindowBounds(new_bounds);
 }
 
@@ -301,7 +297,7 @@ void KeyboardController::SetKeyboardWindowBounds(const gfx::Rect& new_bounds) {
 
   // We need to send out this notification only if keyboard is visible since
   // the keyboard window is resized even if keyboard is hidden.
-  if (keyboard_visible())
+  if (IsKeyboardVisible())
     NotifyKeyboardBoundsChanging(new_bounds);
 }
 
@@ -796,7 +792,7 @@ void KeyboardController::SetOccludedBounds(const gfx::Rect& bounds) {
       .SetOccludedBounds(bounds);
 
   // Notify that only the occluded bounds have changed.
-  if (keyboard_visible())
+  if (IsKeyboardVisible())
     NotifyKeyboardBoundsChanging(visual_bounds_in_screen_);
 }
 
@@ -869,7 +865,7 @@ void KeyboardController::RemoveObserver(
 }
 
 bool KeyboardController::IsKeyboardVisible() {
-  return keyboard_visible();
+  return state_ == KeyboardControllerState::SHOWN;
 }
 
 }  // namespace keyboard

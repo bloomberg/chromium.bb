@@ -314,7 +314,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   // http://crbug.com/638269
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   return !(keyboard_controller->enabled() &&
-           keyboard_controller->keyboard_visible());
+           keyboard_controller->IsKeyboardVisible());
 }
 
 void HandleNextIme() {

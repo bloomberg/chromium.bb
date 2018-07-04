@@ -160,9 +160,6 @@ class KEYBOARD_EXPORT KeyboardController
   // there is an ash::Shell).
   static bool HasInstance();
 
-  // Returns true if keyboard is in SHOWN or SHOWING state.
-  bool keyboard_visible() const;
-
   // Returns the bounds in screen for the visible portion of the keyboard. An
   // empty rectangle will get returned when the keyboard is hidden.
   const gfx::Rect& visual_bounds_in_screen() const {
@@ -228,6 +225,7 @@ class KEYBOARD_EXPORT KeyboardController
       ui::InputMethodKeyboardControllerObserver* observer) override;
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
+  // Returns true if keyboard is in a SHOWN state.
   bool IsKeyboardVisible() override;
 
  private:

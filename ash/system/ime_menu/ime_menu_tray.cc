@@ -443,7 +443,7 @@ void ImeMenuTray::CloseBubble() {
 void ImeMenuTray::ShowBubble(bool show_by_click) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled() &&
-      keyboard_controller->keyboard_visible()) {
+      keyboard_controller->IsKeyboardVisible()) {
     show_bubble_after_keyboard_hidden_ = true;
     keyboard_controller->AddObserver(this);
     keyboard_controller->HideKeyboardExplicitlyBySystem();
