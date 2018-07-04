@@ -4,6 +4,7 @@
 
 #include "components/unified_consent/pref_names.h"
 
+namespace unified_consent {
 namespace prefs {
 
 const char kUnifiedConsentGiven[] = "unified_consent_given";
@@ -12,3 +13,4 @@ const char kUrlKeyedAnonymizedDataCollectionEnabled[] =
     "url_keyed_anonymized_data_collection.enabled";
 
 }  // namespace prefs
+}  // namespace unified_consent

@@ -10,7 +10,8 @@
 
 class PrefService;
 
-class ChromeUnifiedConsentServiceClient : public UnifiedConsentServiceClient {
+class ChromeUnifiedConsentServiceClient
+    : public unified_consent::UnifiedConsentServiceClient {
  public:
   explicit ChromeUnifiedConsentServiceClient(PrefService* pref_service);
   ~ChromeUnifiedConsentServiceClient() override = default;

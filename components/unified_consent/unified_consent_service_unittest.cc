@@ -15,6 +15,7 @@
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace unified_consent {
 namespace {
 
 class TestSyncService : public syncer::FakeSyncService {
@@ -142,3 +143,4 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
+}  // namespace unified_consent

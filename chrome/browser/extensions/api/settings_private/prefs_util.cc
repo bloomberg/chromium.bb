@@ -200,7 +200,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSearchSuggestEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kUnifiedConsentGiven] =
+  (*s_whitelist)[::unified_consent::prefs::kUnifiedConsentGiven] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Languages page

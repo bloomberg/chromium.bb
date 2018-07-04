@@ -24,6 +24,8 @@ namespace syncer {
 class SyncService;
 }
 
+namespace unified_consent {
+
 class UnifiedConsentServiceClient;
 
 // A browser-context keyed service that is used to manage the user consent
@@ -63,5 +65,7 @@ class UnifiedConsentService : public KeyedService,
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentService);
 };
+
+}  // namespace unified_consent
 
 #endif  // COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_SERVICE_H_

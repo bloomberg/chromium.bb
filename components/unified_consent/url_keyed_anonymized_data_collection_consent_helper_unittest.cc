@@ -12,9 +12,9 @@
 #include "components/unified_consent/unified_consent_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using unified_consent::UrlKeyedAnonymizedDataCollectionConsentHelper;
-
+namespace unified_consent {
 namespace {
+
 class UrlKeyedDataCollectionConsentHelperTest
     : public testing::Test,
       public UrlKeyedAnonymizedDataCollectionConsentHelper::Observer {
@@ -65,3 +65,4 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest, UnifiedConsentDisabled) {
 }
 
 }  // namespace
+}  // namespace unified_consent
