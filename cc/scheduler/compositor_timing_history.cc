@@ -291,10 +291,9 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.BeginMainFrameIntervalNotCritical", interval);
   }
 
-  void AddCommitInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser.CommitInterval", interval);
-  }
+  // CommitInterval is not meaningful to measure on browser side because
+  // browser rendering fps is not at 60.
+  void AddCommitInterval(base::TimeDelta interval) override {}
 
   // DrawInterval is not meaningful to measure on browser side because
   // browser rendering fps is not at 60.
