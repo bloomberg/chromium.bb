@@ -12,4 +12,6 @@ interface IActivityHost {
   void setBottomBarView(in IObjectWrapper /* View */ bottomBarView) = 1;
 
   void setOverlayView(in IObjectWrapper /* View */ overlayView) = 2;
+
+  void setBottomBarHeight(int height) = 3;
 }

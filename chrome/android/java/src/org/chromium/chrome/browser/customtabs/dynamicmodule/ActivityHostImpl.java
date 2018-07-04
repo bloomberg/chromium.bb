@@ -32,4 +32,9 @@ public class ActivityHostImpl extends IActivityHost.Stub {
     public void setOverlayView(IObjectWrapper overlayView) {
         mActivity.setOverlayView(ObjectWrapper.unwrap(overlayView, View.class));
     }
+
+    @Override
+    public void setBottomBarHeight(int height) {
+        mActivity.setBottomBarHeight(height);
+    }
 }
