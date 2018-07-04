@@ -81,8 +81,7 @@ public class ChromiumLinkerTestActivity extends Activity {
         linker.setMemoryDeviceConfigForTesting(memoryDeviceConfig);
 
         // Setup the TestRunner class name.
-        linker.setTestRunnerClassNameForTesting(
-                "org.chromium.chromium_linker_test_apk.LinkerTests");
+        Linker.setupForTesting("org.chromium.chromium_linker_test_apk.LinkerTests");
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.

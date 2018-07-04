@@ -136,6 +136,41 @@ public class LibraryLoader {
     private int mLibraryPreloaderStatus = -1;
 
     /**
+     * Call this method to determine if this chromium project must
+     * use this linker. If not, System.loadLibrary() should be used to load
+     * libraries instead.
+     */
+    public static boolean useCrazyLinker() {
+        // TODO(digit): Remove this early return GVR is loadable.
+        // A non-monochrome APK (such as ChromePublic.apk or ChromeModernPublic.apk) on N+ cannot
+        // use the Linker because the latter is incompatible with the GVR library. Fall back
+        // to using System.loadLibrary() or System.load() at the cost of no RELRO sharing.
+        //
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        //
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.N) return false;
+
+        // The auto-generated NativeLibraries.sUseLinker variable will be true if the
+        // build has not explicitly disabled Linker features.
+        return NativeLibraries.sUseLinker;
+    }
+
+    /**
+     * Call this method to determine if the chromium project must load the library
+     * directly from a zip file.
+     */
+    private static boolean isInZipFile() {
+        // The auto-generated NativeLibraries.sUseLibraryInZipFile variable will be true
+        // iff the library remains embedded in the APK zip file on the target.
+        return NativeLibraries.sUseLibraryInZipFile;
+    }
+
+    /**
      * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
      * before calling System.loadLibrary, this only applies when not using the chromium linker.
      *
@@ -186,7 +221,7 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            if (!Linker.isUsed()) {
+            if (!useCrazyLinker()) {
                 preloadAlreadyLocked(appContext);
             }
         }
@@ -195,7 +230,7 @@ public class LibraryLoader {
     private void preloadAlreadyLocked(Context appContext) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !Linker.isUsed();
+            assert !useCrazyLinker();
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloaderStatus = mLibraryPreloader.loadLibrary(appContext);
                 mLibraryPreloaderCalled = true;
@@ -396,12 +431,12 @@ public class LibraryLoader {
 
                 long startTime = SystemClock.uptimeMillis();
 
-                if (Linker.isUsed()) {
+                if (useCrazyLinker()) {
                     // Load libraries using the Chromium linker.
                     Linker linker = Linker.getInstance();
 
                     String apkFilePath =
-                            Linker.isInZipFile() ? appContext.getApplicationInfo().sourceDir : null;
+                            isInZipFile() ? appContext.getApplicationInfo().sourceDir : null;
                     linker.prepareLibraryLoad(apkFilePath);
 
                     for (String library : NativeLibraries.LIBRARIES) {
@@ -427,7 +462,7 @@ public class LibraryLoader {
                                     linker, apkFilePath, libFilePath);
                             incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
-                            if (!Linker.isInZipFile()
+                            if (!isInZipFile()
                                     && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                                 loadLibraryWithCustomLinkerAlreadyLocked(
                                         linker, null, getExtractedLibraryPath(appContext, library));
@@ -447,12 +482,12 @@ public class LibraryLoader {
                     // If the libraries are located in the zip file, assert that the device API
                     // level is M or higher. On devices lower than M, the libraries should
                     // always be loaded by Linker.
-                    assert !Linker.isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
+                    assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
 
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
                         try {
-                            if (!Linker.isInZipFile()) {
+                            if (!isInZipFile()) {
                                 // The extract and retry logic isn't needed because this path is
                                 // used only for local development.
                                 System.loadLibrary(library);
@@ -632,7 +667,7 @@ public class LibraryLoader {
     // onNativeInitializationComplete().
     private void recordBrowserProcessHistogramAlreadyLocked() {
         assert Thread.holdsLock(mLock);
-        if (Linker.isUsed()) {
+        if (useCrazyLinker()) {
             nativeRecordChromiumAndroidLinkerBrowserHistogram(mIsUsingBrowserSharedRelros,
                     mLoadAtFixedAddressFailed,
                     mLibraryWasLoadedFromApk ? LibraryLoadFromApkStatusCodes.SUCCESSFUL
@@ -651,7 +686,7 @@ public class LibraryLoader {
     public void registerRendererProcessHistogram(boolean requestedSharedRelro,
                                                  boolean loadAtFixedAddressFailed) {
         synchronized (mLock) {
-            if (Linker.isUsed()) {
+            if (useCrazyLinker()) {
                 nativeRegisterChromiumAndroidLinkerRendererHistogram(
                         requestedSharedRelro, loadAtFixedAddressFailed, mLibraryLoadTimeMs);
             }
