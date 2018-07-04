@@ -23,7 +23,6 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
@@ -171,8 +170,7 @@ class ResourceSchedulerTest : public testing::Test {
   void InitializeScheduler(bool enabled = true) {
     CleanupScheduler();
 
-    // Destroys previous scheduler, also destroys any previously created
-    // mock_timer_.
+    // Destroys previous scheduler.
     scheduler_.reset(new ResourceScheduler(enabled));
 
     scheduler()->SetResourceSchedulerParamsManagerForTests(
@@ -290,11 +288,6 @@ class ResourceSchedulerTest : public testing::Test {
                              net::RequestPriority new_priority,
                              int intra_priority = 0) {
     request->ChangePriority(new_priority, intra_priority);
-  }
-
-  void FireCoalescingTimer() {
-    EXPECT_TRUE(mock_timer_->IsRunning());
-    mock_timer_->Fire();
   }
 
   void RequestLimitOverrideConfigTestHelper(bool experiment_status) {
@@ -440,7 +433,6 @@ class ResourceSchedulerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   std::unique_ptr<ResourceScheduler> scheduler_;
-  base::MockTimer* mock_timer_;
   net::HttpServerPropertiesImpl http_server_properties_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;
