@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
@@ -969,15 +968,14 @@ struct ShapeRunWithFontOutput {
 };
 
 // An MRU cache of the results from calling ShapeRunWithFont. Use the same
-// maximum cache size as is usedin blink::ShapeCache.
-const int kShapeRunCacheSize = 10000;
+// maximum cache size as is used in blink::ShapeCache.
+constexpr int kShapeRunCacheSize = 10000;
 using ShapeRunCacheBase = base::HashingMRUCache<ShapeRunWithFontInput,
                                                 ShapeRunWithFontOutput,
                                                 ShapeRunWithFontInput::Hash>;
 class ShapeRunCache : public ShapeRunCacheBase {
  public:
   ShapeRunCache() : ShapeRunCacheBase(kShapeRunCacheSize) {}
-  ~ShapeRunCache() override {}
 };
 
 void ShapeRunWithFont(const ShapeRunWithFontInput& in,
