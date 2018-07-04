@@ -360,12 +360,14 @@ class MediaDevicesManager::AudioServiceDeviceListener
 MediaDevicesManager::MediaDevicesManager(
     media::AudioSystem* audio_system,
     const scoped_refptr<VideoCaptureManager>& video_capture_manager,
-    MediaStreamManager* media_stream_manager)
+    StopRemovedInputDeviceCallback stop_removed_input_device_cb,
+    UIInputDeviceChangeCallback ui_input_device_change_cb)
     : use_fake_devices_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)),
       audio_system_(audio_system),
       video_capture_manager_(video_capture_manager),
-      media_stream_manager_(media_stream_manager),
+      stop_removed_input_device_cb_(std::move(stop_removed_input_device_cb)),
+      ui_input_device_change_cb_(std::move(ui_input_device_change_cb)),
       permission_checker_(std::make_unique<MediaDevicesPermissionChecker>()),
       cache_infos_(NUM_MEDIA_DEVICE_TYPES),
       monitoring_started_(false),
@@ -375,6 +377,8 @@ MediaDevicesManager::MediaDevicesManager(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_system_);
   DCHECK(video_capture_manager_.get());
+  DCHECK(!stop_removed_input_device_cb_.is_null());
+  DCHECK(!ui_input_device_change_cb_.is_null());
   cache_policies_.fill(CachePolicy::NO_CACHE);
   has_seen_result_.fill(false);
 }
@@ -804,10 +808,9 @@ void MediaDevicesManager::UpdateSnapshot(
   bool need_update_device_change_subscribers = false;
   MediaDeviceInfoArray& old_snapshot = current_snapshot_[type];
 
-  if (old_snapshot.size() != new_snapshot.size() &&
-      (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
-       type == MEDIA_DEVICE_TYPE_VIDEO_INPUT)) {
-    StopRemovedDevices(type, new_snapshot);
+  if (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
+      type == MEDIA_DEVICE_TYPE_VIDEO_INPUT) {
+    MaybeStopRemovedInputDevices(type, new_snapshot);
   }
 
   // Update the cached snapshot and send notifications only if the device list
@@ -824,9 +827,8 @@ void MediaDevicesManager::UpdateSnapshot(
     bool is_video_with_good_group_ids =
         type == MEDIA_DEVICE_TYPE_VIDEO_INPUT &&
         (new_snapshot.size() == 0 || !new_snapshot[0].group_id.empty());
-    if (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT || is_video_with_good_group_ids) {
-      NotifyMediaStreamManager(type, new_snapshot);
-    }
+    if (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT || is_video_with_good_group_ids)
+      ui_input_device_change_cb_.Run(type, new_snapshot);
 
     // Do not notify device-change subscribers after the first enumeration
     // result, since it is not due to an actual device change.
@@ -899,15 +901,12 @@ void MediaDevicesManager::HandleDevicesChanged(MediaDeviceType type) {
   DoEnumerateDevices(type);
 }
 
-void MediaDevicesManager::StopRemovedDevices(
+void MediaDevicesManager::MaybeStopRemovedInputDevices(
     MediaDeviceType type,
     const MediaDeviceInfoArray& new_snapshot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
          type == MEDIA_DEVICE_TYPE_VIDEO_INPUT);
-
-  if (!media_stream_manager_)
-    return;
 
   for (const auto& old_device_info : current_snapshot_[type]) {
     auto it = std::find_if(new_snapshot.begin(), new_snapshot.end(),
@@ -918,21 +917,8 @@ void MediaDevicesManager::StopRemovedDevices(
     // If a device was removed, notify the MediaStreamManager to stop all
     // streams using that device.
     if (it == new_snapshot.end())
-      media_stream_manager_->StopRemovedDevice(type, old_device_info);
+      stop_removed_input_device_cb_.Run(type, old_device_info);
   }
-}
-
-void MediaDevicesManager::NotifyMediaStreamManager(
-    MediaDeviceType type,
-    const MediaDeviceInfoArray& new_snapshot) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
-         type == MEDIA_DEVICE_TYPE_VIDEO_INPUT);
-
-  if (!media_stream_manager_)
-    return;
-
-  media_stream_manager_->NotifyDevicesChanged(type, new_snapshot);
 }
 
 void MediaDevicesManager::NotifyDeviceChangeSubscribers(
