@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
+#include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 
 using blink::WebInputEvent;
@@ -23,14 +24,17 @@ namespace {
 
 constexpr char kPredictor[] = "predictor";
 constexpr char kInputEventPredictorTypeLsq[] = "lsq";
+constexpr char kInputEventPredictorTypeKalman[] = "kalman";
 
 }  // namespace
 
 InputEventPrediction::InputEventPrediction() {
-  std::string predictor_type_ = GetFieldTrialParamValueByFeature(
+  std::string predictor_type = GetFieldTrialParamValueByFeature(
       features::kResamplingInputEvents, kPredictor);
-  if (predictor_type_ == kInputEventPredictorTypeLsq)
+  if (predictor_type == kInputEventPredictorTypeLsq)
     selected_predictor_type_ = PredictorType::kLsq;
+  else if (predictor_type == kInputEventPredictorTypeKalman)
+    selected_predictor_type_ = PredictorType::kKalman;
   else
     selected_predictor_type_ = PredictorType::kEmpty;
 
@@ -70,6 +74,8 @@ std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
       return std::make_unique<ui::EmptyPredictor>();
     case PredictorType::kLsq:
       return std::make_unique<ui::LeastSquaresPredictor>();
+    case PredictorType::kKalman:
+      return std::make_unique<ui::KalmanPredictor>();
   }
 }
 
