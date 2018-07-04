@@ -499,6 +499,8 @@ void TracingHandler::OnRecordingEnabled(
 
 void TracingHandler::OnBufferUsage(float percent_full,
                                    size_t approximate_event_count) {
+  if (!did_initiate_recording_)
+    return;
   // TODO(crbug426117): remove set_value once all clients have switched to
   // the new interface of the event.
   frontend_->BufferUsage(percent_full, approximate_event_count, percent_full);
