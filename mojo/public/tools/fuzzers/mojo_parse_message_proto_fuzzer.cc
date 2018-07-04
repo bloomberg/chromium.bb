@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 #include "mojo/public/tools/fuzzers/mojo_fuzzer.pb.h"
@@ -49,7 +49,7 @@ struct Environment {
   Environment() : message_loop(base::MessageLoop::TYPE_UI) {
     base::TaskScheduler::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
-    mojo::edk::Init();
+    mojo::core::Init();
   }
 
   // Message loop to send and handle messages on.

@@ -246,7 +246,7 @@ typedef void (*MojoProcessErrorHandler)(
 // An invitation is used to invite another process to join this process's
 // IPC network. The caller must already be a member of a Mojo network, either
 // either by itself having been previously invited, or by being the Mojo broker
-// process initialized via private Mojo APIs (i.e. the EDK).
+// process initialized via the Mojo Core Embedder API.
 //
 // Invitations can have message pipes attached to them, and these message pipes
 // are used to bootstrap Mojo IPC between the inviter and the invitee. See

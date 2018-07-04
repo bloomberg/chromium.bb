@@ -4,7 +4,7 @@
 
 #include "base/android/base_jni_onload.h"
 #include "base/android/jni_android.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
@@ -12,6 +12,6 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (!base::android::OnJNIOnLoadInit())
     return -1;
 
-  mojo::edk::Init();
+  mojo::core::Init();
   return JNI_VERSION_1_4;
 }

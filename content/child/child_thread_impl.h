@@ -47,7 +47,7 @@ class SyncMessageFilter;
 
 namespace mojo {
 class OutgoingInvitation;
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }  // namespace edk
 }  // namespace mojo
@@ -222,7 +222,7 @@ class CONTENT_EXPORT ChildThreadImpl
   mojom::FontCacheWin* GetFontCacheWin();
 #endif
 
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
   mojo::BindingSet<mojom::ChildControl> child_control_bindings_;

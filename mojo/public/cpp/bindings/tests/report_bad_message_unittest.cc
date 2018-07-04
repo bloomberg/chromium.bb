@@ -6,7 +6,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
@@ -62,16 +62,15 @@ class ReportBadMessageTest : public BindingsTestBase {
   ReportBadMessageTest() {}
 
   void SetUp() override {
-    mojo::edk::SetDefaultProcessErrorCallback(
-        base::Bind(&ReportBadMessageTest::OnProcessError,
-                   base::Unretained(this)));
+    mojo::core::SetDefaultProcessErrorCallback(base::Bind(
+        &ReportBadMessageTest::OnProcessError, base::Unretained(this)));
 
     impl_.BindImpl(MakeRequest(&proxy_));
   }
 
   void TearDown() override {
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   TestBadMessages* proxy() { return proxy_.get(); }

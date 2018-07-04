@@ -25,7 +25,7 @@ class ServiceManagerConnection;
 
 namespace mojo {
 class IncomingInvitation;
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }  // namespace edk
 }  // namespace mojo
@@ -58,7 +58,7 @@ class ReplayProcess : public IPC::Listener {
  private:
   void SendNextMessage();
 
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<mojo::IncomingInvitation> mojo_invitation_;
   std::unique_ptr<content::ServiceManagerConnection>
       service_manager_connection_;

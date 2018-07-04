@@ -443,13 +443,13 @@ MojoResult MojoAcceptInvitation(
 }  // extern "C"
 
 void MojoEmbedderSetSystemThunks(const MojoSystemThunks* thunks) {
-  // Assume embedders will always use matching versions of the EDK and public
-  // APIs.
+  // Assume embedders will always use matching versions of the Mojo Core and
+  // public APIs.
   DCHECK_EQ(thunks->size, sizeof(*g_thunks));
 
   // This should only have to check that the |g_thunks->size| is zero, but we
-  // have multiple EDK initializations in some test suites still. For now we
-  // allow double calls as long as they're the same thunks as before.
+  // have multiple Mojo Core initializations in some test suites still. For now
+  // we allow double calls as long as they're the same thunks as before.
   DCHECK(g_thunks->size == 0 || !memcmp(&*g_thunks, thunks, sizeof(*g_thunks)))
       << "Cannot set embedder thunks after Mojo API calls have been made.";
 

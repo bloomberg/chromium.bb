@@ -30,7 +30,7 @@ class WaitableEvent;
 
 namespace mojo {
 class IsolatedConnection;
-namespace edk {
+namespace core {
 class ScopedIPCSupport;
 }
 }
@@ -117,7 +117,7 @@ class ServiceProcess : public ServiceIPCServer::Client,
   std::unique_ptr<ServiceProcessPrefs> service_prefs_;
   std::unique_ptr<ServiceIPCServer> ipc_server_;
   std::unique_ptr<ServiceProcessState> service_process_state_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
 
   // An event that will be signalled when we shutdown.
