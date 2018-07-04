@@ -9,8 +9,8 @@
 #include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/services/device_sync/cryptauth_client_factory_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enroller_factory_impl.h"
+#include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_manager_impl.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
@@ -324,9 +324,10 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
           gcm_driver_, pref_service_.get());
   cryptauth_gcm_manager_->StartListening();
 
-  cryptauth_client_factory_ = std::make_unique<CryptAuthClientFactoryImpl>(
-      identity_manager_, url_request_context_,
-      cryptauth::device_classifier_util::GetDeviceClassifier());
+  cryptauth_client_factory_ =
+      std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
+          identity_manager_, url_request_context_,
+          cryptauth::device_classifier_util::GetDeviceClassifier());
 
   // Initialize |crypauth_device_manager_| and start observing. Start() is not
   // called yet since the device has not completed enrollment.

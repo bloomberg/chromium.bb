@@ -7,14 +7,17 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/cryptauth/cryptauth_api_call_flow.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class OAuth2TokenService;
+namespace identity {
+class IdentityManager;
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace identity
+class GoogleServiceAuthError;
 
 namespace cryptauth {
 
@@ -26,13 +29,11 @@ class CryptAuthClientImpl : public CryptAuthClient {
   typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   // Creates the client using |url_request_context| to make the HTTP request
-  // through |api_call_flow|. CryptAuthClientImpl takes ownership of
-  // |access_token_fetcher|, which provides the access token authorizing
-  // CryptAuth requests. The |device_classifier| argument contains basic device
-  // information of the caller (e.g. version and device type).
+  // through |api_call_flow|. The |device_classifier| argument contains basic
+  // device information of the caller (e.g. version and device type).
   CryptAuthClientImpl(
       std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
-      std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
       const DeviceClassifier& device_classifier);
   ~CryptAuthClientImpl() override;
@@ -85,7 +86,8 @@ class CryptAuthClientImpl : public CryptAuthClient {
   void OnAccessTokenFetched(
       const std::string& serialized_request,
       const base::Callback<void(const ResponseProto&)>& response_callback,
-      const std::string& access_token);
+      GoogleServiceAuthError error,
+      std::string access_token);
 
   // Called with CryptAuthApiCallFlow completes successfully to deserialize and
   // return the result.
@@ -100,8 +102,11 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // Constructs and executes the actual HTTP request.
   std::unique_ptr<CryptAuthApiCallFlow> api_call_flow_;
 
+  identity::IdentityManager* identity_manager_;
+
   // Fetches the access token authorizing the API calls.
-  std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   // The context for network requests.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
@@ -131,14 +136,12 @@ class CryptAuthClientImpl : public CryptAuthClient {
 // Implementation of CryptAuthClientFactory.
 class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
  public:
-  // |token_service|: Gets the user's access token.
-  //     Not owned, so |token_service| needs to outlive this object.
-  // |account_id|: The account id of the user.
+  // |identity_manager|: Gets the user's access token.
+  //     Not owned, so |identity_manager| needs to outlive this object.
   // |url_request_context|: The request context to make the HTTP requests.
   // |device_classifier|: Contains basic device information of the client.
   CryptAuthClientFactoryImpl(
-      OAuth2TokenService* token_service,
-      const std::string& account_id,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
       const DeviceClassifier& device_classifier);
   ~CryptAuthClientFactoryImpl() override;
@@ -147,8 +150,7 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
   std::unique_ptr<CryptAuthClient> CreateInstance() override;
 
  private:
-  OAuth2TokenService* token_service_;
-  const std::string account_id_;
+  identity::IdentityManager* identity_manager_;
   const scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   const DeviceClassifier device_classifier_;
 
