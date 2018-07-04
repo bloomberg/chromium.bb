@@ -65,6 +65,7 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void BeginDrag(const gfx::Point& location);
   void UpdateDrag(const gfx::Point& location);
   void EndDrag(const gfx::Point& location);
+  void Fling(int velocity);
 
   // Show user selector popup widget. Called from the view.
   void ShowUserChooserWidget();
@@ -138,6 +139,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
+
+  // Starts animation to expand or collapse the bubble.
+  void StartAnimation(bool expand);
 
   // Model that stores UI specific variables. Unowned.
   UnifiedSystemTrayModel* const model_;

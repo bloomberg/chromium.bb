@@ -248,6 +248,9 @@ void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
       controller_->EndDrag(screen_location);
       event->SetHandled();
       break;
+    case ui::ET_SCROLL_FLING_START:
+      controller_->Fling(event->details().velocity_y());
+      break;
     default:
       break;
   }
