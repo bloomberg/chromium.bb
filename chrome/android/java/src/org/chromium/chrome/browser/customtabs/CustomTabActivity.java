@@ -379,6 +379,10 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     public void setBottomBarContentView(View view) {
+        // This method is currently only used by dynamic modules, and all its known uses require
+        // the shadow to be hidden. If this requirement ever changes, we could introduce an explicit
+        // API for that.
+        mBottomBarDelegate.setShowShadow(false);
         mBottomBarDelegate.setBottomBarContentView(view);
         mBottomBarDelegate.showBottomBarIfNecessary();
     }
@@ -389,6 +393,10 @@ public class CustomTabActivity extends ChromeActivity {
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addContentView(view, layoutParams);
+    }
+
+    public void setBottomBarHeight(int height) {
+        mBottomBarDelegate.setBottomBarHeight(height);
     }
 
     @Override
