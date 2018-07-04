@@ -132,7 +132,7 @@ class PendingProfiles {
   friend struct base::DefaultSingletonTraits<PendingProfiles>;
 
   PendingProfiles();
-  ~PendingProfiles();
+  ~PendingProfiles() = default;
 
   mutable base::Lock lock_;
 
@@ -207,8 +207,6 @@ void PendingProfiles::ResetToDefaultStateForTesting() {
 // determined by the initial recording state provided to
 // CallStackProfileMetricsProvider.
 PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
-
-PendingProfiles::~PendingProfiles() {}
 
 // Functions to process completed profile ------------------------------------
 
