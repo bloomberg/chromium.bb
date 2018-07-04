@@ -101,6 +101,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
 void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
   card_unmask_view_ = nullptr;
   LogOnCloseEvents();
+  unmasking_result_ = AutofillClient::NONE;
   if (delegate_)
     delegate_->OnUnmaskPromptClosed();
 }

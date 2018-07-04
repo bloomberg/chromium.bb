@@ -136,7 +136,10 @@ void CardUnmaskPromptViews::GotVerificationResult(
     DialogModelChanged();
   }
 
-  Layout();
+  // Since we may have affected the layout of the button row, we retrigger a
+  // layout of the whole dialog (contents and button row).
+  InvalidateLayout();
+  parent()->Layout();
 }
 
 void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
@@ -249,8 +252,12 @@ void CardUnmaskPromptViews::DeleteDelegate() {
 
 int CardUnmaskPromptViews::GetDialogButtons() const {
   // In permanent error state, only the "close" button is shown.
-  if (controller_->GetVerificationResult() == AutofillClient::PERMANENT_FAILURE)
+  AutofillClient::PaymentsRpcResult result =
+      controller_->GetVerificationResult();
+  if (result == AutofillClient::PERMANENT_FAILURE ||
+      result == AutofillClient::NETWORK_ERROR) {
     return ui::DIALOG_BUTTON_CANCEL;
+  }
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
