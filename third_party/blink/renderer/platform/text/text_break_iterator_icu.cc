@@ -870,30 +870,6 @@ bool IsWordTextBreak(TextBreakIterator* iterator) {
   return rule_status != UBRK_WORD_NONE;
 }
 
-static TextBreakIterator* SetUpIteratorWithRules(const char* break_rules,
-                                                 const UChar* string,
-                                                 int length) {
-  if (!string)
-    return nullptr;
-
-  static TextBreakIterator* iterator = nullptr;
-  if (!iterator) {
-    UParseError parse_status;
-    UErrorCode open_status = U_ZERO_ERROR;
-    // break_rules is ASCII. Pick the most efficient UnicodeString ctor.
-    iterator = new icu::RuleBasedBreakIterator(
-        icu::UnicodeString(break_rules, -1, US_INV), parse_status, open_status);
-    DCHECK(U_SUCCESS(open_status))
-        << "ICU could not open a break iterator: " << u_errorName(open_status)
-        << " (" << open_status << ")";
-    if (!iterator)
-      return nullptr;
-  }
-
-  SetText16(iterator, string, length);
-  return iterator;
-}
-
 TextBreakIterator* CursorMovementIterator(const UChar* string, int length) {
   // This rule set is based on character-break iterator rules of ICU 4.0
   // <http://source.icu-project.org/repos/icu/icu/tags/release-4-0/source/data/brkitr/char.txt>.
@@ -984,7 +960,28 @@ TextBreakIterator* CursorMovementIterator(const UChar* string, int length) {
       "!!safe_reverse;"
       "!!safe_forward;";
 
-  return SetUpIteratorWithRules(kRules, string, length);
+  if (!string)
+    return nullptr;
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<std::unique_ptr<icu::RuleBasedBreakIterator>>,
+      thread_specific, ());
+
+  std::unique_ptr<icu::RuleBasedBreakIterator>& iterator = *thread_specific;
+
+  if (!iterator) {
+    UParseError parse_status;
+    UErrorCode open_status = U_ZERO_ERROR;
+    // break_rules is ASCII. Pick the most efficient UnicodeString ctor.
+    iterator = std::make_unique<icu::RuleBasedBreakIterator>(
+        icu::UnicodeString(kRules, -1, US_INV), parse_status, open_status);
+    DCHECK(U_SUCCESS(open_status))
+        << "ICU could not open a break iterator: " << u_errorName(open_status)
+        << " (" << open_status << ")";
+  }
+
+  SetText16(iterator.get(), string, length);
+  return iterator.get();
 }
 
 }  // namespace blink
