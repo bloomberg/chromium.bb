@@ -3839,7 +3839,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemePartition) {
   run.range = Range(0, 4);
   run.glyph_count = 2;
   run.glyph_to_char.resize(2);
-  run.positions.reset(new SkPoint[4]);
+  run.positions.resize(4);
   run.width = 20;
 
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();

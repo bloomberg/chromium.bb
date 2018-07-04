@@ -76,8 +76,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   UBiDiLevel level;
   UScriptCode script;
 
-  std::unique_ptr<uint16_t[]> glyphs;
-  std::unique_ptr<SkPoint[]> positions;
+  std::vector<uint16_t> glyphs;
+  std::vector<SkPoint> positions;
   std::vector<uint32_t> glyph_to_char;
   size_t glyph_count;
 
