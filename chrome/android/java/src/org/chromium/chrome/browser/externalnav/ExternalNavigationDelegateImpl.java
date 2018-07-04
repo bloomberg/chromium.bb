@@ -523,7 +523,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl) {
+    public @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
         int transitionType = PageTransition.LINK;
         final LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
         if (!TextUtils.isEmpty(referrerUrl)) {
@@ -539,9 +539,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 @Override
                 public void run() {
                     // Tab might be closed when this is run. See https://crbug.com/662877
-                    if (!mIsTabDestroyed) {
-                        mTab.loadUrl(loadUrlParams);
-                    }
+                    if (!mIsTabDestroyed) mTab.loadUrl(loadUrlParams);
                 }
             });
             return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;

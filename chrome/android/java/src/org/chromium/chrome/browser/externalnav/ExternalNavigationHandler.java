@@ -39,6 +39,8 @@ import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
@@ -73,29 +75,40 @@ public class ExternalNavigationHandler {
     static final String EXTRA_MARKET_REFERRER = "market_referrer";
 
     // These values are persisted in histograms. Please do not renumber. Append only.
-    @IntDef({AIA_INTENT_FALLBACK_USED, AIA_INTENT_SERP, AIA_INTENT_OTHER, AIA_INTENT_BOUNDARY})
-    public @interface AiaIntent {}
-    private static final int AIA_INTENT_FALLBACK_USED = 0;
-    private static final int AIA_INTENT_SERP = 1;
-    private static final int AIA_INTENT_OTHER = 2;
-    private static final int AIA_INTENT_BOUNDARY = 3;
+    @IntDef({AiaIntent.FALLBACK_USED, AiaIntent.SERP, AiaIntent.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AiaIntent {
+        int FALLBACK_USED = 0;
+        int SERP = 1;
+        int OTHER = 2;
+
+        int NUM_ENTRIES = 3;
+    }
 
     private final ExternalNavigationDelegate mDelegate;
 
     /**
      * Result types for checking if we should override URL loading.
      * NOTE: this enum is used in UMA, do not reorder values. Changes should be append only.
+     * Values should be numerated from 0 and can't have gaps.
      */
-    public enum OverrideUrlLoadingResult {
+    @IntDef({OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+            OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB,
+            OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+            OverrideUrlLoadingResult.NO_OVERRIDE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OverrideUrlLoadingResult {
         /* We should override the URL loading and launch an intent. */
-        OVERRIDE_WITH_EXTERNAL_INTENT,
+        int OVERRIDE_WITH_EXTERNAL_INTENT = 0;
         /* We should override the URL loading and clobber the current tab. */
-        OVERRIDE_WITH_CLOBBERING_TAB,
+        int OVERRIDE_WITH_CLOBBERING_TAB = 1;
         /* We should override the URL loading.  The desired action will be determined
          * asynchronously (e.g. by requiring user confirmation). */
-        OVERRIDE_WITH_ASYNC_ACTION,
+        int OVERRIDE_WITH_ASYNC_ACTION = 2;
         /* We shouldn't override the URL loading. */
-        NO_OVERRIDE,
+        int NO_OVERRIDE = 3;
+
+        int NUM_ENTRIES = 4;
     }
 
     /**
@@ -121,7 +134,7 @@ public class ExternalNavigationHandler {
      * @return Whether the URL generated an intent, caused a navigation in
      *         current tab, or wasn't handled at all.
      */
-    public OverrideUrlLoadingResult shouldOverrideUrlLoading(ExternalNavigationParams params) {
+    public @OverrideUrlLoadingResult int shouldOverrideUrlLoading(ExternalNavigationParams params) {
         if (DEBUG) Log.i(TAG, "shouldOverrideUrlLoading called on " + params.getUrl());
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
@@ -143,7 +156,8 @@ public class ExternalNavigationHandler {
         }
 
         long time = SystemClock.elapsedRealtime();
-        OverrideUrlLoadingResult result = shouldOverrideUrlLoadingInternal(
+        @OverrideUrlLoadingResult
+        int result = shouldOverrideUrlLoadingInternal(
                 params, intent, hasBrowserFallbackUrl, browserFallbackUrl);
         RecordHistogram.recordTimesHistogram("Android.StrictMode.OverrideUrlLoadingTime",
                 SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
@@ -154,8 +168,8 @@ public class ExternalNavigationHandler {
                         || !params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
             if (InstantAppsHandler.isIntentToInstantApp(intent)) {
                 RecordHistogram.recordEnumeratedHistogram(
-                        "Android.InstantApps.DirectInstantAppsIntent", AIA_INTENT_FALLBACK_USED,
-                        AIA_INTENT_BOUNDARY);
+                        "Android.InstantApps.DirectInstantAppsIntent", AiaIntent.FALLBACK_USED,
+                        AiaIntent.NUM_ENTRIES);
             }
 
             return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
@@ -179,7 +193,7 @@ public class ExternalNavigationHandler {
         return true;
     }
 
-    private OverrideUrlLoadingResult shouldOverrideUrlLoadingInternal(
+    private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
             String browserFallbackUrl) {
         // http://crbug.com/441284 : Disallow firing external intent while Chrome is in the
@@ -501,14 +515,14 @@ public class ExternalNavigationHandler {
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent && mDelegate.isSerpReferrer();
         if (shouldProxyForInstantApps) {
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
-                    AIA_INTENT_SERP, AIA_INTENT_BOUNDARY);
+                    AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
             intent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
         } else if (isDirectInstantAppsIntent) {
             // For security reasons, we disable all intent:// URLs to Instant Apps that are
             // not coming from SERP.
             if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Intent URL to an Instant App");
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
-                    AIA_INTENT_OTHER, AIA_INTENT_BOUNDARY);
+                    AiaIntent.OTHER, AiaIntent.NUM_ENTRIES);
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         } else {
             // Make sure this extra is not sent unless we've done the verification.
@@ -596,7 +610,7 @@ public class ExternalNavigationHandler {
      * @return OVERRIDE_WITH_EXTERNAL_INTENT when we successfully started market activity,
      *         NO_OVERRIDE otherwise.
      */
-    private OverrideUrlLoadingResult sendIntentToMarket(
+    private @OverrideUrlLoadingResult int sendIntentToMarket(
             String packageName, String marketReferrer, ExternalNavigationParams params) {
         try {
             Uri marketUri = new Uri.Builder()
@@ -642,7 +656,7 @@ public class ExternalNavigationHandler {
      * @return {@link OverrideUrlLoadingResult} if the tab was clobbered, or we launched an
      *         intent.
      */
-    private OverrideUrlLoadingResult clobberCurrentTabWithFallbackUrl(
+    private @OverrideUrlLoadingResult int clobberCurrentTabWithFallbackUrl(
             String browserFallbackUrl, ExternalNavigationParams params) {
         // If the fallback URL is a link to Play Store, send the user to Play Store app
         // instead: crbug.com/638672.

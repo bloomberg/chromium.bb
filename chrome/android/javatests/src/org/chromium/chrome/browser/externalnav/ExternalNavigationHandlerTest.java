@@ -1033,7 +1033,8 @@ public class ExternalNavigationHandlerTest {
                 new ExternalNavigationParams.Builder(YOUTUBE_MOBILE_URL, false)
                         .setOpenInNewTab(true)
                         .build();
-        OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+        @OverrideUrlLoadingResult
+        int result = mUrlHandler.shouldOverrideUrlLoading(params);
         Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
         Assert.assertTrue(mDelegate.startActivityIntent != null);
         Assert.assertTrue(
@@ -1581,7 +1582,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl) {
+        public @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
             mNewUrlAfterClobbering = url;
             mReferrerUrlForClobbering = referrerUrl;
             return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
@@ -1759,8 +1760,8 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
-        public void expecting(OverrideUrlLoadingResult expectedOverrideResult,
-                int otherExpectation) {
+        public void expecting(
+                @OverrideUrlLoadingResult int expectedOverrideResult, int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
             boolean expectStartActivity =
                     (otherExpectation & (START_WEBAPK | START_OTHER_ACTIVITY)) != 0;
@@ -1784,7 +1785,8 @@ public class ExternalNavigationHandlerTest {
                             .setNativeClientPackageName(mDelegate.getReferrerWebappPackageName())
                             .setHasUserGesture(mHasUserGesture)
                             .build();
-            OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+            @OverrideUrlLoadingResult
+            int result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
             boolean startWebApkCalled = false;
             if (mDelegate.startActivityIntent != null) {

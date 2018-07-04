@@ -99,7 +99,8 @@ public class CustomTabExternalNavigationTest {
         final String testUrl = "customtab://customtabtest/intent";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
-        OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+        @OverrideUrlLoadingResult
+        int result = mUrlHandler.shouldOverrideUrlLoading(params);
         Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
         Assert.assertTrue("A dummy activity should have been started to handle the special url.",
                 mNavigationDelegate.hasExternalActivityStarted());
@@ -115,7 +116,8 @@ public class CustomTabExternalNavigationTest {
         final String testUrl = "http://customtabtest.com";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
-        OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+        @OverrideUrlLoadingResult
+        int result = mUrlHandler.shouldOverrideUrlLoading(params);
         Assert.assertEquals(OverrideUrlLoadingResult.NO_OVERRIDE, result);
         Assert.assertFalse("External activities should not be started to handle the url",
                 mNavigationDelegate.hasExternalActivityStarted());
