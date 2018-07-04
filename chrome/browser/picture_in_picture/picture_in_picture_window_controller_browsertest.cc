@@ -67,14 +67,10 @@ class PictureInPictureWindowControllerBrowserTest
 
     SetUpWindowController(active_web_contents);
 
-    ASSERT_TRUE(content::ExecuteScript(active_web_contents,
-                                       "enterPictureInPicture();"));
-
-    // Wait for confirmation that the window was created.
-    base::string16 expected_title = base::ASCIIToUTF16("1");
-    EXPECT_EQ(expected_title,
-              content::TitleWatcher(active_web_contents, expected_title)
-                  .WaitAndGetTitle());
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
   }
 
  private:
@@ -102,18 +98,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller() != nullptr);
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting() != nullptr);
-  ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
-  // Wait for resize event from the page.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-
-  ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
 // Tests that when an active WebContents accurately tracks whether a video
@@ -138,15 +130,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   SetUpWindowController(active_web_contents);
   ASSERT_TRUE(window_controller());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Wait for title update to confirm and then test there is video playing in
-  // Picture-in-Picture.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   EXPECT_TRUE(active_web_contents->HasPictureInPictureVideo());
 
@@ -179,18 +166,15 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(overlay_window);
   ASSERT_FALSE(overlay_window->IsVisible());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   static_cast<OverlayWindowViews*>(overlay_window)
       ->SetSize(gfx::Size(400, 400));
 
-  expected_title = base::ASCIIToUTF16("2");
+  base::string16 expected_title = base::ASCIIToUTF16("resized");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -216,13 +200,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller());
 
   EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
 
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   bool in_picture_in_picture = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -231,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   window_controller()->Close(true /* should_pause_video */);
 
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -256,24 +238,21 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(active_web_contents);
 
   SetUpWindowController(active_web_contents);
-  ASSERT_TRUE(window_controller());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   bool in_picture_in_picture = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
+  ASSERT_TRUE(window_controller());
   window_controller()->Close(true /* should_pause_video */);
 
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -297,19 +276,17 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller());
 
   EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
 
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   EXPECT_TRUE(
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
 
   // 'left' is sent when the first video leaves Picture-in-Picture.
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -338,14 +315,13 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller());
 
   EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
 
-  // Check that requesting Picture-in-Picture promise was resolved.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
 
   bool in_picture_in_picture = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -356,19 +332,17 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
 
   // 'left' is sent when the video leaves Picture-in-Picture.
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Check that requesting Picture-in-Picture promise was resolved.
-  expected_title = base::ASCIIToUTF16("2");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
 
   in_picture_in_picture = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -399,14 +373,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller());
 
   EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
 
-  // Check that the Picture-in-Picture window was resized once.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   bool in_picture_in_picture = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -417,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
 
   // 'left' is sent when the first video leaves Picture-in-Picture.
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -450,13 +421,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   SetUpWindowController(active_web_contents);
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  base::string16 expected_title = base::ASCIIToUTF16("entered_pip");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 }
 
 // Tests that calling PictureInPictureWindowController::Close() twice has no
@@ -476,19 +444,15 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   SetUpWindowController(active_web_contents);
   ASSERT_TRUE(window_controller());
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Wait for resize event from the page.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   window_controller()->Close(true /* should_pause_video */);
 
   // Wait for the window to close.
-  expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -530,14 +494,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   SetUpWindowController(active_web_contents);
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Wait for resize event from the page.
-  base::string16 expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -558,13 +520,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   SetUpWindowController(active_web_contents);
 
-  EXPECT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Wait for resize event from the page.
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
@@ -585,14 +546,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   SetUpWindowController(active_web_contents);
 
-  EXPECT_TRUE(content::ExecuteScript(active_web_contents,
-                                     "requestPictureInPictureAndDisable();"));
-
-  // Wait for promise to reject.
-  base::string16 expected_title = base::ASCIIToUTF16("rejected");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = true;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "requestPictureInPictureAndDisable();", &result));
+  EXPECT_FALSE(result);
 
   ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
@@ -627,10 +584,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       iframe, "enterPictureInPicture();", &result));
-  EXPECT_EQ("done", result);
+  EXPECT_TRUE(result);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -671,10 +628,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       iframe, "enterPictureInPicture();", &result));
-  EXPECT_EQ("done", result);
+  EXPECT_TRUE(result);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -748,14 +705,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  ASSERT_TRUE(
-      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
-
-  // Wait for resize event from the page.
-  expected_title = base::ASCIIToUTF16("1");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
 
   EXPECT_FALSE(active_web_contents->IsFullscreenForCurrentTab());
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
