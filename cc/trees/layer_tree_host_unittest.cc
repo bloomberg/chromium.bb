@@ -7758,6 +7758,48 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);
 
+// Makes sure that LayerTreeHost does not pick up changes to
+// viz::LocalSurfaceIds that only involve the child sequence number.
+class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_surface_synchronization = true;
+  }
+
+  void BeginTest() override {
+    expected_local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
+    EXPECT_TRUE(child_allocator_.UpdateFromParent(expected_local_surface_id_));
+    child_local_surface_id_ = child_allocator_.GenerateId();
+    EXPECT_NE(expected_local_surface_id_, child_local_surface_id_);
+    PostSetLocalSurfaceIdToMainThread(expected_local_surface_id_);
+    PostSetLocalSurfaceIdToMainThread(child_local_surface_id_);
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    // We should not be picking up the newer |child_local_surface_id_|.
+    EXPECT_EQ(expected_local_surface_id_,
+              host_impl->active_tree()->local_surface_id_from_parent());
+    return draw_result;
+  }
+
+  void DisplayReceivedLocalSurfaceIdOnThread(
+      const viz::LocalSurfaceId& local_surface_id) override {
+    EXPECT_EQ(expected_local_surface_id_, local_surface_id);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  viz::LocalSurfaceId expected_local_surface_id_;
+  viz::LocalSurfaceId child_local_surface_id_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
+  viz::ChildLocalSurfaceIdAllocator child_allocator_;
+};
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceIdSkipChildNum);
+
 // Makes sure that viz::LocalSurfaceId allocation requests propagate all the way
 // to LayerTreeFrameSink.
 class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {

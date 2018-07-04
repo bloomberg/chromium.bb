@@ -1212,8 +1212,13 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
 
 void LayerTreeHost::SetLocalSurfaceIdFromParent(
     const viz::LocalSurfaceId& local_surface_id_from_parent) {
-  if (local_surface_id_from_parent_ == local_surface_id_from_parent)
+  if (local_surface_id_from_parent_.parent_sequence_number() ==
+          local_surface_id_from_parent.parent_sequence_number() &&
+      local_surface_id_from_parent_.embed_token() ==
+          local_surface_id_from_parent.embed_token()) {
     return;
+  }
+
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Submission.Flow",
