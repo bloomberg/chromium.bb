@@ -156,6 +156,13 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   last_submitted_device_scale_factor_ = frame.device_scale_factor();
   last_submitted_size_in_pixels_ = frame.size_in_pixels();
 
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(local_surface_id_.submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SubmitCompositorFrame", "surface_id", local_surface_id_.ToString());
+
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
       tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()

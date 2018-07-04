@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
+#include "base/trace_event/trace_event.h"
 
 namespace viz {
 
@@ -13,9 +14,11 @@ base::LazyInstance<LocalSurfaceId>::Leaky g_invalid_local_surface_id =
     LAZY_INSTANCE_INITIALIZER;
 
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
-    : current_local_surface_id_(kInitialParentSequenceNumber,
+    : current_local_surface_id_(kInvalidParentSequenceNumber,
                                 kInitialChildSequenceNumber,
-                                base::UnguessableToken::Create()) {}
+                                base::UnguessableToken::Create()) {
+  GenerateId();
+}
 
 bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
     const LocalSurfaceId& child_allocated_local_surface_id) {
@@ -24,6 +27,13 @@ bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
     current_local_surface_id_.child_sequence_number_ =
         child_allocated_local_surface_id.child_sequence_number_;
     is_invalid_ = false;
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Embed.Flow",
+        TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "UpdateFromChild", "local_surface_id",
+        current_local_surface_id_.ToString());
     return true;
   }
   return false;
@@ -42,6 +52,22 @@ const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
   if (!is_allocation_suppressed_)
     ++current_local_surface_id_.parent_sequence_number_;
   is_invalid_ = false;
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_.ToString());
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_.submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_.ToString());
+
   return current_local_surface_id_;
 }
 

@@ -33,6 +33,14 @@ void SurfaceLayerImpl::SetPrimarySurfaceId(
       deadline_in_frames_ == deadline_in_frames) {
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(surface_id.local_surface_id().embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ImplSetPrimarySurfaceId", "surface_id", surface_id.ToString());
+
   primary_surface_id_ = surface_id;
   deadline_in_frames_ = deadline_in_frames;
   NoteLayerPropertyChanged();
@@ -41,6 +49,13 @@ void SurfaceLayerImpl::SetPrimarySurfaceId(
 void SurfaceLayerImpl::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
   if (fallback_surface_id_ == surface_id)
     return;
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(surface_id.local_surface_id().submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ImplSetFallbackSurfaceId", "surface_id", surface_id.ToString());
 
   fallback_surface_id_ = surface_id;
   NoteLayerPropertyChanged();

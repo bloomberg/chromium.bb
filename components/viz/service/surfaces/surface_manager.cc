@@ -317,6 +317,13 @@ void SurfaceManager::AddSurfaceReferenceImpl(
     return;
   }
 
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(child_id.local_surface_id().embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN, "step", "NewReference", "reference",
+      reference.ToString());
+
   references_[parent_id].children.insert(child_id);
   references_[child_id].parents.insert(parent_id);
 
