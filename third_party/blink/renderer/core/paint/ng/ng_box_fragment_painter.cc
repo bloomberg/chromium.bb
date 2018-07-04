@@ -180,7 +180,8 @@ void NGBoxFragmentPainter::PaintInlineBox(const PaintInfo& paint_info,
                                           const LayoutPoint& paint_offset) {
   const LayoutPoint adjusted_paint_offset =
       paint_offset + box_fragment_.Offset().ToLayoutPoint();
-  if (paint_info.phase == PaintPhase::kForeground)
+  if (paint_info.phase == PaintPhase::kForeground &&
+      box_fragment_.Style().Visibility() == EVisibility::kVisible)
     PaintBoxDecorationBackground(paint_info, adjusted_paint_offset);
 
   PaintObject(paint_info, adjusted_paint_offset, true);
