@@ -7,8 +7,9 @@
 
 #include <memory>
 
+#include "gin/public/context_holder.h"
+#include "gin/public/gin_embedders.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
@@ -17,6 +18,7 @@ namespace blink {
 
 class DOMWrapperWorld;
 class ScriptValue;
+class V8PerContextData;
 
 // ScriptState is an abstraction class that holds all information about script
 // exectuion (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
@@ -163,6 +165,10 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
   // disposePerContextData() once you no longer need V8PerContextData.
   // Otherwise, the v8::Context will leak.
   std::unique_ptr<V8PerContextData> per_context_data_;
+
+  static constexpr int kV8ContextPerContextDataIndex = static_cast<int>(
+      gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
+      gin::kEmbedderBlink);             // NOLINT(readability/enum_casing)
 };
 
 // ScriptStateProtectingContext keeps the context associated with the

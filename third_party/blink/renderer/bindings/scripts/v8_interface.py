@@ -342,6 +342,7 @@ def interface_context(interface, interfaces):
                             ' specified on partial interface definitions: '
                             '%s' % interface.name)
         if named_constructor:
+            includes.add('platform/bindings/v8_per_context_data.h')
             includes.add('platform/bindings/v8_private_property.h')
 
         includes.add('platform/bindings/v8_object_constructor.h')
@@ -476,6 +477,8 @@ def interface_context(interface, interfaces):
             sorted(origin_trial_features(interface, context['constants'], context['attributes'], context['methods']) +
                    context_enabled_features(context['attributes'])),
     })
+    if context['optional_features']:
+        includes.add('platform/bindings/v8_per_context_data.h')
 
     # Cross-origin interceptors
     has_cross_origin_named_getter = False

@@ -50,6 +50,7 @@ CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
 ])
 LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'platform/bindings/dom_wrapper_world.h',
+    'platform/bindings/wrapper_type_info.h',
 ])
 LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/v8_dom_configuration.h',

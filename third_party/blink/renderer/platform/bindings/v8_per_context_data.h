@@ -53,12 +53,6 @@ namespace blink {
 class V8DOMActivityLogger;
 class V8PerContextData;
 
-enum V8ContextEmbedderDataField {
-  kV8ContextPerContextDataIndex = static_cast<int>(
-      gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
-      gin::kEmbedderBlink),             // NOLINT(readability/enum_casing)
-};
-
 // Used to hold data that is associated with a single v8::Context object, and
 // has a 1:1 relationship with v8::Context.
 class PLATFORM_EXPORT V8PerContextData final {

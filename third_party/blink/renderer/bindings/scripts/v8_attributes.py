@@ -120,6 +120,10 @@ def attribute_context(interface, attribute, interfaces):
     if is_cached_accessor:
         includes.add('platform/bindings/v8_private_property.h')
 
+    # [LogActivity]
+    if 'LogActivity' in extended_attributes:
+        includes.add('platform/bindings/v8_per_context_data.h')
+
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
