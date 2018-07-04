@@ -16,12 +16,15 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_builder.h"
 #endif
 
 class LoginUIServiceTest : public testing::Test {
@@ -112,6 +115,11 @@ class LoginUIServiceLoginPopupTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(LoginUIServiceLoginPopupTest, ShowLoginPop) {
+  extensions::TestExtensionSystem* extension_system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile()));
+  extension_system->CreateExtensionService(
+      base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
   service_->ShowLoginPopup();
   EXPECT_EQ(1, model_->count());
 }
