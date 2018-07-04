@@ -41,18 +41,25 @@ var ActionModelUI;
 
 /**
  * @param {!Entry} entry
+ * @param {!MetadataModel} metadataModel
  * @param {!ActionModelUI} ui
  * @param {!VolumeManagerWrapper} volumeManager
  * @implements {Action}
  * @constructor
  * @struct
  */
-function DriveShareAction(entry, volumeManager, ui) {
+function DriveShareAction(entry, metadataModel, volumeManager, ui) {
   /**
    * @private {!Entry}
    * @const
    */
   this.entry_ = entry;
+
+  /**
+   * @private {!MetadataModel}
+   * @const
+   */
+  this.metadataModel_ = metadataModel;
 
   /**
    * @private {!VolumeManagerWrapper}
@@ -69,14 +76,15 @@ function DriveShareAction(entry, volumeManager, ui) {
 
 /**
  * @param {!Array<!Entry>} entries
+ * @param {!MetadataModel} metadataModel
  * @param {!ActionModelUI} ui
  * @param {!VolumeManagerWrapper} volumeManager
  * @return {DriveShareAction}
  */
-DriveShareAction.create = function(entries, volumeManager, ui) {
+DriveShareAction.create = function(entries, metadataModel, volumeManager, ui) {
   if (entries.length !== 1)
     return null;
-  return new DriveShareAction(entries[0], volumeManager, ui);
+  return new DriveShareAction(entries[0], metadataModel, volumeManager, ui);
 };
 
 /**
@@ -115,9 +123,12 @@ DriveShareAction.prototype.execute = function() {
  * @override
  */
 DriveShareAction.prototype.canExecute = function() {
+  const metadata = this.metadataModel_.getCache([this.entry_], ['canShare']);
+  assert(metadata.length === 1);
+  const canShareItem = metadata[0].canShare !== false;
   return this.volumeManager_.getDriveConnectionState().type !==
       VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-      !util.isTeamDriveRoot(this.entry_);
+      !util.isTeamDriveRoot(this.entry_) && canShareItem;
 };
 
 /**
@@ -720,7 +731,7 @@ ActionsModel.prototype.initialize = function() {
       // For Drive, actions are constructed directly in the Files app code.
       case VolumeManagerCommon.VolumeType.DRIVE:
         var shareAction = DriveShareAction.create(
-            this.entries_, this.volumeManager_, this.ui_);
+            this.entries_, this.metadataModel_, this.volumeManager_, this.ui_);
         if (shareAction)
           actions[ActionsModel.CommonActionId.SHARE] = shareAction;
 

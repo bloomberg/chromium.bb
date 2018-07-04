@@ -15,6 +15,9 @@
  * TODO(sashab): Generate the entries used in these tests at runtime, by
  * creating entries with pre-set combinations of permissions and ensuring the
  * outcome is always as expected.
+ *
+ * TODO(sashab): Once Team Drives is enabled, add tests for team drive roots
+ * and entries as well.
  */
 
 /**
@@ -196,6 +199,44 @@ testcase.checkRenameDisabledForReadOnlyFile = function() {
  */
 testcase.checkRenameDisabledForReadOnlyFolder = function() {
   checkContextMenu('rename', 'Read-Only Folder', false);
+};
+
+/**
+ * Tests that the Share menu item is enabled if a read-write entry is selected.
+ */
+testcase.checkShareEnabledForReadWriteFile = function() {
+  checkContextMenu('share', 'hello.txt', true);
+};
+
+/**
+ * Tests that the Share menu item is enabled if a read-only document is
+ * selected.
+ */
+testcase.checkShareEnabledForReadOnlyDocument = function() {
+  checkContextMenu('share', 'Read-Only Doc.gdoc', true);
+};
+
+/**
+ * Tests that the Share menu item is disabled if a strict read-only document is
+ * selected.
+ */
+testcase.checkShareDisabledForStrictReadOnlyDocument = function() {
+  checkContextMenu('share', 'Read-Only (Strict) Doc.gdoc', false);
+};
+
+/**
+ * Tests that the Share menu item is enabled if a read-only file is selected.
+ */
+testcase.checkShareEnabledForReadOnlyFile = function() {
+  checkContextMenu('share', 'Read-Only File.jpg', true);
+};
+
+/**
+ * Tests that the Share menu item is enabled if a read-only folder is
+ * selected.
+ */
+testcase.checkShareEnabledForReadOnlyFolder = function() {
+  checkContextMenu('share', 'Read-Only Folder', true);
 };
 
 /**
