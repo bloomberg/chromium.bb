@@ -64,7 +64,7 @@ public class TrustedWebActivityClient {
 
             if (success) {
                 NotificationUmaTracker.getInstance().onNotificationShown(
-                        NotificationUmaTracker.SITES, null);
+                        NotificationUmaTracker.SystemNotificationType.SITES, null);
             }
         });
     }

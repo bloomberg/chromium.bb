@@ -80,7 +80,8 @@ public class WebApkDisclosureNotificationManager {
         nm.notify(DISMISSAL_NOTIFICATION_TAG_PREFIX + webappInfo.apkPackageName(), PLATFORM_ID,
                 builder.build());
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.WEBAPK, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                NotificationUmaTracker.SystemNotificationType.WEBAPK,
+                ChannelDefinitions.CHANNEL_ID_BROWSER);
     }
 
     /**

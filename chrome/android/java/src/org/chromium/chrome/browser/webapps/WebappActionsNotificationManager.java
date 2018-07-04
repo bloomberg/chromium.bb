@@ -61,7 +61,7 @@ class WebappActionsNotificationManager {
                 Context.NOTIFICATION_SERVICE);
         nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, createNotification());
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.WEBAPP_ACTIONS,
+                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS,
                 ChannelDefinitions.CHANNEL_ID_WEBAPP_ACTIONS);
     }
 

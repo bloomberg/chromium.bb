@@ -199,8 +199,8 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         order.verify(getManager(), times(1)).onServiceStarted(mService);
         order.verify(getManager(), times(1)).updateNotification(anyBoolean());
         verify(mMockUmaTracker)
-                .onNotificationShown(
-                        NotificationUmaTracker.MEDIA, ChannelDefinitions.CHANNEL_ID_MEDIA);
+                .onNotificationShown(NotificationUmaTracker.SystemNotificationType.MEDIA,
+                        ChannelDefinitions.CHANNEL_ID_MEDIA);
     }
 
     @Test

@@ -783,7 +783,8 @@ public class MediaNotificationManager {
         mService = service;
         updateNotification(true /*serviceStarting*/);
         mNotificationUmaTracker.onNotificationShown(
-                NotificationUmaTracker.MEDIA, ChannelDefinitions.CHANNEL_ID_MEDIA);
+                NotificationUmaTracker.SystemNotificationType.MEDIA,
+                ChannelDefinitions.CHANNEL_ID_MEDIA);
     }
 
     /**
