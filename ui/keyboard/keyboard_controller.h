@@ -163,9 +163,6 @@ class KEYBOARD_EXPORT KeyboardController
   // Returns true if keyboard is in SHOWN or SHOWING state.
   bool keyboard_visible() const;
 
-  // Returns true if keyboard window has been created.
-  bool IsKeyboardWindowCreated();
-
   // Returns the bounds in screen for the visible portion of the keyboard. An
   // empty rectangle will get returned when the keyboard is hidden.
   const gfx::Rect& visual_bounds_in_screen() const {
