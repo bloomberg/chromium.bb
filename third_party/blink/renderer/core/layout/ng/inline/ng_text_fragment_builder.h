@@ -29,6 +29,8 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
                const NGInlineItemsData&,
                NGInlineItemResult*,
                LayoutUnit line_height);
+
+  // Set text for generated text, e.g. hyphen and ellipsis.
   void SetText(LayoutObject*,
                const String& text,
                scoped_refptr<const ComputedStyle>,
