@@ -519,10 +519,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // If the UI was inflated on a background thread, then the CompositorView may not have been
         // fully initialized yet as that may require the creation of a handler which is not allowed
         // outside the UI thread. This call should fully initialize the CompositorView if it hasn't
-        // been yet. If inflation was performed on a background thread, this call should be made in
-        // the same Looper call as setting the content view or transferring the view hierarchy, ie.
-        // before a UI redraw, otherwise some visual artifacts may occur, see
-        // https://crbug.com/704866
+        // been yet.
         mCompositorViewHolder.setRootView(rootView);
 
         // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
