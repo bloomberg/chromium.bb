@@ -219,12 +219,12 @@ UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
   return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
 }
 
-ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
+ui::test::EventGenerator* AshTestBase::GetEventGenerator() {
   if (!event_generator_) {
     event_generator_.reset(
         new ui::test::EventGenerator(new AshEventGeneratorDelegate()));
   }
-  return *event_generator_.get();
+  return event_generator_.get();
 }
 
 // static
@@ -510,7 +510,7 @@ display::DisplayManager* AshTestBase::display_manager() {
   return Shell::Get()->display_manager();
 }
 
-bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
+bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                                      const gfx::Point& point_in_screen) {
   DCHECK(!Shell::Get()->display_manager()->IsInUnifiedMode());
   static_cast<ExtendedMouseWarpController*>(
@@ -519,7 +519,7 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
   display::Screen* screen = display::Screen::GetScreen();
   display::Display original_display =
       screen->GetDisplayNearestPoint(point_in_screen);
-  event_generator.MoveMouseTo(point_in_screen);
+  event_generator->MoveMouseTo(point_in_screen);
   return original_display.id() !=
          screen
              ->GetDisplayNearestPoint(

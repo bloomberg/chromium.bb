@@ -131,9 +131,9 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   EXPECT_CALL(
       *client,
       AuthenticateUser_(users()[0]->basic_user_info->account_id, _, false, _));
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -162,9 +162,9 @@ TEST_F(LockScreenSanityTest,
     // Submit password with content 'a'. This creates a browser-process
     // authentication request stored in |callback|.
     DCHECK(callback.is_null());
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
-    generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+    generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
     base::RunLoop().RunUntilIdle();
     DCHECK(!callback.is_null());
   };
@@ -213,12 +213,12 @@ TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
   EXPECT_TRUE(VerifyNotFocused(shelf));
 
   // Tab (eventually) goes to the shelf.
-  ASSERT_TRUE(TabThroughView(&GetEventGenerator(), lock, false /*reverse*/));
+  ASSERT_TRUE(TabThroughView(GetEventGenerator(), lock, false /*reverse*/));
   EXPECT_TRUE(VerifyNotFocused(lock));
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // A single shift+tab brings focus back to the lock screen.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(VerifyFocused(lock));
   EXPECT_TRUE(VerifyNotFocused(shelf));
 }
@@ -247,13 +247,13 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
   EXPECT_TRUE(VerifyNotFocused(status_area));
 
   // Focus from user view to the status area.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
 
   EXPECT_TRUE(VerifyNotFocused(lock));
   EXPECT_TRUE(VerifyFocused(status_area));
 
   // A single tab brings focus back to the lock screen.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
   EXPECT_TRUE(VerifyFocused(lock));
   EXPECT_TRUE(VerifyNotFocused(status_area));
 }
@@ -305,7 +305,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Reversing focus should bring focus back to the lock screen app.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   // Focus is passed to lock screen apps via mojo - flush the request.
   controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
@@ -318,7 +318,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
 
   // Tabbing out of the status area (in default order) should focus the lock
   // screen app again.
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
   // Focus is passed to lock screen apps via mojo - flush the request.
   controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
@@ -365,7 +365,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
   EXPECT_TRUE(VerifyFocused(lock));
 
   // Tab through the lock screen - the focus should eventually get to the shelf.
-  ASSERT_TRUE(TabThroughView(&GetEventGenerator(), lock, false /*reverse*/));
+  ASSERT_TRUE(TabThroughView(GetEventGenerator(), lock, false /*reverse*/));
   EXPECT_TRUE(VerifyFocused(shelf));
 }
 
@@ -398,7 +398,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
 
   // Fires a return and validates that mock expectations have been satisfied.
   auto submit = [&]() {
-    GetEventGenerator().PressKey(ui::VKEY_RETURN, 0);
+    GetEventGenerator()->PressKey(ui::VKEY_RETURN, 0);
     controller->FlushForTesting();
     testing::Mock::VerifyAndClearExpectations(client.get());
   };

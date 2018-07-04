@@ -62,12 +62,12 @@ TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
               DisableTool(PaletteToolId::CAPTURE_REGION));
 
   const gfx::Rect selection(100, 200, 300, 400);
-  GetEventGenerator().EnterPenPointerMode();
-  GetEventGenerator().MoveTouch(selection.origin());
-  GetEventGenerator().PressTouch();
-  GetEventGenerator().MoveTouch(
-      gfx::Point(selection.right(), selection.bottom()));
-  GetEventGenerator().ReleaseTouch();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->EnterPenPointerMode();
+  event_generator->MoveTouch(selection.origin());
+  event_generator->PressTouch();
+  event_generator->MoveTouch(gfx::Point(selection.right(), selection.bottom()));
+  event_generator->ReleaseTouch();
 
   EXPECT_FALSE(IsPartialScreenshotActive());
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());

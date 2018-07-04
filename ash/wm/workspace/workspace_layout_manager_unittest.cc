@@ -1443,15 +1443,15 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   window->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
-  generator.MoveMouseTo(300, 300);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(300, 300);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 
-  generator.MoveMouseRelativeTo(window.get(), 10, 10);
-  generator.ClickLeftButton();
+  generator->MoveMouseRelativeTo(window.get(), 10, 10);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 
@@ -1459,13 +1459,13 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
 
-  generator.MoveMouseTo(300, 300);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(300, 300);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST, client.GetPlayedEarconAndReset());
 
-  generator.MoveMouseRelativeTo(window.get(), 10, 10);
-  generator.ClickLeftButton();
+  generator->MoveMouseRelativeTo(window.get(), 10, 10);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 
@@ -1473,13 +1473,13 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
 
-  generator.MoveMouseTo(300, 300);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(300, 300);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 
-  generator.MoveMouseTo(70, 70);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(70, 70);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 }
@@ -1622,14 +1622,14 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   // Make sure that clicking the backdrop window will play sound.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(300, 300);
-  generator.ClickLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(300, 300);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST, client.GetPlayedEarconAndReset());
 
-  generator.MoveMouseTo(70, 70);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(70, 70);
+  generator->ClickLeftButton();
   controller->FlushMojoForTest();
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 }

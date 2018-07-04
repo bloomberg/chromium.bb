@@ -49,13 +49,13 @@ class LoginPinViewTest : public LoginTestBase {
 
 // Verifies that PIN submit works with 'Enter'.
 TEST_F(LoginPinViewTest, ButtonsFireEvents) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   LoginPinView::TestApi test_api(view_);
 
   // Verify pin button events are emitted with the correct value.
   for (int i = 0; i <= 9; ++i) {
     test_api.GetButton(i)->RequestFocus();
-    generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+    generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
     EXPECT_TRUE(value_.has_value());
     EXPECT_EQ(*value_, i);
     value_.reset();
@@ -65,7 +65,7 @@ TEST_F(LoginPinViewTest, ButtonsFireEvents) {
   EXPECT_EQ(0, backspace_);
   test_api.GetBackspaceButton()->SetEnabled(true);
   test_api.GetBackspaceButton()->RequestFocus();
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   EXPECT_EQ(1, backspace_);
 }
 
@@ -118,7 +118,7 @@ TEST_F(LoginPinViewTest, ButtonSpacingAndSize) {
 // Verifies that holding the backspace button automatically triggers and begins
 // repeating if it is held down.
 TEST_F(LoginPinViewTest, BackspaceAutoSubmitsAndRepeats) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   LoginPinView::TestApi test_api(view_);
 
   // Install mock timers into the PIN view.
@@ -134,9 +134,9 @@ TEST_F(LoginPinViewTest, BackspaceAutoSubmitsAndRepeats) {
   // Verify backspace events are emitted.
   EXPECT_EQ(0, backspace_);
   test_api.GetBackspaceButton()->SetEnabled(true);
-  generator.MoveMouseTo(
+  generator->MoveMouseTo(
       test_api.GetBackspaceButton()->GetBoundsInScreen().CenterPoint());
-  generator.PressLeftButton();
+  generator->PressLeftButton();
 
   // Backspace event triggers after delay timer fires.
   delay_timer->Fire();
@@ -151,7 +151,7 @@ TEST_F(LoginPinViewTest, BackspaceAutoSubmitsAndRepeats) {
 
   // Backspace does not trigger after releasing the mouse.
   backspace_ = 0;
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(0, backspace_);
 }
 

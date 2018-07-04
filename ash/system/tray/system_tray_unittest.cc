@@ -192,7 +192,7 @@ TEST_F(SystemTrayTest, DISABLED_SwipingOnShelfDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode regular_animations(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Point point_on_shelf_start =
       gfx::Point(original_bounds.x() + 5, shelf_bounds_in_screen.y() + 5);
   gfx::Point point_on_shelf_end(point_on_shelf_start.x(),
@@ -207,8 +207,8 @@ TEST_F(SystemTrayTest, DISABLED_SwipingOnShelfDuringAnimation) {
 
   // Dragging the shelf during up animation should close the bubble.
   if (current_bounds.y() != original_bounds.y()) {
-    generator.GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
-                                    base::TimeDelta::FromMilliseconds(100), 5);
+    generator->GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
+                                     base::TimeDelta::FromMilliseconds(100), 5);
     EXPECT_FALSE(system_tray->HasSystemBubble());
   }
 
@@ -220,8 +220,8 @@ TEST_F(SystemTrayTest, DISABLED_SwipingOnShelfDuringAnimation) {
 
   // Dragging the shelf during down animation should close the bubble.
   if (current_bounds.y() != original_bounds.y()) {
-    generator.GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
-                                    base::TimeDelta::FromMilliseconds(100), 5);
+    generator->GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
+                                     base::TimeDelta::FromMilliseconds(100), 5);
     EXPECT_FALSE(system_tray->HasSystemBubble());
   }
 }
@@ -315,10 +315,10 @@ TEST_F(SystemTrayTest, DISABLED_TapOutsideCloseBubble) {
   SendScrollStartAndUpdate(start, delta, timestamp);
   EXPECT_TRUE(system_tray->HasSystemBubble());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Rect bounds = GetSystemBubbleBoundsInScreen();
   gfx::Point point_outside = gfx::Point(bounds.x() - 5, bounds.y() - 5);
-  generator.GestureTapAt(point_outside);
+  generator->GestureTapAt(point_outside);
   EXPECT_FALSE(system_tray->HasSystemBubble());
 }
 
@@ -437,13 +437,13 @@ TEST_F(SystemTrayTest, ToggleAppListAfterOpenSystemTrayBubbleInTabletMode) {
   GetAppListTestHelper()->CheckVisibility(false);
 
   // Press the search key should toggle the launcher.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Press the search key again should still toggle the launcher.
-  generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 }
@@ -953,9 +953,9 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   ASSERT_TRUE(tray->HasSystemBubble());
   {
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.set_current_location(gfx::Point(5, 5));
-    generator.ClickLeftButton();
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->set_current_location(gfx::Point(5, 5));
+    generator->ClickLeftButton();
     ASSERT_FALSE(tray->HasSystemBubble());
   }
 
@@ -967,9 +967,9 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   ASSERT_TRUE(tray->HasSystemBubble());
 
   {
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.set_current_location(gfx::Point(5, 5));
-    generator.ClickLeftButton();
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->set_current_location(gfx::Point(5, 5));
+    generator->ClickLeftButton();
     ASSERT_TRUE(tray->HasSystemBubble());
   }
 
@@ -980,9 +980,9 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(tray->HasSystemBubble());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(gfx::Point(5, 5));
-  generator.ClickLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(gfx::Point(5, 5));
+  generator->ClickLeftButton();
   EXPECT_TRUE(tray->HasSystemBubble());
 }
 
@@ -1119,14 +1119,14 @@ TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
   EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_TRUE(widget->IsActive());
 
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
   int number_of_consumed_key_events =
       key_event_consumer_view.number_of_consumed_key_events();
 
   // Send A key event. Nothing should happen for the tray. Key event is consumed
   // by the tray.
-  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
 
   EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_TRUE(widget->IsActive());
@@ -1134,8 +1134,8 @@ TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
             key_event_consumer_view.number_of_consumed_key_events());
 
   // Send tab key event.
-  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
 
   // Confirms that system tray is activated.
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
@@ -1151,8 +1151,8 @@ TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
 
   // Confirms that system tray is not activated by tab key event to verify that
   // RerouteEventHandler is not installed in this case.
-  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
   EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_TRUE(widget->IsActive());
 }
@@ -1180,16 +1180,16 @@ TEST_F(SystemTrayTest, AcceleratorController) {
   ASSERT_TRUE(tray->GetWidget());
   ASSERT_TRUE(tray->IsSystemBubbleVisible());
 
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
 
   // Send B key event and confirms that nothing happens.
-  event_generator.PressKey(ui::VKEY_B, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_B, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_B, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_B, ui::EF_NONE);
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
   // Send A key event and confirms that system tray becomes invisible.
-  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_FALSE(tray->IsSystemBubbleVisible());
 }
 
@@ -1217,14 +1217,14 @@ TEST_F(SystemTrayTest, ActiveChildWidget) {
   ASSERT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
   ASSERT_TRUE(child_widget->IsActive());
 
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
 
   // Press ESC key and confirm that child widget consumes it. Also confirm that
   // the tray does not consume the key event.
   ASSERT_EQ(0, consumer_view->number_of_consumed_key_events());
   ASSERT_TRUE(tray->IsSystemBubbleVisible());
-  event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_EQ(2, consumer_view->number_of_consumed_key_events());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
@@ -1232,8 +1232,8 @@ TEST_F(SystemTrayTest, ActiveChildWidget) {
   // the tray is closed even if the tray is not active.
   child_widget->Hide();
   ASSERT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
-  event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(tray->IsSystemBubbleVisible());
 }
 

@@ -363,7 +363,7 @@ TEST_F(ScreenPositionControllerTest,
   // asynchronously when a window which contains the mouse cursor is destroyed.
   // We want to check that none of these synthetic events are dispatched after
   // ScreenPositionClient has been detached from the root window.
-  GetEventGenerator().MoveMouseTo(800, 200);
+  GetEventGenerator()->MoveMouseTo(800, 200);
   EXPECT_TRUE(window_->GetBoundsInScreen().Contains(
       aura::Env::GetInstance()->last_mouse_location()));
 

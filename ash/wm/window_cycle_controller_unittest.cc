@@ -620,15 +620,15 @@ TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
   EventCounter event_count;
   w0->AddPreTargetHandler(&event_count);
   w1->AddPreTargetHandler(&event_count);
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   wm::GetWindowState(w0.get())->Activate();
-  generator.PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
   EXPECT_EQ(1, event_count.GetKeyEventCountAndReset());
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
-  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
-  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsActive());
   EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
 }
@@ -643,12 +643,12 @@ TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   EventCounter event_count;
   w0->AddPreTargetHandler(&event_count);
   w1->SetTargetHandler(&event_count);
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   wm::ActivateWindow(w0.get());
 
   // Events get through.
-  generator.MoveMouseToCenterOf(w0.get());
-  generator.ClickLeftButton();
+  generator->MoveMouseToCenterOf(w0.get());
+  generator->ClickLeftButton();
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
 
   // Start cycling.
@@ -656,16 +656,16 @@ TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
 
   // Most mouse events don't get through.
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(0, event_count.GetMouseEventCountAndReset());
 
   // Although releases do.
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
 
   // Stop cycling: once again, events get through.
   controller->CompleteCycling();
-  generator.ClickLeftButton();
+  generator->ClickLeftButton();
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
 }
 
@@ -688,11 +688,11 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
   wm::GetWindowState(w0.get())->Activate();
   EXPECT_TRUE(wm::GetWindowState(w0.get())->IsActive());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
 
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
 
   // Because w0 and w1 are full-screen, the event should be passed to the
   // browser window to handle it (which if the browser doesn't handle it will
@@ -702,7 +702,7 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
   EventCounter event_count;
   w0->AddPreTargetHandler(&event_count);
   w1->AddPreTargetHandler(&event_count);
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   EXPECT_EQ(1, event_count.GetKeyEventCountAndReset());
 }
 

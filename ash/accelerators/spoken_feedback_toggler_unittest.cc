@@ -19,32 +19,32 @@ TEST_F(SpokenFeedbackTogglerTest, Basic) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
 
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
 
   // Click and hold toggles the spoken feedback.
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
 
   // toggle again
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
 }
 
@@ -56,23 +56,23 @@ TEST_F(SpokenFeedbackTogglerTest, PassThroughEvents) {
       &delegate, 0, gfx::Rect(0, 0, 100, 100)));
   window->Focus();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // None hotkey events.
-  generator.PressKey(ui::VKEY_A, 0);
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->PressKey(ui::VKEY_A, 0);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_EQ("1 1", delegate.GetKeyCountsAndReset());
 
   // Single hotkey press and release.
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_EQ("1 1", delegate.GetKeyCountsAndReset());
 
   // Hotkey press and hold.
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
-  generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
-  generator.ReleaseKey(ui::VKEY_F6, 0);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_F6, 0);
   EXPECT_EQ("3 1", delegate.GetKeyCountsAndReset());
 }
 

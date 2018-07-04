@@ -98,9 +98,9 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
 
   // Verify that by clicking the back button, a back key sequence will be
   // generated.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }

@@ -104,16 +104,16 @@ TEST_F(PaletteWelcomeBubbleTest, TapOutsideOfBubble) {
   ASSERT_TRUE(welcome_bubble_->GetBubbleBoundsForTest().has_value());
 
   // The bubble remains open if a tap occurs on the bubble.
-  GetEventGenerator().set_current_location(
+  GetEventGenerator()->set_current_location(
       welcome_bubble_->GetBubbleBoundsForTest()->CenterPoint());
-  GetEventGenerator().ClickLeftButton();
+  GetEventGenerator()->ClickLeftButton();
   EXPECT_TRUE(welcome_bubble_->bubble_shown());
 
   // Tap anywhere outside the bubble.
   ASSERT_FALSE(
       welcome_bubble_->GetBubbleBoundsForTest()->Contains(gfx::Point()));
-  GetEventGenerator().set_current_location(gfx::Point());
-  GetEventGenerator().ClickLeftButton();
+  GetEventGenerator()->set_current_location(gfx::Point());
+  GetEventGenerator()->ClickLeftButton();
   EXPECT_FALSE(welcome_bubble_->bubble_shown());
 }
 

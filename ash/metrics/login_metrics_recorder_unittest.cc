@@ -130,12 +130,12 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
               AuthenticateUser_(primary_user, testing::_, false, testing::_));
 
   // Authentication attempt with password "abc1";
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_B, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_C, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_C, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
 
   // Run the loop to get the system salt and flush
   // LoginScreenClient::AuthenticateUser mojo call.
@@ -153,11 +153,11 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
             (auth_method | LoginAuthUserView::AUTH_PIN));
   EXPECT_CALL(*client,
               AuthenticateUser_(primary_user, testing::_, true, testing::_));
-  generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
 
   // Run the loop to get the system salt and flush
   // LoginScreenClient::AuthenticateUser mojo call.
@@ -174,11 +174,11 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
   EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
             (auth_method | LoginAuthUserView::AUTH_TAP));
   EXPECT_CALL(*client, AttemptUnlock(primary_user));
-  generator.MoveMouseTo(MakeLoginAuthTestApi(contents, AuthTarget::kPrimary)
-                            .user_view()
-                            ->GetBoundsInScreen()
-                            .CenterPoint());
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(MakeLoginAuthTestApi(contents, AuthTarget::kPrimary)
+                             .user_view()
+                             ->GetBoundsInScreen()
+                             .CenterPoint());
+  generator->ClickLeftButton();
 
   // Flush LoginScreenClient::AttemptUnlock mojo call.
   Shell::Get()->login_screen_controller()->FlushForTesting();
@@ -204,10 +204,10 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
   LockContentsView::TestApi test_api(contents);
   EXPECT_TRUE(test_api.note_action()->visible());
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
       test_api.note_action()->GetBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  generator->ClickLeftButton();
 
   histogram_tester_->ExpectTotalCount(kUserClicksOnLockHistogramName, 1);
   histogram_tester_->ExpectBucketCount(

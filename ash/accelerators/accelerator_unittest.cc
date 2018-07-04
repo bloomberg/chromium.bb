@@ -31,7 +31,7 @@ TEST_F(AcceleratorTest, PostAcceleratorWorks) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   window->Focus();
   ASSERT_TRUE(window->HasFocus());
-  GetEventGenerator().PressKey(accelerator_code, accelerator_modifiers);
+  GetEventGenerator()->PressKey(accelerator_code, accelerator_modifiers);
 
   // The accelerator was not pressed yet (the KeyEvent was sent to the client,
   // but the client hasn't responded).

@@ -222,9 +222,9 @@ class PanelLayoutManagerTest : public AshTestBase {
     DCHECK_GE(index, 0);
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
-    ui::test::EventGenerator& event_generator = GetEventGenerator();
-    event_generator.MoveMouseTo(bounds.CenterPoint());
-    event_generator.ClickLeftButton();
+    ui::test::EventGenerator* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(bounds.CenterPoint());
+    event_generator->ClickLeftButton();
 
     test_api.RunMessageLoopUntilAnimationsDone();
   }

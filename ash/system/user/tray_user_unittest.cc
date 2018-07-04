@@ -155,13 +155,13 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   InitializeParameters(1, false);
 
   // Move the mouse over the status area and click to open the status menu.
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   EXPECT_FALSE(tray()->IsSystemBubbleVisible());
 
   EXPECT_EQ(TrayUser::HIDDEN, tray_user()->GetStateForTest());
 
-  ShowTrayMenu(&generator);
+  ShowTrayMenu(generator);
 
   EXPECT_TRUE(tray()->HasSystemBubble());
   EXPECT_TRUE(tray()->IsSystemBubbleVisible());
@@ -177,8 +177,8 @@ TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
     return;
 
   InitializeParameters(1, false);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  ShowTrayMenu(&generator);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  ShowTrayMenu(generator);
 
   views::View* view =
       tray_user()->user_view_for_test()->user_card_view_for_test();
@@ -197,8 +197,8 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
     return;
 
   InitializeParameters(1, true);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  ShowTrayMenu(&generator);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  ShowTrayMenu(generator);
 
   views::View* view =
       tray_user()->user_view_for_test()->user_card_view_for_test();
@@ -224,32 +224,32 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
   InitializeParameters(2, true);
 
   // Move the mouse over the status area and click to open the status menu.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_async(false);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_async(false);
 
   // Verify that nothing is shown.
   EXPECT_FALSE(tray()->IsSystemBubbleVisible());
   EXPECT_FALSE(tray_user()->GetStateForTest());
   // After clicking on the tray the menu should get shown and for each logged
   // in user we should get a visible item.
-  ShowTrayMenu(&generator);
+  ShowTrayMenu(generator);
 
   EXPECT_TRUE(tray()->HasSystemBubble());
   EXPECT_TRUE(tray()->IsSystemBubbleVisible());
   EXPECT_EQ(TrayUser::SHOWN, tray_user()->GetStateForTest());
 
   // Move the mouse over the user item and it should hover.
-  MoveOverUserItem(&generator);
+  MoveOverUserItem(generator);
   EXPECT_EQ(TrayUser::HOVERED, tray_user()->GetStateForTest());
 
   // Check that clicking the button allows to add item if we have still room
   // for one more user.
-  ClickUserItem(&generator);
+  ClickUserItem(generator);
   EXPECT_EQ(TrayUser::ACTIVE, tray_user()->GetStateForTest());
 
   // Click the button again to see that the menu goes away.
-  ClickUserItem(&generator);
-  MoveOverUserItem(&generator);
+  ClickUserItem(generator);
+  MoveOverUserItem(generator);
   EXPECT_EQ(TrayUser::HOVERED, tray_user()->GetStateForTest());
 
   // Close and check that everything is deleted.
@@ -267,19 +267,19 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
 
   // Have two users.
   InitializeParameters(2, true);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  ShowTrayMenu(&generator);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  ShowTrayMenu(generator);
 
   // Gets the second user before user switching.
   const mojom::UserSession* second_user = controller()->GetUserSession(1);
 
   // Switch to a new user "Second@tray" - which has a capitalized name.
-  ClickUserItem(&generator);
+  ClickUserItem(generator);
   gfx::Rect user_card_bounds = tray_user()->GetUserPanelBoundsInScreenForTest();
   gfx::Point second_user_point = user_card_bounds.CenterPoint() +
                                  gfx::Vector2d(0, user_card_bounds.height());
-  generator.MoveMouseTo(second_user_point);
-  generator.ClickLeftButton();
+  generator->MoveMouseTo(second_user_point);
+  generator->ClickLeftButton();
 
   // SwitchActiverUser is an async mojo call. Spin the loop to let it finish.
   RunAllPendingInMessageLoop();

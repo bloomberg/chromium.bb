@@ -79,7 +79,7 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
     GetSessionControllerClient()->AddUserSession(kUser2Email);
 
     // Place the cursor in the first display.
-    GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
+    GetEventGenerator()->MoveMouseTo(gfx::Point(0, 0));
   }
 
   void SwitchActiveUser(const std::string& email) {
@@ -206,7 +206,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   ASSERT_EQ(2u, root_windows.size());
 
   // Place the cursor in the first display.
-  GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(0, 0));
 
   // Before the magnifier is enabled, the work areas of both displays are their
   // full size minus the shelf height.
@@ -272,7 +272,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   // Now, move mouse cursor to display 2, and expect that the workarea of
   // display 1 is restored to its original value, while that of display 2 is
   // shrunk to fit the Docked Magnifier's viewport.
-  GetEventGenerator().MoveMouseTo(gfx::Point(800, 0));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(800, 0));
   const views::Widget* viewport_2_widget =
       controller()->GetViewportWidgetForTesting();
   ASSERT_NE(nullptr, viewport_2_widget);
@@ -326,7 +326,7 @@ TEST_F(DockedMagnifierTest, TouchEvents) {
   // Generate some touch events in both displays and expect the magnifier
   // viewport moves accordingly.
   gfx::Point touch_point(200, 350);
-  GetEventGenerator().PressMoveAndReleaseTouchTo(touch_point);
+  GetEventGenerator()->PressMoveAndReleaseTouchTo(touch_point);
   const views::Widget* viewport_widget =
       controller()->GetViewportWidgetForTesting();
   EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());
@@ -334,7 +334,7 @@ TEST_F(DockedMagnifierTest, TouchEvents) {
 
   // Touch a new point in the other display.
   touch_point = gfx::Point(900, 200);
-  GetEventGenerator().PressMoveAndReleaseTouchTo(touch_point);
+  GetEventGenerator()->PressMoveAndReleaseTouchTo(touch_point);
   // New viewport widget is created in the second display.
   ASSERT_NE(viewport_widget, controller()->GetViewportWidgetForTesting());
   viewport_widget = controller()->GetViewportWidgetForTesting();
@@ -380,7 +380,7 @@ TEST_F(DockedMagnifierTest, AddRemoveDisplays) {
 
   // Move the cursor to the second display, expect the viewport widget to get
   // updated accordingly.
-  GetEventGenerator().MoveMouseTo(gfx::Point(800, 0));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(800, 0));
   // New viewport widget is created.
   ASSERT_NE(viewport_widget, controller()->GetViewportWidgetForTesting());
   viewport_widget = controller()->GetViewportWidgetForTesting();
@@ -431,19 +431,19 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
 
   // Move the cursor to the center of the screen.
   gfx::Point point_of_interest(400, 400);
-  GetEventGenerator().MoveMouseTo(point_of_interest);
+  GetEventGenerator()->MoveMouseTo(point_of_interest);
   TestMagnifierLayerTransform(point_of_interest, root_windows[0]);
 
   // Move the cursor to the bottom right corner.
   point_of_interest = gfx::Point(799, 799);
-  GetEventGenerator().MoveMouseTo(point_of_interest);
+  GetEventGenerator()->MoveMouseTo(point_of_interest);
   TestMagnifierLayerTransform(point_of_interest, root_windows[0]);
 
   // Tricky: Move the cursor to the top right corner, such that the cursor is
   // over the magnifier viewport. The transform should be such that the viewport
   // doesn't show itself.
   point_of_interest = gfx::Point(799, 0);
-  GetEventGenerator().MoveMouseTo(point_of_interest);
+  GetEventGenerator()->MoveMouseTo(point_of_interest);
   TestMagnifierLayerTransform(point_of_interest, root_windows[0]);
   // In this case, our point of interest is changed to be at the bottom of the
   // separator, and it should go to the center of the top *edge* of the viewport
@@ -512,8 +512,8 @@ TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
 
   // Simulate typing by pressing some keys while focus is in the text field. The
   // transformed caret center should always go to the viewport center.
-  GetEventGenerator().PressKey(ui::VKEY_A, 0);
-  GetEventGenerator().ReleaseKey(ui::VKEY_A, 0);
+  GetEventGenerator()->PressKey(ui::VKEY_A, 0);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_A, 0);
   gfx::Point new_caret_center(text_input_helper.GetCaretBounds().CenterPoint());
   TestMagnifierLayerTransform(new_caret_center, root_windows[0]);
 }

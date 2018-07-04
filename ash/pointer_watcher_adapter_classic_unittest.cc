@@ -160,40 +160,41 @@ TEST_F(PointerWatcherAdapterClassicTest, MouseEvents) {
   TestHelper helper;
 
   // Move: only the move and drag PointerWatcher should get the event.
-  GetEventGenerator().MoveMouseTo(gfx::Point(10, 10));
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::Point(10, 10));
   helper.ExpectCallCount(NONE, MOVE, MOVE);
 
   // Press: all.
-  GetEventGenerator().PressLeftButton();
+  event_generator->PressLeftButton();
   helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 
   // Drag: only drag PointerWatcher should get the event.
-  GetEventGenerator().MoveMouseTo(gfx::Point(20, 30));
+  event_generator->MoveMouseTo(gfx::Point(20, 30));
   helper.ExpectCallCount(NONE, NONE, DRAG);
 
   // Release: all (aura generates a capture event here).
-  GetEventGenerator().ReleaseLeftButton();
+  event_generator->ReleaseLeftButton();
   helper.ExpectCallCount(CAPTURE | PRESS_OR_RELEASE, CAPTURE | PRESS_OR_RELEASE,
                          CAPTURE | PRESS_OR_RELEASE);
 
   // Exit: none.
-  GetEventGenerator().SendMouseExit();
+  event_generator->SendMouseExit();
   helper.ExpectCallCount(NONE, NONE, NONE);
 
   // Enter: none.
   ui::MouseEvent enter_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
-  GetEventGenerator().Dispatch(&enter_event);
+  event_generator->Dispatch(&enter_event);
   helper.ExpectCallCount(NONE, NONE, NONE);
 
   // Wheel: all
-  GetEventGenerator().MoveMouseWheel(10, 11);
+  event_generator->MoveMouseWheel(10, 11);
   helper.ExpectCallCount(WHEEL, WHEEL, WHEEL);
 
   // Capture: all.
   ui::MouseEvent capture_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                                gfx::Point(), ui::EventTimeForNow(), 0, 0);
-  GetEventGenerator().Dispatch(&capture_event);
+  event_generator->Dispatch(&capture_event);
   helper.ExpectCallCount(CAPTURE, CAPTURE, CAPTURE);
 }
 
@@ -206,16 +207,17 @@ TEST_F(PointerWatcherAdapterClassicTest, TouchEvents) {
 
   // Press: all.
   const int touch_id = 11;
-  GetEventGenerator().PressTouchId(touch_id);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressTouchId(touch_id);
   helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 
   // Drag: only drag.
-  GetEventGenerator().MoveTouchId(gfx::Point(20, 30), touch_id);
+  event_generator->MoveTouchId(gfx::Point(20, 30), touch_id);
   helper.ExpectCallCount(NONE, NONE, DRAG);
 
   // Release: both (contrary to mouse above, touch does not implicitly generate
   // capture).
-  GetEventGenerator().ReleaseTouchId(touch_id);
+  event_generator->ReleaseTouchId(touch_id);
   helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 }
 

@@ -513,8 +513,8 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
 
   // Drag the divider to a position two thirds of the screen size. Verify window
   // 1 is wider than window 2.
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().DragMouseTo(screen_width * 0.67f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->DragMouseTo(screen_width * 0.67f, 0);
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   const int old_window1_width = window1_width;
@@ -528,8 +528,8 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   // remain the same size as previously.
   divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().DragMouseTo(screen_width * 0.7f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->DragMouseTo(screen_width * 0.7f, 0);
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   EXPECT_EQ(window1_width, old_window1_width);
@@ -539,8 +539,8 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   // 1 is wider than window 2.
   divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().DragMouseTo(screen_width * 0.33f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->DragMouseTo(screen_width * 0.33f, 0);
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   EXPECT_GT(window2_width, 2 * window1_width);
@@ -646,8 +646,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
       split_view_divider()
           ->GetDividerBoundsInScreen(false /* is_dragging */)
           .CenterPoint();
-  GetEventGenerator().set_current_location(divider_center);
-  GetEventGenerator().DoubleClickLeftButton();
+  GetEventGenerator()->set_current_location(divider_center);
+  GetEventGenerator()->DoubleClickLeftButton();
 
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
@@ -1141,7 +1141,7 @@ TEST_F(SplitViewControllerTest,
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   aura::test::TestWindowDelegate* delegate1 =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
-  ui::test::EventGenerator& generator(GetEventGenerator());
+  ui::test::EventGenerator* generator = GetEventGenerator();
   EXPECT_EQ(OrientationLockType::kLandscapePrimary, screen_orientation());
   gfx::Rect workarea_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
@@ -1154,15 +1154,15 @@ TEST_F(SplitViewControllerTest,
       gfx::Size(workarea_bounds.width() * 0.4f, workarea_bounds.height()));
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
   // Snap the divider to two third position, it should be kept at there after
   // dragging.
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
   EXPECT_GT(divider_position(), 0.5f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.67f * workarea_bounds.width());
   EndSplitView();
@@ -1175,15 +1175,15 @@ TEST_F(SplitViewControllerTest,
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
   // Snap the divider to one third position, it should be kept at there after
   // dragging.
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
   EXPECT_GT(divider_position(), 0);
   EXPECT_LE(divider_position(), 0.33f * workarea_bounds.width());
   EndSplitView();
@@ -1201,15 +1201,15 @@ TEST_F(SplitViewControllerTest,
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
   // Snap the divider to two third position, it should be snapped to the middle
   // position after dragging.
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
   EndSplitView();
@@ -1232,11 +1232,11 @@ TEST_F(SplitViewControllerTest,
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
   // Drag the divider to two-third position.
-  ui::test::EventGenerator& generator(GetEventGenerator());
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
-  generator.set_current_location(divider_bounds.CenterPoint());
-  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
   EXPECT_GT(divider_position(), 0.5f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.67f * workarea_bounds.width());
 
@@ -1324,9 +1324,9 @@ TEST_F(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
       screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseTo(screen_width * 0.67f, 0);
 
   // Drag is started for both windows.
   EXPECT_TRUE(window_state_delegate1->drag_in_progress());
@@ -1364,9 +1364,9 @@ TEST_F(SplitViewControllerTest,
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
       screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseTo(screen_width * 0.67f, 0);
 
   // Drag is started.
   EXPECT_TRUE(window_state_delegate1->drag_in_progress());
@@ -1407,9 +1407,9 @@ TEST_F(SplitViewControllerTest,
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
       screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
-  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+  GetEventGenerator()->set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseTo(screen_width * 0.67f, 0);
 
   // Drag is started for both windows.
   EXPECT_TRUE(window_state_delegate1->drag_in_progress());

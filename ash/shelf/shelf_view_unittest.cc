@@ -548,12 +548,12 @@ class ShelfViewTest : public AshTestBase {
     ShelfButton* drag_button = src_api->GetButton(drag_item_index);
     gfx::Point center_point_of_drag_item = GetButtonCenter(drag_button);
 
-    ui::test::EventGenerator& generator = GetEventGenerator();
-    generator.set_current_location(center_point_of_drag_item);
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->set_current_location(center_point_of_drag_item);
     // Rip an item off this source shelf.
-    generator.PressLeftButton();
+    generator->PressLeftButton();
     gfx::Point rip_off_point(center_point_of_drag_item.x(), 0);
-    generator.MoveMouseTo(rip_off_point);
+    generator->MoveMouseTo(rip_off_point);
     src_api->RunMessageLoopUntilAnimationsDone();
     dest_api->RunMessageLoopUntilAnimationsDone();
     ASSERT_TRUE(src_api->IsRippedOffFromShelf());
@@ -570,7 +570,7 @@ class ShelfViewTest : public AshTestBase {
         main_to_overflow ? kShelfButtonSize / 4 : -kShelfButtonSize / 4;
     gfx::Point modified_drop_point(drop_point.x() + drop_point_x_shift,
                                    drop_point.y());
-    generator.MoveMouseTo(modified_drop_point);
+    generator->MoveMouseTo(modified_drop_point);
     src_api->RunMessageLoopUntilAnimationsDone();
     dest_api->RunMessageLoopUntilAnimationsDone();
     ASSERT_TRUE(src_api->IsRippedOffFromShelf());
@@ -579,7 +579,7 @@ class ShelfViewTest : public AshTestBase {
     if (cancel)
       drag_button->OnMouseCaptureLost();
 
-    generator.ReleaseLeftButton();
+    generator->ReleaseLeftButton();
 
     src_api->RunMessageLoopUntilAnimationsDone();
     dest_api->RunMessageLoopUntilAnimationsDone();
@@ -1203,7 +1203,7 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
 
 // Test what drag movements will rip an item off the shelf.
 TEST_F(ShelfViewTest, ShelfRipOff) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
   ASSERT_EQ(test_api_->shelf_view()->shelf()->alignment(),
@@ -1222,18 +1222,18 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   // Verify that dragging an app off the shelf will trigger the app getting
   // ripped off, unless the distance is less than |kRipOffDistance|.
   gfx::Point first_app_location = GetButtonCenter(GetButtonByID(first_app_id));
-  generator.set_current_location(first_app_location);
-  generator.PressLeftButton();
+  generator->set_current_location(first_app_location);
+  generator->PressLeftButton();
   // Drag the mouse to just off the shelf.
-  generator.MoveMouseBy(0, -kShelfSize / 2 - 1);
+  generator->MoveMouseBy(0, -kShelfSize / 2 - 1);
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
   // Drag the mouse past the rip off threshold.
-  generator.MoveMouseBy(0, -kRipOffDistance);
+  generator->MoveMouseBy(0, -kRipOffDistance);
   EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
   // Drag the mouse back to the original position, so that the app does not get
   // deleted.
-  generator.MoveMouseTo(first_app_location);
-  generator.ReleaseLeftButton();
+  generator->MoveMouseTo(first_app_location);
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
 
   // Open overflow shelf and test api for it.
@@ -1248,29 +1248,29 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
       GetButtonCenter(GetButtonByID(second_app_id));
   gfx::Point overflow_app_location = GetButtonCenter(
       test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id)));
-  generator.set_current_location(second_app_location);
-  generator.PressLeftButton();
-  generator.MoveMouseTo(overflow_app_location);
+  generator->set_current_location(second_app_location);
+  generator->PressLeftButton();
+  generator->MoveMouseTo(overflow_app_location);
   EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
-  generator.MoveMouseTo(second_app_location);
-  generator.ReleaseLeftButton();
+  generator->MoveMouseTo(second_app_location);
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
 
   // Verify that when an app from the overflow shelf is dragged to a location on
   // the main shelf, it is ripped off.
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  generator.set_current_location(overflow_app_location);
-  generator.PressLeftButton();
-  generator.MoveMouseTo(second_app_location);
+  generator->set_current_location(overflow_app_location);
+  generator->PressLeftButton();
+  generator->MoveMouseTo(second_app_location);
   EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
-  generator.MoveMouseTo(overflow_app_location);
-  generator.ReleaseLeftButton();
+  generator->MoveMouseTo(overflow_app_location);
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
 }
 
 // Tests that drag and drop a pinned running app will unpin it.
 TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
   ASSERT_EQ(test_api_->shelf_view()->shelf()->alignment(),
@@ -1289,13 +1289,13 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
   EXPECT_TRUE(IsAppPinned(GetItemId(index)));
 
   gfx::Point app_location = GetButtonCenter(GetButtonByID(id));
-  generator.set_current_location(app_location);
-  generator.PressLeftButton();
-  generator.MoveMouseBy(0, -kShelfSize / 2 - 1);
+  generator->set_current_location(app_location);
+  generator->PressLeftButton();
+  generator->MoveMouseBy(0, -kShelfSize / 2 - 1);
   EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
-  generator.MoveMouseBy(0, -kRipOffDistance);
+  generator->MoveMouseBy(0, -kRipOffDistance);
   EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(IsAppPinned(GetItemId(index)));
 }
 
@@ -1339,9 +1339,9 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   EXPECT_TRUE(test_api_->shelf_view()->GetWidget()->GetNativeWindow());
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
-  generator.MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
   // There's a delay to show the tooltip, so it's not visible yet.
   EXPECT_FALSE(tooltip_manager->IsVisible());
   EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
@@ -1355,20 +1355,20 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
       gfx::UnionRects(app_button->GetBoundsInScreen(),
                       platform_button->GetBoundsInScreen())
           .CenterPoint();
-  generator.MoveMouseTo(midpoint);
+  generator->MoveMouseTo(midpoint);
   EXPECT_TRUE(tooltip_manager->IsVisible());
   EXPECT_EQ(app_button, tooltip_manager->GetCurrentAnchorView());
 
   // When the cursor moves over another item, its tooltip shows immediately.
-  generator.MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(tooltip_manager->IsVisible());
   EXPECT_EQ(platform_button, tooltip_manager->GetCurrentAnchorView());
   tooltip_manager->Close();
 
   // Now cursor over the app_button and move immediately to the platform_button.
-  generator.MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
-  generator.MoveMouseTo(midpoint);
-  generator.MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(midpoint);
+  generator->MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(tooltip_manager->IsVisible());
   EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
 }
@@ -1489,36 +1489,36 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   tooltip_manager->set_timer_delay_for_test(0);
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Move the mouse off any item and check that no tooltip is shown.
-  generator.MoveMouseTo(gfx::Point(0, 0));
+  generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Move the mouse over the button and check that it is visible.
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   gfx::Rect bounds = app_list_button->GetBoundsInScreen();
-  generator.MoveMouseTo(bounds.CenterPoint());
+  generator->MoveMouseTo(bounds.CenterPoint());
   // Wait for the timer to go off.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move the mouse cursor slightly to the right of the item. The tooltip should
   // stay open.
-  generator.MoveMouseBy(bounds.width() / 2 + 5, 0);
+  generator->MoveMouseBy(bounds.width() / 2 + 5, 0);
   // Make sure there is no delayed close.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move back - it should still stay open.
-  generator.MoveMouseBy(-(bounds.width() / 2 + 5), 0);
+  generator->MoveMouseBy(-(bounds.width() / 2 + 5), 0);
   // Make sure there is no delayed close.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Now move the mouse cursor slightly above the item - so that it is over the
   // tooltip bubble. Now it should disappear.
-  generator.MoveMouseBy(0, -(bounds.height() / 2 + 5));
+  generator->MoveMouseBy(0, -(bounds.height() / 2 + 5));
   // Wait until the delayed close kicked in.
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(tooltip_manager->IsVisible());
@@ -1579,16 +1579,16 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
       test_for_overflow_view.shelf_view()->GetPreferredSize();
   int item_width = kShelfButtonSize + kShelfButtonSpacing;
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ShelfButton* button = test_for_overflow_view.GetButton(ripped_index);
   // Rip off the last visible item.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
   gfx::Point rip_off_point(start_point.x(), 0);
-  generator.MoveMouseTo(start_point.x(), start_point.y());
+  generator->MoveMouseTo(start_point.x(), start_point.y());
   base::RunLoop().RunUntilIdle();
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
-  generator.MoveMouseTo(rip_off_point.x(), rip_off_point.y());
+  generator->MoveMouseTo(rip_off_point.x(), rip_off_point.y());
   base::RunLoop().RunUntilIdle();
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
 
@@ -1602,12 +1602,12 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   button = test_for_overflow_view.GetButton(first_index);
 
   // Check the bubble size after an item is re-inserted.
-  generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(bubble_size.width(),
             test_for_overflow_view.shelf_view()->GetPreferredSize().width());
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(bubble_size.width(),
             test_for_overflow_view.shelf_view()->GetPreferredSize().width());
@@ -1856,7 +1856,7 @@ TEST_F(ShelfViewTest,
 TEST_F(ShelfViewTest, TestHideOverflow) {
   // Use an event generator instead of SimulateClick because the overflow bubble
   // is a PointerWatcher and gets the events directly.
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Add one app (which is on the main shelf) and then add buttons until
   // overflow. Add two more apps (which are on the overflow shelf).
@@ -1873,20 +1873,20 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
 
   // Make sure the point we chose is not on the shelf or its overflow bubble.
   ASSERT_FALSE(test_api_->shelf_view()->GetBoundsInScreen().Contains(
-      generator.current_location()));
+      generator->current_location()));
   ASSERT_FALSE(
       test_api_->overflow_bubble()->shelf_view()->GetBoundsInScreen().Contains(
-          generator.current_location()));
-  generator.PressLeftButton();
+          generator->current_location()));
+  generator->PressLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
 
   // Verify that by clicking a app which is on the main shelf while the overflow
   // bubble is opened, the overflow bubble will close.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
-  generator.set_current_location(GetButtonCenter(first_app_id));
-  generator.ClickLeftButton();
+  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->ClickLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
   // Verify that by clicking a app which is on the overflow shelf, the overflow
@@ -1897,16 +1897,16 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
       test_api_->overflow_bubble()->shelf_view());
   ShelfButton* button_on_overflow_shelf =
       test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id2));
-  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf));
-  generator.ClickLeftButton();
+  generator->set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator->ClickLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
   // Verify that dragging apps on the main shelf does not close the overflow
   // bubble.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
-  generator.set_current_location(GetButtonCenter(first_app_id));
-  generator.DragMouseTo(GetButtonCenter(second_app_id));
+  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->DragMouseTo(GetButtonCenter(second_app_id));
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
   test_api_->HideOverflowBubble();
 
@@ -1920,8 +1920,8 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
       test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id1));
   ShelfButton* button_on_overflow_shelf1 =
       test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id2));
-  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf));
-  generator.DragMouseTo(GetButtonCenter(button_on_overflow_shelf1));
+  generator->set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator->DragMouseTo(GetButtonCenter(button_on_overflow_shelf1));
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
@@ -1943,7 +1943,7 @@ TEST_F(ShelfViewTest, UnpinningCancelsOverflow) {
 // Verify the animations of the shelf items are as long as expected.
 TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   TestShelfObserver observer(shelf_view_->shelf());
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   ShelfID first_app_id = AddAppShortcut();
   ShelfID second_app_id = AddAppShortcut();
 
@@ -1954,9 +1954,9 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   // The shelf items should animate if they are moved within the shelf, either
   // by swapping or if the items need to be rearranged due to an item getting
   // ripped off.
-  generator.set_current_location(GetButtonCenter(first_app_id));
-  generator.DragMouseTo(GetButtonCenter(second_app_id));
-  generator.DragMouseBy(0, 50);
+  generator->set_current_location(GetButtonCenter(first_app_id));
+  generator->DragMouseTo(GetButtonCenter(second_app_id));
+  generator->DragMouseBy(0, 50);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
 
@@ -2001,20 +2001,20 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
 
 // Tests that the blank shelf view area shows a context menu on right click.
 TEST_F(ShelfViewTest, ShelfViewShowsContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
-  generator.ReleaseRightButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+  generator->ReleaseRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
 // Tests that the app list button shows a context menu on right click when
 // touchable app context menus are not enabled.
 TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  generator.MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
+  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
@@ -2023,9 +2023,9 @@ TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
 TEST_F(ShelfViewTest, ShelfButtonShowsInkDropHighlightOnMenuShow) {
   const ShelfID id_0 = AddApp();
   ShelfButton* button_0 = GetButtonByID(id_0);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(button_0->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(button_0->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             button_0->GetInkDropForTesting()->GetTargetInkDropState());
 
@@ -2037,7 +2037,7 @@ TEST_F(ShelfViewTest, ShelfButtonShowsInkDropHighlightOnMenuShow) {
 
 // Tests that ShelfWindowWatcher buttons show a context menu on right click.
 TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
@@ -2046,14 +2046,14 @@ TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   ShelfButton* button = GetButtonByID(shelf_id);
   ASSERT_TRUE(button);
-  generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
+  generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
 // Tests that the drag view is set on left click and not set on right click.
 TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
@@ -2066,20 +2066,20 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   // Context menu is shown on right button press and no drag view is set.
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
-  generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
+  generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
   EXPECT_TRUE(shelf_view_->IsShowingMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
 
   // Press left button. Menu should close.
-  generator.PressLeftButton();
-  generator.ReleaseLeftButton();
+  generator->PressLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   // Press left button. Drag view is set to |button|.
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(shelf_view_->drag_view(), button);
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_FALSE(shelf_view_->drag_view());
 }
 
@@ -2180,10 +2180,10 @@ TEST_P(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
 // Tests that the app list button does not show a context menu on right click
 // when touchable app context menus are enabled.
 TEST_F(ShelfViewTouchableContextMenuTest, AppListButtonDoesNotShowContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   const AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  generator.MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
-  generator.PressRightButton();
+  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
   EXPECT_FALSE(test_api_->CloseMenu());
 }
 
@@ -2469,12 +2469,12 @@ TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
   InitAppListButtonInkDrop();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
 
   // Mouse press on the button, which shows the app list, should end up in the
   // activated state.
-  generator.PressLeftButton();
+  generator->PressLeftButton();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2485,9 +2485,9 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
-  generator.MoveMouseBy(app_list_button_->width(), 0);
-  generator.MoveMouseBy(-app_list_button_->width(), 0);
-  generator.ReleaseLeftButton();
+  generator->MoveMouseBy(app_list_button_->width(), 0);
+  generator->MoveMouseBy(-app_list_button_->width(), 0);
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2508,9 +2508,9 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
 
   // Mouse press on the button, which dismisses the app list, should end up in
   // the hidden state.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-  generator.PressLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
   RunAllPendingInMessageLoop();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
@@ -2519,9 +2519,9 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
-  generator.MoveMouseBy(app_list_button_->width(), 0);
-  generator.MoveMouseBy(-app_list_button_->width(), 0);
-  generator.ReleaseLeftButton();
+  generator->MoveMouseBy(app_list_button_->width(), 0);
+  generator->MoveMouseBy(-app_list_button_->width(), 0);
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2533,11 +2533,11 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
   InitAppListButtonInkDrop();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
 
   // Touch press on the button should end up in the pending state.
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2545,7 +2545,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 
   // Touch release on the button, which shows the app list, should end up in the
   // activated state.
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2568,10 +2568,10 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
 
   // Touch press and release on the button, which dismisses the app list, should
   // end up in the hidden state.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-  generator.PressTouch();
-  generator.ReleaseTouch();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->PressTouch();
+  generator->ReleaseTouch();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
@@ -2584,13 +2584,13 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
   InitAppListButtonInkDrop();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Point touch_location =
       app_list_button_->GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(touch_location);
+  generator->MoveMouseTo(touch_location);
 
   // Touch press on the button should end up in the pending state.
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2598,14 +2598,14 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 
   // Dragging the touch point should hide the pending ink drop.
   touch_location.Offset(app_list_button_->width(), 0);
-  generator.MoveTouch(touch_location);
+  generator->MoveTouch(touch_location);
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
   // Touch release should not change the ink drop state.
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2626,9 +2626,9 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
 
   // Touch press on the button, dragging the touch point, and releasing, which
   // dismisses the app list, should end up in the hidden state.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-  generator.PressMoveAndReleaseTouchBy(app_list_button_->width(), 0);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->PressMoveAndReleaseTouchBy(app_list_button_->width(), 0);
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2869,17 +2869,17 @@ TEST_F(OverflowButtonInkDropTest, OnOverflowBubbleShowHide) {
 // Tests ink drop state transitions for the overflow button when the user
 // clicks on it.
 TEST_F(OverflowButtonInkDropTest, MouseActivate) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator* generator = GetEventGenerator();
   gfx::Point mouse_location = GetScreenPointInsideOverflowButton();
-  generator.MoveMouseTo(mouse_location);
+  generator->MoveMouseTo(mouse_location);
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2891,22 +2891,22 @@ TEST_F(OverflowButtonInkDropTest, MouseActivate) {
 // Tests ink drop state transitions for the overflow button when the user
 // presses left mouse button on it and drags it out of the button bounds.
 TEST_F(OverflowButtonInkDropTest, MouseDragOut) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2919,28 +2919,28 @@ TEST_F(OverflowButtonInkDropTest, MouseDragOut) {
 // presses left mouse button on it and drags it out of the button bounds and
 // back.
 TEST_F(OverflowButtonInkDropTest, MouseDragOutAndBack) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2952,16 +2952,16 @@ TEST_F(OverflowButtonInkDropTest, MouseDragOutAndBack) {
 // Tests ink drop state transitions for the overflow button when the user
 // right clicks on the button to show the context menu.
 TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressRightButton();
+  generator->PressRightButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseRightButton();
+  generator->ReleaseRightButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2973,16 +2973,16 @@ TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
 // Tests ink drop state transitions for the overflow button when the user taps
 // on it.
 TEST_F(OverflowButtonInkDropTest, TouchActivate) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2994,22 +2994,22 @@ TEST_F(OverflowButtonInkDropTest, TouchActivate) {
 // Tests ink drop state transitions for the overflow button when the user taps
 // down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonInkDropTest, TouchDragOut) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  generator->MoveTouch(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3021,28 +3021,28 @@ TEST_F(OverflowButtonInkDropTest, TouchDragOut) {
 // Tests ink drop state transitions for the overflow button when the user taps
 // down on it and drags it out of the button bounds and back.
 TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  generator->MoveTouch(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  generator.MoveTouch(GetScreenPointInsideOverflowButton());
+  generator->MoveTouch(GetScreenPointInsideOverflowButton());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3054,11 +3054,11 @@ TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
 // Tests ink drop state transitions for the overflow button when the user long
 // presses on the button to show the context menu.
 TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
   base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3071,7 +3071,7 @@ TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
               ElementsAre(views::InkDropState::ALTERNATE_ACTION_PENDING,
                           views::InkDropState::HIDDEN));
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3180,16 +3180,16 @@ class OverflowButtonActiveInkDropTest : public OverflowButtonInkDropTest {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user clicks on it.
 TEST_F(OverflowButtonActiveInkDropTest, MouseDeactivate) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3202,22 +3202,22 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDeactivate) {
 // and the user presses left mouse button on it and drags it out of the button
 // bounds.
 TEST_F(OverflowButtonActiveInkDropTest, MouseDragOut) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3230,28 +3230,28 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOut) {
 // and the user presses left mouse button on it and drags it out of the button
 // bounds and back.
 TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressLeftButton();
+  generator->PressLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3263,16 +3263,16 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user right clicks on the button to show the context menu.
 TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
-  generator.PressRightButton();
+  generator->PressRightButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseRightButton();
+  generator->ReleaseRightButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3284,16 +3284,16 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps on it.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3305,22 +3305,22 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  generator->MoveTouch(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3333,28 +3333,28 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
 // and the user taps down on it and drags it out of the button bounds and
 // back.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  generator->MoveTouch(GetScreenPointOutsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.MoveTouch(GetScreenPointInsideOverflowButton());
+  generator->MoveTouch(GetScreenPointInsideOverflowButton());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3366,11 +3366,11 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user long presses on the button to show the context menu.
 TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(GetScreenPointInsideOverflowButton());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(GetScreenPointInsideOverflowButton());
   base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
@@ -3382,7 +3382,7 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
               IsEmpty());
 
-  generator.ReleaseTouch();
+  generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),

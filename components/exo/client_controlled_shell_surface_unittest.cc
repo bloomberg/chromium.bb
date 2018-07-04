@@ -618,9 +618,9 @@ TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
       system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
 
   // Send tab key event.
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
-  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
 
   // Confirm that system tray is activated.
   EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
@@ -660,9 +660,9 @@ TEST_F(ClientControlledShellSurfaceTest,
   EXPECT_FALSE(system_tray->IsBubbleActive());
 
   // Send tab key event.
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
-  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
 
   // Confirm that system tray is activated.
   EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
@@ -1046,17 +1046,17 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   ASSERT_FALSE(window_state->is_dragged());
 
   // Client can start drag only when the mouse is pressed on the widget.
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
-  event_generator.MoveMouseToCenterOf(window);
-  event_generator.PressLeftButton();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window);
+  event_generator->PressLeftButton();
   shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_TRUE(window_state->is_dragged());
-  event_generator.ReleaseLeftButton();
+  event_generator->ReleaseLeftButton();
   ASSERT_FALSE(window_state->is_dragged());
 
   // Press pressed outside of the window.
-  event_generator.MoveMouseTo(gfx::Point(200, 50));
-  event_generator.PressLeftButton();
+  event_generator->MoveMouseTo(gfx::Point(200, 50));
+  event_generator->PressLeftButton();
   shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_FALSE(window_state->is_dragged());
 }

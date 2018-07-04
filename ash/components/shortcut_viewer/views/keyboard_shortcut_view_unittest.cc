@@ -201,8 +201,8 @@ TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
   views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_FALSE(widget->IsClosed());
 
-  ui::test::EventGenerator& event_generator = GetEventGenerator();
-  event_generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(widget->IsClosed());
 }
 

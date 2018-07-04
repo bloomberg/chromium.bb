@@ -291,12 +291,12 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
 
   // Drag to change snapped window width.
   const int kIncreasedWidth = 225;
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(window->bounds().right(), window->bounds().y());
-  generator.PressLeftButton();
-  generator.MoveMouseTo(window->bounds().right() + kIncreasedWidth,
-                        window->bounds().y());
-  generator.ReleaseLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(window->bounds().right(), window->bounds().y());
+  generator->PressLeftButton();
+  generator->MoveMouseTo(window->bounds().right() + kIncreasedWidth,
+                         window->bounds().y());
+  generator->ReleaseLeftButton();
   expected.set_width(expected.width() + kIncreasedWidth);
   EXPECT_EQ(expected, window->GetBoundsInScreen());
   EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
