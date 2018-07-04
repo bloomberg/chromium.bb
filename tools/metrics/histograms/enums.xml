@@ -27851,6 +27851,7 @@ from previous Chrome versions.
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
   <int value="-972737445" label="ArcUseAuthEndpoint:disabled"/>
   <int value="-972425050" label="gesture-editing"/>
+  <int value="-970067535" label="BackgroundTaskComponentUpdate:disabled"/>
   <int value="-969332901" label="stop-non-timers-in-background:disabled"/>
   <int value="-968010468" label="SharedArrayBuffer:disabled"/>
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
@@ -28389,6 +28390,7 @@ from previous Chrome versions.
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
+  <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="268535107"

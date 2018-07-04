@@ -151,7 +151,10 @@
 #include "ui/message_center/message_center.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/component_updater/background_task_update_scheduler.h"
+#else
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
@@ -1011,11 +1014,23 @@ BrowserProcessImpl::component_updater() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return nullptr;
 
+  std::unique_ptr<component_updater::UpdateScheduler> scheduler;
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kBackgroundTaskComponentUpdate) &&
+      component_updater::BackgroundTaskUpdateScheduler::IsAvailable()) {
+    scheduler =
+        std::make_unique<component_updater::BackgroundTaskUpdateScheduler>();
+  }
+#endif
+  if (!scheduler)
+    scheduler = std::make_unique<component_updater::TimerUpdateScheduler>();
+
   component_updater_ = component_updater::ComponentUpdateServiceFactory(
       component_updater::MakeChromeComponentUpdaterConfigurator(
           base::CommandLine::ForCurrentProcess(),
           g_browser_process->local_state()),
-      std::make_unique<component_updater::TimerUpdateScheduler>());
+      std::move(scheduler));
 
   return component_updater_.get();
 }
