@@ -3,7 +3,7 @@
 <script>
   function enterPictureInPicture() {
     document.querySelector('video').requestPictureInPicture().then(() => {
-      document.title = 'entered_pip';
+      window.domAutomationController.send(true);
     });
   }
 </script>

@@ -15,7 +15,7 @@
 
   function enterPictureInPicture() {
     video.requestPictureInPicture().then(() => {
-      domAutomationController.send('done');
+      domAutomationController.send(true);
     });
   }
 
