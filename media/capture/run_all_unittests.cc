@@ -9,8 +9,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MojoEnabledTestEnvironment final : public testing::Environment {
@@ -20,12 +20,12 @@ class MojoEnabledTestEnvironment final : public testing::Environment {
   ~MojoEnabledTestEnvironment() final = default;
 
   void SetUp() final {
-    mojo::edk::Init();
+    mojo::core::Init();
     mojo_ipc_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+    mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
         mojo_ipc_thread_.task_runner(),
-        mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     VLOG(1) << "Mojo initialized";
   }
 
@@ -36,7 +36,7 @@ class MojoEnabledTestEnvironment final : public testing::Environment {
 
  private:
   base::Thread mojo_ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
 };
 
 int main(int argc, char* argv[]) {

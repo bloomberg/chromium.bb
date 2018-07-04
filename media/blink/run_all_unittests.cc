@@ -20,7 +20,7 @@
 #endif
 
 #if !defined(OS_IOS)
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -78,7 +78,7 @@ static int RunTests(base::TestSuite* test_suite) {
 
 #if !defined(OS_IOS)
   // Initialize mojo firstly to enable Blink initialization to use it.
-  mojo::edk::Init();
+  mojo::core::Init();
 #endif
 
   BlinkPlatformWithTaskEnvironment platform_;

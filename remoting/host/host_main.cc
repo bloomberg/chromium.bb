@@ -29,7 +29,7 @@
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(REMOTING_MULTI_PROCESS)
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_MACOSX)
@@ -226,7 +226,7 @@ int HostMain(int argc, char** argv) {
   remoting::LoadResources("");
 
 #if defined(REMOTING_MULTI_PROCESS)
-  mojo::edk::Init();
+  mojo::core::Init();
 #endif
 
   // Invoke the entry point.

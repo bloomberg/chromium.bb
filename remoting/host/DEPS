@@ -10,7 +10,7 @@ include_rules = [
   "+media/base/win/mf_initializer.h",
   "+media/gpu/windows/media_foundation_video_encode_accelerator_win.h",
   "+mojo/public",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+net",
   "+remoting/codec",
   "+remoting/protocol",
@@ -33,6 +33,6 @@ include_rules = [
 
 specific_include_rules = {
   ".*unittest\.cc": [
-    "+mojo/edk/test",
+    "+mojo/core/test",
   ],
 }

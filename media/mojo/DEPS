@@ -5,7 +5,7 @@ include_rules = [
   "+mojo/public",
 
   # For changing the bad message handler for tests.
-  "+mojo/edk/embedder/embedder.h",
+  "+mojo/core/embedder/embedder.h",
 
   # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
   # remove this dependency.

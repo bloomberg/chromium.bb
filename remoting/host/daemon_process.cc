@@ -180,9 +180,9 @@ DaemonProcess::DaemonProcess(
       status_monitor_(new HostStatusMonitor()),
       current_process_stats_("DaemonProcess") {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
-  // TODO(sammc): On OSX, mojo::edk::SetMachPortProvider() should be called with
-  // a base::PortProvider implementation. Add it here when this code is used on
-  // OSX.
+  // TODO(sammc): On OSX, mojo::core::SetMachPortProvider() should be called
+  // with a base::PortProvider implementation. Add it here when this code is
+  // used on OSX.
 }
 
 void DaemonProcess::CreateDesktopSession(int terminal_id,

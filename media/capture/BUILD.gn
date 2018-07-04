@@ -312,7 +312,7 @@ test("capture_unittests") {
     "//media:test_support",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
@@ -362,7 +362,7 @@ test("capture_unittests") {
     deps += [
       "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:cros_camera",
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//third_party/libdrm",
       "//third_party/libsync",
       "//third_party/minigbm",

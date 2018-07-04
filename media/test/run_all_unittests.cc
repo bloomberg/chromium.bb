@@ -10,7 +10,7 @@
 #include "media/base/fake_localized_strings.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -46,7 +46,7 @@ void TestSuiteNoAtExit::Initialize() {
 }
 
 int main(int argc, char** argv) {
-  mojo::edk::Init();
+  mojo::core::Init();
   TestSuiteNoAtExit test_suite(argc, argv);
 
   return base::LaunchUnitTests(

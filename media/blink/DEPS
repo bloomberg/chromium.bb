@@ -7,7 +7,7 @@ include_rules = [
   "+components/viz/common/surfaces/frame_sink_id.h",
   "+gin",
   "+media",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+mojo/public/cpp/bindings",
   "+net/base",
   "+net/http",

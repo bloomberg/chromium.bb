@@ -177,7 +177,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//media:test_support",
     "//media/mojo:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//services/metrics/public/cpp:ukm_builders",
     "//testing/gmock",
