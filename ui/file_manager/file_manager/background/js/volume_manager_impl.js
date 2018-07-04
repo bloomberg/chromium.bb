@@ -292,7 +292,7 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   var volumeInfo = this.volumeInfoList.findByEntry(entry);
 
-  if (util.isFakeEntry(entry)) {
+  if (util.isFakeEntry(entry) || entry.type_name == 'EntryList') {
     return new EntryLocationImpl(
         volumeInfo, entry.rootType,
         true /* the entry points a root directory. */,

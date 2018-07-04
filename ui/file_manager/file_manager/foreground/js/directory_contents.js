@@ -36,7 +36,7 @@ ContentScanner.prototype.cancel = function() {
 
 /**
  * Scanner of the entries in a directory.
- * @param {DirectoryEntry} entry The directory to be read.
+ * @param {DirectoryEntry|FilesAppDirEntry} entry The directory to be read.
  * @constructor
  * @extends {ContentScanner}
  */
@@ -592,8 +592,8 @@ FileListContext.createPrefetchPropertyNames_ = function() {
  * @param {FileListContext} context The file list context.
  * @param {boolean} isSearch True for search directory contents, otherwise
  *     false.
- * @param {DirectoryEntry|FakeEntry} directoryEntry The entry of the current
- *     directory.
+ * @param {DirectoryEntry|FakeEntry|FilesAppDirEntry} directoryEntry The entry
+ *     of the current directory.
  * @param {function():ContentScanner} scannerFactory The factory to create
  *     ContentScanner instance.
  * @constructor
@@ -731,7 +731,8 @@ DirectoryContents.prototype.isSearch = function() {
 };
 
 /**
- * @return {DirectoryEntry|FakeEntry} A DirectoryEntry for current directory.
+ * @return {DirectoryEntry|FakeEntry|FilesAppDirEntry} A DirectoryEntry for
+ *     current directory.
  *     In case of search -- the top directory from which search is run.
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
@@ -989,7 +990,8 @@ DirectoryContents.prototype.prefetchMetadata =
  * Creates a DirectoryContents instance to show entries in a directory.
  *
  * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} directoryEntry The current directory entry.
+ * @param {DirectoryEntry|FilesAppDirEntry} directoryEntry The current directory
+ *     entry.
  * @return {DirectoryContents} Created DirectoryContents instance.
  */
 DirectoryContents.createForDirectory = function(context, directoryEntry) {
