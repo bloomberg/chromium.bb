@@ -165,8 +165,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
                       const std::vector<std::string>& scopes,
                       GetAccessTokenCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (get_access_token_callback_ ||
-        !host_->delegate_->AreRefreshTokensReady()) {
+    if (get_access_token_callback_) {
       std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
       return;
     }
@@ -175,11 +174,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mint_token_flow_ =
         host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
     DCHECK(mint_token_flow_);
-    host_->GetIdentityManager().GetAccessToken(
-        host_->delegate_->GetAccountId().GetUserEmail(), {},
-        kIdentityConsumerId,
-        base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
-                       base::Unretained(this)));
+    host_->GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
+        &DriveFsHost::MountState::AccountReady, base::Unretained(this)));
   }
 
   void OnMounted() override {
@@ -197,6 +193,15 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   }
 
   void NotifyDelegateOnMounted() { host_->delegate_->OnMounted(mount_path()); }
+
+  void AccountReady(const AccountInfo& info,
+                    const identity::AccountState& state) {
+    host_->GetIdentityManager().GetAccessToken(
+        host_->delegate_->GetAccountId().GetUserEmail(), {},
+        kIdentityConsumerId,
+        base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
+                       base::Unretained(this)));
+  }
 
   void GotChromeAccessToken(const base::Optional<std::string>& access_token,
                             base::Time expiration_time,
