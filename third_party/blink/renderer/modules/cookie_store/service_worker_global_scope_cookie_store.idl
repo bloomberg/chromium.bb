@@ -6,7 +6,8 @@
 
 [
     RuntimeEnabled=AsyncCookies,
-    ImplementedAs=GlobalCookieStore
+    ImplementedAs=ServiceWorkerGlobalScopeCookieStore
 ] partial interface ServiceWorkerGlobalScope {
   [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
+  attribute EventHandler oncookiechange;
 };

@@ -2623,6 +2623,7 @@ interface WritableStream
     getter onbackgroundfetched
     getter onbackgroundfetchfail
     getter oncanmakepayment
+    getter oncookiechange
     getter onfetch
     getter oninstall
     getter onmessage
@@ -2643,6 +2644,7 @@ interface WritableStream
     setter onbackgroundfetched
     setter onbackgroundfetchfail
     setter oncanmakepayment
+    setter oncookiechange
     setter onfetch
     setter oninstall
     setter onmessage
