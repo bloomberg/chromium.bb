@@ -476,6 +476,11 @@ const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 // shared memory segment as a string.
 const char kFieldTrialHandle[] = "field-trial-handle";
 
+// Define an alias root directory which is replaced with the replacement string
+// in file URLs. The format is "/alias=/replacement", which would turn
+// file:///alias/some/path.html into file:///replacement/some/path.html.
+const char kFileUrlPathAlias[] = "file-url-path-alias";
+
 // Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
 // accelerated compositing + impl-side painting. Overrides the
 // kEnableGpuRasterization flag.

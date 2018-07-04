@@ -2781,6 +2781,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLImageChromium,
     switches::kEnableWebVR,
     switches::kExplicitlyAllowedPorts,
+    switches::kFileUrlPathAlias,
     switches::kFMPNetworkQuietTimeout,
     switches::kForceColorProfile,
     switches::kForceDeviceScaleFactor,
