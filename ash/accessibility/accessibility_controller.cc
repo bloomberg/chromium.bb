@@ -426,6 +426,14 @@ bool AccessibilityController::IsFocusHighlightEnabled() const {
   return focus_highlight_enabled_;
 }
 
+void AccessibilityController::SetFullscreenMagnifierEnabled(bool enabled) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
+}
+
 void AccessibilityController::SetHighContrastEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
