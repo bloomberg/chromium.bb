@@ -398,8 +398,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             getWindowAndroid().setAnimationPlaceholderView(
                     mCompositorViewHolder.getCompositorView());
 
-            initializeToolbar();
             initializeTabModels();
+            initializeToolbar();
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),

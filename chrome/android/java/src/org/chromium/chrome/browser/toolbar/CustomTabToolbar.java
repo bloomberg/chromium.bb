@@ -758,11 +758,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void revertChanges() {}
 
     @Override
-    public long getFirstUrlBarFocusTime() {
-        return 0;
-    }
-
-    @Override
     public void hideSuggestions() {}
 
     @Override

@@ -715,11 +715,6 @@ public class LocationBarLayout extends FrameLayout
         }
     }
 
-    @Override
-    public long getFirstUrlBarFocusTime() {
-        return mUrlBar.getFirstFocusTime();
-    }
-
     /**
      * @return Whether the URL focus change is taking place, e.g. a focus animation is running on
      *         a phone device.

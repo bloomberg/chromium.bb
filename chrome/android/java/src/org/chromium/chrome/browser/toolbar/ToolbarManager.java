@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -116,9 +117,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     private static final int RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS = 30000;
 
-    private static final int MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 1000;
-    private static final int MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 30000;
-
     /**
      * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
      * it's obvious to the user that something is attempting to load.
@@ -182,6 +180,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private boolean mShouldUpdateToolbarPrimaryColor = true;
     private int mCurrentThemeColor;
 
+    private OmniboxStartupMetrics mOmniboxStartupMetrics;
+
     /**
      * Creates a ToolbarManager object.
      *
@@ -238,6 +238,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
         HomepageManager.getInstance().addListener(mHomepageStateListener);
+
+        mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -879,6 +881,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mBottomToolbarCoordinator = null;
         }
 
+        if (mOmniboxStartupMetrics != null) {
+            mOmniboxStartupMetrics.destroy();
+            mOmniboxStartupMetrics = null;
+        }
+
         mLocationBar.removeUrlFocusChangeListener(this);
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
@@ -1103,6 +1110,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (hasFocus) {
             mFullscreenFocusToken = mControlsVisibilityDelegate
                     .showControlsPersistentAndClearOldToken(mFullscreenFocusToken);
+            mOmniboxStartupMetrics.onUrlBarFocused();
         } else {
             mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenFocusToken);
             mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
@@ -1221,14 +1229,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);
-
-        long firstFocusTime = mToolbar.getLocationBar().getFirstUrlBarFocusTime();
-        if (firstFocusTime != 0) {
-            RecordHistogram.recordCustomTimesHistogram(
-                    "MobileStartup.ToolbarFirstFocusTime2." + activityName,
-                    firstFocusTime - activityCreationTimeMs, MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS,
-                    MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS, TimeUnit.MILLISECONDS, 50);
-        }
+        mOmniboxStartupMetrics.recordHistogram();
     }
 
     /**

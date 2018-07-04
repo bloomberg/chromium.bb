@@ -14,7 +14,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
@@ -113,8 +112,6 @@ public class UrlBar extends AutocompleteEditText {
     private final int mLightHighlightColor;
 
     private Boolean mUseDarkColors;
-
-    private long mFirstFocusTimeMs;
 
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
     // ellispize span was applied the last time the text changed.  A true value here does not
@@ -347,23 +344,11 @@ public class UrlBar extends AutocompleteEditText {
         mFocused = focused;
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
 
-        if (focused && mFirstFocusTimeMs == 0) {
-            mFirstFocusTimeMs = SystemClock.elapsedRealtime();
-        }
-
         if (focused) {
             mPendingScroll = false;
         }
 
         fixupTextDirection();
-    }
-
-    /**
-     * @return The elapsed realtime timestamp in ms of the first time the url bar was focused,
-     *         0 if never.
-     */
-    public long getFirstFocusTime() {
-        return mFirstFocusTimeMs;
     }
 
     /**
