@@ -18,9 +18,13 @@ namespace gfx {
 
 // A collection of parameters describing how text should be rendered on Linux.
 struct GFX_EXPORT FontRenderParams {
-  FontRenderParams();
-  FontRenderParams(const FontRenderParams& other);
-  ~FontRenderParams();
+  bool operator==(const FontRenderParams& other) const {
+    return antialiasing == other.antialiasing &&
+           subpixel_positioning == other.subpixel_positioning &&
+           autohinter == other.autohinter && use_bitmaps == other.use_bitmaps &&
+           hinting == other.hinting &&
+           subpixel_rendering == other.subpixel_rendering;
+  }
 
   // Level of hinting to be applied.
   enum Hinting {
@@ -45,27 +49,27 @@ struct GFX_EXPORT FontRenderParams {
 
   // Antialiasing (grayscale if |subpixel_rendering| is SUBPIXEL_RENDERING_NONE
   // and RGBA otherwise).
-  bool antialiasing;
+  bool antialiasing = true;
 
   // Should subpixel positioning (i.e. fractional X positions for glyphs) be
   // used?
   // TODO(derat): Remove this; we don't set it in the browser and mostly ignore
   // it in Blink: http://crbug.com/396659
-  bool subpixel_positioning;
+  bool subpixel_positioning = true;
 
   // Should FreeType's autohinter be used (as opposed to Freetype's bytecode
   // interpreter, which uses fonts' own hinting instructions)?
-  bool autohinter;
+  bool autohinter = false;
 
   // Should embedded bitmaps in fonts should be used?
-  bool use_bitmaps;
+  bool use_bitmaps = false;
 
   // Hinting level.
-  Hinting hinting;
+  Hinting hinting = HINTING_MEDIUM;
 
   // Whether subpixel rendering should be used or not, and if so, the display's
   // subpixel order.
-  SubpixelRendering subpixel_rendering;
+  SubpixelRendering subpixel_rendering = SUBPIXEL_RENDERING_NONE;
 
   static SkFontLCDConfig::LCDOrder SubpixelRenderingToSkiaLCDOrder(
       SubpixelRendering subpixel_rendering);

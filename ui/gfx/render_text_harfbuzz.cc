@@ -8,16 +8,21 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
+#include "base/hash.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
@@ -886,6 +891,166 @@ size_t TextRunList::GetRunIndexAt(size_t position) const {
   return runs_.size();
 }
 
+namespace {
+
+// ShapeRunWithFont cache. Views makes repeated calls to ShapeRunWithFont
+// with the same arguments in several places, and typesetting is very expensive.
+// To compensate for this, encapsulate all of the input arguments to
+// ShapeRunWithFont in ShapeRunWithFontInput, all of the output arguments in
+// ShapeRunWithFontOutput, and add ShapeRunCache to map between the two.
+// This is analogous to the blink::ShapeCache.
+// https://crbug.com/826265
+
+// Input for the stateless implementation of ShapeRunWithFont.
+struct ShapeRunWithFontInput {
+  ShapeRunWithFontInput(const base::string16& text,
+                        sk_sp<SkTypeface> skia_face,
+                        FontRenderParams render_params,
+                        int font_size,
+                        gfx::Range range,
+                        UScriptCode script,
+                        bool is_rtl,
+                        bool obscured,
+                        float glyph_width_for_test,
+                        int glyph_spacing,
+                        bool subpixel_rendering_suppressed)
+      : text(text),
+        skia_face(skia_face),
+        render_params(render_params),
+        range(range),
+        script(script),
+        font_size(font_size),
+        glyph_spacing(glyph_spacing),
+        glyph_width_for_test(glyph_width_for_test),
+        is_rtl(is_rtl),
+        obscured(obscured),
+        subpixel_rendering_suppressed(subpixel_rendering_suppressed) {}
+
+  bool operator==(const ShapeRunWithFontInput& other) const {
+    return text == other.text && skia_face == other.skia_face &&
+           render_params == other.render_params &&
+           font_size == other.font_size && range == other.range &&
+           script == other.script && is_rtl == other.is_rtl &&
+           obscured == other.obscured &&
+           glyph_width_for_test == other.glyph_width_for_test &&
+           glyph_spacing == other.glyph_spacing &&
+           subpixel_rendering_suppressed == other.subpixel_rendering_suppressed;
+  }
+
+  struct Hash {
+    size_t operator()(const ShapeRunWithFontInput& key) const {
+      return base::Hash(key.text) ^ (key.range.start() << 8) ^
+             (key.range.end() << 16);
+    }
+  };
+
+  // Note that only |range| and some nearby context is needed from |text|, so
+  // it is possible to use a smaller substring of |text|.
+  base::string16 text;
+  sk_sp<SkTypeface> skia_face;
+  FontRenderParams render_params;
+  gfx::Range range;
+  UScriptCode script;
+  int font_size;
+  int glyph_spacing;
+  float glyph_width_for_test;
+  bool is_rtl;
+  bool obscured;
+  bool subpixel_rendering_suppressed;
+};
+
+// Output for the stateless implementation of ShapeRunWithFont.
+struct ShapeRunWithFontOutput {
+  std::vector<uint16_t> glyphs;
+  std::vector<SkPoint> positions;
+  std::vector<uint32_t> glyph_to_char;
+  size_t glyph_count = 0;
+  float width = 0;
+};
+
+// An MRU cache of the results from calling ShapeRunWithFont. Use the same
+// maximum cache size as is usedin blink::ShapeCache.
+const int kShapeRunCacheSize = 10000;
+using ShapeRunCacheBase = base::HashingMRUCache<ShapeRunWithFontInput,
+                                                ShapeRunWithFontOutput,
+                                                ShapeRunWithFontInput::Hash>;
+class ShapeRunCache : public ShapeRunCacheBase {
+ public:
+  ShapeRunCache() : ShapeRunCacheBase(kShapeRunCacheSize) {}
+  ~ShapeRunCache() override {}
+};
+
+void ShapeRunWithFont(const ShapeRunWithFontInput& in,
+                      ShapeRunWithFontOutput* out) {
+  TRACE_EVENT0("ui", "RenderTextHarfBuzz::(internal)::ShapeRunWithFont");
+
+  hb_font_t* harfbuzz_font =
+      CreateHarfBuzzFont(in.skia_face, SkIntToScalar(in.font_size),
+                         in.render_params, in.subpixel_rendering_suppressed);
+
+  // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
+  // buffer holds our text, run information to be used by the shaping engine,
+  // and the resulting glyph data.
+  const base::string16& text = in.text;
+  hb_buffer_t* buffer = hb_buffer_create();
+  hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16_t*>(text.c_str()),
+                      text.length(), in.range.start(), in.range.length());
+  hb_buffer_set_script(buffer, ICUScriptToHBScript(in.script));
+  hb_buffer_set_direction(buffer,
+                          in.is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
+  // TODO(ckocagil): Should we determine the actual language?
+  hb_buffer_set_language(buffer, hb_language_get_default());
+
+  // Shape the text.
+  hb_shape(harfbuzz_font, buffer, NULL, 0);
+
+  // Populate the run fields with the resulting glyph data in the buffer.
+  unsigned int glyph_count = 0;
+  hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
+  out->glyph_count = glyph_count;
+  hb_glyph_position_t* hb_positions =
+      hb_buffer_get_glyph_positions(buffer, NULL);
+  out->glyphs.resize(out->glyph_count);
+  out->glyph_to_char.resize(out->glyph_count);
+  out->positions.resize(out->glyph_count);
+  out->width = 0.0f;
+
+#if defined(OS_MACOSX)
+  // Mac 10.9 and 10.10 give a quirky offset for whitespace glyphs in RTL,
+  // which requires tests relying on the behavior of |glyph_width_for_test_|
+  // to also be given a zero x_offset, otherwise expectations get thrown off.
+  const bool force_zero_offset =
+      in.glyph_width_for_test > 0 && base::mac::IsAtMostOS10_10();
+#else
+  constexpr bool force_zero_offset = false;
+#endif
+
+  DCHECK(in.obscured || in.glyph_spacing == 0);
+  for (size_t i = 0; i < out->glyph_count; ++i) {
+    DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
+    out->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
+    out->glyph_to_char[i] = infos[i].cluster;
+    const SkScalar x_offset =
+        force_zero_offset ? 0
+                          : HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
+    const SkScalar y_offset =
+        HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
+    out->positions[i].set(out->width + x_offset, -y_offset);
+    out->width += (in.glyph_width_for_test > 0)
+                      ? in.glyph_width_for_test
+                      : HarfBuzzUnitsToFloat(hb_positions[i].x_advance) +
+                            in.glyph_spacing;
+    // Round run widths if subpixel positioning is off to match native behavior.
+    if (!in.render_params.subpixel_positioning)
+      out->width = std::round(out->width);
+  }
+
+  hb_buffer_destroy(buffer);
+  hb_font_destroy(harfbuzz_font);
+}
+
+}  // namespace
+
 }  // namespace internal
 
 RenderTextHarfBuzz::RenderTextHarfBuzz()
@@ -1296,7 +1461,7 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
       renderer->SetFontRenderParams(run.render_params,
                                     subpixel_rendering_suppressed());
       Range glyphs_range = run.CharRangeToGlyphRange(segment.char_range);
-      std::unique_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
+      std::vector<SkPoint> positions(glyphs_range.length());
       SkScalar offset_x = preceding_segment_widths -
                           ((glyphs_range.GetMin() != 0)
                                ? run.positions[glyphs_range.GetMin()].x()
@@ -1622,69 +1787,32 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   run->skia_face = skia_face;
   run->font = font;
   run->render_params = params;
+  const internal::ShapeRunWithFontInput in(
+      text, run->skia_face, run->render_params, run->font_size, run->range,
+      run->script, run->is_rtl, obscured(), glyph_width_for_test_,
+      glyph_spacing(), subpixel_rendering_suppressed());
+  internal::ShapeRunWithFontOutput out;
 
-  hb_font_t* harfbuzz_font = CreateHarfBuzzFont(
-      run->skia_face, SkIntToScalar(run->font_size), run->render_params,
-      subpixel_rendering_suppressed());
-
-  // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
-  // buffer holds our text, run information to be used by the shaping engine,
-  // and the resulting glyph data.
-  hb_buffer_t* buffer = hb_buffer_create();
-  hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16_t*>(text.c_str()),
-                      text.length(), run->range.start(), run->range.length());
-  hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
-  hb_buffer_set_direction(buffer,
-      run->is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-  // TODO(ckocagil): Should we determine the actual language?
-  hb_buffer_set_language(buffer, hb_language_get_default());
-
-  // Shape the text.
-  hb_shape(harfbuzz_font, buffer, NULL, 0);
-
-  // Populate the run fields with the resulting glyph data in the buffer.
-  unsigned int glyph_count = 0;
-  hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
-  run->glyph_count = glyph_count;
-  hb_glyph_position_t* hb_positions =
-      hb_buffer_get_glyph_positions(buffer, NULL);
-  run->glyphs.reset(new uint16_t[run->glyph_count]);
-  run->glyph_to_char.resize(run->glyph_count);
-  run->positions.reset(new SkPoint[run->glyph_count]);
-  run->width = 0.0f;
-
-#if defined(OS_MACOSX)
-  // Mac 10.9 and 10.10 give a quirky offset for whitespace glyphs in RTL,
-  // which requires tests relying on the behavior of |glyph_width_for_test_|
-  // to also be given a zero x_offset, otherwise expectations get thrown off.
-  const bool force_zero_offset =
-      glyph_width_for_test_ > 0 && base::mac::IsAtMostOS10_10();
-#else
-  constexpr bool force_zero_offset = false;
-#endif
-
-  DCHECK(obscured() || glyph_spacing() == 0);
-  for (size_t i = 0; i < run->glyph_count; ++i) {
-    DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
-    run->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
-    run->glyph_to_char[i] = infos[i].cluster;
-    const SkScalar x_offset =
-        force_zero_offset ? 0
-                          : HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
-    const SkScalar y_offset =
-        HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
-    run->positions[i].set(run->width + x_offset, -y_offset);
-    run->width +=
-        (glyph_width_for_test_ > 0)
-            ? glyph_width_for_test_
-            : HarfBuzzUnitsToFloat(hb_positions[i].x_advance) + glyph_spacing();
-    // Round run widths if subpixel positioning is off to match native behavior.
-    if (!run->render_params.subpixel_positioning)
-      run->width = std::round(run->width);
+  // internal::ShapeRunWithFont can be extremely slow, so use cached results
+  // if possible.
+  if (base::MessageLoopCurrentForUI::IsSet()) {
+    static base::NoDestructor<internal::ShapeRunCache> cache;
+    auto found = cache.get()->Get(in);
+    if (found == cache.get()->end()) {
+      internal::ShapeRunWithFont(in, &out);
+      cache.get()->Put(in, out);
+    } else {
+      out = found->second;
+    }
+  } else {
+    internal::ShapeRunWithFont(in, &out);
   }
 
-  hb_buffer_destroy(buffer);
-  hb_font_destroy(harfbuzz_font);
+  run->glyph_count = out.glyph_count;
+  run->glyphs = std::move(out.glyphs);
+  run->glyph_to_char = std::move(out.glyph_to_char);
+  run->positions = std::move(out.positions);
+  run->width = out.width;
   return true;
 }
 
