@@ -681,36 +681,39 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // interact with the layout system at all.
 - (void)animateToolbarsForAppearance {
   DCHECK(self.transitionCoordinator);
-  // TODO(crbug.com/820410): Tune the timing of these animations.
+  // Set toolbar alphas to 0 prior to animation.
+  self.topToolbar.alpha = 0;
+  self.bottomToolbar.alpha = 0;
 
-  // Capture the current toolbar transforms.
-  CGAffineTransform topToolbarBaseTransform = self.topToolbar.transform;
-  CGAffineTransform bottomToolbarBaseTransform = self.bottomToolbar.transform;
-  // Translate the top toolbar up offscreen by shifting it up by its height.
-  self.topToolbar.transform = CGAffineTransformTranslate(
-      self.topToolbar.transform, /*tx=*/0,
-      /*ty=*/-(self.topToolbar.bounds.size.height * 0.5));
-  // Translate the bottom toolbar down offscreen by shifting it down by its
-  // height.
-  self.bottomToolbar.transform = CGAffineTransformTranslate(
-      self.bottomToolbar.transform, /*tx=*/0,
-      /*ty=*/(self.topToolbar.bounds.size.height * 0.5));
-
-  // Block that restores the toolbar transforms, suitable for using with the
-  // transition coordinator.
+  // Fade the toolbars in for the last 60% of the transition.
+  auto keyframe = ^{
+    [UIView addKeyframeWithRelativeStartTime:0.4
+                            relativeDuration:0.6
+                                  animations:^{
+                                    self.topToolbar.alpha = 1.0;
+                                    self.bottomToolbar.alpha = 1.0;
+                                  }];
+  };
+  // Animation block that does the keyframe animation.
   auto animation = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-    self.topToolbar.transform = topToolbarBaseTransform;
-    self.bottomToolbar.transform = bottomToolbarBaseTransform;
+    [UIView animateKeyframesWithDuration:context.transitionDuration
+                                   delay:0
+                                 options:UIViewAnimationOptionLayoutSubviews
+                              animations:keyframe
+                              completion:nil];
   };
 
   // Also hide the scroll view (and thus the tab grids) until the transition
-  // completes.
+  // completes. Set the toolbar alpha to 1.0 as part of the completion handler
+  // as well, in case the animation didn't complete.
   self.scrollView.hidden = YES;
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
+    self.topToolbar.alpha = 1.0;
+    self.bottomToolbar.alpha = 1.0;
   };
 
-  // Animate the toolbars into place alongside the current transition.
+  // Animate the toolbar alphas alongside the current transition.
   [self.transitionCoordinator animateAlongsideTransition:animation
                                               completion:cleanup];
 }
@@ -718,38 +721,36 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Translates the toolbar views offscreen using the transition coordinator.
 - (void)animateToolbarsForDisappearance {
   DCHECK(self.transitionCoordinator);
-  // TODO(crbug.com/820410): Tune the timing of these animations.
 
-  // Capture the current toolbar transforms.
-  CGAffineTransform topToolbarBaseTransform = self.topToolbar.transform;
-  CGAffineTransform bottomToolbarBaseTransform = self.bottomToolbar.transform;
-  // Translate the top toolbar up offscreen by shifting it up by its height.
-  CGAffineTransform topToolbarOffsetTransform = CGAffineTransformTranslate(
-      self.topToolbar.transform, /*tx=*/0,
-      /*ty=*/-(self.topToolbar.bounds.size.height * 0.5));
-  // Translate the bottom toolbar down offscreen by shifting it down by its
-  // height.
-  CGAffineTransform bottomToolbarOffsetTransform = CGAffineTransformTranslate(
-      self.bottomToolbar.transform, /*tx=*/0,
-      /*ty=*/(self.topToolbar.bounds.size.height * 0.5));
+  // Fade the toolbars out in the first 66% of the transition.
+  auto keyframe = ^{
+    [UIView addKeyframeWithRelativeStartTime:0
+                            relativeDuration:0.66
+                                  animations:^{
+                                    self.topToolbar.alpha = 0.0;
+                                    self.bottomToolbar.alpha = 0.0;
+                                  }];
+  };
 
-  // Block that animates the toolbar transforms, suitable for using with the
-  // transition coordinator.
+  // Animation block that does the keyframe animation.
   auto animation = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-    self.topToolbar.transform = topToolbarOffsetTransform;
-    self.bottomToolbar.transform = bottomToolbarOffsetTransform;
+    [UIView animateKeyframesWithDuration:context.transitionDuration
+                                   delay:0
+                                 options:UIViewAnimationOptionLayoutSubviews
+                              animations:keyframe
+                              completion:nil];
   };
 
   // Hide the scroll view (and thus the tab grids) until the transition
-  // completes.
+  // completes. Restore the toolbar opacity when the transition completes.
   self.scrollView.hidden = YES;
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
-    self.topToolbar.transform = topToolbarBaseTransform;
-    self.bottomToolbar.transform = bottomToolbarBaseTransform;
+    self.topToolbar.alpha = 1.0;
+    self.bottomToolbar.alpha = 1.0;
   };
 
-  // Animate the toolbars into place alongside the current transition.
+  // Animate the toolbar alphas alongside the current transition.
   [self.transitionCoordinator animateAlongsideTransition:animation
                                               completion:cleanup];
 }

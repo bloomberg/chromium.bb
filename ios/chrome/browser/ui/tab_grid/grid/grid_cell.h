@@ -30,6 +30,8 @@
 @property(nonatomic, weak) UIImage* icon;
 @property(nonatomic, weak) UIImage* snapshot;
 @property(nonatomic, copy) NSString* title;
+// Fixed (immutable) UI elements that may be referenced in animations.
+@property(nonatomic, readonly, weak) UIView* topBar;
 
 // Returns a cell with the same theme, icon, snapshot, and title as the reciever
 // (but no delegate or identifier) for use in animated transitions.
