@@ -115,7 +115,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
   // true for shouldPauseAnimation, this will result in the timeline being
   // suspended.
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
-                        TimeDelta::FromSecondsD(timer->NextFireInterval()));
+                        timer->NextFireIntervalDelta());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
 
@@ -149,7 +149,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
   // Fire the timer/trigger a frame update. The timeline will remain
   // suspended and no frame will be scheduled.
   test::RunDelayedTasks(TimeDelta::FromMillisecondsD(1) +
-                        TimeDelta::FromSecondsD(timer->NextFireInterval()));
+                        timer->NextFireIntervalDelta());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
 
@@ -226,7 +226,7 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   // Wait for the next animation frame to be triggered, and then trigger a new
   // frame. The image animation timeline should be running.
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
-                        TimeDelta::FromSecondsD(timer->NextFireInterval()));
+                        timer->NextFireIntervalDelta());
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
@@ -236,7 +236,7 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   // animation timeline.)
   WebView().SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
-                        TimeDelta::FromSecondsD(timer->NextFireInterval()));
+                        timer->NextFireIntervalDelta());
 
   EXPECT_TRUE(svg_image_chrome_client.IsSuspended());
 
@@ -244,7 +244,7 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   // frame and resume the image animation.
   WebView().SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
-                        TimeDelta::FromSecondsD(timer->NextFireInterval()));
+                        timer->NextFireIntervalDelta());
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
