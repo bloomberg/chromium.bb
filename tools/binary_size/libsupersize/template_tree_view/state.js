@@ -28,11 +28,11 @@ const dom = {
    * Removes all the existing children of `parent` and inserts
    * `newChild` in their place
    * @param {Node} parent
-   * @param {Node} newChild
+   * @param {Node | null} newChild
    */
   replace(parent, newChild) {
     while (parent.firstChild) parent.removeChild(parent.firstChild);
-    parent.appendChild(newChild);
+    if (newChild != null) parent.appendChild(newChild);
   },
 };
 

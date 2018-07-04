@@ -48,6 +48,11 @@
   const _leafTemplate = document.getElementById('treeitem');
   const _treeTemplate = document.getElementById('treefolder');
 
+  const _symbolTree = document.getElementById('symboltree');
+
+  /** HTMLCollection of all nodes. Updates itself automatically. */
+  const _liveNodeList = document.getElementsByClassName('node');
+
   /**
    * @type {WeakMap<HTMLElement, Readonly<TreeNode>>}
    * Associates UI nodes with the corresponding tree data object
@@ -113,6 +118,24 @@
   }
 
   /**
+   * Sets focus to a new tree element while updating the element that last had
+   * focus. The tabindex property is used to avoid needing to tab through every
+   * single tree item in the page to reach other areas.
+   * @param {number | HTMLElement} el Index of tree node in `_liveNodeList`
+   */
+  function _focusTreeElement(el) {
+    const lastFocused = document.activeElement;
+    if (_uiNodeData.has(lastFocused)) {
+      lastFocused.tabIndex = -1;
+    }
+    const element = typeof el === 'number' ? _liveNodeList[el] : el;
+    if (element != null) {
+      element.tabIndex = 0;
+      element.focus();
+    }
+  }
+
+  /**
    * Click event handler to expand or close the child group of a tree.
    * @param {Event} event
    */
@@ -126,17 +149,115 @@
     const isExpanded = element.getAttribute('aria-expanded') === 'true';
     if (isExpanded) {
       element.setAttribute('aria-expanded', 'false');
-      group.setAttribute('hidden', '');
+      dom.replace(group, null);
     } else {
-      if (group.children.length === 0) {
-        const data = _uiNodeData.get(link);
-        group.appendChild(
-          dom.createFragment(data.children.map(child => newTreeElement(child)))
-        );
-      }
-
+      const data = _uiNodeData.get(link);
+      group.appendChild(
+        dom.createFragment(data.children.map(child => newTreeElement(child)))
+      );
       element.setAttribute('aria-expanded', 'true');
-      group.removeAttribute('hidden');
+    }
+  }
+
+  /**
+   * Keydown event handler to move focus for the given element
+   * @param {KeyboardEvent} event
+   */
+  function _handleKeyNavigation(event) {
+    const link = event.target;
+    const focusIndex = Array.prototype.indexOf.call(_liveNodeList, link);
+
+    /** Focus the tree element immediately following this one */
+    function _focusNext() {
+      if (focusIndex > -1 && focusIndex < _liveNodeList.length - 1) {
+        event.preventDefault();
+        _focusTreeElement(focusIndex + 1);
+      }
+    }
+
+    /** Open or close the tree element */
+    function _toggle() {
+      event.preventDefault();
+      link.click();
+    }
+
+    /** Focus the tree element at `index` if it starts with `char` */
+    function _focusIfStartsWith(char, index) {
+      const data = _uiNodeData.get(_liveNodeList[index]);
+      if (data.shortName.startsWith(char)) {
+        event.preventDefault();
+        _focusTreeElement(index);
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    switch (event.key) {
+      // Space should act like clicking or pressing enter & toggle the tree.
+      case ' ':
+        _toggle();
+        break;
+      // Move to previous focusable node
+      case 'ArrowUp':
+        if (focusIndex > 0) {
+          event.preventDefault();
+          _focusTreeElement(focusIndex - 1);
+        }
+        break;
+      // Move to next focusable node
+      case 'ArrowDown':
+        _focusNext();
+        break;
+      // If closed tree, open tree. Otherwise, move to first child.
+      case 'ArrowRight':
+        if (_uiNodeData.get(link).children.length !== 0) {
+          const isExpanded =
+            link.parentElement.getAttribute('aria-expanded') === 'true';
+          if (isExpanded) {
+            _focusNext();
+          } else {
+            _toggle();
+          }
+        }
+        break;
+      // If opened tree, close tree. Otherwise, move to parent.
+      case 'ArrowLeft':
+        {
+          const isExpanded =
+            link.parentElement.getAttribute('aria-expanded') === 'true';
+          if (isExpanded) {
+            _toggle();
+          } else {
+            const groupList = link.parentElement.parentElement;
+            if (groupList.getAttribute('role') === 'group') {
+              event.preventDefault();
+              _focusTreeElement(groupList.previousElementSibling);
+            }
+          }
+        }
+        break;
+      // Focus first node
+      case 'Home':
+        event.preventDefault();
+        _focusTreeElement(0);
+        break;
+      // Focus last node on screen
+      case 'End':
+        event.preventDefault();
+        _focusTreeElement(_liveNodeList.length - 1);
+        break;
+      // If a letter was pressed, find a node starting with that character.
+      default:
+        if (event.key.length === 1 && event.key.match(/\S/)) {
+          for (let i = focusIndex + 1; i < _liveNodeList.length; i++) {
+            if (_focusIfStartsWith(event.key, i)) return;
+          }
+          for (let i = 0; i < focusIndex; i++) {
+            if (_focusIfStartsWith(event.key, i)) return;
+          }
+        }
+        break;
     }
   }
 
@@ -190,7 +311,10 @@
     }
   });
 
+  _symbolTree.addEventListener('keydown', _handleKeyNavigation);
+
   self.newTreeElement = newTreeElement;
+  self._symbolTree = _symbolTree;
 }
 
 {
@@ -208,10 +332,12 @@
    */
   worker.onmessage = ({data}) => {
     const root = newTreeElement(data);
+    const node = root.querySelector('.node');
     // Expand the root UI node
-    root.querySelector('.node').click();
+    node.click();
+    node.tabIndex = 0;
 
-    dom.replace(document.getElementById('symboltree'), root);
+    dom.replace(_symbolTree, root);
   };
 
   /**
