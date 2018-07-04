@@ -60,6 +60,7 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
+  void OnSingleTabModeChanged() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
@@ -195,6 +196,9 @@ class BrowserNonClientFrameViewAsh
   // Triggers the hosted app origin and icon animations, assumes the hosted
   // app UI elements exist.
   void StartHostedAppAnimation();
+
+  // To be called after the frame's colors may have changed.
+  void UpdateFrameColors();
 
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
