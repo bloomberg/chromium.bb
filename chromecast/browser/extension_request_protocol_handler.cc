@@ -90,6 +90,9 @@ CastExtensionURLRequestJob::CastExtensionURLRequestJob(
       sub_request_(request->context()->CreateRequest(redirect_url,
                                                      request->priority(),
                                                      this)) {
+  // Copy necessary information from the original request.
+  // (|URLRequest| is not copyable.)
+  sub_request_->set_method(request->method());
   content::URLRequestUserData* user_data =
       static_cast<content::URLRequestUserData*>(
           request->GetUserData(content::URLRequestUserData::kUserDataKey));
