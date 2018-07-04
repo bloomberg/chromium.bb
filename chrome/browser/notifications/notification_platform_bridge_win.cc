@@ -691,7 +691,7 @@ class NotificationPlatformBridgeWinImpl
       DLOG(ERROR) << "Failed to get toast dismissal reason: " << std::hex << hr;
     }
 
-    HandleEvent(notification, NotificationCommon::CLOSE,
+    HandleEvent(notification, NotificationCommon::OPERATION_CLOSE,
                 /*action_index=*/base::nullopt, by_user);
     return S_OK;
   }
@@ -839,9 +839,9 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   if (!inline_reply.empty())
     reply = inline_reply;
 
-  NotificationCommon::Operation operation = launch_id.is_for_context_menu()
-                                                ? NotificationCommon::SETTINGS
-                                                : NotificationCommon::CLICK;
+  NotificationCommon::Operation operation =
+      launch_id.is_for_context_menu() ? NotificationCommon::OPERATION_SETTINGS
+                                      : NotificationCommon::OPERATION_CLICK;
 
   ForwardNotificationOperationOnUiThread(
       operation, launch_id.notification_type(), launch_id.origin_url(),

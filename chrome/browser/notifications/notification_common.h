@@ -17,13 +17,12 @@ class NotificationCommon {
  public:
   // Things as user can do to a notification. Keep in sync with the
   // NotificationOperation enumeration in notification_response_builder_mac.h.
-  // TODO(peter): Prefix these options with OPERATION_.
   enum Operation {
-    CLICK = 0,
-    CLOSE = 1,
-    DISABLE_PERMISSION = 2,
-    SETTINGS = 3,
-    OPERATION_MAX = SETTINGS
+    OPERATION_CLICK = 0,
+    OPERATION_CLOSE = 1,
+    OPERATION_DISABLE_PERMISSION = 2,
+    OPERATION_SETTINGS = 3,
+    OPERATION_MAX = OPERATION_SETTINGS
   };
 
   // A struct that contains extra data about a notification specific to one of

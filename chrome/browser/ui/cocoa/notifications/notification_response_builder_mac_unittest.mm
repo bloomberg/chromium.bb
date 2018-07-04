@@ -16,11 +16,12 @@
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(NOTIFICATION_CLICK, NotificationCommon::CLICK);
-STATIC_ASSERT_ENUM(NOTIFICATION_CLOSE, NotificationCommon::CLOSE);
+STATIC_ASSERT_ENUM(NOTIFICATION_CLICK, NotificationCommon::OPERATION_CLICK);
+STATIC_ASSERT_ENUM(NOTIFICATION_CLOSE, NotificationCommon::OPERATION_CLOSE);
 STATIC_ASSERT_ENUM(NOTIFICATION_DISABLE_PERMISSION,
-                   NotificationCommon::DISABLE_PERMISSION);
-STATIC_ASSERT_ENUM(NOTIFICATION_SETTINGS, NotificationCommon::SETTINGS);
+                   NotificationCommon::OPERATION_DISABLE_PERMISSION);
+STATIC_ASSERT_ENUM(NOTIFICATION_SETTINGS,
+                   NotificationCommon::OPERATION_SETTINGS);
 STATIC_ASSERT_ENUM(NOTIFICATION_OPERATION_MAX,
                    NotificationCommon::OPERATION_MAX);
 

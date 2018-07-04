@@ -787,12 +787,12 @@ class NotificationPlatformBridgeLinuxImpl
       return;
 
     if (action == kDefaultButtonId) {
-      ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLICK,
-                                   base::nullopt /* action_index */,
-                                   base::nullopt /* by_user */);
+      ForwardNotificationOperation(
+          FROM_HERE, data, NotificationCommon::OPERATION_CLICK,
+          base::nullopt /* action_index */, base::nullopt /* by_user */);
     } else if (action == kSettingsButtonId) {
       ForwardNotificationOperation(
-          FROM_HERE, data, NotificationCommon::SETTINGS,
+          FROM_HERE, data, NotificationCommon::OPERATION_SETTINGS,
           base::nullopt /* action_index */, base::nullopt /* by_user */);
     } else if (action == kCloseButtonId) {
       CloseOnTaskRunner(data->profile_id, data->notification_id);
@@ -804,7 +804,8 @@ class NotificationPlatformBridgeLinuxImpl
       size_t id_zero_based = id - data->action_start;
       if (id_zero_based >= n_buttons)
         return;
-      ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLICK,
+      ForwardNotificationOperation(FROM_HERE, data,
+                                   NotificationCommon::OPERATION_CLICK,
                                    id_zero_based, base::nullopt /* by_user */);
     }
   }
@@ -821,9 +822,9 @@ class NotificationPlatformBridgeLinuxImpl
       return;
 
     // TODO(peter): Can we support |by_user| appropriately here?
-    ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLOSE,
-                                 base::nullopt /* action_index */,
-                                 true /* by_user */);
+    ForwardNotificationOperation(
+        FROM_HERE, data, NotificationCommon::OPERATION_CLOSE,
+        base::nullopt /* action_index */, true /* by_user */);
     notifications_.erase(data);
   }
 
