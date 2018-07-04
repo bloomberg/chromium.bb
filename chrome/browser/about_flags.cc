@@ -3832,6 +3832,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLayeredAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLayeredAPI)},
 
+    {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
+     flag_descriptions::kEnableLayoutNGDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
+
     {"enable-lazy-frame-loading",
      flag_descriptions::kEnableLazyFrameLoadingName,
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,

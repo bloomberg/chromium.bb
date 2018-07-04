@@ -350,6 +350,9 @@ extern const char kEnableHttpFormWarningDescription[];
 extern const char kLayeredAPIName[];
 extern const char kLayeredAPIDescription[];
 
+extern const char kEnableLayoutNGName[];
+extern const char kEnableLayoutNGDescription[];
+
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
 

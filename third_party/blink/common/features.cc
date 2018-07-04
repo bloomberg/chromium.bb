@@ -7,6 +7,9 @@
 namespace blink {
 namespace features {
 
+// Enable LayoutNG.
+const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable mojo Blob URL interface and better blob URL lifetime management.
 // Can be enabled independently of NetworkService.
 const base::Feature kMojoBlobURLs{"MojoBlobURLs",

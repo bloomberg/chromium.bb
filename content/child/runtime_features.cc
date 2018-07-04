@@ -18,6 +18,7 @@
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -365,6 +366,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (base::FeatureList::IsEnabled(features::kLayeredAPI))
     WebRuntimeFeatures::EnableLayeredAPI(true);
+
+  if (base::FeatureList::IsEnabled(blink::features::kLayoutNG))
+    WebRuntimeFeatures::EnableLayoutNG(true);
 
   WebRuntimeFeatures::EnableLazyInitializeMediaControls(
       base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));
