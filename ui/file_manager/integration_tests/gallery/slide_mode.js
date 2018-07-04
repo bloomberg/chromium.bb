@@ -149,7 +149,9 @@ testcase.checkAvailabilityOfEditAndPrintButtons = function() {
   return launchedPromise
       .then(function(result) {
         appId = result.appId;
-        return gallery.waitForElement(appId, '.gallery[mode="slide"]');
+        // The buttons are disabled in the static gallery.html DOM, so wait for
+        // the image to be fully loaded before querying the button state.
+        return gallery.waitForSlideImage(appId, 640, 480, 'image3');
       })
       .then(function() {
         return gallery.callRemoteTestUtil(
