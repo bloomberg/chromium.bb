@@ -27,9 +27,9 @@ UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
 UnifiedConsentServiceFactory::~UnifiedConsentServiceFactory() = default;
 
 // static
-UnifiedConsentService* UnifiedConsentServiceFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<UnifiedConsentService*>(
+unified_consent::UnifiedConsentService*
+UnifiedConsentServiceFactory::GetForProfile(Profile* profile) {
+  return static_cast<unified_consent::UnifiedConsentService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
@@ -40,7 +40,7 @@ UnifiedConsentServiceFactory* UnifiedConsentServiceFactory::GetInstance() {
 
 void UnifiedConsentServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  UnifiedConsentService::RegisterPrefs(registry);
+  unified_consent::UnifiedConsentService::RegisterPrefs(registry);
 }
 
 KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
@@ -50,7 +50,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   if (!IsUnifiedConsentEnabled(profile))
     return nullptr;
 
-  return new UnifiedConsentService(
+  return new unified_consent::UnifiedConsentService(
       new ChromeUnifiedConsentServiceClient(profile->GetPrefs()),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile));

@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_UNIFIED_CONSENT_PREF_NAMES_H_
 #define COMPONENTS_UNIFIED_CONSENT_PREF_NAMES_H_
 
+namespace unified_consent {
 namespace prefs {
 
 extern const char kUnifiedConsentGiven[];
 extern const char kUrlKeyedAnonymizedDataCollectionEnabled[];
 
 }  // namespace prefs
+}  // namespace unified_consent
 
 #endif  // COMPONENTS_UNIFIED_CONSENT_PREF_NAMES_H_

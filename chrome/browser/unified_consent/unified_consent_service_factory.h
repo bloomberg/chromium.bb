@@ -10,7 +10,9 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
+namespace unified_consent {
 class UnifiedConsentService;
+}
 
 class UnifiedConsentServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -18,7 +20,8 @@ class UnifiedConsentServiceFactory : public BrowserContextKeyedServiceFactory {
   // (creating one if none exists). Returns nullptr if this profile cannot have
   // a UnifiedConsentService (e.g. UnifiedConsent is not enabled for |profile|
   // or |profile| is incognito).
-  static UnifiedConsentService* GetForProfile(Profile* profile);
+  static unified_consent::UnifiedConsentService* GetForProfile(
+      Profile* profile);
 
   // Returns an instance of the factory singleton.
   static UnifiedConsentServiceFactory* GetInstance();

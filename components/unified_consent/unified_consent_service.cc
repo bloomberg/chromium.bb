@@ -13,6 +13,8 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
+namespace unified_consent {
+
 UnifiedConsentService::UnifiedConsentService(
     UnifiedConsentServiceClient* service_client,
     PrefService* pref_service,
@@ -92,3 +94,5 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetNetworkPredictionEnabled(true);
 }
+
+}  //  namespace unified_consent
