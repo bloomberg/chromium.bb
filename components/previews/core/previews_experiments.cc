@@ -144,15 +144,13 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
     case PreviewsType::LITE_PAGE:
       NOTREACHED();
       break;
-    case PreviewsType::AMP_REDIRECTION:
-      return net::EFFECTIVE_CONNECTION_TYPE_LAST;  // Trigger irrespective of
-                                                   // ECT.
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return GetParamValueAsECTByFeature(features::kResourceLoadingHints,
                                          kEffectiveConnectionTypeThreshold,
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
   }
@@ -172,10 +170,6 @@ bool IsClientLoFiEnabled() {
   return base::FeatureList::IsEnabled(features::kClientLoFi);
 }
 
-bool IsAMPRedirectionPreviewEnabled() {
-  return base::FeatureList::IsEnabled(features::kAMPRedirection);
-}
-
 bool IsNoScriptPreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kNoScriptPreviews);
 }
@@ -191,11 +185,6 @@ int OfflinePreviewsVersion() {
 int ClientLoFiVersion() {
   return base::GetFieldTrialParamByFeatureAsInt(features::kClientLoFi, kVersion,
                                                 0);
-}
-
-int AMPRedirectionPreviewsVersion() {
-  return GetFieldTrialParamByFeatureAsInt(features::kAMPRedirection, kVersion,
-                                          0);
 }
 
 int NoScriptPreviewsVersion() {
@@ -252,14 +241,13 @@ std::string GetStringNameForType(PreviewsType type) {
       return "LoFi";
     case PreviewsType::LITE_PAGE:
       return "LitePage";
-    case PreviewsType::AMP_REDIRECTION:
-      return "AMPRedirection";
     case PreviewsType::NOSCRIPT:
       return "NoScript";
     case PreviewsType::UNSPECIFIED:
       return "Unspecified";
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return "ResourceLoadingHints";
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
   }

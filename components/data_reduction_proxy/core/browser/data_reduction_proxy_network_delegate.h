@@ -77,10 +77,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
  private:
   friend class DataReductionProxyTestContext;
 
-  // Resets if Lo-Fi has been used for the last main frame load to false.
-  void OnBeforeURLRequestInternal(net::URLRequest* request,
-                                  GURL* new_url) override;
-
   // Called before an HTTP transaction is started. Allows the delegate to
   // modify the Chrome-Proxy-Accept-Transform header to convey acceptable
   // content transformations.

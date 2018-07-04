@@ -4,8 +4,6 @@
 
 static_library("core") {
   sources = [
-    "previews_amp_converter.cc",
-    "previews_amp_converter.h",
     "previews_black_list.cc",
     "previews_black_list.h",
     "previews_decider.h",
@@ -37,7 +35,6 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "previews_amp_converter_unittest.cc",
     "previews_black_list_unittest.cc",
     "previews_experiments_unittest.cc",
     "previews_logger_unittest.cc",

@@ -193,23 +193,4 @@ bool ContentLoFiDecider::IsClientLoFiAutoReloadRequest(
          (request_info->GetPreviewsState() & content::CLIENT_LOFI_AUTO_RELOAD);
 }
 
-void ContentLoFiDecider::MaybeApplyAMPPreview(
-    net::URLRequest* request,
-    GURL* new_url,
-    previews::PreviewsDecider* previews_decider) const {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!request_info ||
-      request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME ||
-      !previews::params::IsAMPRedirectionPreviewEnabled() ||
-      !request->url().has_host() ||
-      !previews_decider->ShouldAllowPreview(
-          *request, previews::PreviewsType::AMP_REDIRECTION)) {
-    return;
-  }
-
-  // TODO(rajendrant): Apply the matching logic for |request| and update
-  // |new_url| to its AMP version.
-}
-
 }  // namespace data_reduction_proxy

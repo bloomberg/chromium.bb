@@ -280,19 +280,6 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
   data_reduction_proxy_bypass_stats_ = bypass_stats;
 }
 
-void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
-    net::URLRequest* request,
-    GURL* new_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (data_reduction_proxy_io_data_ &&
-      data_reduction_proxy_io_data_->lofi_decider() &&
-      data_reduction_proxy_io_data_->IsEnabled()) {
-    data_reduction_proxy_io_data_->lofi_decider()->MaybeApplyAMPPreview(
-        request, new_url, data_reduction_proxy_io_data_->previews_decider());
-  }
-}
-
 void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
     net::URLRequest* request,
     net::HttpRequestHeaders* headers) {

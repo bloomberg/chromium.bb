@@ -44,9 +44,6 @@ const base::Feature kNoScriptPreviews{"NoScriptPreviews",
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAMPRedirection{"AMPRedirectionPreviews",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the syncing of the Optimization Hints component, which provides
 // hints for what Previews can be applied on a page load.
 const base::Feature kOptimizationHints{"OptimizationHints",

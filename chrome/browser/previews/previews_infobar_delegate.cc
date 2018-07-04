@@ -68,7 +68,6 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
   switch (previews_type) {
     case previews::PreviewsType::LITE_PAGE:
     case previews::PreviewsType::OFFLINE:
-    case previews::PreviewsType::AMP_REDIRECTION:
     case previews::PreviewsType::NOSCRIPT:
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
       // Prevent previews and lite page modes from showing after reload.
@@ -81,6 +80,7 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
+    case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
       NOTREACHED();
       break;
   }
