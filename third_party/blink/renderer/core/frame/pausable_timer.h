@@ -48,8 +48,8 @@ class CORE_EXPORT PausableTimer : public TimerBase, public PausableObject {
  private:
   void Fired() override = 0;
 
-  double next_fire_interval_;
-  double repeat_interval_;
+  TimeDelta next_fire_interval_;
+  TimeDelta repeat_interval_;
 #if DCHECK_IS_ON()
   bool paused_ = false;
 #endif
