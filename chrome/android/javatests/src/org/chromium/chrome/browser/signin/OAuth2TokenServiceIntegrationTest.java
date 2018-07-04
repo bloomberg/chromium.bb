@@ -158,7 +158,7 @@ public class OAuth2TokenServiceIntegrationTest {
 
             // First seed the account state (some native classes make the assumption that
             // a notification that a token was revoked for a given account was preceded by a
-            // notifictation that that account was available).
+            // notification that that account was available).
             mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
             mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT2);
 
