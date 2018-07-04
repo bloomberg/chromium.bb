@@ -14,8 +14,10 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
-#include "content/browser/renderer_host/font_utils_linux.h"
+#include "build/build_config.h"
+#include "components/services/font/ppapi_fontconfig_matching.h"
 #include "content/public/common/common_sandbox_support_linux.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -74,12 +76,10 @@ int32_t PepperTrueTypeFontLinux::Initialize(
     }
   }
 
-  fd_.reset(
-      MatchFontFaceWithFallback(desc->family,
-                                desc->weight >= PP_TRUETYPEFONTWEIGHT_BOLD,
-                                desc->style & PP_TRUETYPEFONTSTYLE_ITALIC,
-                                desc->charset,
-                                PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT));
+  fd_.reset(font_service::MatchFontFaceWithFallback(
+      desc->family, desc->weight >= PP_TRUETYPEFONTWEIGHT_BOLD,
+      desc->style & PP_TRUETYPEFONTSTYLE_ITALIC, desc->charset,
+      PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT));
   // TODO(bbudge) Modify content API to return results of font matching and
   // fallback, so we can update |desc| to reflect that.
   return fd_.is_valid() ? PP_OK : PP_ERROR_FAILED;

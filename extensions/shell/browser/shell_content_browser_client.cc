@@ -8,8 +8,10 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -54,6 +56,12 @@
 #include "components/nacl/common/nacl_switches.h"      // nogncheck
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "base/strings/utf_string_conversions.h"
+#include "components/services/font/font_service_app.h"  // nogncheck
+#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
 #endif
 
 using base::CommandLine;
@@ -255,6 +263,14 @@ ShellContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(
       std::make_unique<ExtensionNavigationThrottle>(navigation_handle));
   return throttles;
+}
+
+void ShellContentBrowserClient::RegisterOutOfProcessServices(
+    OutOfProcessServiceMap* services) {
+#if defined(OS_LINUX)
+  (*services)[font_service::mojom::kServiceName] =
+      base::BindRepeating(&base::ASCIIToUTF16, "Font Service");
+#endif
 }
 
 std::unique_ptr<content::NavigationUIData>

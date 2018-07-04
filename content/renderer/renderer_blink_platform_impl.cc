@@ -205,13 +205,17 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
 class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
+#if defined(OS_LINUX)
+  explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
+      : font_loader_(std::move(font_loader)) {}
+#endif
   ~SandboxSupport() override {}
 
 #if defined(OS_MACOSX)
   bool LoadFont(CTFontRef src_font,
                 CGFontRef* container,
                 uint32_t* font_id) override;
-#elif defined(OS_POSIX)
+#elif defined(OS_LINUX)
   void GetFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
@@ -229,6 +233,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
   // here.
   base::Lock unicode_font_families_mutex_;
   std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
+  sk_sp<font_service::FontLoader> font_loader_;
 #endif
 };
 #endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
@@ -247,13 +252,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       is_locked_to_site_(false),
       default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
       main_thread_scheduler_(main_thread_scheduler) {
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
-  if (g_sandbox_enabled && sandboxEnabled()) {
-    sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
-  } else {
-    DVLOG(1) << "Disabling sandbox support for testing.";
-  }
-#endif
 
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
@@ -267,10 +265,27 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     web_idb_factory_.reset(new WebIDBFactoryImpl(
         sync_message_filter_,
         RenderThreadImpl::current()->GetIOTaskRunner().get()));
+#if defined(OS_LINUX)
+    font_loader_ = sk_make_sp<font_service::FontLoader>(connector_.get());
+    SkFontConfigInterface::SetGlobal(font_loader_);
+#endif
   } else {
     service_manager::mojom::ConnectorRequest request;
     connector_ = service_manager::Connector::Create(&request);
   }
+
+#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
+  if (g_sandbox_enabled && sandboxEnabled()) {
+#if defined(OS_MACOSX)
+    sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport());
+#else
+    sandbox_support_.reset(
+        new RendererBlinkPlatformImpl::SandboxSupport(font_loader_));
+#endif
+  } else {
+    DVLOG(1) << "Disabling sandbox support for testing.";
+  }
+#endif
 
   blink_interface_provider_.reset(
       new BlinkInterfaceProviderImpl(connector_.get()));
@@ -592,8 +607,8 @@ void RendererBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     return;
   }
 
-  content::GetFallbackFontForCharacter(character, preferred_locale,
-                                       fallbackFont);
+  content::GetFallbackFontForCharacter(font_loader_, character,
+                                       preferred_locale, fallbackFont);
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
@@ -604,8 +619,8 @@ void RendererBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
     bool is_italic,
     float device_scale_factor,
     blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(family, size, is_bold, is_italic, device_scale_factor,
-                          out);
+  GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
+                          device_scale_factor, out);
 }
 
 #endif

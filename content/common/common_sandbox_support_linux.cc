@@ -15,6 +15,9 @@
 
 namespace content {
 
+// TODO(drott): This should be removed once we don't need to support PPAPI
+// TrueType functionality anymore, and before that, it should be replaced with
+// using FreeType for the purpose instead of reimplementing table parsing.
 bool GetFontTable(int fd,
                   uint32_t table_tag,
                   off_t offset,

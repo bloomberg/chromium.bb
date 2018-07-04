@@ -1058,10 +1058,7 @@ test("content_browsertests") {
   }
 
   if (is_linux) {
-    sources += [
-      "../browser/linux_ipc_browsertest.cc",
-      "../zygote/zygote_browsertest.cc",
-    ]
+    sources += [ "../zygote/zygote_browsertest.cc" ]
     deps += [ "//ui/gfx:test_support" ]
   }
 

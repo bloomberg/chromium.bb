@@ -352,6 +352,10 @@ static_library("content_shell_lib") {
     ]
   }
 
+  if (is_linux && !is_android) {
+    deps += [ "//components/services/font:lib" ]
+  }
+
   if (use_x11) {
     # Some tests rely on this tool at runtime. Note: it might be better if
     # the tests that needed it had this as a dep instead of adding it here.
@@ -892,6 +896,10 @@ mojom("mojo_bindings") {
 service_manifest("content_shell_packaged_services_manifest_overlay") {
   source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
   packaged_services = [ "//services/test/echo:manifest" ]
+
+  if (is_linux && !is_android) {
+    packaged_services += [ "//components/services/font:manifest" ]
+  }
 }
 
 group("content_shell_crash_test") {

@@ -29,7 +29,8 @@
         "device": [
           "device:power_monitor",
           "device:time_zone_monitor"
-        ]
+        ],
+        "font_service": [ "font_service" ]
       }
     }
   },
