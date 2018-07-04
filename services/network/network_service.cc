@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -37,6 +36,11 @@
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/cpu.h"
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
+#include "components/os_crypt/key_storage_config_linux.h"
+#include "components/os_crypt/os_crypt.h"
 #endif
 
 namespace network {
@@ -362,6 +366,21 @@ void NetworkService::GetTotalNetworkUsages(
 void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
   sth_distributor_->NewSTHObserved(sth);
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
+#if !defined(IS_CHROMECAST)
+  auto config = std::make_unique<os_crypt::Config>();
+  config->store = crypt_config->store;
+  config->product_name = crypt_config->product_name;
+  config->main_thread_runner = base::ThreadTaskRunnerHandle::Get();
+  config->should_use_preference = crypt_config->should_use_preference;
+  config->user_data_path = crypt_config->user_data_path;
+  OSCrypt::SetConfig(std::move(config));
+  os_crypt_config_set_ = true;
+#endif
+}
+#endif
 
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {

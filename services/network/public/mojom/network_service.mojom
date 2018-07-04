@@ -163,6 +163,22 @@ struct HttpAuthDynamicParams {
   string android_negotiate_account_type;
 };
 
+// Values for configuring OSCrypt.
+[EnableIf=needs_crypt_config]
+struct CryptConfig {
+  // Force OSCrypt to use a specific linux password store.
+  string store;
+
+  // The product name to use for permission prompts.
+  string product_name;
+
+  // Controls whether preference on using or ignoring backends is used.
+  bool should_use_preference;
+
+  // Preferences are stored in a separate file in the user data directory.
+  mojo_base.mojom.FilePath user_data_path;
+};
+
 // Browser interface to the network service.
 interface NetworkService {
   SetClient(NetworkServiceClient client);
@@ -231,4 +247,9 @@ interface NetworkService {
   // Transparency. Broadcast to each NetworkContext using the NetworkService.
   // NetworkContextes ignore STHs from unrecognized logs.
   UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
+
+  // Sets up OSCrypt for the network service process. Must be called before
+  // encrypted cookies can be read or set.
+  [EnableIf=needs_crypt_config]
+  SetCryptConfig(CryptConfig crypt_config);
 };
