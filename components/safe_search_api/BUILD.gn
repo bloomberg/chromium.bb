@@ -26,6 +26,7 @@ source_set("unit_tests") {
   deps = [
     ":safe_search_api",
     "//base",
+    "//base/test:test_support",
     "//net",
     "//net/traffic_annotation:test_support",
     "//services/network:test_support",

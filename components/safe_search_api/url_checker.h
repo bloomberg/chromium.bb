@@ -22,10 +22,17 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace base {
+struct Feature;
+}
+
 namespace safe_search_api {
 
 // The SafeSearch API classification of a URL.
 enum class Classification { SAFE, UNSAFE };
+
+// Visible for testing.
+extern const base::Feature kAllowAllGoogleUrls;
 
 // This class uses the SafeSearch API to check the SafeSearch classification
 // of the content on a given URL and returns the result asynchronously
