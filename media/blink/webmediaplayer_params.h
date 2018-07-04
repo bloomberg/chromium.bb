@@ -82,7 +82,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool enable_instant_source_buffer_gc,
       bool embedded_media_experience_enabled,
       mojom::MediaMetricsProviderPtr metrics_provider,
-      base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+      base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
           blink::WebSurfaceLayerBridgeObserver*)> bridge_callback,
       scoped_refptr<viz::ContextProvider> context_provider,
       bool use_surface_layer_for_video);
@@ -155,9 +155,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return request_routing_token_cb_;
   }
 
-  const base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*)>& create_bridge_callback() const {
-    return create_bridge_callback_;
+  base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+      blink::WebSurfaceLayerBridgeObserver*)>
+  create_bridge_callback() {
+    return std::move(create_bridge_callback_);
   }
 
   scoped_refptr<viz::ContextProvider> context_provider() {
@@ -188,7 +189,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool enable_instant_source_buffer_gc_;
   const bool embedded_media_experience_enabled_;
   mojom::MediaMetricsProviderPtr metrics_provider_;
-  base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+  base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
       blink::WebSurfaceLayerBridgeObserver*)>
       create_bridge_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;

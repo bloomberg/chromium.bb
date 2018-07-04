@@ -296,6 +296,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD1(SetContentsOpaque, void(bool));
+  MOCK_METHOD0(CreateSurfaceLayer, void());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -1152,6 +1153,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId()).Times(0);
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _)).Times(0);
   }
@@ -1168,6 +1170,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   metadata.natural_size = gfx::Size(320, 240);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
@@ -1194,6 +1197,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
@@ -1220,6 +1224,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
@@ -1294,6 +1299,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
@@ -1322,6 +1328,23 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
 
   InitializeWebMediaPlayerImpl();
+
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.video_decoder_config =
+      TestVideoConfig::NormalRotated(VIDEO_ROTATION_90);
+  metadata.natural_size = gfx::Size(320, 240);
+
+  EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+      .WillOnce(ReturnRef(frame_sink_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+
+  // We only call the callback to create the bridge in OnMetadata, so we need
+  // to call it.
+  OnMetadata(metadata);
 
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
 

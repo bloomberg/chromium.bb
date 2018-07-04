@@ -246,6 +246,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       embedded_media_experience_enabled_(
           params->embedded_media_experience_enabled()),
       surface_layer_for_video_enabled_(params->use_surface_layer_for_video()),
+      create_bridge_callback_(params->create_bridge_callback()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()) {
@@ -254,9 +255,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
-
-  if (surface_layer_for_video_enabled_)
-    bridge_ = params->create_bridge_callback().Run(this);
 
   // If we're supposed to force video overlays, then make sure that they're
   // enabled all the time.
@@ -1665,6 +1663,10 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_layer_->SetContentsOpaque(opaque_);
       client_->SetCcLayer(video_layer_.get());
     } else {
+      DCHECK(!bridge_);
+
+      bridge_ = std::move(create_bridge_callback_).Run(this);
+      bridge_->CreateSurfaceLayer();
       vfc_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(

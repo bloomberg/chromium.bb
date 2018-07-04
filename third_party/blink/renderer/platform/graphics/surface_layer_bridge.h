@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
@@ -15,7 +16,8 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
-class Layer;
+class SolidColorLayer;
+class SurfaceLayer;
 }  // namespace cc
 
 namespace viz {
@@ -41,7 +43,8 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
 
   // Implementation of WebSurfaceLayerBridge.
-  cc::Layer* GetCcLayer() const override { return cc_layer_.get(); }
+  void CreateSurfaceLayer() override;
+  cc::Layer* GetCcLayer() const override;
   void ClearSurfaceId() override;
   void SetContentsOpaque(bool) override;
 
@@ -50,16 +53,19 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   }
 
  private:
-  scoped_refptr<cc::Layer> cc_layer_;
+  scoped_refptr<cc::SurfaceLayer> surface_layer_;
+  scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
 
+  // The |observer_| handles unregistering the contents layer on its own.
   WebSurfaceLayerBridgeObserver* observer_;
-
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   mojo::Binding<blink::mojom::blink::EmbeddedFrameSinkClient> binding_;
 
   const viz::FrameSinkId frame_sink_id_;
   viz::SurfaceId current_surface_id_;
   const viz::FrameSinkId parent_frame_sink_id_;
   bool opaque_ = false;
+  bool surface_activated_ = false;
 };
 
 }  // namespace blink
