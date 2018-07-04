@@ -1379,8 +1379,12 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
                          child_data.margins.block_end, &logical_block_offset,
                          &margin_strut);
   } else {
-    margin_strut.Append(child_data.margins.block_end,
-                        child.Style().HasMarginAfterQuirk());
+    // An empty block's end margin can "inherit" quirkiness from its start
+    // margin. E.g.
+    // <ol style="margin-bottom: 20px"></ol>
+    bool is_quirky = (is_empty_block && child.Style().HasMarginBeforeQuirk()) ||
+                     child.Style().HasMarginAfterQuirk();
+    margin_strut.Append(child_data.margins.block_end, is_quirky);
   }
 
   // This flag is subtle, but in order to determine our size correctly we need
