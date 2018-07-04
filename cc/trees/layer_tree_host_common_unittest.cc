@@ -7440,12 +7440,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  grand_parent_animation->AbortKeyframeModelsWithProperty(
-      TargetProperty::TRANSFORM, false);
-  parent_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
-                                                    false);
-  child_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
-                                                   false);
+  grand_parent_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  parent_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  child_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
@@ -7467,8 +7464,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  child_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
-                                                   false);
+  child_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
 
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
@@ -8694,8 +8690,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
-  RemoveKeyframeModelsFromElementWithExistingKeyframeEffect(child->element_id(),
-                                                            timeline());
+  RemoveKeyframeModelFromElementWithExistingKeyframeEffect(
+      child->element_id(), timeline(), keyframe_model_id);
   child->SetTransform(gfx::Transform());
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
@@ -9834,8 +9830,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   EXPECT_TRUE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
 
-  animation->AbortKeyframeModelsWithProperty(TargetProperty::OPACITY,
-                                             false /*needs_completion*/);
+  animation->AbortKeyframeModels(TargetProperty::OPACITY,
+                                 false /*needs_completion*/);
   node = tree.Node(animated->effect_tree_index());
   EXPECT_FALSE(node->is_currently_animating_opacity);
   EXPECT_FALSE(node->has_potential_opacity_animation);
@@ -9893,8 +9889,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   EXPECT_TRUE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);
 
-  animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
-                                             false /*needs_completion*/);
+  animation->AbortKeyframeModels(TargetProperty::TRANSFORM,
+                                 false /*needs_completion*/);
   node = tree.Node(animated->transform_tree_index());
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_FALSE(node->has_potential_animation);

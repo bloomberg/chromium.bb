@@ -3046,7 +3046,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                       model->capturing_state.*spec.background_signal);
             }
 
-            e->RemoveKeyframeModelsWithProperty(TRANSFORM);
+            e->RemoveKeyframeModels(TRANSFORM);
             if (in_long_press) {
               // We do not do a translation animation for long press.
               e->SetTranslate(0, 0, 0);

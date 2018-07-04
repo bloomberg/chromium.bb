@@ -68,16 +68,17 @@ void CompositorAnimation::AddKeyframeModel(
   animation_->AddKeyframeModel(keyframe_model->ReleaseCcKeyframeModel());
 }
 
-void CompositorAnimation::RemoveKeyframeModels() {
-  animation_->RemoveKeyframeModels();
+void CompositorAnimation::RemoveKeyframeModel(int keyframe_model_id) {
+  animation_->RemoveKeyframeModel(keyframe_model_id);
 }
 
-void CompositorAnimation::PauseKeyframeEffect(double time_offset) {
-  animation_->PauseKeyframeEffect(time_offset);
+void CompositorAnimation::PauseKeyframeModel(int keyframe_model_id,
+                                             double time_offset) {
+  animation_->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 
-void CompositorAnimation::AbortKeyframeEffect() {
-  animation_->AbortKeyframeEffect();
+void CompositorAnimation::AbortKeyframeModel(int keyframe_model_id) {
+  animation_->AbortKeyframeModel(keyframe_model_id);
 }
 
 void CompositorAnimation::UpdateScrollTimelineId(

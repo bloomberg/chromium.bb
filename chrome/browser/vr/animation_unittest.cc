@@ -97,11 +97,11 @@ TEST(AnimationTest, AddRemoveKeyframeModels) {
   EXPECT_EQ(3ul, animation.keyframe_models().size());
   EXPECT_EQ(TRANSFORM, animation.keyframe_models()[2]->target_property_id());
 
-  animation.RemoveKeyframeModelsWithProperty(TRANSFORM);
+  animation.RemoveKeyframeModels(TRANSFORM);
   EXPECT_EQ(1ul, animation.keyframe_models().size());
   EXPECT_EQ(BOUNDS, animation.keyframe_models()[0]->target_property_id());
 
-  animation.RemoveKeyframeModels();
+  animation.RemoveKeyframeModel(animation.keyframe_models()[0]->id());
   EXPECT_TRUE(animation.keyframe_models().empty());
 }
 

@@ -25,7 +25,7 @@ PagedScrollView::~PagedScrollView() {}
 
 void PagedScrollView::OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                                     const gfx::PointF& position) {
-  animation().RemoveKeyframeModelsWithProperty(SCROLL_OFFSET);
+  animation().RemoveKeyframeModels(SCROLL_OFFSET);
   scroll_drag_delta_ = 0.0f;
 }
 

@@ -13,7 +13,6 @@
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/layer_threaded_animation_delegate.h"
 
 namespace ui {
 
@@ -24,8 +23,7 @@ LayerAnimationSequence::LayerAnimationSequence()
       waiting_for_group_start_(false),
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
-      animation_metrics_reporter_(nullptr),
-      has_finished_threaded_element_(false) {}
+      animation_metrics_reporter_(nullptr) {}
 
 LayerAnimationSequence::LayerAnimationSequence(
     std::unique_ptr<LayerAnimationElement> element)
@@ -35,8 +33,7 @@ LayerAnimationSequence::LayerAnimationSequence(
       waiting_for_group_start_(false),
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
-      animation_metrics_reporter_(nullptr),
-      has_finished_threaded_element_(false) {
+      animation_metrics_reporter_(nullptr) {
   AddElement(std::move(element));
 }
 
@@ -77,26 +74,14 @@ void LayerAnimationSequence::Progress(base::TimeTicks now,
     if (!elements_[current_index]->IsFinished(now, &element_duration))
       break;
 
-    // Check threaded state before calling ProgressToEnd because some
-    // animations, e.g. opacity, are not considered threaded once finished.
-    bool started_threaded_element =
-        elements_[current_index]->Started() && delegate &&
-        elements_[current_index]->IsThreaded(delegate);
     // Let the element we're passing finish.
-    if (elements_[current_index]->ProgressToEnd(delegate)) {
+    if (elements_[current_index]->ProgressToEnd(delegate))
       redraw_required = true;
-      has_finished_threaded_element_ |= started_threaded_element;
-    }
     last_start_ += element_duration;
     ++last_element_;
     last_progressed_fraction_ =
         elements_[current_index]->last_progressed_fraction();
     current_index = last_element_ % elements_.size();
-    // In cases that the sequence is infinite, i.e. is_cyclic_ is true, this
-    // guarantees that we clean up the finished keyframe models before adding
-    // new ones in the next round.
-    if (has_finished_threaded_element_ && current_index == 0)
-      RemoveThreadedKeyframeModels(delegate);
   }
 
   if (is_cyclic_ || last_element_ < elements_.size()) {
@@ -105,26 +90,13 @@ void LayerAnimationSequence::Progress(base::TimeTicks now,
       elements_[current_index]->Start(delegate, animation_group_id_);
     }
     base::WeakPtr<LayerAnimationSequence> alive(AsWeakPtr());
-    bool threaded_element =
-        delegate && elements_[current_index]->IsThreaded(delegate);
-    if (elements_[current_index]->Progress(now, delegate)) {
+    if (elements_[current_index]->Progress(now, delegate))
       redraw_required = true;
-      // The sequence may be destructed during the Progress call above therefore
-      // we only update its member while it's still *alive*, i.e. in memory.
-      if (alive)
-        has_finished_threaded_element_ |= threaded_element;
-    }
     if (!alive)
       return;
     last_progressed_fraction_ =
         elements_[current_index]->last_progressed_fraction();
   }
-
-  // We remove the threaded keyframe models after iterating the finite sequence.
-  // This is to make sure that we don't remove any unfinished trailing threaded
-  // keyframe models.
-  if (has_finished_threaded_element_ && last_element_ % elements_.size() == 0)
-    RemoveThreadedKeyframeModels(delegate);
 
   // Since the delegate may be deleted due to the notifications below, it is
   // important that we schedule a draw before sending them.
@@ -172,20 +144,13 @@ void LayerAnimationSequence::ProgressToEnd(LayerAnimationDelegate* delegate) {
 
   size_t current_index = last_element_ % elements_.size();
   while (current_index < elements_.size()) {
-    bool threaded_element =
-        delegate && elements_[current_index]->IsThreaded(delegate);
-    if (elements_[current_index]->ProgressToEnd(delegate)) {
+    if (elements_[current_index]->ProgressToEnd(delegate))
       redraw_required = true;
-      has_finished_threaded_element_ |= threaded_element;
-    }
     last_progressed_fraction_ =
         elements_[current_index]->last_progressed_fraction();
     ++current_index;
     ++last_element_;
   }
-
-  if (has_finished_threaded_element_)
-    RemoveThreadedKeyframeModels(delegate);
 
   if (redraw_required)
     delegate->ScheduleDrawForAnimation();
@@ -215,8 +180,6 @@ void LayerAnimationSequence::Abort(LayerAnimationDelegate* delegate) {
   }
   last_element_ = 0;
   waiting_for_group_start_ = false;
-  if (HasThreadedElement(delegate))
-    RemoveThreadedKeyframeModels(delegate);
   NotifyAborted();
 }
 
@@ -327,29 +290,6 @@ LayerAnimationElement* LayerAnimationSequence::CurrentElement() const {
 
   size_t current_index = last_element_ % elements_.size();
   return elements_[current_index].get();
-}
-
-bool LayerAnimationSequence::HasThreadedElement(
-    LayerAnimationDelegate* delegate) const {
-  if (!delegate)
-    return false;
-
-  return any_of(elements_.begin(), elements_.end(), [=](const auto& element) {
-    return element->IsThreaded(delegate);
-  });
-}
-
-void LayerAnimationSequence::RemoveThreadedKeyframeModels(
-    LayerAnimationDelegate* delegate) {
-  if (!delegate)
-    return;
-
-  LayerThreadedAnimationDelegate* threaded =
-      delegate->GetThreadedAnimationDelegate();
-  DCHECK(threaded);
-  threaded->RemoveThreadedKeyframeModels();
-
-  has_finished_threaded_element_ = false;
 }
 
 std::string LayerAnimationSequence::ElementsToString() const {

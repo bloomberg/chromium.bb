@@ -83,13 +83,16 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void AddKeyframeModelForKeyframeEffect(
       std::unique_ptr<KeyframeModel> keyframe_model,
       KeyframeEffectId keyframe_effect_id);
-  void RemoveKeyframeModelsForKeyframeEffect(
+  void PauseKeyframeModelForKeyframeEffect(int keyframe_model_id,
+                                           double time_offset,
+                                           KeyframeEffectId keyframe_effect_id);
+  void RemoveKeyframeModelForKeyframeEffect(
+      int keyframe_model_id,
       KeyframeEffectId keyframe_effect_id);
-  void PauseKeyframeEffect(double time_offset,
-                           KeyframeEffectId keyframe_effect_id);
-  void AbortKeyframeEffect(KeyframeEffectId keyframe_effect_id);
-  void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
-                                       bool needs_completion);
+  void AbortKeyframeModelForKeyframeEffect(int keyframe_model_id,
+                                           KeyframeEffectId keyframe_effect_id);
+  void AbortKeyframeModels(TargetProperty::Type target_property,
+                           bool needs_completion);
 
   virtual void PushPropertiesTo(Animation* animation_impl);
 

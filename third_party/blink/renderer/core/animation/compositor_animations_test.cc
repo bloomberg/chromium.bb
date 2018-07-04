@@ -1209,6 +1209,13 @@ TEST_F(AnimationCompositorAnimationsTest,
                   timing, *element.Get(), animation1, *animation_effect1, 1)
                   .Ok());
 
+  // simulate KeyframeEffect::maybeStartAnimationOnCompositor
+  Vector<int> compositor_keyframe_model_ids;
+  compositor_keyframe_model_ids.push_back(1);
+  keyframe_effect1->SetCompositorKeyframeModelIdsForTesting(
+      compositor_keyframe_model_ids);
+  EXPECT_TRUE(animation1->HasActiveAnimationsOnCompositor());
+
   // The second animation for opacity is not ok to run on compositor.
   KeyframeEffect* keyframe_effect2 =
       KeyframeEffect::Create(element.Get(), animation_effect2, timing);

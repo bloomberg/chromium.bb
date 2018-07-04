@@ -404,8 +404,8 @@ class VR_EXPORT UiElement : public cc::AnimationTarget {
   void SetTransitionDuration(base::TimeDelta delta);
 
   void AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> keyframe_model);
-  void RemoveKeyframeModels();
-  void RemoveKeyframeModelsWithProperty(int target_property);
+  void RemoveKeyframeModel(int keyframe_model_id);
+  void RemoveKeyframeModels(int target_property);
   bool IsAnimatingProperty(TargetProperty property) const;
 
   // Recursive method that sizes and lays out element subtrees.

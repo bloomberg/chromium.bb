@@ -91,12 +91,13 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void UpdateTickingState(UpdateTickingType type);
 
   void Pause(base::TimeDelta pause_offset);
-  void Abort();
-  void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
-                                       bool needs_completion);
 
   void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
-  void RemoveKeyframeModels();
+  void PauseKeyframeModel(int keyframe_model_id, double time_offset);
+  void RemoveKeyframeModel(int keyframe_model_id);
+  void AbortKeyframeModel(int keyframe_model_id);
+  void AbortKeyframeModels(TargetProperty::Type target_property,
+                           bool needs_completion);
 
   void ActivateKeyframeEffects();
 

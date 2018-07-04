@@ -331,9 +331,10 @@ void AddKeyframeModelToElementWithExistingKeyframeEffect(
   keyframe_effect->AddKeyframeModel(std::move(keyframe_model));
 }
 
-void RemoveKeyframeModelsFromElementWithExistingKeyframeEffect(
+void RemoveKeyframeModelFromElementWithExistingKeyframeEffect(
     ElementId element_id,
-    scoped_refptr<AnimationTimeline> timeline) {
+    scoped_refptr<AnimationTimeline> timeline,
+    int keyframe_model_id) {
   scoped_refptr<ElementAnimations> element_animations =
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
@@ -341,7 +342,7 @@ void RemoveKeyframeModelsFromElementWithExistingKeyframeEffect(
   KeyframeEffect* keyframe_effect =
       &*element_animations->keyframe_effects_list().begin();
   DCHECK(keyframe_effect);
-  keyframe_effect->RemoveKeyframeModels();
+  keyframe_effect->RemoveKeyframeModel(keyframe_model_id);
 }
 
 KeyframeModel* GetKeyframeModelFromElementWithExistingKeyframeEffect(
