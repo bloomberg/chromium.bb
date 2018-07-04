@@ -44,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
+#include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
@@ -557,6 +558,11 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
+                 web_data_service_.get())
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
+    case syncer::AUTOFILL_PROFILE:
+      return autofill::AutofillProfileSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
