@@ -23,7 +23,6 @@ hyphenate_xxx_SOURCES = hyphenate_xxx.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 logging_SOURCES = logging.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
-present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
@@ -41,7 +40,6 @@ program_TESTS =					\
 	lastworditalafter			\
 	logging					\
 	pass0_typebuf				\
-	present_progressive			\
 	resolve_table				\
 	typeform				\
 	typeform_for_emphclass			\
@@ -60,11 +58,7 @@ dist_check_SCRIPTS +=	 			\
 	ueb_test_data.pl
 endif
 
-# The present_progressive should not really fail but for the moment
-# the issue doesn't seem to be critical enough that anybody has enough
-# interest to fix it.
 XFAIL_TESTS =					\
-	present_progressive			\
 	lastworditalafter
 
 dist_braille_specs_TESTS =				  \
@@ -201,6 +195,7 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/noletsignafter.yaml	  \
+	yaml/present_progressive.yaml	\
 	yaml/squash_space.yaml		\
 	yaml/syllable.yaml
 

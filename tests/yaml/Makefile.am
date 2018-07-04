@@ -35,5 +35,6 @@ EXTRA_DIST =					\
 	multipass-negation.yaml			\
 	new_emph.yaml				\
 	noletsignafter.yaml			\
+	present_progressive.yaml			\
 	squash_space.yaml				\
 	syllable.yaml
