@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
+#include "base/sampling_heap_profiler/lock_free_address_hash_set.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 
@@ -40,8 +41,8 @@ bool g_deterministic;
 // A positive value if profiling is running, otherwise it's zero.
 Atomic32 g_running;
 
-// Pointer to the current |SamplingHeapProfiler::SamplesMap|.
-AtomicWord g_current_samples_map;
+// Pointer to the current |LockFreeAddressHashSet|.
+AtomicWord g_sampled_addresses_set;
 
 // Sampling interval parameter, the mean value for intervals between samples.
 AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
@@ -174,10 +175,11 @@ SamplingHeapProfiler* SamplingHeapProfiler::instance_;
 
 SamplingHeapProfiler::SamplingHeapProfiler() {
   instance_ = this;
-  auto samples_map = std::make_unique<SamplesMap>(64);
+  auto sampled_addresses = std::make_unique<LockFreeAddressHashSet>(64);
   base::subtle::NoBarrier_Store(
-      &g_current_samples_map, reinterpret_cast<AtomicWord>(samples_map.get()));
-  sample_maps_.push(std::move(samples_map));
+      &g_sampled_addresses_set,
+      reinterpret_cast<AtomicWord>(sampled_addresses.get()));
+  sampled_addresses_stack_.push(std::move(sampled_addresses));
 }
 
 // static
@@ -333,15 +335,21 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
     RecordStackTrace(&sample, skip_frames);
     for (auto* observer : observers_)
       observer->SampleAdded(sample.ordinal, size, total_allocated);
-    EnsureNoRehashingMap().emplace(address, std::move(sample));
+    samples_.emplace(address, std::move(sample));
+    // TODO(alph): Sometimes RecordAlloc is called twice in a row without
+    // a RecordFree in between. Investigate it.
+    if (!sampled_addresses_set().Contains(address))
+      sampled_addresses_set().Insert(address);
+    BalanceAddressesHashSet();
   }
   entered_.Set(false);
 }
 
 // static
 void SamplingHeapProfiler::RecordFree(void* address) {
-  const SamplesMap& samples = SamplingHeapProfiler::samples();
-  if (UNLIKELY(samples.find(address) != samples.end()))
+  if (UNLIKELY(address == nullptr))
+    return;
+  if (UNLIKELY(sampled_addresses_set().Contains(address)))
     instance_->DoRecordFree(address);
 }
 
@@ -353,43 +361,43 @@ void SamplingHeapProfiler::DoRecordFree(void* address) {
   entered_.Set(true);
   {
     base::AutoLock lock(mutex_);
-    SamplesMap& samples = this->samples();
-    auto it = samples.find(address);
-    CHECK(it != samples.end());
+    auto it = samples_.find(address);
+    CHECK(it != samples_.end());
     for (auto* observer : observers_)
       observer->SampleRemoved(it->second.ordinal);
-    samples.erase(it);
+    samples_.erase(it);
+    sampled_addresses_set().Remove(address);
   }
   entered_.Set(false);
 }
 
-SamplingHeapProfiler::SamplesMap& SamplingHeapProfiler::EnsureNoRehashingMap() {
-  // The function makes sure we never rehash the current map in place.
-  // Instead if it comes close to the rehashing boundary, we allocate a twice
-  // larger map, copy the samples into it, and atomically switch new readers
-  // to use the new map.
+void SamplingHeapProfiler::BalanceAddressesHashSet() {
+  // Check if the load_factor of the current addresses hash set becomes higher
+  // than 1, allocate a new twice larger one, copy all the data,
+  // and switch to using it.
+  // During the copy process no other writes are made to both sets
+  // as it's behind the lock.
+  // All the readers continue to use the old one until the atomic switch
+  // process takes place.
+  LockFreeAddressHashSet& current_set = sampled_addresses_set();
+  if (current_set.load_factor() < 1)
+    return;
+  auto new_set =
+      std::make_unique<LockFreeAddressHashSet>(current_set.buckets_count() * 2);
+  new_set->Copy(current_set);
+  // Atomically switch all the new readers to the new set.
+  base::subtle::Release_Store(&g_sampled_addresses_set,
+                              reinterpret_cast<AtomicWord>(new_set.get()));
   // We still have to keep all the old maps alive to resolve the theoretical
   // race with readers in |RecordFree| that have already obtained the map,
   // but haven't yet managed to access it.
-  SamplesMap& samples = this->samples();
-  size_t max_items_before_rehash =
-      static_cast<size_t>(samples.bucket_count() * samples.max_load_factor());
-  // Conservatively use 2 instead of 1 to workaround potential rounding errors.
-  bool may_rehash_on_insert = samples.size() + 2 >= max_items_before_rehash;
-  if (!may_rehash_on_insert)
-    return samples;
-  auto new_map = std::make_unique<SamplesMap>(samples.begin(), samples.end(),
-                                              samples.bucket_count() * 2);
-  base::subtle::Release_Store(&g_current_samples_map,
-                              reinterpret_cast<AtomicWord>(new_map.get()));
-  sample_maps_.push(std::move(new_map));
-  return this->samples();
+  sampled_addresses_stack_.push(std::move(new_set));
 }
 
 // static
-SamplingHeapProfiler::SamplesMap& SamplingHeapProfiler::samples() {
-  return *reinterpret_cast<SamplesMap*>(
-      base::subtle::NoBarrier_Load(&g_current_samples_map));
+LockFreeAddressHashSet& SamplingHeapProfiler::sampled_addresses_set() {
+  return *reinterpret_cast<LockFreeAddressHashSet*>(
+      base::subtle::NoBarrier_Load(&g_sampled_addresses_set));
 }
 
 // static
@@ -432,7 +440,7 @@ std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
   std::vector<Sample> samples;
   {
     base::AutoLock lock(mutex_);
-    for (auto& it : this->samples()) {
+    for (auto& it : samples_) {
       Sample& sample = it.second;
       if (sample.ordinal > profile_id)
         samples.push_back(sample);

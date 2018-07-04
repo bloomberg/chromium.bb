@@ -20,6 +20,8 @@ namespace base {
 template <typename T>
 class NoDestructor;
 
+class LockFreeAddressHashSet;
+
 // The class implements sampling profiling of native memory heap.
 // It hooks on base::allocator and base::PartitionAlloc.
 // When started it selects and records allocation samples based on
@@ -81,8 +83,6 @@ class BASE_EXPORT SamplingHeapProfiler {
   static SamplingHeapProfiler* GetInstance();
 
  private:
-  using SamplesMap = std::unordered_map<void*, Sample>;
-
   SamplingHeapProfiler();
   ~SamplingHeapProfiler() = delete;
 
@@ -96,12 +96,14 @@ class BASE_EXPORT SamplingHeapProfiler {
                      uint32_t skip_frames);
   void DoRecordFree(void* address);
   void RecordStackTrace(Sample*, uint32_t skip_frames);
-  SamplesMap& EnsureNoRehashingMap();
-  static SamplesMap& samples();
+  static LockFreeAddressHashSet& sampled_addresses_set();
+
+  void BalanceAddressesHashSet();
 
   base::ThreadLocalBoolean entered_;
   base::Lock mutex_;
-  std::stack<std::unique_ptr<SamplesMap>> sample_maps_;
+  std::stack<std::unique_ptr<LockFreeAddressHashSet>> sampled_addresses_stack_;
+  std::unordered_map<void*, Sample> samples_;
   std::vector<SamplesObserver*> observers_;
   uint32_t last_sample_ordinal_ = 0;
 
