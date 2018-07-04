@@ -91,6 +91,6 @@ source_set("unit_tests") {
 test("media_mojo_unittests") {
   deps = [
     ":unit_tests",
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
   ]
 }

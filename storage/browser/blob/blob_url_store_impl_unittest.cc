@@ -6,7 +6,7 @@
 
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -27,13 +27,13 @@ class BlobURLStoreImplTest : public testing::Test {
   void SetUp() override {
     context_ = std::make_unique<BlobStorageContext>();
 
-    mojo::edk::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &BlobURLStoreImplTest::OnBadMessage, base::Unretained(this)));
   }
 
   void TearDown() override {
-    mojo::edk::SetDefaultProcessErrorCallback(
-        mojo::edk::ProcessErrorCallback());
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
   }
 
   void OnBadMessage(const std::string& error) {

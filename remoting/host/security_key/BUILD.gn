@@ -60,7 +60,7 @@ source_set("main") {
   ]
   deps = [
     "//base:debugging_buildflags",
-    "//mojo/edk",
+    "//mojo/core/embedder",
   ]
 }
 
@@ -101,7 +101,7 @@ source_set("unit_tests") {
     ":test_support",
   ]
   deps = [
-    "//mojo/edk/test:test_support",
+    "//mojo/core/test:test_support",
   ]
 
   if (is_posix) {

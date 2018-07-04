@@ -177,7 +177,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//net:test_support",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",

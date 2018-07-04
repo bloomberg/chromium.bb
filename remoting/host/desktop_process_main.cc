@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -53,9 +53,9 @@ int DesktopProcessMain() {
       AutoThread::CreateWithType("I/O thread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO);
 
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       io_task_runner->task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
   mojo::PlatformChannelEndpoint endpoint =
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
           *command_line);

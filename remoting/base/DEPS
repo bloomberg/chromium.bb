@@ -1,7 +1,7 @@
 include_rules = [
   "+google/protobuf",
   "+google_apis",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+net",
   "+third_party/breakpad",
   "+third_party/zlib",

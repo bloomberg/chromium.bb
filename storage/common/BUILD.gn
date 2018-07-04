@@ -62,7 +62,7 @@ source_set("unittests") {
   deps = [
     ":common",
     "//base/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//testing/gtest",
     "//url",
   ]

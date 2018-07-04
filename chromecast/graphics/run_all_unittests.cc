@@ -6,7 +6,7 @@
 #include "base/macros.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -37,7 +37,7 @@ class ChromecastGraphicsTestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   ChromecastGraphicsTestSuite test_suite(argc, argv);
 
-  mojo::edk::Init();
+  mojo::core::Init();
 
   return base::LaunchUnitTests(argc, argv,
                                base::BindOnce(&ChromecastGraphicsTestSuite::Run,
