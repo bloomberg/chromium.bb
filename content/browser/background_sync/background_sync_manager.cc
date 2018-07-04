@@ -167,7 +167,7 @@ void DidStartWorkerForSyncEvent(
     base::OnceCallback<void(ServiceWorkerVersion::StatusCallback)> task,
     ServiceWorkerVersion::StatusCallback callback,
     blink::ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(start_worker_status);
     return;
   }
@@ -281,7 +281,7 @@ void BackgroundSyncManager::EmulateDispatchSyncEvent(
     ServiceWorkerVersion::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blink::ServiceWorkerStatusCode code = CanEmulateSyncEvent(active_version);
-  if (code != blink::SERVICE_WORKER_OK) {
+  if (code != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(code);
     return;
   }
@@ -380,8 +380,8 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status != blink::SERVICE_WORKER_OK &&
-      status != blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status != blink::ServiceWorkerStatusCode::kOk &&
+      status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
     LOG(ERROR) << "BackgroundSync failed to init due to backend failure.";
     DisableAndClearManager(std::move(callback));
     return;
@@ -610,7 +610,7 @@ void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status != blink::SERVICE_WORKER_OK || user_data.empty()) {
+  if (status != blink::ServiceWorkerStatusCode::kOk || user_data.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
     return;
@@ -700,7 +700,7 @@ void BackgroundSyncManager::RegisterDidStore(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status == blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // The service worker registration is gone.
     active_registrations_.erase(sw_registration_id);
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
@@ -708,7 +708,7 @@ void BackgroundSyncManager::RegisterDidStore(
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
                   "failure.";
     BackgroundSyncMetrics::CountRegisterFailure(
@@ -1017,7 +1017,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(event_fired_callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1116,7 +1116,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     HasMainFrameProviderHost(
         sw_registration->pattern().GetOrigin(),
         base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
-                       status_code == blink::SERVICE_WORKER_OK));
+                       status_code == blink::ServiceWorkerStatusCode::kOk));
   }
 
   bool registration_completed = true;
@@ -1128,7 +1128,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration->set_num_attempts(0);
     registration_completed = false;
-  } else if (status_code != blink::SERVICE_WORKER_OK &&
+  } else if (status_code != blink::ServiceWorkerStatusCode::kOk &&
              can_retry) {  // Sync failed but can retry
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration->set_delay_until(clock_->Now() +
@@ -1161,7 +1161,7 @@ void BackgroundSyncManager::EventCompleteDidStore(
     blink::ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status_code == blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status_code == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // The registration is gone.
     active_registrations_.erase(service_worker_id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -1169,7 +1169,7 @@ void BackgroundSyncManager::EventCompleteDidStore(
     return;
   }
 
-  if (status_code != blink::SERVICE_WORKER_OK) {
+  if (status_code != blink::ServiceWorkerStatusCode::kOk) {
     LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
                   "failure.";
     DisableAndClearManager(std::move(callback));
@@ -1232,13 +1232,13 @@ base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
 blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
     scoped_refptr<ServiceWorkerVersion> active_version) {
   if (!active_version)
-    return blink::SERVICE_WORKER_ERROR_FAILED;
+    return blink::ServiceWorkerStatusCode::kErrorFailed;
   if (!network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE))
-    return blink::SERVICE_WORKER_ERROR_NETWORK;
+    return blink::ServiceWorkerStatusCode::kErrorNetwork;
   int64_t registration_id = active_version->registration_id();
   if (base::ContainsKey(emulated_offline_sw_, registration_id))
-    return blink::SERVICE_WORKER_ERROR_NETWORK;
-  return blink::SERVICE_WORKER_OK;
+    return blink::ServiceWorkerStatusCode::kErrorNetwork;
+  return blink::ServiceWorkerStatusCode::kOk;
 }
 
 }  // namespace content

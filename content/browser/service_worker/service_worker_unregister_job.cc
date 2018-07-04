@@ -40,7 +40,7 @@ void ServiceWorkerUnregisterJob::Start() {
 
 void ServiceWorkerUnregisterJob::Abort() {
   CompleteInternal(blink::mojom::kInvalidServiceWorkerRegistrationId,
-                   blink::SERVICE_WORKER_ERROR_ABORT);
+                   blink::ServiceWorkerStatusCode::kErrorAbort);
 }
 
 bool ServiceWorkerUnregisterJob::Equals(
@@ -57,14 +57,15 @@ RegistrationJobType ServiceWorkerUnregisterJob::GetType() const {
 void ServiceWorkerUnregisterJob::OnRegistrationFound(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (status == blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     DCHECK(!registration.get());
     Complete(blink::mojom::kInvalidServiceWorkerRegistrationId,
-             blink::SERVICE_WORKER_ERROR_NOT_FOUND);
+             blink::ServiceWorkerStatusCode::kErrorNotFound);
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK || registration->is_uninstalling()) {
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
+      registration->is_uninstalling()) {
     Complete(blink::mojom::kInvalidServiceWorkerRegistrationId, status);
     return;
   }
@@ -72,11 +73,11 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
   // TODO: "7. If registration.updatePromise is not null..."
 
   // "8. Resolve promise."
-  ResolvePromise(registration->id(), blink::SERVICE_WORKER_OK);
+  ResolvePromise(registration->id(), blink::ServiceWorkerStatusCode::kOk);
 
   registration->ClearWhenReady();
 
-  Complete(registration->id(), blink::SERVICE_WORKER_OK);
+  Complete(registration->id(), blink::ServiceWorkerStatusCode::kOk);
 }
 
 void ServiceWorkerUnregisterJob::Complete(

@@ -275,7 +275,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     return;
   }
 
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     delegate_->MainResourceLoadFailed();
     FallbackToNetwork();
     return;

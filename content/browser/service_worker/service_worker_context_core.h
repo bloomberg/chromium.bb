@@ -202,8 +202,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                UnregistrationCallback callback);
 
   // Callback is called after all deletions occured. The status code is
-  // blink::SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
-  // if any did not succeed.
+  // blink::ServiceWorkerStatusCode::kOk if all succeed, or
+  // SERVICE_WORKER_FAILED if any did not succeed.
   void DeleteForOrigin(const GURL& origin, StatusCallback callback);
 
   // Updates the service worker. If |force_bypass_cache| is true or 24 hours

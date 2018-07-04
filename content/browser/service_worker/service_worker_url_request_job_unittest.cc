@@ -231,13 +231,14 @@ class ServiceWorkerURLRequestJobTest
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
 
     // Make the registration findable via storage functions.
-    blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_FAILED;
+    blink::ServiceWorkerStatusCode status =
+        blink::ServiceWorkerStatusCode::kErrorFailed;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(),
         version_.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
     // Create a controlled client.
     std::unique_ptr<ServiceWorkerProviderHost> provider_host =
@@ -554,14 +555,14 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
 
   // Start the worker before the navigation.
-  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
   base::HistogramTester histogram_tester;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &status));
   base::RunLoop().RunUntilIdle();
   helper->CompleteStartWorker();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
   // Do the navigation.
   SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);

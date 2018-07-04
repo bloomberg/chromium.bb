@@ -318,14 +318,14 @@ void ServiceWorkerControlleeRequestHandler::
                               context_->force_update_on_page_load();
   if (provider_host_ && !need_to_update)
     provider_host_->SetAllowAssociation(true);
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     int fallback_reason = 0;
     base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status);
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
     return;
   }
   DCHECK(registration.get());
@@ -337,7 +337,7 @@ void ServiceWorkerControlleeRequestHandler::
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status);
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
     return;
   }
 
@@ -348,7 +348,7 @@ void ServiceWorkerControlleeRequestHandler::
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status);
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
     return;
   }
 
@@ -361,7 +361,8 @@ void ServiceWorkerControlleeRequestHandler::
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status, "Info", "ServiceWorker is blocked");
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status),
+        "Info", "ServiceWorker is blocked");
     return;
   }
 
@@ -407,8 +408,8 @@ void ServiceWorkerControlleeRequestHandler::
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status, "Info",
-        "Wait until finished SW activation");
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status),
+        "Info", "Wait until finished SW activation");
     return;
   }
 
@@ -426,7 +427,8 @@ void ServiceWorkerControlleeRequestHandler::
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", status, "Info",
+        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status),
+        "Info",
         "ServiceWorkerVersion is not available, so falling back to network");
     return;
   }
@@ -442,7 +444,8 @@ void ServiceWorkerControlleeRequestHandler::
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-      url_job_.get(), "Status", status, "Info",
+      url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status),
+      "Info",
       (is_forwarded) ? "Forwarded to the ServiceWorker"
                      : "Skipped the ServiceWorker which has no fetch handler");
 }
@@ -489,7 +492,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     url_job_->FallbackToNetwork();
     return;
   }
-  if (status != blink::SERVICE_WORKER_OK ||
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
       !original_registration->installing_version()) {
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.

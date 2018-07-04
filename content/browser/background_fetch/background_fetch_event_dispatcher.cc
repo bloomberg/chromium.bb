@@ -58,7 +58,7 @@ void RecordFailureResult(ServiceWorkerMetrics::EventType event,
 
   // Used because the |histogram_name| is not a constant.
   base::UmaHistogramEnumeration(histogram_name, service_worker_status,
-                                blink::SERVICE_WORKER_ERROR_MAX_VALUE);
+                                blink::ServiceWorkerStatusCode::kMax);
 }
 
 }  // namespace
@@ -195,7 +195,7 @@ void BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch(
     ServiceWorkerLoadedCallback loaded_callback,
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     DidDispatchEvent(event, std::move(finished_closure), DispatchPhase::FINDING,
                      service_worker_status);
     return;
@@ -217,7 +217,7 @@ void BackgroundFetchEventDispatcher::DispatchEvent(
     ServiceWorkerLoadedCallback loaded_callback,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     blink::ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     DidDispatchEvent(event, std::move(finished_closure),
                      DispatchPhase::STARTING, start_worker_status);
     return;
@@ -247,7 +247,7 @@ void BackgroundFetchEventDispatcher::DidDispatchEvent(
       RecordFailureResult(event, "StartWorker", service_worker_status);
       break;
     case DispatchPhase::DISPATCHING:
-      if (service_worker_status != blink::SERVICE_WORKER_OK) {
+      if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
         RecordDispatchResult(event, DISPATCH_RESULT_CANNOT_DISPATCH_EVENT);
         RecordFailureResult(event, "Dispatch", service_worker_status);
       } else {

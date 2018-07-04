@@ -54,35 +54,36 @@ void ServiceWorkerNotificationEventFinished(
   // This LOG(INFO) deliberately exists to help track down the cause of
   // https://crbug.com/534537, where notifications sometimes do not react to
   // the user clicking on them. It should be removed once that's fixed.
-  LOG(INFO) << "The notification event has finished: " << service_worker_status;
+  LOG(INFO) << "The notification event has finished: "
+            << blink::ServiceWorkerStatusToString(service_worker_status);
 #endif
 
   PersistentNotificationStatus status = PERSISTENT_NOTIFICATION_STATUS_SUCCESS;
   switch (service_worker_status) {
-    case blink::SERVICE_WORKER_OK:
+    case blink::ServiceWorkerStatusCode::kOk:
       // Success status was initialized above.
       break;
-    case blink::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+    case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
       status = PERSISTENT_NOTIFICATION_STATUS_EVENT_WAITUNTIL_REJECTED;
       break;
-    case blink::SERVICE_WORKER_ERROR_FAILED:
-    case blink::SERVICE_WORKER_ERROR_ABORT:
-    case blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
-    case blink::SERVICE_WORKER_ERROR_NOT_FOUND:
-    case blink::SERVICE_WORKER_ERROR_EXISTS:
-    case blink::SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_IPC_FAILED:
-    case blink::SERVICE_WORKER_ERROR_NETWORK:
-    case blink::SERVICE_WORKER_ERROR_SECURITY:
-    case blink::SERVICE_WORKER_ERROR_STATE:
-    case blink::SERVICE_WORKER_ERROR_TIMEOUT:
-    case blink::SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-    case blink::SERVICE_WORKER_ERROR_DISK_CACHE:
-    case blink::SERVICE_WORKER_ERROR_REDUNDANT:
-    case blink::SERVICE_WORKER_ERROR_DISALLOWED:
-    case blink::SERVICE_WORKER_ERROR_MAX_VALUE:
+    case blink::ServiceWorkerStatusCode::kErrorFailed:
+    case blink::ServiceWorkerStatusCode::kErrorAbort:
+    case blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorProcessNotFound:
+    case blink::ServiceWorkerStatusCode::kErrorNotFound:
+    case blink::ServiceWorkerStatusCode::kErrorExists:
+    case blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorActivateWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorIpcFailed:
+    case blink::ServiceWorkerStatusCode::kErrorNetwork:
+    case blink::ServiceWorkerStatusCode::kErrorSecurity:
+    case blink::ServiceWorkerStatusCode::kErrorState:
+    case blink::ServiceWorkerStatusCode::kErrorTimeout:
+    case blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed:
+    case blink::ServiceWorkerStatusCode::kErrorDiskCache:
+    case blink::ServiceWorkerStatusCode::kErrorRedundant:
+    case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kMax:
       status = PERSISTENT_NOTIFICATION_STATUS_SERVICE_WORKER_ERROR;
       break;
   }
@@ -105,9 +106,9 @@ void DispatchNotificationEventOnRegistration(
   // https://crbug.com/534537, where notifications sometimes do not react to
   // the user clicking on them. It should be removed once that's fixed.
   LOG(INFO) << "Trying to dispatch notification for SW with status: "
-            << service_worker_status;
+            << blink::ServiceWorkerStatusToString(service_worker_status);
 #endif
-  if (service_worker_status == blink::SERVICE_WORKER_OK) {
+  if (service_worker_status == blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(service_worker_registration->active_version());
 
     dispatch_event_action.Run(service_worker_registration.get(),
@@ -117,30 +118,30 @@ void DispatchNotificationEventOnRegistration(
 
   PersistentNotificationStatus status = PERSISTENT_NOTIFICATION_STATUS_SUCCESS;
   switch (service_worker_status) {
-    case blink::SERVICE_WORKER_ERROR_NOT_FOUND:
+    case blink::ServiceWorkerStatusCode::kErrorNotFound:
       status = PERSISTENT_NOTIFICATION_STATUS_NO_SERVICE_WORKER;
       break;
-    case blink::SERVICE_WORKER_ERROR_FAILED:
-    case blink::SERVICE_WORKER_ERROR_ABORT:
-    case blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
-    case blink::SERVICE_WORKER_ERROR_EXISTS:
-    case blink::SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
-    case blink::SERVICE_WORKER_ERROR_IPC_FAILED:
-    case blink::SERVICE_WORKER_ERROR_NETWORK:
-    case blink::SERVICE_WORKER_ERROR_SECURITY:
-    case blink::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
-    case blink::SERVICE_WORKER_ERROR_STATE:
-    case blink::SERVICE_WORKER_ERROR_TIMEOUT:
-    case blink::SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-    case blink::SERVICE_WORKER_ERROR_DISK_CACHE:
-    case blink::SERVICE_WORKER_ERROR_REDUNDANT:
-    case blink::SERVICE_WORKER_ERROR_DISALLOWED:
-    case blink::SERVICE_WORKER_ERROR_MAX_VALUE:
+    case blink::ServiceWorkerStatusCode::kErrorFailed:
+    case blink::ServiceWorkerStatusCode::kErrorAbort:
+    case blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorProcessNotFound:
+    case blink::ServiceWorkerStatusCode::kErrorExists:
+    case blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorActivateWorkerFailed:
+    case blink::ServiceWorkerStatusCode::kErrorIpcFailed:
+    case blink::ServiceWorkerStatusCode::kErrorNetwork:
+    case blink::ServiceWorkerStatusCode::kErrorSecurity:
+    case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
+    case blink::ServiceWorkerStatusCode::kErrorState:
+    case blink::ServiceWorkerStatusCode::kErrorTimeout:
+    case blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed:
+    case blink::ServiceWorkerStatusCode::kErrorDiskCache:
+    case blink::ServiceWorkerStatusCode::kErrorRedundant:
+    case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kMax:
       status = PERSISTENT_NOTIFICATION_STATUS_SERVICE_WORKER_ERROR;
       break;
-    case blink::SERVICE_WORKER_OK:
+    case blink::ServiceWorkerStatusCode::kOk:
       NOTREACHED();
       break;
   }
@@ -212,7 +213,7 @@ void DispatchNotificationClickEventOnWorker(
     ServiceWorkerVersion::StatusCallback callback,
     blink::ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(start_worker_status);
     return;
   }
@@ -256,7 +257,7 @@ void OnPersistentNotificationDataDeleted(
     blink::ServiceWorkerStatusCode service_worker_status,
     const NotificationDispatchCompleteCallback& dispatch_complete_callback,
     bool success) {
-  if (service_worker_status != blink::SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     ServiceWorkerNotificationEventFinished(dispatch_complete_callback,
                                            service_worker_status);
     return;
@@ -289,7 +290,7 @@ void DispatchNotificationCloseEventOnWorker(
     ServiceWorkerVersion::StatusCallback callback,
     blink::ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(start_worker_status);
     return;
   }
@@ -325,7 +326,7 @@ void DoDispatchNotificationCloseEvent(
     DeleteNotificationDataFromDatabase(
         notification_id, notification_database_data.origin,
         notification_context, dispatch_complete_callback,
-        blink::SERVICE_WORKER_OK);
+        blink::ServiceWorkerStatusCode::kOk);
   }
 }
 

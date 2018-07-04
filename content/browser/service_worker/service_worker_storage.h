@@ -110,9 +110,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Finds registration for |document_url| or |pattern| or |registration_id|.
   // The Find methods will find stored and initially installing registrations.
-  // Returns blink::SERVICE_WORKER_OK with non-null registration if registration
-  // is found, or returns blink::SERVICE_WORKER_ERROR_NOT_FOUND if no matching
-  // registration is found.  The FindRegistrationForPattern method is
+  // Returns blink::ServiceWorkerStatusCode::kOk with non-null
+  // registration if registration is found, or returns
+  // blink::ServiceWorkerStatusCode::kErrorNotFound if no
+  // matching registration is found.  The FindRegistrationForPattern method is
   // guaranteed to return asynchronously. However, the methods to find
   // for |document_url| or |registration_id| may complete immediately
   // (the callback may be called prior to the method returning) or

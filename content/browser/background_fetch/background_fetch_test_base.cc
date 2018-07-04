@@ -39,7 +39,7 @@ void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               const std::string& status_message,
                               int64_t service_worker_registration_id) {
   DCHECK(out_service_worker_registration_id);
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status) << status_message;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status) << status_message;
 
   *out_service_worker_registration_id = service_worker_registration_id;
 
@@ -52,8 +52,8 @@ void DidFindServiceWorkerRegistration(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK(out_service_worker_registration);
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
 
   *out_service_worker_registration = service_worker_registration;
 
@@ -63,7 +63,7 @@ void DidFindServiceWorkerRegistration(
 // Callback for UnregisterServiceWorker.
 void DidUnregisterServiceWorker(base::Closure quit_closure,
                                 blink::ServiceWorkerStatusCode status) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   std::move(quit_closure).Run();
 }
 

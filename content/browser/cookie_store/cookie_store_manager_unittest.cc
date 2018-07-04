@@ -273,10 +273,10 @@ class CookieStoreManagerTest
                blink::ServiceWorkerStatusCode status,
                const std::string& status_message,
                int64_t service_worker_registration_id) {
-              *success = (status == blink::SERVICE_WORKER_OK);
+              *success = (status == blink::ServiceWorkerStatusCode::kOk);
               *registration_id = service_worker_registration_id;
-              EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-                  << ServiceWorkerStatusToString(status);
+              EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+                  << blink::ServiceWorkerStatusToString(status);
               run_loop->Quit();
             },
             &run_loop, &success, &registration_id));

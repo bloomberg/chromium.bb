@@ -95,7 +95,7 @@ void RegistrationPendingDidGetSWRegistration(
     base::OnceCallback<void(bool)> callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   int64_t service_worker_id = registration->id();
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
   sync_manager->GetRegistrations(

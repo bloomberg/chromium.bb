@@ -166,7 +166,8 @@ void ServiceWorkerInstalledScriptsSender::Abort(
     case ServiceWorkerInstalledScriptReader::FinishedReason::kNoHttpInfoError:
     case ServiceWorkerInstalledScriptReader::FinishedReason::
         kResponseReaderError:
-      owner_->SetStartWorkerStatusCode(blink::SERVICE_WORKER_ERROR_DISK_CACHE);
+      owner_->SetStartWorkerStatusCode(
+          blink::ServiceWorkerStatusCode::kErrorDiskCache);
       // Abort the worker by deleting from the registration since the data was
       // corrupted.
       if (owner_->context()) {

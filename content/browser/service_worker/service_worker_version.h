@@ -261,10 +261,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartUpdate();
 
   // Starts the worker if it isn't already running. Calls |callback| with
-  // blink::SERVICE_WORKER_OK when the worker started up successfully or if it
-  // is already running. Otherwise, calls |callback| with an error code. If the
-  // worker is already running, |callback| is executed synchronously (before
-  // this method returns). |purpose| is used for UMA.
+  // blink::ServiceWorkerStatusCode::kOk when the worker started
+  // up successfully or if it is already running. Otherwise, calls |callback|
+  // with an error code. If the worker is already running, |callback| is
+  // executed synchronously (before this method returns). |purpose| is used for
+  // UMA.
   void RunAfterStartWorker(ServiceWorkerMetrics::EventType purpose,
                            StatusCallback callback);
 
@@ -839,7 +840,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
   blink::ServiceWorkerStatusCode start_worker_status_ =
-      blink::SERVICE_WORKER_OK;
+      blink::ServiceWorkerStatusCode::kOk;
 
   // The clock used to vend tick time.
   const base::TickClock* tick_clock_;

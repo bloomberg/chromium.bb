@@ -125,13 +125,13 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     bool called = false;
     blink::ServiceWorkerStatusCode status =
-        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+        blink::ServiceWorkerStatusCode::kMax;
     context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         base::BindOnce(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   }
 
   RemoteProviderInfo SendProviderCreated(
@@ -254,12 +254,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
 
   // Start up the worker.
   bool called = false;
-  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_ABORT;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorAbort;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 

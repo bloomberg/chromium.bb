@@ -60,8 +60,8 @@ void RegisterServiceWorkerCallback(bool* called,
                                    blink::ServiceWorkerStatusCode status,
                                    const std::string& status_message,
                                    int64_t registration_id) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
 }
@@ -70,14 +70,14 @@ void FindServiceWorkerRegistrationCallback(
     scoped_refptr<ServiceWorkerRegistration>* out_registration,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
   *out_registration = std::move(registration);
 }
 
 void UnregisterServiceWorkerCallback(bool* called,
                                      blink::ServiceWorkerStatusCode code) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
   *called = true;
 }
 
@@ -363,13 +363,13 @@ class BackgroundSyncManagerTest : public testing::Test {
   void InitSyncEventTest() {
     SetupForSyncEvent(base::BindRepeating(
         &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
-        base::Unretained(this), blink::SERVICE_WORKER_OK));
+        base::Unretained(this), blink::ServiceWorkerStatusCode::kOk));
   }
 
   void InitFailedSyncEventTest() {
     SetupForSyncEvent(base::BindRepeating(
         &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
-        base::Unretained(this), blink::SERVICE_WORKER_ERROR_FAILED));
+        base::Unretained(this), blink::ServiceWorkerStatusCode::kErrorFailed));
   }
 
   void DispatchSyncDelayedCallback(
@@ -435,7 +435,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   std::vector<std::unique_ptr<BackgroundSyncRegistration>>
       callback_registrations_;
   blink::ServiceWorkerStatusCode callback_sw_status_code_ =
-      blink::SERVICE_WORKER_OK;
+      blink::ServiceWorkerStatusCode::kOk;
   int sync_events_called_ = 0;
   ServiceWorkerVersion::StatusCallback sync_fired_callback_;
 };
@@ -823,13 +823,14 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
 
   // The first sync attempt fails.
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_ERROR_FAILED);
+  std::move(sync_fired_callback_)
+      .Run(blink::ServiceWorkerStatusCode::kErrorFailed);
   base::RunLoop().RunUntilIdle();
 
   // It should fire again since it was reregistered mid-sync.
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -842,13 +843,13 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptSucceeds) {
 
   // The first sync event succeeds.
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
   // It should fire again since it was reregistered mid-sync.
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -902,7 +903,7 @@ TEST_F(BackgroundSyncManagerTest, DisableWhileFiring) {
   // Successfully complete the firing event. We can't verify that it actually
   // completed but at least we can test that it doesn't crash.
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -991,7 +992,7 @@ TEST_F(BackgroundSyncManagerTest, DelayMidSync) {
 
   // Finish firing the event and verify that the registration is removed.
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
@@ -1004,7 +1005,7 @@ TEST_F(BackgroundSyncManagerTest, BadBackendMidSync) {
 
   test_background_sync_manager_->set_corrupt_backend(true);
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
   // The backend should now be disabled because it couldn't unregister the
@@ -1021,7 +1022,7 @@ TEST_F(BackgroundSyncManagerTest, UnregisterServiceWorkerMidSync) {
   UnregisterServiceWorker(sw_registration_id_1_);
 
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
 
   // The backend isn't disabled, but the first service worker registration is
   // gone.
@@ -1160,7 +1161,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
 
   // Finish the sync.
   ASSERT_TRUE(sync_fired_callback_);
-  std::move(sync_fired_callback_).Run(blink::SERVICE_WORKER_OK);
+  std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetController()->run_in_background_enabled());
 }
@@ -1413,13 +1414,13 @@ static void EmulateDispatchSyncEventCallback(
 TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   InitSyncEventTest();
   bool was_called = false;
-  blink::ServiceWorkerStatusCode code = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
 
   EXPECT_EQ(1, sync_events_called_);
 
@@ -1427,36 +1428,36 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
                                                         true);
 
   was_called = false;
-  code = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+  code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_NETWORK, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork, code);
 
   background_sync_manager_->EmulateServiceWorkerOffline(sw_registration_id_1_,
                                                         false);
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
   was_called = false;
-  code = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+  code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_NETWORK, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork, code);
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
   was_called = false;
-  code = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
+  code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
 
   EXPECT_EQ(2, sync_events_called_);
 }

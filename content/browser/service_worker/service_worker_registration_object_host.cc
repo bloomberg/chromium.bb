@@ -215,7 +215,7 @@ void ServiceWorkerRegistrationObjectHost::UpdateComplete(
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::string error_message;
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
@@ -232,7 +232,7 @@ void ServiceWorkerRegistrationObjectHost::UpdateComplete(
 void ServiceWorkerRegistrationObjectHost::UnregistrationComplete(
     UnregisterCallback callback,
     blink::ServiceWorkerStatusCode status) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::string error_message;
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
@@ -250,7 +250,7 @@ void ServiceWorkerRegistrationObjectHost::DidUpdateNavigationPreloadEnabled(
     bool enable,
     EnableNavigationPreloadCallback callback,
     blink::ServiceWorkerStatusCode status) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kUnknown,
         std::string(ServiceWorkerConsts::kEnableNavigationPreloadErrorPrefix) +
@@ -268,7 +268,7 @@ void ServiceWorkerRegistrationObjectHost::DidUpdateNavigationPreloadHeader(
     const std::string& value,
     SetNavigationPreloadHeaderCallback callback,
     blink::ServiceWorkerStatusCode status) {
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kUnknown,
         std::string(

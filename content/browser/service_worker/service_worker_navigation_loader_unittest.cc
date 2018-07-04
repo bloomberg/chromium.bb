@@ -521,11 +521,12 @@ class ServiceWorkerNavigationLoaderTest
 
     // Make the registration findable via storage functions.
     registration_->set_last_update_check(base::Time::Now());
-    blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_FAILED;
+    blink::ServiceWorkerStatusCode status =
+        blink::ServiceWorkerStatusCode::kErrorFailed;
     storage()->StoreRegistration(registration_.get(), version_.get(),
                                  CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   }
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
@@ -637,7 +638,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
-                                      blink::SERVICE_WORKER_OK, 1);
+                                      blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
@@ -876,7 +877,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
   // failure.
   EXPECT_FALSE(was_main_resource_load_failed_called_);
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
-                                      blink::SERVICE_WORKER_OK, 1);
+                                      blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
 // Test when the service worker rejects the FetchEvent.
@@ -893,7 +894,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
 
   // Event dispatch still succeeded.
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
-                                      blink::SERVICE_WORKER_OK, 1);
+                                      blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
 // Test when dispatching the fetch event to the service worker failed.
@@ -905,8 +906,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   LoaderResult result = StartRequest(CreateRequest());
   EXPECT_EQ(LoaderResult::kDidNotHandleRequest, result);
   EXPECT_TRUE(was_main_resource_load_failed_called_);
-  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
-                                      blink::SERVICE_WORKER_ERROR_FAILED, 1);
+  histogram_tester.ExpectUniqueSample(
+      kHistogramMainResourceFetchEvent,
+      blink::ServiceWorkerStatusCode::kErrorFailed, 1);
 }
 
 // Test when the respondWith() promise resolves before the waitUntil() promise
@@ -1006,7 +1008,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
   EXPECT_EQ(new_url, redirect_info.new_url);
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
-                                      blink::SERVICE_WORKER_OK, 1);
+                                      blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterForwardToServiceWorker) {

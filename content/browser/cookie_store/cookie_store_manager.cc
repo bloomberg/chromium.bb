@@ -34,7 +34,7 @@ void HandleStoreRegistrationUserDataStatus(
   // the registration during the install event, so it's too late to surface the
   // error to the renderer. The registration has already been persisted, and the
   // Service Worker is likely active by now.
-  DLOG_IF(ERROR, status != blink::SERVICE_WORKER_OK)
+  DLOG_IF(ERROR, status != blink::ServiceWorkerStatusCode::kOk)
       << "StoreRegistrationUserData failed";
 }
 
@@ -101,7 +101,7 @@ void CookieStoreManager::ProcessOnDiskSubscriptions(
   DCHECK(!done_loading_subscriptions_) << __func__ << " already called";
   done_loading_subscriptions_ = true;
 
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     DidLoadAllSubscriptions(false, std::move(load_callback));
     return;
   }
@@ -483,7 +483,7 @@ void CookieStoreManager::OnCookieChange(
                ::network::mojom::CookieChangeCause cause,
                blink::ServiceWorkerStatusCode find_status,
                scoped_refptr<ServiceWorkerRegistration> registration) {
-              if (find_status != blink::SERVICE_WORKER_OK)
+              if (find_status != blink::ServiceWorkerStatusCode::kOk)
                 return;
 
               DCHECK(registration);
@@ -523,7 +523,7 @@ void CookieStoreManager::DidStartWorkerForChangeEvent(
     const net::CanonicalCookie& cookie,
     ::network::mojom::CookieChangeCause cause,
     blink::ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != blink::SERVICE_WORKER_OK)
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk)
     return;
   DispatchChangeEvent(std::move(registration), cookie, cause);
 }

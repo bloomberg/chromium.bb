@@ -66,8 +66,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // false, or a suitable existing process is not found, a new process may be
   // created.
   //
-  // If blink::SERVICE_WORKER_OK is returned, |out_info| contains information
-  // about the process.
+  // If blink::ServiceWorkerStatusCode::kOk is returned,
+  // |out_info| contains information about the process.
   //
   // Called on the UI thread.
   blink::ServiceWorkerStatusCode AllocateWorkerProcess(

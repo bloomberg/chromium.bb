@@ -201,7 +201,8 @@ void ServiceWorkerReadFromCacheJob::SetupRangeResponse(int resource_size) {
 void ServiceWorkerReadFromCacheJob::Done(const net::URLRequestStatus& status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!status.is_success()) {
-    version_->SetStartWorkerStatusCode(blink::SERVICE_WORKER_ERROR_DISK_CACHE);
+    version_->SetStartWorkerStatusCode(
+        blink::ServiceWorkerStatusCode::kErrorDiskCache);
     // TODO(falken): Retry before evicting.
     if (context_) {
       ServiceWorkerRegistration* registration =

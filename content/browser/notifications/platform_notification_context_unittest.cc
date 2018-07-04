@@ -72,7 +72,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
                                 const std::string& status_message,
                                 int64_t service_worker_registration_id) {
     DCHECK(store_registration_id);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
     *store_registration_id = service_worker_registration_id;
   }
@@ -364,7 +364,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
                   base::Unretained(this), &unregister_status));
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(blink::SERVICE_WORKER_OK, unregister_status);
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, unregister_status);
 
   // And verify that the associated notification has indeed been dropped.
   notification_context->ReadNotificationDataAndRecordInteraction(

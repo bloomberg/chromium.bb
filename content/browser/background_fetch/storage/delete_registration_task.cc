@@ -67,7 +67,7 @@ void DeleteRegistrationTask::Start() {
       base::BindOnce(&DeleteRegistrationTask::DidGetRegistration,
                      weak_factory_.GetWeakPtr(), barrier_closure));
 #else
-  DidGetRegistration(barrier_closure, {}, blink::SERVICE_WORKER_OK);
+  DidGetRegistration(barrier_closure, {}, blink::ServiceWorkerStatusCode::kOk);
 #endif  // DCHECK_IS_ON()
 
   cache_manager()->DeleteCache(

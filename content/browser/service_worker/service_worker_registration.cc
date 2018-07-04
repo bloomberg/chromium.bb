@@ -260,7 +260,7 @@ void ServiceWorkerRegistration::ClearWhenReady() {
 void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
   DCHECK(context_);
   if (!is_uninstalling()) {
-    std::move(callback).Run(blink::SERVICE_WORKER_OK);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
     return;
   }
   is_uninstalling_ = false;
@@ -495,13 +495,13 @@ void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
 void ServiceWorkerRegistration::DispatchActivateEvent(
     scoped_refptr<ServiceWorkerVersion> activating_version,
     blink::ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != blink::SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     OnActivateEventFinished(activating_version, start_worker_status);
     return;
   }
   if (activating_version != active_version()) {
     OnActivateEventFinished(activating_version,
-                            blink::SERVICE_WORKER_ERROR_FAILED);
+                            blink::ServiceWorkerStatusCode::kErrorFailed);
     return;
   }
 
@@ -535,7 +535,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // it should still be activated. However, if the failure occurred during
   // shutdown, ignore it to give the worker another chance the next time the
   // browser starts up.
-  if (is_shutdown && status != blink::SERVICE_WORKER_OK)
+  if (is_shutdown && status != blink::ServiceWorkerStatusCode::kOk)
     return;
 
   // "Run the Update State algorithm passing registration's active worker and
@@ -595,7 +595,7 @@ void ServiceWorkerRegistration::OnRestoreFinished(
     scoped_refptr<ServiceWorkerVersion> version,
     blink::ServiceWorkerStatusCode status) {
   if (!context_) {
-    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
   context_->storage()->NotifyDoneInstallingRegistration(

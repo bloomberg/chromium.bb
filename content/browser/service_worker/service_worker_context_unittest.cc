@@ -36,8 +36,8 @@ void SaveResponseCallback(bool* called,
                           blink::ServiceWorkerStatusCode status,
                           const std::string& status_message,
                           int64_t registration_id) {
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
-      << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+      << blink::ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
 }
@@ -64,7 +64,7 @@ void ExpectRegisteredWorkers(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   ASSERT_EQ(expect_status, status);
-  if (status != blink::SERVICE_WORKER_OK) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     EXPECT_FALSE(registration.get());
     return;
   }
@@ -248,7 +248,8 @@ TEST_F(ServiceWorkerContextTest, Register) {
 
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
@@ -298,7 +299,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+                     blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
@@ -349,7 +350,8 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
 
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
@@ -382,7 +384,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+                     blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
@@ -477,21 +479,23 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   context()->storage()->FindRegistrationForId(
       registration_id1, origin1_p1.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+                     blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
   context()->storage()->FindRegistrationForId(
       registration_id2, origin1_p2.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+                     blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
   context()->storage()->FindRegistrationForId(
       registration_id3, origin2_p1.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
 
   context()->storage()->FindRegistrationForId(
       registration_id4, origin3_p1.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
 
   base::RunLoop().RunUntilIdle();
@@ -751,7 +755,8 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
@@ -762,7 +767,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_ABORT,
+                     blink::ServiceWorkerStatusCode::kErrorAbort,
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
@@ -771,7 +776,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
-                     blink::SERVICE_WORKER_ERROR_NOT_FOUND,
+                     blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
@@ -785,7 +790,8 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::BindOnce(&ExpectRegisteredWorkers, blink::SERVICE_WORKER_OK,
+      base::BindOnce(&ExpectRegisteredWorkers,
+                     blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 

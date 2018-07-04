@@ -38,24 +38,26 @@ TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
   const int64_t kVersionId = 55;  // dummy value
 
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
-  context()->UpdateVersionFailureCount(kVersionId, blink::SERVICE_WORKER_OK);
   context()->UpdateVersionFailureCount(kVersionId,
-                                       blink::SERVICE_WORKER_ERROR_DISALLOWED);
+                                       blink::ServiceWorkerStatusCode::kOk);
+  context()->UpdateVersionFailureCount(
+      kVersionId, blink::ServiceWorkerStatusCode::kErrorDisallowed);
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
 
-  context()->UpdateVersionFailureCount(kVersionId,
-                                       blink::SERVICE_WORKER_ERROR_NETWORK);
+  context()->UpdateVersionFailureCount(
+      kVersionId, blink::ServiceWorkerStatusCode::kErrorNetwork);
   EXPECT_EQ(1, context()->GetVersionFailureCount(kVersionId));
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_NETWORK,
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork,
+            context()->failure_counts_[kVersionId].last_failure);
+
+  context()->UpdateVersionFailureCount(
+      kVersionId, blink::ServiceWorkerStatusCode::kErrorAbort);
+  EXPECT_EQ(2, context()->GetVersionFailureCount(kVersionId));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
             context()->failure_counts_[kVersionId].last_failure);
 
   context()->UpdateVersionFailureCount(kVersionId,
-                                       blink::SERVICE_WORKER_ERROR_ABORT);
-  EXPECT_EQ(2, context()->GetVersionFailureCount(kVersionId));
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_ABORT,
-            context()->failure_counts_[kVersionId].last_failure);
-
-  context()->UpdateVersionFailureCount(kVersionId, blink::SERVICE_WORKER_OK);
+                                       blink::ServiceWorkerStatusCode::kOk);
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
   EXPECT_FALSE(base::ContainsKey(context()->failure_counts_, kVersionId));
 }

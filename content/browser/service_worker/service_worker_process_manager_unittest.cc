@@ -125,7 +125,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
           true /* can_use_existing_process */, &process_info);
 
   // An existing process should be allocated to the worker.
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   EXPECT_EQ(host->GetID(), process_info.process_id);
   EXPECT_EQ(ServiceWorkerMetrics::StartSituation::EXISTING_UNREADY_PROCESS,
             process_info.start_situation);
@@ -166,7 +166,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
           false /* can_use_existing_process */, &process_info);
 
   // A new process should be allocated to the worker.
-  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   EXPECT_NE(host->GetID(), process_info.process_id);
   EXPECT_EQ(ServiceWorkerMetrics::StartSituation::NEW_PROCESS,
             process_info.start_situation);
@@ -195,7 +195,7 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
           &process_info);
 
   // Allocating a process in shutdown should abort.
-  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_ABORT, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort, status);
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, process_info.process_id);
   EXPECT_EQ(ServiceWorkerMetrics::StartSituation::UNKNOWN,
             process_info.start_situation);
@@ -220,7 +220,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
         process_manager_->AllocateWorkerProcess(
             kEmbeddedWorkerId, pattern_, script_url_,
             true /* can_use_existing_process */, &process_info);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
     // Instead of testing the input to the CreateRenderProcessHost(), it'd be
     // more interesting to check the StoragePartition of the returned process
     // here and below. Alas, MockRenderProcessHosts always use the default
@@ -256,7 +256,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
         process_manager_->AllocateWorkerProcess(
             kEmbeddedWorkerId, pattern_, script_url_,
             true /* can_use_existing_process */, &process_info);
-    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
     EXPECT_EQ(
         kGuestSiteUrl,
         render_process_host_factory_->last_site_instance_used()->GetSiteURL());
