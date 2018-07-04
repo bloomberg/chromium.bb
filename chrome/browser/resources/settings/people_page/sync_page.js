@@ -584,6 +584,15 @@ Polymer({
   shouldShowSyncControls_: function() {
     return !!this.unifiedConsentEnabled && !this.syncStatus.disabled;
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowUnifiedConsentToggle_: function() {
+    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled &&
+        !!this.syncStatus.signedIn;
+  },
 });
 
 })();
