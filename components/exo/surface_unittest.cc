@@ -182,7 +182,13 @@ TEST_P(SurfaceTest, RequestFrameCallback) {
   EXPECT_TRUE(frame_time.is_null());
 }
 
-TEST_P(SurfaceTest, SetOpaqueRegion) {
+// Disabled due to flakiness: crbug.com/856145
+#if defined(LEAK_SANITIZER)
+#define MAYBE_SetOpaqueRegion DISABLED_SetOpaqueRegion
+#else
+#define MAYBE_SetOpaqueRegion SetOpaqueRegion
+#endif
+TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
   gfx::Size buffer_size(1, 1);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -369,7 +375,13 @@ TEST_P(SurfaceTest, SetBufferScale) {
             frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_P(SurfaceTest, SetBufferTransform) {
+// Disabled due to flakiness: crbug.com/856145
+#if defined(LEAK_SANITIZER)
+#define MAYBE_SetBufferTransform DISABLED_SetBufferTransform
+#else
+#define MAYBE_SetBufferTransform SetBufferTransform
+#endif
+TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
   gfx::Size buffer_size(256, 512);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -522,7 +534,13 @@ TEST_P(SurfaceTest, SetCrop) {
             frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_P(SurfaceTest, SetCropAndBufferTransform) {
+// Disabled due to flakiness: crbug.com/856145
+#if defined(LEAK_SANITIZER)
+#define MAYBE_SetCropAndBufferTransform DISABLED_SetCropAndBufferTransform
+#else
+#define MAYBE_SetCropAndBufferTransform SetCropAndBufferTransform
+#endif
+TEST_P(SurfaceTest, MAYBE_SetCropAndBufferTransform) {
   gfx::Size buffer_size(128, 64);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
