@@ -495,7 +495,7 @@ if (!is_ios) {
       "//base/test:test_support",
       "//cc",
       "//ipc:test_support",
-      "//mojo/edk/test:run_all_unittests",
+      "//mojo/core/test:run_all_unittests",
       "//mojo/public/cpp/bindings",
       "//skia",
       "//testing/gmock",

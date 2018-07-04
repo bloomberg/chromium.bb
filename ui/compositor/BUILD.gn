@@ -222,7 +222,7 @@ test("compositor_unittests") {
     "//components/viz/common",
     "//components/viz/service",
     "//components/viz/test:test_support",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

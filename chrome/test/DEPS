@@ -24,7 +24,7 @@ include_rules = [
 
   "+gin/public",
   "+media/base",
-  "+mojo/edk/embedder",
+  "+mojo/core/embedder",
   "+sandbox/win/tests",
   "+third_party/ocmock",
   "+third_party/webrtc",

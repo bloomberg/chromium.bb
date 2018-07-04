@@ -4507,7 +4507,7 @@ static_library("test_support_unit") {
     "//chrome:strings",
     "//chrome/browser",
     "//chrome/common",
-    "//mojo/edk/test:test_support",
+    "//mojo/core/test:test_support",
   ]
 
   if (is_win) {
@@ -4815,7 +4815,7 @@ if (!is_android) {
       "//device/fido:test_support",
       "//extensions/buildflags",
       "//google_apis:test_support",
-      "//mojo/edk",
+      "//mojo/core/embedder",
       "//net",
       "//net:net_resources",
       "//net:test_support",
@@ -4983,7 +4983,7 @@ if (!is_android) {
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/media/router:test_support",
         "//chromeos",
-        "//mojo/edk",
+        "//mojo/core/embedder",
       ]
 
       data += [

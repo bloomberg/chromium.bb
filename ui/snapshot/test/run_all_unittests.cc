@@ -5,11 +5,11 @@
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "ui/compositor/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  mojo::edk::Init();
+  mojo::core::Init();
 
 #if defined(USE_AURA)
   ui::test::CompositorTestSuite test_suite(argc, argv);

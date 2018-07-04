@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -28,7 +28,7 @@ void VrTestSuite::Initialize() {
       std::make_unique<base::test::ScopedTaskEnvironment>(
           base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
-  mojo::edk::Init();
+  mojo::core::Init();
 
   base::FilePath pak_path;
 #if defined(OS_ANDROID)

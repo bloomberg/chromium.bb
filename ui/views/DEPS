@@ -31,10 +31,10 @@ specific_include_rules = {
     "+ui/wm/test"
   ],
   "run_all_unittests_main\.cc": [
-    "+mojo/edk/embedder",
+    "+mojo/core/embedder",
   ],
   "views_perftests\.cc": [
-    "+mojo/edk/embedder",
+    "+mojo/core/embedder",
   ],
   "view_unittest\.cc": [
     "+cc/playback"

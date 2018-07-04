@@ -64,7 +64,7 @@ test("latency_unittests") {
     ":latency",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -95,7 +95,7 @@ test("latency_perftests") {
     ":latency",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/test:run_all_unittests",
+    "//mojo/core/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",

@@ -3,6 +3,6 @@ specific_include_rules = {
     "+ash/host"
   ],
   "accelerator_interactive_uitest_chromeos\.cc": [
-    "+mojo/edk/embedder/embedder.h"
+    "+mojo/core/embedder/embedder.h"
   ],
 }

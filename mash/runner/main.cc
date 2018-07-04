@@ -25,8 +25,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/context.h"
 #include "services/service_manager/switches.h"
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
   base::i18n::InitializeICU();
 
-  mojo::edk::Init();
+  mojo::core::Init();
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
@@ -80,9 +80,9 @@ int main(int argc, char** argv) {
 
   // We can use fast IPC shutdown here since service manager termination must
   // effectively bring down all services as well.
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   base::test::ScopedTaskEnvironment scoped_task_environment;
   service_manager::Context service_manager_context(nullptr,

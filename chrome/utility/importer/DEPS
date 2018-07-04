@@ -8,6 +8,6 @@ include_rules = [
 
 specific_include_rules = {
   "firefox_importer_unittest_utils_mac\.cc": [
-    "+mojo/edk/embedder",
+    "+mojo/core/embedder",
   ],
 }

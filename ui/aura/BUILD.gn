@@ -401,7 +401,7 @@ test("aura_unittests") {
     "//base/test:test_support",
     "//cc/mojo_embedder",
     "//components/viz/client",
-    "//mojo/edk",
+    "//mojo/core/embedder",
     "//net",
     "//services/ui/common:task_runner_test_base",
     "//services/ui/public/cpp",

@@ -15,8 +15,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/catalog/catalog.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -72,12 +72,12 @@ class ServiceManagerConnection {
         ipc_thread_("IPC thread") {
     catalog::Catalog::LoadDefaultCatalogManifest(
         base::FilePath(kCatalogFilename));
-    mojo::edk::Init();
+    mojo::core::Init();
     ipc_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    ipc_support_ = std::make_unique<mojo::edk::ScopedIPCSupport>(
+    ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
         ipc_thread_.task_runner(),
-        mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -162,7 +162,7 @@ class ServiceManagerConnection {
 
   base::Thread thread_;
   base::Thread ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<service_manager::BackgroundServiceManager>
       background_service_manager_;
   std::unique_ptr<service_manager::ServiceContext> context_;

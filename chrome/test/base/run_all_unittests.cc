@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "content/public/test/unittest_test_suite.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 
 #if defined(OS_WIN)
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -19,9 +19,9 @@ int main(int argc, char **argv) {
   content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv));
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  mojo::edk::ScopedIPCSupport ipc_support(
+  mojo::core::ScopedIPCSupport ipc_support(
       test_io_thread.task_runner(),
-      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
 #if defined(OS_WIN)
   install_static::ScopedInstallDetails scoped_install_details;
