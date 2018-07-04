@@ -267,7 +267,6 @@ void BrowserTabStripController::CloseTab(int model_index,
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
-  tabstrip_->PrepareForCloseAt(model_index, source);
   model_->CloseWebContentsAt(model_index,
                              TabStripModel::CLOSE_USER_GESTURE |
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
@@ -427,7 +426,7 @@ void BrowserTabStripController::TabDetachedAt(WebContents* contents,
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
-  tabstrip_->RemoveTabAt(contents, model_index);
+  tabstrip_->RemoveTabAt(contents, model_index, was_active);
 }
 
 void BrowserTabStripController::ActiveTabChanged(

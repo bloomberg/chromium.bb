@@ -545,7 +545,44 @@ void TabStrip::MoveTab(int from_model_index,
     observer.OnTabMoved(from_model_index, to_model_index);
 }
 
-void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
+void TabStrip::RemoveTabAt(content::WebContents* contents,
+                           int model_index,
+                           bool was_active) {
+  const int model_count = GetModelCount();
+  if (in_tab_close_ && model_count > 0 && model_index != model_count) {
+    // The user closed a tab other than the last tab. Set
+    // available_width_for_tabs_ so that as the user closes tabs with the mouse
+    // a tab continues to fall under the mouse.
+    int next_active_index = controller_->GetActiveIndex();
+    DCHECK(IsValidModelIndex(next_active_index));
+    if (model_index <= next_active_index) {
+      // At this point, model's internal state has already been updated.
+      // |contents| has been detached from model and the active index has been
+      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
+      // fix up next_active_index based on it.
+      next_active_index++;
+    }
+    Tab* next_active_tab = tab_at(next_active_index);
+    Tab* tab_being_removed = tab_at(model_index);
+
+    int size_delta = tab_being_removed->width();
+    if (!tab_being_removed->data().pinned && was_active &&
+        current_active_width_ > current_inactive_width_) {
+      // When removing an active, non-pinned tab, an inactive tab will be made
+      // active and thus given the active width. Thus the width being removed
+      // from the strip is really the current width of whichever inactive tab
+      // will be made active.
+      size_delta = next_active_tab->width();
+    }
+
+    available_width_for_tabs_ = ideal_bounds(model_count).right() -
+                                TabStartX() - size_delta + Tab::GetOverlap();
+    if (model_index == 0 && tab_being_removed->data().pinned &&
+        !tab_at(1)->data().pinned) {
+      available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
+    }
+  }
+
   const bool first_unpinned_tab = model_index == GetPinnedTabCount();
 
   if (!touch_layout_)
@@ -694,54 +731,6 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // tab or before.
   return (right_edge + current_active_width_ - current_inactive_width_) <=
          tabstrip_right;
-}
-
-void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
-  if (!in_tab_close_ && IsAnimating()) {
-    // Cancel any current animations. We do this as remove uses the current
-    // ideal bounds and we need to know ideal bounds is in a good state.
-    StopAnimating(true);
-  }
-
-  if (!GetWidget())
-    return;
-
-  int model_count = GetModelCount();
-  if (model_count > 1 && model_index != model_count - 1) {
-    // The user is about to close a tab other than the last tab. Set
-    // available_width_for_tabs_ so that as the user closes tabs with the mouse
-    // a tab continues to fall under the mouse.
-    Tab* tab_being_removed = tab_at(model_index);
-    int size_delta = tab_being_removed->width();
-    if (!tab_being_removed->data().pinned && tab_being_removed->IsActive()) {
-      // When removing an active, non-pinned tab, an inactive tab will be made
-      // active and thus given the active width. Thus the width being removed
-      // from the strip is really the current width of whichever inactive tab
-      // will be made active. This could be either |current_inactive_width_| or
-      // (current_inactive_width_ + 1) (if layout has apportioned extra space to
-      // the initial tabs in the strip). Unfortunately, the next active tab has
-      // not yet been chosen, so it's impossible to know which of these is
-      // correct; using the narrower value is more conservative.
-      // TODO(sky): https://crbug.com/856289 Refactor so this happens after
-      // another tab has been activated.
-      size_delta = current_inactive_width_;
-    }
-
-    available_width_for_tabs_ = ideal_bounds(model_count - 1).right() -
-                                TabStartX() - size_delta + Tab::GetOverlap();
-    if (model_index == 0 && tab_being_removed->data().pinned &&
-        !tab_at(1)->data().pinned) {
-      available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
-    }
-  }
-
-  in_tab_close_ = true;
-  resize_layout_timer_.Stop();
-  if (source == CLOSE_TAB_FROM_TOUCH) {
-    StartResizeLayoutTabsFromTouchTimer();
-  } else {
-    AddMessageLoopObserver();
-  }
 }
 
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
@@ -923,18 +912,33 @@ void TabStrip::AddSelectionFromAnchorTo(Tab* tab) {
 }
 
 void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
+  int model_index = GetModelIndexOfTab(tab);
   if (tab->closing()) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
     // the animations interfere with that.
-    const int closed_tab_index = FindClosingTab(tab).first->first;
-    if (closed_tab_index < GetModelCount())
-      controller_->CloseTab(closed_tab_index, source);
-    return;
+    model_index = FindClosingTab(tab).first->first;
   }
-  int model_index = GetModelIndexOfTab(tab);
-  if (IsValidModelIndex(model_index))
-    controller_->CloseTab(model_index, source);
+
+  if (!IsValidModelIndex(model_index))
+    return;
+
+  if (!in_tab_close_ && IsAnimating()) {
+    // Cancel any current animations. We do this as remove uses the current
+    // ideal bounds and we need to know ideal bounds is in a good state.
+    StopAnimating(true);
+  }
+
+  if (GetWidget()) {
+    in_tab_close_ = true;
+    resize_layout_timer_.Stop();
+    if (source == CLOSE_TAB_FROM_TOUCH)
+      StartResizeLayoutTabsFromTouchTimer();
+    else
+      AddMessageLoopObserver();
+  }
+
+  controller_->CloseTab(model_index, source);
 }
 
 void TabStrip::ToggleTabAudioMute(Tab* tab) {

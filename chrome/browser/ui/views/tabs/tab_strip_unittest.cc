@@ -252,7 +252,7 @@ TEST_P(TabStripTest, GetModelCount) {
 }
 
 TEST_P(TabStripTest, AccessibilityEvents) {
-  // When adding tabs, SetSelection() is called after RemoveTabAt(), as
+  // When adding tabs, SetSelection() is called after AddTabAt(), as
   // otherwise the index would not be meaningful.
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), true);
@@ -266,7 +266,7 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   // otherwise the index would not be meaningful.
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
-  tab_strip_->RemoveTabAt(nullptr, 1);
+  tab_strip_->RemoveTabAt(nullptr, 1, true);
   EXPECT_EQ(2, test_views_delegate_->add_count());
   EXPECT_EQ(1, test_views_delegate_->remove_count());
 }

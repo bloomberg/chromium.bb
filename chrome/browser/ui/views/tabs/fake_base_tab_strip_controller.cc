@@ -33,12 +33,14 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
 
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
-  tab_strip_->RemoveTabAt(nullptr, index);
+  // RemoveTabAt() expects the controller state to have been updated already.
+  const bool was_active = index == active_index_;
   if (active_index_ > index) {
     --active_index_;
   } else if (active_index_ == index) {
     SetActiveIndex(std::min(active_index_, num_tabs_ - 1));
   }
+  tab_strip_->RemoveTabAt(nullptr, index, was_active);
 }
 
 const ui::ListSelectionModel&
@@ -89,7 +91,6 @@ void FakeBaseTabStripController::AddSelectionFromAnchorTo(int index) {
 }
 
 void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
-  tab_strip_->PrepareForCloseAt(index, source);
   RemoveTab(index);
 }
 
