@@ -70,8 +70,8 @@ def GetAffectedOverlays(change, manifest, all_overlays):
   checkout = change.GetCheckout(manifest, strict=False)
   if checkout:
     git_repo = checkout.GetPath(absolute=True)
-    logging.debug('%s modifies %s', cros_patch.GetChangesAsString([change]),
-                  git_repo)
+    logging.info('%s modifies %s', cros_patch.GetChangesAsString([change]),
+                 git_repo)
 
     # The whole git repo is an overlay. Return it.
     # Example: src/private-overlays/overlay-x86-zgb-private
@@ -342,15 +342,15 @@ class CategorizeChanges(object):
     overlay_changes, irrelevant_overlay_changes = cls.ClassifyOverlayChanges(
         untriaged_changes, config, build_root, manifest, packages_under_test)
     if not overlay_changes:
-      logging.debug('There are no overlay based changes.')
+      logging.info('There are no overlay based changes.')
     else:
-      logging.debug('Overlay based changes: %s',
-                    cros_patch.GetChangesAsString(overlay_changes))
+      logging.info('Overlay based changes: %s',
+                   cros_patch.GetChangesAsString(overlay_changes))
     if not irrelevant_overlay_changes:
-      logging.debug('There are no irrelevant overlay based changes.')
+      logging.info('There are no irrelevant overlay based changes.')
     else:
-      logging.debug('Irrelevant Overlay based changes: %s',
-                    cros_patch.GetChangesAsString(irrelevant_overlay_changes))
+      logging.info('Irrelevant Overlay based changes: %s',
+                   cros_patch.GetChangesAsString(irrelevant_overlay_changes))
     untriaged_changes -= overlay_changes
     irrelevant_changes |= irrelevant_overlay_changes
 
@@ -369,17 +369,17 @@ class CategorizeChanges(object):
         untriaged_changes -= workon_changes
         irrelevant_changes |= irrelevant_workon_changes
         if not workon_changes:
-          logging.debug('There are no workon packages based changes.')
+          logging.info('There are no workon packages based changes.')
         else:
-          logging.debug('Workon packages based changes: %s',
-                        cros_patch.GetChangesAsString(workon_changes))
+          logging.info('Workon packages based changes: %s',
+                       cros_patch.GetChangesAsString(workon_changes))
         if not irrelevant_workon_changes:
-          logging.debug('There are no irrelevant workon packages based'
-                        ' changes.')
+          logging.info('There are no irrelevant workon packages based'
+                       ' changes.')
         else:
-          logging.debug('Irrelevant Workon packages based changes: %s',
-                        cros_patch.
-                        GetChangesAsString(irrelevant_workon_changes))
+          logging.info('Irrelevant Workon packages based changes: %s',
+                       cros_patch.
+                       GetChangesAsString(irrelevant_workon_changes))
 
     return irrelevant_changes
 

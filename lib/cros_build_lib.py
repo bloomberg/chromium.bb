@@ -1033,15 +1033,15 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
               for input_path in inputs_abs_paths:
                 # Match for input or its subdirectories.
                 if file_link.path.startswith(input_path):
-                  logging.debug('Competing process that '
-                                'could be responsible - %s,%s,%s',
-                                process.pid, process.name, file_link.path)
+                  logging.info('Competing process that '
+                               'could be responsible - %s,%s,%s',
+                               process.pid, process.name, file_link.path)
           except psutil.AccessDenied:
             # Some process have higher access requirements.
-            logging.debug('This process needs higher access'
-                          ' level than current process. Skipping...')
+            logging.info('This process needs higher access'
+                         ' level than current process. Skipping...')
           except Exception:
-            logging.debug('CreateTarball: psutil exception', exc_info=True)
+            logging.info('CreateTarball: psutil exception', exc_info=True)
 
       raise CreateTarballError('CreateTarball', result)
     assert result.returncode == 1 and try_count == 0
