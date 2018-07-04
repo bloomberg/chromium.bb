@@ -56,7 +56,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void RecordMemoryUsageHistogram() override;
 
   // Encodes all sync metadata into a string, representing a state that can be
-  // restored via DecodeSyncMetadata() below.
+  // restored via ModelReadyToSync() below.
   std::string EncodeSyncMetadata() const;
 
   // It mainly decodes a BookmarkModelMetadata proto seralized in
@@ -66,9 +66,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // used for further model operations. |schedule_save_closure| is a repeating
   // closure used to schedule a save of the bookmark model together with the
   // metadata.
-  void DecodeSyncMetadata(const std::string& metadata_str,
-                          const base::RepeatingClosure& schedule_save_closure,
-                          bookmarks::BookmarkModel* model);
+  void ModelReadyToSync(const std::string& metadata_str,
+                        const base::RepeatingClosure& schedule_save_closure,
+                        bookmarks::BookmarkModel* model);
 
   const SyncedBookmarkTracker* GetTrackerForTest() const;
 
@@ -92,11 +92,11 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
 
   // Stores the start callback in between OnSyncStarting() and
-  // DecodeSyncMetadata().
+  // ModelReadyToSync().
   StartCallback start_callback_;
 
   // The bookmark model we are processing local changes from and forwarding
-  // remote changes to. It is set during DecodeSyncMetadata(), which is called
+  // remote changes to. It is set during ModelReadyToSync(), which is called
   // during startup, as part of the bookmark-loading process.
   bookmarks::BookmarkModel* bookmark_model_ = nullptr;
 
@@ -118,8 +118,10 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   std::unique_ptr<syncer::CommitQueue> worker_;
 
   // Keeps the mapping between server ids and bookmarks nodes together with sync
-  // metadata. It is constructed and set during DecodeSyncMetadata(), which is
-  // called during startup, as part of the bookmark-loading process.
+  // metadata. It is constructed and set during ModelReadyToSync(), if the
+  // loaded bookmarks JSON contained previous sync metadata, or upon completion
+  // of initial sync, which is called during startup, as part of the
+  // bookmark-loading process.
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker_;
 
   // GUID string that identifies the sync client and is received from the sync
