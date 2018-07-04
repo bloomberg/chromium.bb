@@ -527,9 +527,16 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 
   if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
       ShouldScheduleV8FollowupGC()) {
-    VLOG(2) << "[state:" << this << "] "
-            << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
-    SchedulePreciseGC();
+    if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled()) {
+      VLOG(2) << "[state:" << this << "] "
+              << "ScheduleV8FollowupGCIfNeeded: Scheduled incremental v8 "
+                 "followup GC";
+      ScheduleIncrementalGC(BlinkGC::GCReason::kIncrementalV8FollowupGC);
+    } else {
+      VLOG(2) << "[state:" << this << "] "
+              << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
+      SchedulePreciseGC();
+    }
     return;
   }
   if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
