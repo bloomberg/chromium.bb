@@ -134,7 +134,9 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   auto translated_strings = std::make_unique<base::DictionaryValue>();
 
   AddString(translated_strings.get(), "thumbnailRemovedNotification",
-            IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
+            features::IsMDIconsEnabled()
+                ? IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED
+                : IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
   AddString(translated_strings.get(), "removeThumbnailTooltip",
             IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP);
   AddString(translated_strings.get(), "undoThumbnailRemove",
