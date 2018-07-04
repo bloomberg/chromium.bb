@@ -752,7 +752,7 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
   // We don't paint selection on ellipsis.
   if (text_fragment.StyleVariant() == NGStyleVariant::kEllipsis)
-    return {0, 0, SelectLineBreak::kNotSelected};
+    return {0, 0, SelectSoftLineBreak::kNotSelected};
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
       DCHECK(SelectionStart().has_value());
@@ -761,8 +761,8 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       return {ClampOffset(start_in_block, text_fragment),
               text_fragment.EndOffset(),
               (is_continuous && IsBeforeSoftLineBreak(fragment))
-                  ? SelectLineBreak::kSelected
-                  : SelectLineBreak::kNotSelected};
+                  ? SelectSoftLineBreak::kSelected
+                  : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kEnd: {
       DCHECK(SelectionEnd().has_value());
@@ -772,8 +772,8 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       const bool is_continuous = text_fragment.EndOffset() < end_in_block;
       return {text_fragment.StartOffset(), end_in_fragment,
               (is_continuous && IsBeforeSoftLineBreak(fragment))
-                  ? SelectLineBreak::kSelected
-                  : SelectLineBreak::kNotSelected};
+                  ? SelectSoftLineBreak::kSelected
+                  : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kStartAndEnd: {
       DCHECK(SelectionStart().has_value());
@@ -786,17 +786,18 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
                                  text_fragment.EndOffset() < end_in_block;
       return {ClampOffset(start_in_block, text_fragment), end_in_fragment,
               (is_continuous && IsBeforeSoftLineBreak(fragment))
-                  ? SelectLineBreak::kSelected
-                  : SelectLineBreak::kNotSelected};
+                  ? SelectSoftLineBreak::kSelected
+                  : SelectSoftLineBreak::kNotSelected};
     }
     case SelectionState::kInside: {
       return {text_fragment.StartOffset(), text_fragment.EndOffset(),
-              IsBeforeSoftLineBreak(fragment) ? SelectLineBreak::kSelected
-                                              : SelectLineBreak::kNotSelected};
+              IsBeforeSoftLineBreak(fragment)
+                  ? SelectSoftLineBreak::kSelected
+                  : SelectSoftLineBreak::kNotSelected};
     }
     default:
       // This block is not included in selection.
-      return {0, 0, SelectLineBreak::kNotSelected};
+      return {0, 0, SelectSoftLineBreak::kNotSelected};
   }
 }
 
