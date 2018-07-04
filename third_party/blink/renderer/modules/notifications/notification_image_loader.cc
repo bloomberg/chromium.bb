@@ -119,7 +119,8 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   resource_request.SetRequestorOrigin(context->GetSecurityOrigin());
 
   threadable_loader_ = ThreadableLoader::Create(
-      *context, this, threadable_loader_options, resource_loader_options);
+      ThreadableLoader::ModuleId::kNotificationImageLoader, *context, this,
+      threadable_loader_options, resource_loader_options);
   threadable_loader_->Start(resource_request);
 }
 

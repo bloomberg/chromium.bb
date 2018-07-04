@@ -857,9 +857,9 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   ThreadableLoaderOptions threadable_loader_options;
 
   probe::willStartFetch(execution_context_, this);
-  threadable_loader_ = ThreadableLoader::Create(*execution_context_, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = ThreadableLoader::Create(
+      ThreadableLoader::ModuleId::kFetchManager, *execution_context_, this,
+      threadable_loader_options, resource_loader_options);
   threadable_loader_->Start(request);
 }
 
@@ -887,9 +887,9 @@ void FetchManager::Loader::PerformDataFetch() {
   ThreadableLoaderOptions threadable_loader_options;
 
   probe::willStartFetch(execution_context_, this);
-  threadable_loader_ = ThreadableLoader::Create(*execution_context_, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = ThreadableLoader::Create(
+      ThreadableLoader::ModuleId::kFetchManager, *execution_context_, this,
+      threadable_loader_options, resource_loader_options);
   threadable_loader_->Start(request);
 }
 

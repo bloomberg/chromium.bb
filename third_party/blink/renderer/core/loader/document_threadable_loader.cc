@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
 
 #include <memory>
+#include "base/debug/alias.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
@@ -187,8 +188,9 @@ void DocumentThreadableLoader::LoadResourceSynchronously(
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
-  (new DocumentThreadableLoader(loading_context, &client, kLoadSynchronously,
-                                options, resource_loader_options))
+  (new DocumentThreadableLoader(ModuleId::kSync, loading_context, &client,
+                                kLoadSynchronously, options,
+                                resource_loader_options))
       ->Start(request);
 }
 
@@ -242,22 +244,25 @@ DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
 
 // static
 DocumentThreadableLoader* DocumentThreadableLoader::Create(
+    ModuleId id,
     ThreadableLoadingContext& loading_context,
     ThreadableLoaderClient* client,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
-  return new DocumentThreadableLoader(loading_context, client,
+  return new DocumentThreadableLoader(id, loading_context, client,
                                       kLoadAsynchronously, options,
                                       resource_loader_options);
 }
 
 DocumentThreadableLoader::DocumentThreadableLoader(
+    ModuleId module_id,
     ThreadableLoadingContext& loading_context,
     ThreadableLoaderClient* client,
     BlockingBehavior blocking_behavior,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options)
-    : client_(client),
+    : module_id_(module_id),
+      client_(client),
       loading_context_(&loading_context),
       options_(options),
       resource_loader_options_(resource_loader_options),
@@ -551,6 +556,8 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
 }
 
 DocumentThreadableLoader::~DocumentThreadableLoader() {
+  const auto module_id = module_id_;
+  base::debug::Alias(&module_id);
   CHECK(!client_);
   DCHECK(!GetResource());
 }

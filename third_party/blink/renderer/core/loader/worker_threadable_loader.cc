@@ -673,7 +673,8 @@ void WorkerThreadableLoader::ParentThreadLoaderHolder::Start(
       original_resource_loader_options;
   resource_loader_options.request_initiator_context = kWorkerContext;
   parent_thread_loader_ = DocumentThreadableLoader::Create(
-      loading_context, this, options, resource_loader_options);
+      ModuleId::kWorkerThreadableLoader, loading_context, this, options,
+      resource_loader_options);
   parent_thread_loader_->Start(ResourceRequest(request.get()));
 }
 
