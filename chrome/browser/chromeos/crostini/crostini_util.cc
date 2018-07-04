@@ -149,6 +149,11 @@ bool IsCrostiniEnabled(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
 }
 
+bool IsCrostiniRunning(Profile* profile) {
+  return crostini::CrostiniManager::GetInstance()->IsVmRunning(
+      profile, kCrostiniDefaultVmName);
+}
+
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id) {
