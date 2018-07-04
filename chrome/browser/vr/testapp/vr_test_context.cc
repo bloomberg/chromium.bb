@@ -33,7 +33,6 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -80,19 +79,19 @@ bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
       out_image->get());
 }
 
-GestureList CreateScrollGestureEventList(blink::WebGestureEvent::Type type) {
-  auto gesture = std::make_unique<blink::WebGestureEvent>();
-  gesture->SetType(type);
-  GestureList list;
+InputEventList CreateScrollGestureEventList(InputEvent::Type type) {
+  std::unique_ptr<InputEvent> gesture = std::make_unique<InputEvent>(type);
+  InputEventList list;
   list.push_back(std::move(gesture));
   return list;
 }
 
-GestureList CreateScrollGestureEventList(blink::WebGestureEvent::Type type,
-                                         const gfx::Vector2dF& delta) {
+InputEventList CreateScrollGestureEventList(InputEvent::Type type,
+                                            const gfx::Vector2dF& delta) {
   auto list = CreateScrollGestureEventList(type);
-  list.front()->data.scroll_update.delta_x = delta.x();
-  list.front()->data.scroll_update.delta_y = delta.y();
+  InputEvent* event = static_cast<InputEvent*>(list.front().get());
+  event->scroll_data.delta_x = delta.x();
+  event->scroll_data.delta_y = delta.y();
   return list;
 }
 
@@ -302,8 +301,8 @@ void VrTestContext::HandleInput(ui::Event* event) {
           touchpad_touch_position_.y() + kTouchpadPositionDelta * direction,
           0.0f, 1.0f));
     } else {
-      gesture_lists_.push(CreateScrollGestureEventList(
-          blink::WebGestureEvent::kGestureScrollBegin));
+      input_event_lists_.push(
+          CreateScrollGestureEventList(InputEvent::kScrollBegin));
 
       auto offset = gfx::Vector2dF(event->AsMouseWheelEvent()->offset());
       if (event->IsShiftDown()) {
@@ -312,11 +311,11 @@ void VrTestContext::HandleInput(ui::Event* event) {
       } else {
         offset.Scale(kVerticalScrollScaleFactor);
       }
-      gesture_lists_.push(CreateScrollGestureEventList(
-          blink::WebGestureEvent::kGestureScrollUpdate, offset));
+      input_event_lists_.push(
+          CreateScrollGestureEventList(InputEvent::kScrollUpdate, offset));
 
-      gesture_lists_.push(CreateScrollGestureEventList(
-          blink::WebGestureEvent::kGestureScrollEnd));
+      input_event_lists_.push(
+          CreateScrollGestureEventList(InputEvent::kScrollEnd));
     }
     return;
   }
@@ -420,13 +419,14 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
   RotateToward(controller_model.laser_direction, &controller_model.transform);
 
   // Hit testing is done in terms of this synthesized controller model.
-  if (gesture_lists_.empty()) {
-    gesture_lists_.push(GestureList());
+  if (input_event_lists_.empty()) {
+    input_event_lists_.push(InputEventList());
   }
   ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
-                                    &reticle_model, &gesture_lists_.front());
-  gesture_lists_.pop();
+                                    &reticle_model,
+                                    &input_event_lists_.front());
+  input_event_lists_.pop();
 
   // Now that we have accurate hit information, we use this to construct a
   // controller model for display.

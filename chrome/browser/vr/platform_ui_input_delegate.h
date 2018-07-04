@@ -11,22 +11,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/macros.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
 class TimeTicks;
 }  // namespace base
-
-namespace blink {
-class WebGestureEvent;
-class WebMouseEvent;
-class WebTouchEvent;
-}  // namespace blink
 
 namespace gfx {
 class PointF;
@@ -59,18 +53,8 @@ class VR_EXPORT PlatformUiInputDelegate {
                                     base::TimeTicks timestamp);
   VIRTUAL_FOR_MOCKS void OnTouchMove(const gfx::PointF& normalized_hit_point,
                                      base::TimeTicks timestamp);
-  VIRTUAL_FOR_MOCKS void OnFlingCancel(
-      std::unique_ptr<blink::WebGestureEvent> gesture,
-      const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnScrollBegin(
-      std::unique_ptr<blink::WebGestureEvent> gesture,
-      const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnScrollUpdate(
-      std::unique_ptr<blink::WebGestureEvent> gesture,
-      const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnScrollEnd(
-      std::unique_ptr<blink::WebGestureEvent> gesture,
-      const gfx::PointF& normalized_hit_point);
+  VIRTUAL_FOR_MOCKS void OnInputEvent(std::unique_ptr<InputEvent> event,
+                                      const gfx::PointF& normalized_hit_point);
 
   void SetSize(int width, int height) { size_ = {width, height}; }
   void SetPlatformInputHandlerForTest(PlatformInputHandler* input_handler) {
@@ -78,20 +62,16 @@ class VR_EXPORT PlatformUiInputDelegate {
   }
 
  protected:
-  virtual void SendGestureToTarget(std::unique_ptr<blink::WebInputEvent> event);
+  virtual void SendGestureToTarget(std::unique_ptr<InputEvent> event);
   PlatformInputHandler* input_handler() const { return input_handler_; }
 
  private:
   void UpdateGesture(const gfx::PointF& normalized_content_hit_point,
-                     blink::WebGestureEvent& gesture);
-  std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
-      blink::WebInputEvent::Type type,
+                     InputEvent* gesture);
+  std::unique_ptr<InputEvent> MakeInputEvent(
+      InputEvent::Type type,
       const gfx::PointF& normalized_web_content_location,
-      base::TimeTicks timestamp) const;
-  std::unique_ptr<blink::WebTouchEvent> MakeTouchEvent(
-      blink::WebInputEvent::Type type,
-      const gfx::PointF& normalized_web_content_location,
-      base::TimeTicks timestamp) const;
+      base::TimeTicks time_stamp) const;
   gfx::Point CalculateLocation(
       const gfx::PointF& normalized_web_content_location) const;
 

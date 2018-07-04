@@ -5,7 +5,6 @@
 #include "chrome/browser/vr/elements/content_element.h"
 
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
@@ -61,32 +60,28 @@ void PlatformUiElement::OnTouchMove(const gfx::PointF& position,
     delegate_->OnTouchMove(position, timestamp);
 }
 
-void PlatformUiElement::OnFlingCancel(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PlatformUiElement::OnFlingCancel(std::unique_ptr<InputEvent> gesture,
+                                      const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnFlingCancel(std::move(gesture), position);
+    delegate_->OnInputEvent(std::move(gesture), position);
 }
 
-void PlatformUiElement::OnScrollBegin(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PlatformUiElement::OnScrollBegin(std::unique_ptr<InputEvent> gesture,
+                                      const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnScrollBegin(std::move(gesture), position);
+    delegate_->OnInputEvent(std::move(gesture), position);
 }
 
-void PlatformUiElement::OnScrollUpdate(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PlatformUiElement::OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
+                                       const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnScrollUpdate(std::move(gesture), position);
+    delegate_->OnInputEvent(std::move(gesture), position);
 }
 
-void PlatformUiElement::OnScrollEnd(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void PlatformUiElement::OnScrollEnd(std::unique_ptr<InputEvent> gesture,
+                                    const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnScrollEnd(std::move(gesture), position);
+    delegate_->OnInputEvent(std::move(gesture), position);
 }
 
 void PlatformUiElement::SetTextureId(unsigned int texture_id) {

@@ -6,19 +6,17 @@
 
 #include "base/stl_util.h"
 #include "cc/test/geometry_test_utils.h"
+#include "chrome/browser/vr/input_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 
 namespace {
 
-std::unique_ptr<blink::WebGestureEvent> CreateScrollUpdate(float delta_x,
-                                                           float delta_y) {
-  auto gesture = std::make_unique<blink::WebGestureEvent>();
-  gesture->SetType(blink::WebGestureEvent::kGestureScrollBegin);
-  gesture->data.scroll_update.delta_x = delta_x;
-  gesture->data.scroll_update.delta_y = delta_y;
+std::unique_ptr<InputEvent> CreateScrollUpdate(float delta_x, float delta_y) {
+  auto gesture = std::make_unique<InputEvent>(InputEvent::kScrollBegin);
+  gesture->scroll_data.delta_x = delta_x;
+  gesture->scroll_data.delta_y = delta_y;
   return gesture;
 }
 

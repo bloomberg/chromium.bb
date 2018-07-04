@@ -24,14 +24,16 @@ executable("vr_testapp") {
   deps = [
     ":assets_component_version_header",
     ":vr_testapp_pak",
-    "//chrome/browser/vr:vr_gl_test_support",
-    "//chrome/browser/vr:vr_test_support",
+    "//chrome/browser/vr:vr_common",
     "//components:components_tests_pak",
+    "//components/security_state/core",
+    "//components/toolbar:vector_icons",
     "//components/tracing:startup_tracing",
     "//ui/display/types",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",
+    "//ui/gl/init",
     "//ui/ozone",
     "//ui/platform_window",
   ]

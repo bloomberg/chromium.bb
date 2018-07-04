@@ -49,7 +49,6 @@
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -1253,8 +1252,8 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
 
   ControllerModel controller_model;
   controller_->GetTransform(&controller_model.transform);
-  std::unique_ptr<GestureList> gesture_list_ptr = controller_->DetectGestures();
-  GestureList& gesture_list = *gesture_list_ptr;
+  std::unique_ptr<InputEventList> input_event_list =
+      controller_->DetectGestures();
   controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
   DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
            controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
@@ -1304,7 +1303,7 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
 
   ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
-                                    &reticle_model, &gesture_list);
+                                    &reticle_model, input_event_list.get());
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 

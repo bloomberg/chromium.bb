@@ -12,9 +12,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/vr_gl_util.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -225,13 +225,13 @@ void UiElement::OnTouchMove(const gfx::PointF& position,
   }
 }
 
-void UiElement::OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
+void UiElement::OnFlingCancel(std::unique_ptr<InputEvent> gesture,
                               const gfx::PointF& position) {}
-void UiElement::OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+void UiElement::OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                               const gfx::PointF& position) {}
-void UiElement::OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+void UiElement::OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
                                const gfx::PointF& position) {}
-void UiElement::OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+void UiElement::OnScrollEnd(std::unique_ptr<InputEvent> gesture,
                             const gfx::PointF& position) {}
 
 void UiElement::OnFocusChanged(bool focused) {

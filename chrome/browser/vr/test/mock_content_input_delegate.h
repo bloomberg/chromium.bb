@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 
@@ -33,34 +32,13 @@ class MockContentInputDelegate : public ContentInputDelegate {
 
   // As move-only parameters aren't supported by mock methods, we will override
   // the functions explicitly and fwd the calls to the mocked functions.
-  MOCK_METHOD2(FwdContentFlingCancel,
-               void(std::unique_ptr<blink::WebGestureEvent>& gesture,
-                    const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD2(FwdContentScrollBegin,
-               void(std::unique_ptr<blink::WebGestureEvent>& gesture,
-                    const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD2(FwdContentScrollUpdate,
-               void(std::unique_ptr<blink::WebGestureEvent>& gesture,
-                    const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD2(FwdContentScrollEnd,
-               void(std::unique_ptr<blink::WebGestureEvent>& gesture,
+  MOCK_METHOD2(FwdContentInputEvent,
+               void(std::unique_ptr<InputEvent>& gesture,
                     const gfx::PointF& normalized_hit_point));
 
-  void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
-                     const gfx::PointF& normalized_hit_point) override {
-    FwdContentFlingCancel(gesture, normalized_hit_point);
-  }
-  void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
-                     const gfx::PointF& normalized_hit_point) override {
-    FwdContentScrollBegin(gesture, normalized_hit_point);
-  }
-  void OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
-                      const gfx::PointF& normalized_hit_point) override {
-    FwdContentScrollUpdate(gesture, normalized_hit_point);
-  }
-  void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
-                   const gfx::PointF& normalized_hit_point) override {
-    FwdContentScrollEnd(gesture, normalized_hit_point);
+  void OnInputEvent(std::unique_ptr<InputEvent> gesture,
+                    const gfx::PointF& normalized_hit_point) override {
+    FwdContentInputEvent(gesture, normalized_hit_point);
   }
 };
 

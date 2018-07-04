@@ -6,11 +6,8 @@
 
 #include <cmath>
 
+#include "chrome/browser/vr/input_event.h"
 #include "jni/AndroidUiGestureTarget_jni.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -33,30 +30,16 @@ AndroidUiGestureTarget::AndroidUiGestureTarget(JNIEnv* env,
 
 AndroidUiGestureTarget::~AndroidUiGestureTarget() = default;
 
-void AndroidUiGestureTarget::DispatchWebInputEvent(
-    std::unique_ptr<blink::WebInputEvent> event) {
-  blink::WebMouseEvent* mouse;
-  blink::WebTouchEvent* touch;
-  blink::WebGestureEvent* gesture;
-  if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
-    mouse = static_cast<blink::WebMouseEvent*>(event.get());
-  } else if (blink::WebInputEvent::IsTouchEventType(event->GetType())) {
-    touch = static_cast<blink::WebTouchEvent*>(event.get());
-  } else {
-    gesture = static_cast<blink::WebGestureEvent*>(event.get());
-  }
-
-  int64_t event_time_ms = event->TimeStamp().since_origin().InMilliseconds();
-  switch (event->GetType()) {
-    case blink::WebGestureEvent::kGestureScrollBegin: {
-      DCHECK(gesture->data.scroll_begin.delta_hint_units ==
-             blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
-
-      SetPointer(gesture->PositionInWidget().x, gesture->PositionInWidget().y);
+void AndroidUiGestureTarget::DispatchInputEvent(
+    std::unique_ptr<InputEvent> event) {
+  int64_t event_time_ms = event->time_stamp().since_origin().InMilliseconds();
+  switch (event->type()) {
+    case InputEvent::kScrollBegin: {
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
 
-      float xdiff = gesture->data.scroll_begin.delta_x_hint;
-      float ydiff = gesture->data.scroll_begin.delta_y_hint;
+      float xdiff = event->scroll_data.delta_x;
+      float ydiff = event->scroll_data.delta_y;
 
       if (xdiff == 0 && ydiff == 0)
         ydiff = touch_slop_;
@@ -66,8 +49,8 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
         ydiff *= touch_slop_ / dist;
       }
 
-      float xtarget = xdiff * scroll_ratio_ + gesture->PositionInWidget().x;
-      float ytarget = ydiff * scroll_ratio_ + gesture->PositionInWidget().y;
+      float xtarget = xdiff * scroll_ratio_ + event->position_in_widget().x();
+      float ytarget = ydiff * scroll_ratio_ + event->position_in_widget().y();
       scroll_x_ = xtarget > 0 ? std::ceil(xtarget) : std::floor(xtarget);
       scroll_y_ = ytarget > 0 ? std::ceil(ytarget) : std::floor(ytarget);
 
@@ -76,61 +59,50 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     }
-    case blink::WebGestureEvent::kGestureScrollEnd:
+    case InputEvent::kScrollEnd:
       SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
-    case blink::WebGestureEvent::kGestureScrollUpdate: {
+    case InputEvent::kScrollUpdate: {
       float scale = scroll_ratio_ / kScrollEventsPerFrame;
-      scroll_x_ += gesture->data.scroll_update.delta_x * scale;
-      scroll_y_ += gesture->data.scroll_update.delta_y * scale;
+      scroll_x_ += event->scroll_data.delta_x * scale;
+      scroll_y_ += event->scroll_data.delta_y * scale;
 
       SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
 
-      scroll_x_ += gesture->data.scroll_update.delta_x * scale;
-      scroll_y_ += gesture->data.scroll_update.delta_y * scale;
+      scroll_x_ += event->scroll_data.delta_x * scale;
+      scroll_y_ += event->scroll_data.delta_y * scale;
       SetDelayedEvent(scroll_x_, scroll_y_, content::MOTION_EVENT_ACTION_MOVE,
                       event_time_ms, kFrameDurationMs / kScrollEventsPerFrame);
 
       break;
     }
-    case blink::WebGestureEvent::kGestureTapDown:
-      SetPointer(gesture->PositionInWidget().x, gesture->PositionInWidget().y);
-      Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
-      Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
-      break;
-    case blink::WebGestureEvent::kGestureFlingCancel:
+    case InputEvent::kFlingCancel:
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
       Inject(content::MOTION_EVENT_ACTION_CANCEL, event_time_ms);
       break;
-    case blink::WebMouseEvent::kMouseEnter:
-      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+    case InputEvent::kHoverEnter:
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_HOVER_ENTER, event_time_ms);
       break;
-    case blink::WebMouseEvent::kMouseMove:
-    case blink::WebMouseEvent::kMouseLeave:
+    case InputEvent::kHoverLeave:
+    case InputEvent::kHoverMove:
       // The platform ignores HOVER_EXIT, so we instead send a fixed
       // out-of-bounds point (http://crbug.com/715114).
-      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_HOVER_MOVE, event_time_ms);
       break;
-    case blink::WebTouchEvent::kTouchStart:
-      // Mouse down events are translated into touch events on Android anyways,
-      // so we can just send touch events.
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
+    case InputEvent::kButtonDown:
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
       break;
-    case blink::WebTouchEvent::kTouchEnd:
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
+    case InputEvent::kButtonUp:
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
-    case blink::WebTouchEvent::kTouchMove:
-      DCHECK_EQ(touch->touches_length, 1u);
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
+    case InputEvent::kMove:
+      SetPointer(event->position_in_widget());
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     default:
@@ -148,18 +120,23 @@ void AndroidUiGestureTarget::Inject(MotionEventAction action, int64_t time_ms) {
   Java_AndroidUiGestureTarget_inject(env, obj, action, time_ms);
 }
 
-void AndroidUiGestureTarget::SetPointer(int x, int y) {
+void AndroidUiGestureTarget::SetPointer(const gfx::PointF& position) {
+  SetPointer(position.x(), position.y());
+}
+
+void AndroidUiGestureTarget::SetPointer(float x, float y) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  Java_AndroidUiGestureTarget_setPointer(env, obj, x * scale_factor_,
-                                         y * scale_factor_);
+  Java_AndroidUiGestureTarget_setPointer(env, obj,
+                                         static_cast<int>(x * scale_factor_),
+                                         static_cast<int>(y * scale_factor_));
 }
 
-void AndroidUiGestureTarget::SetDelayedEvent(int x,
-                                             int y,
+void AndroidUiGestureTarget::SetDelayedEvent(float x,
+                                             float y,
                                              MotionEventAction action,
                                              int64_t time_ms,
                                              int delay_ms) {
@@ -168,9 +145,9 @@ void AndroidUiGestureTarget::SetDelayedEvent(int x,
   if (obj.is_null())
     return;
 
-  Java_AndroidUiGestureTarget_setDelayedEvent(env, obj, x * scale_factor_,
-                                              y * scale_factor_, action,
-                                              time_ms, delay_ms);
+  Java_AndroidUiGestureTarget_setDelayedEvent(
+      env, obj, static_cast<int>(x * scale_factor_),
+      static_cast<int>(y * scale_factor_), action, time_ms, delay_ms);
 }
 
 // static

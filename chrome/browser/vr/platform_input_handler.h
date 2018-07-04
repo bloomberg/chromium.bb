@@ -7,9 +7,10 @@
 
 #include "base/callback.h"
 #include "chrome/browser/vr/text_edit_action.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace vr {
+
+class InputEvent;
 
 typedef typename base::OnceCallback<void(const base::string16&)>
     TextStateUpdateCallback;
@@ -19,11 +20,9 @@ typedef typename base::OnceCallback<void(const base::string16&)>
 class PlatformInputHandler {
  public:
   virtual ~PlatformInputHandler() {}
-  virtual void ForwardEventToPlatformUi(
-      std::unique_ptr<blink::WebInputEvent> event) = 0;
-  virtual void ForwardEventToContent(
-      std::unique_ptr<blink::WebInputEvent> event,
-      int content_id) = 0;
+  virtual void ForwardEventToPlatformUi(std::unique_ptr<InputEvent> event) = 0;
+  virtual void ForwardEventToContent(std::unique_ptr<InputEvent> event,
+                                     int content_id) = 0;
 
   // Text input specific.
   virtual void ClearFocusedElement() = 0;

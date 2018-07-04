@@ -38,15 +38,12 @@ namespace base {
 class TimeTicks;
 }
 
-namespace blink {
-class WebGestureEvent;
-}
-
 namespace vr {
 
 class KeyframeModel;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
+class InputEvent;
 struct CameraModel;
 struct EditedText;
 
@@ -160,13 +157,13 @@ class VR_EXPORT UiElement : public cc::AnimationTarget {
                           base::TimeTicks timestamp);
   virtual void OnTouchMove(const gfx::PointF& position,
                            base::TimeTicks timestamp);
-  virtual void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
+  virtual void OnFlingCancel(std::unique_ptr<InputEvent> gesture,
                              const gfx::PointF& position);
-  virtual void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+  virtual void OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                              const gfx::PointF& position);
-  virtual void OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+  virtual void OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
                               const gfx::PointF& position);
-  virtual void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+  virtual void OnScrollEnd(std::unique_ptr<InputEvent> gesture,
                            const gfx::PointF& position);
 
   // Whether the point (relative to the origin of the element), should be

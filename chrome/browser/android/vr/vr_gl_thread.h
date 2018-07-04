@@ -77,9 +77,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ToggleCardboardGamepad(bool enabled) override;
 
   // PlatformInputHandler
-  void ForwardEventToPlatformUi(
-      std::unique_ptr<blink::WebInputEvent> event) override;
-  void ForwardEventToContent(std::unique_ptr<blink::WebInputEvent> event,
+  void ForwardEventToPlatformUi(std::unique_ptr<InputEvent> event) override;
+  void ForwardEventToContent(std::unique_ptr<InputEvent> event,
                              int content_id) override;
   void ClearFocusedElement() override;
   void OnWebInputEdited(const TextEdits& edits) override;

@@ -15,20 +15,17 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 
-namespace blink {
-class WebGestureEvent;
-}
-
 namespace vr {
 
 class UiScene;
 class UiElement;
+class InputEvent;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
 struct EditedText;
 
-using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
+using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 
 // Based on controller input finds the hit UI element and determines the
 // interaction with UI elements and the web contents.
@@ -50,12 +47,11 @@ class VR_EXPORT UiInputManager {
 
   explicit UiInputManager(UiScene* scene);
   ~UiInputManager();
-  // TODO(tiborg): Use generic gesture type instead of blink::WebGestureEvent.
   void HandleInput(base::TimeTicks current_time,
                    const RenderInfo& render_info,
                    const ControllerModel& controller_model,
                    ReticleModel* reticle_model,
-                   GestureList* gesture_list);
+                   InputEventList* input_event_list);
 
   void OnPause();
 
@@ -76,15 +72,15 @@ class VR_EXPORT UiInputManager {
   }
 
  private:
-  void SendFlingCancel(GestureList* gesture_list,
+  void SendFlingCancel(InputEventList* input_event_list,
                        const gfx::PointF& target_point);
-  void SendScrollEnd(GestureList* gesture_list,
+  void SendScrollEnd(InputEventList* input_event_list,
                      const gfx::PointF& target_point,
                      ButtonState button_state);
   void SendScrollBegin(UiElement* target,
-                       GestureList* gesture_list,
+                       InputEventList* input_event_list,
                        const gfx::PointF& target_point);
-  void SendScrollUpdate(GestureList* gesture_list,
+  void SendScrollUpdate(InputEventList* input_event_list,
                         const gfx::PointF& target_point);
 
   void SendHoverLeave(UiElement* current_target, base::TimeTicks timestamp);
@@ -107,7 +103,7 @@ class VR_EXPORT UiInputManager {
 
   UiElement* GetTargetElement(const ControllerModel& controller_model,
                               ReticleModel* reticle_model,
-                              const GestureList& gesture_list) const;
+                              const InputEventList& input_event_list) const;
   void UpdateQuiescenceState(base::TimeTicks current_time,
                              const ControllerModel& controller_model);
   void UpdateControllerFocusState(base::TimeTicks current_time,

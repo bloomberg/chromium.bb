@@ -39,11 +39,11 @@ class VR_EXPORT ScrollableElement : public UiElement {
 
   void SetScrollAnchoring(LayoutAlignment anchoring);
 
-  void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                      const gfx::PointF& position) override;
-  void OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
                       const gfx::PointF& position) override;
-  void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollEnd(std::unique_ptr<InputEvent> gesture,
                    const gfx::PointF& position) override;
 
  private:

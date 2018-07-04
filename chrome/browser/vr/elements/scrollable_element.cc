@@ -5,7 +5,7 @@
 #include "chrome/browser/vr/elements/scrollable_element.h"
 
 #include "base/numerics/ranges.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "chrome/browser/vr/input_event.h"
 
 namespace vr {
 
@@ -98,30 +98,26 @@ void ScrollableElement::AddScrollingChild(std::unique_ptr<UiElement> child) {
   inner_element_->AddChild(std::move(child));
 }
 
-void ScrollableElement::OnScrollBegin(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void ScrollableElement::OnScrollBegin(std::unique_ptr<InputEvent> gesture,
+                                      const gfx::PointF& position) {
   cached_transition_ = animation().transition();
   animation().set_transition(Transition());
 }
 
-void ScrollableElement::OnScrollUpdate(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
-  const auto& update = gesture->data.scroll_update;
+void ScrollableElement::OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
+                                       const gfx::PointF& position) {
   float half_scroll_span = ComputeScrollSpan() / 2.0f;
   if (orientation_ == kHorizontal) {
-    scroll_offset_ -= update.delta_x * kScrollScaleFactor;
+    scroll_offset_ -= gesture->scroll_data.delta_x * kScrollScaleFactor;
   } else {
-    scroll_offset_ -= update.delta_y * kScrollScaleFactor;
+    scroll_offset_ -= gesture->scroll_data.delta_y * kScrollScaleFactor;
   }
   scroll_offset_ =
       base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
 }
 
-void ScrollableElement::OnScrollEnd(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
+void ScrollableElement::OnScrollEnd(std::unique_ptr<InputEvent> gesture,
+                                    const gfx::PointF& position) {
   animation().set_transition(cached_transition_);
 }
 

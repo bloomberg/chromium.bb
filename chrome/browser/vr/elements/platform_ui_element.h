@@ -33,13 +33,13 @@ class PlatformUiElement : public UiElement {
                   base::TimeTicks timestamp) override;
   void OnTouchMove(const gfx::PointF& position,
                    base::TimeTicks timestamp) override;
-  void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnFlingCancel(std::unique_ptr<InputEvent> gesture,
                      const gfx::PointF& position) override;
-  void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollBegin(std::unique_ptr<InputEvent> gesture,
                      const gfx::PointF& position) override;
-  void OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollUpdate(std::unique_ptr<InputEvent> gesture,
                       const gfx::PointF& position) override;
-  void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+  void OnScrollEnd(std::unique_ptr<InputEvent> gesture,
                    const gfx::PointF& position) override;
 
   void Render(UiElementRenderer* renderer,

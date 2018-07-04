@@ -12,13 +12,11 @@
 #include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace blink {
-class WebGestureEvent;
-}
-
 namespace vr {
 
-using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
+class InputEvent;
+
+using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 
 struct TouchPoint {
   gfx::Vector2dF position;
@@ -37,9 +35,10 @@ class VR_EXPORT GestureDetector {
   GestureDetector();
   virtual ~GestureDetector();
 
-  std::unique_ptr<GestureList> DetectGestures(const TouchInfo& touch_info,
-                                              base::TimeTicks current_timestamp,
-                                              bool force_cancel);
+  std::unique_ptr<InputEventList> DetectGestures(
+      const TouchInfo& touch_info,
+      base::TimeTicks current_timestamp,
+      bool force_cancel);
 
  private:
   enum GestureDetectorStateLabel {
@@ -60,23 +59,20 @@ class VR_EXPORT GestureDetector {
     gfx::Vector2dF displacement;
   };
 
-  std::unique_ptr<blink::WebGestureEvent> GetGestureFromTouchInfo(
+  std::unique_ptr<InputEvent> GetGestureFromTouchInfo(
       const TouchInfo& input_touch_info,
       bool force_cancel);
 
-  void HandleWaitingState(const TouchInfo& touch_info,
-                          blink::WebGestureEvent* gesture);
-  void HandleDetectingState(const TouchInfo& touch_info,
-                            bool force_cancel,
-                            blink::WebGestureEvent* gesture);
-  void HandleScrollingState(const TouchInfo& touch_info,
-                            bool force_cancel,
-                            blink::WebGestureEvent* gesture);
-  void HandlePostScrollingState(const TouchInfo& touch_info,
-                                bool force_cancel,
-                                blink::WebGestureEvent* gesture);
+  std::unique_ptr<InputEvent> HandleWaitingState(const TouchInfo& touch_info);
+  std::unique_ptr<InputEvent> HandleDetectingState(const TouchInfo& touch_info,
+                                                   bool force_cancel);
+  std::unique_ptr<InputEvent> HandleScrollingState(const TouchInfo& touch_info,
+                                                   bool force_cancel);
+  std::unique_ptr<InputEvent> HandlePostScrollingState(
+      const TouchInfo& touch_info,
+      bool force_cancel);
 
-  void UpdateGestureWithScrollDelta(blink::WebGestureEvent* gesture);
+  void UpdateGestureWithScrollDelta(InputEvent* gesture);
 
   // If the user is touching the touch pad and the touch point is different from
   // before, update the touch point and return true. Otherwise, return false.
