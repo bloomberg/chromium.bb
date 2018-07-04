@@ -57,6 +57,7 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_keyboard.h"
 #include "content/test/test_render_frame.h"
 #include "net/base/net_errors.h"
@@ -441,8 +442,16 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
   void SetUp() override {}
 };
 
-class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
+// This test class enables UseZoomForDSF based on the platform default value.
+class RenderViewImplScaleFactorTest : public RenderViewImplTest {
  protected:
+  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
+      override {
+    auto deps = std::make_unique<FakeCompositorDependencies>();
+    deps->set_use_zoom_for_dsf_enabled(content::IsUseZoomForDSFEnabled());
+    return deps;
+  }
+
   void SetDeviceScaleFactor(float dsf) {
     VisualProperties visual_properties;
     visual_properties.screen_info.device_scale_factor = dsf;
@@ -493,7 +502,31 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
   }
 };
 
-class RenderViewImplZoomTest : public RenderViewImplTest {
+// This test class forces UseZoomForDSF to be on for all platforms.
+class RenderViewImplEnableZoomForDSFTest
+    : public RenderViewImplScaleFactorTest {
+ protected:
+  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
+      override {
+    auto deps = std::make_unique<FakeCompositorDependencies>();
+    deps->set_use_zoom_for_dsf_enabled(true);
+    return deps;
+  }
+};
+
+// This test class forces UseZoomForDSF to be off for all platforms.
+class RenderViewImplDisableZoomForDSFTest
+    : public RenderViewImplScaleFactorTest {
+ protected:
+  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
+      override {
+    auto deps = std::make_unique<FakeCompositorDependencies>();
+    deps->set_use_zoom_for_dsf_enabled(false);
+    return deps;
+  }
+};
+
+class RenderViewImplZoomTest : public RenderViewImplScaleFactorTest {
  protected:
   void SetZoomLevel(bool uses_temporary_zoom, double zoom_level) {
     view()->SetZoomLevelForTesting(uses_temporary_zoom, zoom_level);
@@ -547,9 +580,8 @@ static blink::WebCoalescedInputEvent FatTap(int x,
 }
 
 TEST_F(RenderViewImplScaleFactorTest, TapDisambiguatorSize) {
-  DoSetUp();
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
+  // TODO(oshima): This test tried in the past to enable UseZoomForDSF but
+  // didn't actually do so for the compositor, and fails with it enabled.
   const float device_scale = 2.625f;
   SetDeviceScaleFactor(device_scale);
   EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
@@ -831,14 +863,13 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.
 TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
-  DoSetUp();
-
   // This test should only run with --site-per-process.
   if (!AreAllSitesIsolatedForTesting())
     return;
 
   const float device_scale = 2.0f;
-  float compositor_dsf = IsUseZoomForDSFEnabled() ? 1.f : device_scale;
+  float compositor_dsf =
+      compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : device_scale;
   SetDeviceScaleFactor(device_scale);
 
   LoadHTML(
@@ -929,11 +960,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
 // a new tab looks fine, but visiting the second web page renders smaller DOM
 // elements. We can solve this by updating DSF after swapping in the main frame.
 // See crbug.com/737777#c37.
-TEST_F(RenderViewImplScaleFactorTest, UpdateDSFAfterSwapIn) {
-  DoSetUp();
-  // The bug reproduces if zoom is used for devices scale factor.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
+TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   const float device_scale = 3.0f;
   SetDeviceScaleFactor(device_scale);
   EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
@@ -1050,11 +1077,8 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
 // Verify that the renderer process doesn't crash when device scale factor
 // changes after a cross-process navigation has commited.
 // See https://crbug.com/571603.
-TEST_F(RenderViewImplTest, SetZoomLevelAfterCrossProcessNavigation) {
-  // The bug reproduces if zoom is used for devices scale factor.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
-
+TEST_F(RenderViewImplEnableZoomForDSFTest,
+       SetZoomLevelAfterCrossProcessNavigation) {
   LoadHTML("Hello world!");
 
   // Swap the main frame out after which it should become a WebRemoteFrame.
@@ -2346,7 +2370,6 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, PreferredSizeWithScaleFactor) {
-  DoSetUp();
   LoadHTML(
       "<body style='margin:0;'><div style='display:inline-block; "
       "width:400px; height:400px;'/></body>");
@@ -2557,10 +2580,8 @@ TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
   EXPECT_TRUE(settings()->ViewportEnabled());
 }
 
-TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
-  DoSetUp();
-  if (IsUseZoomForDSFEnabled())
-    return;
+TEST_F(RenderViewImplDisableZoomForDSFTest,
+       ConverViewportToWindowWithoutZoomForDSF) {
   SetDeviceScaleFactor(2.f);
   blink::WebRect rect(20, 10, 200, 100);
   view()->ConvertViewportToWindow(&rect);
@@ -2571,7 +2592,6 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
-  DoSetUp();
   SetDeviceScaleFactor(1.f);
 
   LoadHTML("<body style='min-height:1000px;'></body>");
@@ -2600,10 +2620,8 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
-  DoSetUp();
   SetDeviceScaleFactor(2.f);
-  float compositor_dsf =
-      IsUseZoomForDSFEnabled() ? 1.f : 2.f;
+  float compositor_dsf = compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : 2.f;
 
   LoadHTML("<body style='min-height:1000px;'></body>");
   {
@@ -2630,10 +2648,8 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
-TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
-  DoSetUp();
+TEST_F(RenderViewImplEnableZoomForDSFTest,
+       ConverViewportToWindowWithZoomForDSF) {
   SetDeviceScaleFactor(1.f);
   {
     blink::WebRect rect(20, 10, 200, 100);
@@ -2656,11 +2672,8 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
 }
 
 #if defined(OS_MACOSX) || defined(USE_AURA)
-TEST_F(RenderViewImplScaleFactorTest,
+TEST_F(RenderViewImplEnableZoomForDSFTest,
        DISABLED_GetCompositionCharacterBoundsTest) {  // http://crbug.com/582016
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
-  DoSetUp();
   SetDeviceScaleFactor(1.f);
 #if defined(OS_WIN)
   // http://crbug.com/508747
@@ -2713,10 +2726,7 @@ const char kAutoResizeTestPage[] =
 
 }  // namespace
 
-TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithZoomForDSF) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseZoomForDSF);
-  DoSetUp();
+TEST_F(RenderViewImplEnableZoomForDSFTest, AutoResizeWithZoomForDSF) {
   view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
   gfx::Size size_at_1x = view()->GetWidget()->size();
@@ -2729,7 +2739,6 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithZoomForDSF) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
-  DoSetUp();
   view()->EnableAutoResizeForTesting(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
   gfx::Size size_at_1x = view()->GetWidget()->size();

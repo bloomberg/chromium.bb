@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -326,7 +327,7 @@ void RenderViewTest::SetUp() {
         "en-US", nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
-  compositor_deps_ = std::make_unique<FakeCompositorDependencies>();
+  compositor_deps_ = CreateCompositorDependencies();
   mock_process_ = std::make_unique<MockRenderProcess>();
 
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
@@ -685,6 +686,11 @@ std::unique_ptr<VisualProperties> RenderViewTest::InitialVisualProperties() {
   initial_visual_properties->new_size = gfx::Size(400, 300);
   initial_visual_properties->visible_viewport_size = gfx::Size(400, 300);
   return initial_visual_properties;
+}
+
+std::unique_ptr<CompositorDependencies>
+RenderViewTest::CreateCompositorDependencies() {
+  return std::make_unique<FakeCompositorDependencies>();
 }
 
 void RenderViewTest::GoToOffset(int offset,

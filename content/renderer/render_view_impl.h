@@ -463,7 +463,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                            SetZoomLevelAfterCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            ConverViewportToScreenWithZoomForDSF);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplEnableZoomForDSFTest,
                            GetCompositionCharacterBoundsTest);
 
   enum ErrorPageType {

@@ -37,6 +37,7 @@ class CompositorDependencies {
   virtual bool IsPartialRasterEnabled() = 0;
   virtual bool IsGpuMemoryBufferCompositorResourcesEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
+  virtual bool IsUseZoomForDSFEnabled() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() = 0;
   // Returns null if the compositor is in single-threaded mode (ie. there is no
@@ -48,6 +49,10 @@ class CompositorDependencies {
   virtual bool IsScrollAnimatorEnabled() = 0;
   virtual std::unique_ptr<cc::UkmRecorderFactory>
   CreateUkmRecorderFactory() = 0;
+
+#ifdef OS_ANDROID
+  virtual bool UsingSynchronousCompositing() = 0;
+#endif
 
   virtual ~CompositorDependencies() {}
 };

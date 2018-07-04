@@ -26,6 +26,8 @@
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
+#include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/managed_memory_policy.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
@@ -337,6 +339,20 @@ class CONTENT_EXPORT RenderWidget
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
+
+  // Internal helper that generates the LayerTreeSettings to be given to the
+  // compositor in StartCompositor().
+  static cc::LayerTreeSettings GenerateLayerTreeSettings(
+      CompositorDependencies* compositor_deps,
+      bool is_for_subframe,
+      const gfx::Size& initial_screen_size,
+      float initial_device_scale_factor);
+  // Internal helper that generates the ManagedMemoryPolicy to be given to the
+  // compositor in StartCompositor().
+  static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
+      const cc::ManagedMemoryPolicy& policy,
+      const gfx::Size& initial_screen_size,
+      float initial_device_scale_factor);
 
   // Begins the compositor's scheduler to start producing frames.
   void StartCompositor();

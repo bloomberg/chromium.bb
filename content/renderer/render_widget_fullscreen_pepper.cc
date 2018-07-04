@@ -391,7 +391,7 @@ void RenderWidgetFullscreenPepper::UpdateLayerBounds() {
   if (!layer_)
     return;
 
-  if (IsUseZoomForDSFEnabled()) {
+  if (compositor_deps()->IsUseZoomForDSFEnabled()) {
     // Note that root cc::Layers' bounds are specified in pixels (in contrast
     // with non-root cc::Layers' bounds, which are specified in DIPs).
     layer_->SetBounds(blink::WebSize(compositor_viewport_pixel_size()));

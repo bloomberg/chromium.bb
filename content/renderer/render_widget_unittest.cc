@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -519,5 +520,30 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   EXPECT_EQ(popup_emulated_rect.x, widget()->ViewRect().x);
   EXPECT_EQ(popup_emulated_rect.y, widget()->ViewRect().y);
 }
+
+// Verify desktop memory limit calculations.
+#if !defined(OS_ANDROID)
+TEST(RenderWidgetTest, IgnoreGivenMemoryPolicy) {
+  auto policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
+                                                 gfx::Size(), 1.f);
+  EXPECT_EQ(512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+}
+
+TEST(RenderWidgetTest, LargeScreensUseMoreMemory) {
+  auto policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
+                                                 gfx::Size(4096, 2160), 1.f);
+  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+
+  policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
+                                            gfx::Size(2048, 1080), 2.f);
+  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace content

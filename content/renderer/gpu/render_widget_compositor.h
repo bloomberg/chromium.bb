@@ -16,14 +16,10 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
-#include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/managed_memory_policy.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
-#include "content/common/render_frame_metadata.mojom.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,6 +29,8 @@ class InputHandler;
 class Layer;
 class LayerTreeFrameSink;
 class LayerTreeHost;
+class LayerTreeSettings;
+class RenderFrameMetadataObserver;
 }
 
 namespace gfx {
@@ -45,7 +43,6 @@ class LatencyInfo;
 
 namespace content {
 class RenderWidgetCompositorDelegate;
-struct ScreenInfo;
 
 class CONTENT_EXPORT RenderWidgetCompositor
     : public blink::WebLayerTreeView,
@@ -56,16 +53,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
                          CompositorDependencies* compositor_deps);
   ~RenderWidgetCompositor() override;
 
-  static cc::LayerTreeSettings GenerateLayerTreeSettings(
-      CompositorDependencies* compositor_deps,
-      bool is_for_subframe,
-      const ScreenInfo& screen_info);
-
   void Initialize(const cc::LayerTreeSettings& settings);
-
-  static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
-      const cc::ManagedMemoryPolicy& policy,
-      const ScreenInfo& screen_info);
 
   void SetNeverVisible();
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
@@ -204,11 +192,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
     return layer_tree_host_->GetSettings();
   }
 
-  // Creates a cc::RenderFrameMetadataObserver, which is sent to the compositor
+  // Sets the RenderFrameMetadataObserver, which is sent to the compositor
   // thread for binding.
-  void CreateRenderFrameObserver(
-      mojom::RenderFrameMetadataObserverRequest request,
-      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+  void SetRenderFrameObserver(
+      std::unique_ptr<cc::RenderFrameMetadataObserver> observer);
 
   void AddPresentationCallback(
       uint32_t frame_token,
