@@ -471,6 +471,11 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
 }
 
 content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize() {
+  return Initialize(/*delegate=*/nullptr);
+}
+
+content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize(
+    content::RenderWidgetCompositorDelegate* specified_delegate) {
   cc::LayerTreeSettings settings;
   // Use synchronous compositing so that the MessageLoop becomes idle and the
   // test makes progress.
@@ -485,7 +490,7 @@ content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize() {
     settings.use_layer_lists = true;
 
   compositor_ = std::make_unique<content::RenderWidgetCompositor>(
-      &delegate_, &compositor_deps_);
+      specified_delegate ? specified_delegate : &delegate_, &compositor_deps_);
   compositor_->Initialize(settings);
   return compositor_.get();
 }

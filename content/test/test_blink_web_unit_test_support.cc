@@ -123,6 +123,8 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
 #endif
 #endif
 
+content::TestBlinkWebUnitTestSupport* g_test_platform = nullptr;
+
 }  // namespace
 
 namespace content {
@@ -179,6 +181,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 
   service_manager::BinderRegistry empty_registry;
   blink::Initialize(this, &empty_registry);
+  g_test_platform = this;
   blink::SetLayoutTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);
   blink::WebRuntimeFeatures::EnableNotifications(true);
@@ -208,6 +211,7 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   mock_clipboard_host_.reset();
   if (main_thread_scheduler_)
     main_thread_scheduler_->Shutdown();
+  g_test_platform = nullptr;
 }
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
@@ -311,6 +315,10 @@ blink::WebThread* TestBlinkWebUnitTestSupport::CurrentThread() {
   return BlinkPlatformImpl::CurrentThread();
 }
 
+bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
+  return threaded_animation_;
+}
+
 namespace {
 
 class TestWebRTCCertificateGenerator
@@ -362,6 +370,15 @@ void TestBlinkWebUnitTestSupport::BindClipboardHost(
     mojo::ScopedMessagePipeHandle handle) {
   mock_clipboard_host_->Bind(
       blink::mojom::ClipboardHostRequest(std::move(handle)));
+}
+
+// static
+bool TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(bool enabled) {
+  DCHECK(g_test_platform)
+      << "Not using TestBlinkWebUnitTestSupport as blink::Platform";
+  bool old = g_test_platform->threaded_animation_;
+  g_test_platform->threaded_animation_ = enabled;
+  return old;
 }
 
 }  // namespace content

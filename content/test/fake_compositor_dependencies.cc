@@ -67,10 +67,6 @@ cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-bool FakeCompositorDependencies::IsThreadedAnimationEnabled() {
-  return true;
-}
-
 bool FakeCompositorDependencies::IsScrollAnimatorEnabled() {
   return false;
 }

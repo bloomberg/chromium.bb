@@ -3485,7 +3485,7 @@ void WebViewImpl::InitializeLayerTreeView() {
     // but for various reasons, that's not the case...
     page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
     if (layer_tree_view_) {
-      if (layer_tree_view_->CompositorAnimationHost()) {
+      if (Platform::Current()->IsThreadedAnimationEnabled()) {
         animation_host_ = std::make_unique<CompositorAnimationHost>(
             layer_tree_view_->CompositorAnimationHost());
       }

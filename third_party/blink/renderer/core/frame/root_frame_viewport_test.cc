@@ -102,6 +102,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     scroll_offset_ = offset;
   }
   bool ShouldUseIntegerScrollOffset() const override { return true; }
+  bool IsThrottled() const override { return false; }
   bool IsActive() const override { return true; }
   bool IsScrollCornerVisible() const override { return true; }
   IntRect ScrollCornerRect() const override { return IntRect(); }

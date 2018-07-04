@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
+#include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -15,7 +16,8 @@
 
 namespace blink {
 
-SimTest::SimTest() : web_view_client_(compositor_), web_frame_client_(*this) {
+SimTest::SimTest()
+    : web_view_client_(compositor_.compositor()), web_frame_client_(*this) {
   Document::SetThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
   // the OS callbacks in ScrollAnimatorMac which can schedule frames
@@ -25,6 +27,13 @@ SimTest::SimTest() : web_view_client_(compositor_), web_frame_client_(*this) {
   // in the middle of a test.
   LayoutTestSupport::SetMockThemeEnabledForTest(true);
   ScrollbarTheme::SetMockScrollbarsEnabled(true);
+  // Threaded animations are usually enabled for blink. However these tests use
+  // synchronous compositing, which can not run threaded animations.
+  bool was_threaded_animation_enabled =
+      content::TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(false);
+  // If this fails, we'd be resetting IsThreadedAnimationEnabled() to the wrong
+  // thing in the destructor.
+  DCHECK(was_threaded_animation_enabled);
 }
 
 SimTest::~SimTest() {
@@ -34,6 +43,7 @@ SimTest::~SimTest() {
   Document::SetThreadedParsingEnabledForTesting(true);
   LayoutTestSupport::SetMockThemeEnabledForTest(false);
   ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  content::TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(true);
   WebCache::Clear();
 }
 

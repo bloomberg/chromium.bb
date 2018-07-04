@@ -12,6 +12,10 @@ void FakeProxy::SetLayerTreeHost(LayerTreeHost* host) {
   layer_tree_host_ = host;
 }
 
+bool FakeProxy::RequestedAnimatePending() {
+  return false;
+}
+
 bool FakeProxy::IsStarted() const { return true; }
 
 bool FakeProxy::CommitToActiveTree() const {

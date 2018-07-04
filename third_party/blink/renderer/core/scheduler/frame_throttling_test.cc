@@ -38,7 +38,7 @@ using namespace HTMLNames;
 
 // NOTE: This test uses <iframe sandbox> to create cross origin iframes.
 
-class FrameThrottlingTest : public SimTest, public PaintTestConfigurations {
+class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
  protected:
   void SetUp() override {
     SimTest::SetUp();

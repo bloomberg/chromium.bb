@@ -50,6 +50,10 @@ class CC_EXPORT Proxy {
   virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) = 0;
   virtual void SetNextCommitWaitsForActivation() = 0;
 
+  // Returns true if an animate or commit has been requested, and hasn't
+  // completed yet.
+  virtual bool RequestedAnimatePending() = 0;
+
   virtual void NotifyInputThrottledUntilCommit() = 0;
 
   // Defers commits until it is reset. It is only supported when using a

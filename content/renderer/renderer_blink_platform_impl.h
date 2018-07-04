@@ -131,7 +131,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
 
-  bool IsThreadedCompositingEnabled() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsGpuCompositingDisabled() override;
   double AudioHardwareSampleRate() override;

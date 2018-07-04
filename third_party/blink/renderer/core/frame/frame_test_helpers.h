@@ -165,7 +165,11 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
 // unit tests.
 class RenderWidgetCompositorFactory {
  public:
+  // Use this to make a RenderWidgetCompositor with a stub delegate.
   content::RenderWidgetCompositor* Initialize();
+  // Use this to specify a delegate instead of using a stub.
+  content::RenderWidgetCompositor* Initialize(
+      content::RenderWidgetCompositorDelegate*);
 
  private:
   content::StubRenderWidgetCompositorDelegate delegate_;

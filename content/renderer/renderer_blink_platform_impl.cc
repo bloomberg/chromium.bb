@@ -691,12 +691,6 @@ void RendererBlinkPlatformImpl::SetIsLockedToSite() {
   is_locked_to_site_ = true;
 }
 
-bool RendererBlinkPlatformImpl::IsThreadedCompositingEnabled() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  // thread can be NULL in tests.
-  return thread && thread->compositor_task_runner().get();
-}
-
 bool RendererBlinkPlatformImpl::IsGpuCompositingDisabled() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   RenderThreadImpl* thread = RenderThreadImpl::current();
