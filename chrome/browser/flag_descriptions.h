@@ -359,9 +359,6 @@ extern const char kEnableLazyFrameLoadingDescription[];
 extern const char kEnableMacMaterialDesignDownloadShelfName[];
 extern const char kEnableMacMaterialDesignDownloadShelfDescription[];
 
-extern const char kEnableManualFallbacksFillingName[];
-extern const char kEnableManualFallbacksFillingDescription[];
-
 extern const char kEnableMaterialDesignBookmarksName[];
 extern const char kEnableMaterialDesignBookmarksDescription[];
 
@@ -646,9 +643,6 @@ extern const char kLoadMediaRouterComponentExtensionDescription[];
 
 extern const char kMacViewsAutofillPopupName[];
 extern const char kMacViewsAutofillPopupDescription[];
-
-extern const char kManualPasswordGenerationName[];
-extern const char kManualPasswordGenerationDescription[];
 
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];

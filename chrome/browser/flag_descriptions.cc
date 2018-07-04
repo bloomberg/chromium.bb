@@ -542,13 +542,6 @@ const char kEnableMacMaterialDesignDownloadShelfName[] =
 const char kEnableMacMaterialDesignDownloadShelfDescription[] =
     "If enabled, the download shelf uses Material Design.";
 
-const char kEnableManualFallbacksFillingName[] =
-    "Manual fallbacks for password manager forms filling";
-const char kEnableManualFallbacksFillingDescription[] =
-    "If enabled, then if user clicks on the password field on a form, popup "
-    "might contain generation fallbacks or 'Show all saved passwords' "
-    "fallback.";
-
 const char kEnablePolicyToolName[] = "Enable policy management page";
 const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "

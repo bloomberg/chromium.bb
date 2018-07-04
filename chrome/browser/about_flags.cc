@@ -3374,12 +3374,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
 #endif  // OS_ANDROID
 
-    {"enable-manual-fallbacks-filling",
-     flag_descriptions::kEnableManualFallbacksFillingName,
-     flag_descriptions::kEnableManualFallbacksFillingDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(password_manager::features::kManualFallbacksFilling)},
-
 #if !defined(OS_ANDROID)
     {"voice-search-on-local-ntp", flag_descriptions::kVoiceSearchOnLocalNtpName,
      flag_descriptions::kVoiceSearchOnLocalNtpDescription, kOsDesktop,

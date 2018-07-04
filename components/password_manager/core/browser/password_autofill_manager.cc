@@ -141,20 +141,6 @@ bool ShouldShowManualFallbackForPreLollipop(syncer::SyncService* sync_service) {
 #endif
 }
 
-void AddSimpleSuggestionWithSeparatorOnTop(
-    int value,
-    int frontend_id,
-    std::vector<autofill::Suggestion>* suggestions) {
-#if !defined(OS_ANDROID)
-  suggestions->push_back(autofill::Suggestion());
-  suggestions->back().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
-#endif
-
-  autofill::Suggestion suggestion(l10n_util::GetStringUTF8(value),
-                                  std::string(), std::string(), frontend_id);
-  suggestions->push_back(suggestion);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,24 +227,17 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     return;
   }
 
-  if (options & autofill::IS_PASSWORD_FIELD) {
-    autofill::Suggestion password_field_suggestions(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE));
-    password_field_suggestions.frontend_id = autofill::POPUP_ITEM_ID_TITLE;
-    suggestions.insert(suggestions.begin(), password_field_suggestions);
-  }
-
-  GURL origin = (fill_data_it->second).origin;
+  GURL origin = fill_data_it->second.origin;
 
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kManualFallbacksFilling) &&
-        (options & autofill::IS_PASSWORD_FIELD) && password_client_ &&
+    if (password_client_ &&
         password_client_->IsFillingFallbackEnabledForCurrentPage()) {
-      AddSimpleSuggestionWithSeparatorOnTop(
-          IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK,
-          autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, &suggestions);
+      autofill::Suggestion suggestion(
+          l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS),
+          std::string(), std::string(),
+          autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+      suggestions.push_back(suggestion);
 
       show_all_saved_passwords_shown_context_ =
           metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
