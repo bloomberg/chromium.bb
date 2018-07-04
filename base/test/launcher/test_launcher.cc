@@ -321,7 +321,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   DCHECK(!new_options.job_handle);
 
   zx::job job_handle;
-  zx_status_t result = zx::job::create(GetDefaultJob(), 0, &job_handle);
+  zx_status_t result =
+      zx::job::create(*zx::unowned<zx::job>(GetDefaultJob()), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
 #endif  // defined(OS_FUCHSIA)
