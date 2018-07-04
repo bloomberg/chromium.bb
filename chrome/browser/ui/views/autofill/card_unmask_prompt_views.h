@@ -111,7 +111,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Label* error_label_ = nullptr;
 
   views::View* controls_container_ = nullptr;
-  views::View* storage_row_ = nullptr;
   views::Checkbox* storage_checkbox_ = nullptr;
 
   // Elements related to progress or error when the request is being made.

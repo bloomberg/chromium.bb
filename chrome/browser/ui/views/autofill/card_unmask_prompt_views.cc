@@ -204,24 +204,17 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   if (!controller_->CanStoreLocally())
     return nullptr;
 
-  // Local storage checkbox.
-  storage_row_ = new views::View();
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  auto* storage_row_layout =
-      storage_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
-          provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
-
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+  storage_checkbox_->SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_SUBSECTION)));
   storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
   storage_checkbox_->SetEnabledTextColors(views::style::GetColor(
       *storage_checkbox_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
       STYLE_SECONDARY));
-  storage_row_->AddChildView(storage_checkbox_);
-  storage_row_layout->SetFlexForView(storage_checkbox_, 1);
 
-  return storage_row_;
+  return storage_checkbox_;
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
