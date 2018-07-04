@@ -92,10 +92,6 @@
       status: "experimental",
     },
     {
-      name: "AsyncCookies",
-      status: "experimental",
-    },
-    {
       name: "AudioOutputDevices",
       status: "stable",
     },
@@ -231,6 +227,11 @@
     },
     {
       name: "ContextMenu",
+      status: "experimental",
+    },
+    {
+      name: "CookieStore",
+      origin_trial_feature_name: "CookieStore",
       status: "experimental",
     },
     {
