@@ -4747,3 +4747,7 @@ crbug.com/859629 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing
 # Sheriff 2018-07-03
 crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
 crbug.com/859629 [ Mac10.13 ] http/tests/devtools/tracing/timeline-js/timeline-script-tag-1.js [ Failure ]
+
+# Sheriff 2018-07-04
+crbug.com/860322 [ Mac10.12 Mac10.13 ] virtual/video-surface-layer/media/controls/lazy-loaded-style.html [ Failure Pass ]
+crbug.com/860322 [ Mac10.12 Mac10.13 ] virtual/video-surface-layer/media/video-persistence.html [ Failure Pass ]
