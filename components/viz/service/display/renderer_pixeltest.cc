@@ -2287,7 +2287,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_anti_aliasing.png")),
-      cc::FuzzyPixelComparator(true, 100.f, 0.f, 5.f, 5, 0)));
+      cc::FuzzyPixelComparator(true, 100.f, 0.f, 5.f, 7, 0)));
 }
 
 // This tests the case where we have a RenderPass with a mask, but the quad
