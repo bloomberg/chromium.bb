@@ -293,11 +293,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     private void onLayoutInflated(ViewGroup mainView) {
-        View placeHolderView = new View(this);
-        setContentView(placeHolderView);
-        ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
-        WarmupManager.transferViewHeirarchy(mainView, contentParent);
-        contentParent.removeView(placeHolderView);
+        mSplashController.setViewHierarchyBelowSplashscreen(mainView);
         onInitialLayoutInflationComplete();
     }
 
@@ -385,6 +381,7 @@ public class WebappActivity extends SingleTabActivity {
         setTitle(mWebappInfo.shortName());
 
         super.preInflationStartup();
+        initializeWebappData();
     }
 
     @Override
@@ -613,7 +610,6 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public void postInflationStartup() {
-        initializeWebappData();
         if (getBrowserSession() != null) mTrustedWebContentProvider.verifyRelationship();
 
         super.postInflationStartup();
