@@ -9,13 +9,20 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/night_light/night_light_controller.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_button.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
-NightLightFeaturePodController::NightLightFeaturePodController() {}
+NightLightFeaturePodController::NightLightFeaturePodController(
+    UnifiedSystemTrayController* tray_controller)
+    : tray_controller_(tray_controller) {
+  DCHECK(tray_controller_);
+}
 
 NightLightFeaturePodController::~NightLightFeaturePodController() = default;
 
@@ -36,6 +43,14 @@ void NightLightFeaturePodController::OnIconPressed() {
   DCHECK(features::IsNightLightEnabled());
   Shell::Get()->night_light_controller()->Toggle();
   UpdateButton();
+}
+
+void NightLightFeaturePodController::OnLabelPressed() {
+  DCHECK(features::IsNightLightEnabled());
+  if (TrayPopupUtils::CanOpenWebUISettings()) {
+    Shell::Get()->system_tray_model()->client_ptr()->ShowDisplaySettings();
+    tray_controller_->CloseBubble();
+  }
 }
 
 SystemTrayItemUmaType NightLightFeaturePodController::GetUmaType() const {

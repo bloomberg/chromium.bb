@@ -10,19 +10,25 @@
 
 namespace ash {
 
+class UnifiedSystemTrayController;
+
 // Controller of a feature pod button that toggles night light mode.
 class NightLightFeaturePodController : public FeaturePodControllerBase {
  public:
-  NightLightFeaturePodController();
+  explicit NightLightFeaturePodController(
+      UnifiedSystemTrayController* tray_controller);
   ~NightLightFeaturePodController() override;
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
+  void OnLabelPressed() override;
   SystemTrayItemUmaType GetUmaType() const override;
 
  private:
   void UpdateButton();
+
+  UnifiedSystemTrayController* const tray_controller_;
 
   FeaturePodButton* button_ = nullptr;
 
