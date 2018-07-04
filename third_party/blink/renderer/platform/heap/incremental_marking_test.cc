@@ -1059,7 +1059,7 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetMove) {
 TEST(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
   Swap<HeapLinkedHashSet<Member<Object>>>();
   // Weak references are strongified for the current cycle.
-  Move<HeapLinkedHashSet<WeakMember<Object>>>();
+  Swap<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 // =============================================================================
