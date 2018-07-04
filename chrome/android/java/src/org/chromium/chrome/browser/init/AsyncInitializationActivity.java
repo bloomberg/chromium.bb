@@ -488,7 +488,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mNativeInitializationController.onActivityResult(requestCode, resultCode, data);
     }
 
-    @CallSuper
     @Override
     public final void onCreateWithNative() {
         try {
