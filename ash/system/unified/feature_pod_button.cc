@@ -29,6 +29,7 @@ namespace {
 void ConfigureFeaturePodLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
+  label->set_can_process_events_within_subtree(false);
 }
 
 }  // namespace
@@ -105,6 +106,7 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
   ConfigureFeaturePodLabel(sub_label_);
   label_->SetEnabledColor(kUnifiedMenuTextColor);
   sub_label_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  sub_label_->SetVisible(false);
 
   detailed_view_arrow_->set_can_process_events_within_subtree(false);
   detailed_view_arrow_->SetImage(
@@ -141,10 +143,24 @@ void FeaturePodLabelButton::Layout() {
 }
 
 gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
-  return gfx::Size(kUnifiedFeaturePodSize.width(),
-                   label_->GetPreferredSize().height() +
-                       sub_label_->GetPreferredSize().height() +
-                       GetInsets().height());
+  // Minimum width of the button
+  int width = kUnifiedFeaturePodLabelWidth + GetInsets().width();
+  if (detailed_view_arrow_->visible()) {
+    const int label_width = std::min(kUnifiedFeaturePodLabelWidth,
+                                     label_->GetPreferredSize().width());
+    // Symmetrically increase the width to accommodate the arrow
+    const int extra_space_for_arrow =
+        2 * (kUnifiedFeaturePodArrowSpacing +
+             detailed_view_arrow_->GetPreferredSize().width());
+    width = std::max(width,
+                     label_width + extra_space_for_arrow + GetInsets().width());
+  }
+
+  int height = label_->GetPreferredSize().height() + GetInsets().height();
+  if (sub_label_->visible())
+    height += sub_label_->GetPreferredSize().height();
+
+  return gfx::Size(width, height);
 }
 
 std::unique_ptr<views::InkDrop> FeaturePodLabelButton::CreateInkDrop() {
@@ -174,24 +190,20 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
   label_->SetText(label);
-  UpdateDetailedViewArrow();
   SetTooltipTextFromLabels();
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
   sub_label_->SetText(sub_label);
+  sub_label_->SetVisible(true);
   SetTooltipTextFromLabels();
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 void FeaturePodLabelButton::ShowDetailedViewArrow() {
-  show_detailed_view_arrow_ = true;
-  UpdateDetailedViewArrow();
-  Layout();
-  SchedulePaint();
+  detailed_view_arrow_->SetVisible(true);
+  InvalidateLayout();
 }
 
 void FeaturePodLabelButton::SetTooltipTextFromLabels() {
@@ -203,21 +215,11 @@ void FeaturePodLabelButton::SetTooltipTextFromLabels() {
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Size preferred_size = child->GetPreferredSize();
-  int child_width = std::min(contents_bounds.width(), preferred_size.width());
+  int child_width =
+      std::min(kUnifiedFeaturePodLabelWidth, preferred_size.width());
   child->SetBounds(
       contents_bounds.x() + (contents_bounds.width() - child_width) / 2, y,
       child_width, preferred_size.height());
-}
-
-void FeaturePodLabelButton::UpdateDetailedViewArrow() {
-  // If the feature pod button has a detailed view, and the label row has enough
-  // space to show the arrow, set the arrow visible.
-  detailed_view_arrow_->SetVisible(
-      show_detailed_view_arrow_ &&
-      label_->GetPreferredSize().width() +
-              detailed_view_arrow_->GetPreferredSize().width() +
-              kUnifiedFeaturePodArrowSpacing <=
-          GetPreferredSize().width() - GetInsets().width());
 }
 
 FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
@@ -231,8 +233,6 @@ FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
 
   AddChildView(icon_button_);
   AddChildView(label_button_);
-
-  layout->SetFlexForView(label_button_, 1);
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -248,14 +248,20 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 void FeaturePodButton::SetLabel(const base::string16& label) {
   icon_button_->SetTooltipText(label);
   label_button_->SetLabel(label);
+  Layout();
+  label_button_->SchedulePaint();
 }
 
 void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
   label_button_->SetSubLabel(sub_label);
+  Layout();
+  label_button_->SchedulePaint();
 }
 
 void FeaturePodButton::ShowDetailedViewArrow() {
   label_button_->ShowDetailedViewArrow();
+  Layout();
+  label_button_->SchedulePaint();
 }
 
 void FeaturePodButton::SetToggled(bool toggled) {
