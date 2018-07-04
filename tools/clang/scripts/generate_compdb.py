@@ -30,7 +30,9 @@ def main(argv):
       help='Path to build directory')
   args = parser.parse_args()
 
-  print json.dumps(compile_db.GenerateWithNinja(args.p))
+  print json.dumps(
+      compile_db.ProcessCompileDatabaseIfNeeded(
+          compile_db.GenerateWithNinja(args.p)))
 
 
 if __name__ == '__main__':
