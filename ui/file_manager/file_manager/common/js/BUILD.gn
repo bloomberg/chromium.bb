@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":closure_compile_externs",
     ":error_util",
     ":file_type",
+    ":files_app_entry_types",
     ":importer_common",
     ":lru_cache",
     ":metrics",
@@ -44,6 +45,9 @@ js_library("async_util") {
 }
 
 js_library("error_util") {
+}
+
+js_library("files_app_entry_types") {
 }
 
 js_library("file_type") {
