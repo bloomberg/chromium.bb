@@ -108,7 +108,7 @@ def CheckChromeVox(changed_files=None):
            os.path.relpath(
                os.path.join(
                    _CHROME_SOURCE_DIR,
-                   'chrome/third_party/chromevox/third_party/closure-library/'
+                   'third_party/chromevox/third_party/closure-library/'
                    'closure/goog'))]
   sources = ReadSources(roots, need_source_text=True,
                         exclude=[re.compile('testing')])
