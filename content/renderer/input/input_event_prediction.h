@@ -34,7 +34,7 @@ class CONTENT_EXPORT InputEventPrediction {
  private:
   friend class InputEventPredictionTest;
 
-  enum class PredictorType { kEmpty, kLsq };
+  enum class PredictorType { kEmpty, kLsq, kKalman };
 
   // The following three function is for handling multiple TouchPoints in a
   // WebTouchEvent. They should be more neat when WebTouchEvent is elimated.

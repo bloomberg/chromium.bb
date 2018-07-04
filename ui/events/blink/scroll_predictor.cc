@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
+#include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 
 using blink::WebInputEvent;
@@ -18,6 +19,7 @@ namespace {
 
 constexpr char kPredictor[] = "predictor";
 constexpr char kScrollPredictorTypeLsq[] = "lsq";
+constexpr char kScrollPredictorTypeKalman[] = "kalman";
 
 }  // namespace
 
@@ -26,6 +28,8 @@ ScrollPredictor::ScrollPredictor() {
       features::kResamplingScrollEvents, kPredictor);
   if (predictor_type_ == kScrollPredictorTypeLsq)
     predictor_ = std::make_unique<LeastSquaresPredictor>();
+  else if (predictor_type_ == kScrollPredictorTypeKalman)
+    predictor_ = std::make_unique<KalmanPredictor>();
   else
     predictor_ = std::make_unique<EmptyPredictor>();
 }

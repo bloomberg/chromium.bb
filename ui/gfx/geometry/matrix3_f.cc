@@ -97,6 +97,20 @@ bool Matrix3F::IsNear(const Matrix3F& rhs, float precision) const {
   return true;
 }
 
+Matrix3F Matrix3F::Add(const Matrix3F& rhs) const {
+  Matrix3F result;
+  for (int i = 0; i < M_END; ++i)
+    result.data_[i] = data_[i] + rhs.data_[i];
+  return result;
+}
+
+Matrix3F Matrix3F::Subtract(const Matrix3F& rhs) const {
+  Matrix3F result;
+  for (int i = 0; i < M_END; ++i)
+    result.data_[i] = data_[i] - rhs.data_[i];
+  return result;
+}
+
 Matrix3F Matrix3F::Inverse() const {
   Matrix3F inverse = Matrix3F::Zeros();
   double determinant = Determinant3x3(data_);

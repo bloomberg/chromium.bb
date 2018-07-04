@@ -65,6 +65,11 @@ class GFX_EXPORT Matrix3F {
     data_[MatrixToArrayCoords(2, i)] = c.z();
   }
 
+  // Produces a new matrix by adding the elements of |rhs| to this matrix
+  Matrix3F Add(const Matrix3F& rhs) const;
+  // Produces a new matrix by subtracting elements of |rhs| from this matrix.
+  Matrix3F Subtract(const Matrix3F& rhs) const;
+
   // Returns an inverse of this if the matrix is non-singular, zero (== Zero())
   // otherwise.
   Matrix3F Inverse() const;
@@ -112,6 +117,18 @@ class GFX_EXPORT Matrix3F {
 
 inline bool operator==(const Matrix3F& lhs, const Matrix3F& rhs) {
   return lhs.IsEqual(rhs);
+}
+
+// Matrix addition. Produces a new matrix by adding the corresponding elements
+// together.
+inline Matrix3F operator+(const Matrix3F& lhs, const Matrix3F& rhs) {
+  return lhs.Add(rhs);
+}
+
+// Matrix subtraction. Produces a new matrix by subtracting elements of rhs
+// from corresponding elements of lhs.
+inline Matrix3F operator-(const Matrix3F& lhs, const Matrix3F& rhs) {
+  return lhs.Subtract(rhs);
 }
 
 GFX_EXPORT Matrix3F MatrixProduct(const Matrix3F& lhs, const Matrix3F& rhs);

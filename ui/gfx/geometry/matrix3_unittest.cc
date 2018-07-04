@@ -160,5 +160,23 @@ TEST(Matrix3fTest, EigenvectorsPositiveDefinite) {
   EXPECT_TRUE(expected_eigenvectors.IsNear(eigenvectors, 0.00001f));
 }
 
+TEST(Matrix3fTest, Operators) {
+  Matrix3F matrix1 = Matrix3F::Zeros();
+  matrix1.set(1, 2, 3, 4, 5, 6, 7, 8, 9);
+  EXPECT_EQ(matrix1 + Matrix3F::Zeros(), matrix1);
+
+  Matrix3F matrix2 = Matrix3F::Zeros();
+  matrix2.set(-1, -2, -3, -4, -5, -6, -7, -8, -9);
+  EXPECT_EQ(matrix1 + matrix2, Matrix3F::Zeros());
+
+  EXPECT_EQ(Matrix3F::Zeros() - matrix1, matrix2);
+
+  Matrix3F result = Matrix3F::Zeros();
+  result.set(2, 4, 6, 8, 10, 12, 14, 16, 18);
+  EXPECT_EQ(matrix1 - matrix2, result);
+  result.set(-2, -4, -6, -8, -10, -12, -14, -16, -18);
+  EXPECT_EQ(matrix2 - matrix1, result);
 }
-}
+
+}  // namespace
+}  // namespace gfx

@@ -32,7 +32,7 @@ class LeastSquaresPredictor : public InputPredictor {
   bool HasPrediction() const override;
 
   // Generate the prediction based on stored points and given time_stamp.
-  // Return an empty vector if no prediction available.
+  // Return false if no prediction available.
   bool GeneratePrediction(base::TimeTicks frame_time,
                           InputData* result) const override;
 
