@@ -57,7 +57,8 @@ class GraphicsLayerUpdater::UpdateContext {
 
   const PaintLayer* CompositingContainer(const PaintLayer& layer) const {
     const PaintLayer* compositing_container;
-    if (layer.GetLayoutObject().StyleRef().IsStacked()) {
+    if (layer.GetLayoutObject().StyleRef().IsStacked() &&
+        !layer.IsReplacedNormalFlowStacking()) {
       compositing_container = compositing_stacking_context_;
     } else if ((layer.Parent() &&
                 !layer.Parent()->GetLayoutObject().IsLayoutBlock()) ||

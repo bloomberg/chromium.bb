@@ -1066,7 +1066,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // See
   // https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/paint/README.md
   // for the definition of a replaced normal-flow stacking element.
-  bool IsReplacedNormalFlowStacking();
+  bool IsReplacedNormalFlowStacking() const;
 
   void SetNeeedsCompositingReasonsUpdate() {
     needs_compositing_reasons_update_ = true;
