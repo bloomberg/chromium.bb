@@ -983,6 +983,9 @@ void OmniboxViewIOS::OnPopupDidScroll() {
 }
 
 void OmniboxViewIOS::OnSelectedMatchForAppending(const base::string16& str) {
+  // Exit preedit state and append the match. Refocus if necessary.
+  if ([field_ isPreEditing])
+    [field_ exitPreEditState];
   this->SetUserText(str);
   this->FocusOmnibox();
 }
