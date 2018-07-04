@@ -145,6 +145,10 @@ function DirectoryItem(label, tree) {
   // prototype.
   var labelId = item.labelElement.id;
   item.__proto__ = DirectoryItem.prototype;
+  if (window.IN_TEST) {
+    item.setAttribute('dir-type', 'DirectoryItem');
+    item.setAttribute('entry-label', label);
+  }
   item.parentTree_ = tree;
   item.directoryModel_ = tree.directoryModel;
   item.fileFilter_ = tree.directoryModel.getFileFilter();
@@ -536,6 +540,8 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   var item = new DirectoryItem(label, tree);
   item.__proto__ = SubDirectoryItem.prototype;
 
+  if (window.IN_TEST)
+    item.setAttribute('dir-type', 'SubDirectoryItem');
   item.entry = dirEntry;
   item.delayExpansion = parentDirItem.delayExpansion;
 
@@ -595,6 +601,96 @@ SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
       });
 };
 
+/**
+ * A directory of entries. Each element represents an entry.
+ *
+ * @param {VolumeManagerCommon.RootType} rootType The root type to record.
+ * @param {!NavigationModelFakeItem} modelItem NavigationModelItem of this
+ *     volume.
+ * @param {DirectoryTree} tree Current tree, which contains this item.
+ * @extends {DirectoryItem}
+ * @constructor
+ */
+function EntryListItem(rootType, modelItem, tree) {
+  var item = new DirectoryItem(modelItem.label, tree);
+  // Get the original label id defined by TreeItem, before overwriting
+  // prototype.
+  item.__proto__ = EntryListItem.prototype;
+  if (window.IN_TEST)
+    item.setAttribute('dir-type', 'EntryListItem');
+  item.entries_ = [];
+
+  item.rootType_ = rootType;
+  item.modelItem_ = modelItem;
+  item.dirEntry_ = modelItem.entry;
+  item.parentTree_ = tree;
+
+  var icon = queryRequiredElement('.icon', item);
+  icon.classList.add('item-icon');
+  item.setAttribute('root-type-icon', rootType);
+  return item;
+}
+
+EntryListItem.prototype = {
+  __proto__: DirectoryItem.prototype,
+
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem. This may be
+   * a dummy DirectoryEntry.
+   * @type {DirectoryEntry|Object}
+   */
+  get entry() {
+    return this.dirEntry_;
+  },
+
+  /**
+   * The element containing the label text and the icon.
+   * @type {!HTMLElement}
+   * @override
+   */
+  get labelElement() {
+    return this.firstElementChild.querySelector('.label');
+  },
+
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
+  get modelItem() {
+    return this.modelItem_;
+  }
+};
+
+/**
+ * Retrieves the subdirectories and update them on the tree. Runs synchronously,
+ *     since EntryList has its subdirectories already in memory.
+ * @param {boolean} recursive True if the update is recursively.
+ * @param {function()=} opt_successCallback Callback called on success.
+ * @param {function()=} opt_errorCallback Callback called on error.
+ */
+EntryListItem.prototype.updateSubDirectories = function(
+    recursive, opt_successCallback, opt_errorCallback) {
+  if (!this.entry) {
+    opt_errorCallback && opt_errorCallback();
+    return;
+  }
+  this.entries_ = [];
+  if (this.entry && this.entry.children) {
+    for (let childEntry of this.entry.children) {
+      if (childEntry instanceof VolumeEntry) {
+        // For VolumeEntry we wan't to display its root.
+        this.entries_.push(childEntry.rootEntry);
+      } else {
+        this.entries_.push(childEntry);
+      }
+    }
+  }
+  if (this.entries_.length > 0) {
+    this.expanded = true;
+  }
+  this.updateSubElementsFromList(recursive);
+  opt_successCallback && opt_successCallback();
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // VolumeItem
 
@@ -621,8 +717,10 @@ function VolumeItem(modelItem, tree) {
   item.delayExpansion = (item.volumeInfo.volumeType === 'provided');
 
   // Set helper attribute for testing.
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     item.setAttribute('volume-type-for-testing', item.volumeInfo_.volumeType);
+    item.setAttribute('dir-type', 'VolumeItem');
+  }
 
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);
 
@@ -797,6 +895,8 @@ function DriveVolumeItem(modelItem, tree) {
   var item = new VolumeItem(modelItem, tree);
   item.__proto__ = DriveVolumeItem.prototype;
   item.classList.add('drive-volume');
+  if (window.IN_TEST)
+    item.setAttribute('dir-type', 'DriveVolumeItem');
   return item;
 }
 
@@ -960,6 +1060,8 @@ function ShortcutItem(modelItem, tree) {
   var labelId = item.labelElement.id;
   item.__proto__ = ShortcutItem.prototype;
 
+  if (window.IN_TEST)
+    item.setAttribute('dir-type', 'ShortcutItem');
   item.parentTree_ = tree;
   item.dirEntry_ = modelItem.entry;
   item.modelItem_ = modelItem;
@@ -1093,6 +1195,10 @@ function MenuItem(modelItem, tree) {
   // prototype.
   var labelId = item.labelElement.id;
   item.__proto__ = MenuItem.prototype;
+  if (window.IN_TEST) {
+    item.setAttribute('dir-type', 'MenuItem');
+    item.setAttribute('entry-label', modelItem.label);
+  }
 
   item.parentTree_ = tree;
   item.modelItem_ = modelItem;
@@ -1177,6 +1283,10 @@ function FakeItem(rootType, modelItem, tree) {
   // prototype.
   var labelId = item.labelElement.id;
   item.__proto__ = FakeItem.prototype;
+  if (window.IN_TEST) {
+    item.setAttribute('dir-type', 'FakeItem');
+    item.setAttribute('entry-label', modelItem.label);
+  }
 
   item.rootType_ = rootType;
   item.parentTree_ = tree;
@@ -1185,6 +1295,7 @@ function FakeItem(rootType, modelItem, tree) {
   item.innerHTML = TREE_ITEM_INNER_HTML;
   item.labelElement.id = labelId;
   item.label = modelItem.label;
+  item.directoryModel_ = tree.directoryModel;
 
   var icon = queryRequiredElement('.icon', item);
   icon.classList.add('item-icon');
@@ -1237,6 +1348,15 @@ FakeItem.prototype.selectByEntry = function(entry) {
  */
 FakeItem.prototype.activate = function() {
   this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
+};
+
+/**
+ * FakeItem doesn't really have sub-directories, it's defined here only to have
+ * the same API of other Items on this file.
+ */
+FakeItem.prototype.updateSubDirectories = function(
+    recursive, opt_successCallback, opt_errorCallback) {
+  return opt_successCallback && opt_successCallback();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1336,6 +1456,53 @@ cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);
 cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
 
 /**
+ * Creates a new DirectoryItem based on |modelItem|.
+ * @param {NavigationModelItem} modelItem, model that will determine the type of
+ *     DirectoryItem to be created.
+ * @param {!DirectoryTree} tree The tree to add the new DirectoryItem to.
+ * @return {!cr.ui.TreeItem} a newly created instance of a
+ *     DirectoryItem type.
+ */
+DirectoryTree.createDirectoryItem = function(modelItem, tree) {
+  switch (modelItem.type) {
+    case NavigationModelItemType.VOLUME:
+      const volumeModelItem =
+          /** @type {NavigationModelVolumeItem} */ (modelItem);
+      if (volumeModelItem.volumeInfo.volumeType ===
+          VolumeManagerCommon.VolumeType.DRIVE) {
+        return new DriveVolumeItem(volumeModelItem, tree);
+      } else {
+        return new VolumeItem(volumeModelItem, tree);
+      }
+      break;
+    case NavigationModelItemType.SHORTCUT:
+      return new ShortcutItem(
+          /** @type {!NavigationModelShortcutItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.MENU:
+      return new MenuItem(
+          /** @type {!NavigationModelMenuItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.RECENT:
+      return new FakeItem(
+          VolumeManagerCommon.RootType.RECENT,
+          /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.CROSTINI:
+      return new FakeItem(
+          VolumeManagerCommon.RootType.CROSTINI,
+          /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.ENTRY_LIST:
+      return new EntryListItem(
+          VolumeManagerCommon.RootType.MY_FILES,
+          /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
+  }
+  assertNotReached(`No DirectoryItem model: "${modelItem.type}"`);
+};
+
+/**
  * Updates and selects new directory.
  * @param {!DirectoryEntry} parentDirectory Parent directory of new directory.
  * @param {!DirectoryEntry} newDirectory
@@ -1409,33 +1576,10 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
         this.items[itemIndex].updateSubDirectories(true);
     } else {
       var modelItem = this.dataModel.item(modelIndex);
-      switch (modelItem.type) {
-        case NavigationModelItemType.VOLUME:
-          if (modelItem.volumeInfo.volumeType ===
-              VolumeManagerCommon.VolumeType.DRIVE) {
-            this.addAt(new DriveVolumeItem(modelItem, this), itemIndex);
-          } else {
-            this.addAt(new VolumeItem(modelItem, this), itemIndex);
-          }
-          break;
-        case NavigationModelItemType.SHORTCUT:
-          this.addAt(new ShortcutItem(modelItem, this), itemIndex);
-          break;
-        case NavigationModelItemType.MENU:
-          this.addAt(new MenuItem(modelItem, this), itemIndex);
-          break;
-        case NavigationModelItemType.RECENT:
-          this.addAt(
-              new FakeItem(
-                  VolumeManagerCommon.RootType.RECENT, modelItem, this),
-              itemIndex);
-          break;
-        case NavigationModelItemType.CROSTINI:
-          this.addAt(
-              new FakeItem(
-                  VolumeManagerCommon.RootType.CROSTINI, modelItem, this),
-              itemIndex);
-          break;
+      if (modelItem) {
+        var item = DirectoryTree.createDirectoryItem(modelItem, this);
+        if (item)
+          this.addAt(item, itemIndex);
       }
     }
     itemIndex++;

@@ -11,6 +11,7 @@ var NavigationModelItemType = {
   MENU: 'menu',
   RECENT: 'recent',
   CROSTINI: 'crostini',
+  ENTRY_LIST: 'entry-list',
 };
 
 /**
@@ -139,11 +140,14 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
  * @param {NavigationModelMenuItem} addNewServicesItem Add new services item.
+ * @param {boolean=} opt_useNewNavigation true if should use the new navigation
+ *     style, value should come from flag new-files-app-navigation.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
-    volumeManager, shortcutListModel, recentModelItem, addNewServicesItem) {
+    volumeManager, shortcutListModel, recentModelItem, addNewServicesItem,
+    opt_useNewNavigation) {
   cr.EventTarget.call(this);
 
   /**
@@ -218,6 +222,9 @@ function NavigationListModel(
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
+
+  // True if the flag new-files-app-navigation is enabled.
+  this.useNewNavigation_ = !!opt_useNewNavigation;
 
   // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
@@ -352,6 +359,19 @@ NavigationListModel.prototype = {
 };
 
 /**
+ * Reorder navigation items when command line flag new-files-app-navigation is
+ * enabled it nests Downloads, Linux and Android files under "My Files"; when
+ * it's disabled it has a flat structure with Linux Files after Recent menu.
+ */
+NavigationListModel.prototype.reorderNavigationItems_ = function() {
+  if (this.useNewNavigation_) {
+    return this.orderAndNestItems_();
+  } else {
+    return this.flatNavigationItems_();
+  }
+};
+
+/**
  * Reorder navigation items in the following order:
  *  1. Volumes.
  *  2. If Downloads exists, then immediately after Downloads should be:
@@ -362,7 +382,7 @@ NavigationListModel.prototype = {
  *  4. Add new services if it exists.
  * @private
  */
-NavigationListModel.prototype.reorderNavigationItems_ = function() {
+NavigationListModel.prototype.flatNavigationItems_ = function() {
   // Check if Linux files already mounted.
   let linuxFilesMounted = false;
   for (let i = 0; i < this.volumeList_.length; i++) {
@@ -383,6 +403,128 @@ NavigationListModel.prototype.reorderNavigationItems_ = function() {
     this.navigationItems_.splice(
         downloadsVolumeIndex + 1, 0, this.recentModelItem_);
   Array.prototype.push.apply(this.navigationItems_, this.shortcutList_);
+  if (this.addNewServicesItem_)
+    this.navigationItems_.push(this.addNewServicesItem_);
+};
+
+/**
+ * Reorder navigation items and nest some within "Downloads"
+ * which will be displayed as "My-Files". Desired order:
+ *  1. Recents.
+ *  2. Shortcuts.
+ *  3. "My-Files" (grouping), actually Downloads volume.
+ *    3.1. Downloads
+ *    3.2. Play files (android volume) (if enabled).
+ *    3.3. Linux files (crostini volume or fake item) (if enabled).
+ *  4. Other volumes (MTP, ARCHIVE, REMOVABLE).
+ *  5. Drive volumes.
+ *  6. Other FSP (File System Provider) (when mounted).
+ *  7. Add new services if (it exists).
+ * @private
+ */
+NavigationListModel.prototype.orderAndNestItems_ = function() {
+  const volumeIndexes = {};
+  const volumeList = this.volumeList_;
+
+  // Find the index of each volumeType from the array volumeList_,
+  // for volumes that can have multiple entries it saves as list
+  // of indexes, otherwise saves the index as int directly.
+  for (let i = 0; i < volumeList.length; i++) {
+    const volumeType = volumeList[i].volumeInfo.volumeType;
+    switch (volumeType) {
+      case VolumeManagerCommon.VolumeType.CROSTINI:
+      case VolumeManagerCommon.VolumeType.DOWNLOADS:
+      case VolumeManagerCommon.VolumeType.ANDROID_FILES:
+        volumeIndexes[volumeType] = i;
+        break;
+      case VolumeManagerCommon.VolumeType.REMOVABLE:
+      case VolumeManagerCommon.VolumeType.ARCHIVE:
+      case VolumeManagerCommon.VolumeType.MTP:
+      case VolumeManagerCommon.VolumeType.DRIVE:
+      case VolumeManagerCommon.VolumeType.PROVIDED:
+      case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
+        if (!volumeIndexes[volumeType]) {
+          volumeIndexes[volumeType] = [i];
+        } else {
+          volumeIndexes[volumeType].push(i);
+        }
+        break;
+      default:
+        assertNotReached(`No explict order for VolumeType: "${volumeType}"`);
+        break;
+    }
+  }
+
+  /**
+   * @param {!VolumeManagerCommon.VolumeType} volumeType the desired volume type
+   * to be filtered from volumeList.
+   * @return {NavigationModelVolumeItem}
+   */
+  const getSingleVolume = function(volumeType) {
+    return volumeList[volumeIndexes[volumeType]];
+  };
+
+  /**
+   * @param {!VolumeManagerCommon.VolumeType} volumeType the desired volume type
+   * to be filtered from volumeList.
+   * @return Array<!NavigationModelVolumeItem>
+   */
+  const getVolumes = function(volumeType) {
+    const indexes = volumeIndexes[volumeType] || [];
+    return indexes.map(idx => volumeList[idx]);
+  };
+
+  // Items as per required order.
+  this.navigationItems_ = [];
+
+  if (this.recentModelItem_)
+    this.navigationItems_.push(this.recentModelItem_);
+  for (const shortcut of this.shortcutList_)
+    this.navigationItems_.push(shortcut);
+
+  const myFilesEntry = new EntryList(
+      str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+  const myFilesModel = new NavigationModelFakeItem(
+      myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
+  const downloadsVolume =
+      getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
+  if (downloadsVolume)
+    myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
+
+  this.navigationItems_.push(myFilesModel);
+
+  const androidVolume =
+      getSingleVolume(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+  if (androidVolume)
+    myFilesEntry.addEntry(new VolumeEntry(androidVolume.volumeInfo));
+
+  const crostiniVolume =
+      getSingleVolume(VolumeManagerCommon.VolumeType.CROSTINI);
+  if (crostiniVolume) {
+    // Crostini is mounted so add it.
+    myFilesEntry.addEntry(new crostiniVolume.volumeInfo);
+  } else if (this.linuxFilesItem_) {
+    // Here it's just a fake item.
+    myFilesEntry.addEntry(this.linuxFilesItem_.entry);
+  }
+
+  // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE.
+  // TODO(lucmult) sort based on the index number to preserve original order.
+  const otherVolumes = [].concat(
+      getVolumes(VolumeManagerCommon.VolumeType.MEDIA_VIEW),
+      getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
+      getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
+      getVolumes(VolumeManagerCommon.VolumeType.MTP));
+
+  for (const volume of otherVolumes)
+    this.navigationItems_.push(volume);
+
+  for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE))
+    this.navigationItems_.push(driveItem);
+
+  for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED))
+    this.navigationItems_.push(provided);
+
   if (this.addNewServicesItem_)
     this.navigationItems_.push(this.addNewServicesItem_);
 };
