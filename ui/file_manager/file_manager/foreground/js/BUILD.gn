@@ -407,6 +407,7 @@ js_library("list_thumbnail_loader") {
 js_library("main") {
   deps = [
     ":file_manager",
+    "../../common/js:files_app_entry_types",
     "../../common/js:metrics",
     "../../common/js:util",
   ]

@@ -15,6 +15,7 @@
 // <include src="../../common/js/metrics_base.js">
 // <include src="../../common/js/metrics_events.js">
 // <include src="../../common/js/metrics.js">
+// <include src="../../common/js/files_app_entry_types.js">
 // <include src="../../common/js/util.js">
 // <include src="../../common/js/volume_manager_common.js">
 // <include src="app_window_wrapper.js">
