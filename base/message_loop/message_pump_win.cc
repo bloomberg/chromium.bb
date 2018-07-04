@@ -347,7 +347,7 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
-  TRACE_EVENT1("base", "MessagePumpForUI::ProcessMessageHelper",
+  TRACE_EVENT1("base,toplevel", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
   if (WM_QUIT == msg.message) {
     // WM_QUIT is the standard way to exit a GetMessage() loop. Our MessageLoop
