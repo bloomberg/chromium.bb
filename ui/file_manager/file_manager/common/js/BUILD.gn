@@ -91,6 +91,7 @@ js_library("progress_center_common") {
 
 js_library("util") {
   deps = [
+    ":files_app_entry_types",
     ":volume_manager_common",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",

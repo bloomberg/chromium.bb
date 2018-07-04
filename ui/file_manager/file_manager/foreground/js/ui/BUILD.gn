@@ -302,6 +302,7 @@ js_library("list_container") {
 js_library("location_line") {
   deps = [
     "..:volume_manager_wrapper",
+    "../../../common/js:files_app_entry_types",
     "../../../common/js:metrics",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
