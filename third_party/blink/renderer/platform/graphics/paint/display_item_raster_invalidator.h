@@ -38,7 +38,8 @@ class DisplayItemRasterInvalidator {
                                            PaintInvalidationReason,
                                            RasterInvalidator::ClientIsOldOrNew);
   ALWAYS_INLINE size_t
-  MatchNewDisplayItemInOldChunk(const DisplayItem& new_item, size_t old_index);
+  MatchNewDisplayItemInOldChunk(const DisplayItem& new_item,
+                                size_t& next_old_item_to_match);
   ALWAYS_INLINE void GenerateRasterInvalidation(
       const DisplayItemClient&,
       const FloatRect* old_visual_rect,
@@ -60,6 +61,8 @@ class DisplayItemRasterInvalidator {
   const PaintChunk& old_chunk_;
   const PaintChunk& new_chunk_;
   const ChunkToLayerMapper& mapper_;
+  // Maps clients to indices of display items in old_chunk_.
+  HashMap<const DisplayItemClient*, Vector<size_t>> old_display_items_index_;
 };
 
 }  // namespace blink
