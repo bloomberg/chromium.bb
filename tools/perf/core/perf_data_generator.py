@@ -1065,14 +1065,14 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
     },
     'Win 7 Nvidia GPU Perf': {
       'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win7_nvidia_shard_map.json',
-          ],
-        },
+        #{
+        #  'isolate': 'performance_test_suite',
+        #  'num_shards': 5,
+        #  'extra_args': [
+        #      '--run-ref-build',
+        #      '--test-shard-map-filename=win7_nvidia_shard_map.json',
+        #  ],
+        #},
         # crbug.com/735679 enable performance_browser_tests
         {
           'isolate': 'load_library_perf_tests',
