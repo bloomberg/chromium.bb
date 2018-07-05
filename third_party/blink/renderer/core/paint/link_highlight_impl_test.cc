@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -104,26 +105,28 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
 
-  EXPECT_TRUE(web_view_impl->GetLinkHighlight(0));
-  EXPECT_TRUE(web_view_impl->GetLinkHighlight(0)->Layer());
+  const auto& highlights =
+      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
+  EXPECT_TRUE(highlights.at(0));
+  EXPECT_TRUE(highlights.at(0)->Layer());
 
   // Find a target inside a scrollable div
   touch_event.SetPositionInWidget(WebFloatPoint(20, 100));
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
-  ASSERT_TRUE(web_view_impl->GetLinkHighlight(0));
+  ASSERT_TRUE(highlights.at(0));
 
   // Don't highlight if no "hand cursor"
   touch_event.SetPositionInWidget(
       WebFloatPoint(20, 220));  // An A-link with cross-hair cursor.
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
-  ASSERT_EQ(0U, web_view_impl->NumLinkHighlights());
+  ASSERT_EQ(0U, highlights.size());
 
   touch_event.SetPositionInWidget(WebFloatPoint(20, 260));  // A text input box.
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
-  ASSERT_EQ(0U, web_view_impl->NumLinkHighlights());
+  ASSERT_EQ(0U, highlights.size());
 
   Platform::Current()
       ->GetURLLoaderMockFactory()
@@ -152,16 +155,17 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
   ASSERT_TRUE(touch_node);
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-  ASSERT_TRUE(web_view_impl->GetLinkHighlight(0));
+  const auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
+  ASSERT_TRUE(highlights.link_highlights_.at(0));
 
   GraphicsLayer* highlight_layer =
-      web_view_impl->GetLinkHighlight(0)->CurrentGraphicsLayerForTesting();
+      highlights.link_highlights_.at(0)->CurrentGraphicsLayerForTesting();
   ASSERT_TRUE(highlight_layer);
   EXPECT_TRUE(highlight_layer->GetLinkHighlight(0));
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   web_view_impl->UpdateAllLifecyclePhases();
-  ASSERT_EQ(0U, highlight_layer->NumLinkHighlights());
+  EXPECT_EQ(0U, highlight_layer->NumLinkHighlights());
 
   Platform::Current()
       ->GetURLLoaderMockFactory()
@@ -191,10 +195,12 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
   ASSERT_TRUE(touch_node);
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
-  ASSERT_TRUE(web_view_impl->GetLinkHighlight(0));
+  const auto& highlights =
+      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
+  ASSERT_TRUE(highlights.at(0));
 
   GraphicsLayer* highlight_layer =
-      web_view_impl->GetLinkHighlight(0)->CurrentGraphicsLayerForTesting();
+      highlights.at(0)->CurrentGraphicsLayerForTesting();
   ASSERT_TRUE(highlight_layer);
   EXPECT_TRUE(highlight_layer->GetLinkHighlight(0));
 
@@ -228,7 +234,9 @@ TEST(LinkHighlightImplTest, multipleHighlights) {
                        good_targets, highlight_nodes);
 
   web_view_impl->EnableTapHighlights(highlight_nodes);
-  EXPECT_EQ(2U, web_view_impl->NumLinkHighlights());
+  const auto& highlights =
+      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
+  EXPECT_EQ(2U, highlights.size());
 
   Platform::Current()
       ->GetURLLoaderMockFactory()

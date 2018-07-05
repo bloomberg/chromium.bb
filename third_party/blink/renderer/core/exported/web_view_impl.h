@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -79,7 +78,6 @@ class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class LinkHighlightImpl;
 class PageOverlay;
 class PageScaleConstraintsSet;
 class PaintLayerCompositor;
@@ -341,9 +339,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   GraphicsLayer* RootGraphicsLayer();
   void RegisterViewportLayersWithCompositor();
   PaintLayerCompositor* Compositor() const;
-  CompositorAnimationTimeline* LinkHighlightsTimeline() const {
-    return link_highlights_timeline_.get();
-  }
 
   PageScheduler* Scheduler() const override;
   void SetVisibilityState(mojom::PageVisibilityState, bool) override;
@@ -397,12 +392,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Exposed for testing purposes.
   bool HasHorizontalScrollbar();
   bool HasVerticalScrollbar();
-
-  // Exposed for tests.
-  unsigned NumLinkHighlights() { return link_highlights_.size(); }
-  LinkHighlightImpl* GetLinkHighlight(int i) {
-    return link_highlights_[i].get();
-  }
 
   WebSettingsImpl* SettingsImpl();
 
@@ -653,8 +642,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   GraphicsLayer* visual_viewport_container_layer_;
   bool matches_heuristics_for_gpu_rasterization_;
 
-  Vector<std::unique_ptr<LinkHighlightImpl>> link_highlights_;
-  std::unique_ptr<CompositorAnimationTimeline> link_highlights_timeline_;
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
   WebPoint last_tap_disambiguation_best_candidate_position_;
