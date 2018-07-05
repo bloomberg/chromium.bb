@@ -246,7 +246,6 @@ class ListHashSet
   void CreateAllocatorIfNeeded() {
     allocator_provider_.CreateAllocatorIfNeeded();
   }
-  void Deallocate(Node* node) const { allocator_provider_.deallocate(node); }
 
   iterator MakeIterator(Node* position) { return iterator(this, position); }
   const_iterator MakeConstIterator(Node* position) const {
@@ -309,11 +308,6 @@ struct ListHashSetAllocator : public PartitionAllocator {
 
     void Swap(AllocatorProvider& other) {
       std::swap(allocator_, other.allocator_);
-    }
-
-    void Deallocate(Node* node) const {
-      DCHECK(allocator_);
-      allocator_->Deallocate(node);
     }
 
     ListHashSetAllocator* Get() const {
