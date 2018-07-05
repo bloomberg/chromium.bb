@@ -8,7 +8,7 @@
 <div id="target"></div>
 <script>
 setup(() => {
-  CSS.registerProperty({name: '--x'});
+  CSS.registerProperty({name: '--x', inherits: false});
 });
 
 test(() => {

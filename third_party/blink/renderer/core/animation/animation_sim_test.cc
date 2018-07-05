@@ -48,12 +48,14 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   //   name: '--x',
   //   syntax: '<percentage>',
   //   initialValue: '0%',
+  //   inherits: false
   // })
   DummyExceptionStateForTesting exception_state;
   PropertyDescriptor property_descriptor;
   property_descriptor.setName("--x");
   property_descriptor.setSyntax("<percentage>");
   property_descriptor.setInitialValue("0%");
+  property_descriptor.setInherits(false);
   PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
                                          exception_state);
   EXPECT_FALSE(exception_state.HadException());

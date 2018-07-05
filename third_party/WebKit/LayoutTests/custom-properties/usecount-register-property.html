@@ -12,7 +12,7 @@ test(() => {
     assert_false(isCounted(),
                  'should not be counted before registerProperty call');
 
-    CSS.registerProperty({name: '--name1'});
+    CSS.registerProperty({name: '--name1', inherits: false});
 
     assert_true(isCounted(),
                 'registerProperty call should be counted');
