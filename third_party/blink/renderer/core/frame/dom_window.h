@@ -22,6 +22,7 @@ class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;
+class ScriptValue;
 class SecurityOrigin;
 class SerializedScriptValue;
 class WindowProxyManager;
@@ -85,14 +86,14 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   virtual void blur() = 0;
   void close(LocalDOMWindow* incumbent_window);
 
+  void postMessage(LocalDOMWindow* incumbent_window,
+                   const ScriptValue& message,
+                   const String& target_origin,
+                   Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+
   // Indexed properties
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
-
-  void postMessage(scoped_refptr<SerializedScriptValue> message,
-                   const MessagePortArray&,
-                   const String& target_origin,
-                   LocalDOMWindow* source,
-                   ExceptionState&);
 
   String SanitizedCrossDomainAccessErrorMessage(
       const LocalDOMWindow* calling_window) const;
@@ -111,6 +112,12 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 
+  void PostMessageForTesting(scoped_refptr<SerializedScriptValue> message,
+                             const MessagePortArray&,
+                             const String& target_origin,
+                             LocalDOMWindow* source,
+                             ExceptionState&);
+
  protected:
   explicit DOMWindow(Frame&);
 
@@ -121,6 +128,12 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   void DisconnectFromFrame() { frame_ = nullptr; }
 
  private:
+  void DoPostMessage(scoped_refptr<SerializedScriptValue> message,
+                     const MessagePortArray&,
+                     const String& target_origin,
+                     LocalDOMWindow* source,
+                     ExceptionState&);
+
   Member<Frame> frame_;
   // Unlike |frame_|, |window_proxy_manager_| is available even after the
   // window's frame gets detached from the DOM, until the end of the lifetime

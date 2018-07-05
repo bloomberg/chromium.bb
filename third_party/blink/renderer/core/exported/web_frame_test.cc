@@ -1227,8 +1227,8 @@ TEST_F(WebFrameTest, PostMessageThenDetach) {
   scoped_refptr<SerializedScriptValue> message =
       SerializeString("message", ToScriptStateForMainWorld(frame));
   MessagePortArray message_ports;
-  frame->DomWindow()->postMessage(message, message_ports, "*",
-                                  frame->DomWindow(), exception_state);
+  frame->DomWindow()->PostMessageForTesting(
+      message, message_ports, "*", frame->DomWindow(), exception_state);
   web_view_helper.Reset();
   EXPECT_FALSE(exception_state.HadException());
 
