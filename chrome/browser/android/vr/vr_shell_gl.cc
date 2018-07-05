@@ -440,8 +440,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
   content_overlay_surface_texture_->SetDefaultBufferSize(
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
-  ui_surface_texture_->SetDefaultBufferSize(dialog_tex_buffer_size_.width(),
-                                            dialog_tex_buffer_size_.height());
+  ui_surface_texture_->SetDefaultBufferSize(content_tex_buffer_size_.width(),
+                                            content_tex_buffer_size_.height());
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
@@ -890,8 +890,8 @@ void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
   vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
   vr_dialog_input_delegate_->SetSize(width, height);
   ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(),
-                             width / dialog_tex_buffer_size_.width(),
-                             height / dialog_tex_buffer_size_.width());
+                             width / content_tex_buffer_size_.width(),
+                             height / content_tex_buffer_size_.width());
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
@@ -905,8 +905,8 @@ void VrShellGl::DisableAlertDialog() {
 void VrShellGl::SetAlertDialogSize(float width, float height) {
   if (vr_dialog_input_delegate_)
     vr_dialog_input_delegate_->SetSize(width, height);
-  ui_->SetAlertDialogSize(width / dialog_tex_buffer_size_.width(),
-                          height / dialog_tex_buffer_size_.width());
+  ui_->SetAlertDialogSize(width / content_tex_buffer_size_.width(),
+                          height / content_tex_buffer_size_.width());
 }
 
 void VrShellGl::SetDialogLocation(float x, float y) {
@@ -2154,10 +2154,6 @@ void VrShellGl::ContentBoundsChanged(int width, int height) {
 void VrShellGl::BufferBoundsChanged(const gfx::Size& content_buffer_size,
                                     const gfx::Size& overlay_buffer_size) {
   content_tex_buffer_size_ = content_buffer_size;
-}
-
-void VrShellGl::DialogBufferBoundsChanged(const gfx::Size& size) {
-  dialog_tex_buffer_size_ = size;
 }
 
 base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {

@@ -661,10 +661,6 @@ void VrShell::SetDialogBufferSize(
     float height) {
   if (ui_surface_texture_)
     ui_surface_texture_->SetDefaultBufferSize(width, height);
-  PostToGlThread(
-      FROM_HERE,
-      base::BindOnce(&VrShellGl::DialogBufferBoundsChanged,
-                     gl_thread_->GetVrShellGl(), gfx::Size(width, height)));
 }
 
 void VrShell::SetAlertDialogSize(
