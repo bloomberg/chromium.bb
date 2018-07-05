@@ -99,24 +99,26 @@ HRESULT FakeBluetoothLEDeviceWinrt::remove_NameChanged(
 HRESULT FakeBluetoothLEDeviceWinrt::add_GattServicesChanged(
     ITypedEventHandler<BluetoothLEDevice*, IInspectable*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  gatt_services_changed_handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::remove_GattServicesChanged(
     EventRegistrationToken token) {
-  return E_NOTIMPL;
+  gatt_services_changed_handler_ = nullptr;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::add_ConnectionStatusChanged(
     ITypedEventHandler<BluetoothLEDevice*, IInspectable*>* handler,
     EventRegistrationToken* token) {
-  handler_ = handler;
+  connection_status_changed_handler_ = handler;
   return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::remove_ConnectionStatusChanged(
     EventRegistrationToken token) {
-  handler_ = nullptr;
+  connection_status_changed_handler_ = nullptr;
   return S_OK;
 }
 
@@ -164,14 +166,8 @@ HRESULT FakeBluetoothLEDeviceWinrt::Close() {
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {
-  if (gatt_services_callback_) {
-    std::move(gatt_services_callback_)
-        .Run(Make<FakeGattDeviceServicesResultWinrt>(
-            GattCommunicationStatus_Success));
-  }
-
   status_ = BluetoothConnectionStatus_Connected;
-  handler_->Invoke(this, nullptr);
+  connection_status_changed_handler_->Invoke(this, nullptr);
 }
 
 void FakeBluetoothLEDeviceWinrt ::SimulateGattConnectionError(
@@ -185,7 +181,8 @@ void FakeBluetoothLEDeviceWinrt ::SimulateGattConnectionError(
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
-  if (gatt_services_callback_) {
+  if (status_ == BluetoothConnectionStatus_Disconnected) {
+    DCHECK(gatt_services_callback_);
     std::move(gatt_services_callback_)
         .Run(Make<FakeGattDeviceServicesResultWinrt>(
             GattCommunicationStatus_Unreachable));
@@ -193,7 +190,27 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
   }
 
   status_ = BluetoothConnectionStatus_Disconnected;
-  handler_->Invoke(this, nullptr);
+  connection_status_changed_handler_->Invoke(this, nullptr);
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(
+    const std::vector<std::string>& uuids) {
+  DCHECK(gatt_services_callback_);
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(
+          GattCommunicationStatus_Success, uuids));
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattServicesChanged() {
+  DCHECK(gatt_services_changed_handler_);
+  gatt_services_changed_handler_->Invoke(this, nullptr);
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscoveryError() {
+  DCHECK(gatt_services_callback_);
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(
+          GattCommunicationStatus_ProtocolError));
 }
 
 FakeBluetoothLEDeviceStaticsWinrt::FakeBluetoothLEDeviceStaticsWinrt(

@@ -128,6 +128,11 @@ class BluetoothTestWinrt : public BluetoothTestWin,
       BluetoothDevice* device,
       BluetoothDevice::ConnectErrorCode error_code) override;
   void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscovered(
+      BluetoothDevice* device,
+      const std::vector<std::string>& uuids) override;
+  void SimulateGattServicesChanged(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscoveryError(BluetoothDevice* device) override;
   void DeleteDevice(BluetoothDevice* device) override;
 
   void OnFakeBluetoothDeviceConnectGattCalled();

@@ -12,6 +12,8 @@
 
 #if defined(OS_WIN)
 #include <rpc.h>
+
+#include "base/strings/string_piece_forward.h"
 #endif  // defined(OS_WIN)
 
 namespace device {
@@ -59,6 +61,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
   // UUID by definition and the string accessors will return an empty string.
   BluetoothUUID();
   virtual ~BluetoothUUID();
+
+#if defined(OS_WIN)
+  // The canonical UUID string format is device::BluetoothUUID.value().
+  static GUID GetCanonicalValueAsGUID(base::StringPiece uuid);
+#endif  // defined(OS_WIN)
 
   // Returns true, if the UUID is in a valid canonical format.
   bool IsValid() const;

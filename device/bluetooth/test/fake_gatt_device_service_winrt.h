@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace device {
 
@@ -22,7 +23,7 @@ class FakeGattDeviceServiceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceService> {
  public:
-  FakeGattDeviceServiceWinrt();
+  FakeGattDeviceServiceWinrt(uint16_t attribute_handle, base::StringPiece uuid);
   ~FakeGattDeviceServiceWinrt() override;
 
   // IGattDeviceService:
@@ -41,6 +42,9 @@ class FakeGattDeviceServiceWinrt
   IFACEMETHODIMP get_AttributeHandle(uint16_t* value) override;
 
  private:
+  uint16_t attribute_handle_;
+  GUID uuid_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeGattDeviceServiceWinrt);
 };
 

@@ -5,23 +5,31 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_WINRT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_WINRT_H_
 
+#include <windows.devices.bluetooth.genericattributeprofile.h>
+#include <wrl/client.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
-class BluetoothUUID;
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristic;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
     : public BluetoothRemoteGattService {
  public:
-  BluetoothRemoteGattServiceWinrt();
+  static std::unique_ptr<BluetoothRemoteGattServiceWinrt> Create(
+      BluetoothDevice* device,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDeviceService>
+          gatt_service);
   ~BluetoothRemoteGattServiceWinrt() override;
 
   // BluetoothRemoteGattService:
@@ -36,6 +44,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
       const std::string& identifier) const override;
 
  private:
+  BluetoothRemoteGattServiceWinrt(
+      BluetoothDevice* device,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDeviceService>
+          gatt_service,
+      BluetoothUUID uuid,
+      uint16_t attribute_handle);
+
+  BluetoothDevice* device_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                             GenericAttributeProfile::IGattDeviceService>
+      gatt_service_;
+  BluetoothUUID uuid_;
+  uint16_t attribute_handle_;
+  std::string identifier_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceWinrt);
 };
 

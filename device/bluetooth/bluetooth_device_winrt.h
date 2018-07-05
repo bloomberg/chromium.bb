@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -23,6 +24,7 @@
 namespace device {
 
 class BluetoothAdapterWinrt;
+class BluetoothGattDiscovererWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
@@ -99,16 +101,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
       ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
       IInspectable* object);
 
-  void OnGetGattServices(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-              IGattDeviceServicesResult> result);
+  void OnGattServicesChanged(
+      ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
+      IInspectable* object);
+
+  void OnGattDiscoveryComplete(bool success);
 
   uint64_t raw_address_;
   std::string address_;
   base::Optional<std::string> local_name_;
 
+  std::unique_ptr<BluetoothGattDiscovererWinrt> gatt_discoverer_;
+
   base::Optional<EventRegistrationToken> connection_changed_token_;
+  base::Optional<EventRegistrationToken> gatt_services_changed_token_;
 
   THREAD_CHECKER(thread_checker_);
 

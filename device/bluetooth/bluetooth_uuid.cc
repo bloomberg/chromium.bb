@@ -13,6 +13,8 @@
 
 #if defined(OS_WIN)
 #include <objbase.h>
+
+#include "base/strings/string16.h"
 #endif  // defined(OS_WIN)
 
 namespace device {
@@ -95,6 +97,17 @@ BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {
 }
 
 BluetoothUUID::~BluetoothUUID() = default;
+
+#if defined(OS_WIN)
+// static
+GUID BluetoothUUID::GetCanonicalValueAsGUID(base::StringPiece uuid) {
+  DCHECK_EQ(36u, uuid.size());
+  base::string16 braced_uuid = L'{' + base::UTF8ToWide(uuid) + L'}';
+  GUID guid;
+  CHECK_EQ(NOERROR, ::CLSIDFromString(braced_uuid.data(), &guid));
+  return guid;
+}
+#endif  // defined(OS_WIN)
 
 bool BluetoothUUID::IsValid() const {
   return format_ != kFormatInvalid;

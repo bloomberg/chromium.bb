@@ -47,46 +47,6 @@ using UUIDSet = BluetoothDevice::UUIDSet;
 using ServiceDataMap = BluetoothDevice::ServiceDataMap;
 using ManufacturerDataMap = BluetoothDevice::ManufacturerDataMap;
 
-class BluetoothGetServiceTest : public BluetoothTest {
- public:
-  BluetoothGetServiceTest()
-      : unique_service_uuid_(kTestUUIDGenericAccess),
-        duplicate_service_uuid_(kTestUUIDHeartRate) {}
-
-  // Creates |device_|.
-  void FakeServiceBoilerplate() {
-    InitWithFakeAdapter();
-    StartLowEnergyDiscoverySession();
-    device_ = SimulateLowEnergyDevice(3);
-    EXPECT_FALSE(device_->IsConnected());
-
-    // Connect to the device.
-    ResetEventCounts();
-    device_->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
-                                  GetConnectErrorCallback(Call::NOT_EXPECTED));
-    TestBluetoothAdapterObserver observer(adapter_);
-    SimulateGattConnection(device_);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(device_->IsGattConnected());
-
-    // Discover services.
-    std::vector<std::string> service_uuids;
-    service_uuids.push_back(unique_service_uuid_.canonical_value());
-    // 2 duplicate UUIDs creating 2 instances.
-    service_uuids.push_back(duplicate_service_uuid_.canonical_value());
-    service_uuids.push_back(duplicate_service_uuid_.canonical_value());
-    SimulateGattServicesDiscovered(device_, service_uuids);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(device_->IsGattServicesDiscoveryComplete());
-  }
-
- protected:
-  BluetoothUUID unique_service_uuid_;
-  BluetoothUUID duplicate_service_uuid_;
-
-  BluetoothDevice* device_ = nullptr;
-};
-
 TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_AcceptsAllValidFormats) {
   // There are three valid separators (':', '-', and none).
   // Case shouldn't matter.
@@ -403,7 +363,11 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
 #define MAYBE_GetUUIDs_Connection DISABLED_GetUUIDs_Connection
 #endif
 // Tests Advertisement Data is updated correctly during a connection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GetUUIDs_Connection) {
+#else
 TEST_F(BluetoothTest, MAYBE_GetUUIDs_Connection) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -442,8 +406,8 @@ TEST_F(BluetoothTest, MAYBE_GetUUIDs_Connection) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess)}),
             device->GetUUIDs());
 
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable in Android and Windows.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // TODO(ortuno): Enable in Android and classic Windows.
   // Android and Windows don't yet support service changed events.
   // http://crbug.com/548280
   // http://crbug.com/579202
@@ -468,7 +432,7 @@ TEST_F(BluetoothTest, MAYBE_GetUUIDs_Connection) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess)}),
             device->GetUUIDs());
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   observer.Reset();
 
@@ -1351,8 +1315,13 @@ TEST_F(BluetoothTest,
   DISABLED_BluetoothGattConnection_DisconnectGatt_SimulateDisconnect
 #endif
 // Calls CreateGattConnection & DisconnectGatt, then simulates disconnection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly,
+       BluetoothGattConnection_DisconnectGatt_SimulateDisconnect) {
+#else
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectGatt_SimulateDisconnect) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1364,6 +1333,7 @@ TEST_F(BluetoothTest,
   ResetEventCounts();
   device->CreateGattConnection(GetGattConnectionCallback(Call::NOT_EXPECTED),
                                GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
   device->DisconnectGatt();
   EXPECT_EQ(1, gatt_connection_attempts_);
   EXPECT_EQ(1, gatt_disconnection_attempts_);
@@ -1383,7 +1353,11 @@ TEST_F(BluetoothTest,
 #endif
 // Calls CreateGattConnection & DisconnectGatt, then checks that gatt services
 // have been cleaned up.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_DisconnectGatt_Cleanup) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectGatt_Cleanup) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1484,7 +1458,11 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_ErrorAfterConnection) {
 #else
 #define MAYBE_GattServices_ObserversCalls DISABLED_GattServices_ObserversCalls
 #endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GattServices_ObserversCalls) {
+#else
 TEST_F(BluetoothTest, MAYBE_GattServices_ObserversCalls) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1514,7 +1492,11 @@ TEST_F(BluetoothTest, MAYBE_GattServices_ObserversCalls) {
 #define MAYBE_GattServicesDiscovered_Success \
   DISABLED_GattServicesDiscovered_Success
 #endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GattServicesDiscovered_Success) {
+#else
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_Success) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1618,8 +1600,12 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscoveredError_AfterDeleted) {
 #define MAYBE_GattServicesDiscovered_AfterDisconnection \
   DISABLED_GattServicesDiscovered_AfterDisconnection
 #endif
-// Windows does not support disconnection.
+// Classic Windows does not support disconnection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GattServicesDiscovered_AfterDisconnection) {
+#else
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDisconnection) {
+#endif
   // Tests that we don't crash if there was an error discovering services after
   // the device disconnects.
   if (!PlatformSupportsLowEnergy()) {
@@ -1656,7 +1642,11 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDisconnection) {
   DISABLED_GattServicesDiscoveredError_AfterDisconnection
 #endif
 // Windows does not support disconnecting.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GattServicesDiscoveredError_AfterDisconnection) {
+#else
 TEST_F(BluetoothTest, MAYBE_GattServicesDiscoveredError_AfterDisconnection) {
+#endif
   // Tests that we don't crash if services are discovered after
   // the device disconnects.
   if (!PlatformSupportsLowEnergy()) {
@@ -1682,14 +1672,18 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscoveredError_AfterDisconnection) {
   EXPECT_EQ(0u, device->GetGattServices().size());
 }
 
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetGattServices_and_GetGattService \
   GetGattServices_and_GetGattService
 #else
 #define MAYBE_GetGattServices_and_GetGattService \
   DISABLED_GetGattServices_and_GetGattService
 #endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, GetGattServices_and_GetGattService) {
+#else
 TEST_F(BluetoothTest, MAYBE_GetGattServices_and_GetGattService) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1727,7 +1721,11 @@ TEST_F(BluetoothTest, MAYBE_GetGattServices_and_GetGattService) {
 #define MAYBE_GetGattServices_DiscoveryError \
   DISABLED_GetGattServices_DiscoveryError
 #endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GetGattServices_DiscoveryError) {
+#else
 TEST_F(BluetoothTest, MAYBE_GetGattServices_DiscoveryError) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1767,51 +1765,97 @@ TEST_F(BluetoothTest, GetDeviceTransportType) {
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetPrimaryServices GetPrimaryServices
 #else
 #define MAYBE_GetPrimaryServices DISABLED_GetPrimaryServices
 #endif
-TEST_F(BluetoothGetServiceTest, MAYBE_GetPrimaryServices) {
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, GetPrimaryServices) {
+#else
+TEST_F(BluetoothTest, MAYBE_GetPrimaryServices) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
   }
-  ASSERT_NO_FATAL_FAILURE(FakeServiceBoilerplate());
 
-  EXPECT_EQ(3u, device_->GetPrimaryServices().size());
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  EXPECT_FALSE(device->IsConnected());
+
+  // Connect to the device.
+  ResetEventCounts();
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattConnected());
+
+  // Discover services: Two unique UUIDs, of which the second is duplicated.
+  SimulateGattServicesDiscovered(
+      device, {kTestUUIDGenericAccess, kTestUUIDHeartRate, kTestUUIDHeartRate});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+
+  EXPECT_EQ(3u, device->GetPrimaryServices().size());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetPrimaryServicesByUUID GetPrimaryServicesByUUID
 #else
 #define MAYBE_GetPrimaryServicesByUUID DISABLED_GetPrimaryServicesByUUID
 #endif
-TEST_F(BluetoothGetServiceTest, MAYBE_GetPrimaryServicesByUUID) {
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, GetPrimaryServicesByUUID) {
+#else
+TEST_F(BluetoothTest, MAYBE_GetPrimaryServicesByUUID) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
   }
-  ASSERT_NO_FATAL_FAILURE(FakeServiceBoilerplate());
+
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  EXPECT_FALSE(device->IsConnected());
+
+  // Connect to the device.
+  ResetEventCounts();
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattConnected());
+
+  // Discover services: Two unique UUIDs, of which the second is duplicated.
+  SimulateGattServicesDiscovered(
+      device, {kTestUUIDGenericAccess, kTestUUIDHeartRate, kTestUUIDHeartRate});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
 
   {
+    const BluetoothUUID unique_service_uuid(kTestUUIDGenericAccess);
     std::vector<BluetoothRemoteGattService*> services =
-        device_->GetPrimaryServicesByUUID(unique_service_uuid_);
+        device->GetPrimaryServicesByUUID(unique_service_uuid);
     EXPECT_EQ(1u, services.size());
-    EXPECT_EQ(unique_service_uuid_, services[0]->GetUUID());
+    EXPECT_EQ(unique_service_uuid, services[0]->GetUUID());
   }
 
   {
+    const BluetoothUUID duplicate_service_uuid(kTestUUIDHeartRate);
     std::vector<BluetoothRemoteGattService*> services =
-        device_->GetPrimaryServicesByUUID(duplicate_service_uuid_);
+        device->GetPrimaryServicesByUUID(duplicate_service_uuid);
     EXPECT_EQ(2u, services.size());
-    EXPECT_EQ(duplicate_service_uuid_, services[0]->GetUUID());
-    EXPECT_EQ(duplicate_service_uuid_, services[1]->GetUUID());
+    EXPECT_EQ(duplicate_service_uuid, services[0]->GetUUID());
+    EXPECT_EQ(duplicate_service_uuid, services[1]->GetUUID());
 
-    EXPECT_TRUE(device_
-                    ->GetPrimaryServicesByUUID(BluetoothUUID(
-                        BluetoothTestBase::kTestUUIDGenericAttribute))
-                    .empty());
+    EXPECT_TRUE(
+        device
+            ->GetPrimaryServicesByUUID(BluetoothUUID(kTestUUIDGenericAttribute))
+            .empty());
 
     EXPECT_NE(services[0]->GetIdentifier(), services[1]->GetIdentifier());
   }
