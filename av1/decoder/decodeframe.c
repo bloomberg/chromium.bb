@@ -2560,19 +2560,189 @@ static void set_cb_buffer(AV1Decoder *pbi, MACROBLOCKD *const xd,
   xd->color_index_map_offset[1] = 0;
 }
 
+static void decoder_alloc_tile_data(AV1Decoder *pbi, const int n_tiles) {
+  AV1_COMMON *const cm = &pbi->common;
+  aom_free(pbi->tile_data);
+  CHECK_MEM_ERROR(cm, pbi->tile_data,
+                  aom_memalign(32, n_tiles * sizeof(*pbi->tile_data)));
+  pbi->allocated_tiles = n_tiles;
+  for (int i = 0; i < n_tiles; i++) {
+    TileDataDec *const tile_data = pbi->tile_data + i;
+    av1_zero(tile_data->dec_row_mt_sync);
+  }
+  pbi->allocated_row_mt_sync_rows = 0;
+}
+
+// Set up nsync by width.
+static INLINE int get_sync_range(int width) {
+// nsync numbers are picked by testing.
+#if 0
+  if (width < 640)
+    return 1;
+  else if (width <= 1280)
+    return 2;
+  else if (width <= 4096)
+    return 4;
+  else
+    return 8;
+#else
+  (void)width;
+#endif
+  return 1;
+}
+
+// Allocate memory for decoder row synchronization
+static void dec_row_mt_alloc(AV1DecRowMTSync *dec_row_mt_sync, AV1_COMMON *cm,
+                             int rows) {
+  dec_row_mt_sync->allocated_sb_rows = rows;
+#if CONFIG_MULTITHREAD
+  {
+    int i;
+
+    CHECK_MEM_ERROR(cm, dec_row_mt_sync->mutex_,
+                    aom_malloc(sizeof(*(dec_row_mt_sync->mutex_)) * rows));
+    if (dec_row_mt_sync->mutex_) {
+      for (i = 0; i < rows; ++i) {
+        pthread_mutex_init(&dec_row_mt_sync->mutex_[i], NULL);
+      }
+    }
+
+    CHECK_MEM_ERROR(cm, dec_row_mt_sync->cond_,
+                    aom_malloc(sizeof(*(dec_row_mt_sync->cond_)) * rows));
+    if (dec_row_mt_sync->cond_) {
+      for (i = 0; i < rows; ++i) {
+        pthread_cond_init(&dec_row_mt_sync->cond_[i], NULL);
+      }
+    }
+  }
+#endif  // CONFIG_MULTITHREAD
+
+  CHECK_MEM_ERROR(cm, dec_row_mt_sync->cur_sb_col,
+                  aom_malloc(sizeof(*(dec_row_mt_sync->cur_sb_col)) * rows));
+
+  // Set up nsync.
+  dec_row_mt_sync->sync_range = get_sync_range(cm->width);
+}
+
+// Deallocate decoder row synchronization related mutex and data
+void av1_dec_row_mt_dealloc(AV1DecRowMTSync *dec_row_mt_sync) {
+  if (dec_row_mt_sync != NULL) {
+#if CONFIG_MULTITHREAD
+    int i;
+    if (dec_row_mt_sync->mutex_ != NULL) {
+      for (i = 0; i < dec_row_mt_sync->allocated_sb_rows; ++i) {
+        pthread_mutex_destroy(&dec_row_mt_sync->mutex_[i]);
+      }
+      aom_free(dec_row_mt_sync->mutex_);
+    }
+    if (dec_row_mt_sync->cond_ != NULL) {
+      for (i = 0; i < dec_row_mt_sync->allocated_sb_rows; ++i) {
+        pthread_cond_destroy(&dec_row_mt_sync->cond_[i]);
+      }
+      aom_free(dec_row_mt_sync->cond_);
+    }
+#endif  // CONFIG_MULTITHREAD
+    aom_free(dec_row_mt_sync->cur_sb_col);
+
+    // clear the structure as the source of this call may be a resize in which
+    // case this call will be followed by an _alloc() which may fail.
+    av1_zero(*dec_row_mt_sync);
+  }
+}
+
+static INLINE void sync_read(AV1DecRowMTSync *const dec_row_mt_sync, int r,
+                             int c) {
+#if CONFIG_MULTITHREAD
+  const int nsync = dec_row_mt_sync->sync_range;
+
+  if (r && !(c & (nsync - 1))) {
+    pthread_mutex_t *const mutex = &dec_row_mt_sync->mutex_[r - 1];
+    pthread_mutex_lock(mutex);
+
+    while (c > dec_row_mt_sync->cur_sb_col[r - 1] - nsync) {
+      pthread_cond_wait(&dec_row_mt_sync->cond_[r - 1], mutex);
+    }
+    pthread_mutex_unlock(mutex);
+  }
+#else
+  (void)dec_row_mt_sync;
+  (void)r;
+  (void)c;
+#endif  // CONFIG_MULTITHREAD
+}
+
+static INLINE void sync_write(AV1DecRowMTSync *const dec_row_mt_sync, int r,
+                              int c, const int sb_cols) {
+#if CONFIG_MULTITHREAD
+  const int nsync = dec_row_mt_sync->sync_range;
+  int cur;
+  int sig = 1;
+
+  if (c < sb_cols - 1) {
+    cur = c;
+    if (c % nsync) sig = 0;
+  } else {
+    cur = sb_cols + nsync;
+  }
+
+  if (sig) {
+    pthread_mutex_lock(&dec_row_mt_sync->mutex_[r]);
+
+    dec_row_mt_sync->cur_sb_col[r] = cur;
+
+    pthread_cond_signal(&dec_row_mt_sync->cond_[r]);
+    pthread_mutex_unlock(&dec_row_mt_sync->mutex_[r]);
+  }
+#else
+  (void)dec_row_mt_sync;
+  (void)r;
+  (void)c;
+  (void)sb_cols;
+#endif  // CONFIG_MULTITHREAD
+}
+
+static INLINE int get_sb_rows_in_tile(AV1Decoder *pbi, TileInfo tile) {
+  AV1_COMMON *cm = &pbi->common;
+  int mi_rows_aligned_to_sb = ALIGN_POWER_OF_TWO(
+      tile.mi_row_end - tile.mi_row_start, cm->seq_params.mib_size_log2);
+  int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
+
+  return sb_rows;
+}
+
+static INLINE int get_sb_cols_in_tile(AV1Decoder *pbi, TileInfo tile) {
+  AV1_COMMON *cm = &pbi->common;
+  int mi_cols_aligned_to_sb = ALIGN_POWER_OF_TWO(
+      tile.mi_col_end - tile.mi_col_start, cm->seq_params.mib_size_log2);
+  int sb_cols = mi_cols_aligned_to_sb >> cm->seq_params.mib_size_log2;
+
+  return sb_cols;
+}
+
 static void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
                                TileInfo tile_info, const int mi_row) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
+  TileDataDec *const tile_data =
+      pbi->tile_data + tile_info.tile_row * cm->tile_cols + tile_info.tile_col;
+  const int sb_cols_in_tile = get_sb_cols_in_tile(pbi, tile_info);
+  const int sb_row_in_tile =
+      (mi_row - tile_info.mi_row_start) >> cm->seq_params.mib_size_log2;
+  int sb_col_in_tile = 0;
 
   for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
-       mi_col += cm->seq_params.mib_size) {
+       mi_col += cm->seq_params.mib_size, sb_col_in_tile++) {
     set_cb_buffer(pbi, &td->xd, pbi->cb_buffer_base, num_planes, mi_row,
                   mi_col);
+
+    sync_read(&tile_data->dec_row_mt_sync, sb_row_in_tile, sb_col_in_tile);
 
     // Decoding of the super-block
     decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
                      cm->seq_params.sb_size, 0x2);
+
+    sync_write(&tile_data->dec_row_mt_sync, sb_row_in_tile, sb_col_in_tile,
+               sb_cols_in_tile);
   }
 }
 
@@ -2718,10 +2888,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     get_tile_buffers(pbi, data, data_end, tile_buffers, start_tile, end_tile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
-    aom_free(pbi->tile_data);
-    CHECK_MEM_ERROR(cm, pbi->tile_data,
-                    aom_memalign(32, n_tiles * (sizeof(*pbi->tile_data))));
-    pbi->allocated_tiles = n_tiles;
+    decoder_alloc_tile_data(pbi, n_tiles);
   }
 #if CONFIG_ACCOUNTING
   if (pbi->acct_enabled) {
@@ -3212,10 +3379,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     get_tile_buffers(pbi, data, data_end, tile_buffers, start_tile, end_tile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
-    aom_free(pbi->tile_data);
-    CHECK_MEM_ERROR(cm, pbi->tile_data,
-                    aom_memalign(32, n_tiles * sizeof(*pbi->tile_data)));
-    pbi->allocated_tiles = n_tiles;
+    decoder_alloc_tile_data(pbi, n_tiles);
   }
 
   for (int row = 0; row < tile_rows; row++) {
@@ -3281,6 +3445,7 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
   int tile_count_tg;
   int num_workers;
   const uint8_t *raw_data_end = NULL;
+  int max_sb_rows = 0;
 
   if (cm->large_scale_tile) {
     tile_rows_start = single_row ? dec_tile_row : 0;
@@ -3323,17 +3488,30 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
     get_tile_buffers(pbi, data, data_end, tile_buffers, start_tile, end_tile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
-    aom_free(pbi->tile_data);
-    CHECK_MEM_ERROR(cm, pbi->tile_data,
-                    aom_memalign(32, n_tiles * sizeof(*pbi->tile_data)));
-    pbi->allocated_tiles = n_tiles;
+    for (int i = 0; i < pbi->allocated_tiles; i++) {
+      TileDataDec *const tile_data = pbi->tile_data + i;
+      av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);
+    }
+    decoder_alloc_tile_data(pbi, n_tiles);
   }
 
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
       TileDataDec *tile_data = pbi->tile_data + row * cm->tile_cols + col;
       av1_tile_init(&tile_data->tile_info, cm, row, col);
+
+      max_sb_rows =
+          AOMMAX(max_sb_rows, get_sb_rows_in_tile(pbi, tile_data->tile_info));
     }
+  }
+
+  if (pbi->allocated_row_mt_sync_rows != max_sb_rows) {
+    for (int i = 0; i < n_tiles; ++i) {
+      TileDataDec *const tile_data = pbi->tile_data + i;
+      av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);
+      dec_row_mt_alloc(&tile_data->dec_row_mt_sync, cm, max_sb_rows);
+    }
+    pbi->allocated_row_mt_sync_rows = max_sb_rows;
   }
 
   tile_mt_queue(pbi, tile_cols, tile_rows, tile_rows_start, tile_rows_end,

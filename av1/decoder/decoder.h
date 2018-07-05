@@ -64,10 +64,21 @@ typedef struct ThreadData {
   cfl_store_inter_block_visitor_fn_t cfl_store_inter_block_visit;
 } ThreadData;
 
+typedef struct AV1DecRowMTSyncData {
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *mutex_;
+  pthread_cond_t *cond_;
+#endif
+  int allocated_sb_rows;
+  int *cur_sb_col;
+  int sync_range;
+} AV1DecRowMTSync;
+
 typedef struct TileDataDec {
   TileInfo tile_info;
   aom_reader bit_reader;
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
+  AV1DecRowMTSync dec_row_mt_sync;
 } TileDataDec;
 
 typedef struct TileBufferDec {
@@ -191,6 +202,8 @@ typedef struct AV1Decoder {
 
   CB_BUFFER *cb_buffer_base;
   int cb_buffer_alloc_size;
+
+  int allocated_row_mt_sync_rows;
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
@@ -216,6 +229,8 @@ struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 
 void av1_decoder_remove(struct AV1Decoder *pbi);
 void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_jobs_sync);
+
+void av1_dec_row_mt_dealloc(AV1DecRowMTSync *dec_row_mt_sync);
 
 void av1_dec_free_cb_buf(AV1Decoder *pbi);
 

@@ -178,6 +178,10 @@ void av1_decoder_remove(AV1Decoder *pbi) {
     AVxWorker *const worker = &pbi->tile_workers[i];
     aom_get_worker_interface()->end(worker);
   }
+  for (i = 0; i < pbi->allocated_tiles; i++) {
+    TileDataDec *const tile_data = pbi->tile_data + i;
+    av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);
+  }
   aom_free(pbi->tile_data);
   aom_free(pbi->tile_workers);
 
