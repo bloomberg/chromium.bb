@@ -219,10 +219,10 @@ void DynamicModuleResolver::ResolveDynamically(
   // highly discouraged since it breaks layering. Rewrite this.
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
-  FetchClientSettingsObjectSnapshot settings_object(*execution_context);
-  modulator_->FetchTree(url, settings_object,
-                        WebURLRequest::kRequestContextScript, options,
-                        ModuleScriptCustomFetchType::kNone, tree_client);
+  modulator_->FetchTree(
+      url, new FetchClientSettingsObjectSnapshot(*execution_context),
+      WebURLRequest::kRequestContextScript, options,
+      ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 2.[5-8] are implemented at
   // DynamicImportTreeClient::NotifyModuleLoadFinished.

@@ -39,7 +39,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
   static void Fetch(
       const KURL&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
       Modulator*,
@@ -50,7 +50,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // [FDaI] for an inline script.
   static void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleScriptCustomFetchType,
@@ -67,7 +67,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 
  private:
   ModuleTreeLinker(
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleScriptCustomFetchType,
@@ -112,7 +112,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ScriptValue FindFirstParseError(ModuleScript*,
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
-  const FetchClientSettingsObjectSnapshot fetch_client_settings_object_;
+  const Member<FetchClientSettingsObjectSnapshot> fetch_client_settings_object_;
   const WebURLRequest::RequestContext destination_;
   const Member<Modulator> modulator_;
   const ModuleScriptCustomFetchType custom_fetch_type_;

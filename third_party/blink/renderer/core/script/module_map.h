@@ -41,7 +41,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   void FetchSingleModuleScript(
       const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType,
       SingleModuleClient*);

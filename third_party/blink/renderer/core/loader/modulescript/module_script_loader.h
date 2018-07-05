@@ -49,7 +49,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
   static void Fetch(
       const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       Modulator* module_map_settings_object,
       ModuleScriptCustomFetchType,
@@ -74,7 +74,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
   void FetchInternal(
       const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType);
 

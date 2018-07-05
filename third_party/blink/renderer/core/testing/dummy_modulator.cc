@@ -63,7 +63,7 @@ base::SingleThreadTaskRunner* DummyModulator::TaskRunner() {
 };
 
 void DummyModulator::FetchTree(const KURL&,
-                               const FetchClientSettingsObjectSnapshot&,
+                               FetchClientSettingsObjectSnapshot*,
                                WebURLRequest::RequestContext,
                                const ScriptFetchOptions&,
                                ModuleScriptCustomFetchType,
@@ -72,7 +72,7 @@ void DummyModulator::FetchTree(const KURL&,
 }
 
 void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
-                                 const FetchClientSettingsObjectSnapshot&,
+                                 FetchClientSettingsObjectSnapshot*,
                                  ModuleGraphLevel,
                                  ModuleScriptCustomFetchType,
                                  SingleModuleClient*) {
@@ -81,7 +81,7 @@ void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
 
 void DummyModulator::FetchDescendantsForInlineScript(
     ModuleScript*,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext,
     ModuleTreeClient*) {
   NOTREACHED();

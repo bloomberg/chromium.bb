@@ -51,19 +51,19 @@ class ModulatorImplBase : public Modulator {
 
   void FetchTree(
       const KURL&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
       ModuleScriptCustomFetchType,
       ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   void FetchSingle(
       const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType,
       SingleModuleClient*) override;

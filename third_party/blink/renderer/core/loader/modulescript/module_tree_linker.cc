@@ -20,7 +20,7 @@ namespace blink {
 
 void ModuleTreeLinker::Fetch(
     const KURL& url,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
@@ -37,7 +37,7 @@ void ModuleTreeLinker::Fetch(
 
 void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -53,7 +53,7 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
 }
 
 ModuleTreeLinker::ModuleTreeLinker(
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -71,6 +71,7 @@ ModuleTreeLinker::ModuleTreeLinker(
 }
 
 void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
+  visitor->Trace(fetch_client_settings_object_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
@@ -164,7 +165,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // settings object's API base URL.</spec>
   if (RuntimeEnabledFeatures::LayeredAPIEnabled()) {
     url = blink::layered_api::ResolveFetchingURL(
-        url, fetch_client_settings_object_.BaseURL());
+        url, fetch_client_settings_object_->BaseURL());
   }
 
 #if DCHECK_IS_ON()
@@ -192,7 +193,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
       url, destination_, options,
       SecurityPolicy::GenerateReferrer(
           options.GetReferrerPolicy(), url,
-          fetch_client_settings_object_.GetOutgoingReferrer()),
+          fetch_client_settings_object_->GetOutgoingReferrer()),
       TextPosition::MinimumPosition());
 
   InitiateInternalModuleScriptGraphFetching(

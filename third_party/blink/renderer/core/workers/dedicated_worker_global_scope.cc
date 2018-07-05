@@ -64,7 +64,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void DedicatedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."

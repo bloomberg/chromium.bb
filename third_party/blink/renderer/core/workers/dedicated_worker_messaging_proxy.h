@@ -43,7 +43,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
       std::unique_ptr<GlobalScopeCreationParams>,
       const WorkerOptions&,
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
       const v8_inspector::V8StackTraceId&,
       const String& source_code);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,

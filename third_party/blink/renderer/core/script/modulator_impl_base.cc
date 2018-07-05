@@ -50,7 +50,7 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 void ModulatorImplBase::FetchTree(
     const KURL& url,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -85,7 +85,7 @@ void ModulatorImplBase::FetchTree(
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
@@ -95,7 +95,7 @@ void ModulatorImplBase::FetchDescendantsForInlineScript(
 
 void ModulatorImplBase::FetchSingle(
     const ModuleScriptFetchRequest& request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {

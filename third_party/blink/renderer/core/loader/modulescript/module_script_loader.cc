@@ -79,7 +79,7 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
 
 void ModuleScriptLoader::Fetch(
     const ModuleScriptFetchRequest& module_request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     ModuleGraphLevel level,
     Modulator* module_map_settings_object,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -95,7 +95,7 @@ void ModuleScriptLoader::Fetch(
 // https://html.spec.whatwg.org/#fetch-a-single-module-script
 void ModuleScriptLoader::FetchInternal(
     const ModuleScriptFetchRequest& module_request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type) {
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
@@ -149,7 +149,7 @@ void ModuleScriptLoader::FetchInternal(
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
   fetch_params.SetCrossOriginAccessControl(
-      fetch_client_settings_object.GetSecurityOrigin(),
+      fetch_client_settings_object->GetSecurityOrigin(),
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]

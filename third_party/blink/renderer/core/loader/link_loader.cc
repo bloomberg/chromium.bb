@@ -502,7 +502,8 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // |document| is the node document here, and its context document is the
   // relevant settings object.
   Document* context_document = document.ContextDocument();
-  FetchClientSettingsObjectSnapshot settings_object(*context_document);
+  auto* settings_object =
+      new FetchClientSettingsObjectSnapshot(*context_document);
 
   Modulator* modulator =
       Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));

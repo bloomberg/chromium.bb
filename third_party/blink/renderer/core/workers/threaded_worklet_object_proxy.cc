@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -27,14 +28,16 @@ ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() = default;
 void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks,
     WorkerThread* worker_thread) {
   ThreadedWorkletGlobalScope* global_scope =
       ToThreadedWorkletGlobalScope(worker_thread->GlobalScope());
   global_scope->FetchAndInvokeScript(
-      module_url_record, credentials_mode, outside_settings_object,
+      module_url_record, credentials_mode,
+      new FetchClientSettingsObjectSnapshot(std::move(outside_settings_object)),
       std::move(outside_settings_task_runner), pending_tasks);
 }
 
