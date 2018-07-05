@@ -49,13 +49,14 @@
 namespace blink {
 
 class BlobDataHandle;
-class Transferables;
+class DOMSharedArrayBuffer;
 class ExceptionState;
+class ScriptValue;
 class SharedBuffer;
 class StaticBitmapImage;
+class Transferables;
 class UnpackedSerializedScriptValue;
 class WebBlobInfo;
-class DOMSharedArrayBuffer;
 
 typedef HashMap<String, scoped_refptr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;
@@ -189,6 +190,10 @@ class CORE_EXPORT SerializedScriptValue
   static bool ExtractTransferables(v8::Isolate*,
                                    v8::Local<v8::Value>,
                                    int,
+                                   Transferables&,
+                                   ExceptionState&);
+  static bool ExtractTransferables(v8::Isolate*,
+                                   const Vector<ScriptValue>&,
                                    Transferables&,
                                    ExceptionState&);
 

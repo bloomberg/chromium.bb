@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+
 #include "base/numerics/checked_math.h"
 #include "base/sys_byteorder.h"
 #include "third_party/blink/public/web/web_serialized_script_value_version.h"
@@ -429,15 +430,24 @@ bool SerializedScriptValue::ExtractTransferables(
   if (value.IsEmpty() || value->IsUndefined())
     return true;
 
-  Vector<ScriptValue> transferable_array =
+  const Vector<ScriptValue>& transferable_array =
       NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(isolate, value,
                                                                exception_state);
   if (exception_state.HadException())
     return false;
 
+  return ExtractTransferables(isolate, transferable_array, transferables,
+                              exception_state);
+}
+
+bool SerializedScriptValue::ExtractTransferables(
+    v8::Isolate* isolate,
+    const Vector<ScriptValue>& object_sequence,
+    Transferables& transferables,
+    ExceptionState& exception_state) {
   // Validate the passed array of transferables.
   uint32_t i = 0;
-  for (const auto& script_value : transferable_array) {
+  for (const auto& script_value : object_sequence) {
     v8::Local<v8::Value> transferable_object = script_value.V8Value();
     // Validation of non-null objects, per HTML5 spec 10.3.3.
     if (IsUndefinedOrNull(transferable_object)) {
