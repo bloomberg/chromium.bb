@@ -789,11 +789,9 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
 // This positions any "leading" floats within the given exclusion space.
 // If we are also an empty inline, it will add any out-of-flow descendants.
-// TODO(ikilpatrick): Do we need to always add the OOFs here?
 unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
     NGExclusionSpace* exclusion_space) {
   const Vector<NGInlineItem>& items = Node().ItemsData(false).items;
-  bool is_empty_inline = Node().IsEmptyInline();
   LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
 
   unsigned index = BreakToken() ? BreakToken()->ItemIndex() : 0;
@@ -812,16 +810,11 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
               bfc_line_offset, margins, node, /* break_token */ nullptr);
       AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
                            std::move(unpositioned_float));
-    } else if (is_empty_inline &&
-               item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
-      container_builder_.AddInlineOutOfFlowChildCandidate(
-          node, NGLogicalOffset(), Style().Direction(), nullptr);
     }
 
     // Abort if we've found something that makes this a non-empty inline.
     if (!item.IsEmptyItem()) {
-      DCHECK(!is_empty_inline);
+      DCHECK(!Node().IsEmptyInline());
       break;
     }
   }
