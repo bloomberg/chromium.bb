@@ -430,9 +430,10 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       resource_request.SetSkipServiceWorker(true);
     }
 
+    DCHECK(document.GetFrame());
     FetchParameters params(resource_request, resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
-                     document.GetClientHintsPreferences());
+                     document.GetFrame()->GetClientHintsPreferences());
 
     if (update_behavior != kUpdateForcedReload && document.GetFrame())
       document.GetFrame()->MaybeAllowImagePlaceholder(params);

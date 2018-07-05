@@ -86,12 +86,13 @@ void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
 
 void HttpEquiv::ProcessHttpEquivAcceptCH(Document& document,
                                          const AtomicString& content) {
-  if (!document.GetFrame())
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
     return;
 
   UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCH);
-  FrameClientHintsPreferencesContext hints_context(document.GetFrame());
-  document.GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
+  FrameClientHintsPreferencesContext hints_context(frame);
+  frame->GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
       content, document.Url(), &hints_context);
 }
 

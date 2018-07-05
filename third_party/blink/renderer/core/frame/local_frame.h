@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -361,6 +362,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void AnimateSnapFling(base::TimeTicks monotonic_time);
 
+  ClientHintsPreferences& GetClientHintsPreferences() {
+    return client_hints_preferences_;
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -454,6 +459,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
 
   blink::mojom::blink::PrefetchURLLoaderServicePtr prefetch_loader_service_;
+  ClientHintsPreferences client_hints_preferences_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/length.h"
-#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -1303,10 +1302,6 @@ class CORE_EXPORT Document : public ContainerNode,
     secure_context_state_ = state;
   }
 
-  ClientHintsPreferences& GetClientHintsPreferences() {
-    return client_hints_preferences_;
-  }
-
   CanvasFontCache* GetCanvasFontCache();
 
   // Used by unit tests so that all parsing will be main thread for
@@ -1792,8 +1787,6 @@ class CORE_EXPORT Document : public ContainerNode,
   ParserSynchronizationPolicy parser_sync_policy_;
 
   HostsUsingFeatures::Value hosts_using_features_value_;
-
-  ClientHintsPreferences client_hints_preferences_;
 
   Member<CanvasFontCache> canvas_font_cache_;
 

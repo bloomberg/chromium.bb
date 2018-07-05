@@ -905,7 +905,9 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewFormElements(history_item_->GetDocumentState());
 
-  document->GetClientHintsPreferences().UpdateFrom(client_hints_preferences_);
+  DCHECK(document->GetFrame());
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(
+      client_hints_preferences_);
 
   // TODO(japhet): There's no reason to wait until commit to set these bits.
   Settings* settings = document->GetSettings();
