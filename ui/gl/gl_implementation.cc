@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -122,9 +121,9 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
 }
 
 GLImplementation GetSoftwareGLImplementation() {
-#if (BUILDFLAG(ENABLE_SWIFTSHADER) &&         \
-     (defined(OS_WIN) || defined(OS_LINUX) || \
-      (defined(OS_MACOSX) && defined(USE_EGL))))
+#if (defined(OS_WIN) ||                                                     \
+     (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)) || \
+     (defined(OS_MACOSX) && defined(USE_EGL)))
   return kGLImplementationSwiftShaderGL;
 #else
   return kGLImplementationOSMesaGL;
