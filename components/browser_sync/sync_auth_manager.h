@@ -94,9 +94,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void ResetRequestAccessTokenBackoffForTest();
 
  private:
-  void UpdateAuthErrorState(const GoogleServiceAuthError& error);
-  void ClearAuthError();
-
   void ClearAccessTokenAndRequest();
 
   void RequestAccessToken();
