@@ -316,6 +316,15 @@ TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
                              "\",\"screenCaptureDisabled\":true}");
 }
 
+TEST_F(ArcPolicyBridgeTest, DisablePrintingTest) {
+  policy_map().Set(policy::key::kPrintingEnabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   std::make_unique<base::Value>(false), nullptr);
+  GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
+                             "\",\"printingDisabled\":true}");
+}
+
 TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
