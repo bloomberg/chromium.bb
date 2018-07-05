@@ -527,24 +527,13 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
       SetExitCode(ExitCode::kGracefullyTerminated);
   }
 
-  inspector_task_runner_->Dispose();
   GetWorkerReportingProxy().WillDestroyWorkerGlobalScope();
+
   probe::AllAsyncTasksCanceled(GlobalScope());
-
   GlobalScope()->NotifyContextDestroyed();
-  if (worker_inspector_controller_) {
-    worker_inspector_controller_->Dispose();
-    worker_inspector_controller_.Clear();
-  }
   worker_scheduler_->Dispose();
-  GlobalScope()->Dispose();
-  global_scope_ = nullptr;
 
-  if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
-    debugger->WorkerThreadDestroyed(this);
-
-  console_message_storage_.Clear();
-  loading_context_.Clear();
+  // No V8 microtasks should get executed after shutdown is requested.
   GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
 
@@ -557,6 +546,21 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
     DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
   }
 #endif
+
+  inspector_task_runner_->Dispose();
+  if (worker_inspector_controller_) {
+    worker_inspector_controller_->Dispose();
+    worker_inspector_controller_.Clear();
+  }
+
+  GlobalScope()->Dispose();
+  global_scope_ = nullptr;
+
+  if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
+    debugger->WorkerThreadDestroyed(this);
+
+  console_message_storage_.Clear();
+  loading_context_.Clear();
 
   if (IsOwningBackingThread())
     GetWorkerBackingThread().ShutdownOnBackingThread();
