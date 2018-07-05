@@ -4024,7 +4024,6 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
-crbug.com/746128 [ Win7 Debug ] virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Release ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
@@ -4417,6 +4416,21 @@ crbug.com/794338 [ Linux Win Android ] virtual/video-surface-layer/media/video-r
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 crbug.com/811605 virtual/video-surface-layer/media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
+crbug.com/860368 virtual/video-surface-layer/media/autoplay/webaudio-audio-context-resume.html  [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/captions-menu-always-visible.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/video-frame-accurate-seek.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/video-zoom.html [ Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/volumechange-muted-attribute.html [ Timeout Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/video-persistence.html [ Timeout Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/color-profile-video.html [ Timeout Pass Failure ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/modern/singletouch-on-play-button.html [ Timeout Pass ]
+crbug.com/860368 virtual/video-surface-layer/media/controls/lazy-loaded-style.html [ Pass Failure ]
+
 # TODO(senorblanco): rebaseline after Skia roll
 crbug.com/802896 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
 
@@ -4748,7 +4762,3 @@ crbug.com/859629 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing
 # Sheriff 2018-07-03
 crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
 crbug.com/859629 [ Mac10.13 ] http/tests/devtools/tracing/timeline-js/timeline-script-tag-1.js [ Failure ]
-
-# Sheriff 2018-07-04
-crbug.com/860322 [ Mac10.12 Mac10.13 ] virtual/video-surface-layer/media/controls/lazy-loaded-style.html [ Failure Pass ]
-crbug.com/860322 [ Mac10.12 Mac10.13 ] virtual/video-surface-layer/media/video-persistence.html [ Failure Pass ]
