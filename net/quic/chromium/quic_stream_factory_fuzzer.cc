@@ -54,7 +54,7 @@ const int kCertVerifyFlags = 0;
 struct Env {
   Env() : host_port_pair(kServerHostName, kServerPort), random_generator(0) {
     clock.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
-    ssl_config_service = base::MakeRefCounted<SSLConfigServiceDefaults>();
+    ssl_config_service = std::make_unique<SSLConfigServiceDefaults>();
     crypto_client_stream_factory.set_use_mock_crypter(true);
     cert_verifier = std::make_unique<MockCertVerifier>();
     channel_id_service =
@@ -67,7 +67,7 @@ struct Env {
   }
 
   quic::MockClock clock;
-  scoped_refptr<SSLConfigService> ssl_config_service;
+  std::unique_ptr<SSLConfigService> ssl_config_service;
   ProofVerifyDetailsChromium verify_details;
   MockCryptoClientStreamFactory crypto_client_stream_factory;
   HostPortPair host_port_pair;

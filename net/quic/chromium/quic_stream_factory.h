@@ -582,7 +582,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   base::SequencedTaskRunner* task_runner_;
 
-  const scoped_refptr<SSLConfigService> ssl_config_service_;
+  SSLConfigService* const ssl_config_service_;
 
   // If set to true, the stream factory will create UDP Sockets with
   // experimental optimization enabled for receiving data.

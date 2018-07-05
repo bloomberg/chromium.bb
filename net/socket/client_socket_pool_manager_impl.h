@@ -111,7 +111,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   CTVerifier* const cert_transparency_verifier_;
   CTPolicyEnforcer* const ct_policy_enforcer_;
   const std::string ssl_session_cache_shard_;
-  const scoped_refptr<SSLConfigService> ssl_config_service_;
+  SSLConfigService* const ssl_config_service_;
   const HttpNetworkSession::SocketPoolType pool_type_;
 
   // Note: this ordering is important.

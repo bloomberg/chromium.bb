@@ -44,12 +44,11 @@ class TokenBindingSSLConfigService : public SSLConfigService {
   TokenBindingSSLConfigService() {
     ssl_config_.token_binding_params.push_back(TB_PARAM_ECDSAP256);
   }
+  ~TokenBindingSSLConfigService() override = default;
 
   void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
  private:
-  ~TokenBindingSSLConfigService() override = default;
-
   SSLConfig ssl_config_;
 };
 
@@ -60,7 +59,7 @@ class HttpNetworkTransactionSSLTest : public TestWithScopedTaskEnvironment {
   HttpNetworkTransactionSSLTest() = default;
 
   void SetUp() override {
-    ssl_config_service_ = new TokenBindingSSLConfigService;
+    ssl_config_service_.reset(new TokenBindingSSLConfigService);
     session_context_.ssl_config_service = ssl_config_service_.get();
 
     auth_handler_factory_.reset(new HttpAuthHandlerMock::Factory());
@@ -89,7 +88,7 @@ class HttpNetworkTransactionSSLTest : public TestWithScopedTaskEnvironment {
     return request_info;
   }
 
-  scoped_refptr<SSLConfigService> ssl_config_service_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
 

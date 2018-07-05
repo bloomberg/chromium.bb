@@ -192,8 +192,6 @@ class AwSSLConfigService : public net::SSLConfigService {
   }
 
  private:
-  ~AwSSLConfigService() override = default;
-
   net::SSLConfig default_config_;
 };
 
@@ -340,7 +338,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       CreateAuthHandlerFactory(host_resolver.get()));
   builder.set_host_resolver(std::move(host_resolver));
 
-  builder.set_ssl_config_service(base::MakeRefCounted<AwSSLConfigService>());
+  builder.set_ssl_config_service(std::make_unique<AwSSLConfigService>());
 
   url_request_context_ = builder.Build();
 #if DCHECK_IS_ON()
