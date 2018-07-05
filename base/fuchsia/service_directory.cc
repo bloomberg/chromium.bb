@@ -75,6 +75,12 @@ void ServiceDirectory::RemoveService(StringPiece name) {
   ZX_DCHECK(status == ZX_OK, status);
 }
 
+void ServiceDirectory::RemoveAllServices() {
+  while (!services_.empty()) {
+    RemoveService(services_.begin()->first);
+  }
+}
+
 // static
 void ServiceDirectory::HandleConnectRequest(void* context,
                                             const char* service_name,
