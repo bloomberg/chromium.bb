@@ -18,14 +18,15 @@ template <>
 struct TypeConverter<blink::BackgroundFetchRegistration*,
                      blink::mojom::blink::BackgroundFetchRegistrationPtr> {
   static blink::BackgroundFetchRegistration* Convert(
-      const blink::mojom::blink::BackgroundFetchRegistrationPtr&);
+      const blink::mojom::blink::BackgroundFetchRegistrationPtr&
+          mojo_registration);
 };
 
 template <>
 struct TypeConverter<blink::mojom::blink::BackgroundFetchOptionsPtr,
                      blink::BackgroundFetchOptions> {
   static blink::mojom::blink::BackgroundFetchOptionsPtr Convert(
-      const blink::BackgroundFetchOptions&);
+      const blink::BackgroundFetchOptions& options);
 };
 
 }  // namespace mojo
