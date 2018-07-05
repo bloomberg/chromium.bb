@@ -39,7 +39,6 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_image.h"
@@ -96,6 +95,7 @@
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
+#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -140,7 +140,6 @@
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/link_highlight_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -150,7 +149,6 @@
 #include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
@@ -381,11 +379,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
 WebViewImpl::~WebViewImpl() {
   DCHECK(!page_);
-
-  // Each highlight uses m_owningWebViewImpl->m_linkHighlightsTimeline
-  // in destructor. m_linkHighlightsTimeline might be destroyed earlier
-  // than m_linkHighlights.
-  DCHECK(link_highlights_.IsEmpty());
 }
 
 ValidationMessageClient* WebViewImpl::GetValidationMessageClient() const {
@@ -620,8 +613,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTap:
     case WebInputEvent::kGestureLongPress:
-      for (size_t i = 0; i < link_highlights_.size(); ++i)
-        link_highlights_[i]->StartHighlightAnimationIfNeeded();
+      GetPage()->GetLinkHighlights().StartHighlightAnimationIfNeeded();
       break;
     default:
       break;
@@ -669,8 +661,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                 RoundedIntSize(targeted_event.GetHitTestResult().LocalPoint());
 
             EnableTapHighlights(highlight_nodes);
-            for (size_t i = 0; i < link_highlights_.size(); ++i)
-              link_highlights_[i]->StartHighlightAnimationIfNeeded();
+            GetPage()->GetLinkHighlights().StartHighlightAnimationIfNeeded();
             event_result = WebInputEventResult::kHandledSystem;
             event_cancelled = true;
             break;
@@ -1266,30 +1257,7 @@ void WebViewImpl::EnableTapHighlightAtPoint(
 
 void WebViewImpl::EnableTapHighlights(
     HeapVector<Member<Node>>& highlight_nodes) {
-  if (highlight_nodes.IsEmpty())
-    return;
-
-  // Always clear any existing highlight when this is invoked, even if we
-  // don't get a new target to highlight.
-  link_highlights_.clear();
-
-  for (size_t i = 0; i < highlight_nodes.size(); ++i) {
-    Node* node = highlight_nodes[i];
-
-    if (!node || !node->GetLayoutObject())
-      continue;
-
-    Color highlight_color =
-        node->GetLayoutObject()->Style()->TapHighlightColor();
-    // Safari documentation for -webkit-tap-highlight-color says if the
-    // specified color has 0 alpha, then tap highlighting is disabled.
-    // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
-    if (!highlight_color.Alpha())
-      continue;
-
-    link_highlights_.push_back(LinkHighlightImpl::Create(node, this));
-  }
-
+  GetPage()->GetLinkHighlights().SetTapHighlights(highlight_nodes);
   UpdateAllLifecyclePhases();
 }
 
@@ -1785,8 +1753,8 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
 
   // TODO(chrishtr): link highlights don't currently paint themselves, it's
   // still driven by cc.  Fix this.
-  for (size_t i = 0; i < link_highlights_.size(); ++i)
-    link_highlights_[i]->UpdateGeometry();
+  // TODO(pdr): Move this to LocalFrameView::UpdateLifecyclePhasesInternal.
+  GetPage()->GetLinkHighlights().UpdateGeometry();
 
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
@@ -2137,12 +2105,6 @@ bool WebViewImpl::IsAcceleratedCompositingActive() const {
 }
 
 void WebViewImpl::WillCloseLayerTreeView() {
-  if (link_highlights_timeline_) {
-    link_highlights_.clear();
-    DetachCompositorAnimationTimeline(link_highlights_timeline_.get());
-    link_highlights_timeline_.reset();
-  }
-
   if (layer_tree_view_)
     GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
 
@@ -3172,7 +3134,8 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   GetPage()->GetVisualViewport().MainFrameDidChangeSize();
 
   // Make sure link highlight from previous page is cleared.
-  link_highlights_.clear();
+  // TODO(pdr): Move this to Page::DidCommitLoad.
+  GetPage()->GetLinkHighlights().ResetForPageNavigation();
   if (!MainFrameImpl())
     return;
 
@@ -3503,11 +3466,6 @@ void WebViewImpl::InitializeLayerTreeView() {
   // hit this code and then delete allowsBrokenNullLayerTreeView.
   DCHECK(layer_tree_view_ || !client_ ||
          client_->WidgetClient()->AllowsBrokenNullLayerTreeView());
-
-  if (Platform::Current()->IsThreadedAnimationEnabled() && layer_tree_view_) {
-    link_highlights_timeline_ = CompositorAnimationTimeline::Create();
-    AttachCompositorAnimationTimeline(link_highlights_timeline_.get());
-  }
 }
 
 void WebViewImpl::ApplyViewportDeltas(
