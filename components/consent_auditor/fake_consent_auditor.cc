@@ -26,9 +26,8 @@ void FakeConsentAuditor::RecordGaiaConsent(
     int confirmation_grd_id,
     consent_auditor::ConsentStatus status) {
   account_id_ = account_id;
-  std::vector<int> ids = description_grd_ids;
-  ids.push_back(confirmation_grd_id);
-  recorded_id_vectors_.push_back(std::move(ids));
+  recorded_id_vectors_.push_back(description_grd_ids);
+  recorded_confirmation_ids_.push_back(confirmation_grd_id);
   recorded_features_.push_back(feature);
   recorded_statuses_.push_back(status);
 }

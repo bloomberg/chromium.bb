@@ -180,18 +180,20 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeRevokesConsent) {
 
   SetArcPlayStoreEnabledForProfile(profile(), false);
 
-  // Make sure consent auditig is recording the expected revocation of consent.
+  // Make sure consent auditing is recording the expected revocation of consent.
   const std::vector<int> tos_consent = {
-      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE,
+      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE};
+  const std::vector<std::vector<int>> description_ids = {tos_consent};
+  const std::vector<int> confirmation_ids = {
       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE};
-  const std::vector<std::vector<int>> consent_ids = {tos_consent};
   const std::vector<consent_auditor::Feature> features = {
       consent_auditor::Feature::PLAY_STORE};
   const std::vector<consent_auditor::ConsentStatus> statuses = {
       consent_auditor::ConsentStatus::NOT_GIVEN};
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
-  EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
+  EXPECT_EQ(consent_auditor()->recorded_id_vectors(), description_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
