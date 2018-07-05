@@ -253,6 +253,18 @@
         event.preventDefault();
         _focusTreeElement(_liveNodeList.length - 1);
         break;
+      // Expand all sibling nodes
+      case '*':
+        const groupList = link.parentElement.parentElement;
+        if (groupList.getAttribute('role') === 'group') {
+          event.preventDefault();
+          for (const li of groupList.children) {
+            if (li.getAttribute('aria-expanded') !== 'true') {
+              li.querySelector('.node').click();
+            }
+          }
+        }
+        break;
       // If a letter was pressed, find a node starting with that character.
       default:
         if (event.key.length === 1 && event.key.match(/\S/)) {
