@@ -739,10 +739,12 @@ function addRippleAnimations() {
     ripple.style.marginTop = y + 'px';
 
     rippleContainer.style.left = rect.left + 'px';
+    rippleContainer.style.top = rect.top + 'px';
     rippleContainer.style.width = target.offsetWidth + 'px';
     rippleContainer.style.height = target.offsetHeight + 'px';
     rippleContainer.style.borderRadius =
         window.getComputedStyle(target).borderRadius;
+    rippleContainer.style.position = 'fixed';
 
     // Start transition/ripple
     ripple.style.width = radius * 2 + 'px';
