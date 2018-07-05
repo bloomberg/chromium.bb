@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/autofill/dialog_event_waiter.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
@@ -758,13 +757,13 @@ void PaymentRequestBrowserTestBase::SetCanMakePaymentEnabledPref(
 }
 
 void PaymentRequestBrowserTestBase::ResetEventWaiter(DialogEvent event) {
-  event_waiter_ = std::make_unique<DialogEventWaiter<DialogEvent>>(
+  event_waiter_ = std::make_unique<autofill::EventWaiter<DialogEvent>>(
       std::list<DialogEvent>{event});
 }
 
 void PaymentRequestBrowserTestBase::ResetEventWaiterForSequence(
     std::list<DialogEvent> event_sequence) {
-  event_waiter_ = std::make_unique<DialogEventWaiter<DialogEvent>>(
+  event_waiter_ = std::make_unique<autofill::EventWaiter<DialogEvent>>(
       std::move(event_sequence));
 }
 

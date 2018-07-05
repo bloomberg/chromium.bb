@@ -27,119 +27,37 @@ namespace autofill {
 
 // AutofillManagerTestDelegateImpl --------------------------------------------
 AutofillManagerTestDelegateImpl::AutofillManagerTestDelegateImpl()
-    : run_loop_(nullptr),
-      is_expecting_dynamic_refill_(false),
-      waiting_for_preview_form_data_(false),
-      waiting_for_fill_form_data_(false),
-      waiting_for_show_suggestion_(false),
-      waiting_for_text_change_(false) {}
+    : is_expecting_dynamic_refill_(false) {}
 
 AutofillManagerTestDelegateImpl::~AutofillManagerTestDelegateImpl() {}
 
 void AutofillManagerTestDelegateImpl::DidPreviewFormData() {
-  if (!waiting_for_preview_form_data_)
-    return;
-  waiting_for_preview_form_data_ = false;
-  run_loop_->Quit();
+  DCHECK(event_waiter_);
+  event_waiter_->OnEvent(ObservedUiEvents::kPreviewFormData);
 }
 
 void AutofillManagerTestDelegateImpl::DidFillFormData() {
-  if (!is_expecting_dynamic_refill_)
-    ASSERT_TRUE(run_loop_->running());
-  if (!waiting_for_fill_form_data_)
-    return;
-  waiting_for_fill_form_data_ = false;
-  run_loop_->Quit();
+  DCHECK(event_waiter_);
+  event_waiter_->OnEvent(ObservedUiEvents::kFormDataFilled);
 }
 
 void AutofillManagerTestDelegateImpl::DidShowSuggestions() {
-  if (!waiting_for_show_suggestion_)
-    return;
-  waiting_for_show_suggestion_ = false;
-  run_loop_->Quit();
+  DCHECK(event_waiter_);
+  event_waiter_->OnEvent(ObservedUiEvents::kSuggestionShown);
 }
 
-void AutofillManagerTestDelegateImpl::OnTextFieldChanged() {
-  if (!waiting_for_text_change_)
-    return;
-  waiting_for_text_change_ = false;
-  run_loop_->Quit();
-}
+void AutofillManagerTestDelegateImpl::OnTextFieldChanged() {}
 
 void AutofillManagerTestDelegateImpl::Reset() {
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, nullptr);
-  waiting_for_preview_form_data_ = false;
-  waiting_for_fill_form_data_ = false;
-  waiting_for_show_suggestion_ = false;
-  waiting_for_text_change_ = false;
+  event_waiter_.reset();
 }
 
-void AutofillManagerTestDelegateImpl::Wait() {
-  waiting_for_preview_form_data_ = true;
-  waiting_for_fill_form_data_ = true;
-  waiting_for_show_suggestion_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  run_loop_->Run();
-}
-
-void AutofillManagerTestDelegateImpl::WaitForTextChange() {
-  waiting_for_text_change_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  run_loop_->Run();
-}
-
-bool AutofillManagerTestDelegateImpl::WaitForPreviewFormData(
-    base::TimeDelta timeout = base::TimeDelta::FromSeconds(0)) {
-  waiting_for_preview_form_data_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  if (!timeout.is_zero()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_->QuitClosure(), timeout);
-  }
-  run_loop_->Run();
-  return !waiting_for_preview_form_data_;
-}
-
-bool AutofillManagerTestDelegateImpl::WaitForFormDataFilled(
-    base::TimeDelta timeout = base::TimeDelta::FromSeconds(0)) {
-  waiting_for_fill_form_data_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  if (!timeout.is_zero()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_->QuitClosure(), timeout);
-  }
-  run_loop_->Run();
-  return !waiting_for_fill_form_data_;
-}
-
-bool AutofillManagerTestDelegateImpl::WaitForSuggestionShown(
-    base::TimeDelta timeout = base::TimeDelta::FromSeconds(0)) {
-  waiting_for_show_suggestion_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  if (!timeout.is_zero()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_->QuitClosure(), timeout);
-  }
-  run_loop_->Run();
-  return !waiting_for_show_suggestion_;
-}
-
-bool AutofillManagerTestDelegateImpl::WaitForTextChange(
-    base::TimeDelta timeout = base::TimeDelta::FromSeconds(0)) {
-  waiting_for_text_change_ = true;
-  base::RunLoop run_loop;
-  base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-  if (!timeout.is_zero()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_->QuitClosure(), timeout);
-  }
-  run_loop_->Run();
-  return !waiting_for_text_change_;
+bool AutofillManagerTestDelegateImpl::Wait(
+    std::list<ObservedUiEvents> expected_events,
+    base::TimeDelta timeout) {
+  event_waiter_ =
+      std::make_unique<EventWaiter<ObservedUiEvents>>(expected_events, timeout);
+  return event_waiter_->Wait();
 }
 
 // AutofillUiTest ----------------------------------------------------
@@ -193,8 +111,8 @@ bool AutofillUiTest::TryFillForm(const std::string& focus_element_xpath,
     // suggestion drop down.
     test_delegate()->Reset();
     SendKeyToPopup(ui::DomKey::ARROW_DOWN);
-    if (!test_delegate()->WaitForPreviewFormData(
-            base::TimeDelta::FromSeconds(5))) {
+    if (!test_delegate()->Wait({ObservedUiEvents::kPreviewFormData},
+                               base::TimeDelta::FromSeconds(5))) {
       LOG(WARNING) << "Failed to select an option from the"
                    << " autofill suggestion drop down.";
       continue;
@@ -203,8 +121,8 @@ bool AutofillUiTest::TryFillForm(const std::string& focus_element_xpath,
     // Press the enter key to invoke autofill using the first suggestion.
     test_delegate()->Reset();
     SendKeyToPopup(ui::DomKey::ENTER);
-    if (!test_delegate()->WaitForFormDataFilled(
-            base::TimeDelta::FromSeconds(5))) {
+    if (!test_delegate()->Wait({ObservedUiEvents::kFormDataFilled},
+                               base::TimeDelta::FromSeconds(5))) {
       LOG(WARNING) << "Failed to fill the form.";
       continue;
     }
@@ -229,8 +147,8 @@ bool AutofillUiTest::ShowAutofillSuggestion(
   if (content::ExecuteScript(GetWebContents(), js)) {
     test_delegate()->Reset();
     SendKeyToPage(ui::DomKey::ARROW_DOWN);
-    return test_delegate()->WaitForSuggestionShown(
-        base::TimeDelta::FromSeconds(5));
+    return test_delegate()->Wait({ObservedUiEvents::kSuggestionShown},
+                                 base::TimeDelta::FromSeconds(5));
   }
   return false;
 }
@@ -242,19 +160,23 @@ void AutofillUiTest::SendKeyToPage(ui::DomKey key) {
                             false, false);
 }
 
-void AutofillUiTest::SendKeyToPageAndWait(ui::DomKey key) {
+void AutofillUiTest::SendKeyToPageAndWait(
+    ui::DomKey key,
+    std::list<ObservedUiEvents> expected_events) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  SendKeyToPageAndWait(key, code, key_code);
+  SendKeyToPageAndWait(key, code, key_code, std::move(expected_events));
 }
 
-void AutofillUiTest::SendKeyToPageAndWait(ui::DomKey key,
-                                          ui::DomCode code,
-                                          ui::KeyboardCode key_code) {
+void AutofillUiTest::SendKeyToPageAndWait(
+    ui::DomKey key,
+    ui::DomCode code,
+    ui::KeyboardCode key_code,
+    std::list<ObservedUiEvents> expected_events) {
   test_delegate()->Reset();
   content::SimulateKeyPress(GetWebContents(), key, code, key_code, false, false,
                             false, false);
-  test_delegate()->Wait();
+  test_delegate()->Wait(std::move(expected_events));
 }
 
 void AutofillUiTest::SendKeyToPopup(ui::DomKey key) {
@@ -276,16 +198,21 @@ void AutofillUiTest::SendKeyToPopup(ui::DomKey key) {
   widget->RemoveKeyPressEventCallback(key_press_event_sink_);
 }
 
-void AutofillUiTest::SendKeyToPopupAndWait(ui::DomKey key) {
+void AutofillUiTest::SendKeyToPopupAndWait(
+    ui::DomKey key,
+    std::list<ObservedUiEvents> expected_events) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  SendKeyToPopupAndWait(key, code, key_code, GetRenderViewHost()->GetWidget());
+  SendKeyToPopupAndWait(key, code, key_code, std::move(expected_events),
+                        GetRenderViewHost()->GetWidget());
 }
 
-void AutofillUiTest::SendKeyToPopupAndWait(ui::DomKey key,
-                                           ui::DomCode code,
-                                           ui::KeyboardCode key_code,
-                                           content::RenderWidgetHost* widget) {
+void AutofillUiTest::SendKeyToPopupAndWait(
+    ui::DomKey key,
+    ui::DomCode code,
+    ui::KeyboardCode key_code,
+    std::list<ObservedUiEvents> expected_events,
+    content::RenderWidgetHost* widget) {
   // Route popup-targeted key presses via the render view host.
   content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
                                         blink::WebInputEvent::kNoModifiers,
@@ -298,7 +225,7 @@ void AutofillUiTest::SendKeyToPopupAndWait(ui::DomKey key,
   // handled by the installed callbacks do not end up crashing the test.
   widget->AddKeyPressEventCallback(key_press_event_sink_);
   widget->ForwardKeyboardEvent(event);
-  test_delegate()->Wait();
+  test_delegate()->Wait(std::move(expected_events));
   widget->RemoveKeyPressEventCallback(key_press_event_sink_);
 }
 

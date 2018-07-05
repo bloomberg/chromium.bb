@@ -1419,7 +1419,6 @@ test("browser_tests") {
         "../browser/ui/global_error/global_error_service_browsertest.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
-        "../browser/ui/views/autofill/dialog_event_waiter.h",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest_base.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h",

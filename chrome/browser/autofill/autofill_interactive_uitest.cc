@@ -303,9 +303,12 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     std::string js("document.getElementById('" + field_id + "').focus();");
     ASSERT_TRUE(content::ExecuteScript(GetWebContents(), js));
 
-    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-    SendKeyToPopupAndWait(ui::DomKey::ENTER);
+    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                         {ObservedUiEvents::kSuggestionShown});
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                          {ObservedUiEvents::kPreviewFormData});
+    SendKeyToPopupAndWait(ui::DomKey::ENTER,
+                          {ObservedUiEvents::kFormDataFilled});
   }
 
   void ExpectFieldValue(const std::string& field_name,
@@ -494,11 +497,12 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                         ui::VKEY_M);
+                         ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
-    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                          {ObservedUiEvents::kPreviewFormData});
 
     // The previewed values should not be accessible to JavaScript.
     ExpectFieldValue("firstname", "M");
@@ -514,15 +518,18 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // displayed: http://crbug.com/57220
 
     // Press Enter to accept the autofill suggestions.
-    SendKeyToPopupAndWait(ui::DomKey::ENTER);
+    SendKeyToPopupAndWait(ui::DomKey::ENTER,
+                          {ObservedUiEvents::kFormDataFilled});
 
     // The form should be filled.
     ExpectFilledTestForm();
   }
 
   void TryClearForm() {
-    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                         {ObservedUiEvents::kSuggestionShown});
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                          {ObservedUiEvents::kPreviewFormData});
     SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
     SendKeyToDataListPopup(ui::DomKey::ENTER);
 
@@ -535,14 +542,33 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                         ui::VKEY_M);
+                         ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
-    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                          {ObservedUiEvents::kPreviewFormData});
 
     // Press Enter to accept the autofill suggestions.
-    SendKeyToPopupAndWait(ui::DomKey::ENTER);
+    SendKeyToPopupAndWait(ui::DomKey::ENTER,
+                          {ObservedUiEvents::kFormDataFilled});
+  }
+
+  void SelectSuggestionUsingArrowDown(int suggestion_position = 0) {
+    // Press the down arrow to initiate Autofill and wait for the popup to be
+    // shown.
+    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                         {ObservedUiEvents::kSuggestionShown});
+    // Press the down arrow repeatedly to select the suggestion at
+    // |suggestion_position| and preview the autofilled form.
+    for (int i = 0; i <= suggestion_position; ++i) {
+      SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                            {ObservedUiEvents::kPreviewFormData});
+    }
+
+    // Press Enter to accept the autofill suggestions.
+    SendKeyToPopupAndWait(ui::DomKey::ENTER,
+                          {ObservedUiEvents::kFormDataFilled});
   }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
@@ -628,13 +654,13 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ClearTwoSection) {
 
   // Fill second section.
   FocusFieldByName("firstname_billing");
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   // Clear second section.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
   SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
   SendKeyToDataListPopup(ui::DomKey::ENTER);
 
@@ -666,9 +692,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyFieldAndFill) {
 
   // Fill
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Waddams");  // Modified by the user.
@@ -705,9 +729,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, PrefillFormAndFill) {
   FocusFirstNameField();
   DeleteElementValue("firstname");
 
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
   ExpectFilledTestForm();
 }
 
@@ -724,8 +746,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Change the last name.
   FocusFieldByName("lastname");
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
@@ -739,9 +763,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Fill again by focusing on the first field.
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname",
@@ -755,8 +777,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 
   // Clear everything except last name by selecting 'clear' on the first field.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
   SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
   SendKeyToDataListPopup(ui::DomKey::ENTER);
 
@@ -785,8 +809,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Change the last name.
   FocusFieldByName("lastname");
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
@@ -799,9 +825,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 
   // Autofill the last name.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   ExpectFilledTestForm();
 
@@ -821,8 +845,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Change the last name.
   FocusFieldByName("lastname");
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                       {ObservedUiEvents::kSuggestionShown});
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
@@ -835,9 +861,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 
   // Autofill the last name.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   ExpectFilledTestForm();
 
@@ -864,10 +888,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   FocusFieldByName("address1");
   DeleteElementValue("address1");
 
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);  // second profile
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown(/*suggestion_position=*/1);
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Waddams");
@@ -895,16 +916,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillViaDownArrow) {
   // Focus a fillable field.
   FocusFirstNameField();
 
-  // Press the down arrow to initiate Autofill and wait for the popup to be
-  // shown.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-
-  // Press the down arrow to select the suggestion and preview the autofilled
-  // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-
-  // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -920,16 +932,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillSelectViaTab) {
   // Focus a fillable field.
   FocusFirstNameField();
 
-  // Press the down arrow to initiate Autofill and wait for the popup to be
-  // shown.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-
-  // Press the down arrow to select the suggestion and preview the autofilled
-  // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-
-  // Press tab to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::TAB);
+  SelectSuggestionUsingArrowDown();
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -947,14 +950,15 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillViaClick) {
   // Now click it.
   test_delegate()->Reset();
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait();
+  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -1008,14 +1012,15 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
   // This click should activate the autofill popup.
   test_delegate()->Reset();
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait();
+  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -1042,7 +1047,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, DontAutofillForOutsideClick) {
 
   test_delegate()->Reset();
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait();
+  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
 }
 
 // Test that a field is still autofillable after the previously autofilled
@@ -1057,9 +1062,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
   ExpectFilledTestForm();
 
   // Delete the value of a filled field.
@@ -1069,9 +1075,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
 
   // Invoke and accept the Autofill popup and verify the field was filled.
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
   ExpectFieldValue("firstname", "Milton");
 }
 
@@ -1105,7 +1112,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   GetFieldBackgroundColor("firstname", &orginalcolor);
 
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
   SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);
   SendKeyToDataListPopup(ui::DomKey::ENTER);
   ExpectFieldValue("firstname", "Adam");
@@ -1150,14 +1158,15 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnInputAfterAutofill) {
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -1220,14 +1229,15 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnChangeAfterAutofill) {
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -1283,9 +1293,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, InputFiresBeforeChange) {
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
   ExpectFilledTestForm();
 
   int num_input_element_events = -1;
@@ -1945,7 +1956,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   // the popup to be shown.
   FocusFirstNameField();
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
 
   // Now that the popup with suggestions is showing, disable autocomplete for
   // the active field.
@@ -1955,7 +1966,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
 }
 
 // Test that dynamic forms don't get filled when the feature is disabled.
@@ -2058,9 +2070,7 @@ IN_PROC_BROWSER_TEST_P(AutofillCreditCardInteractiveTest, FillLocalCreditCard) {
 
   // Trigger the autofill.
   FocusFieldByName("CREDIT_CARD_NAME_FULL");
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  SelectSuggestionUsingArrowDown();
 
   ExpectFieldValue("CREDIT_CARD_NAME_FULL", "Milton Waddams");
   ExpectFieldValue("CREDIT_CARD_NUMBER", "4111111111111111");
@@ -2273,11 +2283,12 @@ class AutofillInteractiveIsolationTest
   ~AutofillInteractiveIsolationTest() override = default;
 
   void SendKeyToPopupAndWait(ui::DomKey key,
+                             std::list<ObservedUiEvents> expected_events,
                              content::RenderWidgetHost* widget) {
     ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
     ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    AutofillInteractiveTestBase::SendKeyToPopupAndWait(key, code, key_code,
-                                                       widget);
+    AutofillInteractiveTestBase::SendKeyToPopupAndWait(
+        key, code, key_code, std::move(expected_events), widget);
   }
 
   bool IsPopupShown() {
@@ -2323,11 +2334,14 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
   // keyboard.
   std::string script_focus("document.getElementById('NAME_FIRST').focus();");
   ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
   content::RenderWidgetHost* widget =
       cross_frame->GetView()->GetRenderWidgetHost();
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN, widget);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER, widget);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData}, widget);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled},
+                        widget);
 
   // Check that the suggestion was filled.
   std::string value;
@@ -2376,7 +2390,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
 
   // Send an arrow dow keypress in order to trigger the autofill popup.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
 }
 
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
@@ -2406,10 +2421,12 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
   // keyboard.
   std::string script_focus("document.getElementById('NAME_FIRST').focus();");
   ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
   content::RenderWidgetHost* widget =
       cross_frame->GetView()->GetRenderWidgetHost();
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN, widget);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData}, widget);
   // Do not accept the suggestion yet, to keep the pop-up shown.
   EXPECT_TRUE(IsPopupShown());
 
@@ -2633,9 +2650,10 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   // Trigger the initial fill.
   FocusFieldByName("cc-name");
   SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
-                       ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
 
   // Wait for the dynamic change to happen.
   bool has_refilled = false;

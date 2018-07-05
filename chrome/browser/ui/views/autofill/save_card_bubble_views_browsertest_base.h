@@ -12,11 +12,11 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/views/autofill/dialog_event_waiter.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
+#include "components/autofill/core/browser/test_event_waiter.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -109,7 +109,7 @@ class SaveCardBubbleViewsBrowserTestBase
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  std::unique_ptr<DialogEventWaiter<DialogEvent>> event_waiter_;
+  std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;
   std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
