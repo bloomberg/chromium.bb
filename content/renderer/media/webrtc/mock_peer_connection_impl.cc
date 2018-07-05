@@ -206,6 +206,61 @@ std::vector<webrtc::RtpSource> FakeRtpReceiver::GetSources() const {
   return std::vector<webrtc::RtpSource>();
 }
 
+FakeRtpTransceiver::FakeRtpTransceiver(
+    cricket::MediaType media_type,
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+    rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver)
+    : media_type_(media_type),
+      sender_(std::move(sender)),
+      receiver_(std::move(receiver)) {}
+
+FakeRtpTransceiver::~FakeRtpTransceiver() {}
+
+cricket::MediaType FakeRtpTransceiver::media_type() const {
+  return media_type_;
+}
+
+rtc::Optional<std::string> FakeRtpTransceiver::mid() const {
+  return rtc::nullopt;
+}
+
+rtc::scoped_refptr<webrtc::RtpSenderInterface> FakeRtpTransceiver::sender()
+    const {
+  return sender_;
+}
+
+rtc::scoped_refptr<webrtc::RtpReceiverInterface> FakeRtpTransceiver::receiver()
+    const {
+  return receiver_;
+}
+
+bool FakeRtpTransceiver::stopped() const {
+  return false;
+}
+
+webrtc::RtpTransceiverDirection FakeRtpTransceiver::direction() const {
+  return webrtc::RtpTransceiverDirection::kSendRecv;
+}
+
+void FakeRtpTransceiver::SetDirection(
+    webrtc::RtpTransceiverDirection new_direction) {
+  NOTIMPLEMENTED();
+}
+
+rtc::Optional<webrtc::RtpTransceiverDirection>
+FakeRtpTransceiver::current_direction() const {
+  return rtc::nullopt;
+}
+
+void FakeRtpTransceiver::Stop() {
+  NOTIMPLEMENTED();
+}
+
+void FakeRtpTransceiver::SetCodecPreferences(
+    rtc::ArrayView<webrtc::RtpCodecCapability> codecs) {
+  NOTIMPLEMENTED();
+}
+
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
