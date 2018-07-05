@@ -551,6 +551,7 @@ class TestRunner(object):
           raise
 
       # Retry failed test cases.
+      retry_results = {}
       if self.retries and failed:
         print '%s tests failed and will be retried.' % len(failed)
         print
@@ -558,13 +559,20 @@ class TestRunner(object):
           for test in failed.keys():
             print 'Retry #%s for %s.' % (i + 1, test)
             print
-            result = self._run(self.get_launch_command(test_filter=[test]))
+            retry_result = self._run(self.get_launch_command(
+                test_filter=[test]
+            ))
             # If the test passed on retry, consider it flake instead of failure.
-            if test in result.passed_tests:
+            if test in retry_result.passed_tests:
               flaked[test] = failed.pop(test)
+            # Save the result of the latest run for each test.
+            retry_results[test] = retry_result
 
       # Build test_results.json.
-      self.test_results['interrupted'] = result.crashed
+      # Check if if any of the retries crashed in addition to the original run.
+      interrupted = (result.crashed or
+                     any([r.crashed for r in retry_results.values()]))
+      self.test_results['interrupted'] = interrupted
       self.test_results['num_failures_by_type'] = {
         'FAIL': len(failed) + len(flaked),
         'PASS': len(passed),
@@ -584,7 +592,7 @@ class TestRunner(object):
       for test, log_lines in flaked.iteritems():
         self.logs[test] = log_lines
 
-      return not failed
+      return not failed and not interrupted
     finally:
       self.tear_down()
 
