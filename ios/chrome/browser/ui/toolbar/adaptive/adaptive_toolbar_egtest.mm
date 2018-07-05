@@ -28,6 +28,7 @@
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -35,6 +36,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using web::test::ElementSelector;
 
 namespace {
 
@@ -690,7 +693,8 @@ void FocusOmnibox() {
       selectElementWithMatcher:web::WebViewInWebState(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        kLinkID, true /* menu should appear */)];
+                        ElementSelector::ElementSelectorId(kLinkID),
+                        true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(
                      IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]

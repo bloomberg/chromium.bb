@@ -22,6 +22,7 @@
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -35,6 +36,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 using testing::ElementToDismissAlert;
+using web::test::ElementSelector;
 
 namespace {
 
@@ -445,7 +447,9 @@ id<GREYMatcher> GoButtonMatcher() {
 
   web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
-      performAction:web::WebViewTapElement(currentWebState, ID)];
+      performAction:web::WebViewTapElement(
+                        currentWebState,
+                        ElementSelector::ElementSelectorId(ID))];
 
   // Wait until the keyboard shows up before tapping.
   GREYCondition* condition = [GREYCondition

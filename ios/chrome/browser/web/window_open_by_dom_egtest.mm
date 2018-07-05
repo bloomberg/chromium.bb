@@ -20,6 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,6 +33,7 @@ using chrome_test_util::ExecuteJavaScript;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
+using web::test::ElementSelector;
 using web::test::HttpServer;
 using web::WebViewInWebState;
 
@@ -92,7 +94,9 @@ id<GREYMatcher> PopupBlocker() {
   GREYAssert(!error, @"Error during script execution: %@", error);
   const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
 
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
@@ -106,7 +110,9 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTarget {
   const char ID[] = "webScenarioWindowOpenRegularLink";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
@@ -126,13 +132,17 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetMultipleTimes {
   const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
   [ChromeEarlGrey waitForMainTabCount:4];
 }
 
@@ -186,7 +196,9 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetWithDelayedClose {
   const char ID[] = "webScenarioWindowOpenWithDelayedClose";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
   [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -243,7 +255,9 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testWindowOpenWithAboutNewTabScript {
   const char ID[] = "webScenarioWindowOpenWithAboutNewTabScript";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId(ID))];
   [ChromeEarlGrey waitForMainTabCount:2];
   [[EarlGrey selectElementWithMatcher:OmniboxText("about:newtab")]
       assertWithMatcher:grey_notNil()];

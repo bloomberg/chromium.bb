@@ -17,10 +17,18 @@
 
 namespace chrome_test_util {
 
-id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
+id<GREYAction> LongPressElementForContextMenu(const std::string& elementId,
                                               bool triggers_context_menu) {
+  return LongPressElementForContextMenu(
+      web::test::ElementSelector::ElementSelectorId(elementId),
+      triggers_context_menu);
+}
+
+id<GREYAction> LongPressElementForContextMenu(
+    web::test::ElementSelector selector,
+    bool triggers_context_menu) {
   return WebViewLongPressElementForContextMenu(
-      chrome_test_util::GetCurrentWebState(), element_id,
+      chrome_test_util::GetCurrentWebState(), std::move(selector),
       triggers_context_menu);
 }
 

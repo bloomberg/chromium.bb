@@ -18,7 +18,7 @@ const ElementSelector ElementSelector::ElementSelectorId(
     const std::string element_id) {
   return ElementSelector(
       base::StringPrintf("document.getElementById('%s')", element_id.c_str()),
-      base::StringPrintf("with ID '%s')", element_id.c_str()));
+      base::StringPrintf("with ID %s", element_id.c_str()));
 }
 
 // Static.
@@ -27,7 +27,7 @@ const ElementSelector ElementSelector::ElementSelectorCss(
   const std::string script(base::StringPrintf("document.querySelector(\"%s\")",
                                               css_selector.c_str()));
   const std::string description(
-      base::StringPrintf("with CSS selector '%s')", css_selector.c_str()));
+      base::StringPrintf("with CSS selector '%s'", css_selector.c_str()));
   return ElementSelector(std::move(script), std::move(description));
 }
 
@@ -39,7 +39,7 @@ const ElementSelector ElementSelector::ElementSelectorXPath(
       "null,XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue",
       xpath_selector.c_str()));
   const std::string description(
-      base::StringPrintf("with xpath '%s')", xpath_selector.c_str()));
+      base::StringPrintf("with xpath '%s'", xpath_selector.c_str()));
   return ElementSelector(std::move(script), std::move(description));
 }
 
@@ -50,6 +50,7 @@ ElementSelector::ElementSelector(const std::string&& script,
 const std::string ElementSelector::GetSelectorScript() const {
   return script_;
 }
+
 const std::string ElementSelector::GetSelectorDescription() const {
   return description_;
 }
