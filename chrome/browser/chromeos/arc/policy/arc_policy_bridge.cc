@@ -242,7 +242,7 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
 
   // Keep them sorted by the ARC policy names.
   MapBoolToBool("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
-                true, &filtered_policies);
+                /* invert_bool_value */ true, &filtered_policies);
   // Use the pref for "debuggingFeaturesDisabled" to avoid duplicating the logic
   // of handling DeveloperToolsDisabled / DeveloperToolsAvailability policies.
   MapManagedIntPrefToBool(
@@ -251,15 +251,17 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
       static_cast<int>(
           policy::DeveloperToolsPolicyHandler::Availability::kDisallowed),
       &filtered_policies);
+  MapBoolToBool("printingDisabled", policy::key::kPrintingEnabled, policy_map,
+                /* invert_bool_value */ true, &filtered_policies);
   MapBoolToBool("screenCaptureDisabled", policy::key::kDisableScreenshots,
                 policy_map, false, &filtered_policies);
   MapIntToBool("shareLocationDisabled", policy::key::kDefaultGeolocationSetting,
                policy_map, 2 /*BlockGeolocation*/, &filtered_policies);
   MapBoolToBool("unmuteMicrophoneDisabled", policy::key::kAudioCaptureAllowed,
-                policy_map, true, &filtered_policies);
+                policy_map, /* invert_bool_value */ true, &filtered_policies);
   MapBoolToBool("mountPhysicalMediaDisabled",
-                policy::key::kExternalStorageDisabled, policy_map, false,
-                &filtered_policies);
+                policy::key::kExternalStorageDisabled, policy_map,
+                /* invert_bool_value */ false, &filtered_policies);
   MapObjectToPresenceBool("setWallpaperDisabled", policy::key::kWallpaperImage,
                           policy_map, &filtered_policies, {"url", "hash"});
 
