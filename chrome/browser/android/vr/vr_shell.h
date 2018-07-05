@@ -224,8 +224,8 @@ class VrShell : device::GvrGamepadDataProvider,
                         const base::android::JavaParamRef<jobject>& obj);
   void SetDialogBufferSize(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
-                           float width,
-                           float height);
+                           int width,
+                           int height);
   void SetAlertDialogSize(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           float width,

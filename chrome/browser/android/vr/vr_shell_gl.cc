@@ -440,8 +440,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
   content_overlay_surface_texture_->SetDefaultBufferSize(
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
-  ui_surface_texture_->SetDefaultBufferSize(content_tex_buffer_size_.width(),
-                                            content_tex_buffer_size_.height());
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
@@ -889,9 +887,8 @@ void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
   showing_vr_dialog_ = true;
   vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
   vr_dialog_input_delegate_->SetSize(width, height);
-  ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(),
-                             width / content_tex_buffer_size_.width(),
-                             height / content_tex_buffer_size_.width());
+  ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(), width,
+                             height);
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
@@ -905,8 +902,14 @@ void VrShellGl::DisableAlertDialog() {
 void VrShellGl::SetAlertDialogSize(float width, float height) {
   if (vr_dialog_input_delegate_)
     vr_dialog_input_delegate_->SetSize(width, height);
-  ui_->SetAlertDialogSize(width / content_tex_buffer_size_.width(),
-                          height / content_tex_buffer_size_.width());
+  // If not floating, dialogs are rendered with a fixed width, so that only the
+  // ratio matters. But, if they are floating, its size should be relative to
+  // the contents. During a WebXR presentation, the contents might not have been
+  // initialized but, in this case, the dialogs are never floating.
+  float scale = content_tex_buffer_size_.IsEmpty()
+                    ? 1.0f
+                    : content_tex_buffer_size_.width();
+  ui_->SetAlertDialogSize(width / scale, height / scale);
 }
 
 void VrShellGl::SetDialogLocation(float x, float y) {

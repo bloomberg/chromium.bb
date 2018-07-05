@@ -657,8 +657,8 @@ void VrShell::CloseAlertDialog(
 void VrShell::SetDialogBufferSize(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    float width,
-    float height) {
+    int width,
+    int height) {
   if (ui_surface_texture_)
     ui_surface_texture_->SetDefaultBufferSize(width, height);
 }

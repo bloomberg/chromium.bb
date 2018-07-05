@@ -827,9 +827,9 @@ public class VrShellImpl
     @Override
     public void setDialogLocation(int x, int y) {
         if (getWebVrModeEnabled()) return;
-        DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
-        float w = mLastContentWidth * primaryDisplay.getDipScale();
-        float h = mLastContentHeight * primaryDisplay.getDipScale();
+        float dipScale = DisplayAndroid.getNonMultiDisplay(mActivity).getDipScale();
+        float w = mLastContentWidth * dipScale;
+        float h = mLastContentHeight * dipScale;
         float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
         nativeSetDialogLocation(mNativeVrShell, x * scale / w, y * scale / h);
     }
@@ -1283,7 +1283,7 @@ public class VrShellImpl
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
     private native void nativeCloseAlertDialog(long nativeVrShell);
     private native void nativeSetAlertDialog(long nativeVrShell, float width, float height);
-    private native void nativeSetDialogBufferSize(long nativeVrShell, float width, float height);
+    private native void nativeSetDialogBufferSize(long nativeVrShell, int width, int height);
     private native void nativeSetAlertDialogSize(long nativeVrShell, float width, float height);
     private native void nativeSetDialogLocation(long nativeVrShell, float x, float y);
     private native void nativeSetDialogFloating(long nativeVrShell, boolean floating);
