@@ -1176,10 +1176,14 @@ void ShapeResult::ComputePositionData() const {
       if (rtl && next_character_index + 1 == character_index)
         continue;
 
-      // For glyphs with the same character index the first one wins in LTR so
-      // no need to do anything special.
+      // For glyphs with the same character index in LTR take the advance from
+      // the last one but the safe to break flag from the first.
       DCHECK_LT(character_index, num_characters_);
-      data[character_index] = {total_advance, glyph_data.safe_to_break_before};
+      bool safe_to_break =
+          next_character_index > character_index
+              ? data[next_character_index - 1].safe_to_break_before
+              : glyph_data.safe_to_break_before;
+      data[character_index] = {total_advance, safe_to_break};
 
       total_advance += glyph_data.advance;
       next_character_index = character_index + (!rtl ? 1 : -1);
@@ -1226,8 +1230,9 @@ float ShapeResult::CachedPositionForOffset(unsigned offset) const {
 }
 
 unsigned ShapeResult::CachedNextSafeToBreakOffset(unsigned offset) const {
-  // TODO(layout-dev): Use character_position_->NextSafeToBreakOffset(index)
-  // once fully implemented. Fails fast/text/trailing_whitespace_wrapping.html
+  // TODO(layout-dev): Use character_position_ for RTL once supported.
+  if (!Rtl())
+    return character_position_->NextSafeToBreakOffset(offset);
   return NextSafeToBreakOffset(offset);
 }
 
@@ -1290,9 +1295,9 @@ unsigned ShapeResult::CharacterPositionData::NextSafeToBreakOffset(
   if (adjusted_offset == 0)
     return start_offset_;
 
-  unsigned length = data_.size() - 1;
+  unsigned length = data_.size();
   for (unsigned i = adjusted_offset; i < length; i++) {
-    if (data_[i + 1].safe_to_break_before)
+    if (data_[i].safe_to_break_before)
       return start_offset_ + i;
   }
 
