@@ -89,7 +89,7 @@ cr.define('settings_personalization_options', function() {
         testElement.unifiedConsentEnabled = false;
         Polymer.dom.flush();
         assertEquals(
-            7,
+            8,
             testElement.root.querySelectorAll('settings-toggle-button').length);
         testElement.unifiedConsentEnabled = true;
         Polymer.dom.flush();
