@@ -1956,6 +1956,7 @@ enum WebFeature {
   kDocumentOpenTwoArgs = 2494,
   kDocumentOpenTwoArgsWithReplace = 2495,
   kDocumentOpenThreeArgs = 2496,
+  kV8FunctionTokenOffsetTooLongForToString = 2497,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

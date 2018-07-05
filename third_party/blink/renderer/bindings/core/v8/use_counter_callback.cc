@@ -148,6 +148,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kArrayPrototypeSortJSArrayModifiedPrototype:
       blink_feature = WebFeature::kV8ArrayPrototypeSortJSArrayModifiedPrototype;
       break;
+    case v8::Isolate::kFunctionTokenOffsetTooLongForToString:
+      blink_feature = WebFeature::kV8FunctionTokenOffsetTooLongForToString;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
