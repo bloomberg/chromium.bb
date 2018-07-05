@@ -26,8 +26,6 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
  * Delegates out to either an {@link IntentService} or {@link JobService}, as necessary.
  */
 public class OmahaService extends OmahaBase implements BackgroundTask {
-    private static final String TAG = "omaha";
-
     private static class OmahaClientDelegate extends OmahaDelegateBase {
         public OmahaClientDelegate(Context context) {
             super(context);
@@ -37,16 +35,16 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
         public void scheduleService(long currentTimestampMs, long nextTimestampMs) {
             if (Build.VERSION.SDK_INT < OmahaBase.MIN_API_JOB_SCHEDULER) {
                 getScheduler().createAlarm(OmahaClient.createIntent(getContext()), nextTimestampMs);
-                Log.i(TAG, "Scheduled using AlarmManager and IntentService");
+                Log.i(OmahaBase.TAG, "Scheduled using AlarmManager and IntentService");
             } else {
                 final long delay = nextTimestampMs - currentTimestampMs;
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (scheduleJobService(getContext(), delay)) {
-                            Log.i(TAG, "Scheduled using JobService");
+                            Log.i(OmahaBase.TAG, "Scheduled using JobService");
                         } else {
-                            Log.e(TAG, "Failed to schedule job");
+                            Log.e(OmahaBase.TAG, "Failed to schedule job");
                         }
                     }
                 });
