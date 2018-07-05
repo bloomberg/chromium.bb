@@ -357,8 +357,12 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
       "Signin_Signin_WithAdvancedSyncSettings"));
 
   // The corresponding string IDs get recorded.
-  std::vector<std::vector<int>> expected_id_vectors = {{1, 2, 4, 5}};
+  std::vector<std::vector<int>> expected_id_vectors = {{1, 2, 4}};
+  std::vector<int> expected_confirmation_ids = {5};
+
   EXPECT_EQ(expected_id_vectors, consent_auditor()->recorded_id_vectors());
+  EXPECT_EQ(expected_confirmation_ids,
+            consent_auditor()->recorded_confirmation_ids());
 
   EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
             consent_auditor()->account_id());
@@ -395,8 +399,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
                    "Signin_Signin_WithAdvancedSyncSettings"));
 
   // The corresponding string IDs get recorded.
-  std::vector<std::vector<int>> expected_id_vectors = {{2, 3, 5, 2}};
+  std::vector<std::vector<int>> expected_id_vectors = {{2, 3, 5}};
+  std::vector<int> expected_confirmation_ids = {2};
   EXPECT_EQ(expected_id_vectors, consent_auditor()->recorded_id_vectors());
+  EXPECT_EQ(expected_confirmation_ids,
+            consent_auditor()->recorded_confirmation_ids());
 
   EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
             consent_auditor()->account_id());

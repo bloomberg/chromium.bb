@@ -186,13 +186,14 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
   // Make sure consent auditing records expected consents.
   std::vector<int> tos_consent =
       ArcSupportHost::ComputePlayToSConsentIds(tos_content);
-  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
-  const std::vector<int> backup_consent = {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE,
-                                           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
-  const std::vector<int> location_consent = {
-      IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+  const std::vector<int> backup_consent = {
+      IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE};
+  const std::vector<int> location_consent = {IDS_ARC_OPT_IN_LOCATION_SETTING};
   const std::vector<std::vector<int>> consent_ids = {
       tos_consent, backup_consent, location_consent};
+  const std::vector<int> confirmation_ids = {
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
   const std::vector<consent_auditor::Feature> features = {
       consent_auditor::Feature::PLAY_STORE,
       consent_auditor::Feature::BACKUP_AND_RESTORE,
@@ -204,6 +205,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
@@ -251,13 +253,14 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithUnchecked) {
   // consents as NOT_GIVEN.
   std::vector<int> tos_consent =
       ArcSupportHost::ComputePlayToSConsentIds(tos_content);
-  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
-  const std::vector<int> backup_consent = {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE,
-                                           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
-  const std::vector<int> location_consent = {
-      IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+  const std::vector<int> backup_consent = {
+      IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE};
+  const std::vector<int> location_consent = {IDS_ARC_OPT_IN_LOCATION_SETTING};
   const std::vector<std::vector<int>> consent_ids = {
       tos_consent, backup_consent, location_consent};
+  const std::vector<int> confirmation_ids = {
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
   const std::vector<consent_auditor::Feature> features = {
       consent_auditor::Feature::PLAY_STORE,
       consent_auditor::Feature::BACKUP_AND_RESTORE,
@@ -269,6 +272,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithUnchecked) {
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
@@ -308,11 +312,12 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithManagedToS) {
 
   // Make sure consent auditing records expected consents.
   std::vector<int> tos_consent = ArcSupportHost::ComputePlayToSConsentIds("");
-  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
-  const std::vector<int> location_consent = {
-      IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+
+  const std::vector<int> location_consent = {IDS_ARC_OPT_IN_LOCATION_SETTING};
   const std::vector<std::vector<int>> consent_ids = {tos_consent,
                                                      location_consent};
+  const std::vector<int> confirmation_ids = {
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
   const std::vector<consent_auditor::Feature> features = {
       consent_auditor::Feature::PLAY_STORE,
       consent_auditor::Feature::GOOGLE_LOCATION_SERVICE};
@@ -322,6 +327,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithManagedToS) {
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
@@ -364,13 +370,16 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
   // Make sure consent auditing is recording all consents as NOT_GIVEN.
   std::vector<int> tos_consent =
       ArcSupportHost::ComputePlayToSConsentIds(tos_content);
-  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
-  const std::vector<int> backup_consent = {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE,
-                                           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
-  const std::vector<int> location_consent = {
-      IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+  const std::vector<int> backup_consent = {
+      IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE};
+  const std::vector<int> location_consent = {IDS_ARC_OPT_IN_LOCATION_SETTING};
   const std::vector<std::vector<int>> consent_ids = {
       tos_consent, backup_consent, location_consent};
+
+  const std::vector<int> confirmation_ids = {
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+      IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+
   const std::vector<consent_auditor::Feature> features = {
       consent_auditor::Feature::PLAY_STORE,
       consent_auditor::Feature::BACKUP_AND_RESTORE,
@@ -382,6 +391,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }

@@ -36,6 +36,10 @@ class FakeConsentAuditor : public ConsentAuditor {
     return recorded_id_vectors_;
   }
 
+  const std::vector<int>& recorded_confirmation_ids() const {
+    return recorded_confirmation_ids_;
+  }
+
   const std::vector<Feature>& recorded_features() { return recorded_features_; }
 
   const std::vector<ConsentStatus>& recorded_statuses() {
@@ -45,6 +49,7 @@ class FakeConsentAuditor : public ConsentAuditor {
  private:
   std::string account_id_;
   std::vector<std::vector<int>> recorded_id_vectors_;
+  std::vector<int> recorded_confirmation_ids_;
   std::vector<Feature> recorded_features_;
   std::vector<ConsentStatus> recorded_statuses_;
 

@@ -131,6 +131,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/consent_auditor",
+    "//components/consent_auditor:test_support",
     "//components/pref_registry",
     "//components/signin/core/browser:browser",
     "//components/sync_preferences",
