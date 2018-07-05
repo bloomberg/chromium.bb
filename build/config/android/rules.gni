@@ -2170,19 +2170,17 @@ if (enable_java_templates) {
 
     _compile_resources_target = "${_template_name}__compile_resources"
 
-    if (android_enable_app_bundles) {
-      # Path to the intermediate proto-format resources zip file.
-      _packaged_proto_resources_path =
-          "$root_gen_dir/proto_resources/" +
-          rebase_path(_final_apk_path_no_ext, root_build_dir) + ".proto.ap_"
+    # Path to the intermediate proto-format resources zip file.
+    _packaged_proto_resources_path =
+        "$root_gen_dir/proto_resources/" +
+        rebase_path(_final_apk_path_no_ext, root_build_dir) + ".proto.ap_"
 
-      # Define another target used to generate an archive containing the
-      # resources compiled in protocol buffer format. This is not used by
-      # the APK itself, but by android_bundle_module() targets that depend
-      # on it.
-      _compile_proto_resources_target =
-          "${_template_name}__compile_proto_resources"
-    }
+    # Define another target used to generate an archive containing the
+    # resources compiled in protocol buffer format. This is not used by
+    # the APK itself, but by android_bundle_module() targets that depend
+    # on it.
+    _compile_proto_resources_target =
+        "${_template_name}__compile_proto_resources"
 
     compile_apk_resources(_compile_resources_target) {
       forward_variables_from(invoker,
@@ -2237,10 +2235,8 @@ if (enable_java_templates) {
         ]
       }
 
-      if (android_enable_app_bundles) {
-        proto_output = _packaged_proto_resources_path
-        proto_resources_target = _compile_proto_resources_target
-      }
+      proto_output = _packaged_proto_resources_path
+      proto_resources_target = _compile_proto_resources_target
     }
     _srcjar_deps += [ ":$_compile_resources_target" ]
 
@@ -2380,9 +2376,7 @@ if (enable_java_templates) {
       final_dex_path = _final_dex_path
       apk_path = _final_apk_path
 
-      if (android_enable_app_bundles) {
-        proto_resources_path = _packaged_proto_resources_path
-      }
+      proto_resources_path = _packaged_proto_resources_path
 
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
@@ -3466,6 +3460,219 @@ if (enable_java_templates) {
       }
       if (defined(_res_target_name)) {
         deps += [ ":$_res_target_name" ]
+      }
+    }
+  }
+
+  # Create an Android application bundle from one base android_apk target,
+  # and zero or more associated android_apk.
+  #
+  # Variables:
+  #    base_apk_target: Name of the android_apk target corresponding to the
+  #      base module for this application bundle. The bundle file will include
+  #      the same content in its base module, though in a slightly different
+  #      format.
+  #
+  #    extra_modules: Optional list of scopes, one per extra module used by
+  #      this bundle. Each scope must have a 'name' field that specifies the
+  #      module name (which cannot be 'base', since this is reserved for the
+  #      base module), and an 'apk_target' field that specified the
+  #      corresponding android_apk target name the module is modeled on.
+  #
+  #    extra_module_apk_targets: Optional list of android_apk target matching
+  #      the names listed in extra_module_names.
+  #
+  #    generate_apks: Optional. If true, generate an .apks archive that
+  #      contains all generated APK splits from the bundle. These are
+  #      installable to a local device using the bundletool 'install-apks'
+  #      command.
+  #
+  #      NOTE: This creates a new target with the name "${target_name}_apks"
+  #
+  #    sign_bundle: Optional. If true, sign the bundle. Default is false
+  #      because signing is very slow, and there is no reason to do it
+  #      unless one wants to upload the bundle to the Play Store (e.g.
+  #      for official builds).
+  #
+  #    keystore_path: optional keystore path, used only when generating APKs.
+  #    keystore_name: optional keystore name, used only when generating APKs.
+  #    keystore_password: optional keystore password, used only when
+  #      generating APKs.
+  #
+  # Example:
+  #   android_app_bundle("chrome_public_bundle") {
+  #      base_apk_target = "//chrome/android:chrome_public_apk"
+  #      extra_modules = [
+  #        {  # NOTE: Scopes require one field per line, and no comma separators.
+  #          name = "my_module"
+  #          apk_target = ":my_module_apk"
+  #        },
+  #      ]
+  #   }
+  #
+  template("android_app_bundle") {
+    _all_modules = [
+      {
+        name = "base"
+        apk_target = invoker.base_apk_target
+      },
+    ]
+
+    if (defined(invoker.extra_modules)) {
+      _module_count = 0
+      foreach(_module, invoker.extra_modules) {
+        _module_count += 1
+        assert(defined(_module.name),
+               "Missing 'name' field for extra module #${_module_count}.")
+        assert(_module.name != "base",
+               "Module name 'base' is reserved for the main bundle module")
+        assert(defined(_module.apk_target),
+               "Missing 'apk_target' field for extra module ${_module.name}.")
+      }
+      _all_modules += invoker.extra_modules
+    }
+
+    # Generate one module .zip file per APK.
+    _all_module_targets = []
+    _all_module_paths = []
+    _all_module_build_configs = []
+    foreach(_module, _all_modules) {
+      # Important: the bundle tool uses the module's zip filename as
+      # the internal module name inside the final bundle, in other words,
+      # this file *must* be named ${_module.name}.zip
+      _module_target = "${target_name}__module__${_module.name}"
+      _module_path = "$target_gen_dir/$target_name/${_module.name}.zip"
+      _apk_target = _module.apk_target
+      _apk_build_config_target = "${_apk_target}__build_config"
+
+      android_app_bundle_module(_module_target) {
+        apk_target = _apk_target
+        module_path = _module_path
+      }
+
+      # Determine the rebased path to the module's target .build_config
+      # In order to pass its list of uncompressed assets later.
+      _apk_target_name = get_label_info(_apk_target, "name")
+      _apk_target_gen_dir = get_label_info(_apk_target, "target_gen_dir")
+      _apk_build_config =
+          "$_apk_target_gen_dir/${_apk_target_name}.build_config"
+
+      _all_module_targets += [
+        ":$_module_target",
+        _apk_build_config_target,
+      ]
+      _all_module_paths += [ _module_path ]
+      _all_module_build_configs += [ _apk_build_config ]
+    }
+
+    _all_rebased_module_paths = rebase_path(_all_module_paths, root_build_dir)
+
+    _bundle_path = "$target_gen_dir/$target_name.aab"
+    _rebased_bundle_path = rebase_path(_bundle_path, root_build_dir)
+
+    _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
+    _generate_apks = defined(invoker.generate_apks) && invoker.generate_apks
+
+    if (_sign_bundle || _generate_apks) {
+      _keystore_path = android_keystore_path
+      _keystore_password = android_keystore_password
+      _keystore_name = android_keystore_name
+
+      if (defined(invoker.keystore_path)) {
+        _keystore_path = invoker.keystore_path
+        _keystore_password = invoker.keystore_password
+        _keystore_name = invoker.keystore_name
+      }
+
+      _rebased_keystore_path = rebase_path(_keystore_path, root_build_dir)
+
+      if (_sign_bundle) {
+        # For now, the same keys are used to sign the bundle and the set of
+        # generated APKs. In the future, signing the bundle may require a
+        # different set of keys.
+        _bundle_keystore_name = _keystore_name
+      }
+    }
+
+    # NOTE: Keep this consistent with the imports of create_app_bundle.py
+    _create_app_bundle_py_imports =
+        build_utils_py + [
+          "//build/android/gyp/util/resource_utils.py",
+          "//build/android/gyp/bundletool.py",
+        ]
+
+    _bundle_target_name = target_name
+    action(_bundle_target_name) {
+      script = "//build/android/gyp/create_app_bundle.py"
+      inputs = _all_module_paths + _all_module_build_configs +
+               _create_app_bundle_py_imports
+      outputs = [
+        _bundle_path,
+      ]
+      deps = _all_module_targets
+      args = [
+        "--out-bundle=$_rebased_bundle_path",
+        "--module-zips=$_all_rebased_module_paths",
+      ]
+      if (_sign_bundle) {
+        args += [
+          "--keystore-path",
+          _rebased_keystore_path,
+          "--keystore-password",
+          _keystore_password,
+          "--key-name",
+          _bundle_keystore_name,
+        ]
+      }
+      foreach(build_config, _all_module_build_configs) {
+        _rebased_build_config = rebase_path(build_config, root_build_dir)
+        args += [
+          "--uncompressed-assets=@FileArg(" +
+              "$_rebased_build_config:uncompressed_assets)",
+          "--uncompress-shared-libraries=@FileArg(" +
+              "$_rebased_build_config:native:uncompress_shared_libraries)",
+        ]
+      }
+    }
+
+    if (_generate_apks) {
+      _android_aapt2_path = android_sdk_tools_bundle_aapt2
+
+      _bundle_apks_target = "${target_name}_apks"
+      _bundle_apks_path = "$target_gen_dir/$target_name.apks"
+
+      # NOTE: Keep this consistent with the imports of app_bundle_to_apks.py
+      #       note that resource_utils.py imports build_utils.py
+      _app_bundle_to_apks_py_imports =
+          build_utils_py + [ "//build/android/gyp/bundletool.py" ]
+
+      action(_bundle_apks_target) {
+        script = "//build/android/gyp/app_bundle_to_apks.py"
+        inputs = _app_bundle_to_apks_py_imports + [
+                   _bundle_path,
+                   _android_aapt2_path,
+                   _keystore_path,
+                 ]
+        outputs = [
+          _bundle_apks_path,
+        ]
+        deps = [
+          ":$_bundle_target_name",
+        ]
+        args = [
+          "--aapt2",
+          rebase_path(_android_aapt2_path, root_build_dir),
+          "--bundle",
+          _rebased_bundle_path,
+          "--out-zip",
+          rebase_path(_bundle_apks_path, root_build_dir),
+          "--keystore-path",
+          _rebased_keystore_path,
+          "--keystore-password",
+          _keystore_password,
+          "--key-name",
+          _keystore_name,
+        ]
       }
     }
   }
