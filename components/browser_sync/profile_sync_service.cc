@@ -785,22 +785,25 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
     // TODO(crbug.com/839834): See if we can change this by either shutting down
     // immediately (not posting a task), or setting the unrecoverable error as
     // part of the posted task.
-    DCHECK((GetDisableReasons() & DISABLE_REASON_UNRECOVERABLE_ERROR) ||
-           !engine_);
+    DCHECK(HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR) || !engine_);
     return State::DISABLED;
   }
 
-  // From this point on, Sync can start in principle.
+  // Since there is no disable reason, Sync can start in principle.
   DCHECK(CanSyncStart());
+
+  // The presence of an auth error overrides any non-disabled state.
+  // Note: We typically shouldn't have auth errors without an initialized
+  // engine, but it can happen e.g. if a refresh token gets revoked while Sync
+  // is off.
+  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    return State::AUTH_ERROR;
+  }
 
   // Typically, Sync won't start until the initial setup is at least in
   // progress. StartupController::TryStartImmediately bypasses the first setup
   // check though, so we first have to check whether the engine is initialized.
   if (!IsEngineInitialized()) {
-    // Note: We generally shouldn't be in an auth error state here (we get those
-    // errors only after the engine is initialized), but if we received an auth
-    // error and then shut down, it'll still be here.
-    // TODO(crbug.com/839834): Should we check for an auth error first here?
     switch (startup_controller_->GetState()) {
       case syncer::StartupController::State::NOT_STARTED:
         DCHECK(!engine_);
@@ -817,10 +820,6 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   DCHECK(engine_);
   // The DataTypeManager gets created once the engine is initialized.
   DCHECK(data_type_manager_);
-
-  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
-    return State::AUTH_ERROR;
-  }
 
   if (!IsFirstSetupComplete()) {
     DCHECK(!ConfigurationDone());
