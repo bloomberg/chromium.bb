@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 
 #include <memory>
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -187,7 +188,10 @@ class FragmentPaintPropertyTreeBuilder {
 static bool NeedsScrollNode(const LayoutObject& object) {
   if (!object.HasOverflowClip())
     return false;
-  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
+  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
+  // main-thread AnimationWorklet and don't need to promote the scroll-source.
+  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow() ||
+         ScrollTimeline::HasActiveScrollTimeline(object.GetNode());
 }
 
 static CompositingReasons CompositingReasonsForScroll(const LayoutBox& box) {

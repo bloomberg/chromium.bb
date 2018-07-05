@@ -159,7 +159,6 @@ crbug.com/855691 virtual/threaded/fast/animationworklet/worklet-animation-curren
 crbug.com/855702 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
 crbug.com/855702 virtual/threaded/animations/img-element-transform.html [ Timeout Failure Pass ]
 crbug.com/855702 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
-crbug.com/855718 virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline-overflow-hidden.html [ Crash ]
 
 # These scrollbar tests should pass.
 Bug(none) virtual/prefer_compositing_to_lcd_text/scrollbars/ [ Pass ]
