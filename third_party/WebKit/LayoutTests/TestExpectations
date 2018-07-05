@@ -4751,3 +4751,6 @@ crbug.com/859629 [ Mac10.13 ] http/tests/devtools/tracing/timeline-js/timeline-s
 
 # wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html is flaky in some virtual/ tests.
 crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Failure ]
+
+# Sheriff 2018-07-05
+crbug.com/831796 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
