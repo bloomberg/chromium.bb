@@ -233,6 +233,36 @@ struct ShapeResult::RunInfo {
         });
   }
 
+  void ExpandRangeToIncludePartialGlyphs(int offset, int* from, int* to) const {
+    int start = !Rtl() ? offset : (offset + num_characters_);
+    int end = offset + num_characters_;
+
+    for (unsigned i = 0; i < glyph_data_.size(); ++i) {
+      int index = offset + glyph_data_[i].character_index;
+      if (start == index)
+        continue;
+
+      if (!Rtl())
+        end = index;
+
+      if (end > *from && start < *to) {
+        *from = std::min(*from, start);
+        *to = std::max(*to, end);
+      }
+
+      if (!Rtl())
+        end = num_characters_;
+      else
+        end = start;
+      start = index;
+    }
+
+    if (end > *from && start < *to) {
+      *from = std::min(*from, start);
+      *to = std::max(*to, end);
+    }
+  }
+
   scoped_refptr<SimpleFontData> font_data_;
   hb_direction_t direction_;
   // For upright-in-vertical we need to tell the ShapeResultBloberizer to rotate

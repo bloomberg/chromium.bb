@@ -310,6 +310,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                      static_cast<unsigned>(selection_end)});
   selection_start = selection_offsets.start;
   selection_end = selection_offsets.end;
+  if (have_selection) {
+    font.ExpandRangeToIncludePartialGlyphs(text_run, &selection_start,
+                                           &selection_end);
+  }
+
   if (inline_text_box_.Truncation() != kCNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // rather than at the end of it.
