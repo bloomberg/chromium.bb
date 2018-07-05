@@ -399,13 +399,23 @@ def _handle_perf_results(
     # Kick off the uploads in mutliple processes
     cpus = mp.cpu_count()
     pool = mp.Pool(cpus)
-    result_iterator = pool.map(_upload_individual_benchmark,
-                               invocations)
+    try:
+      async_result = pool.map_async(
+          _upload_individual_benchmark, invocations)
+      results = async_result.get(timeout=2000)
+    except mp.TimeoutError:
+      print 'Failed uploading benchmarks to perf dashboard in parallel'
+      print 'Terminate the pool'
+      pool.terminate()
+      results = []
+      for benchmark_name in benchmark_directory_map:
+        results.append((benchmark_name, False))
+
 
     # Keep a mapping of benchmarks to their upload results
     benchmark_upload_result_map = {}
-    for result in result_iterator:
-      benchmark_upload_result_map[result[0]] = bool(result[1])
+    for r in results:
+      benchmark_upload_result_map[r[0]] = bool(r[1])
 
     logdog_dict = {}
     upload_failure = False
