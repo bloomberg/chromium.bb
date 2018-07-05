@@ -229,7 +229,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     }
 
     MinMaxSizeInput child_input;
-    if (child.IsInline() || child.IsAnonymous())
+    if (child.IsInline() || child.IsAnonymousBlock())
       child_input = {float_left_inline_size, float_right_inline_size};
 
     MinMaxSize child_sizes;
@@ -383,7 +383,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   // Anonymous constraint spaces are auto-sized. Don't let that affect
   // block-axis percentage resolution.
-  if (ConstraintSpace().IsAnonymous() || Node().IsAnonymous())
+  if (ConstraintSpace().IsAnonymous() || Node().IsAnonymousBlock())
     child_percentage_size_ = ConstraintSpace().PercentageResolutionSize();
   else
     child_percentage_size_ = adjusted_size;

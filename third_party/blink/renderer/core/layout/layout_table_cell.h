@@ -235,7 +235,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     cell_children_need_layout_ = b;
   }
 
-  static LayoutTableCell* CreateAnonymous(Document*);
+  static LayoutTableCell* CreateAnonymous(Document*,
+                                          scoped_refptr<ComputedStyle>);
   static LayoutTableCell* CreateAnonymousWithParent(const LayoutObject*);
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override {

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/collapsed_border_value.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
@@ -1157,20 +1158,23 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
   }
 }
 
-LayoutTableCell* LayoutTableCell::CreateAnonymous(Document* document) {
-  LayoutTableCell* layout_object = new LayoutTableCell(nullptr);
+LayoutTableCell* LayoutTableCell::CreateAnonymous(
+    Document* document,
+    scoped_refptr<ComputedStyle> style) {
+  LayoutTableCell* layout_object =
+      LayoutObjectFactory::CreateTableCell(*document, *style);
   layout_object->SetDocumentForAnonymous(document);
+  layout_object->SetStyle(std::move(style));
   return layout_object;
 }
 
 LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
     const LayoutObject* parent) {
-  LayoutTableCell* new_cell =
-      LayoutTableCell::CreateAnonymous(&parent->GetDocument());
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableCell);
-  new_cell->SetStyle(std::move(new_style));
+  LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
+      &parent->GetDocument(), std::move(new_style));
   return new_cell;
 }
 
