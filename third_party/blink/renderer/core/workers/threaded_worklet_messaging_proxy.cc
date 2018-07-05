@@ -78,7 +78,7 @@ void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
@@ -87,7 +87,7 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
       CrossThreadBind(&ThreadedWorkletObjectProxy::FetchAndInvokeScript,
                       CrossThreadUnretained(worklet_object_proxy_.get()),
                       module_url_record, credentials_mode,
-                      outside_settings_object,
+                      WTF::Passed(outside_settings_object->CopyData()),
                       std::move(outside_settings_task_runner),
                       WrapCrossThreadPersistent(pending_tasks),
                       CrossThreadUnretained(GetWorkerThread())));

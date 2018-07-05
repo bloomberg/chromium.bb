@@ -202,7 +202,8 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
-  FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
+  auto* fetch_client_settings_object =
+      new FetchClientSettingsObjectSnapshot(GetDocument());
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -255,7 +256,8 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
-  FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
+  auto* fetch_client_settings_object =
+      new FetchClientSettingsObjectSnapshot(GetDocument());
   GetModulator()->SetModuleRequests({"invalid"});
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
@@ -296,7 +298,8 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
   EXPECT_FALSE(url.IsValid());
-  FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
+  auto* fetch_client_settings_object =
+      new FetchClientSettingsObjectSnapshot(GetDocument());
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -332,7 +335,8 @@ void ModuleScriptLoaderTest::TestFetchURL(
   KURL url("https://example.test/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
-  FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
+  auto* fetch_client_settings_object =
+      new FetchClientSettingsObjectSnapshot(GetDocument());
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   ModuleScriptLoader::Fetch(

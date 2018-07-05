@@ -468,7 +468,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
 
   void FetchSingle(
       const ModuleScriptFetchRequest& request,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType custom_fetch_type,
       SingleModuleClient*) override {

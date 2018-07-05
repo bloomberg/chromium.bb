@@ -110,7 +110,7 @@ void ModuleMap::Trace(blink::Visitor* visitor) {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
 void ModuleMap::FetchSingleModuleScript(
     const ModuleScriptFetchRequest& request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {

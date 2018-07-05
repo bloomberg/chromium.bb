@@ -138,7 +138,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Imports the top-level module script for |module_url_record|.
   virtual void ImportModuleScript(
       const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
       network::mojom::FetchCredentialsMode) = 0;
 
   base::TimeTicks TimeOrigin() const { return time_origin_; }

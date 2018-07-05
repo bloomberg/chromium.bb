@@ -16,6 +16,13 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
                                         execution_context.OutgoingReferrer()) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
+    : FetchClientSettingsObjectSnapshot(data->base_url,
+                                        data->security_origin,
+                                        data->referrer_policy,
+                                        data->outgoing_referrer) {}
+
+FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const KURL& base_url,
     const scoped_refptr<const SecurityOrigin> security_origin,
     ReferrerPolicy referrer_policy,

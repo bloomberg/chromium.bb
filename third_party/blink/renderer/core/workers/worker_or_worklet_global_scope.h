@@ -112,7 +112,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   void FetchModuleScript(
       const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       network::mojom::FetchCredentialsMode,
       ModuleScriptCustomFetchType,

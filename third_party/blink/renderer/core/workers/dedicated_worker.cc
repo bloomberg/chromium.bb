@@ -161,8 +161,8 @@ void DedicatedWorker::Start() {
     // Specify empty source code here because module scripts will be fetched on
     // the worker thread as opposed to classic scripts that are fetched on the
     // main thread.
-    FetchClientSettingsObjectSnapshot outside_settings_object(
-        *GetExecutionContext());
+    auto* outside_settings_object =
+        new FetchClientSettingsObjectSnapshot(*GetExecutionContext());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(), options_, script_url_,
         outside_settings_object, stack_id, String() /* source_code */);
@@ -257,8 +257,8 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
     std::unique_ptr<GlobalScopeCreationParams> creation_params =
         CreateGlobalScopeCreationParams();
     creation_params->referrer_policy = referrer_policy;
-    FetchClientSettingsObjectSnapshot outside_settings_object(
-        *GetExecutionContext());
+    auto* outside_settings_object =
+        new FetchClientSettingsObjectSnapshot(*GetExecutionContext());
     context_proxy_->StartWorkerGlobalScope(
         std::move(creation_params), options_, script_url_,
         outside_settings_object, stack_id,

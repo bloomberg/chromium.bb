@@ -121,8 +121,8 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   DCHECK(result);
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
-  FetchClientSettingsObjectSnapshot outside_settings_object(
-      *GetExecutionContext());
+  auto* outside_settings_object =
+      new FetchClientSettingsObjectSnapshot(*GetExecutionContext());
   // Specify TaskType::kInternalLoading because it's commonly used for module
   // loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =

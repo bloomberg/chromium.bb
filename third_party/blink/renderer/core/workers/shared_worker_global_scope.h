@@ -60,7 +60,7 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   // WorkerGlobalScope
   void ImportModuleScript(
       const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
 
   // Setters/Getters for attributes in SharedWorkerGlobalScope.idl

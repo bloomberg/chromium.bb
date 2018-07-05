@@ -117,7 +117,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // module worker script graph" algorithm.
   virtual void FetchTree(
       const KURL&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
       ModuleScriptCustomFetchType,
@@ -129,14 +129,14 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // Note that |this| is the "module map settings object".
   virtual void FetchSingle(
       const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType,
       SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) = 0;
 

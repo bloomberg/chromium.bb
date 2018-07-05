@@ -62,6 +62,7 @@ class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
+struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
@@ -115,7 +116,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Called on the main thread after start().
   void ImportModuleScript(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
@@ -286,7 +287,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
       const v8_inspector::V8StackTraceId& stack_id);
   void ImportModuleScriptOnWorkerThread(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
   void TerminateChildThreadsOnWorkerThread();

@@ -57,7 +57,7 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
 void LayoutWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());

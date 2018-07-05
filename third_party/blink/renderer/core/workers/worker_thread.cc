@@ -146,14 +146,15 @@ void WorkerThread::EvaluateClassicScript(
 
 void WorkerThread::ImportModuleScript(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
       CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
-                      outside_settings_object, credentials_mode));
+                      WTF::Passed(outside_settings_object->CopyData()),
+                      credentials_mode));
 }
 
 void WorkerThread::TerminateChildThreadsOnWorkerThread() {
@@ -502,13 +503,16 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
 
 void WorkerThread::ImportModuleScriptOnWorkerThread(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   ToWorkerGlobalScope(GlobalScope())
-      ->ImportModuleScript(script_url, outside_settings_object,
+      ->ImportModuleScript(script_url,
+                           new FetchClientSettingsObjectSnapshot(
+                               std::move(outside_settings_object)),
                            credentials_mode);
 }
 
