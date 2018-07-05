@@ -185,27 +185,32 @@ static cc::BrowserControlsState ConvertBrowserControlsState(
 
 RenderWidgetCompositor::RenderWidgetCompositor(
     RenderWidgetCompositorDelegate* delegate,
-    CompositorDependencies* compositor_deps)
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+    cc::TaskGraphRunner* task_graph_runner,
+    blink::scheduler::WebThreadScheduler* scheduler)
     : delegate_(delegate),
-      compositor_deps_(compositor_deps),
-      threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
+      main_thread_(std::move(main_thread)),
+      compositor_thread_(std::move(compositor_thread)),
+      task_graph_runner_(task_graph_runner),
+      web_main_thread_scheduler_(scheduler),
       animation_host_(cc::AnimationHost::CreateMainInstance()),
       weak_factory_(this) {}
 
 RenderWidgetCompositor::~RenderWidgetCompositor() = default;
 
-void RenderWidgetCompositor::Initialize(const cc::LayerTreeSettings& settings) {
-  const bool is_threaded =
-      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
+void RenderWidgetCompositor::Initialize(
+    const cc::LayerTreeSettings& settings,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  const bool is_threaded = !!compositor_thread_;
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;
   params.settings = &settings;
-  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
-  params.main_task_runner =
-      compositor_deps_->GetCompositorMainThreadTaskRunner();
+  params.task_graph_runner = task_graph_runner_;
+  params.main_task_runner = main_thread_;
   params.mutator_host = animation_host_.get();
-  params.ukm_recorder_factory = compositor_deps_->CreateUkmRecorderFactory();
+  params.ukm_recorder_factory = std::move(ukm_recorder_factory);
   if (base::TaskScheduler::GetInstance()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
@@ -215,11 +220,11 @@ void RenderWidgetCompositor::Initialize(const cc::LayerTreeSettings& settings) {
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {
-    // Single-threaded layout tests.
+    // Single-threaded layout tests, and unit tests.
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   } else {
-    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+    layer_tree_host_ =
+        cc::LayerTreeHost::CreateThreaded(compositor_thread_, &params);
   }
 }
 
@@ -477,7 +482,7 @@ bool RenderWidgetCompositor::HaveScrollEventHandlers() const {
 }
 
 bool RenderWidgetCompositor::CompositeIsSynchronous() const {
-  if (!threaded_) {
+  if (!compositor_thread_) {
     DCHECK(!layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
     return true;
   }
@@ -682,18 +687,17 @@ void RenderWidgetCompositor::WillBeginMainFrame() {
 void RenderWidgetCompositor::DidBeginMainFrame() {}
 
 void RenderWidgetCompositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
-  compositor_deps_->GetWebMainThreadScheduler()->WillBeginFrame(args);
+  web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
-  compositor_deps_->GetWebMainThreadScheduler()->BeginFrameNotExpectedSoon();
+  web_main_thread_scheduler_->BeginFrameNotExpectedSoon();
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedUntil(
     base::TimeTicks time) {
-  compositor_deps_->GetWebMainThreadScheduler()->BeginMainFrameNotExpectedUntil(
-      time);
+  web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
 void RenderWidgetCompositor::UpdateLayerTreeHost(
@@ -751,7 +755,7 @@ void RenderWidgetCompositor::WillCommit() {
 
 void RenderWidgetCompositor::DidCommit() {
   delegate_->DidCommitCompositorFrame();
-  compositor_deps_->GetWebMainThreadScheduler()->DidCommitFrameToCompositor();
+  web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {
@@ -817,6 +821,11 @@ void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
 
 void RenderWidgetCompositor::RequestBeginMainFrameNotExpected(bool new_state) {
   layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
+}
+
+const cc::LayerTreeSettings& RenderWidgetCompositor::GetLayerTreeSettings()
+    const {
+  return layer_tree_host_->GetSettings();
 }
 
 void RenderWidgetCompositor::SetRenderFrameObserver(

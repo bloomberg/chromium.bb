@@ -13,8 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/animation/animation_host.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
+#include "cc/test/test_task_graph_runner.h"
+#include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/test/test_context_provider.h"
@@ -26,6 +27,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using testing::AllOf;
@@ -121,12 +123,18 @@ class FakeRenderWidgetCompositorDelegate
 // the compositor (couldn't bind the output surface) are handled identically.
 class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
  public:
-  RenderWidgetLayerTreeFrameSink(FakeRenderWidgetCompositorDelegate* delegate,
-                                 CompositorDependencies* compositor_deps)
-      : RenderWidgetCompositor(delegate, compositor_deps),
+  RenderWidgetLayerTreeFrameSink(
+      FakeRenderWidgetCompositorDelegate* delegate,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+      cc::TaskGraphRunner* task_graph_runner,
+      blink::scheduler::WebThreadScheduler* scheduler)
+      : RenderWidgetCompositor(delegate,
+                               std::move(main_thread),
+                               std::move(compositor_thread),
+                               task_graph_runner,
+                               scheduler),
         delegate_(delegate) {}
-
-  using RenderWidgetCompositor::Initialize;
 
   // Force a new output surface to be created.
   void SynchronousComposite() {
@@ -202,13 +210,16 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
 class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
  public:
   RenderWidgetLayerTreeFrameSinkTest()
-      : render_widget_compositor_(&compositor_delegate_, &compositor_deps_) {
-    auto animation_host = cc::AnimationHost::CreateMainInstance();
-
-    ScreenInfo dummy_screen_info;
+      : render_widget_compositor_(
+            &compositor_delegate_,
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            /*compositor_thread=*/nullptr,
+            &test_task_graph_runner_,
+            &fake_renderer_scheduler_) {
     cc::LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
-    render_widget_compositor_.Initialize(settings);
+    render_widget_compositor_.Initialize(
+        settings, std::make_unique<cc::TestUkmRecorderFactory>());
   }
 
   void RunTest(int expected_successes, FailureMode failure_mode) {
@@ -248,7 +259,8 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
  protected:
   base::MessageLoop ye_olde_message_loope_;
   MockRenderThread render_thread_;
-  FakeCompositorDependencies compositor_deps_;
+  cc::TestTaskGraphRunner test_task_graph_runner_;
+  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
   FakeRenderWidgetCompositorDelegate compositor_delegate_;
   RenderWidgetLayerTreeFrameSink render_widget_compositor_;
 
@@ -292,8 +304,15 @@ class VisibilityTestRenderWidgetCompositor : public RenderWidgetCompositor {
  public:
   VisibilityTestRenderWidgetCompositor(
       StubRenderWidgetCompositorDelegate* delegate,
-      CompositorDependencies* compositor_deps)
-      : RenderWidgetCompositor(delegate, compositor_deps) {}
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+      cc::TaskGraphRunner* task_graph_runner,
+      blink::scheduler::WebThreadScheduler* scheduler)
+      : RenderWidgetCompositor(delegate,
+                               std::move(main_thread),
+                               std::move(compositor_thread),
+                               task_graph_runner,
+                               scheduler) {}
 
   void RequestNewLayerTreeFrameSink() override {
     RenderWidgetCompositor::RequestNewLayerTreeFrameSink();
@@ -316,15 +335,18 @@ TEST(RenderWidgetCompositorTest, VisibilityTest) {
 
   base::MessageLoop message_loop;
 
-  FakeCompositorDependencies compositor_deps;
+  cc::TestTaskGraphRunner test_task_graph_runner;
+  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler;
   // Synchronously callback with null FrameSink.
   StubRenderWidgetCompositorDelegate compositor_delegate;
   VisibilityTestRenderWidgetCompositor render_widget_compositor(
-      &compositor_delegate, &compositor_deps);
+      &compositor_delegate,
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      /*compositor_thread=*/nullptr, &test_task_graph_runner,
+      &fake_renderer_scheduler);
 
-  auto animation_host = cc::AnimationHost::CreateMainInstance();
-  ScreenInfo dummy_screen_info;
-  render_widget_compositor.Initialize(cc::LayerTreeSettings());
+  render_widget_compositor.Initialize(
+      cc::LayerTreeSettings(), std::make_unique<cc::TestUkmRecorderFactory>());
 
   {
     // Make one request and stop immediately while invisible.

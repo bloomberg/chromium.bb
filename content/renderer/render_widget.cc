@@ -31,6 +31,7 @@
 #include "cc/input/touch_action.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/ukm_manager.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -1370,11 +1371,16 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ =
-      std::make_unique<RenderWidgetCompositor>(this, compositor_deps_);
-  compositor_->Initialize(GenerateLayerTreeSettings(
-      compositor_deps_, for_oopif_, screen_info_.rect.size(),
-      screen_info_.device_scale_factor));
+  compositor_ = std::make_unique<RenderWidgetCompositor>(
+      this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
+      compositor_deps_->GetCompositorImplThreadTaskRunner(),
+      compositor_deps_->GetTaskGraphRunner(),
+      compositor_deps_->GetWebMainThreadScheduler());
+  compositor_->Initialize(
+      GenerateLayerTreeSettings(compositor_deps_, for_oopif_,
+                                screen_info_.rect.size(),
+                                screen_info_.device_scale_factor),
+      compositor_deps_->CreateUkmRecorderFactory());
 
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
