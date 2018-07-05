@@ -15,34 +15,36 @@ blink::BackgroundFetchRegistration*
 TypeConverter<blink::BackgroundFetchRegistration*,
               blink::mojom::blink::BackgroundFetchRegistrationPtr>::
     Convert(const blink::mojom::blink::BackgroundFetchRegistrationPtr&
-                mojoRegistration) {
-  if (!mojoRegistration)
+                mojo_registration) {
+  if (!mojo_registration)
     return nullptr;
 
   return new blink::BackgroundFetchRegistration(
-      mojoRegistration->developer_id, mojoRegistration->unique_id,
-      mojoRegistration->upload_total, mojoRegistration->uploaded,
-      mojoRegistration->download_total, mojoRegistration->downloaded);
+      mojo_registration->developer_id, mojo_registration->unique_id,
+      mojo_registration->upload_total, mojo_registration->uploaded,
+      mojo_registration->download_total, mojo_registration->downloaded);
 }
 
 blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<
     blink::mojom::blink::BackgroundFetchOptionsPtr,
     blink::BackgroundFetchOptions>::Convert(const blink::BackgroundFetchOptions&
                                                 options) {
-  blink::mojom::blink::BackgroundFetchOptionsPtr mojoOptions =
+  blink::mojom::blink::BackgroundFetchOptionsPtr mojo_options =
       blink::mojom::blink::BackgroundFetchOptions::New();
 
-  WTF::Vector<blink::mojom::blink::ManifestImageResourcePtr> mojoIcons;
-  mojoIcons.ReserveInitialCapacity(options.icons().size());
+  WTF::Vector<blink::mojom::blink::ManifestImageResourcePtr> mojo_icons;
+  mojo_icons.ReserveInitialCapacity(options.icons().size());
 
-  for (const auto& icon : options.icons())
-    mojoIcons.push_back(blink::mojom::blink::ManifestImageResource::From(icon));
+  for (const auto& icon : options.icons()) {
+    mojo_icons.push_back(
+        blink::mojom::blink::ManifestImageResource::From(icon));
+  }
 
-  mojoOptions->icons = std::move(mojoIcons);
-  mojoOptions->download_total = options.downloadTotal();
-  mojoOptions->title = options.title();
+  mojo_options->icons = std::move(mojo_icons);
+  mojo_options->download_total = options.downloadTotal();
+  mojo_options->title = options.title();
 
-  return mojoOptions;
+  return mojo_options;
 }
 
 }  // namespace mojo
