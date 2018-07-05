@@ -26,8 +26,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.asynctask.CustomShadowAsyncTask;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;

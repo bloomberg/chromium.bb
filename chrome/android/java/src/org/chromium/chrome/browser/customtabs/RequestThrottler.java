@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.customtabs;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.Map;

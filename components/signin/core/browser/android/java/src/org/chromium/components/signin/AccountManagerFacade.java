@@ -13,7 +13,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -22,6 +21,7 @@ import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -311,6 +311,9 @@ public class AccountManagerFacade {
     /**
      * Asynchronous version of {@link #getGoogleAccounts()}.
      */
+    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
+    // overriding.
+    @SuppressWarnings("WrongThread")
     @MainThread
     public void getGoogleAccounts(final Callback<AccountManagerResult<Account[]>> callback) {
         ThreadUtils.assertOnUiThread();
@@ -347,6 +350,9 @@ public class AccountManagerFacade {
     /**
      * Asynchronous version of {@link #tryGetGoogleAccounts()}.
      */
+    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
+    // overriding.
+    @SuppressWarnings("WrongThread")
     @MainThread
     public void tryGetGoogleAccounts(final Callback<Account[]> callback) {
         ThreadUtils.assertOnUiThread();
@@ -519,6 +525,9 @@ public class AccountManagerFacade {
         });
     }
 
+    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
+    // overriding.
+    @SuppressWarnings("WrongThread")
     @MainThread
     public void checkChildAccountStatus(Account account, Callback<Integer> callback) {
         ThreadUtils.assertOnUiThread();

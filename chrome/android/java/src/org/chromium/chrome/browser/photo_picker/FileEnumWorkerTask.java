@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.Manifest;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 

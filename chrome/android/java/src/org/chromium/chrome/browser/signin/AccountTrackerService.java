@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.os.AsyncTask;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;

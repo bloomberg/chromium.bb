@@ -8,10 +8,10 @@ import android.annotation.TargetApi;
 import android.app.IntentService;
 import android.app.job.JobService;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -88,6 +88,9 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
         }
     }
 
+    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
+    // overriding.
+    @SuppressWarnings("WrongThread")
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public boolean onStartTask(

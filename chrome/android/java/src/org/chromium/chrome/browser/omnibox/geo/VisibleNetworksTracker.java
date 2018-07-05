@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;

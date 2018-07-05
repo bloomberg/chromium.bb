@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.cookies;
 
-import android.os.AsyncTask;
-
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;

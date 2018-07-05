@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DirectoryOption;

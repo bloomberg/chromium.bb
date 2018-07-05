@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.upgrade;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 
 /**

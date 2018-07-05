@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -13,6 +12,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
