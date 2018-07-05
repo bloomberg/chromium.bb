@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/autofill/dialog_event_waiter.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -356,8 +355,8 @@ SaveCardBubbleViewsBrowserTestBase::GetActiveWebContents() {
 
 void SaveCardBubbleViewsBrowserTestBase::ResetEventWaiterForSequence(
     std::list<DialogEvent> event_sequence) {
-  event_waiter_ = std::make_unique<DialogEventWaiter<DialogEvent>>(
-      std::move(event_sequence));
+  event_waiter_ =
+      std::make_unique<EventWaiter<DialogEvent>>(std::move(event_sequence));
 }
 
 void SaveCardBubbleViewsBrowserTestBase::WaitForObservedEvent() {

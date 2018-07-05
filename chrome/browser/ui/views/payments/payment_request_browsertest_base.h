@@ -15,12 +15,12 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/autofill/dialog_event_waiter.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/test_event_waiter.h"
 #include "components/autofill/core/browser/test_sync_service.h"
 #include "components/payments/content/payment_request.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -65,7 +65,7 @@ class PaymentRequestBrowserTestBase
       public PaymentRequestDialogView::ObserverForTest,
       public content::WebContentsObserver {
  public:
-  // Various events that can be waited on by the DialogEventWaiter.
+  // Various events that can be waited on by the EventWaiter.
   enum DialogEvent : int {
     DIALOG_OPENED,
     DIALOG_CLOSED,
@@ -257,7 +257,7 @@ class PaymentRequestBrowserTestBase
   void WaitForObservedEvent();
 
  private:
-  std::unique_ptr<DialogEventWaiter<DialogEvent>> event_waiter_;
+  std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;

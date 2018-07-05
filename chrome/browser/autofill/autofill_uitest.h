@@ -11,6 +11,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
+#include "components/autofill/core/browser/test_event_waiter.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +20,12 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace autofill {
+
+enum class ObservedUiEvents {
+  kPreviewFormData,
+  kFormDataFilled,
+  kSuggestionShown,
+};
 
 class AutofillManagerTestDelegateImpl
     : public autofill::AutofillManagerTestDelegate {
@@ -33,23 +40,17 @@ class AutofillManagerTestDelegateImpl
   void OnTextFieldChanged() override;
 
   void Reset();
-  void Wait();
-  void WaitForTextChange();
-  bool WaitForPreviewFormData(base::TimeDelta timeout);
-  bool WaitForFormDataFilled(base::TimeDelta timeout);
-  bool WaitForSuggestionShown(base::TimeDelta timeout);
-  bool WaitForTextChange(base::TimeDelta timeout);
+
+  bool Wait(std::list<ObservedUiEvents> expected_events,
+            base::TimeDelta timeout = base::TimeDelta::FromSeconds(0));
+
   void SetIsExpectingDynamicRefill(bool expect_refill) {
     is_expecting_dynamic_refill_ = expect_refill;
   }
 
  private:
-  base::RunLoop* run_loop_;
   bool is_expecting_dynamic_refill_;
-  bool waiting_for_preview_form_data_;
-  bool waiting_for_fill_form_data_;
-  bool waiting_for_show_suggestion_;
-  bool waiting_for_text_change_;
+  std::unique_ptr<EventWaiter<ObservedUiEvents>> event_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
@@ -67,14 +68,18 @@ class AutofillUiTest : public InProcessBrowserTest {
                    const int attempts = 1);
   bool ShowAutofillSuggestion(const std::string& focus_element_xpath);
 
-  void SendKeyToPageAndWait(ui::DomKey key);
+  void SendKeyToPageAndWait(ui::DomKey key,
+                            std::list<ObservedUiEvents> expected_events);
   void SendKeyToPageAndWait(ui::DomKey key,
                             ui::DomCode code,
-                            ui::KeyboardCode key_code);
-  void SendKeyToPopupAndWait(ui::DomKey key);
+                            ui::KeyboardCode key_code,
+                            std::list<ObservedUiEvents> expected_events);
+  void SendKeyToPopupAndWait(ui::DomKey key,
+                             std::list<ObservedUiEvents> expected_events);
   void SendKeyToPopupAndWait(ui::DomKey key,
                              ui::DomCode code,
                              ui::KeyboardCode key_code,
+                             std::list<ObservedUiEvents> expected_events,
                              content::RenderWidgetHost* widget);
   void SendKeyToDataListPopup(ui::DomKey key);
   void SendKeyToDataListPopup(ui::DomKey key,
