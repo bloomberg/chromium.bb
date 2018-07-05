@@ -82,6 +82,9 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
 
   String id() const { return descriptor_->Id(); }
 
+  // Adds the track, this may cause "onactive" to fire but it won't cause
+  // "onaddtrack" because the track was added explicitly by the JavaScript
+  // application.
   void addTrack(MediaStreamTrack*, ExceptionState&);
   void removeTrack(MediaStreamTrack*, ExceptionState&);
   MediaStreamTrack* getTrackById(String);
@@ -105,8 +108,13 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
 
   // MediaStreamDescriptorClient implementation
   void StreamEnded() override;
-  void AddTrackByComponent(MediaStreamComponent*) override;
-  void RemoveTrackByComponent(MediaStreamComponent*) override;
+  void AddTrackByComponentAndFireEvents(MediaStreamComponent*) override;
+  void RemoveTrackByComponentAndFireEvents(MediaStreamComponent*) override;
+
+  // Adds the track and, unlike JavaScript-invoked addTrack(), fires related
+  // events like "onaddtrack".
+  void AddTrackAndFireEvents(MediaStreamTrack*);
+  void RemoveTrackAndFireEvents(MediaStreamTrack*);
 
   void AddRemoteTrack(MediaStreamTrack*);
   void RemoveRemoteTrack(MediaStreamTrack*);

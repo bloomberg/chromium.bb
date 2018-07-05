@@ -1766,7 +1766,7 @@ void RTCPeerConnection::DidAddReceiver(
     } else {
       // The stream already exists, add the track to it.
       // This will cause to schedule to fire "stream.onaddtrack".
-      stream->AddRemoteTrack(track);
+      stream->AddTrackAndFireEvents(track);
     }
     streams.push_back(stream);
   }
@@ -1795,7 +1795,7 @@ void RTCPeerConnection::DidRemoveReceiver(
   for (const auto& stream : streams) {
     // Remove the track.
     // This will cause to schedule to fire "stream.onremovetrack".
-    stream->RemoveRemoteTrack(track);
+    stream->RemoveTrackAndFireEvents(track);
 
     // Was this the last usage of the stream? Remove from remote streams.
     if (!IsRemoteStream(stream)) {
