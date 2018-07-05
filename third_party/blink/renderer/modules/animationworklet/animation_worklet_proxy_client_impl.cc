@@ -39,7 +39,7 @@ void AnimationWorkletProxyClientImpl::SetGlobalScope(
 
   global_scope_ = static_cast<AnimationWorkletGlobalScope*>(global_scope);
   // TODO(majidvp): Add an AnimationWorklet task type when the spec is final.
-  scoped_refptr<base::SingleThreadTaskRunner> global_runner_ =
+  scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
       global_scope_->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
   DCHECK(mutator_runner_);
@@ -47,7 +47,7 @@ void AnimationWorkletProxyClientImpl::SetGlobalScope(
       *mutator_runner_, FROM_HERE,
       CrossThreadBind(&CompositorMutatorImpl::RegisterCompositorAnimator,
                       mutator_, WrapCrossThreadPersistent(this),
-                      global_runner_));
+                      global_scope_runner));
 }
 
 void AnimationWorkletProxyClientImpl::Dispose() {

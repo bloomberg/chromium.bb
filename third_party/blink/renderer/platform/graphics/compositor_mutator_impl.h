@@ -60,8 +60,9 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
   void SetClient(CompositorMutatorClient* client) { client_ = client; }
 
  private:
-  using CompositorAnimators =
-      HashSet<CrossThreadPersistent<CompositorAnimator>>;
+  using CompositorAnimatorToTaskRunnerMap =
+      HashMap<CrossThreadPersistent<CompositorAnimator>,
+              scoped_refptr<base::SingleThreadTaskRunner>>;
 
   class AutoSignal {
 
@@ -77,16 +78,13 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
 
   // The AnimationWorkletProxyClientImpls are also owned by the WorkerClients
   // dictionary.
-  CompositorAnimators animators_;
+  CompositorAnimatorToTaskRunnerMap animator_map_;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return mutator_queue_;
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> mutator_queue_;
-
-  // Currently we only support a single queue for animators.
-  scoped_refptr<base::SingleThreadTaskRunner> animator_queue_;
 
   // The CompositorMutatorClient owns (std::unique_ptr) us, so this pointer is
   // valid as long as this class exists.
