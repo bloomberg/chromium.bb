@@ -245,21 +245,25 @@ tests:
       cursorPos: [1,1]
       xfail: true
 
-        # Converted from en_gb_g1_italics.c
+  # Converted from en_gb_g1_italics.c
   - - This is a Test
     - ⠠⠹ ⠊⠎ ⠁ ⠠⠞⠑⠌
     - typeform:
         italic: '              '
   - - This is a Test in Italic.
-    - ⠨⠠⠹ ⠊⠎ ⠁ ⠠⠞⠑⠌ ⠔ ⠠⠊⠞⠁⠇⠊⠉⠲⠨⠄
+    - ⠨⠨⠠⠹ ⠊⠎ ⠁ ⠠⠞⠑⠌ ⠔ ⠠⠊⠞⠁⠇⠊⠉⠲⠨⠄
     - typeform:
         italic: '+++++++++++++++++++++++++'
+      xfail: true
   - - This is a Test
-    - ⠠⠹ ⠨⠊⠎ ⠁⠨⠄ ⠠⠞⠑⠌
+    - ⠠⠹ ⠨⠊⠎ ⠨⠁ ⠠⠞⠑⠌
     - typeform:
         italic: '     ++++     '
-  - - time and spirit
-    - ⠨⠐⠞ ⠯ ⠸⠎⠨⠄
+      xfail: true
+  - # Test case requested here:
+    # http://www.freelists.org/post/liblouis-liblouisxml/Mesar-here-are-some-test-possibilities
+    - time and spirit
+    - ⠨⠐⠞ ⠨⠯ ⠨⠸⠎
     - typeform:
         italic: '+++++++++++++++'
-        
+      xfail: true
