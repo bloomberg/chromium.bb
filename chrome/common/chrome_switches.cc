@@ -728,6 +728,11 @@ const char kWebAuthenticationUI[] = "enable-web-authentication-ui";
 const char kWebRtcRemoteEventLogProactivePruningDelta[] =
     "webrtc-event-log-proactive-pruning-delta";
 
+// WebRTC event logs will only be uploaded if the conditions hold for this
+// many milliseconds.
+const char kWebRtcRemoteEventLogUploadDelayMs[] =
+    "webrtc-event-log-upload-delay-ms";
+
 // Normally, remote-bound WebRTC event logs are uploaded only when no
 // peer connections are active. With this flag, the upload is never suppressed.
 const char kWebRtcRemoteEventLogUploadNoSuppression[] =
