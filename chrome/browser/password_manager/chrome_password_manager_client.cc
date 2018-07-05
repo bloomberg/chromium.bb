@@ -848,6 +848,10 @@ ChromePasswordManagerClient::GetPasswordRequirementsService() {
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
 }
 
+void ChromePasswordManagerClient::UpdateFormManagers() {
+  password_manager_.UpdateFormManagers();
+}
+
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
     password_manager::mojom::CredentialManagerRequest request,

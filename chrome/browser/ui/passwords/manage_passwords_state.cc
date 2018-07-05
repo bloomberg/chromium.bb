@@ -201,7 +201,10 @@ void ManagePasswordsState::ProcessLoginsChanged(
     return;
 
   bool applied_delete = false;
+  bool all_changes_are_deletion = true;
   for (const password_manager::PasswordStoreChange& change : changes) {
+    if (change.type() != password_manager::PasswordStoreChange::REMOVE)
+      all_changes_are_deletion = false;
     const autofill::PasswordForm& changed_form = change.form();
     if (changed_form.blacklisted_by_user)
       continue;
@@ -220,8 +223,8 @@ void ManagePasswordsState::ProcessLoginsChanged(
   // itself adds a credential, they should not be refetched. The password
   // generation can be confused as the generated password will be refetched and
   // autofilled immediately.
-  if (applied_delete && client_->GetPasswordManager())
-    client_->GetPasswordManager()->UpdateFormManagers();
+  if (applied_delete && all_changes_are_deletion)
+    client_->UpdateFormManagers();
 }
 
 void ManagePasswordsState::ChooseCredential(
