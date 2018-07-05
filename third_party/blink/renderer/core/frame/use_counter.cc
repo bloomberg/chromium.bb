@@ -524,9 +524,9 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 260;
     // case CSSPropertyWebkitLineGrid: return 261;
     // case CSSPropertyWebkitLineSnap: return 262;
-    case CSSPropertyWebkitLogicalWidth:
+    case CSSPropertyAliasWebkitLogicalWidth:
       return 263;
-    case CSSPropertyWebkitLogicalHeight:
+    case CSSPropertyAliasWebkitLogicalHeight:
       return 264;
     case CSSPropertyWebkitMarginAfterCollapse:
       return 265;
@@ -584,13 +584,13 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 296;
     case CSSPropertyWebkitMaskSize:
       return 297;
-    case CSSPropertyWebkitMaxLogicalWidth:
+    case CSSPropertyAliasWebkitMaxLogicalWidth:
       return 298;
-    case CSSPropertyWebkitMaxLogicalHeight:
+    case CSSPropertyAliasWebkitMaxLogicalHeight:
       return 299;
-    case CSSPropertyWebkitMinLogicalWidth:
+    case CSSPropertyAliasWebkitMinLogicalWidth:
       return 300;
-    case CSSPropertyWebkitMinLogicalHeight:
+    case CSSPropertyAliasWebkitMinLogicalHeight:
       return 301;
     // WebkitNbspMode has been deleted, was return 302;
     case CSSPropertyOrder:

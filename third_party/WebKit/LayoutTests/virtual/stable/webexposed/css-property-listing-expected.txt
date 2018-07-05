@@ -22,8 +22,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-line-break
     -webkit-line-clamp
     -webkit-locale
-    -webkit-logical-height
-    -webkit-logical-width
     -webkit-margin-after-collapse
     -webkit-margin-before-collapse
     -webkit-margin-bottom-collapse
@@ -42,10 +40,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-mask-repeat-x
     -webkit-mask-repeat-y
     -webkit-mask-size
-    -webkit-max-logical-height
-    -webkit-max-logical-width
-    -webkit-min-logical-height
-    -webkit-min-logical-width
     -webkit-perspective-origin-x
     -webkit-perspective-origin-y
     -webkit-print-color-adjust
@@ -778,6 +772,10 @@ All changes to this list should go through Blink's feature review process: http:
         font-feature-settings
     -webkit-justify-content
         justify-content
+    -webkit-logical-height
+        block-size
+    -webkit-logical-width
+        inline-size
     -webkit-margin-after
         margin-block-end
     -webkit-margin-before
@@ -786,6 +784,14 @@ All changes to this list should go through Blink's feature review process: http:
         margin-inline-end
     -webkit-margin-start
         margin-inline-start
+    -webkit-max-logical-height
+        max-block-size
+    -webkit-max-logical-width
+        max-inline-size
+    -webkit-min-logical-height
+        min-block-size
+    -webkit-min-logical-width
+        min-inline-size
     -webkit-opacity
         opacity
     -webkit-order
