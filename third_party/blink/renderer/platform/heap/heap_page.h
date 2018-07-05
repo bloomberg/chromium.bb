@@ -373,9 +373,10 @@ class BasePage {
   // defined as non-virtual methods on |NormalPage| and |LargeObjectPage|. The
   // following methods are not performance-sensitive.
   virtual size_t ObjectPayloadSizeForTesting() = 0;
-  virtual bool IsEmpty() = 0;
   virtual void RemoveFromHeap() = 0;
-  virtual void Sweep() = 0;
+  // Sweeps a page. Returns true when that page is empty and false otherwise.
+  // Does not create free list entries for empty pages.
+  virtual bool Sweep() = 0;
   virtual void MakeConsistentForMutator() = 0;
 
 #if defined(ADDRESS_SANITIZER)
@@ -509,9 +510,8 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   }
 
   size_t ObjectPayloadSizeForTesting() override;
-  bool IsEmpty() override;
   void RemoveFromHeap() override;
-  void Sweep() override;
+  bool Sweep() override;
   void MakeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
@@ -635,9 +635,8 @@ class LargeObjectPage final : public BasePage {
   }
 
   size_t ObjectPayloadSizeForTesting() override;
-  bool IsEmpty() override;
   void RemoveFromHeap() override;
-  void Sweep() override;
+  bool Sweep() override;
   void MakeConsistentForMutator() override;
 
   void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
