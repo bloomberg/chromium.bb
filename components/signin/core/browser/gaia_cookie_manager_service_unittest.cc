@@ -60,28 +60,33 @@ class MockObserver : public GaiaCookieManagerService::Observer {
 
 int total = 0;
 
-// Custom matcher for ListedAccounts.
-MATCHER_P(ListedAccountEquals, expected, "") {
-  if (expected.size() != arg.size())
+bool AreAccountListsEqual(const std::vector<gaia::ListedAccount>& left,
+                          const std::vector<gaia::ListedAccount>& right) {
+  if (left.size() != right.size())
     return false;
 
-  for (size_t i = 0u; i < expected.size(); ++i) {
-    const gaia::ListedAccount& expected_account = expected[i];
-    const gaia::ListedAccount& actual_account = arg[i];
+  for (size_t i = 0u; i < left.size(); ++i) {
+    const gaia::ListedAccount& left_account = left[i];
+    const gaia::ListedAccount& actual_account = right[i];
     // If both accounts have an ID, use it for the comparison.
-    if (!expected_account.id.empty() && !actual_account.id.empty()) {
-      if (expected_account.id != actual_account.id)
+    if (!left_account.id.empty() && !actual_account.id.empty()) {
+      if (left_account.id != actual_account.id)
         return false;
-    } else if (expected_account.email != actual_account.email ||
-               expected_account.gaia_id != actual_account.gaia_id ||
-               expected_account.raw_email != actual_account.raw_email ||
-               expected_account.valid != actual_account.valid ||
-               expected_account.signed_out != actual_account.signed_out ||
-               expected_account.verified != actual_account.verified) {
+    } else if (left_account.email != actual_account.email ||
+               left_account.gaia_id != actual_account.gaia_id ||
+               left_account.raw_email != actual_account.raw_email ||
+               left_account.valid != actual_account.valid ||
+               left_account.signed_out != actual_account.signed_out ||
+               left_account.verified != actual_account.verified) {
       return false;
     }
   }
   return true;
+}
+
+// Custom matcher for ListedAccounts.
+MATCHER_P(ListedAccountEquals, expected, "") {
+  return AreAccountListsEqual(expected, arg);
 }
 
 class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
@@ -668,21 +673,31 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
   std::vector<gaia::ListedAccount> signed_out_accounts;
   std::vector<gaia::ListedAccount> empty_signed_out_accounts;
 
+  std::vector<gaia::ListedAccount> nonempty_list_accounts;
+  gaia::ListedAccount listed_account;
+  listed_account.email = "a@b.com";
+  listed_account.raw_email = "a@b.com";
+  listed_account.gaia_id = "8";
+  nonempty_list_accounts.push_back(listed_account);
+
+  // Add a single account.
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
               OnGaiaAccountsInCookieUpdated(
-                  ListedAccountEquals(empty_list_accounts),
+                  ListedAccountEquals(nonempty_list_accounts),
                   ListedAccountEquals(empty_signed_out_accounts), no_error()));
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
   ASSERT_TRUE(list_accounts.empty());
   ASSERT_TRUE(signed_out_accounts.empty());
-  SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
+  SimulateListAccountsSuccess(
+      &helper,
+      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
 
-  // ListAccounts returns cached data.
+  // Sanity-check that ListAccounts returns the cached data.
   ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                   GaiaConstants::kChromeSource));
-  ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(AreAccountListsEqual(nonempty_list_accounts, list_accounts));
   ASSERT_TRUE(signed_out_accounts.empty());
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
@@ -692,7 +707,13 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
                   ListedAccountEquals(empty_signed_out_accounts), no_error()));
   helper.ForceOnCookieChangeProcessing();
 
-  // OnCookieChange should invalidate cached data.
+  // OnCookieChange should invalidate the cached data.
+
+  // Clear the list before calling |ListAccounts()| as GaiaCookieManagerService
+  // simply leaves the input unaffected in the case where the accounts are
+  // stale.
+  list_accounts.clear();
+
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
   ASSERT_TRUE(list_accounts.empty());
