@@ -5,6 +5,7 @@
 #import "ios/web/shell/test/earl_grey/shell_actions.h"
 
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,9 +14,10 @@
 
 namespace web {
 
-id<GREYAction> LongPressElementForContextMenu(const std::string& element_id) {
+id<GREYAction> LongPressElementForContextMenu(
+    web::test::ElementSelector selector) {
   return WebViewLongPressElementForContextMenu(
-      shell_test_util::GetCurrentWebState(), element_id, true);
+      shell_test_util::GetCurrentWebState(), std::move(selector), true);
 }
 
 }  // namespace web

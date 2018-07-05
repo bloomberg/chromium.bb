@@ -23,6 +23,7 @@
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
@@ -37,6 +38,7 @@ using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
+using web::test::ElementSelector;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -126,7 +128,8 @@ void LongPressElement(const char* element_id) {
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
   [[EarlGrey selectElementWithMatcher:web_view_matcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        element_id, true /* menu should appear */)];
+                        ElementSelector::ElementSelectorId(element_id),
+                        true /* menu should appear */)];
 }
 
 //  Tap on |context_menu_item_button| context menu item.

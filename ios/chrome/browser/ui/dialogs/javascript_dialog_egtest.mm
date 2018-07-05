@@ -23,6 +23,7 @@
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/public/test/url_test_util.h"
@@ -38,6 +39,7 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::OKButton;
 using chrome_test_util::SettingsDoneButton;
+using web::test::ElementSelector;
 using web::test::HttpServer;
 
 namespace {
@@ -523,7 +525,8 @@ void TapSuppressDialogsButton() {
 
   [[EarlGrey selectElementWithMatcher:webViewMatcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        kLinkID, true /* menu should appear */)];
+                        ElementSelector::ElementSelectorId(kLinkID),
+                        true /* menu should appear */)];
 
   // Tap on the "Open In New Tab" button.
   id<GREYMatcher> newTabMatcher = ButtonWithAccessibilityLabel(

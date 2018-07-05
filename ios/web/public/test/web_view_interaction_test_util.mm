@@ -5,6 +5,7 @@
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
 #include "base/bind.h"
+#include "base/json/string_escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -66,17 +67,28 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
   return stack_result;
 }
 
-CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
-                                      const std::string& element_id) {
+CGRect GetBoundingRectOfElement(web::WebState* web_state,
+                                const web::test::ElementSelector& selector) {
+  std::string quoted_description;
+  bool success =
+      base::EscapeJSONString(selector.GetSelectorDescription(),
+                             true /* put_in_quotes */, &quoted_description);
+  if (!success) {
+    DLOG(ERROR) << "Error quoting description: "
+                << selector.GetSelectorDescription();
+  }
+
   std::string kGetBoundsScript =
       "(function() {"
-      "  var element = document.getElementById('" +
-      element_id +
-      "');"
-      "  if (!element)"
-      "    return {'error': 'Element " +
-      element_id +
-      " not found'};"
+      "  var element = " +
+      selector.GetSelectorScript() +
+      ";"
+      "  if (!element) {"
+      "    var description = " +
+      quoted_description +
+      ";"
+      "    return {'error': 'Element ' + description + ' not found'};"
+      "  }"
       "  var rect = element.getBoundingClientRect();"
       "  return {"
       "      'left': rect.left,"

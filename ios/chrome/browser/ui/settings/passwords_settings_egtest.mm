@@ -38,6 +38,7 @@
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/test/earl_grey/web_view_actions.h"
 #include "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,6 +61,7 @@ using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
+using web::test::ElementSelector;
 
 namespace {
 
@@ -1558,7 +1560,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       selectElementWithMatcher:web::WebViewInWebState(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
-                        chrome_test_util::GetCurrentWebState(), "password")];
+                        chrome_test_util::GetCurrentWebState(),
+                        ElementSelector::ElementSelectorId("password"))];
 
   // Wait until the keyboard shows up before tapping.
   id<GREYMatcher> showAll = grey_allOf(

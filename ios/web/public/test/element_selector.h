@@ -33,7 +33,7 @@ class ElementSelector {
   // Returns the javascript to invoke on a page to retrieve the element.
   const std::string GetSelectorScript() const;
 
-  // Return a human readable description of the query.
+  // Returns a human readable description of the query.
   const std::string GetSelectorDescription() const;
 
  private:
