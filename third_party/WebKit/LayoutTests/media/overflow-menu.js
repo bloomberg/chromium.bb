@@ -33,3 +33,6 @@ var OverflowMenuButtons = {
 
 // Default text within the overflow menu
 var overflowMenuText = ["Play", "Fullscreen", "Download", "Mute", "Cast", "CaptionsOff"];
+
+if (document.pictureInPictureEnabled)
+  overflowMenuText.push('Picture-in-Picture');

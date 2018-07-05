@@ -25,7 +25,8 @@ layer at (8,244) size 400x48
     LayoutBlockFlow {DIV} at (51,0) size 39x48 [color=#FFFFFF]
       LayoutText {#text} at (0,15) size 39x18
         text run at (0,15) width 39: "/ 0:06"
-    LayoutBlockFlow {DIV} at (90,48) size 214x0
+    LayoutBlockFlow {DIV} at (90,48) size 166x0
+    LayoutButton {INPUT} at (256,0) size 48x48
     LayoutButton {INPUT} at (304,0) size 48x48
     LayoutButton {INPUT} at (352,0) size 48x48
 layer at (8,292) size 400x16

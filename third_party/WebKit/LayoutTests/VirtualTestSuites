@@ -611,21 +611,6 @@
     "args": ["--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
   },
   {
-    "prefix": "picture-in-picture",
-    "base": "external/wpt/picture-in-picture",
-    "args": ["--enable-features=UseSurfaceLayerForVideo"]
-  },
-  {
-    "prefix": "picture-in-picture",
-    "base": "external/wpt/feature-policy",
-    "args": ["--enable-features=UseSurfaceLayerForVideo"]
-  },
-  {
-    "prefix": "picture-in-picture",
-    "base": "media/picture-in-picture",
-    "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
-  },
-  {
     "prefix": "service-worker-servicification",
     "base": "http/tests/serviceworker",
     "args": ["--enable-features=ServiceWorkerServicification",
@@ -660,6 +645,18 @@
   {
     "prefix": "video-surface-layer",
     "base": "media",
+    "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-display-compositor-pixel-dump"]
+  },
+  {
+    "prefix": "video-surface-layer",
+    "base": "external/wpt/picture-in-picture",
+    "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-display-compositor-pixel-dump"]
+  },
+  {
+    "prefix": "video-surface-layer",
+    "base": "external/wpt/feature-policy",
     "args": ["--enable-features=UseSurfaceLayerForVideo",
              "--enable-display-compositor-pixel-dump"]
   },

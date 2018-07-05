@@ -570,6 +570,8 @@ void MediaControlsImpl::InitializeControls() {
   }
 
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
+      GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetPictureInPictureEnabled() &&
       MediaElement().IsHTMLVideoElement()) {
     picture_in_picture_button_ =
         new MediaControlPictureInPictureButtonElement(*this);
@@ -612,8 +614,7 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->ParserAppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
-      MediaElement().IsHTMLVideoElement()) {
+  if (picture_in_picture_button_) {
     overflow_list_->ParserAppendChild(
         picture_in_picture_button_->CreateOverflowElement(
             new MediaControlPictureInPictureButtonElement(*this)));
@@ -1716,6 +1717,10 @@ void MediaControlsImpl::OnExitedFullscreen() {
 }
 
 void MediaControlsImpl::OnPictureInPictureChanged() {
+  // This will only be called if the media controls are listening to the
+  // Picture-in-Picture events which only happen when they provide a
+  // Picture-in-Picture button.
+  DCHECK(picture_in_picture_button_);
   picture_in_picture_button_->UpdateDisplayType();
 }
 

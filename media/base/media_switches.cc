@@ -219,8 +219,14 @@ const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Picture-in-Picture.
-const base::Feature kPictureInPicture{"PictureInPicture",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPictureInPicture {
+  "PictureInPicture",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kPreloadMetadataSuspend{"PreloadMetadataSuspend",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -317,7 +323,7 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 
 // Use SurfaceLayer instead of VideoLayer.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",

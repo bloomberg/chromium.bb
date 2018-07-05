@@ -29,10 +29,11 @@ layer at (8,268) size 352x48
     LayoutBlockFlow {DIV} at (51,0) size 39x48 [color=#FFFFFF]
       LayoutText {#text} at (0,15) size 39x18
         text run at (0,15) width 39: "/ 0:09"
-    LayoutBlockFlow {DIV} at (90,48) size 166x0
+    LayoutBlockFlow {DIV} at (90,48) size 118x0
+    LayoutButton {INPUT} at (256,0) size 48x48
     LayoutButton {INPUT} at (304,0) size 48x48
-layer at (264,268) size 48x48 transparent
-  LayoutButton {INPUT} at (256,0) size 48x48 [color=#808080]
+layer at (216,268) size 48x48 transparent
+  LayoutButton {INPUT} at (208,0) size 48x48 [color=#808080]
 layer at (8,316) size 352x16
   LayoutSlider {INPUT} at (0,272) size 352x16 [color=#9D968E]
     LayoutFlexibleBox {DIV} at (16,0) size 320x4

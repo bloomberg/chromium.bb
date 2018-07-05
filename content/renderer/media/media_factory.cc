@@ -136,15 +136,24 @@ void PostMediaContextProviderToCallback(
                      std::move(set_context_provider_callback)));
 }
 
-// Whether videos should use SurfaceLayers.
-bool VideoSurfaceLayerEnabled() {
-  return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
-         features::IsAshInBrowserProcess();
-}
-
 }  // namespace
 
 namespace content {
+
+// static
+bool MediaFactory::VideoSurfaceLayerEnabled() {
+  // LayoutTests do not support SurfaceLayer by default at the moment.
+  // See https://crbug.com/838128
+  content::RenderThreadImpl* render_thread =
+      content::RenderThreadImpl::current();
+  if (render_thread && render_thread->layout_test_mode() &&
+      !render_thread->LayoutTestModeUsesDisplayCompositorPixelDump()) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
+         features::IsAshInBrowserProcess();
+}
 
 MediaFactory::MediaFactory(
     RenderFrameImpl* render_frame,
