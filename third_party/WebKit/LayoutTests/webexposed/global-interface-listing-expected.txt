@@ -4652,6 +4652,7 @@ interface Navigator
     getter serviceWorker
     getter storage
     getter usb
+    getter userActivation
     getter userAgent
     getter vendor
     getter vendorSub
@@ -7405,6 +7406,11 @@ interface USBOutTransferResult
     attribute @@toStringTag
     getter bytesWritten
     getter status
+    method constructor
+interface UserActivation
+    attribute @@toStringTag
+    getter hasBeenActive
+    getter isActive
     method constructor
 interface VRDisplay : EventTarget
     attribute @@toStringTag
