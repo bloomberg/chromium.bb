@@ -28,6 +28,17 @@ static_library("view") {
   ]
 }
 
+android_library("content_view_java") {
+  deps = [
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//ui/android:ui_java",
+  ]
+  java_files = [
+    "java/src/org/chromium/components/embedder_support/view/ContentView.java",
+  ]
+}
+
 android_library("view_java") {
   deps = [
     "//base:base_java",
