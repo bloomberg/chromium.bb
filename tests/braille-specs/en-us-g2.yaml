@@ -4,6 +4,26 @@ table:
   grade: 2
   __assert-match: en_US.tbl # en-us-g2.ctb
 
+# Back-translation
+
+flags: {testmode: backward}
+tests:
+
+# Converted from backtranslate.c
+  - [⠅⠢, ken]
+  - [⠍⠢, men]
+  - [⠍⠜⠅, mark]
+  - [⠋⠢, fen]
+  - [⠇⠢, len]
+  - [⠞⠢, ten]
+
+# Test with letsign
+# converted from backtranslate_with_letsign.c
+
+flags: {testmode: bothDirections}
+tests:
+  - ["but b can ", "⠃ ⠰⠃ ⠉ "]
+
 # Converted from inpos_compbrl.c
 tests:
   - - 'user@example.com'

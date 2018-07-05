@@ -160,7 +160,6 @@ endif
 
 dist_yaml_TESTS =			  \
 	yaml/back_cont_then_punc.yaml	  \
-	yaml/backtranslate.yaml		\
 	yaml/begcaps_endcaps.yaml	  \
 	yaml/before_begmidword.yaml	  \
 	yaml/broken_equals_operand.yaml	  \
@@ -195,8 +194,10 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/noletsignafter.yaml	  \
-	yaml/present_progressive.yaml	\
-	yaml/squash_space.yaml		\
+	yaml/noUndefinedDots.yaml	  \
+	yaml/partialTrans.yaml		  \
+	yaml/present_progressive.yaml	  \
+	yaml/squash_space.yaml		  \
 	yaml/syllable.yaml
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
