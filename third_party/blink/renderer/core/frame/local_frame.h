@@ -359,6 +359,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void ResumeSubresourceLoading();
 
+  void AnimateSnapFling(base::TimeTicks monotonic_time);
+
  private:
   friend class FrameNavigationDisabler;
 

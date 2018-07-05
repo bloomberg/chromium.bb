@@ -116,6 +116,10 @@ FloatPoint::operator gfx::ScrollOffset() const {
   return gfx::ScrollOffset(x_, y_);
 }
 
+FloatPoint::operator gfx::Vector2dF() const {
+  return gfx::Vector2dF(x_, y_);
+}
+
 std::ostream& operator<<(std::ostream& ostream, const FloatPoint& point) {
   return ostream << point.ToString();
 }

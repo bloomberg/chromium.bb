@@ -72,6 +72,7 @@ void PageAnimator::ServiceScriptedAnimations(
               monotonic_animation_start_time.since_origin().InSecondsF());
         }
       }
+      document->GetFrame()->AnimateSnapFling(monotonic_animation_start_time);
       SVGDocumentExtensions::ServiceOnAnimationFrame(*document);
     }
     // TODO(skyostil): This function should not run for documents without views.

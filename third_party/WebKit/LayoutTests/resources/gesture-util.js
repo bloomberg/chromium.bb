@@ -27,6 +27,30 @@ function waitFor(condition) {
   });
 }
 
+function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
+  const MAX_FRAME = max_frame;
+  const MAX_UNCHANGED_FRAME = max_unchanged_frame;
+  var last_changed_frame = 0;
+  var last_position = getValue();
+  return new Promise((resolve, reject) => {
+    function tick(frames) {
+    // We requestAnimationFrame either for MAX_FRAME or until
+    // MAX_UNCHANGED_FRAME with no change have been observed.
+      if (frames >= MAX_FRAME || frames - last_changed_frame > MAX_UNCHANGED_FRAME) {
+        resolve();
+      } else {
+        current_value = getValue();
+        if (last_position != current_value) {
+          last_changed_frame = frames;
+          last_position = current_value;
+        }
+        requestAnimationFrame(tick.bind(this, frames + 1));
+      }
+    }
+    tick(0);
+  })
+}
+
 // Enums for gesture_source_type parameters in gpuBenchmarking synthetic
 // gesture methods. Must match C++ side enums in synthetic_gesture_params.h
 const GestureSourceType = {
@@ -77,6 +101,21 @@ function pixelsPerTick() {
 
   // Comes from ui/events/event.cc
   return 53;
+}
+
+function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s) {
+  return new Promise((resolve, reject) => {
+    if (chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.swipe(direction,
+                                   pixels_to_scroll,
+                                   resolve,
+                                   start_x,
+                                   start_y,
+                                   speed_in_pixels_s);
+    } else {
+      reject('This test requires chrome.gpuBenchmarking');
+    }
+  });
 }
 
 function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type) {
@@ -175,4 +214,8 @@ function mouseDragAndDrop(start_x, start_y, end_x, end_y) {
       reject('This test requires chrome.gpuBenchmarking');
     }
   });
+}
+
+function approx_equals(actual, expected, epsilon) {
+  return actual >= expected - epsilon && actual <= expected + epsilon;
 }
