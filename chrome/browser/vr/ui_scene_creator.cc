@@ -903,14 +903,17 @@ std::unique_ptr<UiElement> CreateHostedUi(
 
 std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
   auto grid = Create<Grid>(name, kPhaseBackground);
-  grid->SetSize(kSceneSize, kSceneSize);
-  grid->SetTranslate(0.0, kFloorHeight, 0.0);
-  grid->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   grid->set_gridline_count(kFloorGridlineCount);
-  grid->SetGridColor(model->color_scheme().floor_grid);
   grid->set_hit_testable(true);
   grid->set_focusable(false);
   return grid;
+}
+
+void ApplyFloorTransform(Rect* floor) {
+  floor->SetSize(1.0f, 1.0f);
+  floor->SetScale(kSceneSize, kSceneSize, kSceneSize);
+  floor->SetTranslate(0.0, kFloorHeight, 0.0);
+  floor->SetRotate(1, 0, 0, -base::kPiFloat / 2);
 }
 
 void SetVisibleInLayout(UiElement* e, bool v) {
@@ -1527,14 +1530,17 @@ void UiSceneCreator::CreateWebVrSubtree() {
   VR_BIND_VISIBILITY(
       bg, model->web_vr_enabled() && (!model->web_vr.presenting_web_vr() ||
                                       model->web_vr.showing_hosted_ui));
-  auto grid = CreateGrid(model_, kWebVrFloor);
-  VR_BIND_COLOR(model_, grid.get(), &ColorScheme::web_vr_floor_center,
-                &Grid::SetCenterColor);
-  VR_BIND_COLOR(model_, grid.get(), &ColorScheme::web_vr_floor_edge,
-                &Grid::SetEdgeColor);
+  auto grid = CreateGrid(model_, kNone);
+  grid->set_owner_name_for_test(kWebVrFloor);
   VR_BIND_COLOR(model_, grid.get(), &ColorScheme::web_vr_floor_grid,
                 &Grid::SetGridColor);
-  grid->AddBinding(std::make_unique<Binding<bool>>(
+  auto grid_bg = Create<Rect>(kWebVrFloor, kPhaseBackground);
+  ApplyFloorTransform(grid_bg.get());
+  VR_BIND_COLOR(model_, grid_bg.get(), &ColorScheme::web_vr_floor_center,
+                &Rect::SetCenterColor);
+  VR_BIND_COLOR(model_, grid_bg.get(), &ColorScheme::web_vr_floor_edge,
+                &Rect::SetEdgeColor);
+  grid_bg->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* model, UiElement* timeout_screen) {
             return model->web_vr_enabled() &&
@@ -1545,8 +1551,9 @@ void UiSceneCreator::CreateWebVrSubtree() {
           base::Unretained(scene_->GetUiElementByName(kWebVrTimeoutRoot))),
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
-          base::Unretained(grid.get()))));
-  bg->AddChild(std::move(grid));
+          base::Unretained(grid_bg.get()))));
+  grid_bg->AddChild(std::move(grid));
+  bg->AddChild(std::move(grid_bg));
   scene_->AddUiElement(kWebVrRoot, std::move(bg));
 }
 
@@ -1729,6 +1736,9 @@ void UiSceneCreator::CreateBackground() {
   scene_->AddUiElement(k2dBrowsingTexturedBackground, std::move(stars));
 
   auto grid = CreateGrid(model_, kNone);
+  ApplyFloorTransform(grid.get());
+  VR_BIND_COLOR(model_, grid.get(), &ColorScheme::floor_grid,
+                &Grid::SetGridColor);
   grid->SetOpacity(kGridOpacity);
   scene_->AddUiElement(k2dBrowsingTexturedBackground, std::move(grid));
 
@@ -1745,13 +1755,17 @@ void UiSceneCreator::CreateBackground() {
   scene_->AddUiElement(k2dBrowsingDefaultBackground,
                        std::move(solid_background));
 
-  auto floor = CreateGrid(model_, kFloor);
-  VR_BIND_COLOR(model_, floor.get(), &ColorScheme::floor,
-                &Grid::SetCenterColor);
-  VR_BIND_COLOR(model_, floor.get(), &ColorScheme::world_background,
-                &Grid::SetEdgeColor);
-  VR_BIND_COLOR(model_, floor.get(), &ColorScheme::floor_grid,
+  auto grid_fallback = CreateGrid(model_, kNone);
+  grid_fallback->set_owner_name_for_test(kFloor);
+  VR_BIND_COLOR(model_, grid_fallback.get(), &ColorScheme::floor_grid,
                 &Grid::SetGridColor);
+  auto floor = Create<Rect>(kFloor, kPhaseBackground);
+  ApplyFloorTransform(floor.get());
+  VR_BIND_COLOR(model_, floor.get(), &ColorScheme::floor,
+                &Rect::SetCenterColor);
+  VR_BIND_COLOR(model_, floor.get(), &ColorScheme::world_background,
+                &Rect::SetEdgeColor);
+  floor->AddChild(std::move(grid_fallback));
   scene_->AddUiElement(k2dBrowsingDefaultBackground, std::move(floor));
 
   // Ceiling.
