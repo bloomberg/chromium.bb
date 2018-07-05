@@ -346,6 +346,17 @@ class WebInputEvent {
     return type_ == other.type_;
   }
 
+  bool IsGestureScroll() const {
+    switch (type_) {
+      case Type::kGestureScrollBegin:
+      case Type::kGestureScrollUpdate:
+      case Type::kGestureScrollEnd:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   // Returns true if the WebInputEvent |type| is a pinch gesture event.
   static bool IsPinchGestureEventType(WebInputEvent::Type type) {
     return kGesturePinchTypeFirst <= type && type <= kGesturePinchTypeLast;

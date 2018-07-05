@@ -235,25 +235,26 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   return snap_area_data;
 }
 
-FloatPoint SnapCoordinator::GetSnapPositionForPoint(
+base::Optional<FloatPoint> SnapCoordinator::GetSnapPositionForPoint(
     const LayoutBox& snap_container,
     const FloatPoint& point,
     bool did_scroll_x,
     bool did_scroll_y) {
   auto iter = snap_container_map_.find(&snap_container);
   if (iter == snap_container_map_.end())
-    return point;
+    return base::nullopt;
 
   const SnapContainerData& data = iter->value;
   if (!data.size())
-    return point;
+    return base::nullopt;
 
   gfx::ScrollOffset snap_position;
   if (data.FindSnapPosition(gfx::ScrollOffset(point.X(), point.Y()),
                             did_scroll_x, did_scroll_y, &snap_position)) {
-    return FloatPoint(snap_position.x(), snap_position.y());
+    FloatPoint snap_point(snap_position.x(), snap_position.y());
+    return snap_point;
   }
-  return point;
+  return base::nullopt;
 }
 
 void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
@@ -264,12 +265,14 @@ void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
     return;
 
   FloatPoint current_position = scrollable_area->ScrollPosition();
-  FloatPoint snap_position = GetSnapPositionForPoint(
+  base::Optional<FloatPoint> snap_point = GetSnapPositionForPoint(
       snap_container, current_position, did_scroll_x, did_scroll_y);
+  if (!snap_point.has_value())
+    return;
 
-  if (snap_position != current_position) {
+  if (snap_point.value() != current_position) {
     scrollable_area->SetScrollOffset(
-        scrollable_area->ScrollPositionToOffset(snap_position),
+        scrollable_area->ScrollPositionToOffset(snap_point.value()),
         kProgrammaticScroll, kScrollBehaviorSmooth);
   }
 }
@@ -300,6 +303,30 @@ base::Optional<SnapContainerData> SnapCoordinator::GetSnapContainerData(
     return iter->value;
   }
   return base::nullopt;
+}
+
+bool SnapCoordinator::GetSnapFlingInfo(
+    const LayoutBox& snap_container,
+    const gfx::Vector2dF& natural_displacement,
+    gfx::Vector2dF* out_initial_offset,
+    gfx::Vector2dF* out_target_offset) {
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  if (!scrollable_area)
+    return false;
+
+  FloatPoint current_position = scrollable_area->ScrollPosition();
+  *out_initial_offset = gfx::Vector2dF(current_position);
+  FloatPoint original_end =
+      current_position +
+      FloatPoint(natural_displacement.x(), natural_displacement.y());
+  bool did_scroll_x = natural_displacement.x() != 0;
+  bool did_scroll_y = natural_displacement.y() != 0;
+  base::Optional<FloatPoint> snap_end = GetSnapPositionForPoint(
+      snap_container, original_end, did_scroll_x, did_scroll_y);
+  if (!snap_end.has_value())
+    return false;
+  *out_target_offset = gfx::Vector2dF(snap_end.value());
+  return true;
 }
 
 #ifndef NDEBUG
