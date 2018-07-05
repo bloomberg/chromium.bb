@@ -102,7 +102,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!success) {
-    DoDestroySyncManager(STOP_SYNC);
+    DoDestroySyncManager();
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
     return;
@@ -443,7 +443,7 @@ void SyncBackendHostCore::ShutdownOnUIThread() {
 void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DoDestroySyncManager(reason);
+  DoDestroySyncManager();
 
   registrar_ = nullptr;
 
@@ -454,7 +454,7 @@ void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
+void SyncBackendHostCore::DoDestroySyncManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
@@ -462,7 +462,7 @@ void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
     DisableDirectoryTypeDebugInfoForwarding();
     save_changes_timer_.reset();
     sync_manager_->RemoveObserver(this);
-    sync_manager_->ShutdownOnSyncThread(reason);
+    sync_manager_->ShutdownOnSyncThread();
     sync_manager_.reset();
   }
 }

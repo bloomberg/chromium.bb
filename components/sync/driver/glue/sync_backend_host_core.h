@@ -132,7 +132,7 @@ class SyncBackendHostCore
   //    directory and destroy sync manager.
   void ShutdownOnUIThread();
   void DoShutdown(ShutdownReason reason);
-  void DoDestroySyncManager(ShutdownReason reason);
+  void DoDestroySyncManager();
 
   // Configuration methods that must execute on sync loop.
   void DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
