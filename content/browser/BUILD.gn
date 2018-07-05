@@ -441,6 +441,8 @@ jumbo_source_set("browser") {
     "background_fetch/storage/delete_registration_task.h",
     "background_fetch/storage/get_developer_ids_task.cc",
     "background_fetch/storage/get_developer_ids_task.h",
+    "background_fetch/storage/get_initialization_data_task.cc",
+    "background_fetch/storage/get_initialization_data_task.h",
     "background_fetch/storage/get_metadata_task.cc",
     "background_fetch/storage/get_metadata_task.h",
     "background_fetch/storage/get_num_requests_task.cc",

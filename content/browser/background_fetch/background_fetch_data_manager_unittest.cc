@@ -32,6 +32,7 @@
 namespace content {
 namespace {
 
+using background_fetch::BackgroundFetchInitializationData;
 using ::testing::UnorderedElementsAre;
 using ::testing::IsEmpty;
 
@@ -46,6 +47,16 @@ const char kInitialTitle[] = "Initial Title";
 const char kUpdatedTitle[] = "Updated Title";
 
 constexpr size_t kResponseFileSize = 42u;
+
+void DidGetInitializationData(
+    base::Closure quit_closure,
+    std::vector<BackgroundFetchInitializationData>* out_result,
+    blink::mojom::BackgroundFetchError error,
+    std::vector<BackgroundFetchInitializationData> result) {
+  DCHECK_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  *out_result = std::move(result);
+  std::move(quit_closure).Run();
+}
 
 void DidCreateRegistration(
     base::Closure quit_closure,
@@ -149,6 +160,22 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
             embedded_worker_test_helper()->context_wrapper(),
             true /* mock_fill_response */);
     background_fetch_data_manager_->InitializeOnIOThread();
+  }
+
+  // Synchronous version of BackgroundFetchDataManager::GetInitializationData().
+  std::vector<BackgroundFetchInitializationData> GetInitializationData() {
+    // Simulate browser restart. This re-initializes |data_manager_|, since
+    // this DatabaseTask should only be called on browser startup.
+    RestartDataManagerFromPersistentStorage();
+
+    std::vector<BackgroundFetchInitializationData> result;
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetInitializationData(base::BindOnce(
+        &DidGetInitializationData, run_loop.QuitClosure(), &result));
+    run_loop.Run();
+
+    return result;
   }
 
   // Synchronous version of BackgroundFetchDataManager::CreateRegistration().
@@ -1305,6 +1332,75 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
   // The deletion should have been persisted.
   EXPECT_EQ(0u,
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
+}
+
+TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
+  {
+    // No registered ServiceWorkers.
+    std::vector<BackgroundFetchInitializationData> data =
+        GetInitializationData();
+    EXPECT_TRUE(data.empty());
+  }
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+  {
+    // Register ServiceWorker with no Background Fetch Registrations.
+    std::vector<BackgroundFetchInitializationData> data =
+        GetInitializationData();
+    EXPECT_TRUE(data.empty());
+  }
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+  // Register a Background Fetch.
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  CreateRegistration(registration_id, requests, options, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  {
+    std::vector<BackgroundFetchInitializationData> data =
+        GetInitializationData();
+    ASSERT_EQ(data.size(), 1u);
+
+    EXPECT_EQ(data[0].registration_id, registration_id);
+    EXPECT_EQ(data[0].registration.unique_id, kExampleUniqueId);
+    EXPECT_EQ(data[0].registration.developer_id, kExampleDeveloperId);
+    EXPECT_EQ(data[0].num_requests, requests.size());
+    EXPECT_EQ(data[0].num_completed_requests, 0u);
+    EXPECT_TRUE(data[0].active_fetch_guids.empty());
+  }
+
+  // Mark one request as complete and start another.
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+  {
+    std::vector<BackgroundFetchInitializationData> data =
+        GetInitializationData();
+    ASSERT_EQ(data.size(), 1u);
+
+    EXPECT_EQ(data[0].num_requests, requests.size());
+    EXPECT_EQ(data[0].num_completed_requests, 1u);
+    EXPECT_EQ(data[0].active_fetch_guids.size(), 1u);
+  }
+
+  // Create another registration.
+  BackgroundFetchRegistrationId registration_id2(
+      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+  CreateRegistration(registration_id2, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  {
+    std::vector<BackgroundFetchInitializationData> data =
+        GetInitializationData();
+    ASSERT_EQ(data.size(), 2u);
+  }
 }
 
 TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {

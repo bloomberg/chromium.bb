@@ -21,6 +21,7 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/background_fetch/storage/database_task.h"
+#include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -54,6 +55,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
     : public BackgroundFetchScheduler::RequestProvider,
       public background_fetch::DatabaseTaskHost {
  public:
+  using GetInitializationDataCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<background_fetch::BackgroundFetchInitializationData>)>;
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       bool /* background_fetch_succeeded */,
@@ -79,6 +83,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Grabs a reference to CacheStorageManager.
   virtual void InitializeOnIOThread();
+
+  // Gets the required data to initialize BackgroundFetchContext with the
+  // appropriate JobControllers. This will be called when BackgroundFetchContext
+  // is being intialized on the IO thread.
+  void GetInitializationData(GetInitializationDataCallback callback);
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may

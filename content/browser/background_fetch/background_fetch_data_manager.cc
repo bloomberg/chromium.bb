@@ -100,6 +100,14 @@ BackgroundFetchDataManager::~BackgroundFetchDataManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
+void BackgroundFetchDataManager::GetInitializationData(
+    GetInitializationDataCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  AddDatabaseTask(std::make_unique<background_fetch::GetInitializationDataTask>(
+      this, std::move(callback)));
+}
+
 void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
