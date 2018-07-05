@@ -149,7 +149,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+    base::WeakPtr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
@@ -195,6 +195,13 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   DCHECK(!ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
 
+  if (!controller_connector_) {
+    // The factory (that owns the connector) is dead; which means the frame
+    // must be getting dropped now.
+    SettleFetchEventDispatch(base::nullopt);
+    return;
+  }
+
   DCHECK(!controller_connector_observer_.IsObservingSources());
   controller_connector_observer_.Add(controller_connector_.get());
   fetch_request_restarted_ = false;
@@ -209,6 +216,13 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 }
 
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
+  if (!controller_connector_) {
+    // The factory (that owns the connector) is dead; which means the frame
+    // must be getting dropped now.
+    SettleFetchEventDispatch(base::nullopt);
+    return;
+  }
+
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
   mojom::ControllerServiceWorker* controller =
@@ -594,7 +608,7 @@ void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
 
 // static
 void ServiceWorkerSubresourceLoaderFactory::Create(
-    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+    std::unique_ptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     network::mojom::URLLoaderFactoryRequest request,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
@@ -604,7 +618,7 @@ void ServiceWorkerSubresourceLoaderFactory::Create(
 }
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
-    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+    std::unique_ptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     network::mojom::URLLoaderFactoryRequest request,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
@@ -635,8 +649,8 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   // destructs itself (while the loader client continues to work).
   new ServiceWorkerSubresourceLoader(
       std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, controller_connector_,
-      fallback_factory_, task_runner_);
+      std::move(client), traffic_annotation,
+      controller_connector_->GetWeakPtr(), fallback_factory_, task_runner_);
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(

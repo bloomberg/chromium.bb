@@ -36,20 +36,12 @@ namespace content {
 namespace {
 
 void CreateSubresourceLoaderFactoryForProviderContext(
-    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    mojom::ControllerServiceWorkerPtrInfo controller_ptr_info,
-    const std::string& client_id,
+    std::unique_ptr<ControllerServiceWorkerConnector> controller_connector,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
-    mojom::ControllerServiceWorkerConnectorRequest connector_request,
     network::mojom::URLLoaderFactoryRequest request,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  mojom::ControllerServiceWorkerPtr controller_ptr;
-  controller_ptr.Bind(std::move(controller_ptr_info));
-  auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-      std::move(container_host_info), std::move(controller_ptr), client_id);
-  connector->AddBinding(std::move(connector_request));
   ServiceWorkerSubresourceLoaderFactory::Create(
-      std::move(connector),
+      std::move(controller_connector),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
       std::move(request), std::move(task_runner));
 }
@@ -112,14 +104,18 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // and is to be passed to (i.e. taken by) a subresource loader factory when
   // GetSubresourceLoaderFactory() is called for the first time when a valid
   // controller exists.
-  //
-  // |controller_connector| is a Mojo pipe to the
-  // ControllerServiceWorkerConnector that is attached to the newly created
-  // subresource loader factory and lives on a background thread. This is
-  // populated when GetSubresourceLoader() creates the subresource loader
-  // factory and takes |controller_endpoint|.
   mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
-  mojom::ControllerServiceWorkerConnectorPtr controller_connector;
+
+  // S13nServiceWorker
+  // |controller_connector| is a weak pointer to
+  // ControllerServiceWorkerConnector that is attached to the newly created
+  // |subresource_loader_factory| and lives on a background
+  // |subresource_loader_task_runner|. They are populated when
+  // GetSubresourceLoader() creates the subresource loader factory and takes
+  // |controller_endpoint|. Note that |controller_connector| must be accessed
+  // only on |subresource_loader_task_runner|.
+  base::WeakPtr<ControllerServiceWorkerConnector> controller_connector;
+  scoped_refptr<base::SequencedTaskRunner> subresource_loader_task_runner;
 
   // For service worker clients. Map from registration id to JavaScript
   // ServiceWorkerRegistration object.
@@ -199,7 +195,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
 
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();
-  if (!state->controller_endpoint && !state->controller_connector) {
+  if (!state->controller_endpoint && !state->subresource_loader_task_runner) {
     // No controller is attached.
     return nullptr;
   }
@@ -211,21 +207,23 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   }
 
   if (!state->subresource_loader_factory) {
-    DCHECK(!state->controller_connector);
     DCHECK(state->controller_endpoint);
     // Create a SubresourceLoaderFactory on a background thread to avoid
     // extra contention on the main thread.
     auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    task_runner->PostTask(
+    auto connector = std::make_unique<ControllerServiceWorkerConnector>(
+        CloneContainerHostPtrInfo(), std::move(state->controller_endpoint),
+        state->client_id, task_runner);
+    state->controller_connector = connector->GetWeakPtr();
+    state->subresource_loader_task_runner = task_runner;
+    state->subresource_loader_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
-                       CloneContainerHostPtrInfo(),
-                       std::move(state->controller_endpoint), state->client_id,
+                       std::move(connector),
                        state->fallback_loader_factory->Clone(),
-                       mojo::MakeRequest(&state->controller_connector),
                        mojo::MakeRequest(&state->subresource_loader_factory),
-                       task_runner));
+                       std::move(task_runner)));
   }
   return state->subresource_loader_factory.get();
 }
@@ -388,7 +386,7 @@ void ServiceWorkerProviderContext::SetController(
     //  (B) Had a controller, and lost the controller.
     //  (C) Didn't have a controller, and got a new controller.
     //  (D) Didn't have a controller, and lost the controller (nothing to do).
-    if (state->controller_connector) {
+    if (state->subresource_loader_task_runner) {
       // Used to have a controller at least once and have created a
       // subresource loader factory before (if no subresource factory was
       // created before, then the right controller, if any, will be used when
@@ -400,9 +398,11 @@ void ServiceWorkerProviderContext::SetController(
       // the existing controller or may use the new controller settings
       // depending on when the request is actually passed to the factory (this
       // part is inherently racy).
-      state->controller_connector->UpdateController(
-          mojom::ControllerServiceWorkerPtr(
-              std::move(state->controller_endpoint)));
+      state->subresource_loader_task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ControllerServiceWorkerConnector::UpdateController,
+                         state->controller_connector,
+                         std::move(state->controller_endpoint)));
     }
   }
 
