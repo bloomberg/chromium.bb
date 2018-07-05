@@ -52,7 +52,7 @@ bool AreLogParametersValid(size_t max_file_size_bytes,
   return true;
 }
 
-base::Optional<base::TimeDelta> GetProactivePruningDelta() {
+base::TimeDelta GetProactivePruningDelta() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kWebRtcRemoteEventLogProactivePruningDelta)) {
     const std::string delta_seconds_str =
@@ -60,11 +60,7 @@ base::Optional<base::TimeDelta> GetProactivePruningDelta() {
             ::switches::kWebRtcRemoteEventLogProactivePruningDelta);
     int64_t seconds;
     if (base::StringToInt64(delta_seconds_str, &seconds) && seconds >= 0) {
-      // A delta of 0 seconds is used to signal the intention of disabling
-      // proactive pruning altogether. (From the command line. Past the command
-      // line, we use an unset optional to signal that.)
-      return (seconds == 0) ? base::Optional<base::TimeDelta>()
-                            : base::TimeDelta::FromSeconds(seconds);
+      return base::TimeDelta::FromSeconds(seconds);
     } else {
       LOG(WARNING) << "Proactive pruning delta could not be parsed.";
     }
@@ -227,7 +223,7 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
 
   enabled_browser_contexts_.insert(browser_context_id);
 
-  if (proactive_prune_scheduling_delta_.has_value() &&
+  if (!proactive_prune_scheduling_delta_.is_zero() &&
       !proactive_prune_scheduling_started_) {
     proactive_prune_scheduling_started_ = true;
     RecurringPendingLogsPrune();
@@ -611,8 +607,7 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs() {
 
 void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(proactive_prune_scheduling_delta_.has_value());
-  DCHECK_GT(*proactive_prune_scheduling_delta_, base::TimeDelta());
+  DCHECK(!proactive_prune_scheduling_delta_.is_zero());
   DCHECK(proactive_prune_scheduling_started_);
 
   PrunePendingLogs();
@@ -623,7 +618,7 @@ void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
       FROM_HERE,
       base::BindOnce(&WebRtcRemoteEventLogManager::RecurringPendingLogsPrune,
                      base::Unretained(this)),
-      *proactive_prune_scheduling_delta_);
+      proactive_prune_scheduling_delta_);
 }
 
 void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
