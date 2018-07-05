@@ -762,6 +762,16 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
   wmpi_->SetPoster(blink::WebURL(GURL("file://example.com/sample.jpg")));
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+  }
+
   LoadAndWaitForMetadata("bear-320x240-video-only.webm");
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
@@ -1175,6 +1185,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
@@ -1201,6 +1212,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
@@ -1228,6 +1240,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
@@ -1303,6 +1316,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }

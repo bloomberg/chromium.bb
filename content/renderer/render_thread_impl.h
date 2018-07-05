@@ -307,6 +307,14 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<LayoutTestDependencies> deps) {
     layout_test_deps_ = std::move(deps);
   }
+  // Returns whether we are running layout tests with display compositor for
+  // pixel dump enabled. It is meant to disable feature that require display
+  // compositor while it is not enabled by default.
+  // This should only be called if currently running in layout tests.
+  bool LayoutTestModeUsesDisplayCompositorPixelDump() const {
+    DCHECK(layout_test_deps_);
+    return layout_test_deps_->UseDisplayCompositorPixelDump();
+  }
 
   discardable_memory::ClientDiscardableSharedMemoryManager*
   GetDiscardableSharedMemoryManagerForTest() {

@@ -78,6 +78,9 @@ async_test(t => {
       const elements = [ menu.lastElementChild,
                          menu.lastElementChild.previousSibling ];
 
+      if (document.pictureInPictureEnabled)
+        elements.push(menu.lastElementChild.previousSibling.previousSibling);
+
       testNavigation(internals.shadowRoot(video), elements,
                      () => { eventSender.keyDown('ArrowUp'); },
                      () => { eventSender.keyDown('ArrowDown'); });

@@ -2327,11 +2327,11 @@ crbug.com/839038 [ Mac ] external/wpt/pointerevents/pointerevent_lostpointercapt
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/picture-in-picture/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/picture-in-picture/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
@@ -2832,7 +2832,7 @@ crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-crbug.com/626703 [ Mac10.12 ] virtual/picture-in-picture/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
@@ -2954,8 +2954,8 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/template/creating
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/picture-in-picture/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/846472 virtual/picture-in-picture/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
+crbug.com/626703 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
+crbug.com/846472 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
 
@@ -4460,9 +4460,6 @@ crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-button.htm
 crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
 crbug.com/806249 media/picture-in-picture/picture-in-picture-enabled.html [ Failure ]
 crbug.com/811977 media/picture-in-picture/picture-in-picture-interstitial.html [ Failure ]
-crbug.com/806249 virtual/picture-in-picture/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/806249 virtual/picture-in-picture/external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/806249 virtual/picture-in-picture/external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Skip ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Skip ]
@@ -4471,6 +4468,9 @@ crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/picture-in
 crbug.com/811977 virtual/video-surface-layer/media/picture-in-picture/picture-in-picture-interstitial.html [ Failure ]
 crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/controls/picture-in-picture-button.html [ Failure ]
 crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Sheriff 2018-02-26
 crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
@@ -4707,6 +4707,7 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 
 # Sheriff 2018-06-18
 crbug.com/853852 [ Win7 Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
+crbug.com/853852 [ Linux ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
@@ -4751,3 +4752,6 @@ crbug.com/859629 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing
 # Sheriff 2018-07-03
 crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
 crbug.com/859629 [ Mac10.13 ] http/tests/devtools/tracing/timeline-js/timeline-script-tag-1.js [ Failure ]
+
+# wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html is flaky in some virtual/ tests.
+crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Failure ]
