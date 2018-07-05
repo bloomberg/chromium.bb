@@ -27,7 +27,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
 
   uintptr_t Id() const override { return id_; }
   WebMediaStreamTrack Track() const override { return WebMediaStreamTrack(); }
-  WebVector<WebMediaStream> Streams() const override { return {}; }
+  WebVector<WebString> StreamIds() const override { return {}; }
   void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) override {}
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;

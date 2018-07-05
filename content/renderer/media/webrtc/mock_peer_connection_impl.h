@@ -22,7 +22,8 @@ class MockStreamCollection;
 
 class FakeRtpSender : public webrtc::RtpSenderInterface {
  public:
-  FakeRtpSender(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
+  FakeRtpSender(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+                std::vector<std::string> stream_ids);
   ~FakeRtpSender() override;
 
   bool SetTrack(webrtc::MediaStreamTrackInterface* track) override;
@@ -39,6 +40,7 @@ class FakeRtpSender : public webrtc::RtpSenderInterface {
 
  private:
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  std::vector<std::string> stream_ids_;
 };
 
 class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
@@ -73,10 +75,16 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                                   webrtc::PeerConnectionObserver* observer);
 
   // PeerConnectionInterface implementation.
-  rtc::scoped_refptr<webrtc::StreamCollectionInterface>
-      local_streams() override;
-  rtc::scoped_refptr<webrtc::StreamCollectionInterface>
-      remote_streams() override;
+  rtc::scoped_refptr<webrtc::StreamCollectionInterface> local_streams()
+      override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+  rtc::scoped_refptr<webrtc::StreamCollectionInterface> remote_streams()
+      override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
   bool AddStream(webrtc::MediaStreamInterface* local_stream) override {
     NOTIMPLEMENTED();
     return false;
@@ -84,11 +92,9 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void RemoveStream(webrtc::MediaStreamInterface* local_stream) override {
     NOTIMPLEMENTED();
   }
-  // TODO(hbos): Use AddTrack() taking stream labels instead of stream pointers.
-  // https://crbug.com/810708
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> AddTrack(
-      webrtc::MediaStreamTrackInterface* track,
-      std::vector<webrtc::MediaStreamInterface*> streams) override;
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>> AddTrack(
+      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+      const std::vector<std::string>& stream_ids) override;
   bool RemoveTrack(webrtc::RtpSenderInterface* sender) override;
   std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders()
       const override;
@@ -205,7 +211,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   MockPeerConnectionDependencyFactory* dependency_factory_;
 
   std::string stream_label_;
-  rtc::scoped_refptr<MockStreamCollection> local_streams_;
+  std::vector<std::string> local_stream_ids_;
   rtc::scoped_refptr<MockStreamCollection> remote_streams_;
   std::vector<rtc::scoped_refptr<FakeRtpSender>> senders_;
   std::unique_ptr<webrtc::SessionDescriptionInterface> local_desc_;

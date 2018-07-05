@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
@@ -57,19 +58,6 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
         return track;
     }
     return nullptr;
-  }
-  std::vector<webrtc::MediaStreamInterface*> FindStreamsOfTrack(
-      webrtc::MediaStreamTrackInterface* track) {
-    std::vector<webrtc::MediaStreamInterface*> streams_of_track;
-    if (!track)
-      return streams_of_track;
-    for (size_t i = 0; i < streams_.size(); ++i) {
-      if (streams_.at(i)->FindAudioTrack(track->id()) ||
-          streams_.at(i)->FindVideoTrack(track->id())) {
-        streams_of_track.push_back(streams_.at(i));
-      }
-    }
-    return streams_of_track;
   }
   void AddStream(MediaStreamInterface* stream) {
     streams_.push_back(stream);
@@ -120,8 +108,9 @@ class MockDtmfSender : public DtmfSenderInterface {
 };
 
 FakeRtpSender::FakeRtpSender(
-    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
-    : track_(std::move(track)) {}
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+    std::vector<std::string> stream_ids)
+    : track_(std::move(track)), stream_ids_(std::move(stream_ids)) {}
 
 FakeRtpSender::~FakeRtpSender() {}
 
@@ -151,8 +140,7 @@ std::string FakeRtpSender::id() const {
 }
 
 std::vector<std::string> FakeRtpSender::stream_ids() const {
-  NOTIMPLEMENTED();
-  return {};
+  return stream_ids_;
 }
 
 webrtc::RtpParameters FakeRtpSender::GetParameters() {
@@ -225,7 +213,6 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
     MockPeerConnectionDependencyFactory* factory,
     webrtc::PeerConnectionObserver* observer)
     : dependency_factory_(factory),
-      local_streams_(new rtc::RefCountedObject<MockStreamCollection>),
       remote_streams_(new rtc::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
@@ -249,63 +236,40 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
 
-rtc::scoped_refptr<webrtc::StreamCollectionInterface>
-MockPeerConnectionImpl::local_streams() {
-  return local_streams_;
-}
-
-rtc::scoped_refptr<webrtc::StreamCollectionInterface>
-MockPeerConnectionImpl::remote_streams() {
-  return remote_streams_;
-}
-
-rtc::scoped_refptr<webrtc::RtpSenderInterface> MockPeerConnectionImpl::AddTrack(
-    webrtc::MediaStreamTrackInterface* track,
-    std::vector<webrtc::MediaStreamInterface*> streams) {
+webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>
+MockPeerConnectionImpl::AddTrack(
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+    const std::vector<std::string>& stream_ids) {
   DCHECK(track);
-  DCHECK_EQ(1u, streams.size());
+  DCHECK_EQ(1u, stream_ids.size());
   for (const auto& sender : senders_) {
     if (sender->track() == track)
-      return nullptr;
+      return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
   }
-  for (auto* stream : streams) {
-    if (!local_streams_->find(stream->id())) {
-      stream_label_ = stream->id();
-      local_streams_->AddStream(stream);
+  for (const auto& stream_id : stream_ids) {
+    if (!base::ContainsValue(local_stream_ids_, stream_id)) {
+      stream_label_ = stream_id;
+      local_stream_ids_.push_back(stream_id);
     }
   }
-  auto* sender = new rtc::RefCountedObject<FakeRtpSender>(track);
+  auto* sender = new rtc::RefCountedObject<FakeRtpSender>(track, stream_ids);
   senders_.push_back(sender);
-  return sender;
+  return rtc::scoped_refptr<webrtc::RtpSenderInterface>(sender);
 }
 
-bool MockPeerConnectionImpl::RemoveTrack(webrtc::RtpSenderInterface* sender) {
-  auto it = std::find(senders_.begin(), senders_.end(),
-                      static_cast<FakeRtpSender*>(sender));
+bool MockPeerConnectionImpl::RemoveTrack(webrtc::RtpSenderInterface* s) {
+  rtc::scoped_refptr<FakeRtpSender> sender = static_cast<FakeRtpSender*>(s);
+  auto it = std::find(senders_.begin(), senders_.end(), sender);
   if (it == senders_.end())
     return false;
   senders_.erase(it);
   auto track = sender->track();
-  for (auto* stream : local_streams_->FindStreamsOfTrack(track)) {
-    bool stream_has_senders = false;
-    for (const auto& track : stream->GetAudioTracks()) {
-      for (const auto& sender : senders_) {
-        if (sender->track() == track) {
-          stream_has_senders = true;
-          break;
-        }
-      }
-    }
-    for (const auto& track : stream->GetVideoTracks()) {
-      for (const auto& sender : senders_) {
-        if (sender->track() == track) {
-          stream_has_senders = true;
-          break;
-        }
-      }
-    }
-    if (!stream_has_senders)
-      local_streams_->RemoveStream(stream);
+
+  for (const auto& stream_id : sender->stream_ids()) {
+    auto local_stream_it = std::find(local_stream_ids_.begin(),
+                                     local_stream_ids_.end(), stream_id);
+    if (local_stream_it != local_stream_ids_.end())
+      local_stream_ids_.erase(local_stream_it);
   }
   return true;
 }
