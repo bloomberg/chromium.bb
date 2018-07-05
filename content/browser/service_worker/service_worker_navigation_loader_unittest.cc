@@ -20,7 +20,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -55,7 +54,8 @@ void ReceiveRequestHandler(
 // 1. ServiceWorkerNavigationLoader asks ServiceWorkerFetchDispatcher to start
 //    navigation preload.
 // 2. ServiceWorkerFetchDispatcher starts the network request which is mocked
-//    by MockNetworkURLLoaderFactory. The response is sent to
+//    by EmbeddedWorkerTestHelper's default network loader factory. The
+//    response is sent to
 //    ServiceWorkerFetchDispatcher::DelegatingURLLoaderClient.
 // 3. DelegatingURLLoaderClient sends the response to the |preload_handle|
 //    that was passed to Helper::OnFetchEvent().
@@ -150,68 +150,11 @@ class NavigationPreloadLoaderClient final
   DISALLOW_COPY_AND_ASSIGN(NavigationPreloadLoaderClient);
 };
 
-// A URLLoaderFactory that returns 200 OK with a simple body to any request.
-//
-// ServiceWorkerNavigationLoaderTest sets the network factory for
-// ServiceWorkerContextCore to MockNetworkURLLoaderFactory. So far, it's only
-// used for navigation preload in these tests.
-class MockNetworkURLLoaderFactory final
-    : public network::mojom::URLLoaderFactory {
- public:
-  MockNetworkURLLoaderFactory() = default;
-
-  // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    std::string headers = "HTTP/1.1 200 OK\n\n";
-    net::HttpResponseInfo info;
-    info.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
-    network::ResourceResponseHead response;
-    response.headers = info.headers;
-    response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response);
-
-    std::string body = "this body came from the network";
-    uint32_t bytes_written = body.size();
-    mojo::DataPipe data_pipe;
-    data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
-                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-    client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-    network::URLLoaderCompletionStatus status;
-    status.error_code = net::OK;
-    client->OnComplete(status);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
-};
-
 // Helper simulates a service worker handling fetch events. The response can be
 // customized via RespondWith* functions.
 class Helper : public EmbeddedWorkerTestHelper {
  public:
-  Helper()
-      : EmbeddedWorkerTestHelper(
-            base::FilePath(),
-            base::MakeRefCounted<URLLoaderFactoryGetter>()) {
-    url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        &mock_url_loader_factory_);
-    mock_render_process_host()->OverrideURLLoaderFactory(
-        &mock_url_loader_factory_);
-  }
+  Helper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~Helper() override = default;
 
   // Tells this helper to respond to fetch events with the specified blob.
@@ -451,7 +394,6 @@ class Helper : public EmbeddedWorkerTestHelper {
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
 
-  MockNetworkURLLoaderFactory mock_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -491,12 +433,12 @@ class ServiceWorkerNavigationLoaderTest
       public ServiceWorkerNavigationLoader::Delegate {
  public:
   ServiceWorkerNavigationLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        helper_(std::make_unique<Helper>()) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~ServiceWorkerNavigationLoaderTest() override = default;
 
   void SetUp() override {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    helper_ = std::make_unique<Helper>();
 
     // Create an active service worker.
     storage()->LazyInitializeForTest(base::DoNothing());
