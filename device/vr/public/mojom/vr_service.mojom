@@ -22,10 +22,10 @@ enum XRHandedness {
   RIGHT = 2
 };
 
-enum XRPointerOrigin {
-  HEAD = 1,
-  HAND = 2,
-  SCREEN = 3
+enum XRTargetRayMode {
+  GAZING = 1,
+  POINTING = 2,
+  TAPPING = 3
 };
 
 struct XRSessionOptions {
@@ -47,7 +47,7 @@ struct XRPresentationConnection {
 };
 
 struct XRInputSourceDescription {
-  XRPointerOrigin pointer_origin;
+  XRTargetRayMode target_ray_mode;
   XRHandedness handedness;
   bool emulated_position;
 

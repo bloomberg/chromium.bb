@@ -665,8 +665,8 @@ void XRSession::UpdateInputSourceState(
     const device::mojom::blink::XRInputSourceDescriptionPtr& desc =
         state->description;
 
-    input_source->SetPointerOrigin(
-        static_cast<XRInputSource::PointerOrigin>(desc->pointer_origin));
+    input_source->SetTargetRayMode(
+        static_cast<XRInputSource::TargetRayMode>(desc->target_ray_mode));
 
     input_source->SetHandedness(
         static_cast<XRInputSource::Handedness>(desc->handedness));

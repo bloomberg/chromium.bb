@@ -25,7 +25,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
     });
 
     let input_source_1 = new MockXRInputSource();
-    input_source_1.pointerOrigin = "hand";
+    input_source_1.targetRayMode = "pointing";
     input_source_1.handedness = "right";
 
     addInputSource(input_source_1);
@@ -35,12 +35,12 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
 
       t.step( () => {
         assert_equals(input_sources.length, 1);
-        assert_equals(input_sources[0].pointerOrigin, "hand");
+        assert_equals(input_sources[0].targetRayMode, "pointing");
         assert_equals(input_sources[0].handedness, "right");
       });
 
       let input_source_2 = new MockXRInputSource();
-      input_source_2.pointerOrigin = "head";
+      input_source_2.targetRayMode = "gazing";
       input_source_2.emulatedPosition = "true";
       addInputSource(input_source_2);
 
@@ -49,7 +49,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
 
         t.step( () => {
           assert_equals(input_sources.length, 2);
-          assert_equals(input_sources[1].pointerOrigin, "head");
+          assert_equals(input_sources[1].targetRayMode, "gazing");
           assert_equals(input_sources[1].handedness, "");
         });
 
@@ -60,7 +60,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
 
           t.step( () => {
             assert_equals(input_sources.length, 1);
-            assert_equals(input_sources[0].pointerOrigin, "head");
+            assert_equals(input_sources[0].targetRayMode, "gazing");
             assert_equals(input_sources[0].handedness, "");
           });
 

@@ -20,7 +20,7 @@ class XRInputSource : public ScriptWrappable {
 
  public:
   enum Handedness { kHandNone = 0, kHandLeft = 1, kHandRight = 2 };
-  enum PointerOrigin { kOriginHead = 1, kOriginHand = 2, kOriginScreen = 3 };
+  enum TargetRayMode { kGazing = 1, kPointing = 2, kTapping = 3 };
 
   XRInputSource(XRSession*, uint32_t source_id);
   ~XRInputSource() override = default;
@@ -28,12 +28,12 @@ class XRInputSource : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   const String& handedness() const { return handedness_string_; }
-  const String& pointerOrigin() const { return pointer_origin_string_; }
+  const String& targetRayMode() const { return target_ray_mode_string_; }
   bool emulatedPosition() const { return emulated_position_; }
 
   uint32_t source_id() const { return source_id_; }
 
-  void SetPointerOrigin(PointerOrigin);
+  void SetTargetRayMode(TargetRayMode);
   void SetHandedness(Handedness);
   void SetEmulatedPosition(bool emulated_position);
   void SetBasePoseMatrix(std::unique_ptr<TransformationMatrix>);
@@ -54,8 +54,8 @@ class XRInputSource : public ScriptWrappable {
   Handedness handedness_;
   String handedness_string_;
 
-  PointerOrigin pointer_origin_;
-  String pointer_origin_string_;
+  TargetRayMode target_ray_mode_;
+  String target_ray_mode_string_;
 
   bool emulated_position_ = false;
 

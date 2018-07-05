@@ -2558,7 +2558,7 @@ device::mojom::XRInputSourceStatePtr VrShellGl::GetGazeInputSourceState() {
   state->description = device::mojom::XRInputSourceDescription::New();
 
   // It's a gaze-cursor-based device.
-  state->description->pointer_origin = device::mojom::XRPointerOrigin::HEAD;
+  state->description->target_ray_mode = device::mojom::XRTargetRayMode::GAZING;
   state->description->emulated_position = true;
 
   // No implicit handedness
