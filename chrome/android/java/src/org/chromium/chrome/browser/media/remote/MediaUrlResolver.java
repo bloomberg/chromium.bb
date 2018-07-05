@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.media.remote;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;

@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.asynctask.ShadowAsyncTask;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 
 import java.util.concurrent.CountDownLatch;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for {@link AsyncInitTaskRunner}
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowAsyncTask.class})
 public class AsyncInitTaskRunnerTest {
     private static final int THREAD_WAIT_TIME_MS = 1000;
 

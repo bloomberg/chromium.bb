@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.services.gcm;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.support.annotation.MainThread;
@@ -16,6 +15,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderService;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
@@ -50,6 +50,9 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         });
     }
 
+    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
+    // overriding.
+    @SuppressWarnings("WrongThread")
     @MainThread
     private void doDeliverMessage(
             final Context applicationContext, final String to, final Bundle data) {

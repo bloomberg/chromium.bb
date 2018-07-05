@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.chrome.browser.IntentHandler;

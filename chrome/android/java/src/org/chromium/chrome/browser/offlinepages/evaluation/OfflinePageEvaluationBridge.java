@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages.evaluation;
 
-import android.os.AsyncTask;
-
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;

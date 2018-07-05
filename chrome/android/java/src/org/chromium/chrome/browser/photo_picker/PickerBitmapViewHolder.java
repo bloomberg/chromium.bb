@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 

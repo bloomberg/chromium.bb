@@ -20,6 +20,7 @@ import org.robolectric.shadows.ShadowApplication;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.asynctask.ShadowAsyncTask;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -35,7 +36,7 @@ import java.util.Map;
  * Unit tests (run on host) for {@link org.chromium.chrome.browser.media.remote.MediaUrlResolver}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowAsyncTask.class})
 public class MediaUrlResolverTest {
     // Constants copied from MediaUrlResolver. Don't use the copies in MediaUrlResolver
     // since we want the tests to detect if these are changed or corrupted.

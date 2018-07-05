@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.os.AsyncTask;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -16,11 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
-import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemGroup;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

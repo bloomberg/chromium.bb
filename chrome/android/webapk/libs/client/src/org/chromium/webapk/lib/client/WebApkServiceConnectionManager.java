@@ -9,9 +9,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
+
+import org.chromium.base.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.metrics;
 
 import android.Manifest;
 import android.content.ContentResolver;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;

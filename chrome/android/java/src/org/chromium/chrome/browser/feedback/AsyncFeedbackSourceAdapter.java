@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.feedback;
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
 
+import org.chromium.base.AsyncTask;
+import org.chromium.base.AsyncTask.Status;
 import org.chromium.base.ContextUtils;
 
 import java.util.concurrent.ExecutionException;

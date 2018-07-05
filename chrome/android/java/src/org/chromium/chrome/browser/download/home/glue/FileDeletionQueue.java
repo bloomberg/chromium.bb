@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.glue;
 
-import android.os.AsyncTask;
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
 

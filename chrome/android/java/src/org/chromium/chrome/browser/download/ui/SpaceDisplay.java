@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
