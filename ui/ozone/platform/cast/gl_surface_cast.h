@@ -41,6 +41,7 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   EGLConfig GetConfig() override;
+  int GetBufferCount() const override;
 
  protected:
   ~GLSurfaceCast() override;
@@ -48,6 +49,7 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
   gfx::AcceleratedWidget widget_;
   GLOzoneEglCast* parent_;
   bool supports_swap_buffer_with_bounds_;
+  bool uses_triple_buffering_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceCast);

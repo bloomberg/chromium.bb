@@ -50,7 +50,9 @@ GLSurfaceCast::GLSurfaceCast(gfx::AcceleratedWidget widget,
       parent_(parent),
       supports_swap_buffer_with_bounds_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableSwapBuffersWithBounds)) {
+              switches::kEnableSwapBuffersWithBounds)),
+      uses_triple_buffering_(
+          chromecast::IsFeatureEnabled(chromecast::kTripleBuffer720)) {
   DCHECK(parent_);
 }
 
@@ -134,6 +136,10 @@ EGLConfig GLSurfaceCast::GetConfig() {
     config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
   }
   return config_;
+}
+
+int GLSurfaceCast::GetBufferCount() const {
+  return uses_triple_buffering_ ? 3 : 2;
 }
 
 GLSurfaceCast::~GLSurfaceCast() {

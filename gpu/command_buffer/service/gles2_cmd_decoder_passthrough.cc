@@ -1269,6 +1269,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
   caps.chromium_nonblocking_readback = true;
+  caps.num_surface_buffers = surface_->GetBufferCount();
 
   return caps;
 }
