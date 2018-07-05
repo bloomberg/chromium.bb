@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -18,9 +19,12 @@
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -39,6 +43,39 @@ signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
       NOTREACHED();
       return signin_metrics::Reason::REASON_UNKNOWN_REASON;
   }
+}
+
+// Opens a new tab on |url| or reuses the current tab if it is the NTP.
+void ShowTabOverwritingNTP(Browser* browser, const GURL& url) {
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  params.user_gesture = true;
+  params.tabstrip_add_types |= TabStripModel::ADD_INHERIT_OPENER;
+
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (contents) {
+    const GURL& contents_url = contents->GetVisibleURL();
+    if (contents_url == chrome::kChromeUINewTabURL ||
+        search::IsInstantNTP(contents) || contents_url == url::kAboutBlankURL) {
+      params.disposition = WindowOpenDisposition::CURRENT_TAB;
+    }
+  }
+
+  Navigate(&params);
+}
+
+// Returns the index of an existing re-usable Dice signin tab, or -1.
+int FindDiceSigninTab(TabStripModel* tab_strip) {
+  int tab_count = tab_strip->count();
+  for (int tab_index = 0; tab_index < tab_count; ++tab_index) {
+    content::WebContents* web_contents = tab_strip->GetWebContentsAt(tab_index);
+    DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
+    if (tab_helper && tab_helper->IsChromeSigninPage())
+      return tab_index;
+  }
+  return -1;
 }
 #endif
 
@@ -174,15 +211,30 @@ void SigninViewController::ShowDiceSigninTab(
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     active_contents->OpenURL(params);
   } else {
-    NavigateParams params = GetSingletonTabNavigateParams(browser, signin_url);
-    ShowSingletonTabOverwritingNTP(browser, std::move(params));
+    // Check if there is already a signin-tab open.
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    int dice_tab_index = FindDiceSigninTab(tab_strip);
+    if (dice_tab_index != -1) {
+      if (access_point !=
+          signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS) {
+        // Extensions do not activate the tab to prevent misbehaving
+        // extensions to keep focusing the signin tab.
+        tab_strip->ActivateTabAt(dice_tab_index, true /* user_gesture */);
+      }
+      // Do not create a new signin tab, because there is already one.
+      return;
+    }
+
+    ShowTabOverwritingNTP(browser, signin_url);
     active_contents = browser->tab_strip_model()->GetActiveWebContents();
   }
+
   DCHECK(active_contents);
   DCHECK_EQ(signin_url, active_contents->GetVisibleURL());
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
-  tab_helper->InitializeSigninFlow(access_point, signin_reason, promo_action);
+  tab_helper->InitializeSigninFlow(signin_url, access_point, signin_reason,
+                                   promo_action);
 }
 #endif  // !defined(OS_CHROMEOS)
 
