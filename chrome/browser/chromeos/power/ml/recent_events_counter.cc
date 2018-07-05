@@ -60,12 +60,13 @@ int RecentEventsCounter::GetTotal(base::TimeDelta now) {
   base::TimeDelta start =
       std::max(first_bucket_time_, now - duration_ + bucket_duration_);
   base::TimeDelta end =
-      std::min(now + bucket_duration_, first_bucket_time_ + duration_);
+      std::min(now, first_bucket_time_ + duration_ - bucket_duration_);
   int end_index = GetBucketIndex(end);
   for (int i = GetBucketIndex(start); i != end_index;
        i = (i + 1) % num_buckets_) {
     total += event_count_[i];
   }
+  total += event_count_[end_index];
   return total;
 }
 

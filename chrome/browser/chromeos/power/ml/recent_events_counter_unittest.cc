@@ -47,6 +47,24 @@ TEST(RecentEventsCounterTest, TimeTest) {
   ASSERT_EQ(counter.GetTotal(300 * minute), 0);
 }
 
+TEST(RecentEventsCounterTest, TimeTestConsecutiveMinutes) {
+  base::TimeDelta minute = base::TimeDelta::FromMinutes(1);
+  RecentEventsCounter counter(base::TimeDelta::FromHours(1), 60);
+
+  for (int i = 0; i < 59; i++) {
+    counter.Log(i * minute);
+    EXPECT_EQ(counter.GetTotal(i * minute), i + 1);
+    EXPECT_EQ(counter.GetTotal((i + 0.5) * minute), i + 1);
+    EXPECT_EQ(counter.GetTotal((i + 1) * minute), i + 1);
+  }
+  for (int i = 59; i < 122; i++) {
+    counter.Log(i * minute);
+    EXPECT_EQ(counter.GetTotal(i * minute), 60);
+    EXPECT_EQ(counter.GetTotal((i + 0.5) * minute), 60);
+    EXPECT_EQ(counter.GetTotal((i + 1) * minute), 59);
+  }
+}
+
 }  // namespace ml
 }  // namespace power
 }  // namespace chromeos
