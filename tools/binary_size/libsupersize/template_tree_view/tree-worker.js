@@ -43,6 +43,7 @@
  * @prop {string} shortName
  * @prop {number} size
  * @prop {string} type
+ * @prop {{ [type: string]: number }} childSizes
  */
 
 /**
@@ -121,7 +122,16 @@ function attachToParent(node, parent) {
 
   // Update the size of all ancestors
   const {size} = node;
+  const nodeType = node.type.slice(-1);
   while (node != null && node.parent != null) {
+    const {childSizes} = node.parent;
+    const lastBiggestType = node.parent.type[1];
+
+    childSizes[nodeType] = size + (childSizes[nodeType] || 0);
+    if (childSizes[nodeType] > (childSizes[lastBiggestType] || 0)) {
+      node.parent.type = node.parent.type[0] + nodeType;
+    }
+
     node.parent.size += size;
     node = node.parent;
   }
@@ -140,6 +150,7 @@ function createNode(options, sep) {
   return {
     children: [],
     parent: null,
+    childSizes: {},
     idPath,
     shortName,
     size,
