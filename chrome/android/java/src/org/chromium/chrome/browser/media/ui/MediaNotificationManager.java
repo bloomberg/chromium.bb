@@ -871,7 +871,8 @@ public class MediaNotificationManager {
             mMediaSession = null;
         }
         if (mService != null) {
-            getContext().stopService(createIntent());
+            mService.stopForeground(true /* removeNotification */);
+            mService.stopSelf();
         }
         mMediaNotificationInfo = null;
         mNotificationBuilder = null;
