@@ -232,7 +232,7 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that toggles play/pause. -------------------------------------
   play_pause_controls_view_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
-  play_pause_controls_view_->SetToggled(!controller_->IsPlayerActive());
+  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
   play_pause_controls_view_->SetBackgroundImageAlignment(
       views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
   UpdatePlayPauseControlsSize();

@@ -131,8 +131,10 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
 }
 
 bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
-  if (!media_player_id_.has_value())
-    media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
+  if (!media_player_id_.has_value()) {
+    media_player_id_ =
+        media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
+  }
 
   return media_player_id_.has_value() &&
          media_web_contents_observer_->IsPlayerActive(*media_player_id_);
