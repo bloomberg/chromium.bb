@@ -250,6 +250,16 @@ class RepeatingTimer : public Timer {
   RepeatingTimer() : RepeatingTimer(nullptr) {}
   explicit RepeatingTimer(const TickClock* tick_clock)
       : Timer(true, true, tick_clock) {}
+
+  RepeatingTimer(const Location& posted_from,
+                 TimeDelta delay,
+                 RepeatingClosure user_task)
+      : Timer(posted_from, delay, std::move(user_task), true) {}
+  RepeatingTimer(const Location& posted_from,
+                 TimeDelta delay,
+                 RepeatingClosure user_task,
+                 const TickClock* tick_clock)
+      : Timer(posted_from, delay, std::move(user_task), true, tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -260,6 +270,16 @@ class RetainingOneShotTimer : public Timer {
   RetainingOneShotTimer() : RetainingOneShotTimer(nullptr) {}
   explicit RetainingOneShotTimer(const TickClock* tick_clock)
       : Timer(true, false, tick_clock) {}
+
+  RetainingOneShotTimer(const Location& posted_from,
+                        TimeDelta delay,
+                        RepeatingClosure user_task)
+      : Timer(posted_from, delay, std::move(user_task), false) {}
+  RetainingOneShotTimer(const Location& posted_from,
+                        TimeDelta delay,
+                        RepeatingClosure user_task,
+                        const TickClock* tick_clock)
+      : Timer(posted_from, delay, std::move(user_task), false, tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
