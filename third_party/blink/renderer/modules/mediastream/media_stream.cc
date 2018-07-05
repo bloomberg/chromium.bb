@@ -399,16 +399,18 @@ const AtomicString& MediaStream::InterfaceName() const {
   return EventTargetNames::MediaStream;
 }
 
-void MediaStream::AddTrackByComponent(MediaStreamComponent* component) {
+void MediaStream::AddTrackByComponentAndFireEvents(
+    MediaStreamComponent* component) {
   DCHECK(component);
   if (!GetExecutionContext())
     return;
   MediaStreamTrack* track =
       MediaStreamTrack::Create(GetExecutionContext(), component);
-  AddRemoteTrack(track);
+  AddTrackAndFireEvents(track);
 }
 
-void MediaStream::RemoveTrackByComponent(MediaStreamComponent* component) {
+void MediaStream::RemoveTrackByComponentAndFireEvents(
+    MediaStreamComponent* component) {
   DCHECK(component);
   if (!GetExecutionContext())
     return;
@@ -447,7 +449,7 @@ void MediaStream::RemoveTrackByComponent(MediaStreamComponent* component) {
   }
 }
 
-void MediaStream::AddRemoteTrack(MediaStreamTrack* track) {
+void MediaStream::AddTrackAndFireEvents(MediaStreamTrack* track) {
   DCHECK(track);
   switch (track->Component()->Source()->GetType()) {
     case MediaStreamSource::kTypeAudio:
@@ -469,9 +471,9 @@ void MediaStream::AddRemoteTrack(MediaStreamTrack* track) {
   }
 }
 
-void MediaStream::RemoveRemoteTrack(MediaStreamTrack* track) {
+void MediaStream::RemoveTrackAndFireEvents(MediaStreamTrack* track) {
   DCHECK(track);
-  RemoveTrackByComponent(track->Component());
+  RemoveTrackByComponentAndFireEvents(track->Component());
 }
 
 void MediaStream::ScheduleDispatchEvent(Event* event) {

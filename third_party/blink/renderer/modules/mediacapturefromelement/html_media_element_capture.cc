@@ -62,7 +62,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
       track->stopTrack(context);
-      media_stream_->RemoveTrackByComponent(track->Component());
+      media_stream_->RemoveTrackByComponentAndFireEvents(track->Component());
     }
 
     media_stream_->StreamEnded();
@@ -76,7 +76,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
       track->stopTrack(context);
-      media_stream_->RemoveTrackByComponent(track->Component());
+      media_stream_->RemoveTrackByComponentAndFireEvents(track->Component());
     }
     MediaStreamDescriptor* const descriptor =
         media_element_->currentSrc().IsEmpty()
@@ -84,10 +84,14 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
             : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
                   media_element_->currentSrc().GetString());
     DCHECK(descriptor);
-    for (size_t i = 0; i < descriptor->NumberOfAudioComponents(); i++)
-      media_stream_->AddTrackByComponent(descriptor->AudioComponent(i));
-    for (size_t i = 0; i < descriptor->NumberOfVideoComponents(); i++)
-      media_stream_->AddTrackByComponent(descriptor->VideoComponent(i));
+    for (size_t i = 0; i < descriptor->NumberOfAudioComponents(); i++) {
+      media_stream_->AddTrackByComponentAndFireEvents(
+          descriptor->AudioComponent(i));
+    }
+    for (size_t i = 0; i < descriptor->NumberOfVideoComponents(); i++) {
+      media_stream_->AddTrackByComponentAndFireEvents(
+          descriptor->VideoComponent(i));
+    }
     UpdateSources(context);
     return;
   }
@@ -109,11 +113,11 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
 
   WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
   for (const auto& track : video_tracks)
-    media_stream_->AddTrackByComponent(track);
+    media_stream_->AddTrackByComponentAndFireEvents(track);
 
   WebVector<WebMediaStreamTrack> audio_tracks = web_stream.AudioTracks();
   for (const auto& track : audio_tracks)
-    media_stream_->AddTrackByComponent(track);
+    media_stream_->AddTrackByComponentAndFireEvents(track);
 
   DVLOG(2) << "#videotracks: " << video_tracks.size()
            << " #audiotracks: " << audio_tracks.size();
