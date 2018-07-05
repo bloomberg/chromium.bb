@@ -96,7 +96,8 @@ WebRtcEventLogManager::WebRtcEventLogManager()
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (IsRemoteLoggingEnabled()) {
-    remote_logs_manager_ = std::make_unique<WebRtcRemoteEventLogManager>(this);
+    remote_logs_manager_ =
+        std::make_unique<WebRtcRemoteEventLogManager>(this, task_runner_);
   }
 
   DCHECK(!g_webrtc_event_log_manager);
@@ -751,6 +752,17 @@ void WebRtcEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(uploader_factory), std::move(reply)));
+}
+
+void WebRtcEventLogManager::UploadConditionsHoldForTesting(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(remote_logs_manager_);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebRtcRemoteEventLogManager::UploadConditionsHoldForTesting,
+          base::Unretained(remote_logs_manager_.get()), std::move(callback)));
 }
 
 scoped_refptr<base::SequencedTaskRunner>&

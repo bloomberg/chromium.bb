@@ -305,6 +305,9 @@ void WebRtcEventLogUploaderImpl::ReportResult(bool result) {
   // TODO(crbug.com/775415): Provide refined retrial behavior.
   DeleteLogFile();
 
+  // TODO(crbug.com/775415): Post a task instead, because it's less likely to be
+  // misused, i.e. things done from the callback that the caller to Create()
+  // did not expect happening before Create() returns.
   observer_->OnWebRtcEventLogUploadComplete(log_file_.path, result);
 }
 

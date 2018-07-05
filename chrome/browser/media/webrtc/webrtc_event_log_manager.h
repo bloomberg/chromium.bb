@@ -260,6 +260,12 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory,
       base::OnceClosure reply);
 
+  // It is not always feasible to check in unit tests that uploads do not occur
+  // at a certain time, because that's (sometimes) racy with the event that
+  // suppresses the upload. We therefore allow unit tests to glimpse into the
+  // black box and verify that the box is aware that it should not upload.
+  void UploadConditionsHoldForTesting(base::OnceCallback<void(bool)> callback);
+
   // This allows unit tests that do not wish to change the task runner to still
   // check when certain operations are finished.
   // TODO(crbug.com/775415): Remove this and use PostNullTaskForTesting instead.
