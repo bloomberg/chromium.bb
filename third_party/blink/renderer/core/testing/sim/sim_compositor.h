@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_COMPOSITOR_H_
 
 #include "base/time/time.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/test/stub_render_widget_compositor_delegate.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"

@@ -32,6 +32,8 @@
 
 #include <utility>
 
+#include "cc/test/test_ukm_recorder_factory.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -490,8 +492,12 @@ content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize(
     settings.use_layer_lists = true;
 
   compositor_ = std::make_unique<content::RenderWidgetCompositor>(
-      specified_delegate ? specified_delegate : &delegate_, &compositor_deps_);
-  compositor_->Initialize(settings);
+      specified_delegate ? specified_delegate : &delegate_,
+      Platform::Current()->CurrentThread()->GetTaskRunner(),
+      /*compositor_thread=*/nullptr, &test_task_graph_runner_,
+      &fake_renderer_scheduler_);
+  compositor_->Initialize(settings,
+                          std::make_unique<cc::TestUkmRecorderFactory>());
   return compositor_.get();
 }
 

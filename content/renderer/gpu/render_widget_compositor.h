@@ -10,18 +10,25 @@
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
-#include "content/renderer/gpu/compositor_dependencies.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
+
+class GURL;
+
+namespace blink {
+namespace scheduler {
+class WebThreadScheduler;
+}
+}  // namespace blink
 
 namespace cc {
 class AnimationHost;
@@ -31,6 +38,8 @@ class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeSettings;
 class RenderFrameMetadataObserver;
+class TaskGraphRunner;
+class UkmRecorderFactory;
 }
 
 namespace gfx {
@@ -49,11 +58,22 @@ class CONTENT_EXPORT RenderWidgetCompositor
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
  public:
-  RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
-                         CompositorDependencies* compositor_deps);
+  // The |main_thread| is the task runner that the compositor will use for the
+  // main thread (where it is constructed). The |compositor_thread| is the task
+  // runner for the compositor thread, but is null if the compositor will run in
+  // single-threaded mode (in tests only).
+  RenderWidgetCompositor(
+      RenderWidgetCompositorDelegate* delegate,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+      cc::TaskGraphRunner* task_graph_runner,
+      blink::scheduler::WebThreadScheduler* scheduler);
   ~RenderWidgetCompositor() override;
 
-  void Initialize(const cc::LayerTreeSettings& settings);
+  // The |ukm_recorder_factory| may be null to disable recording (in tests
+  //  only).
+  void Initialize(const cc::LayerTreeSettings& settings,
+                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
   void SetNeverVisible();
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
@@ -188,9 +208,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidLoseLayerTreeFrameSink() override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
 
-  const cc::LayerTreeSettings& GetLayerTreeSettings() const {
-    return layer_tree_host_->GetSettings();
-  }
+  const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 
   // Sets the RenderFrameMetadataObserver, which is sent to the compositor
   // thread for binding.
@@ -215,9 +233,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
                               std::unique_ptr<cc::SwapPromise> swap_promise);
 
   RenderWidgetCompositorDelegate* const delegate_;
-  CompositorDependencies* const compositor_deps_;
-  const bool threaded_;
-  std::unique_ptr<cc::AnimationHost> animation_host_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
+  cc::TaskGraphRunner* const task_graph_runner_;
+  blink::scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
+  const std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
   bool never_visible_ = false;
 

@@ -37,12 +37,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/test/fake_compositor_dependencies.h"
 #include "content/test/stub_render_widget_compositor_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -173,7 +174,8 @@ class RenderWidgetCompositorFactory {
 
  private:
   content::StubRenderWidgetCompositorDelegate delegate_;
-  content::FakeCompositorDependencies compositor_deps_;
+  cc::TestTaskGraphRunner test_task_graph_runner_;
+  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
   std::unique_ptr<content::RenderWidgetCompositor> compositor_;
 };
 

@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/common/dom_storage/dom_storage_types.h"
