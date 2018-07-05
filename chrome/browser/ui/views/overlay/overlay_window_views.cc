@@ -385,6 +385,7 @@ gfx::Rect OverlayWindowViews::GetBounds() const {
 void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   DCHECK(!natural_size.IsEmpty());
   natural_size_ = natural_size;
+  SetAspectRatio(natural_size_);
 
   // Update the views::Widget bounds to adhere to sizing spec.
   SetBounds(CalculateAndUpdateWindowBounds());
