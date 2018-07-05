@@ -730,6 +730,32 @@
             ]
         }
     ],
+    "BetterMultiTabsLoading": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "PageAlmostIdleSignalEnabled",
+                    "params": {
+                        "mainThreadTaskLoadLowThreshold": "25"
+                    },
+                    "enable_features": [
+                        "PageAlmostIdle",
+                        "StaggeredBackgroundTabOpening",
+                        "StaggeredBackgroundTabOpeningExperiment"
+                    ],
+                    "disable_features": [
+                        "CustomizedTabLoadTimeout"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlinkSchedulerDedicatedWorkerThrottling": [
         {
             "platforms": [

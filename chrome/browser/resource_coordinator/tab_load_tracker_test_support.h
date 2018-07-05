@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LOAD_TRACKER_TEST_SUPPORT_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LOAD_TRACKER_TEST_SUPPORT_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
+
+class TabStripModel;
 
 namespace content {
 class WebContents;
@@ -25,6 +28,16 @@ bool WaitForTransitionToUnloaded(content::WebContents* contents);
 bool WaitForTransitionToLoading(content::WebContents* contents);
 bool WaitForTransitionToLoaded(content::WebContents* contents);
 bool WaitUntilNoLongerTracked(content::WebContents* contents);
+
+#if !defined(OS_ANDROID)
+// Waits until all tabs in a TabStripModel have transitionned to a given state.
+bool WaitForTransitionToLoadingState(
+    TabStripModel* tab_strip,
+    TabLoadTracker::LoadingState loading_state);
+bool WaitForTransitionToUnloaded(TabStripModel* tab_strip);
+bool WaitForTransitionToLoading(TabStripModel* tab_strip);
+bool WaitForTransitionToLoaded(TabStripModel* tab_strip);
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace resource_coordinator
 
