@@ -2526,6 +2526,15 @@ be describing additional metrics about the same event.
       correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
     </summary>
   </metric>
+  <metric name="Saving.ShowedManualFallbackForSaving">
+    <summary>
+      Records if a manual fallback for saving option was shown to the user (on
+      Android this is recorded, even though the UI does not exist at the
+      moment). This is a bit mask. 1 means a prompt was shown, 2 means the
+      prompt was due to a generated password, 4 means the prompt was due to an
+      update.
+    </summary>
+  </metric>
   <metric name="Submission.Indicator">
     <summary>
       Records the event that led the password manager to believe the submission

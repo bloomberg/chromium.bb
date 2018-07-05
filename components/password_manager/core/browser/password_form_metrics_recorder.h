@@ -272,6 +272,11 @@ class PasswordFormMetricsRecorder
   void RecordParsingsComparisonResult(
       ParsingComparisonResult comparison_result);
 
+  // Records that Chrome noticed that it should show a manual fallback for
+  // saving.
+  void RecordShowManualFallbackForSaving(bool has_generated_password,
+                                         bool is_update);
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -368,6 +373,12 @@ class PasswordFormMetricsRecorder
   // Counter for DetailedUserActions observed during the lifetime of a
   // PasswordFormManager. Reported upon destruction.
   std::map<DetailedUserAction, int64_t> detailed_user_actions_counts_;
+
+  // Bitmap of whether and why a manual fallback for saving was shown:
+  // 1 = the fallback was shown.
+  // 2 = the password was generated.
+  // 4 = this was an update prompt.
+  base::Optional<uint32_t> showed_manual_fallback_for_saving_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

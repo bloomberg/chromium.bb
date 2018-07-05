@@ -612,4 +612,68 @@ TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
   }
 }
 
+// Verify that the the mapping is correct and that metrics are actually
+// recorded.
+TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSaving) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  struct {
+    bool has_generated_password;
+    bool is_update;
+    int expected_value;
+  } kTests[] = {
+      {false, false, 1},
+      {true, false, 1 + 2},
+      {false, true, 1 + 4},
+      {true, true, 1 + 2 + 4},
+  };
+  for (const auto& test : kTests) {
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          true /*is_main_frame_secure*/, &test_ukm_recorder);
+      recorder->RecordShowManualFallbackForSaving(test.has_generated_password,
+                                                  test.is_update);
+    }
+    auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    EXPECT_EQ(kTestSourceId, entries[0]->source_id);
+    test_ukm_recorder.ExpectEntryMetric(
+        entries[0], UkmEntry::kSaving_ShowedManualFallbackForSavingName,
+        test.expected_value);
+  }
+}
+
+// Verify that no 0 is recorded if now fallback icon is shown.
+TEST(PasswordFormMetricsRecorder, NoRecordShowManualFallbackForSaving) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  {
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        true /*is_main_frame_secure*/, &test_ukm_recorder);
+  }
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(kTestSourceId, entries[0]->source_id);
+  EXPECT_FALSE(test_ukm_recorder.EntryHasMetric(
+      entries[0], UkmEntry::kSaving_ShowedManualFallbackForSavingName));
+}
+
+// Verify that only the latest value is recorded
+TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSavingLatestOnly) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  {
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        true /*is_main_frame_secure*/, &test_ukm_recorder);
+    recorder->RecordShowManualFallbackForSaving(true, false);
+    recorder->RecordShowManualFallbackForSaving(true, true);
+  }
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(kTestSourceId, entries[0]->source_id);
+  test_ukm_recorder.ExpectEntryMetric(
+      entries[0], UkmEntry::kSaving_ShowedManualFallbackForSavingName,
+      1 + 2 + 4);
+}
+
 }  // namespace password_manager

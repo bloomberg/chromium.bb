@@ -30,4 +30,7 @@ specific_include_rules = {
   "password_manager_metrics_recorder_unittest\.cc": [
     "+components/ukm",
   ],
+  "password_manager_unittest\.cc": [
+    "+components/ukm",
+  ],
 }
