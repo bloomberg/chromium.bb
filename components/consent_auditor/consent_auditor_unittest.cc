@@ -132,6 +132,10 @@ class ConsentAuditorTest : public testing::Test {
   void SetConsentSyncBridge(std::unique_ptr<syncer::ConsentSyncBridge> bridge) {
     consent_sync_bridge_ = std::move(bridge);
   }
+  void SetUserEventService(
+      std::unique_ptr<syncer::FakeUserEventService> service) {
+    user_event_service_ = std::move(service);
+  }
 
   void SetIsSeparateConsentTypeEnabledFeature(bool new_value) {
     // VariationParamsManager supports only one
@@ -286,11 +290,14 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserEvent) {
 }
 
 TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
+
   auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
   FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
 
   SetIsSeparateConsentTypeEnabledFeature(true);
   SetConsentSyncBridge(std::move(wrapped_fake_bridge));
+  SetUserEventService(nullptr);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
   BuildConsentAuditor();
@@ -303,9 +310,6 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
       kAccountId, Feature::CHROME_SYNC, kDescriptionMessageIds,
       kConfirmationMessageId, ConsentStatus::GIVEN);
   base::Time time_after = base::Time::Now();
-
-  // The consent should be recorded as a separate type and not as a user event.
-  EXPECT_EQ(0U, user_event_service()->GetRecordedUserEvents().size());
 
   std::vector<UserConsentSpecifics> consents =
       fake_bridge->GetRecordedUserConsents();
@@ -347,6 +351,7 @@ TEST_F(ConsentAuditorTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   fake_bridge->SetControllerDelegateOnUIThread(expected_delegate_ptr);
 
   SetConsentSyncBridge(std::move(fake_bridge));
+  SetUserEventService(nullptr);
   BuildConsentAuditor();
 
   // There is a bridge (i.e. separate sync type for consents is enabled), thus,

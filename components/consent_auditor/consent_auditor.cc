@@ -95,9 +95,9 @@ ConsentAuditor::ConsentAuditor(
       app_version_(app_version),
       app_locale_(app_locale) {
   if (IsSeparateConsentTypeEnabled()) {
-    DCHECK(consent_sync_bridge_);
+    DCHECK(consent_sync_bridge_ && !user_event_service_);
   } else {
-    DCHECK(user_event_service_);
+    DCHECK(user_event_service_ && !consent_sync_bridge_);
   }
   DCHECK(pref_service_);
 }
