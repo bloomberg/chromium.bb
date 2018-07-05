@@ -158,6 +158,11 @@ to show a diff of ELF symbols.
  * Use [//tools/binary_size/diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md)
    to show a diff of Java symbols.
  * Ensure any new Java deps are as specific as possible.
+ * If the change doesn't look suspect, check to see if the regression still
+   exists when internal proguard is used (see
+   [downstream graphs](https://chromeperf.appspot.com/report?sid=83bf643964a326648325f7eb6767d8adb85d67db8306dd94aa7476ed70d7dace)
+   or use `diagnose_bloat.py -v --enable-chrome-android-internal REV`
+   to build locally)
 
 ### Growth is from "other lib size" or "Unknown files size"
 
