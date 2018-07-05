@@ -26,7 +26,6 @@
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
-#include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_status.h"
@@ -335,7 +334,7 @@ class SyncManager {
   virtual void SaveChanges() = 0;
 
   // Issue a final SaveChanges, and close sqlite handles.
-  virtual void ShutdownOnSyncThread(ShutdownReason reason) = 0;
+  virtual void ShutdownOnSyncThread() = 0;
 
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
