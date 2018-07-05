@@ -390,6 +390,12 @@ class _ProjectContextGenerator(object):
                   for s in self.AllResZips(root_entry))
     return tuples
 
+  def GenerateManifest(self, root_entry):
+    android_manifest = root_entry.DepsInfo().get('android_manifest')
+    if not android_manifest:
+      android_manifest = self._GenCustomManifest(root_entry)
+    return self._Relativize(root_entry, android_manifest)
+
   def Generate(self, root_entry):
     # TODO(agrieve): Add an option to use interface jars and see if that speeds
     # things up at all.
@@ -415,11 +421,6 @@ class _ProjectContextGenerator(object):
     res_dirs.add(
         os.path.join(self.EntryOutputDir(root_entry), _RES_SUBDIR))
     variables['res_dirs'] = self._Relativize(root_entry, res_dirs)
-    android_manifest = root_entry.DepsInfo().get('android_manifest')
-    if not android_manifest:
-      android_manifest = self._GenCustomManifest(root_entry)
-    variables['android_manifest'] = self._Relativize(
-        root_entry, android_manifest)
     if self.split_projects:
       deps = [_ProjectEntry.FromBuildConfigPath(p)
               for p in root_entry.Gradle()['dependent_android_projects']]
@@ -546,10 +547,7 @@ def _GenerateLocalProperties(sdk_dir):
 
 
 def _GenerateBaseVars(generator, build_vars, source_properties):
-  variables = {
-      'sourceSetName': 'main',
-      'depCompileName': 'compile',
-  }
+  variables = {}
   variables['build_tools_version'] = source_properties['Pkg.Revision']
   variables['compile_sdk_version'] = (
       'android-%s' % build_vars['android_sdk_version'])
@@ -570,6 +568,9 @@ def _GenerateGradleFile(entry, generator, build_vars, source_properties,
   gradle = entry.Gradle()
 
   variables = _GenerateBaseVars(generator, build_vars, source_properties)
+
+  sourceSetName = 'main'
+
   if deps_info['type'] == 'android_apk':
     target_type = 'android_apk'
   elif deps_info['type'] == 'java_library':
@@ -584,14 +585,18 @@ def _GenerateGradleFile(entry, generator, build_vars, source_properties,
     variables['main_class'] = deps_info.get('main_class')
   elif deps_info['type'] == 'junit_binary':
     target_type = 'android_junit'
-    variables['sourceSetName'] = 'test'
-    variables['depCompileName'] = 'testCompile'
+    sourceSetName = 'test'
   else:
     return None
 
   variables['target_name'] = os.path.splitext(deps_info['name'])[0]
   variables['template_type'] = target_type
-  variables['main'] = generator.Generate(entry)
+
+  variables['main'] = {}
+  variables[sourceSetName] = generator.Generate(entry)
+
+  variables['main']['android_manifest'] = generator.GenerateManifest(entry)
+
   bootclasspath = gradle.get('bootclasspath')
   if bootclasspath:
     # Must use absolute path here.
@@ -600,6 +605,7 @@ def _GenerateGradleFile(entry, generator, build_vars, source_properties,
     variables['android_test'] = []
     for e in entry.android_test_entries:
       test_entry = generator.Generate(e)
+      test_entry['android_manifest'] = generator.GenerateManifest(e)
       variables['android_test'].append(test_entry)
       for key, value in test_entry.iteritems():
         if isinstance(value, list):
