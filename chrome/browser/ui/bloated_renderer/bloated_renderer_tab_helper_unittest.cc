@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bloated_renderer/bloated_renderer_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/test/web_contents_tester.h"
@@ -15,10 +16,11 @@ class BloatedRendererTabHelperTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     BloatedRendererTabHelper::CreateForWebContents(web_contents());
     tab_helper_ = BloatedRendererTabHelper::FromWebContents(web_contents());
-    content::WebContentsTester::For(web_contents())
-        ->SetLastCommittedURL(GURL("https://test.test"));
+    web_contents_tester_ = content::WebContentsTester::For(web_contents());
+    web_contents_tester_->SetLastCommittedURL(GURL("https://test.test"));
   }
   BloatedRendererTabHelper* tab_helper_;
+  content::WebContentsTester* web_contents_tester_;
 };
 
 TEST_F(BloatedRendererTabHelperTest, DetectReload) {
@@ -58,6 +60,7 @@ TEST_F(BloatedRendererTabHelperTest, IgnoreUnrelatedNavigation) {
 }
 
 TEST_F(BloatedRendererTabHelperTest, CanReloadBloatedTab) {
+  web_contents_tester_->NavigateAndCommit(GURL("https://test.test"));
   EXPECT_TRUE(tab_helper_->CanReloadBloatedTab());
 }
 
@@ -68,8 +71,14 @@ TEST_F(BloatedRendererTabHelperTest, CannotReloadBloatedTabCrashed) {
 }
 
 TEST_F(BloatedRendererTabHelperTest, CannotReloadBloatedTabInvalidURL) {
-  content::WebContentsTester::For(web_contents())
-      ->SetLastCommittedURL(GURL("invalid :)"));
+  web_contents_tester_->SetLastCommittedURL(GURL("invalid :)"));
+
+  EXPECT_FALSE(tab_helper_->CanReloadBloatedTab());
+}
+
+TEST_F(BloatedRendererTabHelperTest, CannotReloadBloatedTabWithPostData) {
+  web_contents_tester_->NavigateAndCommit(GURL("https://test.test"));
+  web_contents()->GetController().GetLastCommittedEntry()->SetHasPostData(true);
 
   EXPECT_FALSE(tab_helper_->CanReloadBloatedTab());
 }
@@ -78,7 +87,6 @@ TEST_F(BloatedRendererTabHelperTest,
        CannotReloadBloatedTabPendingUserInteraction) {
   content::PageImportanceSignals signals;
   signals.had_form_interaction = true;
-  content::WebContentsTester::For(web_contents())
-      ->SetPageImportanceSignals(signals);
+  web_contents_tester_->SetPageImportanceSignals(signals);
   EXPECT_FALSE(tab_helper_->CanReloadBloatedTab());
 }

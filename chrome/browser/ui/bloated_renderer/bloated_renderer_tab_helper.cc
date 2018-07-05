@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/page_importance_signals.h"
@@ -96,7 +97,22 @@ bool BloatedRendererTabHelper::CanReloadBloatedTab() {
   if (web_contents()->GetPageImportanceSignals().had_form_interaction)
     return false;
 
-  // TODO(ulan): Check if the navigation controller has POST data.
+  // Do not reload if no entry was committed.
+  content::NavigationEntry* committed_entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!committed_entry)
+    return false;
+
+  // Do not reload if the visible entry does not match the last committed entry.
+  // This means that the entry is either transient or pending.
+  content::NavigationEntry* visible_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (visible_entry != committed_entry)
+    return false;
+
+  // Do not reload if the last committed entry has post data.
+  if (committed_entry->GetHasPostData())
+    return false;
 
   return true;
 }
