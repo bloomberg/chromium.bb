@@ -24,15 +24,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   // Prepare data.
   std::vector<uint8_t> mutable_data(data, data + size);
-  zucchini::MutableBufferView mutable_image(mutable_data.data(),
-                                            mutable_data.size());
+  zucchini::ConstBufferView image(mutable_data.data(), mutable_data.size());
 
   // Create disassembler. Early exit on failure.
   auto disassembler_dex =
-      zucchini::Disassembler::Make<zucchini::DisassemblerDex>(
-          zucchini::ConstBufferView(mutable_image));
+      zucchini::Disassembler::Make<zucchini::DisassemblerDex>(image);
   if (!disassembler_dex)
     return 0;
+  CHECK_LE(disassembler_dex->size(), image.size());
+  zucchini::MutableBufferView mutable_image(mutable_data.data(),
+                                            disassembler_dex->size());
 
   std::vector<zucchini::Reference> references;
   // Read all references in the file.
