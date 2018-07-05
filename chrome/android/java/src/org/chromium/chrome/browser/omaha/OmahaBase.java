@@ -54,7 +54,8 @@ import java.util.concurrent.TimeUnit;
  * http://docs.google.com/a/google.com/document/d/1scTCovqASf5ktkOeVj8wFRkWTCeDYw2LrOBNn05CDB0/edit
  */
 public class OmahaBase {
-    private static final String TAG = "omaha";
+    // Used in various org.chromium.chrome.browser.omaha files.
+    static final String TAG = "omaha";
 
     /** Version config data structure. */
     public static class VersionConfig {
@@ -86,13 +87,14 @@ public class OmahaBase {
     private static boolean sIsDisabled;
 
     // Results of {@link #handlePostRequest()}.
+    @IntDef({PostResult.NO_REQUEST, PostResult.SENT, PostResult.FAILED, PostResult.SCHEDULED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({POST_RESULT_NO_REQUEST, POST_RESULT_SENT, POST_RESULT_FAILED, POST_RESULT_SCHEDULED})
-    @interface PostResult {}
-    static final int POST_RESULT_NO_REQUEST = 0;
-    static final int POST_RESULT_SENT = 1;
-    static final int POST_RESULT_FAILED = 2;
-    static final int POST_RESULT_SCHEDULED = 3;
+    @interface PostResult {
+        int NO_REQUEST = 0;
+        int SENT = 1;
+        int FAILED = 2;
+        int SCHEDULED = 3;
+    }
 
     /** Deprecated; kept around to cancel alarms set for OmahaClient pre-M58. */
     private static final String ACTION_REGISTER_REQUEST =
@@ -158,8 +160,9 @@ public class OmahaBase {
         }
 
         if (hasRequest()) {
+            @PostResult
             int result = handlePostRequest();
-            if (result == POST_RESULT_FAILED || result == POST_RESULT_SCHEDULED) {
+            if (result == PostResult.FAILED || result == PostResult.SCHEDULED) {
                 nextTimestamp = Math.min(nextTimestamp, mTimestampForNextPostAttempt);
             }
         }
@@ -193,13 +196,14 @@ public class OmahaBase {
     /**
      * Sends the request it is holding.
      */
-    private int handlePostRequest() {
+    private @PostResult int handlePostRequest() {
         if (!hasRequest()) {
-            mDelegate.onHandlePostRequestDone(POST_RESULT_NO_REQUEST, false);
-            return POST_RESULT_NO_REQUEST;
+            mDelegate.onHandlePostRequestDone(PostResult.NO_REQUEST, false);
+            return PostResult.NO_REQUEST;
         }
 
         // If enough time has passed since the last attempt, try sending a request.
+        @PostResult
         int result;
         long currentTimestamp = getBackoffScheduler().getCurrentTime();
         boolean installEventWasSent = false;
@@ -219,9 +223,9 @@ public class OmahaBase {
                 succeeded &= generateAndPostRequest(currentTimestamp, sessionID);
             }
 
-            result = succeeded ? POST_RESULT_SENT : POST_RESULT_FAILED;
+            result = succeeded ? PostResult.SENT : PostResult.FAILED;
         } else {
-            result = POST_RESULT_SCHEDULED;
+            result = PostResult.SCHEDULED;
         }
 
         mDelegate.onHandlePostRequestDone(result, installEventWasSent);
