@@ -1230,17 +1230,19 @@ float ShapeResult::CachedPositionForOffset(unsigned offset) const {
 }
 
 unsigned ShapeResult::CachedNextSafeToBreakOffset(unsigned offset) const {
-  // TODO(layout-dev): Use character_position_ for RTL once supported.
-  if (!Rtl())
-    return character_position_->NextSafeToBreakOffset(offset);
-  return NextSafeToBreakOffset(offset);
+  if (Rtl())
+    return NextSafeToBreakOffset(offset);
+
+  DCHECK(character_position_);
+  return character_position_->NextSafeToBreakOffset(offset);
 }
 
 unsigned ShapeResult::CachedPreviousSafeToBreakOffset(unsigned offset) const {
+  if (Rtl())
+    return PreviousSafeToBreakOffset(offset);
+
   DCHECK(character_position_);
-  // TODO(layout-dev): Use character_position_->PreviousSafeToBreakOffset(index)
-  // once implemented.
-  return PreviousSafeToBreakOffset(offset);
+  return character_position_->PreviousSafeToBreakOffset(offset);
 }
 
 // TODO(eae): Might be worth trying to set midpoint to ~50% more than the number
@@ -1307,14 +1309,17 @@ unsigned ShapeResult::CharacterPositionData::NextSafeToBreakOffset(
 
 unsigned ShapeResult::CharacterPositionData::PreviousSafeToBreakOffset(
     unsigned offset) const {
-  if (offset >= data_.size())
-    return data_.size();
+  DCHECK_LE(start_offset_, offset);
+  unsigned adjusted_offset = offset - start_offset_;
+  DCHECK_LT(adjusted_offset, data_.size());
 
-  unsigned length = data_.size();
-  for (unsigned i = offset; i < length; i++) {
-    if (data_[i].safe_to_break_before) {
-      return start_offset_ + i;
-    }
+  // Assume it is always safe to break at the end of the run.
+  if (adjusted_offset >= data_.size())
+    return start_offset_ + data_.size();
+
+  for (unsigned i = adjusted_offset + 1; i > 0; i--) {
+    if (data_[i - 1].safe_to_break_before)
+      return start_offset_ + (i - 1);
   }
 
   // Previous safe break is at the start of the run.
