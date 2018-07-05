@@ -1207,6 +1207,7 @@ jumbo_component("base") {
   defines = []
   data = []
   data_deps = []
+  libs = []
 
   configs += [
     ":base_flags",
@@ -1240,7 +1241,7 @@ jumbo_component("base") {
   # more robust check for this.
   if (!use_sysroot && (is_android || (is_linux && !is_chromecast)) &&
       host_toolchain != "//build/toolchain/cros:host") {
-    libs = [ "atomic" ]
+    libs += [ "atomic" ]
   }
 
   if (use_allocator_shim) {
@@ -1342,7 +1343,7 @@ jumbo_component("base") {
 
     # This is actually a linker script, but it can be added to the link in the
     # same way as a library.
-    libs = [ "android/library_loader/anchor_functions.lds" ]
+    libs += [ "android/library_loader/anchor_functions.lds" ]
   }
 
   # Chromeos.
@@ -1599,7 +1600,7 @@ jumbo_component("base") {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-    libs = [
+    libs += [
       "cfgmgr32.lib",
       "powrprof.lib",
       "propsys.lib",
@@ -1627,7 +1628,7 @@ jumbo_component("base") {
       "time/time_mac.cc",
     ]
 
-    libs = [
+    libs += [
       "ApplicationServices.framework",
       "AppKit.framework",
       "bsm",
