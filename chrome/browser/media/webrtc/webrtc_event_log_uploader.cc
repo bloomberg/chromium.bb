@@ -104,22 +104,21 @@ WebRtcEventLogUploaderImpl::Factory::Factory(
     : request_context_getter_(request_context_getter) {}
 
 std::unique_ptr<WebRtcEventLogUploader>
-WebRtcEventLogUploaderImpl::Factory::Create(
-    const WebRtcLogFileInfo& log_file,
-    WebRtcEventLogUploaderObserver* observer) {
-  DCHECK(observer);
+WebRtcEventLogUploaderImpl::Factory::Create(const WebRtcLogFileInfo& log_file,
+                                            UploadResultCallback callback) {
   return std::make_unique<WebRtcEventLogUploaderImpl>(
-      request_context_getter_, log_file, observer, kMaxRemoteLogFileSizeBytes);
+      request_context_getter_, log_file, std::move(callback),
+      kMaxRemoteLogFileSizeBytes);
 }
 
 std::unique_ptr<WebRtcEventLogUploader>
 WebRtcEventLogUploaderImpl::Factory::CreateWithCustomMaxSizeForTesting(
     const WebRtcLogFileInfo& log_file,
-    WebRtcEventLogUploaderObserver* observer,
+    UploadResultCallback callback,
     size_t max_log_file_size_bytes) {
-  DCHECK(observer);
   return std::make_unique<WebRtcEventLogUploaderImpl>(
-      request_context_getter_, log_file, observer, max_log_file_size_bytes);
+      request_context_getter_, log_file, std::move(callback),
+      max_log_file_size_bytes);
 }
 
 WebRtcEventLogUploaderImpl::Delegate::Delegate(
@@ -156,16 +155,14 @@ void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchComplete(
 WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
     net::URLRequestContextGetter* request_context_getter,
     const WebRtcLogFileInfo& log_file,
-    WebRtcEventLogUploaderObserver* observer,
+    UploadResultCallback callback,
     size_t max_log_file_size_bytes)
     : delegate_(this),
       request_context_getter_(request_context_getter),
       log_file_(log_file),
-      observer_(observer),
+      callback_(std::move(callback)),
       max_log_file_size_bytes_(max_log_file_size_bytes),
       io_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  DCHECK(observer);
-
   std::string upload_data;
 
   if (!PrepareUploadData(&upload_data)) {
@@ -305,10 +302,8 @@ void WebRtcEventLogUploaderImpl::ReportResult(bool result) {
   // TODO(crbug.com/775415): Provide refined retrial behavior.
   DeleteLogFile();
 
-  // TODO(crbug.com/775415): Post a task instead, because it's less likely to be
-  // misused, i.e. things done from the callback that the caller to Create()
-  // did not expect happening before Create() returns.
-  observer_->OnWebRtcEventLogUploadComplete(log_file_.path, result);
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), log_file_.path, result));
 }
 
 void WebRtcEventLogUploaderImpl::DeleteLogFile() {

@@ -433,23 +433,6 @@ void WebRtcRemoteEventLogManager::OnConnectionChanged(
   // or switches to an unsupported connection type.
 }
 
-void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
-    const base::FilePath& file_path,
-    bool upload_successful) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  // Post a task to deallocate the uploader (can't do this directly,
-  // because this function is a callback from the uploader), potentially
-  // starting a new upload for the next file.
-  // |this| is only destroyed (on the UI thread) after |task_runner_| stops,
-  // so both base::Unretained(this) is safe.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal,
-          base::Unretained(this)));
-}
-
 void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
     std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -789,6 +772,13 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
     // delay of length |upload_delay_| before the next one starts.
     time_when_upload_conditions_met_ = base::TimeTicks();
 
+    // |this| is only destroyed (on the UI thread) after |task_runner_| stops,
+    // so base::Unretained(this) is safe. (|uploader_| and |uploader_factory_|
+    // live on |task_runner_|.)
+    auto callback = base::BindOnce(
+        &WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete,
+        base::Unretained(this));
+
     // The uploader takes ownership of the file; it's no longer considered to be
     // pending. (If the upload fails, the log will be deleted.)
     // TODO(crbug.com/775415): Add more refined retry behavior, so that we would
@@ -798,14 +788,17 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
     // TODO(crbug.com/775415): Rename the file before uploading, so that we
     // would not retry the upload after restarting Chrome, if the upload is
     // interrupted.
-    uploader_ = uploader_factory_->Create(*pending_logs_.begin(), this);
+    uploader_ =
+        uploader_factory_->Create(*pending_logs_.begin(), std::move(callback));
     pending_logs_.erase(pending_logs_.begin());
   }
 
   --scheduled_upload_tasks_;
 }
 
-void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal() {
+void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
+    const base::FilePath& log_file,
+    bool upload_successful) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   uploader_.reset();
   ManageUploadSchedule();

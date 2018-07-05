@@ -18,24 +18,16 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-// A class implementing this interace can register for notification of an
-// upload's eventual result (success/failure).
-class WebRtcEventLogUploaderObserver {
- public:
-  virtual void OnWebRtcEventLogUploadComplete(const base::FilePath& log_file,
-                                              bool upload_successful) = 0;
-
- protected:
-  virtual ~WebRtcEventLogUploaderObserver() = default;
-};
-
-// A sublcass of this interface would take ownership of a file, and either
-// upload it to a remote server (actual implementation), or pretend to do
-// so (in unit tests). It will typically take on an observer of type
-// WebRtcEventLogUploaderObserver, and inform it of the success or failure
-// of the upload.
+// A sublcass of this interface will take ownership of a file, and either
+// upload it to a remote server (actual implementation), or pretend to do so
+// (in unit tests). Upon completion, success/failure will be reported by posting
+// an UploadResultCallback task to the task queue on which this object lives.
 class WebRtcEventLogUploader {
  public:
+  using UploadResultCallback =
+      base::OnceCallback<void(const base::FilePath& log_file,
+                              bool upload_successful)>;
+
   // Since we'll need more than one instance of the abstract
   // WebRtcEventLogUploader, we'll need an abstract factory for it.
   class Factory {
@@ -50,7 +42,7 @@ class WebRtcEventLogUploader {
     // the file after invoking Create().
     virtual std::unique_ptr<WebRtcEventLogUploader> Create(
         const WebRtcLogFileInfo& log_file,
-        WebRtcEventLogUploaderObserver* observer) = 0;
+        UploadResultCallback callback) = 0;
   };
 
   virtual ~WebRtcEventLogUploader() = default;
@@ -77,14 +69,14 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
 
     std::unique_ptr<WebRtcEventLogUploader> Create(
         const WebRtcLogFileInfo& log_file,
-        WebRtcEventLogUploaderObserver* observer) override;
+        UploadResultCallback callback) override;
 
    protected:
     friend class WebRtcEventLogUploaderImplTest;
 
     std::unique_ptr<WebRtcEventLogUploader> CreateWithCustomMaxSizeForTesting(
         const WebRtcLogFileInfo& log_file,
-        WebRtcEventLogUploaderObserver* observer,
+        UploadResultCallback callback,
         size_t max_remote_log_file_size_bytes);
 
    private:
@@ -94,7 +86,7 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   WebRtcEventLogUploaderImpl(
       net::URLRequestContextGetter* request_context_getter,
       const WebRtcLogFileInfo& log_file,
-      WebRtcEventLogUploaderObserver* observer,
+      UploadResultCallback callback,
       size_t max_remote_log_file_size_bytes);
   ~WebRtcEventLogUploaderImpl() override;
 
@@ -119,7 +111,7 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // permissible afterwards.
   void OnURLFetchComplete(const net::URLFetcher* source);
 
-  // Cleanup and reporting to |observer_|.
+  // Cleanup and posting of the result callback.
   void ReportResult(bool result);
 
   // Remove the log file which is owned by |this|.
@@ -157,8 +149,8 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // modification, associated BrowserContext).
   const WebRtcLogFileInfo log_file_;
 
-  // The observer to be notified when this upload succeeds or fails.
-  WebRtcEventLogUploaderObserver* const observer_;
+  // Callback posted back to signal success or failure.
+  UploadResultCallback callback_;
 
   // Maximum allowed file size. In production code, this is a hard-coded,
   // but unit tests may set other values.

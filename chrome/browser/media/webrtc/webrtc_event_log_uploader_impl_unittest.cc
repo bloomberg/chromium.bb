@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -29,27 +30,23 @@ using ::testing::StrictMock;
 using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
 namespace {
-class MockWebRtcEventLogUploaderObserver
-    : public WebRtcEventLogUploaderObserver {
+class UploadObserver {
  public:
-  explicit MockWebRtcEventLogUploaderObserver(
-      base::OnceClosure completion_closure)
-      : completion_closure_(std::move(completion_closure)) {}
+  explicit UploadObserver(base::OnceClosure on_complete_callback)
+      : on_complete_callback_(std::move(on_complete_callback)) {}
 
-  ~MockWebRtcEventLogUploaderObserver() override = default;
-
-  // Combines the mock functionality via a helper (CompletionCallback), as well
-  // as calls the completion closure.
+  // Combines the mock functionality via a helper (CompletionCallback),
+  // as well as unblocks its owner through |on_complete_callback_|.
   void OnWebRtcEventLogUploadComplete(const base::FilePath& log_file,
-                                      bool upload_successful) override {
+                                      bool upload_successful) {
     CompletionCallback(log_file, upload_successful);
-    std::move(completion_closure_).Run();
+    std::move(on_complete_callback_).Run();
   }
 
   MOCK_METHOD2(CompletionCallback, void(const base::FilePath&, bool));
 
  private:
-  base::OnceClosure completion_closure_;
+  base::OnceClosure on_complete_callback_;
 };
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
@@ -158,7 +155,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
     const WebRtcLogFileInfo log_file_info(browser_context_id, log_file_,
                                           last_modified_time);
 
-    uploader_ = uploader_factory_->Create(log_file_info, &observer_);
+    uploader_ = uploader_factory_->Create(log_file_info, ResultCallback());
 
     observer_run_loop_.Run();  // Observer was given quit-closure by ctor.
   }
@@ -173,7 +170,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
                                           last_modified_time);
 
     uploader_ = uploader_factory_->CreateWithCustomMaxSizeForTesting(
-        log_file_info, &observer_, max_log_size_bytes);
+        log_file_info, ResultCallback(), max_log_size_bytes);
 
     observer_run_loop_.Run();  // Observer was given quit-closure by ctor.
   }
@@ -186,7 +183,12 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
     const WebRtcLogFileInfo log_file_info(browser_context_id, log_file_,
                                           last_modified_time);
 
-    uploader_ = uploader_factory_->Create(log_file_info, &observer_);
+    uploader_ = uploader_factory_->Create(log_file_info, ResultCallback());
+  }
+
+  WebRtcEventLogUploader::UploadResultCallback ResultCallback() {
+    return base::BindOnce(&UploadObserver::OnWebRtcEventLogUploadComplete,
+                          base::Unretained(&observer_));
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -203,7 +205,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   std::unique_ptr<net::TestURLFetcherFactory> test_url_fetcher_factory_;
 
-  StrictMock<MockWebRtcEventLogUploaderObserver> observer_;
+  StrictMock<UploadObserver> observer_;
 
   // These (uploader-factory and uploader) are the units under test.
   std::unique_ptr<WebRtcEventLogUploaderImpl::Factory> uploader_factory_;

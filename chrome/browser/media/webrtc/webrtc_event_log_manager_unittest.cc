@@ -32,6 +32,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
@@ -151,7 +152,7 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
 
     std::unique_ptr<WebRtcEventLogUploader> Create(
         const WebRtcLogFileInfo& log_file,
-        WebRtcEventLogUploaderObserver* observer) override {
+        UploadResultCallback callback) override {
       return std::make_unique<NullWebRtcEventLogUploader>(
           log_file, cancellation_expected_);
     }
@@ -939,7 +940,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
 
     std::unique_ptr<WebRtcEventLogUploader> Create(
         const WebRtcLogFileInfo& log_file,
-        WebRtcEventLogUploaderObserver* observer) override {
+        UploadResultCallback callback) override {
       if (expected_files_.empty()) {
         EXPECT_FALSE(true);  // More files uploaded than expected.
       } else {
@@ -958,7 +959,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
       }
 
       return std::make_unique<FileListExpectingWebRtcEventLogUploader>(
-          log_file, result_, observer);
+          log_file, result_, std::move(callback));
     }
 
    private:
@@ -969,12 +970,12 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
 
   // The logic is in the factory; the uploader just reports success so that the
   // next file may become eligible for uploading.
-  FileListExpectingWebRtcEventLogUploader(
-      const WebRtcLogFileInfo& log_file,
-      bool result,
-      WebRtcEventLogUploaderObserver* observer)
+  FileListExpectingWebRtcEventLogUploader(const WebRtcLogFileInfo& log_file,
+                                          bool result,
+                                          UploadResultCallback callback)
       : log_file_(log_file) {
-    observer->OnWebRtcEventLogUploadComplete(log_file.path, result);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), log_file_.path, result));
   }
 
   ~FileListExpectingWebRtcEventLogUploader() override = default;
