@@ -44,11 +44,29 @@ using content::RenderFrameHostTester;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false) {}
+    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
+                                false,
+                                content::TestBrowserThreadBundle::DEFAULT) {}
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    content::TestBrowserThreadBundle::Options thread_bundle_options)
+    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
+                                false,
+                                thread_bundle_options) {}
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
                                                      bool hosted_app)
-    : browser_type_(browser_type), hosted_app_(hosted_app) {
+    : BrowserWithTestWindowTest(browser_type,
+                                hosted_app,
+                                content::TestBrowserThreadBundle::DEFAULT) {}
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    Browser::Type browser_type,
+    bool hosted_app,
+    content::TestBrowserThreadBundle::Options thread_bundle_options)
+    : thread_bundle_(thread_bundle_options),
+      browser_type_(browser_type),
+      hosted_app_(hosted_app) {
 #if defined(OS_CHROMEOS)
   ash_test_environment_ = std::make_unique<AshTestEnvironmentChrome>();
   ash_test_helper_ =

@@ -82,7 +82,9 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
   DiceSigninUiUtilTest()
-      : scoped_account_consistency_(signin::AccountConsistencyMethod::kDice) {}
+      : BrowserWithTestWindowTest(
+            content::TestBrowserThreadBundle::IO_MAINLOOP),
+        scoped_account_consistency_(signin::AccountConsistencyMethod::kDice) {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {
@@ -363,6 +365,14 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   ASSERT_TRUE(active_contents);
   EXPECT_EQ(signin::GetSigninURLForDice(profile(), ""),
             active_contents->GetVisibleURL());
+}
+
+TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {
+  // Should start off with no accounts.
+  std::vector<AccountInfo> accounts = GetAccountsForDicePromos(profile());
+  EXPECT_TRUE(accounts.empty());
+
+  // TODO(tangltom): Flesh out this test.
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

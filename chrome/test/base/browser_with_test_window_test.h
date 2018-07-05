@@ -84,6 +84,19 @@ class BrowserWithTestWindowTest : public testing::Test {
   // the specified type.
   BrowserWithTestWindowTest(Browser::Type browser_type, bool hosted_app);
 
+  // Creates a BrowserWithTestWindowTest with the specified options for the
+  // TestBrowserThreadBundle.
+  explicit BrowserWithTestWindowTest(
+      content::TestBrowserThreadBundle::Options thread_bundle_options);
+
+  // Creates a BrowserWithTestWindowTest for which the initial window will be
+  // the specified type and with the specified options for the
+  // TestBrowserThreadBundle.
+  BrowserWithTestWindowTest(
+      Browser::Type browser_type,
+      bool hosted_app,
+      content::TestBrowserThreadBundle::Options thread_bundle_options);
+
   ~BrowserWithTestWindowTest() override;
 
   void SetUp() override;
