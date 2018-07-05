@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/memory/scoped_refptr.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"

@@ -226,9 +226,10 @@ bool QuotaDatabase::SetOriginLastAccessTime(
     entry.used_count = 1;
     const char* kSql =
         "INSERT INTO OriginInfoTable"
-        " (used_count, last_access_time, origin, type)"
-        " VALUES (?, ?, ?, ?)";
+        " (used_count, last_access_time, origin, type, last_modified_time)"
+        " VALUES (?, ?, ?, ?, ?)";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
+    statement.BindInt64(4, last_access_time.ToInternalValue());
   }
   statement.BindInt(0, entry.used_count);
   statement.BindInt64(1, last_access_time.ToInternalValue());
@@ -260,8 +261,9 @@ bool QuotaDatabase::SetOriginLastModifiedTime(
   } else {
     const char* kSql =
         "INSERT INTO OriginInfoTable"
-        " (last_modified_time, origin, type)  VALUES (?, ?, ?)";
+        " (last_modified_time, origin, type, last_access_time)  VALUES (?, ?, ?, ?)";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
+    statement.BindInt64(3, last_modified_time.ToInternalValue());
   }
   statement.BindInt64(0, last_modified_time.ToInternalValue());
   statement.BindString(1, origin.spec());
