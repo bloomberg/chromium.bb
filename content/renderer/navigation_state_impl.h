@@ -57,6 +57,10 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
     navigation_client_ = std::move(navigation_client_impl);
   }
 
+  void set_navigation_start(const base::TimeTicks& navigation_start) {
+    common_params_.navigation_start = navigation_start;
+  }
+
   void RunCommitNavigationCallback(blink::mojom::CommitResult result);
 
  private:

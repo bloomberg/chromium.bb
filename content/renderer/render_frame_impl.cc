@@ -909,6 +909,18 @@ void ApplyFilePathAlias(blink::WebURLRequest* request) {
   request->SetURL(blink::WebURL(GURL(path)));
 }
 
+// Sets the |navigation_start| time into the |document_state|'s NavigationState.
+void SetNavigationStartTimeInPendingParams(
+    const base::TimeTicks& navigation_start,
+    PendingNavigationParams* pending_navigation_params) {
+  // Lower bound for browser initiated navigation start time.
+  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+
+  // Sanitize navigation start and store it in |document_state|.
+  pending_navigation_params->common_params.navigation_start =
+      SanitizeNavigationTiming(navigation_start, renderer_navigation_start);
+}
+
 }  // namespace
 
 class RenderFrameImpl::FrameURLLoaderFactory
@@ -3076,7 +3088,9 @@ void RenderFrameImpl::CommitNavigation(
   pending_navigation_params_.reset(
       new PendingNavigationParams(common_params, request_params,
                                   base::TimeTicks::Now(), std::move(callback)));
-  PrepareFrameForCommit();
+  PrepareFrameForCommit(common_params.url, request_params);
+  SetNavigationStartTimeInPendingParams(common_params.navigation_start,
+                                        pending_navigation_params_.get());
   std::unique_ptr<DocumentState> document_state(
       BuildDocumentStateFromPending(pending_navigation_params_.get()));
 
@@ -3309,16 +3323,14 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
       common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
                                      : nullptr);
 
-  // Note: The CommitNavigationCallback below is not used: the commit of
-  // same-document navigation is synchronous so there is enough information at
-  // the end of this function to run |callback| directly.
-  // TODO(clamy): See if PendingNavigationParams should not be set at all for
-  // same-document navigations.
+  // TODO(ahemery): |pending_navigation_params_| below is solely used by
+  // IsBrowserInitiated() in DecidePolicyForNavigation. Try and find a a way to
+  // avoid having to create the entire structure just for this.
   pending_navigation_params_.reset(new PendingNavigationParams(
       common_params, request_params,
       base::TimeTicks(),  // Not used for same-document navigation.
       CommitNavigationCallback()));
-  PrepareFrameForCommit();
+  PrepareFrameForCommit(common_params.url, request_params);
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -5728,27 +5740,16 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   }
 }
 
-void RenderFrameImpl::PrepareFrameForCommit() {
+void RenderFrameImpl::PrepareFrameForCommit(
+    const GURL& url,
+    const RequestNavigationParams& request_params) {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
 
   GetContentClient()->SetActiveURL(
-      pending_navigation_params_->common_params.url,
-      frame_->Top()->GetSecurityOrigin().ToString().Utf8());
+      url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  RenderFrameImpl::PrepareRenderViewForNavigation(
-      pending_navigation_params_->common_params.url,
-      pending_navigation_params_->request_params);
-
-  // Lower bound for browser initiated navigation start time.
-  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-
-  // Sanitize navigation start and store in |pending_navigation_params_|.
-  // It will be picked up in UpdateNavigationState.
-  pending_navigation_params_->common_params.navigation_start =
-      SanitizeNavigationTiming(
-          pending_navigation_params_->common_params.navigation_start,
-          renderer_navigation_start);
+  RenderFrameImpl::PrepareRenderViewForNavigation(url, request_params);
 }
 
 blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
