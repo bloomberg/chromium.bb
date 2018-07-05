@@ -23,12 +23,14 @@ const char kANGLEImplementationD3D9Name[]     = "d3d9";
 const char kANGLEImplementationD3D11Name[]    = "d3d11";
 const char kANGLEImplementationOpenGLName[]   = "gl";
 const char kANGLEImplementationOpenGLESName[] = "gles";
-const char kANGLEImplementationNullName[]     = "null";
+const char kANGLEImplementationNullName[] = "null";
+const char kANGLEImplementationVulkanName[] = "vulkan";
 
 // Special switches for "NULL"/stub driver implementations.
 const char kANGLEImplementationD3D11NULLName[] = "d3d11-null";
 const char kANGLEImplementationOpenGLNULLName[] = "gl-null";
 const char kANGLEImplementationOpenGLESNULLName[] = "gles-null";
+const char kANGLEImplementationVulkanNULLName[] = "vulkan-null";
 
 }  // namespace gl
 
