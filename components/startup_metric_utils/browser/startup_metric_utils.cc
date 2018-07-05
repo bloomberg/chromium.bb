@@ -17,12 +17,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -576,7 +576,7 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   RecordHardFaultHistogram();
 
   // Record timing of the browser message-loop start time.
-  base::StackSamplingProfiler::SetProcessMilestone(
+  metrics::CallStackProfileBuilder::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::MAIN_LOOP_START);
   if (!is_first_run && !g_process_creation_ticks.is_null()) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
@@ -683,7 +683,7 @@ void RecordFirstWebContentsNonEmptyPaint(
   if (!ShouldLogStartupHistogram())
     return;
 
-  base::StackSamplingProfiler::SetProcessMilestone(
+  metrics::CallStackProfileBuilder::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::FIRST_NONEMPTY_PAINT);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
@@ -708,7 +708,7 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
   if (!ShouldLogStartupHistogram())
     return;
 
-  base::StackSamplingProfiler::SetProcessMilestone(
+  metrics::CallStackProfileBuilder::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_START);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
@@ -739,7 +739,7 @@ void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  base::StackSamplingProfiler::SetProcessMilestone(
+  metrics::CallStackProfileBuilder::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_FINISHED);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,

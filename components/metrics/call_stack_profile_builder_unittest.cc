@@ -14,6 +14,8 @@ using InternalFrame = StackSamplingProfiler::InternalFrame;
 using InternalModule = StackSamplingProfiler::InternalModule;
 using CallStackProfile = StackSamplingProfiler::CallStackProfile;
 
+namespace metrics {
+
 namespace {
 
 // Called on the profiler thread when complete, to collect profile.
@@ -34,7 +36,7 @@ TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
   profile_builder->RecordAnnotations();
   profile_builder->OnSampleCompleted(std::vector<InternalFrame>());
 
-  StackSamplingProfiler::SetProcessMilestone(1);
+  CallStackProfileBuilder::SetProcessMilestone(1);
   profile_builder->RecordAnnotations();
   profile_builder->OnSampleCompleted(std::vector<InternalFrame>());
 
@@ -153,3 +155,5 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   EXPECT_EQ(0u, profile.samples[0].frames[0].module_index);
   EXPECT_EQ(0u, profile.samples[0].frames[1].module_index);
 }
+
+}  // namespace metrics

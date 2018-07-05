@@ -6,9 +6,39 @@
 
 #include <utility>
 
+#include "base/atomicops.h"
 #include "base/logging.h"
 
 using StackSamplingProfiler = base::StackSamplingProfiler;
+
+namespace metrics {
+
+namespace {
+
+// This global variables holds the current system state and is recorded with
+// every captured sample, done on a separate thread which is why updates to
+// this must be atomic. A PostTask to move the the updates to that thread
+// would skew the timing and a lock could result in deadlock if the thread
+// making a change was also being profiled and got stopped.
+static base::subtle::Atomic32 g_process_milestones = 0;
+
+void ChangeAtomicFlags(base::subtle::Atomic32* flags,
+                       base::subtle::Atomic32 set,
+                       base::subtle::Atomic32 clear) {
+  DCHECK(set != 0 || clear != 0);
+  DCHECK_EQ(0, set & clear);
+
+  base::subtle::Atomic32 bits = base::subtle::NoBarrier_Load(flags);
+  while (true) {
+    base::subtle::Atomic32 existing = base::subtle::NoBarrier_CompareAndSwap(
+        flags, bits, (bits | set) & ~clear);
+    if (existing == bits)
+      break;
+    bits = existing;
+  }
+}
+
+}  // namespace
 
 CallStackProfileBuilder::CallStackProfileBuilder(
     const CompletedCallback& callback)
@@ -20,7 +50,8 @@ void CallStackProfileBuilder::RecordAnnotations() {
   // The code inside this method must not do anything that could acquire a
   // mutex, including allocating memory (which includes LOG messages) because
   // that mutex could be held by a stopped thread, thus resulting in deadlock.
-  sample_.process_milestones = StackSamplingProfiler::ProcessMilestone();
+  sample_.process_milestones =
+      base::subtle::NoBarrier_Load(&g_process_milestones);
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
@@ -62,3 +93,14 @@ void CallStackProfileBuilder::OnProfileCompleted(
   // Run the associated callback, passing the collected profile.
   callback_.Run(std::move(profile_));
 }
+
+// static
+void CallStackProfileBuilder::SetProcessMilestone(int milestone) {
+  DCHECK_LE(0, milestone);
+  DCHECK_GT(static_cast<int>(sizeof(g_process_milestones) * 8), milestone);
+  DCHECK_EQ(0, base::subtle::NoBarrier_Load(&g_process_milestones) &
+                   (1 << milestone));
+  ChangeAtomicFlags(&g_process_milestones, 1 << milestone, 0);
+}
+
+}  // namespace metrics
