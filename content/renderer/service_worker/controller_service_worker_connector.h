@@ -6,12 +6,11 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_CONTROLLER_SERVICE_WORKER_CONNECTOR_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 
@@ -20,12 +19,9 @@ class ServiceWorkerContainerHost;
 }  // namespace mojom
 
 // Vends a connection to the controller service worker for a given
-// ServiceWorkerContainerHost. This is co-owned by
-// ServiceWorkerProviderContext::ControlleeState and
-// ServiceWorkerSubresourceLoader{,Factory}.
-class CONTENT_EXPORT ControllerServiceWorkerConnector
-    : public mojom::ControllerServiceWorkerConnector,
-      public base::RefCounted<ControllerServiceWorkerConnector> {
+// ServiceWorkerContainerHost. This is owned by
+// ServiceWorkerSubresourceLoaderFactory.
+class CONTENT_EXPORT ControllerServiceWorkerConnector {
  public:
   // Observes the connection to the controller.
   class Observer {
@@ -53,17 +49,18 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
     kNoContainerHost,
   };
 
-  // This class should only be created if a controller exists for the client.
-  // |controller_ptr| may be nullptr if the caller does not yet have a Mojo
-  // connection to the controller. |state_| is set to kDisconnected in that
-  // case.
-  // Creates and holds the ownership of |container_host_ptr_| (as |this|
-  // will be created on a different thread from the thread that has the
-  // original |container_host|).
+  // This should only be called if a controller exists for the client.
+  // |this| is initialized on |task_runner|, and therefore must be
+  // used only on |task_runner|.
+  // |controller_info| can be null if the caller does not have the Mojo ptr
+  // to the controller. In that case |controller_service_worker_| is populated
+  // by talking to |controller_host_ptr_|.
   ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-      mojom::ControllerServiceWorkerPtr controller_ptr,
-      const std::string& client_id);
+      mojom::ControllerServiceWorkerPtrInfo controller_info,
+      const std::string& client_id,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  ~ControllerServiceWorkerConnector();
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
@@ -76,26 +73,24 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   void OnContainerHostConnectionClosed();
   void OnControllerConnectionClosed();
 
-  void AddBinding(mojom::ControllerServiceWorkerConnectorRequest request);
-
-  // mojom::ControllerServiceWorkerConnector:
-  void UpdateController(
-      mojom::ControllerServiceWorkerPtr controller_ptr) override;
+  void UpdateController(mojom::ControllerServiceWorkerPtrInfo controller_info);
 
   State state() const { return state_; }
 
   const std::string& client_id() const { return client_id_; }
 
+  base::WeakPtr<ControllerServiceWorkerConnector> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
+  void InitializeOnTaskRunner(
+      mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+      mojom::ControllerServiceWorkerPtrInfo controller_info);
   void SetControllerServiceWorkerPtr(
       mojom::ControllerServiceWorkerPtr controller_ptr);
 
   State state_ = State::kDisconnected;
-
-  friend class base::RefCounted<ControllerServiceWorkerConnector>;
-  ~ControllerServiceWorkerConnector() override;
-
-  mojo::BindingSet<mojom::ControllerServiceWorkerConnector> bindings_;
 
   // Keeps the mojo end to the browser process on its own.
   // Non-null only for the service worker clients that are workers (i.e., only
@@ -115,6 +110,8 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // ServiceWorkerProviderHost::client_uuid and not
   // ServiceWorkerProviderHost::provider_id).
   std::string client_id_;
+
+  base::WeakPtrFactory<ControllerServiceWorkerConnector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerServiceWorkerConnector);
 };

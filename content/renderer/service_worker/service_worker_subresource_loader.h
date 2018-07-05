@@ -14,6 +14,7 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -33,8 +34,7 @@ class ControllerServiceWorkerConnector;
 // S13nServiceWorker:
 // A custom URLLoader implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
-// Currently an instance of this class is created and used only on
-// the main thread (while the implementation itself is thread agnostic).
+// An instance of this class is created and run on a background thread.
 class CONTENT_EXPORT ServiceWorkerSubresourceLoader
     : public network::mojom::URLLoader,
       public mojom::ServiceWorkerFetchResponseCallback,
@@ -50,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+      base::WeakPtr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -123,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // The blob needs to be held while it's read to keep it alive.
   blink::mojom::BlobPtr body_as_blob_;
 
-  scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
+  base::WeakPtr<ControllerServiceWorkerConnector> controller_connector_;
 
   // Observes |controller_connector_| while this loader dispatches a fetch event
   // to the controller. If a broken connection is observed, this loader attempts
@@ -169,6 +169,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 // A custom URLLoaderFactory implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Self destroys when no more bindings exist.
+// An instance of this class is created and run on a background thread.
 class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
@@ -182,7 +183,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // this around because calling base::SequencedTaskRunnerHandle is
   // prohibited in the renderer :()
   static void Create(
-      scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+      std::unique_ptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
       network::mojom::URLLoaderFactoryRequest request,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -202,14 +203,14 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
  private:
   ServiceWorkerSubresourceLoaderFactory(
-      scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
+      std::unique_ptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
       network::mojom::URLLoaderFactoryRequest request,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void OnConnectionError();
 
-  scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
+  std::unique_ptr<ControllerServiceWorkerConnector> controller_connector_;
 
   // Used when a request falls back to network.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
