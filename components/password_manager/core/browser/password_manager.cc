@@ -534,6 +534,8 @@ void PasswordManager::ShowManualFallbackForSaving(
     bool is_update = IsPasswordUpdate(*provisional_save_manager_);
     client_->ShowManualFallbackForSaving(std::move(provisional_save_manager_),
                                          has_generated_password, is_update);
+    matched_manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
+        has_generated_password, is_update);
   } else {
     HideManualFallbackForSaving();
   }

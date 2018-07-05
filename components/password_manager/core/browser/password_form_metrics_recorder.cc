@@ -144,6 +144,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
         spec_priority_of_generated_password_.value());
   }
 
+  if (showed_manual_fallback_for_saving_) {
+    ukm_entry_builder_.SetSaving_ShowedManualFallbackForSaving(
+        showed_manual_fallback_for_saving_.value());
+  }
+
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
 }
 
@@ -276,6 +281,13 @@ void PasswordFormMetricsRecorder::RecordParsingsComparisonResult(
     ParsingComparisonResult comparison_result) {
   ukm_entry_builder_.SetParsingComparison(
       static_cast<uint64_t>(comparison_result));
+}
+
+void PasswordFormMetricsRecorder::RecordShowManualFallbackForSaving(
+    bool has_generated_password,
+    bool is_update) {
+  showed_manual_fallback_for_saving_ =
+      1 + (has_generated_password ? 2 : 0) + (is_update ? 4 : 0);
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {

@@ -32,7 +32,10 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2156,6 +2159,8 @@ TEST_F(PasswordManagerTest, NotSavingSyncPasswordHash_NotSyncCredentials) {
 #endif
 
 TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
 
@@ -2191,6 +2196,22 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
   // Hide the manual fallback.
   EXPECT_CALL(client_, HideManualFallbackForSaving());
   manager()->HideManualFallbackForSaving();
+
+  // Two PasswordFormManagers instances hold references to a shared
+  // PasswordFormMetrics recorder. These need to be freed to flush the metrics
+  // into the test_ukm_recorder.
+  manager_.reset();
+  form_manager_to_save.reset();
+
+  // Verify that the last state is recorded.
+  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
+      test_ukm_recorder.GetEntriesByName(
+          ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, ukm_entries.size());
+  test_ukm_recorder.ExpectEntryMetric(
+      ukm_entries[0],
+      ukm::builders::PasswordForm::kSaving_ShowedManualFallbackForSavingName,
+      1);
 }
 
 // Tests that the manual fallback for saving isn't shown if there is no response
