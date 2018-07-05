@@ -127,6 +127,7 @@ class AutocompleteActionPredictor
 
   struct TransitionalMatch {
     TransitionalMatch();
+    explicit TransitionalMatch(const base::string16 in_user_text);
     TransitionalMatch(const TransitionalMatch& other);
     ~TransitionalMatch();
 
@@ -161,6 +162,8 @@ class AutocompleteActionPredictor
       DBIdCacheMap;
 
   static const int kMaximumDaysToKeepEntry;
+  static const size_t kMinimumUserTextLength;
+  static const size_t kMaximumStringLength;
 
   // NotificationObserver
   void Observe(int type,
@@ -252,6 +255,10 @@ class AutocompleteActionPredictor
 
   // This is cleared after every Omnibox navigation.
   std::vector<TransitionalMatch> transitional_matches_;
+
+  // The aggregated size of all user text and GURLs in |transitional_matches_|.
+  // This is used to limit the maximum size of |transitional_matches_|.
+  size_t transitional_matches_size_ = 0;
 
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 

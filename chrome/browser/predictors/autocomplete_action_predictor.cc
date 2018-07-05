@@ -47,8 +47,8 @@ static_assert(arraysize(kConfidenceCutoff) ==
               predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
               "kConfidenceCutoff count should match LAST_PREDICT_ACTION");
 
-const size_t kMinimumUserTextLength = 1;
 const int kMinimumNumberOfHits = 3;
+const size_t kMaximumTransitionalMatchesSize = 1024 * 1024;  // 1 MB.
 
 enum DatabaseAction {
   DATABASE_ACTION_ADD,
@@ -63,6 +63,8 @@ enum DatabaseAction {
 namespace predictors {
 
 const int AutocompleteActionPredictor::kMaximumDaysToKeepEntry = 14;
+const size_t AutocompleteActionPredictor::kMinimumUserTextLength = 1;
+const size_t AutocompleteActionPredictor::kMaximumStringLength = 1024;
 
 AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
@@ -110,8 +112,10 @@ AutocompleteActionPredictor::~AutocompleteActionPredictor() {
 void AutocompleteActionPredictor::RegisterTransitionalMatches(
     const base::string16& user_text,
     const AutocompleteResult& result) {
-  if (user_text.length() < kMinimumUserTextLength)
+  if (user_text.length() < kMinimumUserTextLength ||
+      user_text.length() > kMaximumStringLength) {
     return;
+  }
   const base::string16 lower_user_text(base::i18n::ToLower(user_text));
 
   // Merge this in to an existing match if we already saw |user_text|
@@ -120,20 +124,30 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
                 lower_user_text);
 
   if (match_it == transitional_matches_.end()) {
-    TransitionalMatch transitional_match;
-    transitional_match.user_text = lower_user_text;
-    match_it = transitional_matches_.insert(transitional_matches_.end(),
-                                            transitional_match);
+    if (transitional_matches_size_ + lower_user_text.length() >
+        kMaximumTransitionalMatchesSize) {
+      return;
+    }
+    transitional_matches_.emplace_back(lower_user_text);
+    transitional_matches_size_ += lower_user_text.length();
+    match_it = transitional_matches_.end() - 1;
   }
 
-  for (const auto& i : result) {
-    if (!base::ContainsValue(match_it->urls, i.destination_url))
-      match_it->urls.push_back(i.destination_url);
+  for (const auto& match : result) {
+    const GURL& url = match.destination_url;
+    const size_t size = url.spec().size();
+    if (!base::ContainsValue(match_it->urls, url) &&
+        size <= kMaximumStringLength &&
+        transitional_matches_size_ + size <= kMaximumTransitionalMatchesSize) {
+      match_it->urls.push_back(url);
+      transitional_matches_size_ += size;
+    }
   }
 }
 
 void AutocompleteActionPredictor::ClearTransitionalMatches() {
   transitional_matches_.clear();
+  transitional_matches_size_ = 0;
 }
 
 void AutocompleteActionPredictor::CancelPrerender() {
@@ -218,8 +232,10 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   // TODO(dominich): The body of this method doesn't need to be run
   // synchronously. Investigate posting it as a task to be run later.
 
-  if (log.text.length() < kMinimumUserTextLength)
+  if (log.text.length() < kMinimumUserTextLength ||
+      log.text.length() > kMaximumStringLength) {
     return;
+  }
 
   // Do not attempt to learn from omnibox interactions where the omnibox
   // dropdown is closed.  In these cases the user text (|log.text|) that we
@@ -251,19 +267,19 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   std::vector<AutocompleteActionPredictorTable::Row> rows_to_add;
   std::vector<AutocompleteActionPredictorTable::Row> rows_to_update;
 
-  for (std::vector<TransitionalMatch>::const_iterator it =
-        transitional_matches_.begin(); it != transitional_matches_.end();
-        ++it) {
-    if (!base::StartsWith(lower_user_text, it->user_text,
+  for (const TransitionalMatch& match : transitional_matches_) {
+    if (!base::StartsWith(lower_user_text, match.user_text,
                           base::CompareCase::SENSITIVE))
       continue;
 
+    DCHECK_GE(match.user_text.length(), kMinimumUserTextLength);
+    DCHECK_LE(match.user_text.length(), kMaximumStringLength);
     // Add entries to the database for those matches.
-    for (std::vector<GURL>::const_iterator url_it = it->urls.begin();
-          url_it != it->urls.end(); ++url_it) {
-      DCHECK(it->user_text.length() >= kMinimumUserTextLength);
-      const DBCacheKey key = { it->user_text, *url_it };
-      const bool is_hit = (*url_it == opened_url);
+    for (const GURL& url : match.urls) {
+      DCHECK_LE(url.spec().length(), kMaximumStringLength);
+
+      const DBCacheKey key = {match.user_text, url};
+      const bool is_hit = (url == opened_url);
 
       AutocompleteActionPredictorTable::Row row;
       row.user_text = key.user_text;
@@ -293,12 +309,10 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
 
   // Check against tracked urls and log accuracy for the confidence we
   // predicted.
-  for (std::vector<std::pair<GURL, double> >::const_iterator it =
-       tracked_urls_.begin(); it != tracked_urls_.end();
-       ++it) {
-    if (opened_url == it->first) {
+  for (const auto& url_and_confidence : tracked_urls_) {
+    if (opened_url == url_and_confidence.first) {
       UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.AccurateCount",
-                               it->second * 100);
+                               url_and_confidence.second * 100);
     }
   }
   tracked_urls_.clear();
@@ -581,6 +595,10 @@ void AutocompleteActionPredictor::OnHistoryServiceLoaded(
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
 }
+
+AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch(
+    const base::string16 in_user_text)
+    : user_text(in_user_text) {}
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch(
     const TransitionalMatch& other) = default;
