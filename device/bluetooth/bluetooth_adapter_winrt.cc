@@ -463,6 +463,8 @@ void BluetoothAdapterWinrt::RemoveDiscoverySession(
     return;
   }
 
+  for (auto& device : devices_)
+    device.second->ClearAdvertisementData();
   ble_advertisement_watcher_.Reset();
   --num_discovery_sessions_;
   ui_task_runner_->PostTask(FROM_HERE, std::move(callback));

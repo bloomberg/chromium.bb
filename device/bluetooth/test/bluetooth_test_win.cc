@@ -33,6 +33,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
@@ -166,15 +167,6 @@ CanonicalStringToBLUETOOTH_ADDRESS(std::string device_address) {
 }
 
 // The canonical UUID string format is device::BluetoothUUID.value().
-GUID CanonicalStringToGUID(base::StringPiece uuid) {
-  DCHECK_EQ(36u, uuid.size());
-  std::wstring braced_uuid = L'{' + base::UTF8ToWide(uuid) + L'}';
-  GUID guid;
-  CHECK_EQ(NOERROR, ::CLSIDFromString(braced_uuid.data(), &guid));
-  return guid;
-}
-
-// The canonical UUID string format is device::BluetoothUUID.value().
 BTH_LE_UUID CanonicalStringToBTH_LE_UUID(base::StringPiece uuid) {
   BTH_LE_UUID win_uuid = {0};
   if (uuid.size() == 4) {
@@ -185,7 +177,7 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(base::StringPiece uuid) {
     win_uuid.Value.ShortUuid = data[0];
   } else if (uuid.size() == 36) {
     win_uuid.IsShortUuid = FALSE;
-    win_uuid.Value.LongUuid = CanonicalStringToGUID(uuid);
+    win_uuid.Value.LongUuid = BluetoothUUID::GetCanonicalValueAsGUID(uuid);
   } else {
     CHECK(false);
   }
@@ -671,7 +663,8 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
   LowEnergyDeviceData data = GetLowEnergyDeviceData(device_ordinal);
   std::vector<GUID> guids;
   for (const auto& uuid : data.advertised_uuids)
-    guids.push_back(CanonicalStringToGUID(uuid.canonical_value()));
+    guids.push_back(
+        BluetoothUUID::GetCanonicalValueAsGUID(uuid.canonical_value()));
 
   auto service_uuids = Make<base::win::Vector<GUID>>(std::move(guids));
   auto advertisement = Make<FakeBluetoothLEAdvertisementWinrt>(
@@ -686,6 +679,9 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
 }
 
 void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattConnection(device);
+
   // Spin the message loop to make sure a device instance was obtained.
   base::RunLoop().RunUntilIdle();
   auto* const ble_device =
@@ -714,6 +710,39 @@ void BluetoothTestWinrt::SimulateGattDisconnection(BluetoothDevice* device) {
   ble_device->SimulateGattDisconnection();
 }
 
+void BluetoothTestWinrt::SimulateGattServicesDiscovered(
+    BluetoothDevice* device,
+    const std::vector<std::string>& uuids) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattServicesDiscovered(device, uuids);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattServicesDiscovered(uuids);
+}
+
+void BluetoothTestWinrt::SimulateGattServicesChanged(BluetoothDevice* device) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattServicesChanged(device);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattServicesChanged();
+}
+
+void BluetoothTestWinrt::SimulateGattServicesDiscoveryError(
+    BluetoothDevice* device) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattServicesDiscoveryError(device);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattServicesDiscoveryError();
+}
+
 void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {
   (!GetParam() || !PlatformSupportsLowEnergy())
       ? BluetoothTestWin::DeleteDevice(device)
@@ -722,6 +751,7 @@ void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {
 
 void BluetoothTestWinrt::OnFakeBluetoothDeviceConnectGattCalled() {
   ++gatt_connection_attempts_;
+  ++gatt_discovery_attempts_;
 }
 
 void BluetoothTestWinrt::OnFakeBluetoothGattDisconnect() {

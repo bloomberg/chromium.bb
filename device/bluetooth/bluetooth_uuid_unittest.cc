@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +100,23 @@ TEST(BluetoothUUIDTest, BluetoothUUID_GUID) {
   EXPECT_EQ(BluetoothUUID::kFormat128Bit, uuid.format());
   EXPECT_EQ(kValid128Bit0, uuid.value());
   EXPECT_EQ(kValid128Bit0, uuid.canonical_value());
+}
+
+TEST(BluetoothUUIDTest, GetCanonicalValueAsGUID) {
+  const char kValid128Bit0[] = "12345678-1234-5678-9abc-def123456789";
+  GUID guid = BluetoothUUID::GetCanonicalValueAsGUID(kValid128Bit0);
+
+  EXPECT_EQ(0x12345678, guid.Data1);
+  EXPECT_EQ(0x1234, guid.Data2);
+  EXPECT_EQ(0x5678, guid.Data3);
+  EXPECT_EQ(0x9a, guid.Data4[0]);
+  EXPECT_EQ(0xbc, guid.Data4[1]);
+  EXPECT_EQ(0xde, guid.Data4[2]);
+  EXPECT_EQ(0xf1, guid.Data4[3]);
+  EXPECT_EQ(0x23, guid.Data4[4]);
+  EXPECT_EQ(0x45, guid.Data4[5]);
+  EXPECT_EQ(0x67, guid.Data4[6]);
+  EXPECT_EQ(0x89, guid.Data4[7]);
 }
 #endif  // defined(OS_WIN)
 

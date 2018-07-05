@@ -4,6 +4,13 @@
 
 #include "device/bluetooth/test/fake_gatt_device_service_winrt.h"
 
+#include <utility>
+
+#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
+#include "device/bluetooth/bluetooth_uuid.h"
+
 namespace device {
 
 namespace {
@@ -16,7 +23,11 @@ using ABI::Windows::Foundation::Collections::IVectorView;
 
 }  // namespace
 
-FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt() = default;
+FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt(
+    uint16_t attribute_handle,
+    base::StringPiece uuid)
+    : attribute_handle_(attribute_handle),
+      uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)) {}
 
 FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() = default;
 
@@ -37,11 +48,13 @@ HRESULT FakeGattDeviceServiceWinrt::get_DeviceId(HSTRING* value) {
 }
 
 HRESULT FakeGattDeviceServiceWinrt::get_Uuid(GUID* value) {
-  return E_NOTIMPL;
+  *value = uuid_;
+  return S_OK;
 }
 
 HRESULT FakeGattDeviceServiceWinrt::get_AttributeHandle(uint16_t* value) {
-  return E_NOTIMPL;
+  *value = attribute_handle_;
+  return S_OK;
 }
 
 }  // namespace device

@@ -284,13 +284,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns the set of UUIDs that this device supports.
   //  * For classic Bluetooth devices this data is collected from both the EIR
   //    data and SDP tables.
-  //  * For non-connected Low Energy Devices this returns the latest advertised
-  //    UUIDs.
-  //  * For connected Low Energy Devices for which services have not been
-  //    discovered returns an empty list.
+  //  * For non-connected and connected Low Energy Devices for which services
+  //    have not been discovered returns the latest advertised UUIDs.
   //  * For connected Low Energy Devices for which services have been discovered
-  //    returns the UUIDs of the device's services.
+  //    returns the UUIDs of the device's services and the latest advertised
+  //    UUIDs.
   //  * For dual mode devices this may be collected from both.
+  //
+  // Note: On Android, Mac and WinRT advertised UUIDs are cleared when the
+  // adapter stops discovering, as otherwise stale data might be returned.
   //
   // Note: On ChromeOS and Linux, BlueZ persists all services meaning if
   // a device stops advertising a service this function will still return

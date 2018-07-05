@@ -11,6 +11,9 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -102,17 +105,25 @@ class FakeBluetoothLEDeviceWinrt
   void SimulateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);
   void SimulateGattDisconnection();
+  void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
+  void SimulateGattServicesChanged();
+  void SimulateGattServicesDiscoveryError();
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
 
   ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus status_ =
-      ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
+      ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Disconnected;
 
   Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
       ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,
       IInspectable*>>
-      handler_;
+      connection_status_changed_handler_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,
+      IInspectable*>>
+      gatt_services_changed_handler_;
 
   base::OnceCallback<void(
       Microsoft::WRL::ComPtr<
