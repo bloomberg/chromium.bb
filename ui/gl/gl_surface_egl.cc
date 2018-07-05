@@ -94,6 +94,11 @@
 #define EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE 0x33AE
 #endif /* EGL_ANGLE_platform_angle_null */
 
+#ifndef EGL_ANGLE_platform_angle_vulkan
+#define EGL_ANGLE_platform_angle_vulkan 1
+#define EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE 0x3450
+#endif /* EGL_ANGLE_platform_angle_vulkan */
+
 #ifndef EGL_ANGLE_x11_visual
 #define EGL_ANGLE_x11_visual 1
 #define EGL_X11_VISUAL_ID_ANGLE 0x33A3
@@ -275,6 +280,12 @@ EGLDisplay GetDisplayFromType(DisplayType display_type,
     case ANGLE_NULL:
       return GetPlatformANGLEDisplay(
           native_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false, false);
+    case ANGLE_VULKAN:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE, false, false);
+    case ANGLE_VULKAN_NULL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE, false, true);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -303,6 +314,10 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "OpenGLESNull";
     case ANGLE_NULL:
       return "Null";
+    case ANGLE_VULKAN:
+      return "Vulkan";
+    case ANGLE_VULKAN_NULL:
+      return "VulkanNull";
     default:
       NOTREACHED();
       return "Err";
@@ -531,6 +546,7 @@ static void EGLAPIENTRY LogEGLDebugMessage(EGLenum error,
 void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_opengl,
                         bool supports_angle_null,
+                        bool supports_angle_vulkan,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
@@ -595,6 +611,14 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
       } else if (requested_renderer == kANGLEImplementationOpenGLESNULLName) {
         AddInitDisplay(init_displays, ANGLE_OPENGLES_NULL);
       }
+    }
+  }
+
+  if (supports_angle_vulkan) {
+    if (requested_renderer == kANGLEImplementationVulkanName) {
+      AddInitDisplay(init_displays, ANGLE_VULKAN);
+    } else if (requested_renderer == kANGLEImplementationVulkanNULLName) {
+      AddInitDisplay(init_displays, ANGLE_VULKAN_NULL);
     }
   }
 
@@ -889,6 +913,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
   bool supports_angle_d3d = false;
   bool supports_angle_opengl = false;
   bool supports_angle_null = false;
+  bool supports_angle_vulkan = false;
   // Check for availability of ANGLE extensions.
   if (client_extensions &&
       ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
@@ -898,11 +923,13 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_opengl");
     supports_angle_null =
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_null");
+    supports_angle_vulkan =
+        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_vulkan");
   }
 
   std::vector<DisplayType> init_displays;
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
-                     supports_angle_null,
+                     supports_angle_null, supports_angle_vulkan,
                      base::CommandLine::ForCurrentProcess(), &init_displays);
 
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
