@@ -18,7 +18,7 @@
 namespace base {
 
 class MessageLoop;
-class PostTaskTest;
+class BasicPostTaskPerfTest;
 
 namespace internal {
 
@@ -103,7 +103,7 @@ class BASE_EXPORT IncomingTaskQueue
   void ReportMetricsOnIdle() const;
 
  private:
-  friend class base::PostTaskTest;
+  friend class base::BasicPostTaskPerfTest;
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
 
   // These queues below support the previous MessageLoop behavior of
