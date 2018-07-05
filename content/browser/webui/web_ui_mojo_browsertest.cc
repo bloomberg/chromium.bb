@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "build/build_config.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -281,13 +280,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
             other_shell->web_contents()->GetMainFrame()->GetProcess());
 }
 
-// Disabled due to flakiness: crbug.com/860385.
-#if defined(OS_ANDROID)
-#define MAYGE_NativeMojoAvailable DISABLED_NativeMojoAvailable
-#else
-#define MAYGE_NativeMojoAvailable NativeMojoAvailable
-#endif
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_NativeMojoAvailable) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, NativeMojoAvailable) {
   // Mojo bindings should be enabled.
   NavigateWithNewWebUI("web_ui_mojo_native.html");
   EXPECT_TRUE(RunBoolFunction("isNativeMojoAvailable()"));
@@ -309,13 +302,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_NativeMojoAvailable) {
   EXPECT_FALSE(RunBoolFunction("isNativeMojoAvailable()"));
 }
 
-// Disabled due to flakiness: crbug.com/860385.
-#if defined(OS_ANDROID)
-#define MAYGE_ChromeSendAvailable DISABLED_ChromeSendAvailable
-#else
-#define MAYGE_ChromeSendAvailable ChromeSendAvailable
-#endif
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_ChromeSendAvailable) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ChromeSendAvailable) {
   // chrome.send is not available on mojo-only WebUIs.
   NavigateWithNewWebUI("web_ui_mojo_native.html");
   EXPECT_FALSE(RunBoolFunction("isChromeSendAvailable()"));
