@@ -107,6 +107,11 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // disabled it, or simply because there is no authenticated user. Call
     // GetDisableReasons to figure out which of these it is.
     DISABLED,
+    // Sync has encountered an authentication error. Note that Sync may have
+    // been in any of the below states before, and might go straight back to it
+    // if the auth error gets resolved. Call GetAuthError for more details on
+    // the error.
+    AUTH_ERROR,
     // Sync can start in principle, but nothing has prodded it to actually do it
     // yet. Note that during subsequent browser startups, Sync starts
     // automatically, i.e. no prod is necessary, but during the first start Sync
@@ -122,14 +127,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     START_DEFERRED,
     // The Sync engine is in the process of initializing.
     INITIALIZING,
-    // The Sync engine is initialized and the data types may or may not be
-    // configured (i.e. any of the states below), but Sync has encountered an
-    // auth error. Call GetAuthError for more details.
-    // TODO(crbug.com/839834): If we receive an auth error and then shut down,
-    // we can be in one of the previous states but still have an auth error. Can
-    // we clear the auth error on shutdown, since it's not persisted anyway?
-    // Otherwise this state might have to move to just after DISABLED.
-    AUTH_ERROR,
     // The Sync engine is initialized, but the user hasn't completed the initial
     // Sync setup yet, so we won't actually configure the data types.
     WAITING_FOR_CONSENT,

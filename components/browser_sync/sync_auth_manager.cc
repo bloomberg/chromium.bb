@@ -156,6 +156,8 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
       break;
     case syncer::CONNECTION_SERVER_ERROR:
+      // TODO(crbug.com/839834): Verify whether CONNECTION_FAILED is really an
+      // appropriate auth error here; maybe SERVICE_ERROR would be better?
       last_auth_error_ =
           GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
       break;
@@ -175,6 +177,9 @@ void SyncAuthManager::ClearAccessTokenAndRequest() {
 }
 
 void SyncAuthManager::Clear() {
+  // TODO(crbug.com/839834): Clearing the auth error here isn't quite right.
+  // It makes sense to clear any auth error we got from the Sync server, but we
+  // should probably retain any errors from the identity manager.
   last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
   ClearAccessTokenAndRequest();
 }
@@ -239,6 +244,8 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
     return;
   }
 
+  // TODO(crbug.com/839834): REQUEST_CANCELED doesn't seem like the right auth
+  // error to use here. Maybe INVALID_GAIA_CREDENTIALS?
   last_auth_error_ =
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
 
