@@ -141,6 +141,10 @@ class EmbeddedWorkerTestHelper {
     return url_loader_factory_getter_.get();
   }
 
+  // Overrides the network URLLoaderFactory for subsequent requests. Passing a
+  // null pointer will restore the default behavior.
+  void SetNetworkFactory(network::mojom::URLLoaderFactory* factory);
+
  protected:
   // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
   // This simulates behaviors in the renderer process. Binds
@@ -257,6 +261,7 @@ class EmbeddedWorkerTestHelper {
   }
 
  private:
+  class MockNetworkURLLoaderFactory;
   class MockServiceWorkerEventDispatcher;
   class MockRendererInterface;
 
@@ -382,6 +387,7 @@ class EmbeddedWorkerTestHelper {
 
   std::vector<Event> events_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
+  std::unique_ptr<MockNetworkURLLoaderFactory> default_network_loader_factory_;
 
   base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -28,6 +29,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -97,7 +99,7 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
   DISALLOW_COPY_AND_ASSIGN(ProviderHostEndpoints);
 };
 
-class EmbeddedWorkerInstanceTest : public testing::Test,
+class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
                                    public EmbeddedWorkerInstance::Listener {
  protected:
   EmbeddedWorkerInstanceTest()
@@ -136,6 +138,13 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   }
 
   void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          blink::features::kServiceWorkerServicification);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          blink::features::kServiceWorkerServicification);
+    }
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
@@ -258,6 +267,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<EventLog> events_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
@@ -317,7 +327,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       instance_host_ptr_map_;
 };
 
-TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
+TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -364,7 +374,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
 
 // Test that a worker that failed twice will use a new render process
 // on the next attempt.
-TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
+TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -421,7 +431,7 @@ TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   }
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
+TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -465,7 +475,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
 
 // Test that the removal of a worker from the registry doesn't remove
 // other workers in the same process.
-TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
+TEST_P(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -526,7 +536,7 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   worker2->Stop();
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
+TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -559,7 +569,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
+TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -600,7 +610,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
+TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -670,7 +680,7 @@ class DontReceiveResumeAfterDownloadInstanceClient
   bool* const was_resume_after_download_called_;
 };
 
-TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
+TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -707,7 +717,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   EXPECT_FALSE(was_resume_after_download_called);
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
+TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -771,7 +781,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   worker->Stop();
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, Detach) {
+TEST_P(EmbeddedWorkerInstanceTest, Detach) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -805,7 +815,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
 }
 
 // Test for when sending the start IPC failed.
-TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
+TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -847,7 +857,7 @@ class FailEmbeddedWorkerInstanceClientImpl
   }
 };
 
-TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
+TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -900,7 +910,7 @@ class StoreMessageInstanceClient
       messages_;
 };
 
-TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
+TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
   std::unique_ptr<StoreMessageInstanceClient> instance_client =
@@ -982,7 +992,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
 
 // Test that the worker is given a CacheStoragePtr during startup, when
 // |pause_after_download| is false.
-TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
+TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   auto helper = std::make_unique<RecordCacheStorageHelper>();
@@ -1042,5 +1052,9 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
     base::RunLoop().RunUntilIdle();
   }
 }
+
+INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,
+                        EmbeddedWorkerInstanceTest,
+                        ::testing::Bool(););
 
 }  // namespace content

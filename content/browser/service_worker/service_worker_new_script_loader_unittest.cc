@@ -30,8 +30,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
-
-namespace {
+namespace service_worker_new_script_loader_unittest {
 
 const char kNormalScriptURL[] = "https://example.com/normal.js";
 const char kNormalImportedScriptURL[] =
@@ -68,11 +67,6 @@ class MockHTTPServer {
 };
 
 // A URLLoaderFactory that returns a mocked response provided by MockHTTPServer.
-//
-// TODO(nhiroki): We copied this from
-// service_worker_navigation_loader_unittest.cc instead of making it a common
-// test helper because we might want to customize the mock factory to add more
-// tests later. Merge this and that if we're convinced it's better.
 class MockNetworkURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:
@@ -149,8 +143,6 @@ class MockNetworkURLLoaderFactory final
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
 
-}  // namespace
-
 // ServiceWorkerNewScriptLoaderTest is for testing the handling of requests for
 // installing service worker scripts via ServiceWorkerNewScriptLoader.
 class ServiceWorkerNewScriptLoaderTest : public testing::Test {
@@ -163,8 +155,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
   void SetUp() override {
-    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
-        base::FilePath(), base::MakeRefCounted<URLLoaderFactoryGetter>());
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     InitializeStorage();
 
@@ -185,8 +176,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     network::mojom::URLLoaderFactoryPtr test_loader_factory;
     mock_url_loader_factory_ =
         std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get());
-    helper_->url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        mock_url_loader_factory_.get());
+    helper_->SetNetworkFactory(mock_url_loader_factory_.get());
   }
 
   void InitializeStorage() {
@@ -910,4 +900,5 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
   EXPECT_FALSE(version_->embedded_worker()->network_accessed_for_script());
 }
 
+}  // namespace service_worker_new_script_loader_unittest
 }  // namespace content

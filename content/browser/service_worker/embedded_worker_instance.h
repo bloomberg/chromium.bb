@@ -41,6 +41,11 @@ class ServiceWorkerContentSettingsProxyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
+namespace service_worker_new_script_loader_unittest {
+class ServiceWorkerNewScriptLoaderTest;
+FORWARD_DECLARE_TEST(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
+}  // namespace service_worker_new_script_loader_unittest
+
 // This gives an interface to control one EmbeddedWorker instance, which
 // may be 'in-waiting' or running in one of the child processes added by
 // AddProcessReference().
@@ -220,7 +225,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StopDuringStart);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
+  FRIEND_TEST_ALL_PREFIXES(service_worker_new_script_loader_unittest::
+                               ServiceWorkerNewScriptLoaderTest,
+                           AccessedNetwork);
 
   // Constructor is called via EmbeddedWorkerRegistry::CreateWorker().
   // This instance holds a ref of |registry|.

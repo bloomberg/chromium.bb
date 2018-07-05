@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/http/http_util.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,6 +64,51 @@ void OnFetchEventCommon(
 }
 
 }  // namespace
+
+// A URLLoaderFactory that returns 200 OK with a simple body to any request.
+class EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
+ public:
+  MockNetworkURLLoaderFactory() = default;
+
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    std::string headers = "HTTP/1.1 200 OK\n\n";
+    net::HttpResponseInfo info;
+    info.headers = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    network::ResourceResponseHead response;
+    response.headers = info.headers;
+    response.headers->GetMimeType(&response.mime_type);
+    client->OnReceiveResponse(response);
+
+    std::string body = "this body came from the network";
+    uint32_t bytes_written = body.size();
+    mojo::DataPipe data_pipe;
+    data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
+                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+
+    network::URLLoaderCompletionStatus status;
+    status.error_code = net::OK;
+    client->OnComplete(status);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
+};
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     MockEmbeddedWorkerInstanceClient(
@@ -389,11 +435,6 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
-    : EmbeddedWorkerTestHelper(user_data_directory, nullptr) {}
-
-EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
-    const base::FilePath& user_data_directory,
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : browser_context_(std::make_unique<TestBrowserContext>()),
       render_process_host_(
           std::make_unique<MockRenderProcessHost>(browser_context_.get())),
@@ -405,7 +446,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       next_thread_id_(0),
       mock_render_process_id_(render_process_host_->GetID()),
       new_mock_render_process_id_(new_render_process_host_->GetID()),
-      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
+      url_loader_factory_getter_(
+          base::MakeRefCounted<URLLoaderFactoryGetter>()),
       weak_factory_(this) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
@@ -435,6 +477,22 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           new_renderer_interface_ptr.get()));
   new_render_process_host_->OverrideRendererInterfaceForTesting(
       std::move(new_renderer_interface_ptr));
+
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    default_network_loader_factory_ =
+        std::make_unique<MockNetworkURLLoaderFactory>();
+    SetNetworkFactory(default_network_loader_factory_.get());
+  }
+}
+
+void EmbeddedWorkerTestHelper::SetNetworkFactory(
+    network::mojom::URLLoaderFactory* factory) {
+  if (!factory)
+    factory = default_network_loader_factory_.get();
+
+  url_loader_factory_getter_->SetNetworkFactoryForTesting(factory);
+  render_process_host_->OverrideURLLoaderFactory(factory);
+  new_render_process_host_->OverrideURLLoaderFactory(factory);
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
