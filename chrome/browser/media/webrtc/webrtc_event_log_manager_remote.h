@@ -23,8 +23,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 class WebRtcRemoteEventLogManager final
-    : public content::NetworkConnectionTracker::NetworkConnectionObserver,
-      public WebRtcEventLogUploaderObserver {
+    : public content::NetworkConnectionTracker::NetworkConnectionObserver {
   using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
   using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
@@ -133,10 +132,6 @@ class WebRtcRemoteEventLogManager final
 
   // content::NetworkConnectionTracker::NetworkConnectionObserver implementation
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
-
-  // WebRtcEventLogUploaderObserver implementation.
-  void OnWebRtcEventLogUploadComplete(const base::FilePath& file_path,
-                                      bool upload_successful) override;
 
   // Unit tests may use this to inject null uploaders, or ones which are
   // directly controlled by the unit test (succeed or fail according to the
@@ -272,8 +267,14 @@ class WebRtcRemoteEventLogManager final
   // executed, will initiate an upload of the next log file.
   void MaybeStartUploading();
 
+  // Callback for the success/failure of an upload.
   // When an upload is complete, it might be time to upload the next file.
-  void OnWebRtcEventLogUploadCompleteInternal();
+  // Note: |log_file| and |upload_successful| are ignored in production; they
+  // are used in unit tests, so we keep them here to make things simpler, so
+  // that this method would match WebRtcEventLogUploader::UploadResultCallback
+  // without adaptation.
+  void OnWebRtcEventLogUploadComplete(const base::FilePath& log_file,
+                                      bool upload_successful);
 
   // Given a renderer process ID and peer connection ID (a string naming the
   // peer connection), find the peer connection to which they refer.
