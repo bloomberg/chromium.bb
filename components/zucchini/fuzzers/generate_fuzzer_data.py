@@ -72,7 +72,7 @@ def main():
   args = parse_args()
   return gen(os.path.join(ABS_TESTDATA_PATH, args.old_file),
              os.path.join(ABS_TESTDATA_PATH, args.new_file),
-             os.path.join(ABS_TESTDATA_PATH, args.patch_file),
+             os.path.abspath(args.patch_file),
              os.path.abspath(args.output_file),
              args.raw,
              platform.system() == 'Windows')
