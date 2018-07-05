@@ -581,13 +581,13 @@ public class PageInfoController implements ModalDialogView.Controller {
     @Override
     public void onDismiss() {
         assert mNativePageInfoController != 0;
-        mWebContentsObserver.destroy();
-        nativeDestroy(mNativePageInfoController);
-        mNativePageInfoController = 0;
         if (mPendingRunAfterDismissTask != null) {
             mPendingRunAfterDismissTask.run();
             mPendingRunAfterDismissTask = null;
         }
+        mWebContentsObserver.destroy();
+        nativeDestroy(mNativePageInfoController);
+        mNativePageInfoController = 0;
     }
 
     private void recordAction(int action) {
