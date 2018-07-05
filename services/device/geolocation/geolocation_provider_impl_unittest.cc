@@ -146,12 +146,13 @@ bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(provider()->IsRunning());
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  base::RunLoop run_loop;
   provider()->task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GeolocationProviderTest::GetProvidersStarted,
                      base::Unretained(this)),
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  base::RunLoop().Run();
+      run_loop.QuitClosure());
+  run_loop.Run();
   return is_started_;
 }
 
