@@ -39,22 +39,6 @@ constexpr WaitableEvent::ResetPolicy kResetPolicy =
 // for referencing the active collection to the SamplingThread.
 const int kNullProfilerId = -1;
 
-void ChangeAtomicFlags(subtle::Atomic32* flags,
-                       subtle::Atomic32 set,
-                       subtle::Atomic32 clear) {
-  DCHECK(set != 0 || clear != 0);
-  DCHECK_EQ(0, set & clear);
-
-  subtle::Atomic32 bits = subtle::NoBarrier_Load(flags);
-  while (true) {
-    subtle::Atomic32 existing =
-        subtle::NoBarrier_CompareAndSwap(flags, bits, (bits | set) & ~clear);
-    if (existing == bits)
-      break;
-    bits = existing;
-  }
-}
-
 }  // namespace
 
 // StackSamplingProfiler::Module ----------------------------------------------
@@ -682,12 +666,6 @@ void StackSamplingProfiler::SamplingThread::CleanUp() {
 // static
 void StackSamplingProfiler::TestAPI::Reset() {
   SamplingThread::TestAPI::Reset();
-  ResetAnnotations();
-}
-
-// static
-void StackSamplingProfiler::TestAPI::ResetAnnotations() {
-  subtle::NoBarrier_Store(&process_milestones_, 0u);
 }
 
 // static
@@ -705,8 +683,6 @@ void StackSamplingProfiler::TestAPI::PerformSamplingThreadIdleShutdown(
     bool simulate_intervening_start) {
   SamplingThread::TestAPI::ShutdownAssumingIdle(simulate_intervening_start);
 }
-
-subtle::Atomic32 StackSamplingProfiler::process_milestones_ = 0;
 
 StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
@@ -787,19 +763,6 @@ void StackSamplingProfiler::Start() {
 void StackSamplingProfiler::Stop() {
   SamplingThread::GetInstance()->Remove(profiler_id_);
   profiler_id_ = kNullProfilerId;
-}
-
-// static
-void StackSamplingProfiler::SetProcessMilestone(int milestone) {
-  DCHECK_LE(0, milestone);
-  DCHECK_GT(static_cast<int>(sizeof(process_milestones_) * 8), milestone);
-  DCHECK_EQ(0, subtle::NoBarrier_Load(&process_milestones_) & (1 << milestone));
-  ChangeAtomicFlags(&process_milestones_, 1 << milestone, 0);
-}
-
-// static
-subtle::Atomic32 StackSamplingProfiler::ProcessMilestone() {
-  return subtle::NoBarrier_Load(&process_milestones_);
 }
 
 // StackSamplingProfiler::Frame global functions ------------------------------

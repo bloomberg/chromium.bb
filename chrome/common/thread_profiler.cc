@@ -22,6 +22,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 

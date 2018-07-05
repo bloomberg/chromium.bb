@@ -31,7 +31,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -136,6 +135,7 @@
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/expired_histogram_util.h"
@@ -2097,7 +2097,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainParts::PreShutdown() {
-  base::StackSamplingProfiler::SetProcessMilestone(
+  metrics::CallStackProfileBuilder::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::SHUTDOWN_START);
 }
 

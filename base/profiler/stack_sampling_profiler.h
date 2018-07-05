@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -217,9 +216,6 @@ class BASE_EXPORT StackSamplingProfiler {
     // so that tests don't inherit state from previous tests.
     static void Reset();
 
-    // Resets internal annotations (like process phase) to initial values.
-    static void ResetAnnotations();
-
     // Returns whether the sampling thread is currently running or not.
     static bool IsSamplingThreadRunning();
 
@@ -306,31 +302,12 @@ class BASE_EXPORT StackSamplingProfiler {
   // are completed or the profiler object is destroyed, whichever occurs first.
   void Stop();
 
-  // Sets the current system state that is recorded with each captured stack
-  // frame. This is thread-safe so can be called from anywhere. The parameter
-  // value should be from an enumeration of the appropriate type with values
-  // ranging from 0 to 31, inclusive. This sets bits within Sample field of
-  // |process_milestones|. The actual meanings of these bits are defined
-  // (globally) by the caller(s).
-  static void SetProcessMilestone(int milestone);
-
-  // Gets the current system state that is recorded with each captured stack
-  // frame. This is thread-safe so can be called from anywhere.
-  static subtle::Atomic32 ProcessMilestone();
-
  private:
   friend class TestAPI;
 
   // SamplingThread is a separate thread used to suspend and sample stacks from
   // the target thread.
   class SamplingThread;
-
-  // This global variables holds the current system state and is recorded with
-  // every captured sample, done on a separate thread which is why updates to
-  // this must be atomic. A PostTask to move the the updates to that thread
-  // would skew the timing and a lock could result in deadlock if the thread
-  // making a change was also being profiled and got stopped.
-  static subtle::Atomic32 process_milestones_;
 
   // The thread whose stack will be sampled.
   PlatformThreadId thread_id_;

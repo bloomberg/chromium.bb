@@ -11,6 +11,8 @@
 
 #include "base/callback.h"
 
+namespace metrics {
+
 // CallStackProfileBuilder builds a CallStackProfile from the collected sampling
 // data.
 //
@@ -46,6 +48,14 @@ class CallStackProfileBuilder
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
 
+  // Sets the current system state that is recorded with each captured stack
+  // frame. This is thread-safe so can be called from anywhere. The parameter
+  // value should be from an enumeration of the appropriate type with values
+  // ranging from 0 to 31, inclusive. This sets bits within Sample field of
+  // |process_milestones|. The actual meanings of these bits are defined
+  // (globally) by the caller(s).
+  static void SetProcessMilestone(int milestone);
+
  private:
   // The collected stack samples.
   base::StackSamplingProfiler::CallStackProfile profile_;
@@ -61,5 +71,7 @@ class CallStackProfileBuilder
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_CALL_STACK_PROFILE_BUILDER_H_
