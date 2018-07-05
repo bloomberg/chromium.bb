@@ -161,7 +161,8 @@ NSString* GetNSErrorMessage() {
 // sucessfully goes back to the first page. Back-forward navigations are
 // renderer-initiated.
 // TODO(crbug.com/840489): Remove this test.
-- (void)testRendererInitiatedGoBackFromErrorPageAndForwardToErrorPage {
+// disable due to flaky: crbug.com/859910
+- (void)DISABLED_testRendererInitiatedGoBackFromErrorPageAndForwardToErrorPage {
   // First page loads sucessfully.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
   [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
