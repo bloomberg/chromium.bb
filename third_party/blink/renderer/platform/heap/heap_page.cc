@@ -281,14 +281,11 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
 
 void BaseArena::SweepUnsweptPage() {
   BasePage* page = first_unswept_page_;
-  if (page->IsEmpty()) {
-    page->Unlink(&first_unswept_page_);
+  const bool is_empty = page->Sweep();
+  page->Unlink(&first_unswept_page_);
+  if (is_empty) {
     page->RemoveFromHeap();
   } else {
-    // Sweep a page and move the page from m_firstUnsweptPages to
-    // m_firstPages.
-    page->Sweep();
-    page->Unlink(&first_unswept_page_);
     page->Link(&first_page_);
     page->MarkAsSwept();
   }
@@ -504,11 +501,6 @@ void NormalPageArena::SweepAndCompact() {
 
   while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
-    if (page->IsEmpty()) {
-      page->Unlink(&first_unswept_page_);
-      page->RemoveFromHeap();
-      continue;
-    }
     // Large objects do not belong to this arena.
     DCHECK(!page->IsLargeObjectPage());
     NormalPage* normal_page = static_cast<NormalPage*>(page);
@@ -836,17 +828,13 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
   Address result = nullptr;
   while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
-    if (page->IsEmpty()) {
-      page->Unlink(&first_unswept_page_);
+    const bool is_empty = page->Sweep();
+    page->Unlink(&first_unswept_page_);
+    if (is_empty) {
       page->RemoveFromHeap();
     } else {
-      // Sweep a page and move the page from m_firstUnsweptPages to
-      // m_firstPages.
-      page->Sweep();
-      page->Unlink(&first_unswept_page_);
       page->Link(&first_page_);
       page->MarkAsSwept();
-
       // For NormalPage, stop lazy sweeping once we find a slot to
       // allocate a new object.
       result = AllocateFromFreeList(allocation_size, gc_info_index);
@@ -1068,22 +1056,19 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
   size_t swept_size = 0;
   while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
-    if (page->IsEmpty()) {
+    const bool is_empty = page->Sweep();
+    page->Unlink(&first_unswept_page_);
+    if (is_empty) {
       swept_size += static_cast<LargeObjectPage*>(page)->ObjectSize();
-      page->Unlink(&first_unswept_page_);
       page->RemoveFromHeap();
       // For LargeObjectPage, stop lazy sweeping once we have swept
-      // more than allocationSize bytes.
+      // more than |allocation_size| bytes.
       if (swept_size >= allocation_size) {
         result = DoAllocateLargeObjectPage(allocation_size, gc_info_index);
         DCHECK(result);
         break;
       }
     } else {
-      // Sweep a page and move the page from m_firstUnsweptPages to
-      // m_firstPages.
-      page->Sweep();
-      page->Unlink(&first_unswept_page_);
       page->Link(&first_page_);
       page->MarkAsSwept();
     }
@@ -1305,11 +1290,6 @@ size_t NormalPage::ObjectPayloadSizeForTesting() {
   return object_payload_size;
 }
 
-bool NormalPage::IsEmpty() {
-  HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(Payload());
-  return header->IsFree() && header->size() == PayloadSize();
-}
-
 void NormalPage::RemoveFromHeap() {
   ArenaForNormalPage()->FreePage(this);
 }
@@ -1327,7 +1307,7 @@ static void DiscardPages(Address begin, Address end) {
 }
 #endif
 
-void NormalPage::Sweep() {
+bool NormalPage::Sweep() {
   object_start_bit_map()->Clear();
   size_t marked_object_size = 0;
   Address start_of_gap = Payload();
@@ -1383,7 +1363,10 @@ void NormalPage::Sweep() {
     marked_object_size += size;
     start_of_gap = header_address;
   }
-  if (start_of_gap != PayloadEnd()) {
+  // Only add the memory to the free list if the page is not completely empty
+  // and we are not at the end of the page. Empty pages are not added to the
+  // free list as the pages are removed immediately.
+  if (start_of_gap != Payload() && start_of_gap != PayloadEnd()) {
     page_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     if (MemoryCoordinator::IsLowEndDevice())
@@ -1397,6 +1380,7 @@ void NormalPage::Sweep() {
   }
 
   VerifyObjectStartBitmapIsConsistentWithPayload();
+  return start_of_gap == Payload();
 }
 
 void NormalPage::SweepAndCompact(CompactionContext& context) {
@@ -1707,17 +1691,17 @@ size_t LargeObjectPage::ObjectPayloadSizeForTesting() {
   return PayloadSize();
 }
 
-bool LargeObjectPage::IsEmpty() {
-  return !ObjectHeader()->IsMarked();
-}
-
 void LargeObjectPage::RemoveFromHeap() {
   static_cast<LargeObjectArena*>(Arena())->FreeLargeObjectPage(this);
 }
 
-void LargeObjectPage::Sweep() {
+bool LargeObjectPage::Sweep() {
+  if (!ObjectHeader()->IsMarked()) {
+    return true;
+  }
   ObjectHeader()->Unmark();
   Arena()->GetThreadState()->Heap().IncreaseMarkedObjectSize(size());
+  return false;
 }
 
 void LargeObjectPage::MakeConsistentForMutator() {
