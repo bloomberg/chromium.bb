@@ -95,10 +95,6 @@ crbug.com/816045 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothing
 # seem to fix it.
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-crbug.com/857501 [ Mac10.10 ] compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ Failure Pass ]
-crbug.com/857501 [ Mac10.10 ] compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ Failure Pass ]
-crbug.com/857501 [ Mac10.10 ] compositing/gestures/gesture-tapHighlight-pixel-transparent.html [ Failure Pass ]
-
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
 # SwiftShader Failures
