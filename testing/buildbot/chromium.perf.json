@@ -719,7 +719,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -764,7 +764,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -805,7 +805,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -849,7 +849,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -890,7 +890,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -935,7 +935,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -976,7 +976,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1017,7 +1017,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1060,7 +1060,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1103,7 +1103,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1148,7 +1148,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1189,7 +1189,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1230,7 +1230,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
@@ -1274,7 +1274,7 @@
         "merge": {
           "args": [
             "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+            "C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },

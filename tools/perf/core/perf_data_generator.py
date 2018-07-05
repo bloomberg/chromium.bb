@@ -1245,6 +1245,14 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
           'True'
       ],
   }
+
+  if tester_config['platform'] == 'win':
+    service_account_path = (
+        'C:\\creds\\service_accounts\\'
+        'service-account-chromium-perf-histograms.json')
+  else:
+    service_account_path = (
+        '/creds/service_accounts/service-account-chromium-perf-histograms.json')
   # Only want to append multiple-trigger-configs if we don't support
   # soft device affinity
   if len(dimensions):
@@ -1254,7 +1262,7 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
       'script': '//tools/perf/process_perf_results.py',
       'args': [
         '--service-account-file',
-        '/creds/service_accounts/service-account-chromium-perf-histograms.json'
+        service_account_path
       ],
   }
   return len(dimensions)
