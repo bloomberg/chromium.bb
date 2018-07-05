@@ -684,11 +684,9 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, FileSystemDeletion) {
 }
 
 // Test that empty filesystems are deleted correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
                        EmptyFileSystemDeletion) {
-  // TODO(843995, 840080): Change this test to be parameterized when partial
-  // file system deletions are fixed.
-  TestEmptySiteData("FileSystem", base::Time());
+  TestEmptySiteData("FileSystem", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, WebSqlDeletion) {
@@ -696,10 +694,8 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, WebSqlDeletion) {
 }
 
 // Test that empty websql dbs are deleted correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyWebSqlDeletion) {
-  // TODO(843995):  Change this test to be parameterized when partial
-  // web sql deletions are fixed.
-  TestEmptySiteData("WebSql", base::Time());
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyWebSqlDeletion) {
+  TestEmptySiteData("WebSql", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, IndexedDbDeletion) {
