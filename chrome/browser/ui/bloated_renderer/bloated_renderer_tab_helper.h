@@ -53,6 +53,9 @@ class BloatedRendererTabHelper
                            CannotReloadBloatedTabInvalidURL);
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest,
                            CannotReloadBloatedTabPendingUserInteraction);
+  FRIEND_TEST_ALL_PREFIXES(BloatedRendererTabHelperTest,
+                           CannotReloadBloatedTabWithPostData);
+
   enum class State { kInactive, kRequestingReload, kStartedNavigation };
 
   explicit BloatedRendererTabHelper(content::WebContents* contents);
