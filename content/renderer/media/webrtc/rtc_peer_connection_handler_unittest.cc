@@ -810,14 +810,11 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
       .Times(2);
   EXPECT_TRUE(AddStream(local_stream));
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
-  EXPECT_EQ(1u,
-      mock_peer_connection_->local_streams()->at(0)->GetAudioTracks().size());
-  EXPECT_EQ(1u,
-      mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
+  EXPECT_EQ(2u, mock_peer_connection_->GetSenders().size());
 
   EXPECT_FALSE(AddStream(local_stream));
   EXPECT_TRUE(RemoveStream(local_stream));
-  EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
+  EXPECT_EQ(0u, mock_peer_connection_->GetSenders().size());
 
   StopAllTracks(local_stream);
 }
@@ -842,12 +839,7 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
 
   EXPECT_TRUE(AddStream(local_stream));
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
-  EXPECT_EQ(
-      1u,
-      mock_peer_connection_->local_streams()->at(0)->GetAudioTracks().size());
-  EXPECT_EQ(
-      1u,
-      mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
+  EXPECT_EQ(2u, mock_peer_connection_->GetSenders().size());
 
   StopAllTracks(local_stream);
 }

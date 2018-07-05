@@ -84,11 +84,20 @@ class RTCRtpSenderTest : public ::testing::Test {
 
   std::unique_ptr<RTCRtpSender> CreateSender(
       blink::WebMediaStreamTrack web_track) {
-    return std::make_unique<RTCRtpSender>(
-        peer_connection_.get(), main_thread_,
-        dependency_factory_->GetWebRtcSignalingThread(), stream_map_,
-        mock_webrtc_sender_.get(), std::move(web_track),
-        std::vector<blink::WebMediaStream>());
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
+    if (!web_track.IsNull()) {
+      track_ref =
+          stream_map_->track_adapter_map()->GetOrCreateLocalTrackAdapter(
+              web_track);
+      DCHECK(track_ref->is_initialized());
+    }
+    RtpSenderState sender_state(main_thread_,
+                                dependency_factory_->GetWebRtcSignalingThread(),
+                                mock_webrtc_sender_.get(), std::move(track_ref),
+                                std::vector<std::string>());
+    sender_state.Initialize();
+    return std::make_unique<RTCRtpSender>(peer_connection_.get(), stream_map_,
+                                          std::move(sender_state));
   }
 
   // Calls replaceTrack(), which is asynchronous, returning a callback that when

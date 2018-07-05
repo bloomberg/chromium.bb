@@ -842,15 +842,14 @@ std::set<RTCPeerConnectionHandler*>* GetPeerConnectionHandlers() {
   return handlers;
 }
 
-// Counts the number of senders that have |web_stream| as an associated stream.
+// Counts the number of senders that have |stream_id| as an associated stream.
 size_t GetLocalStreamUsageCount(
     const std::vector<std::unique_ptr<RTCRtpSender>>& rtp_senders,
-    const blink::WebMediaStream& web_stream) {
+    const std::string stream_id) {
   size_t usage_count = 0;
   for (const auto& sender : rtp_senders) {
-    for (const auto& stream_ref : sender->stream_refs()) {
-      if (stream_ref->adapter().web_stream().UniqueId() ==
-          web_stream.UniqueId()) {
+    for (const auto& sender_stream_id : sender->state().stream_ids()) {
+      if (sender_stream_id == stream_id) {
         ++usage_count;
         break;
       }
@@ -1816,39 +1815,37 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
-  // Get or create the associated track and stream adapters.
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter =
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
       track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      stream_adapters(streams.size());
-  std::vector<webrtc::MediaStreamInterface*> webrtc_streams(streams.size());
-  for (size_t i = 0; i < streams.size(); ++i) {
-    stream_adapters[i] =
-        stream_adapter_map_->GetOrCreateLocalStreamAdapter(streams[i]);
-    webrtc_streams[i] = stream_adapters[i]->adapter().webrtc_stream().get();
-  }
+  std::vector<std::string> stream_ids(streams.size());
+  for (size_t i = 0; i < streams.size(); ++i)
+    stream_ids[i] = streams[i].Id().Utf8();
 
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender =
-      native_peer_connection_->AddTrack(track_adapter->webrtc_track(),
-                                        webrtc_streams);
-  if (!webrtc_sender)
+  // Native addTrack().
+  auto error_or_sender =
+      native_peer_connection_->AddTrack(track_ref->webrtc_track(), stream_ids);
+  if (!error_or_sender.ok())
     return nullptr;
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender =
+      error_or_sender.value();
+  DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender)) == rtp_senders_.end());
   track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kSend,
                           MediaStreamTrackMetricsKind(track),
                           track.Id().Utf8());
-  DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender)) == rtp_senders_.end());
+  RtpSenderState sender_state(task_runner_, signaling_thread(),
+                              webrtc_sender.get(), std::move(track_ref),
+                              std::move(stream_ids));
+  sender_state.Initialize();
   rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
-      native_peer_connection_, task_runner_, signaling_thread(),
-      stream_adapter_map_, std::move(webrtc_sender), std::move(track_adapter),
-      std::move(stream_adapters)));
+      native_peer_connection_, stream_adapter_map_, std::move(sender_state)));
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,
         rtp_senders_.back()->ShallowCopy(), nullptr);
   }
-  for (const auto& stream_ref : rtp_senders_.back()->stream_refs()) {
-    if (GetLocalStreamUsageCount(rtp_senders_,
-                                 stream_ref->adapter().web_stream()) == 1u) {
+  for (const auto& stream_id : rtp_senders_.back()->state().stream_ids()) {
+    if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 1u) {
+      // This is the first occurrence of this stream.
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
     }
   }
@@ -1867,7 +1864,6 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kSend,
                              MediaStreamTrackMetricsKind(web_track),
                              web_track.Id().Utf8());
-  auto stream_refs = (*it)->stream_refs();
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackRemoveTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
@@ -1876,10 +1872,11 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   // TODO(hbos): In Unified Plan, senders are never removed. The lower layer
   // needs to tell us what to do with the sender: Update its states and/or
   // remove it. https://crbug.com/799030
+  std::vector<std::string> stream_ids = (*it)->state().stream_ids();
   rtp_senders_.erase(it);
-  for (const auto& stream_ref : stream_refs) {
-    if (GetLocalStreamUsageCount(rtp_senders_,
-                                 stream_ref->adapter().web_stream()) == 0u) {
+  for (const auto& stream_id : stream_ids) {
+    if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 0u) {
+      // This was the last occurrence of this stream.
       PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
     }
   }

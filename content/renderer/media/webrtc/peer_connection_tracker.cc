@@ -92,22 +92,26 @@ static std::string SerializeMediaStreamComponent(
   return component.Source().Id().Utf8();
 }
 
-static std::string SerializeMediaStream(const blink::WebMediaStream& stream) {
-  return stream.Id().Utf8();
-}
-
-static std::string SerializeMediaStreamVector(
-    const blink::WebVector<blink::WebMediaStream> streams) {
-  if (!streams.size())
+static std::string SerializeMediaStreamIds(
+    const blink::WebVector<blink::WebString>& stream_ids) {
+  if (!stream_ids.size())
     return "[]";
   std::string result = "[ ";
-  for (const auto& stream : streams) {
+  for (const auto& stream_id : stream_ids) {
     if (result.size() > 2u)
       result += ", ";
-    result += SerializeMediaStream(stream);
+    result += stream_id.Utf8();
   }
   result += " ]";
   return result;
+}
+
+static std::string SerializeMediaStreams(
+    const blink::WebVector<blink::WebMediaStream>& streams) {
+  blink::WebVector<blink::WebString> stream_ids(streams.size());
+  for (size_t i = 0; i < streams.size(); ++i)
+    stream_ids[i] = streams[i].Id();
+  return SerializeMediaStreamIds(stream_ids);
 }
 
 static std::string SerializeTransceiver(
@@ -121,14 +125,14 @@ static std::string SerializeTransceiver(
       result += "track: null";
     else
       result += "track: " + SerializeMediaStreamComponent(sender->Track());
-    result += ", streams: " + SerializeMediaStreamVector(sender->Streams());
+    result += ", streams: " + SerializeMediaStreamIds(sender->StreamIds());
     result += " }";
   } else {
     DCHECK(receiver);
     result += "receiver: { ";
     DCHECK(!receiver->Track().IsNull());
     result += "track: " + SerializeMediaStreamComponent(receiver->Track());
-    result += ", streams: " + SerializeMediaStreamVector(receiver->Streams());
+    result += ", streams: " + SerializeMediaStreams(receiver->Streams());
     result += " }";
   }
   return result;
