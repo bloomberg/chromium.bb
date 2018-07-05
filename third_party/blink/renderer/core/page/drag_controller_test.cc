@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/core/page/drag_state.h"
@@ -120,6 +121,45 @@ TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   // AutoscrollController should have been cleared.
   EXPECT_FALSE(
       WebView().GetPage()->GetAutoscrollController().AutoscrollInProgress());
+}
+
+// Verify that conditions that prevent hit testing - such as throttled
+// lifecycle updates for frames - are accounted for in the DragController.
+// Regression test for https://crbug.com/685030
+TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
+  WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  // Intercept event to indicate that the document will be handling the drag.
+  main_resource.Complete(
+      "<!DOCTYPE html>"
+      "<script>"
+      "  document.addEventListener('dragenter', e => e.preventDefault());"
+      "</script>");
+
+  DataObject* object = DataObject::Create();
+  object->SetURLAndTitle("https://www.example.com/index.html", "index");
+  DragData data(
+      object, IntPoint(10, 10), IntPoint(10, 10),
+      static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink |
+                                 kDragOperationMove));
+
+  WebView().GetPage()->GetDragController().DragEnteredOrUpdated(
+      &data, *GetDocument().GetFrame());
+
+  // Throttle updates, which prevents hit testing from yielding a node.
+  WebView()
+      .MainFrameImpl()
+      ->GetFrameView()
+      ->SetLifecycleUpdatesThrottledForTesting();
+
+  WebView().GetPage()->GetDragController().PerformDrag(
+      &data, *GetDocument().GetFrame());
+
+  // Test passes if we don't crash.
 }
 
 TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
