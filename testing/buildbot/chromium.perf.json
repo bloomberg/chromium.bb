@@ -1094,50 +1094,6 @@
       },
       {
         "args": [
-          "-v",
-          "--browser=release_x64",
-          "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=win7_nvidia_shard_map.json"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 5,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
           "--non-telemetry=true",
           "--migrated-test=true",
           "--use-cmd-decoder=validating",
