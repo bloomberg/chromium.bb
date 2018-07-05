@@ -2760,8 +2760,8 @@ INSTANTIATE_TEST_CASE_P(,
 // NOTE: This test is separate from IntermediateFromAia200 as a different URL
 // needs to be used to avoid having the result depend on globally cached success
 // or failure of the fetch.
-// Test flaky on Win crbug.com/859387
-#if defined(OS_WIN)
+// Test flaky on Win and iOS crbug.com/859387
+#if defined(OS_WIN) || defined(OS_IOS)
 #define MAYBE_IntermediateFromAia404 DISABLED_IntermediateFromAia404
 #else
 #define MAYBE_IntermediateFromAia404 IntermediateFromAia404
