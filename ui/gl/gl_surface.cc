@@ -240,10 +240,6 @@ void GLSurface::SetUsePlaneGpuFences() {
   // and synchronize using other methods.
 }
 
-int GLSurface::GetBufferCount() const {
-  return 2;
-}
-
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -488,10 +484,6 @@ void GLSurfaceAdapter::SetEnableSwapTimestamps() {
 
 void GLSurfaceAdapter::SetUsePlaneGpuFences() {
   surface_->SetUsePlaneGpuFences();
-}
-
-int GLSurfaceAdapter::GetBufferCount() const {
-  return surface_->GetBufferCount();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
