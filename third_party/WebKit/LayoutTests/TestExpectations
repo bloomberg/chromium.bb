@@ -4749,6 +4749,9 @@ crbug.com/859629 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing
 crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
 crbug.com/859629 [ Mac10.13 ] http/tests/devtools/tracing/timeline-js/timeline-script-tag-1.js [ Failure ]
 
+# User Activation
+crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
+
 # wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html is flaky in some virtual/ tests.
 crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Failure ]
 
