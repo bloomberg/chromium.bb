@@ -360,7 +360,12 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
 
         LayoutRect selection_visual_rect = MapFragmentLocalRectToVisualRect(
             local_selection_rect, object, *fragment, context);
-        if (selection_visual_rect != fragment->SelectionVisualRect()) {
+        const bool should_invalidate =
+            object.ShouldInvalidateSelection() ||
+            selection_visual_rect != fragment->SelectionVisualRect();
+        const bool rect_exists = !selection_visual_rect.IsEmpty() ||
+                                 !fragment->SelectionVisualRect().IsEmpty();
+        if (should_invalidate && rect_exists) {
           context.painting_layer->SetNeedsRepaint();
           ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
               *fragment, PaintInvalidationReason::kSelection);
