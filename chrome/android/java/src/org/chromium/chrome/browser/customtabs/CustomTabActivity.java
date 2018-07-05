@@ -360,11 +360,13 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_FEATURE_DISABLED);
             return;
         }
 
         if (!ExternalAuthUtils.getInstance().isGoogleSigned(packageName)) {
             Log.w(TAG, "The %s package is not Google-signed.", packageName);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_NOT_GOOGLE_SIGNED);
             return;
         }
 

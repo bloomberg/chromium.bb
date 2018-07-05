@@ -54,14 +54,20 @@ public final class ModuleLoader {
                                 + "minimum required entry point version %s.",
                         moduleHost.getHostVersion(), entryPoint.getMinimumHostVersion(),
                         entryPoint.getModuleVersion(), moduleHost.getMinimumModuleVersion());
+                ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_INCOMPATIBLE_VERSION);
                 return null;
             }
 
             entryPoint.init(moduleHost);
             return entryPoint;
-        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
-            Log.e(TAG, "Could not create entry point using package name %s and class name %s",
-                    packageName, className, e);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "Could not find class %", className, e);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_CLASS_NOT_FOUND_EXCEPTION);
+        } catch (Exception e) {
+            // No multi-catch below API level 19 for reflection exceptions.
+            // This catches InstantiationException and IllegalAccessException.
+            Log.e(TAG, "Could not instantiate class %", className, e);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_INSTANTIATION_EXCEPTION);
         }
         return null;
     }
@@ -78,6 +84,8 @@ public final class ModuleLoader {
             return moduleContext;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not create package context for %s", packageName, e);
+            ModuleMetrics.recordLoadResult(
+                    ModuleMetrics.LOAD_RESULT_PACKAGE_NAME_NOT_FOUND_EXCEPTION);
         }
         return null;
     }

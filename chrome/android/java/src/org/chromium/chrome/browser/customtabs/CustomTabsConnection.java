@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -1434,12 +1435,16 @@ public class CustomTabsConnection {
                 throw new IllegalStateException("Only one module can be loaded at a time.");
             }
             mModuleUseCount++;
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_CACHED);
             return mModuleEntryPoint;
         }
 
         mModuleNames = new Pair<>(packageName, className);
         mModuleEntryPoint = ModuleLoader.loadModule(packageName, className);
-        if (mModuleEntryPoint != null) mModuleUseCount++;
+        if (mModuleEntryPoint != null) {
+            mModuleUseCount++;
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_NEW);
+        }
         return mModuleEntryPoint;
     }
 
