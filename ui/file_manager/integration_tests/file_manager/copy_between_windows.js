@@ -36,7 +36,7 @@ function openTwoWindows(rootPath1, rootPath2) {
  * @param {TestEntryInfo} file Test entry info to be copied.
  * @return {Promise} Promise fulfilled on success.
  */
-function copyBetweenWindows(window1, window2, file) {
+function copyBetweenWindows(window1, window2, file, alreadyPresentFile = null) {
   if (!file || !file.nameText)
     chrome.test.assertTrue(false, 'copyBetweenWindows invalid file name');
 
@@ -62,7 +62,11 @@ function copyBetweenWindows(window1, window2, file) {
         return remoteCall.callRemoteTestUtil('execCommand', window2, ['paste']);
       })
       .then(function() {
-        return remoteCall.waitForFiles(window2, [file.getExpectedRow()], flag);
+        var expectedFiles = [file.getExpectedRow()];
+        if (alreadyPresentFile) {
+          expectedFiles.push(alreadyPresentFile.getExpectedRow());
+        }
+        return remoteCall.waitForFiles(window2, expectedFiles, flag);
       });
 }
 
@@ -77,24 +81,26 @@ testcase.copyBetweenWindowsDriveToLocal = function() {
     function() {
       openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
     },
-    // Check: Downloads window is empty.
+    // Add files.
     function(appIdArray) {
       window1 = appIdArray[0];
       window2 = appIdArray[1];
-      remoteCall.waitForFiles(window1, []).then(this.next);
+      Promise
+          .all([
+            addEntries(['drive'], [ENTRIES.hello]),
+            addEntries(['local'], [ENTRIES.photos]),
+          ])
+          .then(this.next);
     },
-    // Add hello file to Drive.
+    // Check: Downloads photos file.
     function() {
-      addEntries(['drive'], [ENTRIES.hello], this.next);
-    },
-    // Check: Drive hello file.
-    function() {
-      remoteCall.waitForFiles(window2, [ENTRIES.hello.getExpectedRow()])
+      remoteCall.waitForFiles(window1, [ENTRIES.photos.getExpectedRow()])
           .then(this.next);
     },
     // Copy Drive hello file to Downloads.
     function() {
-      copyBetweenWindows(window2, window1, ENTRIES.hello).then(this.next);
+      copyBetweenWindows(window2, window1, ENTRIES.hello, ENTRIES.photos)
+          .then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -113,24 +119,26 @@ testcase.copyBetweenWindowsLocalToDrive = function() {
     function() {
       openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
     },
-    // Check: Drive window is empty.
+    // Add files.
     function(appIdArray) {
       window1 = appIdArray[0];
       window2 = appIdArray[1];
-      remoteCall.waitForFiles(window2, []).then(this.next);
+      Promise
+          .all([
+            addEntries(['local'], [ENTRIES.hello]),
+            addEntries(['drive'], [ENTRIES.photos]),
+          ])
+          .then(this.next);
     },
-    // Add hello file to Downloads.
+    // Check: Downloads hello file and Drive photos file.
     function() {
-      addEntries(['local'], [ENTRIES.hello], this.next);
-    },
-    // Check: Downloads hello file.
-    function() {
-      remoteCall.waitForFiles(window1, [ENTRIES.hello.getExpectedRow()])
+      remoteCall.waitForFiles(window2, [ENTRIES.photos.getExpectedRow()])
           .then(this.next);
     },
     // Copy Downloads hello file to Drive.
     function() {
-      copyBetweenWindows(window1, window2, ENTRIES.hello).then(this.next);
+      copyBetweenWindows(window1, window2, ENTRIES.hello, ENTRIES.photos)
+          .then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
