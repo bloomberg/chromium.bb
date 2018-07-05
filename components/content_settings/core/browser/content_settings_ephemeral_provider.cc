@@ -68,11 +68,23 @@ bool EphemeralProvider::SetWebsiteSetting(
     return false;
   }
 
-  content_settings_rules_.SetValue(
-      primary_pattern, secondary_pattern, content_type, resource_identifier,
-      store_last_modified_ ? clock_->Now() : base::Time(), in_value);
-  NotifyObservers(primary_pattern, secondary_pattern, content_type,
-                  resource_identifier);
+  if (in_value) {
+    content_settings_rules_.SetValue(
+        primary_pattern, secondary_pattern, content_type, resource_identifier,
+        store_last_modified_ ? clock_->Now() : base::Time(), in_value);
+    NotifyObservers(primary_pattern, secondary_pattern, content_type,
+                    resource_identifier);
+  } else {
+    // If the value exists, delete it.
+    if (content_settings_rules_.GetLastModified(
+            primary_pattern, secondary_pattern, content_type,
+            resource_identifier) != base::Time()) {
+      content_settings_rules_.DeleteValue(primary_pattern, secondary_pattern,
+                                          content_type, resource_identifier);
+      NotifyObservers(primary_pattern, secondary_pattern, content_type,
+                      resource_identifier);
+    }
+  }
   return true;
 }
 
