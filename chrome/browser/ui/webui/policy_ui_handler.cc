@@ -773,20 +773,26 @@ void PolicyUIHandler::HandleInitialized(const base::ListValue* args) {
 
 void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
-  // Allow user to manually fetch remote commands, in case invalidation
-  // service is not working properly.
-  // TODO(binjin): evaluate and possibly remove this after invalidation
-  // service is landed and tested. http://crbug.com/480982
-  policy::CloudPolicyManager* manager =
+  // Allow user to manually fetch remote commands. Useful for testing or when
+  // the invalidation service is not working properly.
+  policy::CloudPolicyManager* const device_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetDeviceCloudPolicyManager();
-  // Active Directory management has no CloudPolicyManager.
-  if (manager) {
-    policy::RemoteCommandsService* remote_commands_service =
-        manager->core()->remote_commands_service();
-    if (remote_commands_service)
-      remote_commands_service->FetchRemoteCommands();
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  policy::CloudPolicyManager* const user_manager =
+      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
+
+  // Fetch both device and user remote commands.
+  for (policy::CloudPolicyManager* manager : {device_manager, user_manager}) {
+    // Active Directory management has no CloudPolicyManager.
+    if (manager) {
+      policy::RemoteCommandsService* const remote_commands_service =
+          manager->core()->remote_commands_service();
+      if (remote_commands_service)
+        remote_commands_service->FetchRemoteCommands();
+    }
   }
 #endif
   GetPolicyService()->RefreshPolicies(base::Bind(
