@@ -157,4 +157,23 @@ TEST_F(ContentSettingsEphemeralProviderTest, StorageIsEphemeral) {
   EXPECT_EQ(nullptr, rule_iterator);
 }
 
+// Tests if a pattern can be deleted by passing null value.
+TEST_F(ContentSettingsEphemeralProviderTest, DeleteValueByPassingNull) {
+  ContentSettingsPattern site_pattern =
+      ContentSettingsPattern::FromString("https://example.com");
+
+  provider()->SetWebsiteSetting(site_pattern, site_pattern, ephemeral_type(0),
+                                std::string(),
+                                new base::Value(CONTENT_SETTING_ALLOW));
+  std::unique_ptr<RuleIterator> rule_iterator =
+      provider()->GetRuleIterator(ephemeral_type(0), std::string(), false);
+  EXPECT_NE(nullptr, rule_iterator);
+
+  provider()->SetWebsiteSetting(site_pattern, site_pattern, ephemeral_type(0),
+                                std::string(), nullptr);
+  rule_iterator =
+      provider()->GetRuleIterator(ephemeral_type(0), std::string(), false);
+  EXPECT_EQ(nullptr, rule_iterator);
+}
+
 }  // namespace content_settings
