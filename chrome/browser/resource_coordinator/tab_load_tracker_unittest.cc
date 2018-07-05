@@ -115,12 +115,15 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  // Enables the PAI feature so that the TabLoadTracker can be tested in both
-  // modes.
-  void EnablePAI() {
+  // Enables or disables the PAI feature so that the TabLoadTracker can be
+  // tested in both modes.
+  void SetPageAlmostIdleFeatureEnabled(bool enabled) {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    feature_list_->InitAndEnableFeature(features::kPageAlmostIdle);
-    ASSERT_TRUE(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+    if (enabled)
+      feature_list_->InitAndEnableFeature(features::kPageAlmostIdle);
+    else
+      feature_list_->InitAndDisableFeature(features::kPageAlmostIdle);
+    ASSERT_EQ(resource_coordinator::IsPageAlmostIdleSignalEnabled(), enabled);
   }
 
   void ExpectTabCounts(size_t tabs,
@@ -178,8 +181,7 @@ TEST_F(TabLoadTrackerTest, DetermineLoadingState) {
 }
 
 void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
-  if (enable_pai)
-    EnablePAI();
+  SetPageAlmostIdleFeatureEnabled(enable_pai);
 
   auto* tester1 = content::WebContentsTester::For(contents1());
   auto* tester2 = content::WebContentsTester::For(contents2());

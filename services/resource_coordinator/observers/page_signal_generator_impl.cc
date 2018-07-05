@@ -198,7 +198,7 @@ void PageSignalGeneratorImpl::OnPageEventReceived(
   // started.
   auto* page_data = GetPageData(page_cu);
   page_data->SetLoadIdleState(kLoadingNotStarted, base::TimeTicks::Now());
-  page_data->idling_timer.Stop();
+  UpdateLoadIdleStatePage(page_cu);
 }
 
 void PageSignalGeneratorImpl::OnProcessEventReceived(

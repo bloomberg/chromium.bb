@@ -20,6 +20,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker_test_support.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
@@ -255,6 +256,7 @@ void LocalSiteCharacteristicsDatabaseTest::TestFeatureUsageDetectionImpl(
       browser(), test_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   GetActiveWebContents()->WasHidden();
+  WaitForTransitionToLoaded(GetActiveWebContents());
 
   // If needed, wait for all feature observation windows to expire.
   if (wait_for_observation_window_to_expire) {
@@ -299,6 +301,11 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, NoFeatureUsed) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), test_url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_EQ(test_url, contents->GetLastCommittedURL());
+  WaitForTransitionToLoaded(contents);
 
   auto reader =
       GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
@@ -426,10 +433,12 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
         i == 0 ? WindowOpenDisposition::CURRENT_TAB
                : WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(i);
+    WaitForTransitionToLoaded(contents);
     EXPECT_EQ(TabLoadTracker::LoadingState::LOADED,
-              TabLoadTracker::Get()->GetLoadingState(
-                  browser()->tab_strip_model()->GetWebContentsAt(i)));
-    browser()->tab_strip_model()->GetWebContentsAt(i)->WasHidden();
+              TabLoadTracker::Get()->GetLoadingState(contents));
+    contents->WasHidden();
   }
 
   internal::LocalSiteCharacteristicsDataImpl* impl =
@@ -478,6 +487,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), test_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
 
   // Cause the "title update in background" feature to be used.
@@ -516,6 +526,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, PRE_ClearHistory) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), test_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
 
   // Cause the "title update in background" feature to be used.
