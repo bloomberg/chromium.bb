@@ -65,6 +65,32 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams_;
 };
 
+class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
+ public:
+  FakeRtpTransceiver(cricket::MediaType media_type,
+                     rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+                     rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver);
+  ~FakeRtpTransceiver() override;
+
+  cricket::MediaType media_type() const override;
+  rtc::Optional<std::string> mid() const override;
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> sender() const override;
+  rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver() const override;
+  bool stopped() const override;
+  webrtc::RtpTransceiverDirection direction() const override;
+  void SetDirection(webrtc::RtpTransceiverDirection new_direction) override;
+  rtc::Optional<webrtc::RtpTransceiverDirection> current_direction()
+      const override;
+  void Stop() override;
+  void SetCodecPreferences(
+      rtc::ArrayView<webrtc::RtpCodecCapability> codecs) override;
+
+ private:
+  cricket::MediaType media_type_;
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> sender_;
+  rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver_;
+};
+
 // TODO(hbos): The use of fakes and mocks is the wrong approach for testing of
 // this. It introduces complexity, is error prone (not testing the right thing
 // and bugs in the mocks). This class is a maintenance burden and should be
