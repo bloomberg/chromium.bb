@@ -1288,7 +1288,8 @@ class CONTENT_EXPORT RenderFrameImpl
   CreateWebSocketHandshakeThrottle() override;
 
   // Updates the state of this frame when asked to commit a navigation.
-  void PrepareFrameForCommit();
+  void PrepareFrameForCommit(const GURL& url,
+                             const RequestNavigationParams& request_params);
 
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for
