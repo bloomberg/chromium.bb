@@ -8799,6 +8799,22 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Connected to service with KeepAlive connection"/>
 </enum>
 
+<enum name="CustomTabsDynamicModuleLoadResult">
+  <int value="0" label="Loaded new instance successfully"/>
+  <int value="1" label="Used cached instance"/>
+  <int value="2" label="Not loaded because the feature is disabled"/>
+  <int value="3" label="Not loaded because the package is not Google-signed"/>
+  <int value="4"
+      label="Not loaded because the package name could not be found"/>
+  <int value="5"
+      label="Not loaded because the entry point class could not be found"/>
+  <int value="6"
+      label="Not loaded because the entry point class could not be
+             instantiated"/>
+  <int value="7"
+      label="Loaded but the host and module versions are incompatible"/>
+</enum>
+
 <enum name="CustomTabsParallelRequestStatusOnStart">
   <int value="0" label="No Parallel Request was requested"/>
   <int value="1" label="Parallel request successfully started"/>
