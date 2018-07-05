@@ -947,12 +947,27 @@ void LayoutObject::ClearPreferredLogicalWidthsDirty() {
   bitfields_.SetPreferredLogicalWidthsDirty(false);
 }
 
+static inline bool NGKeepInvalidatingBeyond(LayoutObject* o) {
+  // Because LayoutNG does not work on individual inline objects, we can't
+  // use a dirty width on an inline as a signal that it is safe to stop --
+  // inlines never get marked as clean. Instead, we need to keep going to the
+  // next block container.
+  // Atomic inlines do not have this problem as they are treated like blocks
+  // in this context.
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return false;
+  if (o->IsLayoutInline() || o->IsText())
+    return true;
+  return false;
+}
+
 inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
   // In order to avoid pathological behavior when inlines are deeply nested, we
   // do include them in the chain that we mark dirty (even though they're kind
   // of irrelevant).
   LayoutObject* o = IsTableCell() ? ContainingBlock() : Container();
-  while (o && !o->PreferredLogicalWidthsDirty()) {
+  while (o &&
+         (!o->PreferredLogicalWidthsDirty() || NGKeepInvalidatingBeyond(o))) {
     // Don't invalidate the outermost object of an unrooted subtree. That object
     // will be invalidated when the subtree is added to the document.
     LayoutObject* container =

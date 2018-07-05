@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
@@ -1407,6 +1408,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                        ->has_previous_content_box_size_and_layout_overflow_rect_
                ? rare_data_->previous_physical_layout_overflow_rect_
                : LayoutRect(LayoutPoint(), PreviousSize());
+  }
+
+  // LayoutNG can use this function to update our cache of preferred logical
+  // widths when the layout object is managed by NG. Should not be called by
+  // regular code.
+  // Also clears the "dirty" flag for preferred widths.
+  void SetPreferredLogicalWidthsFromNG(MinMaxSize sizes) {
+    min_preferred_logical_width_ = sizes.min_size;
+    max_preferred_logical_width_ = sizes.max_size;
+    ClearPreferredLogicalWidthsDirty();
   }
 
  protected:
