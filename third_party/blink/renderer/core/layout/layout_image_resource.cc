@@ -113,6 +113,12 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
   return size;
 }
 
+FloatSize LayoutImageResource::ImageSizeWithDefaultSize(
+    float multiplier,
+    const LayoutSize&) const {
+  return ImageSize(multiplier);
+}
+
 float LayoutImageResource::DeviceScaleFactor() const {
   return DeviceScaleFactorDeprecated(layout_object_->GetFrame());
 }

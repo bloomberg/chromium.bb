@@ -53,6 +53,8 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
     return style_image_->ImageHasRelativeSize();
   }
   FloatSize ImageSize(float multiplier) const override;
+  FloatSize ImageSizeWithDefaultSize(float multiplier,
+                                     const LayoutSize&) const override;
   WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 
   void Trace(blink::Visitor*) override;
