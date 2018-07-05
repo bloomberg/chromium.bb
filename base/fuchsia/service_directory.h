@@ -47,6 +47,7 @@ class BASE_EXPORT ServiceDirectory {
 
   void AddService(StringPiece name, ConnectServiceCallback connect_callback);
   void RemoveService(StringPiece name);
+  void RemoveAllServices();
 
  private:
   // Called by |svc_dir_| to handle service requests.
