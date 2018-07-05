@@ -596,7 +596,7 @@ class MockXRInputSource {
     this.primary_input_clicked_ = false;
     this.grip_ = null;
 
-    this.pointer_origin_ = "head";
+    this.target_ray_mode_ = "gazing";
     this.pointer_offset_ = null;
     this.emulated_position_ = false;
     this.handedness_ = "";
@@ -630,14 +630,14 @@ class MockXRInputSource {
     this.grip_.matrix = new Float32Array(value);
   }
 
-  get pointerOrigin() {
-    return this.pointer_origin_;
+  get targetRayMode() {
+    return this.target_ray_mode_;
   }
 
-  set pointerOrigin(value) {
-    if (this.pointer_origin_ != value) {
+  set targetRayMode(value) {
+    if (this.target_ray_mode_ != value) {
       this.desc_dirty_ = true;
-      this.pointer_origin_ = value;
+      this.target_ray_mode_ = value;
     }
   }
 
@@ -695,12 +695,12 @@ class MockXRInputSource {
 
       input_desc.emulatedPosition = this.emulated_position_;
 
-      switch (this.pointer_origin_) {
-        case "head":
-          input_desc.pointerOrigin = device.mojom.XRPointerOrigin.HEAD;
+      switch (this.target_ray_mode_) {
+        case "gazing":
+          input_desc.targetRayMode = device.mojom.XRTargetRayMode.GAZING;
           break;
-        case "hand":
-          input_desc.pointerOrigin = device.mojom.XRPointerOrigin.HAND;
+        case "pointing":
+          input_desc.targetRayMode = device.mojom.XRTargetRayMode.POINTING;
           break;
       }
 

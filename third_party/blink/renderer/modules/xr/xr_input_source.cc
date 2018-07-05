@@ -9,29 +9,29 @@ namespace blink {
 
 XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
     : session_(session), source_id_(source_id) {
-  SetPointerOrigin(kOriginHead);
+  SetTargetRayMode(kGazing);
   SetHandedness(kHandNone);
 }
 
-void XRInputSource::SetPointerOrigin(PointerOrigin pointer_origin) {
-  if (pointer_origin_ == pointer_origin)
+void XRInputSource::SetTargetRayMode(TargetRayMode target_ray_mode) {
+  if (target_ray_mode_ == target_ray_mode)
     return;
 
-  pointer_origin_ = pointer_origin;
+  target_ray_mode_ = target_ray_mode;
 
-  switch (pointer_origin_) {
-    case kOriginHead:
-      pointer_origin_string_ = "head";
-      break;
-    case kOriginHand:
-      pointer_origin_string_ = "hand";
-      break;
-    case kOriginScreen:
-      pointer_origin_string_ = "screen";
-      break;
-    default:
-      NOTREACHED() << "Unknown pointer origin: " << pointer_origin_;
+  switch (target_ray_mode_) {
+    case kGazing:
+      target_ray_mode_string_ = "gazing";
+      return;
+    case kPointing:
+      target_ray_mode_string_ = "pointing";
+      return;
+    case kTapping:
+      target_ray_mode_string_ = "tapping";
+      return;
   }
+
+  NOTREACHED() << "Unknown target ray mode: " << target_ray_mode_;
 }
 
 void XRInputSource::SetHandedness(Handedness handedness) {
@@ -43,16 +43,16 @@ void XRInputSource::SetHandedness(Handedness handedness) {
   switch (handedness_) {
     case kHandNone:
       handedness_string_ = "";
-      break;
+      return;
     case kHandLeft:
       handedness_string_ = "left";
-      break;
+      return;
     case kHandRight:
       handedness_string_ = "right";
-      break;
-    default:
-      NOTREACHED() << "Unknown handedness: " << handedness_;
+      return;
   }
+
+  NOTREACHED() << "Unknown handedness: " << handedness_;
 }
 
 void XRInputSource::SetEmulatedPosition(bool emulated_position) {

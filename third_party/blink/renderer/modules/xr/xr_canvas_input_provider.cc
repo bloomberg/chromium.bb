@@ -86,7 +86,7 @@ void XRCanvasInputProvider::UpdateInputSource(MouseEvent* event) {
 
   if (!input_source_) {
     input_source_ = new XRInputSource(session_, 0);
-    input_source_->SetPointerOrigin(XRInputSource::kOriginScreen);
+    input_source_->SetTargetRayMode(XRInputSource::kTapping);
   }
 
   // Get the event location relative to the canvas element.

@@ -143,7 +143,8 @@ device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
   state->description = device::mojom::XRInputSourceDescription::New();
 
   // It's a handheld pointing device.
-  state->description->pointer_origin = device::mojom::XRPointerOrigin::HAND;
+  state->description->target_ray_mode =
+      device::mojom::XRTargetRayMode::POINTING;
 
   // Controller uses an arm model.
   state->description->emulated_position = true;

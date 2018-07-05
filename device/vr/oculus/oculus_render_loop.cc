@@ -362,7 +362,7 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
       device::mojom::XRInputSourceDescription::New();
 
   // It's a handheld pointing device.
-  desc->pointer_origin = device::mojom::XRPointerOrigin::HAND;
+  desc->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
 
   // Set handedness.
   switch (hand) {

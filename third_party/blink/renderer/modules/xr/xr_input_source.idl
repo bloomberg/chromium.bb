@@ -7,10 +7,10 @@ enum XRHandedness {
   "right"
 };
 
-enum XRPointerOrigin {
-  "head",
-  "grip",
-  "screen"
+enum XRTargetRayMode {
+  "gazing",
+  "pointing",
+  "tapping"
 };
 
 [
@@ -18,5 +18,5 @@ enum XRPointerOrigin {
     OriginTrialEnabled=WebXR
 ] interface XRInputSource {
   readonly attribute XRHandedness handedness;
-  readonly attribute XRPointerOrigin pointerOrigin;
+  readonly attribute XRTargetRayMode targetRayMode;
 };

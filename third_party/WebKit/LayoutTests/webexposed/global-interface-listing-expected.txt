@@ -9146,7 +9146,7 @@ interface XRInputPose
 interface XRInputSource
     attribute @@toStringTag
     getter handedness
-    getter pointerOrigin
+    getter targetRayMode
     method constructor
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
