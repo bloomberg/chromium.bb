@@ -605,6 +605,8 @@ Document::Document(const DocumentInit& initializer,
       compatibility_mode_(kNoQuirksMode),
       compatibility_mode_locked_(false),
       has_autofocused_(false),
+      last_focus_type_(kWebFocusTypeNone),
+      had_keyboard_event_(false),
       clear_focused_element_timer_(
           GetTaskRunner(TaskType::kInternalUserInteraction),
           this,
@@ -4652,7 +4654,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     focused_element_ = new_focused_element;
     SetSequentialFocusNavigationStartingPoint(focused_element_.Get());
 
-    last_focus_type_ = params.type;
+    // Keep track of last focus from user interaction, ignoring focus from code.
+    if (params.type != kWebFocusTypeNone)
+      last_focus_type_ = params.type;
+
     focused_element_->SetFocused(true, params.type);
     focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor);
 
