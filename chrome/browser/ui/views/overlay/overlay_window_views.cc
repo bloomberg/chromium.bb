@@ -387,6 +387,9 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   natural_size_ = natural_size;
   SetAspectRatio(natural_size_);
 
+  if (IsVisible())
+    return;
+
   // Update the views::Widget bounds to adhere to sizing spec.
   SetBounds(CalculateAndUpdateWindowBounds());
 }
