@@ -121,7 +121,7 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
-  if (window_) {
+  if (window_ && window_->IsVisible()) {
     media_web_contents_observer_->OnPictureInPictureWindowResize(
         window_->GetBounds().size());
   }
