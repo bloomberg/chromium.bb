@@ -591,7 +591,7 @@ to_drm_mode(struct weston_mode *base)
  */
 static uint64_t
 drm_property_get_value(struct drm_property_info *info,
-		       drmModeObjectPropertiesPtr props,
+		       const drmModeObjectProperties *props,
 		       uint64_t def)
 {
 	unsigned int i;
