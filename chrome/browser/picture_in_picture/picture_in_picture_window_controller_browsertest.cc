@@ -22,6 +22,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "ui/views/widget/widget_observer.h"
 #endif
 
 class PictureInPictureWindowControllerBrowserTest
@@ -72,6 +73,33 @@ class PictureInPictureWindowControllerBrowserTest
         active_web_contents, "enterPictureInPicture();", &result));
     EXPECT_TRUE(result);
   }
+
+#if !defined(OS_ANDROID)
+  class WidgetBoundsChangeWaiter : public views::WidgetObserver {
+   public:
+    explicit WidgetBoundsChangeWaiter(views::Widget* widget)
+        : widget_(widget), initial_bounds_(widget->GetWindowBoundsInScreen()) {
+      widget_->AddObserver(this);
+    }
+
+    ~WidgetBoundsChangeWaiter() final { widget_->RemoveObserver(this); }
+
+    void OnWidgetBoundsChanged(views::Widget* widget, const gfx::Rect&) final {
+      run_loop_.Quit();
+    }
+
+    void Wait() {
+      if (widget_->GetWindowBoundsInScreen() != initial_bounds_)
+        return;
+      run_loop_.Run();
+    }
+
+   private:
+    views::Widget* widget_;
+    gfx::Rect initial_bounds_;
+    base::RunLoop run_loop_;
+  };
+#endif  // !defined(OS_ANDROID)
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
@@ -713,3 +741,62 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(active_web_contents->IsFullscreenForCurrentTab());
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
+
+#if !defined(OS_ANDROID)
+
+// TODO(mlamouri): enable this tests on other platforms when aspect ratio is
+// implemented.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+// Tests that when a new surface id is sent to the Picture-in-Picture window, it
+// doesn't move back to its default position.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       SurfaceIdChangeDoesNotMoveWindow) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+  ASSERT_TRUE(overlay_window->IsVisible());
+
+  // Move and resize the window to the top left corner and wait for ack.
+  {
+    WidgetBoundsChangeWaiter waiter(overlay_window);
+
+    overlay_window->SetBounds(gfx::Rect(0, 0, 400, 400));
+
+    waiter.Wait();
+  }
+
+  // Wait for signal that the window was resized.
+  base::string16 expected_title = base::ASCIIToUTF16("resized");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  // Simulate a new surface layer and a change in aspect ratio and wait for ack.
+  {
+    WidgetBoundsChangeWaiter waiter(overlay_window);
+
+    window_controller()->EmbedSurface(
+        viz::SurfaceId(
+            viz::FrameSinkId(1, 1),
+            viz::LocalSurfaceId(9, base::UnguessableToken::Create())),
+        gfx::Size(200, 100));
+
+    waiter.Wait();
+  }
+
+  // The position should be closer to the (0, 0) than the default one (bottom
+  // right corner). This will be reflected by checking that the position is
+  // below (100, 100).
+  EXPECT_LT(overlay_window->GetBounds().x(), 100);
+  EXPECT_LT(overlay_window->GetBounds().y(), 100);
+}
+
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+#endif  // !defined(OS_ANDROID)
