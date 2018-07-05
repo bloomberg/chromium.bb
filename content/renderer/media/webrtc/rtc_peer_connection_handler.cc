@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -858,17 +859,17 @@ size_t GetLocalStreamUsageCount(
   return usage_count;
 }
 
-// Counts the number of receivers that have |webrtc_stream| as an associated
-// stream.
-size_t GetRemoteStreamUsageCount(
+bool IsRemoteStream(
     const std::map<uintptr_t, std::unique_ptr<RTCRtpReceiver>>& rtp_receivers,
-    const webrtc::MediaStreamInterface* webrtc_stream) {
-  size_t usage_count = 0;
+    const std::string& stream_id) {
   for (const auto& receiver_entry : rtp_receivers) {
-    if (receiver_entry.second->HasStream(webrtc_stream))
-      ++usage_count;
+    for (const auto& receiver_stream_id :
+         receiver_entry.second->state().stream_ids()) {
+      if (stream_id == receiver_stream_id)
+        return true;
+    }
   }
-  return usage_count;
+  return false;
 }
 
 enum SdpSemanticRequested {
@@ -1047,23 +1048,17 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
           removed_receivers.push_back(it->second.get());
       }
 
-      // Update stream states (which tracks belong to which streams).
-      for (auto& stream_state : GetStreamStates(states, removed_receivers)) {
-        stream_state.stream_ref->adapter().SetTracks(
-            std::move(stream_state.track_refs));
-      }
-
       // Process the addition of remote receivers/tracks.
       for (auto& receiver_state : states.receiver_states) {
         if (ReceiverWasAdded(receiver_state)) {
-          handler_->OnAddRemoteTrack(receiver_state.receiver,
-                                     std::move(receiver_state.track_ref),
-                                     std::move(receiver_state.stream_refs));
+          handler_->OnAddReceiver(std::move(receiver_state));
         }
       }
       // Process the removal of remote receivers/tracks.
-      for (auto* removed_receiver : removed_receivers)
-        handler_->OnRemoveRemoteTrack(removed_receiver->webrtc_receiver());
+      for (auto* removed_receiver : removed_receivers) {
+        handler_->OnRemoveReceiver(RTCRtpReceiver::getId(
+            removed_receiver->state().webrtc_receiver().get()));
+      }
       if (tracker_) {
         tracker_->TrackSessionDescriptionCallback(
             handler_.get(),
@@ -1088,87 +1083,27 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
  private:
   ~WebRtcSetRemoteDescriptionObserverImpl() override {}
 
-  // Describes which tracks belong to a stream in terms of AdapterRefs.
-  struct StreamState {
-    StreamState(
-        std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> stream_ref)
-        : stream_ref(std::move(stream_ref)) {}
-
-    std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> stream_ref;
-    std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
-        track_refs;
-  };
-
   void ResolvePromise() {
     web_request_.RequestSucceeded();
     web_request_.Reset();
   }
 
-  bool ReceiverWasAdded(const WebRtcReceiverState& receiver_state) {
-    return handler_->rtp_receivers_.find(
-               RTCRtpReceiver::getId(receiver_state.receiver.get())) ==
-           handler_->rtp_receivers_.end();
+  bool ReceiverWasAdded(const RtpReceiverState& receiver_state) {
+    return !base::ContainsKey(
+        handler_->rtp_receivers_,
+        RTCRtpReceiver::getId(receiver_state.webrtc_receiver().get()));
   }
 
   bool ReceiverWasRemoved(
       const RTCRtpReceiver& receiver,
-      const std::vector<WebRtcReceiverState>& receiver_states) {
+      const std::vector<RtpReceiverState>& receiver_states) {
     for (const auto& receiver_state : receiver_states) {
-      if (receiver_state.receiver == receiver.webrtc_receiver())
+      if (receiver_state.webrtc_receiver() ==
+          receiver.state().webrtc_receiver()) {
         return false;
+      }
     }
     return true;
-  }
-
-  // Determines the stream states from the current state of receivers and the
-  // receivers that are about to be removed. Produces a stable order of streams.
-  std::vector<StreamState> GetStreamStates(
-      const WebRtcSetRemoteDescriptionObserver::States& states,
-      const std::vector<RTCRtpReceiver*>& removed_receivers) {
-    states.CheckInvariants();
-    std::vector<StreamState> stream_states;
-    // The receiver's track belongs to all of its streams. A stream may be
-    // associated with multiple tracks (multiple receivers).
-    for (auto& receiver_state : states.receiver_states) {
-      for (auto& stream_ref : receiver_state.stream_refs) {
-        CHECK(stream_ref);
-        CHECK(stream_ref->adapter().is_initialized());
-        CHECK(!stream_ref->adapter().web_stream().IsNull());
-        CHECK(stream_ref->adapter().webrtc_stream());
-        auto* stream_state =
-            GetOrAddStreamStateForStream(*stream_ref, &stream_states);
-        auto track_ref = receiver_state.track_ref->Copy();
-        CHECK(!track_ref->web_track().IsNull());
-        CHECK(track_ref->webrtc_track());
-        stream_state->track_refs.push_back(std::move(track_ref));
-      }
-    }
-    // The track of removed receivers do not belong to any stream. Make sure we
-    // have a stream state for any streams belonging to receivers about to be
-    // removed in case it was the last receiver referencing that stream.
-    for (auto* removed_receiver : removed_receivers) {
-      for (auto& stream_ref : removed_receiver->StreamAdapterRefs()) {
-        CHECK(!stream_ref->adapter().web_stream().IsNull());
-        CHECK(stream_ref->adapter().webrtc_stream());
-        GetOrAddStreamStateForStream(*stream_ref, &stream_states);
-      }
-    }
-    states.CheckInvariants();
-    return stream_states;
-  }
-
-  StreamState* GetOrAddStreamStateForStream(
-      const WebRtcMediaStreamAdapterMap::AdapterRef& stream_ref,
-      std::vector<StreamState>* stream_states) {
-    auto* webrtc_stream = stream_ref.adapter().webrtc_stream().get();
-    for (auto& stream_state : *stream_states) {
-      if (stream_state.stream_ref->adapter().webrtc_stream().get() ==
-          webrtc_stream) {
-        return &stream_state;
-      }
-    }
-    stream_states->push_back(StreamState(stream_ref.Copy()));
-    return &stream_states->back();
   }
 
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
@@ -1616,8 +1551,9 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
 
   rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>
       webrtc_observer(WebRtcSetRemoteDescriptionObserverHandler::Create(
-                          task_runner_, native_peer_connection_,
-                          stream_adapter_map_, content_observer)
+                          task_runner_, signaling_thread(),
+                          native_peer_connection_, track_adapter_map_,
+                          content_observer)
                           .get());
 
   signaling_thread()->PostTask(
@@ -1841,7 +1777,7 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,
-        rtp_senders_.back()->ShallowCopy(), nullptr);
+        rtp_senders_.back().get(), nullptr);
   }
   for (const auto& stream_id : rtp_senders_.back()->state().stream_ids()) {
     if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 1u) {
@@ -1867,7 +1803,7 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackRemoveTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
-        (*it)->ShallowCopy(), nullptr);
+        (*it).get(), nullptr);
   }
   // TODO(hbos): In Unified Plan, senders are never removed. The lower layer
   // needs to tell us what to do with the sender: Update its states and/or
@@ -2061,86 +1997,64 @@ void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
     client_->NegotiationNeeded();
 }
 
-void RTCPeerConnectionHandler::OnAddRemoteTrack(
-    scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-        remote_track_adapter_ref,
-    std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-        remote_stream_adapter_refs) {
+void RTCPeerConnectionHandler::OnAddReceiver(RtpReceiverState receiver_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(receiver_state.is_initialized());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddRemoteTrack");
-  auto web_track = remote_track_adapter_ref->web_track();
+  auto web_track = receiver_state.track_ref()->web_track();
+  // Update metrics.
   track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kReceive,
                           MediaStreamTrackMetricsKind(web_track),
                           web_track.Id().Utf8());
-  for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
+  for (const auto& stream_id : receiver_state.stream_ids()) {
     // New remote stream?
-    if (GetRemoteStreamUsageCount(
-            rtp_receivers_,
-            remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
-      // Update metrics.
+    if (!IsRemoteStream(rtp_receivers_, stream_id))
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
-    }
   }
-
-  uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
+  uintptr_t receiver_id =
+      RTCRtpReceiver::getId(receiver_state.webrtc_receiver().get());
   DCHECK(rtp_receivers_.find(receiver_id) == rtp_receivers_.end());
   const std::unique_ptr<RTCRtpReceiver>& rtp_receiver =
       rtp_receivers_
-          .insert(std::make_pair(
-              receiver_id,
-              std::make_unique<RTCRtpReceiver>(
-                  native_peer_connection_, task_runner_, signaling_thread(),
-                  webrtc_receiver.get(), std::move(remote_track_adapter_ref),
-                  std::move(remote_stream_adapter_refs))))
+          .insert(std::make_pair(receiver_id, std::make_unique<RTCRtpReceiver>(
+                                                  native_peer_connection_,
+                                                  std::move(receiver_state))))
           .first->second;
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddTransceiver(
         this,
         PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
-        nullptr, rtp_receiver->ShallowCopy());
+        nullptr, rtp_receiver.get());
   }
   if (!is_closed_)
-    client_->DidAddRemoteTrack(rtp_receiver->ShallowCopy());
+    client_->DidAddReceiver(rtp_receiver->ShallowCopy());
 }
 
-void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
-    scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver) {
+void RTCPeerConnectionHandler::OnRemoveReceiver(uintptr_t receiver_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRemoveRemoteTrack");
 
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      remote_stream_adapter_refs;
-  {
-    uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
-    auto it = rtp_receivers_.find(receiver_id);
-    DCHECK(it != rtp_receivers_.end());
-    if (peer_connection_tracker_) {
-      peer_connection_tracker_->TrackRemoveTransceiver(
-          this,
-          PeerConnectionTracker::TransceiverUpdatedReason::
-              kSetRemoteDescription,
-          nullptr /* sender */, it->second->ShallowCopy() /* receiver */);
-    }
-    remote_stream_adapter_refs = it->second->StreamAdapterRefs();
-    auto receiver = it->second->ShallowCopy();
-    track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kReceive,
-                               MediaStreamTrackMetricsKind(receiver->Track()),
-                               receiver->Track().Id().Utf8());
-    if (!is_closed_)
-      client_->DidRemoveRemoteTrack(std::move(receiver));
-    rtp_receivers_.erase(it);
+  auto it = rtp_receivers_.find(receiver_id);
+  DCHECK(it != rtp_receivers_.end());
+  auto receiver = it->second->ShallowCopy();
+  rtp_receivers_.erase(it);
+  // Update metrics.
+  track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kReceive,
+                             MediaStreamTrackMetricsKind(receiver->Track()),
+                             receiver->Track().Id().Utf8());
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackRemoveTransceiver(
+        this,
+        PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
+        nullptr /* sender */, receiver.get() /* receiver */);
   }
-
-  for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
-    // Was this the last usage of the remote stream?
-    if (GetRemoteStreamUsageCount(
-            rtp_receivers_,
-            remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
-      // Update metrics.
-      PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
-    }
+  for (const auto& stream_id : receiver->state().stream_ids()) {
+    // This was the last occurence of the stream?
+    if (!IsRemoteStream(rtp_receivers_, stream_id))
+      PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
   }
+  if (!is_closed_)
+    client_->DidRemoveReceiver(std::move(receiver));
 }
 
 void RTCPeerConnectionHandler::OnDataChannel(

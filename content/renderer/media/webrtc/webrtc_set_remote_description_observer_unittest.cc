@@ -73,7 +73,8 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
                                                  main_thread_));
     observer_ = new WebRtcSetRemoteDescriptionObserverForTest();
     observer_handler_ = WebRtcSetRemoteDescriptionObserverHandler::Create(
-        main_thread_, pc_, map, observer_);
+        main_thread_, dependency_factory_->GetWebRtcSignalingThread(), pc_,
+        map->track_adapter_map(), observer_);
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
@@ -131,13 +132,12 @@ TEST_F(WebRtcSetRemoteDescriptionObserverHandlerTest, OnSuccess) {
   EXPECT_TRUE(observer_->result());
 
   EXPECT_EQ(1u, observer_->states().receiver_states.size());
-  const WebRtcReceiverState& receiver_state =
+  const RtpReceiverState& receiver_state =
       observer_->states().receiver_states[0];
-  EXPECT_EQ(added_receiver, receiver_state.receiver);
-  EXPECT_EQ(added_track, receiver_state.track_ref->webrtc_track());
-  EXPECT_EQ(1u, receiver_state.stream_refs.size());
-  EXPECT_EQ(added_stream,
-            receiver_state.stream_refs[0]->adapter().webrtc_stream());
+  EXPECT_EQ(added_receiver, receiver_state.webrtc_receiver());
+  EXPECT_EQ(added_track, receiver_state.track_ref()->webrtc_track());
+  EXPECT_EQ(1u, receiver_state.stream_ids().size());
+  EXPECT_EQ(added_stream->id(), receiver_state.stream_ids()[0]);
 }
 
 TEST_F(WebRtcSetRemoteDescriptionObserverHandlerTest, OnFailure) {

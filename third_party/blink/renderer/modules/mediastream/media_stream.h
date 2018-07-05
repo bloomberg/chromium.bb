@@ -108,6 +108,9 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   void AddTrackByComponent(MediaStreamComponent*) override;
   void RemoveTrackByComponent(MediaStreamComponent*) override;
 
+  void AddRemoteTrack(MediaStreamTrack*);
+  void RemoveRemoteTrack(MediaStreamTrack*);
+
   MediaStreamDescriptor* Descriptor() const { return descriptor_; }
 
   // EventTarget

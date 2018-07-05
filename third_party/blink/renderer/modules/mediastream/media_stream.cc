@@ -403,27 +403,9 @@ void MediaStream::AddTrackByComponent(MediaStreamComponent* component) {
   DCHECK(component);
   if (!GetExecutionContext())
     return;
-
   MediaStreamTrack* track =
       MediaStreamTrack::Create(GetExecutionContext(), component);
-  switch (component->Source()->GetType()) {
-    case MediaStreamSource::kTypeAudio:
-      audio_tracks_.push_back(track);
-      break;
-    case MediaStreamSource::kTypeVideo:
-      video_tracks_.push_back(track);
-      break;
-  }
-  track->RegisterMediaStream(this);
-  descriptor_->AddComponent(component);
-
-  ScheduleDispatchEvent(
-      MediaStreamTrackEvent::Create(EventTypeNames::addtrack, track));
-
-  if (!active() && !track->Ended()) {
-    descriptor_->SetActive(true);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::active));
-  }
+  AddRemoteTrack(track);
 }
 
 void MediaStream::RemoveTrackByComponent(MediaStreamComponent* component) {
@@ -463,6 +445,33 @@ void MediaStream::RemoveTrackByComponent(MediaStreamComponent* component) {
     descriptor_->SetActive(false);
     ScheduleDispatchEvent(Event::Create(EventTypeNames::inactive));
   }
+}
+
+void MediaStream::AddRemoteTrack(MediaStreamTrack* track) {
+  DCHECK(track);
+  switch (track->Component()->Source()->GetType()) {
+    case MediaStreamSource::kTypeAudio:
+      audio_tracks_.push_back(track);
+      break;
+    case MediaStreamSource::kTypeVideo:
+      video_tracks_.push_back(track);
+      break;
+  }
+  track->RegisterMediaStream(this);
+  descriptor_->AddComponent(track->Component());
+
+  ScheduleDispatchEvent(
+      MediaStreamTrackEvent::Create(EventTypeNames::addtrack, track));
+
+  if (!active() && !track->Ended()) {
+    descriptor_->SetActive(true);
+    ScheduleDispatchEvent(Event::Create(EventTypeNames::active));
+  }
+}
+
+void MediaStream::RemoveRemoteTrack(MediaStreamTrack* track) {
+  DCHECK(track);
+  RemoveTrackByComponent(track->Component());
 }
 
 void MediaStream::ScheduleDispatchEvent(Event* event) {

@@ -8,22 +8,6 @@
 
 namespace content {
 
-WebRtcReceiverState::WebRtcReceiverState(
-    scoped_refptr<webrtc::RtpReceiverInterface> receiver,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
-    std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-        stream_refs)
-    : receiver(std::move(receiver)),
-      track_ref(std::move(track_ref)),
-      stream_refs(std::move(stream_refs)) {}
-
-WebRtcReceiverState::WebRtcReceiverState(WebRtcReceiverState&& other) = default;
-
-WebRtcReceiverState& WebRtcReceiverState::operator=(
-    WebRtcReceiverState&& other) = default;
-
-WebRtcReceiverState::~WebRtcReceiverState() {}
-
 WebRtcSetRemoteDescriptionObserver::States::States()
     : signaling_state(
           webrtc::PeerConnectionInterface::SignalingState::kClosed) {}
@@ -41,42 +25,33 @@ WebRtcSetRemoteDescriptionObserver::States::operator=(States&& other) {
   return *this;
 }
 
-void WebRtcSetRemoteDescriptionObserver::States::CheckInvariants() const {
-  // Invariants:
-  // - All receiver states have a stream ref
-  // - All receiver states refer to streams that are non-null.
-  for (auto& receiver_state : receiver_states) {
-    for (auto& stream_ref : receiver_state.stream_refs) {
-      CHECK(stream_ref);
-      CHECK(!stream_ref->adapter().web_stream().IsNull());
-    }
-  }
-}
-
 WebRtcSetRemoteDescriptionObserver::WebRtcSetRemoteDescriptionObserver() {}
 
 WebRtcSetRemoteDescriptionObserver::~WebRtcSetRemoteDescriptionObserver() {}
 
 scoped_refptr<WebRtcSetRemoteDescriptionObserverHandler>
 WebRtcSetRemoteDescriptionObserverHandler::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
     scoped_refptr<webrtc::PeerConnectionInterface> pc,
-    scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map,
+    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
     scoped_refptr<WebRtcSetRemoteDescriptionObserver> observer) {
   return new rtc::RefCountedObject<WebRtcSetRemoteDescriptionObserverHandler>(
-      std::move(main_thread), std::move(pc), std::move(stream_adapter_map),
-      std::move(observer));
+      std::move(main_task_runner), std::move(signaling_task_runner),
+      std::move(pc), std::move(track_adapter_map), std::move(observer));
 }
 
 WebRtcSetRemoteDescriptionObserverHandler::
     WebRtcSetRemoteDescriptionObserverHandler(
-        scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+        scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+        scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
         scoped_refptr<webrtc::PeerConnectionInterface> pc,
-        scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map,
+        scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
         scoped_refptr<WebRtcSetRemoteDescriptionObserver> observer)
-    : main_thread_(std::move(main_thread)),
+    : main_task_runner_(std::move(main_task_runner)),
+      signaling_task_runner_(std::move(signaling_task_runner)),
       pc_(std::move(pc)),
-      stream_adapter_map_(std::move(stream_adapter_map)),
+      track_adapter_map_(std::move(track_adapter_map)),
       observer_(std::move(observer)) {}
 
 WebRtcSetRemoteDescriptionObserverHandler::
@@ -84,7 +59,7 @@ WebRtcSetRemoteDescriptionObserverHandler::
 
 void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
     webrtc::RTCError error) {
-  CHECK(!main_thread_->BelongsToCurrentThread());
+  CHECK(signaling_task_runner_->BelongsToCurrentThread());
 
   webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
       states_or_error;
@@ -93,22 +68,20 @@ void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
     states.signaling_state = pc_->signaling_state();
     for (const auto& webrtc_receiver : pc_->GetReceivers()) {
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
-          track_adapter_map()->GetOrCreateRemoteTrackAdapter(
+          track_adapter_map_->GetOrCreateRemoteTrackAdapter(
               webrtc_receiver->track().get());
-      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-          stream_refs;
-      for (const auto& stream : webrtc_receiver->streams()) {
-        stream_refs.push_back(
-            stream_adapter_map_->GetOrCreateRemoteStreamAdapter(stream.get()));
-      }
-      states.receiver_states.push_back(WebRtcReceiverState(
-          webrtc_receiver.get(), std::move(track_ref), std::move(stream_refs)));
+      std::vector<std::string> stream_ids;
+      for (const auto& stream : webrtc_receiver->streams())
+        stream_ids.push_back(stream->id());
+      states.receiver_states.push_back(RtpReceiverState(
+          main_task_runner_, signaling_task_runner_, webrtc_receiver.get(),
+          std::move(track_ref), std::move(stream_ids)));
     }
     states_or_error = std::move(states);
   } else {
     states_or_error = std::move(error);
   }
-  main_thread_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcSetRemoteDescriptionObserverHandler::
                                     OnSetRemoteDescriptionCompleteOnMainThread,
                                 this, std::move(states_or_error)));
@@ -118,7 +91,11 @@ void WebRtcSetRemoteDescriptionObserverHandler::
     OnSetRemoteDescriptionCompleteOnMainThread(
         webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
             states_or_error) {
-  CHECK(main_thread_->BelongsToCurrentThread());
+  CHECK(main_task_runner_->BelongsToCurrentThread());
+  if (states_or_error.ok()) {
+    for (auto& receiver_state : states_or_error.value().receiver_states)
+      receiver_state.Initialize();
+  }
   observer_->OnSetRemoteDescriptionComplete(std::move(states_or_error));
 }
 

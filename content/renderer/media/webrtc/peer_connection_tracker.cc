@@ -106,17 +106,9 @@ static std::string SerializeMediaStreamIds(
   return result;
 }
 
-static std::string SerializeMediaStreams(
-    const blink::WebVector<blink::WebMediaStream>& streams) {
-  blink::WebVector<blink::WebString> stream_ids(streams.size());
-  for (size_t i = 0; i < streams.size(); ++i)
-    stream_ids[i] = streams[i].Id();
-  return SerializeMediaStreamIds(stream_ids);
-}
-
 static std::string SerializeTransceiver(
-    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+    const blink::WebRTCRtpSender* sender,
+    const blink::WebRTCRtpReceiver* receiver) {
   DCHECK((sender != nullptr) != (receiver != nullptr));
   std::string result;
   if (sender) {
@@ -132,7 +124,7 @@ static std::string SerializeTransceiver(
     result += "receiver: { ";
     DCHECK(!receiver->Track().IsNull());
     result += "track: " + SerializeMediaStreamComponent(receiver->Track());
-    result += ", streams: " + SerializeMediaStreams(receiver->Streams());
+    result += ", streams: " + SerializeMediaStreamIds(receiver->StreamIds());
     result += " }";
   }
   return result;
@@ -654,24 +646,24 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 void PeerConnectionTracker::TrackAddTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+    const blink::WebRTCRtpSender* sender,
+    const blink::WebRTCRtpReceiver* receiver) {
   TrackTransceiver("Added", pc_handler, reason, sender, receiver);
 }
 
 void PeerConnectionTracker::TrackModifyTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+    const blink::WebRTCRtpSender* sender,
+    const blink::WebRTCRtpReceiver* receiver) {
   TrackTransceiver("Modified", pc_handler, reason, sender, receiver);
 }
 
 void PeerConnectionTracker::TrackRemoveTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+    const blink::WebRTCRtpSender* sender,
+    const blink::WebRTCRtpReceiver* receiver) {
   TrackTransceiver("Removed", pc_handler, reason, sender, receiver);
 }
 
@@ -679,8 +671,8 @@ void PeerConnectionTracker::TrackTransceiver(
     const char* callback_type_ending,
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+    const blink::WebRTCRtpSender* sender,
+    const blink::WebRTCRtpReceiver* receiver) {
   DCHECK(main_thread_.CalledOnValidThread());
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
