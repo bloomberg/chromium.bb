@@ -2355,6 +2355,7 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @DisabledTest(message = "crbug.com/860556")
     public void testCacheModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         TestWebServer webServer = TestWebServer.start();
