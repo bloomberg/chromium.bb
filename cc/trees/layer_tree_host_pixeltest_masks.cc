@@ -320,12 +320,9 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
       large_error_allowed,
       small_error_allowed);
 
-  base::FilePath image_name =
-      (test_case_ == GPU)
-          ? base::FilePath(
-                FILE_PATH_LITERAL("mask_of_background_filter_gpu.png"))
-          : base::FilePath(FILE_PATH_LITERAL("mask_of_background_filter.png"));
-  RunPixelResourceTest(background, image_name);
+  RunPixelResourceTest(background,
+                       base::FilePath(
+                           FILE_PATH_LITERAL("mask_of_background_filter.png")));
 }
 
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
@@ -677,13 +674,9 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_layer->SetBlendMode(SkBlendMode::kDstIn);
   mask_isolation->AddChild(mask_layer);
 
-  base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
-          ? base::FilePath(
-                FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png"))
-          : base::FilePath(
-                FILE_PATH_LITERAL("mask_as_blending_rotated_circle_gl.png"));
-  RunPixelResourceTest(root, image_name);
+  RunPixelResourceTest(
+      root,
+      base::FilePath(FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png")));
 }
 
 TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
@@ -724,13 +717,9 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   mask_layer->SetBlendMode(SkBlendMode::kDstIn);
   mask_isolation->AddChild(mask_layer);
 
-  base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
-          ? base::FilePath(FILE_PATH_LITERAL(
-                "mask_as_blending_rotated_circle_underflow.png"))
-          : base::FilePath(FILE_PATH_LITERAL(
-                "mask_as_blending_rotated_circle_underflow_gl.png"));
-  RunPixelResourceTest(root, image_name);
+  RunPixelResourceTest(root,
+                       base::FilePath(FILE_PATH_LITERAL(
+                           "mask_as_blending_rotated_circle_underflow.png")));
 }
 
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
