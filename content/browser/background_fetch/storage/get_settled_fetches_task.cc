@@ -102,7 +102,7 @@ void GetSettledFetchesTask::GetResponses() {
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      completed_requests_.size() + /* finalizer */ 1,
+      completed_requests_.size(),
       base::BindOnce(&GetSettledFetchesTask::FinishTaskWithErrorCode,
                      weak_factory_.GetWeakPtr(),
                      blink::mojom::BackgroundFetchError::NONE));
@@ -115,14 +115,6 @@ void GetSettledFetchesTask::GetResponses() {
             completed_request.serialized_request()));
     FillResponse(&settled_fetches_.back(), barrier_closure);
   }
-
-  // The callback within |barrier_closure| eventually calls Finished(), which
-  // will destroy |this|. If the callback runs within the loop, the task might
-  // crash since |completed_requests_| will be destroyed, and the for loop
-  // condition statement will access deleted memory. This is why 1 was added to
-  // the |barrier_closure| closure number, so that it can be explicitly called
-  // outside the loop.
-  barrier_closure.Run();
 }
 
 void GetSettledFetchesTask::FillResponse(

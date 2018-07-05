@@ -38,7 +38,15 @@ class DatabaseTaskHost {
  public:
   virtual void OnTaskFinished(DatabaseTask* task) = 0;
   virtual BackgroundFetchDataManager* data_manager() = 0;
-  virtual ~DatabaseTaskHost() = default;
+  virtual ~DatabaseTaskHost();
+
+  base::WeakPtr<DatabaseTaskHost> GetWeakPtr();
+
+ protected:
+  DatabaseTaskHost();
+
+ private:
+  base::WeakPtrFactory<DatabaseTaskHost> weak_factory_;
 };
 
 // A DatabaseTask is an asynchronous "transaction" that needs to read/write the
