@@ -2775,6 +2775,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/websockets/Create-on-worker-shutdown.any.html [ Timeout ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events.html [ Timeout ]
 crbug.com/626703 external/wpt/console/console-timing-logging-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-scoping/host-specificity-002.html [ Failure ]
