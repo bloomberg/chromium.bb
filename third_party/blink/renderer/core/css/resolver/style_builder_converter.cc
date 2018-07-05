@@ -1526,14 +1526,14 @@ ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
       ComputedStyleInitialValues::InitialScrollSnapAlign();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
-    snapAlign.alignment_inline =
-        ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAlignment>();
     snapAlign.alignment_block =
+        ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAlignment>();
+    snapAlign.alignment_inline =
         ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapAlignment>();
   } else {
-    snapAlign.alignment_inline =
+    snapAlign.alignment_block =
         ToCSSIdentifierValue(value).ConvertTo<SnapAlignment>();
-    snapAlign.alignment_block = snapAlign.alignment_inline;
+    snapAlign.alignment_inline = snapAlign.alignment_block;
   }
   return snapAlign;
 }
