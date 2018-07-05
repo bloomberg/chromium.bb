@@ -85,6 +85,11 @@ TextTrackContainer* TextTrackContainer::Create(
 }
 
 LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
+  // TODO(mstensho): Should use LayoutObjectFactory to create the right type of
+  // object here, to enable LayoutNG, but currently we can't, because this will
+  // typically be a child of LayoutVideo (a legacy type), and we'll typically
+  // also insert a LayoutVTTCue (a LayoutBlockFlow type) child, which also isn't
+  // implemented in NG.
   return new LayoutBlockFlow(this);
 }
 
