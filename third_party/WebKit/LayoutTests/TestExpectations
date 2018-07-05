@@ -1711,14 +1711,6 @@ crbug.com/757165 [ Win ] virtual/outofblink-cors/external/wpt/service-workers/se
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # Crashing tests in dictionary order.
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Failure Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Crash Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/performance-timeline.https.html [ Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/redirected-response.https.html [ Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/referer.https.html [ Crash ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/referrer-policy-header.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Timeout Crash ]
 
