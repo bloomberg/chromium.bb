@@ -354,16 +354,11 @@ if (is_android || is_chromeos) {
     android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
   }
 
-  # Dynamic app bundles -------------------------------------------------------
-
   declare_args() {
     # Location of aapt2 binary used for app bundles. For now, a more recent version
     # than the one distributed with the Android SDK is required.
     android_sdk_tools_bundle_aapt2 =
         "//third_party/android_build_tools/aapt2/aapt2"
-
-    # Set this variable to true to enable building app bundles.
-    android_enable_app_bundles = false
   }
 }
 

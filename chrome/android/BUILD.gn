@@ -1460,3 +1460,23 @@ if (defined(expected_static_initializer_count)) {
     ]
   }
 }
+
+# Generate application bundles if possible.
+android_app_bundle("chrome_public_bundle") {
+  base_apk_target = ":chrome_public_apk"
+
+  # Signing is very slow, only do that for official builds.
+  sign_bundle = is_official_build
+
+  # To ease local testing, also generate the .apks archive containing split
+  # APKs for this bundle.
+  generate_apks = true
+}
+
+android_app_bundle("chrome_modern_public_bundle") {
+  base_apk_target = ":chrome_modern_public_apk"
+}
+
+android_app_bundle("monochrome_public_bundle") {
+  base_apk_target = ":monochrome_public_apk"
+}

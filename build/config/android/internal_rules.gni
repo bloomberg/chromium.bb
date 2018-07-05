@@ -3331,3 +3331,87 @@ if (enable_java_templates) {
     }
   }
 }
+
+# Create a zip archive corresponding to an application bundle module.
+#
+# Each module corresponds to the content of an existing android_apk() target
+# except that the internal directory layout is slightly different, and
+# resources as well as xml files are compiled into a protocol buffer format,
+# instead of the regular binary xml + resources.arsc.
+#
+# A final application bundle is built from one or more module bundle modules,
+# plus some configuration file.
+#
+# Variables:
+#   apk_target: Name of the android_apk target this module refers to.
+#     The archive will contain the same content, but organized slightly
+#     differently.
+#
+#   module_path: Output module path.
+#
+template("android_app_bundle_module") {
+  _apk_target = invoker.apk_target
+  _apk_target_name = get_label_info(_apk_target, "name")
+  _apk_target_gen_dir = get_label_info(_apk_target, "target_gen_dir")
+
+  _apk_build_config = "$_apk_target_gen_dir/${_apk_target_name}.build_config"
+  _rebased_apk_build_config = rebase_path(_apk_build_config, root_build_dir)
+
+  action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "visibility",
+                           ])
+    script = "//build/android/gyp/apkbuilder.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    # NOTE: Building the APK is not necessary to build the bundle module,
+    # only its individual components, hence depend on their intermediate
+    # targets itself. This also allows building the APK and the bundle module
+    # in parallel if necessary.
+    deps = [
+      "${_apk_target}__build_config",
+      "${_apk_target}__compile_proto_resources",
+      "${_apk_target}__create",  # Required to get final dex zip.
+      "${_apk_target}__merge_manifests",
+    ]
+
+    # NOTE: Compared to the inputs of the "package_apk" template action,
+    #       this list is much smaller, since finalize_apk is never called
+    #       by apkbuild.py --format=bundle-module. This means not using
+    #       apksigner and zipalign as well, nor the keystore. Other
+    #       dependencies like extra native libraries are all pulled from the
+    #       .build_config through @FileArg() references (see below) and
+    #       will be listed in the generated depfile instead.
+    inputs = build_utils_py + [ _apk_build_config ]
+    outputs = [
+      invoker.module_path,
+    ]
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--format=bundle-module",
+      "--output-apk",
+      rebase_path(invoker.module_path, root_build_dir),
+      "--dex-file=@FileArg($_rebased_apk_build_config:final_dex:path)",
+      "--resource-apk=@FileArg(" +
+          "$_rebased_apk_build_config:deps_info:proto_resources_path)",
+      "--assets=@FileArg($_rebased_apk_build_config:assets)",
+      "--uncompressed-assets=@FileArg(" +
+          "$_rebased_apk_build_config:uncompressed_assets)",
+      "--native-libs=@FileArg($_rebased_apk_build_config:native:libraries)",
+      "--native-libs=@FileArg($_rebased_apk_build_config:native:extra_shared_libraries)",
+      "--android-abi=$android_app_abi",
+      "--uncompress-shared-libraries=@FileArg(" +
+          "$_rebased_apk_build_config:native:uncompress_shared_libraries)",
+    ]
+    if (defined(android_app_secondary_abi)) {
+      args += [
+        "--secondary-native-libs=@FileArg(" +
+            "$_rebased_apk_build_config:native:secondary_abi_libraries)",
+        "--secondary-android-abi=$android_app_secondary_abi",
+      ]
+    }
+  }
+}

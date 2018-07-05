@@ -11,6 +11,7 @@ import itertools
 import os
 import shutil
 import sys
+import tempfile
 import zipfile
 
 import finalize_apk
@@ -48,6 +49,8 @@ def _ParseArgs(args):
   parser.add_argument('--output-apk',
                       help='Path to the output file',
                       required=True)
+  parser.add_argument('--format', choices=['apk', 'bundle-module'],
+                      default='apk', help='Specify output format.')
   parser.add_argument('--apk-pak-info-path',
                       help='Path to the *.apk.pak.info file')
   parser.add_argument('--apk-res-info-path',
@@ -80,15 +83,15 @@ def _ParseArgs(args):
       choices=['true', 'True', 'false', 'False'],
       help='Whether to uncompress native shared libraries. Argument must be '
            'a boolean value.')
-  parser.add_argument('--apksigner-path', required=True,
+  parser.add_argument('--apksigner-path',
                       help='Path to the apksigner executable.')
-  parser.add_argument('--zipalign-path', required=True,
+  parser.add_argument('--zipalign-path',
                       help='Path to the zipalign executable.')
-  parser.add_argument('--key-path', required=True,
+  parser.add_argument('--key-path',
                       help='Path to keystore for signing.')
-  parser.add_argument('--key-passwd', required=True,
+  parser.add_argument('--key-passwd',
                       help='Keystore password')
-  parser.add_argument('--key-name', required=True,
+  parser.add_argument('--key-name',
                       help='Keystore name')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
@@ -107,6 +110,16 @@ def _ParseArgs(args):
   for gyp_list in options.secondary_native_libs:
     secondary_libs.extend(build_utils.ParseGnList(gyp_list))
   options.secondary_native_libs = secondary_libs
+
+  # --apksigner-path, --zipalign-path, --key-xxx arguments are
+  # required when building an APK, but not a bundle module.
+  if options.format == 'apk':
+    required_args = ['apksigner_path', 'zipalign_path', 'key_path',
+                     'key_passwd', 'key_name']
+    for required in required_args:
+      if not vars(options)[required]:
+        raise Exception('Argument --%s is required for APKs.' % (
+            required.replace('_', '-')))
 
   options.uncompress_shared_libraries = \
       options.uncompress_shared_libraries in [ 'true', 'True' ]
@@ -257,10 +270,10 @@ def main(args):
     # Included via .build_config, so need to write it to depfile.
     depfile_deps.extend(options.java_resources)
 
-  _assets = _ExpandPaths(options.assets)
-  _uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
+  assets = _ExpandPaths(options.assets)
+  uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
 
-  for src_path, dest_path in itertools.chain(_assets, _uncompressed_assets):
+  for src_path, dest_path in itertools.chain(assets, uncompressed_assets):
     # Included via .build_config, so need to write it to depfile.
     depfile_deps.append(src_path)
     input_strings.append(dest_path)
@@ -271,14 +284,34 @@ def main(args):
   if options.apk_res_info_path:
     output_paths.append(options.apk_res_info_path)
 
+  # Bundle modules have a structure similar to APKs, except that resources
+  # are compiled in protobuf format (instead of binary xml), and that some
+  # files are located into different top-level directories, e.g.:
+  #  AndroidManifest.xml -> manifest/AndroidManifest.xml
+  #  classes.dex -> dex/classes.dex
+  #  res/ -> res/  (unchanged)
+  #  assets/ -> assets/  (unchanged)
+  #  <other-file> -> root/<other-file>
+  #
+  # Hence, the following variables are used to control the location of files in
+  # the final archive.
+  if options.format == 'bundle-module':
+    apk_manifest_dir = 'manifest/'
+    apk_root_dir = 'root/'
+    apk_dex_dir = 'dex/'
+  else:
+    apk_manifest_dir = ''
+    apk_root_dir = ''
+    apk_dex_dir = ''
+
   def on_stale_md5():
-    tmp_apk = options.output_apk + '.tmp'
-    try:
+    with tempfile.NamedTemporaryFile() as tmp_apk:
+      tmp_file = tmp_apk.name
       with zipfile.ZipFile(options.resource_apk) as resource_apk, \
-           zipfile.ZipFile(tmp_apk, 'w', zipfile.ZIP_DEFLATED) as out_apk:
-        def copy_resource(zipinfo):
+           zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as out_apk:
+        def copy_resource(zipinfo, out_dir=''):
           compress = zipinfo.compress_type != zipfile.ZIP_STORED
-          build_utils.AddToZipHermetic(out_apk, zipinfo.filename,
+          build_utils.AddToZipHermetic(out_apk, out_dir + zipinfo.filename,
                                        data=resource_apk.read(zipinfo.filename),
                                        compress=compress)
 
@@ -288,24 +321,25 @@ def main(args):
 
         # 1. AndroidManifest.xml
         assert resource_infos[0].filename == 'AndroidManifest.xml'
-        copy_resource(resource_infos[0])
+        copy_resource(resource_infos[0], out_dir=apk_manifest_dir)
 
         # 2. Assets
         if options.write_asset_list:
           data = _CreateAssetsList(
-              itertools.chain(_assets, _uncompressed_assets))
+              itertools.chain(assets, uncompressed_assets))
           build_utils.AddToZipHermetic(out_apk, 'assets/assets_list', data=data)
 
-        _AddAssets(out_apk, _assets, disable_compression=False)
-        _AddAssets(out_apk, _uncompressed_assets, disable_compression=True)
+        _AddAssets(out_apk, assets, disable_compression=False)
+        _AddAssets(out_apk, uncompressed_assets, disable_compression=True)
 
         # 3. Dex files
         if options.dex_file and options.dex_file.endswith('.zip'):
           with zipfile.ZipFile(options.dex_file, 'r') as dex_zip:
             for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
-              build_utils.AddToZipHermetic(out_apk, dex, data=dex_zip.read(dex))
+              build_utils.AddToZipHermetic(out_apk, apk_dex_dir + dex,
+                                           data=dex_zip.read(dex))
         elif options.dex_file:
-          build_utils.AddToZipHermetic(out_apk, 'classes.dex',
+          build_utils.AddToZipHermetic(out_apk, apk_dex_dir + 'classes.dex',
                                        src_path=options.dex_file)
 
         # 4. Native libraries.
@@ -354,7 +388,8 @@ def main(args):
                 continue
 
               build_utils.AddToZipHermetic(
-                  out_apk, apk_path, data=java_resource_jar.read(apk_path))
+                  out_apk, apk_root_dir + apk_path,
+                  data=java_resource_jar.read(apk_path))
 
         if options.apk_pak_info_path:
           _MergePakInfoFiles(options.apk_pak_info_path,
@@ -362,13 +397,15 @@ def main(args):
         if options.apk_res_info_path:
           _MergeResInfoFiles(options.apk_res_info_path, options.resource_apk)
 
-      finalize_apk.FinalizeApk(options.apksigner_path, options.zipalign_path,
-                               tmp_apk, options.output_apk,
-                               options.key_path, options.key_passwd,
-                               options.key_name)
-    finally:
-      if os.path.exists(tmp_apk):
-        os.unlink(tmp_apk)
+      if options.format == 'apk':
+        finalize_apk.FinalizeApk(options.apksigner_path, options.zipalign_path,
+                                 tmp_file, options.output_apk,
+                                 options.key_path, options.key_passwd,
+                                 options.key_name)
+      else:
+        shutil.move(tmp_file, options.output_apk)
+
+      tmp_apk.delete = False
 
   build_utils.CallAndWriteDepfileIfStale(
       on_stale_md5,
