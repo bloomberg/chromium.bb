@@ -20,6 +20,8 @@ SSLConfigServiceMojo::SSLConfigServiceMojo(
     binding_.Bind(std::move(ssl_config_client_request));
 }
 
+SSLConfigServiceMojo::~SSLConfigServiceMojo() = default;
+
 void SSLConfigServiceMojo::OnSSLConfigUpdated(mojom::SSLConfigPtr ssl_config) {
   net::SSLConfig old_config = ssl_config_;
   ssl_config_ = mojo::ConvertTo<net::SSLConfig>(std::move(ssl_config));
@@ -29,7 +31,5 @@ void SSLConfigServiceMojo::OnSSLConfigUpdated(mojom::SSLConfigPtr ssl_config) {
 void SSLConfigServiceMojo::GetSSLConfig(net::SSLConfig* ssl_config) {
   *ssl_config = ssl_config_;
 }
-
-SSLConfigServiceMojo::~SSLConfigServiceMojo() {}
 
 }  // namespace network

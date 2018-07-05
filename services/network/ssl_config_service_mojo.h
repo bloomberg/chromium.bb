@@ -23,6 +23,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   // initial configuration.
   SSLConfigServiceMojo(mojom::SSLConfigPtr initial_config,
                        mojom::SSLConfigClientRequest ssl_config_client_request);
+  ~SSLConfigServiceMojo() override;
 
   // mojom::SSLConfigClient implementation:
   void OnSSLConfigUpdated(const mojom::SSLConfigPtr ssl_config) override;
@@ -31,8 +32,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   void GetSSLConfig(net::SSLConfig* ssl_config) override;
 
  private:
-  ~SSLConfigServiceMojo() override;
-
   mojo::Binding<mojom::SSLConfigClient> binding_;
 
   net::SSLConfig ssl_config_;

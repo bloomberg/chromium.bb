@@ -19,8 +19,7 @@ namespace net {
 // does not cover setting the SSL configuration, as on some systems, the
 // SSLConfigService objects may not have direct access to the configuration, or
 // live longer than the configuration preferences.
-class NET_EXPORT SSLConfigService
-    : public base::RefCountedThreadSafe<SSLConfigService> {
+class NET_EXPORT SSLConfigService {
  public:
   // Observer is notified when SSL config settings have changed.
   class NET_EXPORT Observer {
@@ -42,6 +41,7 @@ class NET_EXPORT SSLConfigService
   };
 
   SSLConfigService();
+  virtual ~SSLConfigService();
 
   // May not be thread-safe, should only be called on the IO thread.
   virtual void GetSSLConfig(SSLConfig* config) = 0;
@@ -75,10 +75,6 @@ class NET_EXPORT SSLConfigService
                                            const net::SSLConfig& config2);
 
  protected:
-  friend class base::RefCountedThreadSafe<SSLConfigService>;
-
-  virtual ~SSLConfigService();
-
   // Process before/after config update.
   void ProcessConfigUpdate(const SSLConfig& orig_config,
                            const SSLConfig& new_config);

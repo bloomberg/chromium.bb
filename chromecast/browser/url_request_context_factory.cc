@@ -229,7 +229,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
   cert_verifier_ = net::CertVerifier::CreateDefault();
-  ssl_config_service_ = new net::SSLConfigServiceDefaults;
+  ssl_config_service_.reset(new net::SSLConfigServiceDefaults);
   transport_security_state_.reset(new net::TransportSecurityState());
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
   ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());

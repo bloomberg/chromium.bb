@@ -49,12 +49,11 @@ const quic::QuicStreamId kClientDataStreamId1 = quic::kHeadersStreamId + 2;
 class MockSSLConfigService : public SSLConfigService {
  public:
   MockSSLConfigService() = default;
+  ~MockSSLConfigService() override = default;
 
   void GetSSLConfig(SSLConfig* config) override { *config = config_; }
 
  private:
-  ~MockSSLConfigService() override = default;
-
   SSLConfig config_;
 };
 
@@ -205,7 +204,7 @@ class HttpProxyClientSocketWrapperTest
   // QuicStreamFactory environment
   NetLogWithSource net_log_;
   MockHostResolver host_resolver_;
-  scoped_refptr<SSLConfigService> ssl_config_service_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   MockTaggingClientSocketFactory socket_factory_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;

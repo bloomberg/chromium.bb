@@ -66,7 +66,7 @@ class NET_EXPORT URLRequestContextStorage {
   void set_proxy_resolution_service(
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service);
   void set_ssl_config_service(
-      scoped_refptr<SSLConfigService> ssl_config_service);
+      std::unique_ptr<SSLConfigService> ssl_config_service);
   void set_http_server_properties(
       std::unique_ptr<HttpServerProperties> http_server_properties);
   void set_cookie_store(std::unique_ptr<CookieStore> cookie_store);
@@ -115,8 +115,7 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  // TODO(willchan): Remove refcounting on this member.
-  scoped_refptr<SSLConfigService> ssl_config_service_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings_;
   std::unique_ptr<CookieStore> cookie_store_;

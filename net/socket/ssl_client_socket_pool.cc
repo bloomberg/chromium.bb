@@ -505,7 +505,7 @@ SSLClientSocketPool::SSLClientSocketPool(
                                        ssl_session_cache_shard),
                 net_log)),
       ssl_config_service_(ssl_config_service) {
-  if (ssl_config_service_.get())
+  if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
   if (transport_pool_)
     base_.AddLowerLayeredPool(transport_pool_);
@@ -516,7 +516,7 @@ SSLClientSocketPool::SSLClientSocketPool(
 }
 
 SSLClientSocketPool::~SSLClientSocketPool() {
-  if (ssl_config_service_.get())
+  if (ssl_config_service_)
     ssl_config_service_->RemoveObserver(this);
 }
 

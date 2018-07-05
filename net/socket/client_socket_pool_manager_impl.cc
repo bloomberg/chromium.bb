@@ -296,7 +296,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
               ssl_session_cache_shard_, socket_factory_,
               tcp_https_ret.first->second.get() /* https proxy */,
               nullptr /* no socks proxy */, nullptr /* no http proxy */,
-              ssl_config_service_.get(), net_log_)));
+              ssl_config_service_, net_log_)));
   DCHECK(tcp_https_ret.second);
 
   std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
@@ -331,8 +331,8 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
               ssl_session_cache_shard_, socket_factory_,
               nullptr, /* no tcp pool, we always go through a proxy */
               GetSocketPoolForSOCKSProxy(proxy_server),
-              GetSocketPoolForHTTPProxy(proxy_server),
-              ssl_config_service_.get(), net_log_)));
+              GetSocketPoolForHTTPProxy(proxy_server), ssl_config_service_,
+              net_log_)));
 
   return ret.first->second.get();
 }
