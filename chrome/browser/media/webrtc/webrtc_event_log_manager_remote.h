@@ -295,11 +295,11 @@ class WebRtcRemoteEventLogManager final
   // This may be disabled from the command line.
   const bool upload_suppression_disabled_;
 
-  // Proactive pruning will be done only if this has a value, in which case,
+  // Proactive pruning will be done only if this is non-zero, in which case,
   // every |proactive_prune_scheduling_delta_|, pending logs will be pruned.
   // This avoids them staying around on disk for longer than their expiration
   // if no event occurs which triggers reactive pruning.
-  const base::Optional<base::TimeDelta> proactive_prune_scheduling_delta_;
+  const base::TimeDelta proactive_prune_scheduling_delta_;
 
   // The conditions for upload must hold for this much time, uninterrupted,
   // before an upload may be initiated.
