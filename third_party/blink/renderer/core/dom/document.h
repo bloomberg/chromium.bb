@@ -34,12 +34,9 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
@@ -51,7 +48,6 @@
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_notifier.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
@@ -65,19 +61,20 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace ukm {
 class UkmRecorder;
@@ -87,6 +84,7 @@ namespace blink {
 
 namespace mojom {
 enum class EngagementLevel : int32_t;
+enum class PageVisibilityState : int32_t;
 }  // namespace mojom
 
 class AnimationClock;
@@ -186,6 +184,7 @@ class TreeWalker;
 class V8NodeFilter;
 class VisitedLinkState;
 class WebMouseEvent;
+class WorkletAnimationController;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -1390,7 +1389,7 @@ class CORE_EXPORT Document : public ContainerNode,
   int64_t UkmSourceID() const;
 
   // May return nullptr.
-  FrameScheduler* GetScheduler() override;
+  FrameOrWorkerScheduler* GetScheduler() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 

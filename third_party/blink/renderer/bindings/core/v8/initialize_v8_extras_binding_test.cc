@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/core/dom/document.h"
