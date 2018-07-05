@@ -207,7 +207,6 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
   return email;
 }
 
-// TODO(tangltom): Add a unit test for this function.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
   ProfileOAuth2TokenService* token_service =
