@@ -44,6 +44,7 @@
     P: _icons.querySelector('.nonlocalpakicon'),
     o: _icons.querySelector('.othericon'), // used as default icon
   };
+  const _CONTAINER_TYPES = new Set('DCF');
 
   // Templates for tree nodes in the UI.
   const _leafTemplate = document.getElementById('treeitem');
@@ -297,8 +298,17 @@
     _uiNodeData.set(link, Object.freeze(data));
 
     // Icons are predefined in the HTML through hidden SVG elements
-    const iconTemplate = _SYMBOL_ICONS[data.type] || _SYMBOL_ICONS.o;
+    const type = data.type[0];
+    const iconTemplate = _SYMBOL_ICONS[type] || _SYMBOL_ICONS.o;
     const icon = iconTemplate.cloneNode(true);
+    if (_CONTAINER_TYPES.has(type)) {
+      const symbolIcon = _SYMBOL_ICONS[data.type[1]] || _SYMBOL_ICONS.o;
+      const symbolColor = symbolIcon.getAttribute('fill');
+      const symbolName = symbolIcon.querySelector('title').textContent;
+
+      icon.setAttribute('fill', symbolColor);
+      icon.querySelector('title').textContent += ` - Mostly ${symbolName}`;
+    }
     // Insert an SVG icon at the start of the link to represent type
     link.insertBefore(icon, link.firstElementChild);
 
@@ -374,7 +384,7 @@
     event.preventDefault();
     state.setAll(new FormData(event.currentTarget));
     loadTree(tree_data);
-  })
+  });
 
   self.loadTree = loadTree;
 }
