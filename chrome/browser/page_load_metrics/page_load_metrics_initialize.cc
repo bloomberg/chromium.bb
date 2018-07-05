@@ -67,7 +67,7 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderInterface:
   bool IsNewTabPageUrl(const GURL& url) override;
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
-  std::unique_ptr<base::Timer> CreateTimer() override;
+  std::unique_ptr<base::OneShotTimer> CreateTimer() override;
 
  private:
   bool IsPrerendering() const;
@@ -169,7 +169,7 @@ bool PageLoadMetricsEmbedder::IsPrerendering() const {
          nullptr;
 }
 
-std::unique_ptr<base::Timer> PageLoadMetricsEmbedder::CreateTimer() {
+std::unique_ptr<base::OneShotTimer> PageLoadMetricsEmbedder::CreateTimer() {
   return std::make_unique<base::OneShotTimer>();
 }
 

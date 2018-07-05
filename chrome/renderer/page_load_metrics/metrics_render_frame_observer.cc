@@ -225,7 +225,7 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   return timing;
 }
 
-std::unique_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() {
+std::unique_ptr<base::OneShotTimer> MetricsRenderFrameObserver::CreateTimer() {
   return std::make_unique<base::OneShotTimer>();
 }
 

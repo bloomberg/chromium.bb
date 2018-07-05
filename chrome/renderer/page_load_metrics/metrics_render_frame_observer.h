@@ -13,7 +13,7 @@
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace page_load_metrics {
@@ -58,7 +58,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
  private:
   void SendMetrics();
   virtual mojom::PageLoadTimingPtr GetTiming() const;
-  virtual std::unique_ptr<base::Timer> CreateTimer();
+  virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
   virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender();
   virtual bool HasNoRenderFrame() const;
 
