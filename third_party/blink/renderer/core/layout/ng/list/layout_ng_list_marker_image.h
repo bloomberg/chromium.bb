@@ -20,7 +20,7 @@ class CORE_EXPORT LayoutNGListMarkerImage final : public LayoutImage {
  private:
   bool IsOfType(LayoutObjectType) const override;
 
-  void ComputeSVGIntrinsicSizingInfoByDefaultSize(IntrinsicSizingInfo&) const;
+  void ComputeIntrinsicSizingInfoByDefaultSize(IntrinsicSizingInfo&) const;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 };
 

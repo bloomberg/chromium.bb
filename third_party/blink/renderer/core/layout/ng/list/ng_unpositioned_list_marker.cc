@@ -88,9 +88,9 @@ bool NGUnpositionedListMarker::AddToBox(
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(),
                                 marker_physical_fragment);
-  NGLogicalSize maker_size = marker_fragment.Size();
-  NGLogicalOffset marker_offset(InlineOffset(maker_size.inline_size),
-                                content_offset->block_offset);
+  NGLogicalOffset marker_offset(
+      InlineOffset(marker_fragment.Size().inline_size),
+      content_offset->block_offset);
 
   // Adjust the block offset to align baselines of the marker and the content.
   NGLineHeightMetrics marker_metrics = marker_fragment.BaselineMetrics(

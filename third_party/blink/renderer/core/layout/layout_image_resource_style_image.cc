@@ -70,11 +70,17 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
   // TODO(davve): Find out the correct default object size in this context.
-  return style_image_->ImageSize(layout_object_->GetDocument(), multiplier,
-                                 LayoutSize(LayoutReplaced::kDefaultWidth,
-                                            LayoutReplaced::kDefaultHeight));
+  return ImageSizeWithDefaultSize(multiplier,
+                                  LayoutSize(LayoutReplaced::kDefaultWidth,
+                                             LayoutReplaced::kDefaultHeight));
 }
 
+FloatSize LayoutImageResourceStyleImage::ImageSizeWithDefaultSize(
+    float multiplier,
+    const LayoutSize& default_size) const {
+  return style_image_->ImageSize(layout_object_->GetDocument(), multiplier,
+                                 default_size);
+}
 void LayoutImageResourceStyleImage::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_image_);
   LayoutImageResource::Trace(visitor);

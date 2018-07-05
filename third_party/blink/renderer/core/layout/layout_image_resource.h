@@ -65,7 +65,9 @@ class CORE_EXPORT LayoutImageResource
   virtual bool ImageHasRelativeSize() const;
 
   virtual FloatSize ImageSize(float multiplier) const;
-
+  // Default size is effective when this is LayoutImageResourceStyleImage.
+  virtual FloatSize ImageSizeWithDefaultSize(float multiplier,
+                                             const LayoutSize&) const;
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(cached_image_); }

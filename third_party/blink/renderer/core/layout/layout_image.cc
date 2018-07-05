@@ -385,7 +385,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
   // Our intrinsicSize is empty if we're laying out generated images with
   // relative width/height. Figure out the right intrinsic size to use.
   if (intrinsic_sizing_info.size.IsEmpty() &&
-      image_resource_->ImageHasRelativeSize()) {
+      image_resource_->ImageHasRelativeSize() && !IsLayoutNGListMarkerImage()) {
     LayoutObject* containing_block =
         IsOutOfFlowPositioned() ? Container() : ContainingBlock();
     if (containing_block->IsBox()) {
