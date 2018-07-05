@@ -76,11 +76,6 @@
 #include "media/mojo/services/media_service.h"      // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"  // nogncheck
-#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
-#endif
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -685,14 +680,6 @@ void CastContentBrowserClient::RegisterInProcessServices(
   info.factory = base::Bind(&CreateMediaService, base::Unretained(this));
   info.task_runner = GetMediaTaskRunner();
   services->insert(std::make_pair(::media::mojom::kMediaServiceName, info));
-#endif
-}
-
-void CastContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-#if defined(OS_LINUX)
-  (*services)[font_service::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Font Service");
 #endif
 }
 

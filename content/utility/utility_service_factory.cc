@@ -45,11 +45,6 @@
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #endif
 
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"  // nogncheck
-#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
-#endif
-
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox.h"
 
@@ -175,14 +170,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
     services->insert(
         std::make_pair(content::mojom::kNetworkServiceName, network_info));
   }
-
-#if defined(OS_LINUX)
-  service_manager::EmbeddedServiceInfo font_service_info;
-  font_service_info.factory =
-      base::BindRepeating(&font_service::FontServiceApp::CreateService);
-  services->insert(
-      std::make_pair(font_service::mojom::kServiceName, font_service_info));
-#endif
 }
 
 void UtilityServiceFactory::OnServiceQuit() {

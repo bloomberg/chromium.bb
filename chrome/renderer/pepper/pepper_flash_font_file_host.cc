@@ -13,38 +13,12 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
+
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#include "content/public/child/child_process_sandbox_support_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
+#elif defined(OS_WIN)
 #include "third_party/skia/include/core/SkFontMgr.h"
-
-#if !defined(OS_WIN)
-namespace {
-
-SkFontStyle::Weight PepperWeightToSkWeight(int pepper_weight) {
-  switch (pepper_weight) {
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_100:
-      return SkFontStyle::kThin_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_200:
-      return SkFontStyle::kExtraLight_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_300:
-      return SkFontStyle::kLight_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_400:
-      return SkFontStyle::kNormal_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_500:
-      return SkFontStyle::kMedium_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_600:
-      return SkFontStyle::kSemiBold_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_700:
-      return SkFontStyle::kBold_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_800:
-      return SkFontStyle::kExtraBold_Weight;
-    case PP_BROWSERFONT_TRUSTED_WEIGHT_900:
-      return SkFontStyle::kBlack_Weight;
-    default:
-      NOTREACHED();
-      return SkFontStyle::kInvisible_Weight;
-  }
-}
-
-}  // namespace
 #endif
 
 PepperFlashFontFileHost::PepperFlashFontFileHost(
@@ -54,23 +28,24 @@ PepperFlashFontFileHost::PepperFlashFontFileHost(
     const ppapi::proxy::SerializedFontDescription& description,
     PP_PrivateFontCharset charset)
     : ResourceHost(host->GetPpapiHost(), instance, resource) {
-  int weight;
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/857388): Figure out why this diverges from the
-  // #else block.
-  weight = description.weight;
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  fd_.reset(content::MatchFontWithFallback(
+      description.face,
+      description.weight >= PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD,
+      description.italic,
+      charset,
+      PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT));
+#elif defined(OS_WIN)
+  int weight = description.weight;
   if (weight == FW_DONTCARE)
     weight = SkFontStyle::kNormal_Weight;
-#else
-  weight = PepperWeightToSkWeight(description.weight);
-#endif
   SkFontStyle style(weight, SkFontStyle::kNormal_Width,
                     description.italic ? SkFontStyle::kItalic_Slant
                                        : SkFontStyle::kUpright_Slant);
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
-
   typeface_ = sk_sp<SkTypeface>(
       font_mgr->matchFamilyStyle(description.face.c_str(), style));
+#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 }
 
 PepperFlashFontFileHost::~PepperFlashFontFileHost() {}
@@ -89,6 +64,12 @@ bool PepperFlashFontFileHost::GetFontData(uint32_t table,
                                           void* buffer,
                                           size_t* length) {
   bool result = false;
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  int fd = fd_.get();
+  if (fd != -1)
+    result = content::GetFontTable(fd, table, 0 /* offset */,
+                                   reinterpret_cast<uint8_t*>(buffer), length);
+#elif defined(OS_WIN)
   if (typeface_) {
     table = base::ByteSwap(table);
     if (buffer == NULL) {
@@ -101,6 +82,7 @@ bool PepperFlashFontFileHost::GetFontData(uint32_t table,
         result = true;
     }
   }
+#endif
   return result;
 }
 

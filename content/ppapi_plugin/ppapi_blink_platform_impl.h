@@ -13,11 +13,6 @@
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
 
-#if defined(OS_LINUX)
-#include "components/services/font/public/cpp/font_loader.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#endif
-
 namespace content {
 
 class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
@@ -56,10 +51,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;
   std::unique_ptr<SandboxSupport> sandbox_support_;
-#endif
-
-#if defined(OS_LINUX)
-  sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiBlinkPlatformImpl);

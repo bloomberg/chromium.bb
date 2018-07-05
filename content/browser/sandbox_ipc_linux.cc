@@ -21,15 +21,69 @@
 #include "base/posix/unix_domain_socket.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/renderer_host/font_utils_linux.h"
+#include "content/common/font_config_ipc_linux.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/services/libc_interceptor.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "skia/ext/skia_utils_base.h"
+#include "third_party/skia/include/ports/SkFontConfigInterface.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/font_fallback_linux.h"
+#include "ui/gfx/font_render_params.h"
 
 namespace content {
 
-const size_t kMaxSandboxIPCMessagePayloadSize = 64;
+namespace {
+
+SandboxIPCHandler::TestObserver* g_test_observer = nullptr;
+
+// Converts gfx::FontRenderParams::Hinting to WebFontRenderStyle::hintStyle.
+// Returns an int for serialization, but the underlying Blink type is a char.
+int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
+  switch (hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:
+      return 0;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return 1;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return 2;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return 3;
+  }
+  NOTREACHED() << "Unexpected hinting value " << hinting;
+  return 0;
+}
+
+// Converts gfx::FontRenderParams::SubpixelRendering to
+// WebFontRenderStyle::useSubpixelRendering. Returns an int for serialization,
+// but the underlying Blink type is a char.
+int ConvertSubpixelRendering(
+    gfx::FontRenderParams::SubpixelRendering rendering) {
+  switch (rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+      return 0;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return 1;
+  }
+  NOTREACHED() << "Unexpected subpixel rendering value " << rendering;
+  return 0;
+}
+
+}  // namespace
 
 // static
+void SandboxIPCHandler::SetObserverForTests(
+    SandboxIPCHandler::TestObserver* observer) {
+  g_test_observer = observer;
+}
+
 SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
     : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {}
 
@@ -82,22 +136,17 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
 
   // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
   // bytes long (this is the largest message type).
-  // The size limit  used to be FontConfigIPC::kMaxFontFamilyLength which was
-  // 2048, but we do not receive FontConfig IPC here anymore. The only payloads
-  // here are service_manager::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT
-  // and HandleLocalTime from libc_interceptor for which
-  // kMaxSandboxIPCMessagePayloadSize set to 64 should be plenty.
   // 128 bytes padding are necessary so recvmsg() does not return MSG_TRUNC
   // error for a maximum length message.
-  char buf[kMaxSandboxIPCMessagePayloadSize + 128];
+  char buf[FontConfigIPC::kMaxFontFamilyLength + 128];
 
   const ssize_t len =
       base::UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
   if (len == -1) {
     // TODO: should send an error reply, or the sender might block forever.
     if (errno == EMSGSIZE) {
-      NOTREACHED() << "Sandbox host message is larger than "
-                      "kMaxSandboxIPCMessagePayloadSize";
+      NOTREACHED()
+          << "Sandbox host message is larger than kMaxFontFamilyLength";
     } else {
       PLOG(ERROR) << "Recvmsg failed";
       NOTREACHED();
@@ -119,12 +168,167 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
   if (sandbox::HandleInterceptedCall(kind, fd, iter, fds))
     return;
 
-  if (kind ==
-      service_manager::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
+  if (kind == FontConfigIPC::METHOD_MATCH) {
+    HandleFontMatchRequest(fd, iter, fds);
+  } else if (kind == FontConfigIPC::METHOD_OPEN) {
+    HandleFontOpenRequest(fd, iter, fds);
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
+    HandleGetFallbackFontForChar(fd, iter, fds);
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE) {
+    HandleGetStyleForStrike(fd, iter, fds);
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
     HandleMakeSharedMemorySegment(fd, iter, fds);
+  } else if (kind ==
+             service_manager::SandboxLinux::METHOD_MATCH_WITH_FALLBACK) {
+    HandleMatchWithFallback(fd, iter, fds);
+  }
+}
+
+int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
+  int count = paths_.size();
+  for (int i = 0; i < count; ++i) {
+    if (path == paths_[i])
+      return i;
+  }
+  paths_.emplace_back(path);
+  return count;
+}
+
+void SandboxIPCHandler::HandleFontMatchRequest(
+    int fd,
+    base::PickleIterator iter,
+    const std::vector<base::ScopedFD>& fds) {
+  SkFontStyle requested_style;
+  std::string family;
+  if (!iter.ReadString(&family) ||
+      !skia::ReadSkFontStyle(&iter, &requested_style))
+    return;
+
+  SkFontConfigInterface::FontIdentity result_identity;
+  SkString result_family;
+  SkFontStyle result_style;
+  SkFontConfigInterface* fc =
+      SkFontConfigInterface::GetSingletonDirectInterface();
+  const bool r =
+      fc->matchFamilyName(family.c_str(), requested_style, &result_identity,
+                          &result_family, &result_style);
+
+  base::Pickle reply;
+  if (!r) {
+    reply.WriteBool(false);
+  } else {
+    // Stash away the returned path, so we can give it an ID (index)
+    // which will later be given to us in a request to open the file.
+    int index = FindOrAddPath(result_identity.fString);
+    result_identity.fID = static_cast<uint32_t>(index);
+
+    reply.WriteBool(true);
+    skia::WriteSkString(&reply, result_family);
+    skia::WriteSkFontIdentity(&reply, result_identity);
+    skia::WriteSkFontStyle(&reply, result_style);
+  }
+  SendRendererReply(fds, reply, -1);
+}
+
+void SandboxIPCHandler::HandleFontOpenRequest(
+    int fd,
+    base::PickleIterator iter,
+    const std::vector<base::ScopedFD>& fds) {
+  uint32_t index;
+  if (!iter.ReadUInt32(&index))
+    return;
+  if (index >= static_cast<uint32_t>(paths_.size()))
+    return;
+  if (g_test_observer) {
+    g_test_observer->OnFontOpen(index);
+  }
+  const int result_fd = open(paths_[index].c_str(), O_RDONLY);
+
+  base::Pickle reply;
+  reply.WriteBool(result_fd != -1);
+
+  // The receiver will have its own access to the file, so we will close it
+  // after this send.
+  SendRendererReply(fds, reply, result_fd);
+
+  if (result_fd >= 0) {
+    int err = IGNORE_EINTR(close(result_fd));
+    DCHECK(!err);
+  }
+}
+
+void SandboxIPCHandler::HandleGetFallbackFontForChar(
+    int fd,
+    base::PickleIterator iter,
+    const std::vector<base::ScopedFD>& fds) {
+  // The other side of this call is
+  // content/common/child_process_sandbox_support_impl_linux.cc
+
+  UChar32 c;
+  if (!iter.ReadInt(&c))
+    return;
+
+  std::string preferred_locale;
+  if (!iter.ReadString(&preferred_locale))
+    return;
+
+  auto fallback_font = gfx::GetFallbackFontForChar(c, preferred_locale);
+  int fontconfig_interface_id =
+      FindOrAddPath(SkString(fallback_font.filename.data()));
+
+  if (g_test_observer) {
+    g_test_observer->OnGetFallbackFontForChar(c, fallback_font.name,
+                                              fontconfig_interface_id);
+  }
+  base::Pickle reply;
+  reply.WriteString(fallback_font.name);
+  reply.WriteString(fallback_font.filename);
+  reply.WriteInt(fontconfig_interface_id);
+  reply.WriteInt(fallback_font.ttc_index);
+  reply.WriteBool(fallback_font.is_bold);
+  reply.WriteBool(fallback_font.is_italic);
+  SendRendererReply(fds, reply, -1);
+}
+
+void SandboxIPCHandler::HandleGetStyleForStrike(
+    int fd,
+    base::PickleIterator iter,
+    const std::vector<base::ScopedFD>& fds) {
+  std::string family;
+  bool bold;
+  bool italic;
+  uint16_t pixel_size;
+  float device_scale_factor;
+
+  if (!iter.ReadString(&family) || !iter.ReadBool(&bold) ||
+      !iter.ReadBool(&italic) || !iter.ReadUInt16(&pixel_size) ||
+      !iter.ReadFloat(&device_scale_factor)) {
     return;
   }
-  NOTREACHED();
+
+  gfx::FontRenderParamsQuery query;
+  query.families.push_back(family);
+  query.pixel_size = pixel_size;
+  query.style = italic ? gfx::Font::ITALIC : 0;
+  query.weight = bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL;
+  query.device_scale_factor = device_scale_factor;
+  const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, nullptr);
+
+  // These are passed as ints since they're interpreted as tri-state chars in
+  // Blink.
+  base::Pickle reply;
+  reply.WriteInt(params.use_bitmaps);
+  reply.WriteInt(params.autohinter);
+  reply.WriteInt(params.hinting != gfx::FontRenderParams::HINTING_NONE);
+  reply.WriteInt(ConvertHinting(params.hinting));
+  reply.WriteInt(params.antialiasing);
+  reply.WriteInt(ConvertSubpixelRendering(params.subpixel_rendering));
+  reply.WriteInt(params.subpixel_positioning);
+
+  SendRendererReply(fds, reply, -1);
 }
 
 void SandboxIPCHandler::HandleMakeSharedMemorySegment(
@@ -144,6 +348,34 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
     shm_fd = shm.handle().GetHandle();
   base::Pickle reply;
   SendRendererReply(fds, reply, shm_fd);
+}
+
+void SandboxIPCHandler::HandleMatchWithFallback(
+    int fd,
+    base::PickleIterator iter,
+    const std::vector<base::ScopedFD>& fds) {
+  std::string face;
+  bool is_bold;
+  bool is_italic;
+  uint32_t charset;
+  uint32_t fallback_family;
+
+  if (!iter.ReadString(&face) || face.empty() || !iter.ReadBool(&is_bold) ||
+      !iter.ReadBool(&is_italic) || !iter.ReadUInt32(&charset) ||
+      !iter.ReadUInt32(&fallback_family)) {
+    return;
+  }
+
+  int font_fd = MatchFontFaceWithFallback(face, is_bold, is_italic, charset,
+                                          fallback_family);
+
+  base::Pickle reply;
+  SendRendererReply(fds, reply, font_fd);
+
+  if (font_fd >= 0) {
+    if (IGNORE_EINTR(close(font_fd)) < 0)
+      PLOG(ERROR) << "close";
+  }
 }
 
 void SandboxIPCHandler::SendRendererReply(

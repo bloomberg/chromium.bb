@@ -47562,7 +47562,6 @@ Full version information for the fingerprint enum values:
   <int value="-400619253" label="mus_demo"/>
   <int value="-254080081" label="cdm"/>
   <int value="-2816355" label="profile_import"/>
-  <int value="69152809" label="font_service"/>
   <int value="357224138" label="user_id"/>
   <int value="498331100" label="preferences"/>
   <int value="573935755" label="removable_storage_writer"/>

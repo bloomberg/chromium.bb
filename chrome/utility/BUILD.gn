@@ -199,10 +199,6 @@ static_library("utility") {
   if (is_android || enable_extensions) {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
   }
-
-  if (is_linux && !is_android) {
-    deps += [ "//components/services/font:lib" ]
-  }
 }
 
 if (!is_android) {

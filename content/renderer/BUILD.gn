@@ -1018,16 +1018,6 @@ target(link_target_type, "renderer") {
     deps += [ "//sandbox:sandbox_buildflags" ]
   }
 
-  if (is_linux && !is_android) {
-    deps += [
-      "//components/services/font:lib",
-      "//components/services/font/public/cpp",
-    ]
-    data_deps = [
-      "//components/services/font:font_service",
-    ]
-  }
-
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }

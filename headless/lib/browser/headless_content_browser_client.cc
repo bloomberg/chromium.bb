@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -49,11 +48,6 @@
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"  // nogncheck
-#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
 #endif
 
 namespace headless {
@@ -170,10 +164,6 @@ void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   (*services)[printing::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "PDF Compositor Service");
-#endif
-#if defined(OS_LINUX)
-  (*services)[font_service::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Font Service");
 #endif
 }
 
