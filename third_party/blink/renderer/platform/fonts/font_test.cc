@@ -15,7 +15,27 @@ using blink::test::CreateTestFont;
 
 namespace blink {
 
-TEST(FontTest, TextIntercepts) {
+class FontTest : public ::testing::Test {
+ public:
+  Vector<int> GetExpandedRange(const String& text, bool ltr, int from, int to) {
+    FontDescription::VariantLigatures ligatures(
+        FontDescription::kEnabledLigaturesState);
+    Font font = CreateTestFont(
+        "roboto",
+        test::PlatformTestDataPath("third_party/Roboto/roboto-regular.woff2"),
+        100, &ligatures);
+
+    TextRun text_run(
+        text, /* xpos */ 0, /* expansion */ 0,
+        TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
+        ltr ? TextDirection::kLtr : TextDirection::kRtl, false);
+
+    font.ExpandRangeToIncludePartialGlyphs(text_run, &from, &to);
+    return Vector<int>({from, to});
+  }
+};
+
+TEST_F(FontTest, TextIntercepts) {
   Font font =
       CreateTestFont("Ahem", test::PlatformTestDataPath("Ahem.woff"), 16);
   // A sequence of LATIN CAPITAL LETTER E WITH ACUTE and LATIN SMALL LETTER P
@@ -46,6 +66,24 @@ TEST(FontTest, TextIntercepts) {
   for (auto text_intercept : text_intercepts) {
     EXPECT_GT(text_intercept.end_, text_intercept.begin_);
   }
+}
+
+TEST_F(FontTest, ExpandRange) {
+  // "ffi" is a ligature, therefore a single glyph. Any range that includes one
+  // of the letters must be expanded to all of them.
+  EXPECT_EQ(GetExpandedRange("efficient", true, 0, 1), Vector<int>({0, 1}));
+  EXPECT_EQ(GetExpandedRange("efficient", true, 0, 2), Vector<int>({0, 4}));
+  EXPECT_EQ(GetExpandedRange("efficient", true, 3, 4), Vector<int>({1, 4}));
+  EXPECT_EQ(GetExpandedRange("efficient", true, 4, 6), Vector<int>({4, 6}));
+  EXPECT_EQ(GetExpandedRange("efficient", true, 6, 7), Vector<int>({6, 7}));
+  EXPECT_EQ(GetExpandedRange("efficient", true, 0, 9), Vector<int>({0, 9}));
+
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 0, 1), Vector<int>({0, 1}));
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 0, 2), Vector<int>({0, 2}));
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 3, 4), Vector<int>({3, 4}));
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 4, 6), Vector<int>({4, 8}));
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 6, 7), Vector<int>({5, 8}));
+  EXPECT_EQ(GetExpandedRange("tneiciffe", false, 0, 9), Vector<int>({0, 9}));
 }
 
 }  // namespace blink
