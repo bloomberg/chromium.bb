@@ -364,10 +364,16 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   pref_content_settings_provider.SetWebsiteSetting(
       pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, resource1,
       new base::Value(CONTENT_SETTING_BLOCK));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            TestUtils::GetContentSetting(&pref_content_settings_provider, host,
-                                         host, CONTENT_SETTINGS_TYPE_PLUGINS,
-                                         resource1, false));
+
+  bool flash_is_ephemeral =
+      ContentSettingsRegistry::GetInstance()
+          ->Get(CONTENT_SETTINGS_TYPE_PLUGINS)
+          ->storage_behavior() == ContentSettingsInfo::EPHEMERAL;
+  ContentSetting expectation =
+      flash_is_ephemeral ? CONTENT_SETTING_DEFAULT : CONTENT_SETTING_BLOCK;
+  EXPECT_EQ(expectation, TestUtils::GetContentSetting(
+                             &pref_content_settings_provider, host, host,
+                             CONTENT_SETTINGS_TYPE_PLUGINS, resource1, false));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             TestUtils::GetContentSetting(&pref_content_settings_provider, host,
                                          host, CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -599,6 +605,37 @@ TEST_F(PrefProviderTest, LastModified) {
       pattern_2, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   EXPECT_EQ(last_modified, t1);
+
+  provider.ShutdownOnUIThread();
+}
+
+// Tests if PrefProvider rejects storing ephemeral types.
+TEST_F(PrefProviderTest, RejectEphemeralStorage) {
+  // Find an ephemeral type.
+  ContentSettingsType ephemeral_type = CONTENT_SETTINGS_NUM_TYPES;
+  ContentSettingsRegistry* registry = ContentSettingsRegistry::GetInstance();
+  for (const content_settings::ContentSettingsInfo* item : *registry) {
+    if (item->storage_behavior() == ContentSettingsInfo::EPHEMERAL) {
+      ephemeral_type = item->website_settings_info()->type();
+      break;
+    }
+  }
+  if (ephemeral_type == CONTENT_SETTINGS_NUM_TYPES)
+    return;
+
+  sync_preferences::TestingPrefServiceSyncable prefs;
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
+  PrefProvider provider(&prefs, true /* regular */,
+                        true /* store_last_modified */);
+  ContentSettingsPattern site_pattern =
+      ContentSettingsPattern::FromString("https://example.com");
+
+  std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
+  EXPECT_FALSE(provider.SetWebsiteSetting(
+      site_pattern, site_pattern, ephemeral_type, std::string(), value.get()));
+  std::unique_ptr<RuleIterator> rule_iterator =
+      provider.GetRuleIterator(ephemeral_type, std::string(), false);
+  EXPECT_EQ(nullptr, rule_iterator);
 
   provider.ShutdownOnUIThread();
 }

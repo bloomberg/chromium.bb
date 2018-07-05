@@ -11,8 +11,10 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -20,12 +22,17 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
+#include "components/content_settings/core/browser/content_settings_pref_provider.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -1765,6 +1772,13 @@ TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
 // |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| setting on the creation of a new
 // |HostContentSettingsMap|.
 TEST_F(HostContentSettingsMapTest, PluginDataMigration) {
+  // Avoid the test if Flash permissions are ephemeral.
+  if (content_settings::ContentSettingsRegistry::GetInstance()
+          ->Get(CONTENT_SETTINGS_TYPE_PLUGINS)
+          ->storage_behavior() ==
+      content_settings::ContentSettingsInfo::EPHEMERAL) {
+    return;
+  }
   TestingProfile profile;
   // Set a website-specific Flash preference and a pattern exception.
   std::unique_ptr<base::Value> value = base::JSONReader::Read(
@@ -1823,4 +1837,65 @@ TEST_F(HostContentSettingsMapTest, PluginDataMigrated) {
                                             CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
                                             std::string(), nullptr));
 }
-#endif
+
+// Creates new instances of PrefProvider and EphemeralProvider and overrides
+// them in |host_content_settings_map|.
+void ReloadProviders(PrefService* pref_service,
+                     HostContentSettingsMap* host_content_settings_map) {
+  auto pref_provider = std::make_unique<content_settings::PrefProvider>(
+      pref_service, false, true);
+  content_settings::TestUtils::OverrideProvider(
+      host_content_settings_map, std::move(pref_provider),
+      HostContentSettingsMap::PREF_PROVIDER);
+
+  auto ephemeral_provider =
+      std::make_unique<content_settings::EphemeralProvider>(true);
+  content_settings::TestUtils::OverrideProvider(
+      host_content_settings_map, std::move(ephemeral_provider),
+      HostContentSettingsMap::EPHEMERAL_PROVIDER);
+}
+
+// Tests if availability of EnableEphemeralFlashPermission switch results in
+// Flash permissions being reset after restarting.
+// The flag is not available on Android.
+#if !defined(OS_ANDROID)
+TEST_F(HostContentSettingsMapTest, FlashEphemeralPermissionSwitch) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  const GURL url("https://example.com");
+
+  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                CONTENT_SETTING_ASK);
+
+  for (int ephemeral = 0; ephemeral < 2; ephemeral++) {
+    base::test::ScopedFeatureList feature_list;
+    if (ephemeral) {
+      feature_list.InitAndEnableFeature(
+          content_settings::features::kEnableEphemeralFlashPermission);
+    } else {
+      feature_list.InitAndDisableFeature(
+          content_settings::features::kEnableEphemeralFlashPermission);
+    }
+    content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+
+    ReloadProviders(profile.GetPrefs(), map);
+    map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                       std::string(), CONTENT_SETTING_ALLOW);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string()));
+
+    ReloadProviders(profile.GetPrefs(), map);
+    ContentSetting expectation =
+        ephemeral ? CONTENT_SETTING_ASK : CONTENT_SETTING_ALLOW;
+
+    EXPECT_EQ(expectation,
+              map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string()))
+        << ephemeral;
+  }
+}
+#endif  // !defined(OS_ANDROID)
+
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
