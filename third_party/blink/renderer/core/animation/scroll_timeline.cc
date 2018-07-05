@@ -169,6 +169,8 @@ void ScrollTimeline::AttachAnimation() {
   LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
   if (object && object->HasLayer())
     object->Layer()->SetNeedsCompositingInputsUpdate();
+  if (object)
+    object->SetNeedsPaintPropertyUpdate();
 }
 
 void ScrollTimeline::DetachAnimation() {
@@ -184,6 +186,8 @@ void ScrollTimeline::DetachAnimation() {
     LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
     if (object && object->HasLayer())
       object->Layer()->SetNeedsCompositingInputsUpdate();
+    if (object)
+      object->SetNeedsPaintPropertyUpdate();
   }
 }
 
