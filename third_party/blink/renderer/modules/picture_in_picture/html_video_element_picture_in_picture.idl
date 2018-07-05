@@ -12,8 +12,8 @@ partial interface HTMLVideoElement {
 
     attribute EventHandler onenterpictureinpicture;
     attribute EventHandler onleavepictureinpicture;
-
     [RuntimeEnabled=PictureInPictureControl] attribute EventHandler onpictureinpicturecontrolclick;
+
     [CEReactions, Measure, Reflect] attribute boolean disablePictureInPicture;
 
 };
