@@ -637,13 +637,26 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   }
 }
 
+// Returns an image and the image's resolution scale factor.
+static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
+  if (device_scale_factor >= 2) {
+    DEFINE_STATIC_REF(blink::Image, broken_canvas_hi_res,
+                      (blink::Image::LoadPlatformResource("brokenCanvas@2x")));
+    return std::make_pair(broken_canvas_hi_res, 2);
+  }
+
+  DEFINE_STATIC_REF(blink::Image, broken_canvas_lo_res,
+                    (blink::Image::LoadPlatformResource("brokenCanvas")));
+  return std::make_pair(broken_canvas_lo_res, 1);
+}
+
 void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
     float device_scale_factor =
         blink::DeviceScaleFactorDeprecated(GetDocument().GetFrame());
     std::pair<Image*, float> broken_canvas_and_image_scale_factor =
-        ImageResourceContent::BrokenCanvas(device_scale_factor);
+        BrokenCanvas(device_scale_factor);
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(FloatRect(r), Color(), SkBlendMode::kClear);
