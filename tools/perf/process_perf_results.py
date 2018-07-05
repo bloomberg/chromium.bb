@@ -5,11 +5,13 @@
 
 import argparse
 import json
+import logging
 import multiprocessing as mp
 import os
 import shutil
 import sys
 import tempfile
+import traceback
 import time
 import uuid
 
@@ -118,6 +120,18 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
   end_time = time.time()
   print_duration('Merging json test results', begin_time, end_time)
   return 0
+
+
+class LogExceptionWrapper(object):
+  def __init__(self, func):
+    self._func = func
+
+  def __call__(self, *args, **kwargs):
+    try:
+      return self._func(*args, **kwargs)
+    except Exception:
+      mp.get_logger().error(traceback.format_exc())
+      raise
 
 
 def _handle_perf_json_test_results(
@@ -401,11 +415,10 @@ def _handle_perf_results(
     pool = mp.Pool(cpus)
     try:
       async_result = pool.map_async(
-          _upload_individual_benchmark, invocations)
+          LogExceptionWrapper(_upload_individual_benchmark), invocations)
       results = async_result.get(timeout=2000)
     except mp.TimeoutError:
-      print 'Failed uploading benchmarks to perf dashboard in parallel'
-      print 'Terminate the pool'
+      logging.error('Failed uploading benchmarks to perf dashboard in parallel')
       pool.terminate()
       results = []
       for benchmark_name in benchmark_directory_map:
