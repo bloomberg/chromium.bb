@@ -44,6 +44,8 @@ UserEventSpecifics::UserConsent::Feature FeatureToUserEventProtoEnum(
       return UserEventSpecifics::UserConsent::BACKUP_AND_RESTORE;
     case consent_auditor::Feature::GOOGLE_LOCATION_SERVICE:
       return UserEventSpecifics::UserConsent::GOOGLE_LOCATION_SERVICE;
+    case consent_auditor::Feature::CHROME_UNIFIED_CONSENT:
+      return UserEventSpecifics::UserConsent::CHROME_UNIFIED_CONSENT;
   }
   NOTREACHED();
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
@@ -72,6 +74,8 @@ UserConsentSpecifics::Feature FeatureToUserConsentProtoEnum(
       return UserConsentSpecifics::BACKUP_AND_RESTORE;
     case consent_auditor::Feature::GOOGLE_LOCATION_SERVICE:
       return UserConsentSpecifics::GOOGLE_LOCATION_SERVICE;
+    case consent_auditor::Feature::CHROME_UNIFIED_CONSENT:
+      return UserConsentSpecifics::CHROME_UNIFIED_CONSENT;
   }
   NOTREACHED();
   return UserConsentSpecifics::FEATURE_UNSPECIFIED;
