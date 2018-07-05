@@ -215,7 +215,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
   }
 
   const signin::ScopedAccountConsistency scoped_account_consistency_;
-  const signin_metrics::AccessPoint access_point_ =
+  signin_metrics::AccessPoint access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
 
   bool create_dice_turn_sync_on_helper_called_ = false;
@@ -272,6 +272,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 }
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
+  AddTab(browser(), GURL("http://example.com"));
   // Add an account to the account tracker, but do not add it to the token
   // service in order for it to require a reauth before enabling sync.
   std::string account_id =
@@ -306,11 +307,14 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     }
 
     // Verify that the active tab has the correct DICE sign-in URL.
-    content::WebContents* active_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+    TabStripModel* tab_strip = browser()->tab_strip_model();
+    content::WebContents* active_contents = tab_strip->GetActiveWebContents();
     ASSERT_TRUE(active_contents);
     EXPECT_EQ(signin::GetSigninURLForDice(profile(), kMainEmail),
               active_contents->GetVisibleURL());
+    tab_strip->CloseWebContentsAt(
+        tab_strip->GetIndexOfWebContents(active_contents),
+        TabStripModel::CLOSE_USER_GESTURE);
   }
 }
 
@@ -373,6 +377,41 @@ TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {
   EXPECT_TRUE(accounts.empty());
 
   // TODO(tangltom): Flesh out this test.
+}
+
+TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
+  base::UserActionTester user_action_tester;
+  EnableSync(AccountInfo(), false);
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+
+  // Signin tab is reused.
+  EnableSync(AccountInfo(), false);
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+
+  // Give focus to a different tab.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(0, tab_strip->active_index());
+  GURL other_url = GURL("http://example.com");
+  AddTab(browser(), other_url);
+  tab_strip->ActivateTabAt(0, true);
+  ASSERT_EQ(other_url, tab_strip->GetActiveWebContents()->GetVisibleURL());
+  ASSERT_EQ(0, tab_strip->active_index());
+
+  // Extensions re-use the tab but do not take focus.
+  access_point_ = signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS;
+  EnableSync(AccountInfo(), false);
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+  EXPECT_EQ(0, tab_strip->active_index());
+
+  // Other access points re-use the tab and take focus.
+  access_point_ = signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS;
+  EnableSync(AccountInfo(), false);
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+  EXPECT_EQ(1, tab_strip->active_index());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

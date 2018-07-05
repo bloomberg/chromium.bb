@@ -11,8 +11,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
-class RenderFrameHost;
+class NavigationHandle;
 }
+
 // Tab helper used for DICE to mark that sync should start after a web sign-in
 // with a Google account.
 class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
@@ -31,26 +32,40 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
   signin_metrics::Reason signin_reason() { return signin_reason_; }
 
   // Initializes the DiceTabHelper for a new signin flow. Must be called once
-  // per signin flow happening in the tab.
-  void InitializeSigninFlow(signin_metrics::AccessPoint access_point,
+  // per signin flow happening in the tab, when the signin URL is being loaded.
+  void InitializeSigninFlow(const GURL& signin_url,
+                            signin_metrics::AccessPoint access_point,
                             signin_metrics::Reason reason,
                             signin_metrics::PromoAction promo_action);
 
-  // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
+  // Returns true if this the tab is a re-usable chrome sign-in page (the signin
+  // page is loading or loaded in the tab).
+  // Returns false if the user or the page has navigated away from |signin_url|.
+  bool IsChromeSigninPage() const;
 
  private:
   friend class content::WebContentsUserData<DiceTabHelper>;
   explicit DiceTabHelper(content::WebContents* web_contents);
 
+  // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // Returns true if this is a navigation to the signin URL.
+  bool IsSigninPageNavigation(
+      content::NavigationHandle* navigation_handle) const;
+
+  GURL signin_url_;
   signin_metrics::AccessPoint signin_access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
   signin_metrics::PromoAction signin_promo_action_ =
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
   signin_metrics::Reason signin_reason_ =
       signin_metrics::Reason::REASON_UNKNOWN_REASON;
-  bool did_finish_loading_signin_page_ = false;
+  bool is_chrome_signin_page_ = false;
+  bool signin_page_load_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DiceTabHelper);
 };
