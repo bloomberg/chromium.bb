@@ -239,45 +239,14 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
       suggestions.push_back(suggestion);
 
-      show_all_saved_passwords_shown_context_ =
-          metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
       metrics_util::LogContextOfShowAllSavedPasswordsShown(
-          show_all_saved_passwords_shown_context_);
+          metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
     }
   }
 
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
                                       suggestions,
-                                      weak_ptr_factory_.GetWeakPtr());
-}
-
-void PasswordAutofillManager::OnShowManualFallbackSuggestion(
-    base::i18n::TextDirection text_direction,
-    const gfx::RectF& bounds) {
-  // https://crbug.com/699197
-  // CroS SimpleWebviewDialog used for the captive portal dialog is a special
-  // case because it doesn't instantiate many helper classes. |autofill_client_|
-  // is NULL too.
-  if (!autofill_client_ || !ShouldShowManualFallbackForPreLollipop(
-                               autofill_client_->GetSyncService()))
-    return;
-  if (!password_client_ ||
-      !password_client_->IsFillingFallbackEnabledForCurrentPage())
-    return;
-  std::vector<autofill::Suggestion> suggestions;
-  autofill::Suggestion all_saved_passwords(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
-      std::string(), std::string(),
-      autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
-  suggestions.push_back(all_saved_passwords);
-
-  show_all_saved_passwords_shown_context_ =
-      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK;
-  metrics_util::LogContextOfShowAllSavedPasswordsShown(
-      show_all_saved_passwords_shown_context_);
-
-  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -324,30 +293,16 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
   }
 
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
-    DCHECK_NE(show_all_saved_passwords_shown_context_,
-              metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE);
-
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
-        show_all_saved_passwords_shown_context_);
+        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
 
     if (password_client_) {
       using UserAction =
           password_manager::PasswordManagerMetricsRecorder::PageLevelUserAction;
-      switch (show_all_saved_passwords_shown_context_) {
-        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD:
-          password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
-              UserAction::kShowAllPasswordsWhileSomeAreSuggested);
-          break;
-        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK:
-          password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
-              UserAction::kShowAllPasswordsWhileNoneAreSuggested);
-          break;
-        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU:
-        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE:
-        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT:
-          NOTREACHED();
+
+      password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
+          UserAction::kShowAllPasswordsWhileSomeAreSuggested);
       }
-    }
   }
 
   autofill_client_->HideAutofillPopup();

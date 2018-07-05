@@ -73,7 +73,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       const FormsPredictionsMap& predictions) override;
   void FindFocusedPasswordForm(
       FindFocusedPasswordFormCallback callback) override;
-  void BlacklistedFormFound() override;
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
@@ -130,11 +129,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // This UI is shown when a username or password field is autofilled or edited
   // on a non-secure page.
   void ShowNotSecureWarning(const blink::WebInputElement& element);
-
-  // Shows an Autofill-style popup with an option to go to settings and check
-  // all saved passwords. Returns true if the suggestion was shown, false
-  // otherwise.
-  bool ShowManualFallbackSuggestion(const blink::WebInputElement& element);
 
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
@@ -407,8 +401,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerDriverPtr password_manager_driver_;
 
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
-
-  bool blacklisted_form_found_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

@@ -174,10 +174,6 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
   return is_main_frame_;
 }
 
-void ContentPasswordManagerDriver::MatchingBlacklistedFormFound() {
-  GetPasswordAutofillAgent()->BlacklistedFormFound();
-}
-
 void ContentPasswordManagerDriver::DidNavigateFrame(
     content::NavigationHandle* navigation_handle) {
   // Clear page specific data after main frame navigation.
@@ -248,13 +244,6 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
   password_autofill_manager_.OnShowPasswordSuggestions(
       key, text_direction, typed_username, options,
       TransformToRootCoordinates(bounds));
-}
-
-void ContentPasswordManagerDriver::ShowManualFallbackSuggestion(
-    base::i18n::TextDirection text_direction,
-    const gfx::RectF& bounds) {
-  password_autofill_manager_.OnShowManualFallbackSuggestion(
-      text_direction, TransformToRootCoordinates(bounds));
 }
 
 void ContentPasswordManagerDriver::HideManualFallbackForSaving() {

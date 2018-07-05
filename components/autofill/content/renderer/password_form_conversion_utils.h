@@ -95,10 +95,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
 
-// Returns whether the form |field| has a "password" type, but looks like a
-// credit card verification field.
-bool IsCreditCardVerificationPasswordField(const blink::WebInputElement& field);
-
 // The "Realm" for the sign-on. This is scheme, host, port.
 std::string GetSignOnRealm(const GURL& origin);
 

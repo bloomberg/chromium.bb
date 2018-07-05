@@ -97,8 +97,3 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
   // On IOS only processing of password forms in main frame is implemented.
   return true;
 }
-
-void IOSChromePasswordManagerDriver::MatchingBlacklistedFormFound() {
-  NOTIMPLEMENTED();
-}
-

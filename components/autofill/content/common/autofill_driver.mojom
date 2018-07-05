@@ -123,12 +123,6 @@ interface PasswordManagerDriver {
                           mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
-  // Instructs the browser to show a suggestion, which will redirect the user to
-  // the list of all saved passwords. The popup will use |text_direction| for
-  // displaying text.
-  ShowManualFallbackSuggestion(mojo_base.mojom.TextDirection text_direction,
-                           gfx.mojom.RectF bounds);
-
   // Sends the outcome of HTML parsing based form classifier that detects the
   // forms where password generation should be available.
   SaveGenerationFieldDetectedByClassifier(

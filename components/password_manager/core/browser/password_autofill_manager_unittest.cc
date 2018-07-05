@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
@@ -174,16 +173,6 @@ class PasswordAutofillManagerTest : public testing::Test {
   int fill_data_id() { return fill_data_id_; }
   autofill::PasswordFormFillData& fill_data() { return fill_data_; }
 
-  void SetManualFallbacksForFillingStandalone(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          password_manager::features::kManualFallbacksFillingStandalone);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          password_manager::features::kManualFallbacksFillingStandalone);
-    }
-  }
-
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
 
   base::string16 test_username_;
@@ -192,7 +181,6 @@ class PasswordAutofillManagerTest : public testing::Test {
  private:
   autofill::PasswordFormFillData fill_data_;
   const int fill_data_id_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   // The TestAutofillDriver uses a SequencedWorkerPool which expects the
   // existence of a MessageLoop.
@@ -712,96 +700,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   }
 }
 
-TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
-  const char kShownContextHistogram[] =
-      "PasswordManager.ShowAllSavedPasswordsShownContext";
-  const char kAcceptedContextHistogram[] =
-      "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
-  base::HistogramTester histograms;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<MockAutofillClient>();
-  auto manager =
-      std::make_unique<password_manager::PasswordManager>(client.get());
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
-
-  ON_CALL(*(client->mock_driver()), GetPasswordManager())
-      .WillByDefault(testing::Return(manager.get()));
-
-  gfx::RectF element_bounds;
-  autofill::PasswordFormFillData data;
-  data.username_field.value = test_username_;
-  data.password_field.value = test_password_;
-  data.origin = GURL("http://foo.test");
-
-  // String for the "Show all passwords" fallback.
-  base::string16 show_all_saved_row_text =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
-
-  SetManualFallbacksForFillingStandalone(true);
-
-  EXPECT_CALL(
-      *autofill_client,
-      ShowAutofillPopup(element_bounds, _,
-                        SuggestionVectorValuesAre(testing::ElementsAreArray(
-                            {show_all_saved_row_text})),
-                        _))
-      .Times(IsPreLollipopAndroid() ? 0 : 1);
-  password_autofill_manager_->OnShowManualFallbackSuggestion(
-      base::i18n::RIGHT_TO_LEFT, element_bounds);
-
-  if (IsPreLollipopAndroid()) {
-    EXPECT_THAT(histograms.GetAllSamples(kShownContextHistogram),
-                testing::IsEmpty());
-  } else {
-    // Expect a sample only in the shown histogram.
-    histograms.ExpectUniqueSample(
-        kShownContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
-  }
-
-  if (!IsPreLollipopAndroid()) {
-    // Clicking at the "Show all passwords row" should trigger a call to open
-    // the Password Manager settings page and hide the popup.
-    EXPECT_CALL(
-        *autofill_client,
-        ExecuteCommand(autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
-    EXPECT_CALL(*autofill_client, HideAutofillPopup());
-    password_autofill_manager_->DidAcceptSuggestion(
-        base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
-    // Expect a sample in both the shown and accepted histogram.
-    histograms.ExpectUniqueSample(
-        kShownContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
-    histograms.ExpectUniqueSample(
-        kAcceptedContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
-    // Trigger UKM reporting, which happens at destruction time.
-    ukm::SourceId expected_source_id = client->GetUkmSourceId();
-    manager.reset();
-    autofill_client.reset();
-    client.reset();
-
-    const auto& entries =
-        test_ukm_recorder.GetEntriesByName("PageWithPassword");
-    EXPECT_EQ(1u, entries.size());
-    for (const auto* entry : entries) {
-      EXPECT_EQ(expected_source_id, entry->source_id);
-      test_ukm_recorder.ExpectEntryMetric(
-          entry, UkmEntry::kPageLevelUserActionName,
-          static_cast<int64_t>(
-              password_manager::PasswordManagerMetricsRecorder::
-                  PageLevelUserAction::kShowAllPasswordsWhileNoneAreSuggested));
-    }
-  } else {
-    EXPECT_THAT(histograms.GetAllSamples(kShownContextHistogram),
-                testing::IsEmpty());
-    EXPECT_THAT(histograms.GetAllSamples(kAcceptedContextHistogram),
-                testing::IsEmpty());
-  }
-}
-
 // Tests that the "Manage passwords" fallback shows up in non-password
 // fields of login forms.
 TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
@@ -826,18 +724,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
                         _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
-}
-
-// SimpleWebviewDialog doesn't have an autofill client. Nothing should crash if
-// the filling fallback is invoked.
-TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsWithoutAutofillClient) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  InitializePasswordAutofillManager(client.get(), nullptr);
-
-  SetManualFallbacksForFillingStandalone(true);
-
-  password_autofill_manager_->OnShowManualFallbackSuggestion(
-      base::i18n::RIGHT_TO_LEFT, gfx::RectF());
 }
 
 }  // namespace password_manager

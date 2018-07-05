@@ -278,7 +278,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
                void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm,
                void(const autofill::PasswordForm&));
-  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 
   MockAutofillManager* mock_autofill_manager() {
     return &mock_autofill_manager_;
@@ -1471,15 +1470,6 @@ TEST_F(PasswordFormManagerTest,
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
   PasswordForm simulated_result = CreateSavedMatch(false);
   fetcher.SetNonFederated({&simulated_result}, 0u);
-}
-
-TEST_F(PasswordFormManagerTest,
-       TestSendMachedBlacklistedFoundMessage_BlacklistedCredentials) {
-  // Signing up on a previously visited site. Credentials are found in the
-  // password store, but they are blacklisted.
-  EXPECT_CALL(*client()->mock_driver(), MatchingBlacklistedFormFound());
-  PasswordForm simulated_result = CreateSavedMatch(true);
-  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
 }
 
 // Test that exactly one match for each username is chosen as a best match, even
@@ -4419,18 +4409,7 @@ TEST_F(PasswordFormManagerTest,
   fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
 }
 
-TEST_F(PasswordFormManagerTest,
-       TestSendMachedBlacklistedFoundMessage_Credentials) {
-  // Signing up on a previously visited site. Credentials are found in the
-  // password store, and are not blacklisted.
-  EXPECT_CALL(*client()->mock_driver(), MatchingBlacklistedFormFound())
-      .Times(0);
-  PasswordForm simulated_result = CreateSavedMatch(false);
-  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
-}
-
 TEST_F(PasswordFormManagerTest, FirstLoginVote) {
-
   PasswordForm old_without_username = *saved_match();
   old_without_username.username_value.clear();
   old_without_username.username_element.clear();

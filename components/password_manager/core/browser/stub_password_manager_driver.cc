@@ -64,6 +64,4 @@ bool StubPasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
-void StubPasswordManagerDriver::MatchingBlacklistedFormFound() {}
-
 }  // namespace password_manager

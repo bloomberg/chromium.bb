@@ -44,10 +44,6 @@ class FakeContentPasswordManagerDriver
     show_pw_suggestions_options_ = -1;
   }
 
-  void reset_called_manual_fallback_suggestion() {
-    called_manual_fallback_suggestion_ = false;
-  }
-
   bool called_show_not_secure_warning() const {
     return called_show_not_secure_warning_;
   }
@@ -130,10 +126,6 @@ class FakeContentPasswordManagerDriver
     return called_show_manual_fallback_for_saving_count_;
   }
 
-  bool called_manual_fallback_suggestion() {
-    return called_manual_fallback_suggestion_;
-  }
-
  private:
   // mojom::PasswordManagerDriver:
   void PasswordFormsParsed(
@@ -154,9 +146,6 @@ class FakeContentPasswordManagerDriver
                                const base::string16& typed_username,
                                int options,
                                const gfx::RectF& bounds) override;
-
-  void ShowManualFallbackSuggestion(base::i18n::TextDirection text_direction,
-                                    const gfx::RectF& bounds) override;
 
   void RecordSavePasswordProgress(const std::string& log) override;
 
@@ -181,8 +170,6 @@ class FakeContentPasswordManagerDriver
   int show_pw_suggestions_options_ = -1;
   // Records whether ShowNotSecureWarning() gets called.
   bool called_show_not_secure_warning_ = false;
-  // Record whenether ShowManualFallbackSuggestion gets called.
-  bool called_manual_fallback_suggestion_ = false;
   // Records whether PasswordFormSubmitted() gets called.
   bool called_password_form_submitted_ = false;
   // Records data received via PasswordFormSubmitted() call.
