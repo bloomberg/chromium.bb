@@ -24,7 +24,7 @@ const base::Feature kPageLoadMetricsTimerDelayFeature{
 
 PageTimingMetricsSender::PageTimingMetricsSender(
     std::unique_ptr<PageTimingSender> sender,
-    std::unique_ptr<base::Timer> timer,
+    std::unique_ptr<base::OneShotTimer> timer,
     mojom::PageLoadTimingPtr initial_timing)
     : sender_(std::move(sender)),
       timer_(std::move(timer)),

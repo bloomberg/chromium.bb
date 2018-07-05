@@ -10,7 +10,7 @@
 class GURL;
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace page_load_metrics {
@@ -24,7 +24,7 @@ class PageLoadMetricsEmbedderInterface {
   virtual ~PageLoadMetricsEmbedderInterface() {}
   virtual bool IsNewTabPageUrl(const GURL& url) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
-  virtual std::unique_ptr<base::Timer> CreateTimer() = 0;
+  virtual std::unique_ptr<base::OneShotTimer> CreateTimer() = 0;
 };
 
 }  // namespace page_load_metrics

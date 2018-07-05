@@ -40,7 +40,7 @@ class TestPageLoadMetricsEmbedderInterface
     test_->RegisterObservers(tracker);
   }
 
-  std::unique_ptr<base::Timer> CreateTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateTimer() override {
     auto timer = std::make_unique<test::WeakMockTimer>();
     test_->SetMockTimer(timer->AsWeakPtr());
     return std::move(timer);

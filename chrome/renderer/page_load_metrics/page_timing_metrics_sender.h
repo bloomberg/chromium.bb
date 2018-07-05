@@ -15,7 +15,7 @@
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace page_load_metrics {
@@ -28,7 +28,7 @@ class PageTimingSender;
 class PageTimingMetricsSender {
  public:
   PageTimingMetricsSender(std::unique_ptr<PageTimingSender> sender,
-                          std::unique_ptr<base::Timer> timer,
+                          std::unique_ptr<base::OneShotTimer> timer,
                           mojom::PageLoadTimingPtr initial_timing);
   ~PageTimingMetricsSender();
 
@@ -38,7 +38,7 @@ class PageTimingMetricsSender {
   void Send(mojom::PageLoadTimingPtr timing);
 
  protected:
-  base::Timer* timer() const { return timer_.get(); }
+  base::OneShotTimer* timer() const { return timer_.get(); }
 
  private:
   void EnsureSendTimer();
@@ -46,7 +46,7 @@ class PageTimingMetricsSender {
   void ClearNewFeatures();
 
   std::unique_ptr<PageTimingSender> sender_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   mojom::PageLoadTimingPtr last_timing_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
