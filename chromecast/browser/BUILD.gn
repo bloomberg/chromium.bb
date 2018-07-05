@@ -201,7 +201,6 @@ cast_source_set("browser") {
 
     deps += [
       "//components/metrics:serialization",
-      "//components/services/font:lib",
       "//third_party/fontconfig",
     ]
   }

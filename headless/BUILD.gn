@@ -449,10 +449,6 @@ component("headless") {
     deps += [ "//components/os_crypt" ]
   }
 
-  if (is_linux) {
-    deps += [ "//components/services/font/public/cpp" ]
-  }
-
   if (is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",

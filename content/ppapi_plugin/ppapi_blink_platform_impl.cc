@@ -40,15 +40,11 @@ namespace content {
 
 class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
  public:
-#if defined(OS_LINUX)
-  explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
-      : font_loader_(std::move(font_loader)) {}
-#endif
   ~SandboxSupport() override {}
 
 #if defined(OS_MACOSX)
   bool LoadFont(CTFontRef srcFont, CGFontRef* out, uint32_t* fontID) override;
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   SandboxSupport();
   void GetFallbackFontForCharacter(
       WebUChar32 character,
@@ -68,7 +64,6 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
   // For debugging crbug.com/312965
   base::PlatformThreadId creation_thread_;
-  sk_sp<font_service::FontLoader> font_loader_;
 #endif
 };
 
@@ -110,8 +105,8 @@ void PpapiBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     return;
   }
 
-  content::GetFallbackFontForCharacter(font_loader_, character,
-                                       preferred_locale, fallbackFont);
+  content::GetFallbackFontForCharacter(character, preferred_locale,
+                                       fallbackFont);
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
@@ -122,8 +117,8 @@ void PpapiBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
     bool is_italic,
     float device_scale_factor,
     blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
-                          device_scale_factor, out);
+  GetRenderStyleForStrike(family, size, is_bold, is_italic, device_scale_factor,
+                          out);
 }
 
 #endif
@@ -131,14 +126,8 @@ void PpapiBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
 #endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
 
 PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  font_loader_ =
-      sk_make_sp<font_service::FontLoader>(ChildThread::Get()->GetConnector());
-  SkFontConfigInterface::SetGlobal(font_loader_);
-  sandbox_support_.reset(
-      new PpapiBlinkPlatformImpl::SandboxSupport(font_loader_));
-#elif defined(OS_MACOSX)
-  sandbox_support_.reset(new PpapiBlinkPlatformImpl::SandboxSupport());
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
+  sandbox_support_.reset(new PpapiBlinkPlatformImpl::SandboxSupport);
 #endif
 }
 

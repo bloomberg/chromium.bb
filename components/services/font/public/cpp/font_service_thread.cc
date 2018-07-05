@@ -22,7 +22,6 @@ FontServiceThread::FontServiceThread(mojom::FontServicePtr font_service)
     : base::Thread(kFontThreadName),
       font_service_info_(font_service.PassInterface()),
       weak_factory_(this) {
-  DETACH_FROM_THREAD(thread_checker_);
   Start();
 }
 
@@ -32,7 +31,7 @@ bool FontServiceThread::MatchFamilyName(
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
     SkFontStyle* out_style) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   bool out_valid = false;
   // This proxies to the other thread, which proxies to mojo. Only on the reply
@@ -55,7 +54,6 @@ bool FontServiceThread::FallbackFontForCharacter(
     std::string* out_family_name,
     bool* out_is_bold,
     bool* out_is_italic) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
   bool out_valid = false;
   base::WaitableEvent done_event;
   task_runner()->PostTask(
@@ -76,7 +74,6 @@ bool FontServiceThread::FontRenderStyleForStrike(
     bool is_bold,
     float device_scale_factor,
     font_service::mojom::FontRenderStylePtr* out_font_render_style) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
   bool out_valid = false;
   base::WaitableEvent done_event;
   task_runner()->PostTask(
@@ -95,7 +92,6 @@ void FontServiceThread::MatchFontWithFallback(
     uint32_t charset,
     uint32_t fallback_family_type,
     base::File* out_font_file_handle) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
   base::WaitableEvent done_event;
   task_runner()->PostTask(
       FROM_HERE,
@@ -107,7 +103,7 @@ void FontServiceThread::MatchFontWithFallback(
 
 scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
     const SkFontConfigInterface::FontIdentity& identity) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   base::File stream_file;
   // This proxies to the other thread, which proxies to mojo. Only on the
@@ -214,7 +210,6 @@ void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
 void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
                                              base::File* output_file,
                                              base::File file) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   pending_waitable_events_.erase(done_event);
   *output_file = std::move(file);
   done_event->Signal();

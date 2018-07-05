@@ -13,8 +13,6 @@
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "base/synchronization/lock.h"
 #include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "content/child/child_thread_impl.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/linux/web_fallback_font.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #endif
@@ -32,10 +30,6 @@ namespace content {
 class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
-#if defined(OS_LINUX)
-  explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
-      : font_loader_(std::move(font_loader)) {}
-#endif
   ~SandboxSupport() override {}
 
 #if defined(OS_MACOSX)
@@ -59,20 +53,14 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
   base::Lock unicode_font_families_mutex_;
   // Maps unicode chars to their fallback fonts.
   std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
-  sk_sp<font_service::FontLoader> font_loader_;
 #endif  // defined(OS_MACOSX)
 };
 
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 UtilityBlinkPlatformWithSandboxSupportImpl::
-    UtilityBlinkPlatformWithSandboxSupportImpl(
-        service_manager::Connector* connector) {
-#if defined(OS_LINUX)
-  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
-  SkFontConfigInterface::SetGlobal(font_loader_);
-  sandbox_support_ = std::make_unique<SandboxSupport>(font_loader_);
-#elif defined(OS_MACOSX)
+    UtilityBlinkPlatformWithSandboxSupportImpl() {
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   sandbox_support_ = std::make_unique<SandboxSupport>();
 #endif
 }
@@ -117,8 +105,9 @@ void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
     fallback_font->is_italic = iter->second.is_italic;
     return;
   }
-  content::GetFallbackFontForCharacter(font_loader_, character,
-                                       preferred_locale, fallback_font);
+
+  content::GetFallbackFontForCharacter(character, preferred_locale,
+                                       fallback_font);
   unicode_font_families_.emplace(character, *fallback_font);
 }
 
@@ -129,8 +118,8 @@ void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
                                    bool is_italic,
                                    float device_scale_factor,
                                    blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
-                          device_scale_factor, out);
+  GetRenderStyleForStrike(family, size, is_bold, is_italic, device_scale_factor,
+                          out);
 }
 
 #endif

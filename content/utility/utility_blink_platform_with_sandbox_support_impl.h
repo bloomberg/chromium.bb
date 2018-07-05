@@ -11,17 +11,8 @@
 #include "build/build_config.h"
 #include "content/utility/utility_blink_platform_impl.h"
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-#include "components/services/font/public/cpp/font_loader.h"  // nogncheck
-#include "third_party/skia/include/core/SkRefCnt.h"           // nogncheck
-#endif
-
 namespace blink {
 class WebSandboxSupport;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace content {
@@ -31,9 +22,7 @@ namespace content {
 class UtilityBlinkPlatformWithSandboxSupportImpl
     : public UtilityBlinkPlatformImpl {
  public:
-  UtilityBlinkPlatformWithSandboxSupportImpl() = delete;
-  explicit UtilityBlinkPlatformWithSandboxSupportImpl(
-      service_manager::Connector*);
+  UtilityBlinkPlatformWithSandboxSupportImpl();
   ~UtilityBlinkPlatformWithSandboxSupportImpl() override;
 
   // BlinkPlatformImpl
@@ -43,9 +32,6 @@ class UtilityBlinkPlatformWithSandboxSupportImpl
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   class SandboxSupport;
   std::unique_ptr<SandboxSupport> sandbox_support_;
-#endif
-#if defined(OS_LINUX)
-  sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(UtilityBlinkPlatformWithSandboxSupportImpl);
