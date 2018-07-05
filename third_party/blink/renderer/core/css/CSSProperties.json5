@@ -4362,51 +4362,27 @@
     },
     {
       name: "-webkit-logical-width",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "width",
-        shorthand_for_physical_side: "CSSProperty",
-      },
+      alias_for: "inline-size",
     },
     {
       name: "-webkit-logical-height",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "height",
-        shorthand_for_physical_side: "CSSProperty",
-      },
+      alias_for: "block-size",
     },
     {
       name: "-webkit-min-logical-width",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "width",
-        shorthand_for_physical_side: "CSSPropertyMin",
-      },
+      alias_for: "min-inline-size",
     },
     {
       name: "-webkit-min-logical-height",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "height",
-        shorthand_for_physical_side: "CSSPropertyMin",
-      },
+      alias_for: "min-block-size",
     },
     {
       name: "-webkit-max-logical-width",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "width",
-        shorthand_for_physical_side: "CSSPropertyMax",
-      },
+      alias_for: "max-inline-size",
     },
     {
       name: "-webkit-max-logical-height",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "height",
-        shorthand_for_physical_side: "CSSPropertyMax",
-      },
+      alias_for: "max-block-size",
     },
 
     // Properties that we ignore in the StyleBuilder.

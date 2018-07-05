@@ -29913,8 +29913,8 @@ Called by update_use_counter_css.py.-->
   <int value="260" label="webkit-line-clamp"/>
   <int value="261" label="webkit-line-grid"/>
   <int value="262" label="webkit-line-snap"/>
-  <int value="263" label="webkit-logical-width"/>
-  <int value="264" label="webkit-logical-height"/>
+  <int value="263" label="alias-webkit-logical-width"/>
+  <int value="264" label="alias-webkit-logical-height"/>
   <int value="265" label="webkit-margin-after-collapse"/>
   <int value="266" label="webkit-margin-before-collapse"/>
   <int value="267" label="webkit-margin-bottom-collapse"/>
@@ -29948,10 +29948,10 @@ Called by update_use_counter_css.py.-->
   <int value="295" label="webkit-mask-repeat-x"/>
   <int value="296" label="webkit-mask-repeat-y"/>
   <int value="297" label="webkit-mask-size"/>
-  <int value="298" label="webkit-max-logical-width"/>
-  <int value="299" label="webkit-max-logical-height"/>
-  <int value="300" label="webkit-min-logical-width"/>
-  <int value="301" label="webkit-min-logical-height"/>
+  <int value="298" label="alias-webkit-max-logical-width"/>
+  <int value="299" label="alias-webkit-max-logical-height"/>
+  <int value="300" label="alias-webkit-min-logical-width"/>
+  <int value="301" label="alias-webkit-min-logical-height"/>
   <int value="302" label="webkit-nbsp-mode"/>
   <int value="303" label="order"/>
   <int value="304" label="alias-webkit-padding-after"/>
