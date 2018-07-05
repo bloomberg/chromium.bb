@@ -29,8 +29,10 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_result.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -84,6 +86,17 @@ struct TestUrlInfo {
     ASCIIToUTF16("just a test"), 2, 0,
     AutocompleteActionPredictor::ACTION_NONE }
 };
+
+GURL GenerateTestURL(size_t size) {
+  std::string prefix = "http://b/";
+  // Cannot generate an URL shorter than |prefix|.
+  DCHECK_GE(size, prefix.size());
+  size_t suffix_len = size - prefix.size();
+  std::string suffix(suffix_len, 'c');
+  GURL url(prefix + suffix);
+  DCHECK_EQ(url.spec().size(), size);
+  return url;
+}
 
 }  // end namespace
 
@@ -251,9 +264,21 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   DBCacheMap* db_cache() { return &predictor_->db_cache_; }
   DBIdCacheMap* db_id_cache() { return &predictor_->db_id_cache_; }
+  std::vector<AutocompleteActionPredictor::TransitionalMatch>*
+  transitional_matches() {
+    return &predictor_->transitional_matches_;
+  }
 
   static int maximum_days_to_keep_entry() {
     return AutocompleteActionPredictor::kMaximumDaysToKeepEntry;
+  }
+
+  static size_t minimum_user_text_length() {
+    return AutocompleteActionPredictor::kMinimumUserTextLength;
+  }
+
+  static size_t maximum_string_length() {
+    return AutocompleteActionPredictor::kMaximumStringLength;
   }
 
  private:
@@ -438,6 +463,55 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
               predictor()->RecommendAction(test_url_db[i].user_text, match))
         << "Unexpected action for " << match.destination_url;
   }
+}
+
+TEST_F(AutocompleteActionPredictorTest,
+       RegisterTransitionalMatchesUserTextSizeLimits) {
+  auto test = [this](const base::string16& user_text,
+                     bool should_be_registered) {
+    predictor()->RegisterTransitionalMatches(user_text, AutocompleteResult());
+    bool registered = (std::find(transitional_matches()->begin(),
+                                 transitional_matches()->end(),
+                                 user_text) != transitional_matches()->end());
+    EXPECT_EQ(registered, should_be_registered);
+  };
+
+  base::string16 short_text =
+      ASCIIToUTF16(std::string(minimum_user_text_length(), 'g'));
+  test(short_text, true);
+
+  base::string16 too_short_text =
+      ASCIIToUTF16(std::string(minimum_user_text_length() - 1, 'g'));
+  test(too_short_text, false);
+
+  base::string16 long_text =
+      ASCIIToUTF16(std::string(maximum_string_length(), 'g'));
+  test(long_text, true);
+
+  base::string16 too_long_text =
+      ASCIIToUTF16(std::string(maximum_string_length() + 1, 'g'));
+  test(too_long_text, false);
+}
+
+TEST_F(AutocompleteActionPredictorTest,
+       RegisterTransitionalMatchesURLSizeLimits) {
+  GURL urls[] = {GenerateTestURL(10), GenerateTestURL(maximum_string_length()),
+                 GenerateTestURL(maximum_string_length() + 1),
+                 GenerateTestURL(maximum_string_length() * 10)};
+  ACMatches matches;
+  for (const auto& url : urls) {
+    AutocompleteMatch match;
+    match.destination_url = url;
+    matches.push_back(match);
+  }
+  AutocompleteResult result;
+  result.AppendMatches(AutocompleteInput(), matches);
+  base::string16 user_text = ASCIIToUTF16("google");
+  predictor()->RegisterTransitionalMatches(user_text, result);
+  auto it = std::find(transitional_matches()->begin(),
+                      transitional_matches()->end(), user_text);
+  ASSERT_NE(it, transitional_matches()->end());
+  EXPECT_THAT(it->urls, ::testing::ElementsAre(urls[0], urls[1]));
 }
 
 }  // namespace predictors
