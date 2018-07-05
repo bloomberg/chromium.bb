@@ -104,6 +104,14 @@ customBackgrounds.closeCollectionDialog = function(menu) {
   customBackgrounds.resetSelectionDialog();
 };
 
+/* Close and reset the dialog, and set the background.
+ * @param {string} url The url of the selected background.
+ */
+customBackgrounds.setBackground = function(url) {
+  customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
+  window.chrome.embeddedSearch.newTabPage.setBackgroundURL(url);
+};
+
 /**
  * Show dialog for selecting a collection. Populates the dialog
  * with data from |coll|.
@@ -251,7 +259,14 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
           .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
     };
 
-    tile.onclick = tileInteraction;
+    tile.onclick = function(event) {
+      let clickCount = event.detail;
+      if (clickCount == 1) {
+        tileInteraction(event);
+      } else if (clickCount == 2) {
+        customBackgrounds.setBackground(this.dataset.url);
+      }
+    };
     tile.onkeyup = function(event) {
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
         tileInteraction(event);
@@ -438,10 +453,7 @@ customBackgrounds.initCustomBackgrounds = function() {
       return;
     }
 
-    menu.close();
-    window.chrome.embeddedSearch.newTabPage.setBackgroundURL(
-        customBackgrounds.selectedTile.dataset.url);
-    customBackgrounds.resetSelectionDialog();
+    customBackgrounds.setBackground(customBackgrounds.selectedTile.dataset.url);
   };
   $(customBackgrounds.IDS.DONE).onclick = doneInteraction;
   $(customBackgrounds.IDS.DONE).onkeyup = function(event) {
