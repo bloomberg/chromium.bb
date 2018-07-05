@@ -141,8 +141,6 @@ class FakePasswordAutofillAgent
     logging_state_active_ = false;
   }
 
-  void BlacklistedFormFound() override {}
-
  private:
   // autofill::mojom::PasswordAutofillAgent:
   void FillPasswordForm(

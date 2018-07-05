@@ -38,7 +38,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,
                void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
-  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 };
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
@@ -121,8 +120,6 @@ TEST_F(PasswordFormFillingTest, Autofill) {
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
-    EXPECT_CALL(driver_, MatchingBlacklistedFormFound)
-        .Times(is_blacklisted ? 1 : 0);
 
     SendFillInformationToRenderer(
         client_, &driver_, is_blacklisted, observed_form_, best_matches,

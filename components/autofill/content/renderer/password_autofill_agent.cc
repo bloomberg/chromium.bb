@@ -597,18 +597,6 @@ blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
   return blink::WebInputElement();
 }
 
-bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
-                                         const GURL& url) {
-  return (
-      element.IsPasswordFieldForAutofill() &&
-      !IsCreditCardVerificationPasswordField(element) &&
-      AutocompleteFlagForElement(element) != AutocompleteFlag::CREDIT_CARD &&
-      !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
-      !url.SchemeIs(url::kAboutScheme) &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kManualFallbacksFillingStandalone));
-}
-
 PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
     SubmissionSource source) {
   switch (source) {
@@ -1015,11 +1003,6 @@ bool PasswordAutofillAgent::ShowSuggestions(
                                                                 frame_url);
       }
 #endif
-      if (!generation_popup_showing && !blacklisted_form_found_ &&
-          ShouldShowStandaloneManuallFallback(element, frame_url) &&
-          ShowManualFallbackSuggestion(element)) {
-        return true;
-      }
     }
     return false;
   }
@@ -1608,10 +1591,6 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
   std::move(callback).Run(*password_form);
 }
 
-void PasswordAutofillAgent::BlacklistedFormFound() {
-  blacklisted_form_found_ = true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
@@ -1656,22 +1635,6 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
 }
 
-bool PasswordAutofillAgent::ShowManualFallbackSuggestion(
-    const blink::WebInputElement& element) {
-  if (!element.Value().IsEmpty()) {
-    HidePopup();
-    return false;
-  }
-
-  FormData form;
-  FormFieldData field;
-  form_util::FindFormAndFieldForFormControlElement(element, &form, &field);
-  GetPasswordManagerDriver()->ShowManualFallbackSuggestion(
-      field.text_direction,
-      render_frame()->GetRenderView()->ElementBoundsInWindow(element));
-  return true;
-}
-
 void PasswordAutofillAgent::FrameClosing() {
   web_input_to_password_info_.clear();
   password_to_username_.clear();
@@ -1685,7 +1648,6 @@ void PasswordAutofillAgent::FrameClosing() {
   username_query_prefix_.clear();
   form_predictions_.clear();
   username_detector_cache_.clear();
-  blacklisted_form_found_ = false;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif

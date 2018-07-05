@@ -363,11 +363,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         password_manager::features::kFillOnAccountSelect);
   }
 
-  void SetManualFallbacksStandalone() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kManualFallbacksFillingStandalone);
-  }
-
   void EnableShowAutofillSignatures() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kShowAutofillSignatures);
@@ -576,11 +571,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   bool GetCalledShowPasswordSuggestions() {
     base::RunLoop().RunUntilIdle();
     return fake_driver_.called_show_pw_suggestions();
-  }
-
-  bool GetCalledShowManualFallbackSuggestion() {
-    base::RunLoop().RunUntilIdle();
-    return fake_driver_.called_manual_fallback_suggestion();
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
@@ -2498,7 +2488,6 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   SetFocused(password_element_);
   SimulateElementClick("new_password");
   EXPECT_FALSE(GetCalledShowPasswordSuggestions());
-  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
   EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
 }
 
@@ -3454,53 +3443,6 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
       fake_driver_.password_forms_parsed().value();
   ASSERT_EQ(1u, parsed_forms.size());
   EXPECT_TRUE(parsed_forms[0].is_gaia_with_skip_save_password_form);
-}
-
-// Tests that "Show all saved passwords" option is shown on a password field.
-TEST_F(PasswordAutofillAgentTest, ShowAllSavedPasswordsTest) {
-  SetManualFallbacksStandalone();
-  LoadHTML(kFormHTML);
-  SetFocused(username_element_);
-  SimulateElementClick("username");
-  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
-  SetFocused(password_element_);
-  SimulateElementClick("password");
-  EXPECT_TRUE(GetCalledShowManualFallbackSuggestion());
-}
-
-// Tests that "Show all saved passwords" option isn't shown on credit card
-// field.
-TEST_F(PasswordAutofillAgentTest,
-       NotShowAllSavedPasswordsOnCreditCardFormTest) {
-  SetManualFallbacksStandalone();
-  LoadHTML(kCreditCardFormHTML);
-  SetFocused(username_element_);
-  SimulateElementClick("username");
-  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
-  SetFocused(password_element_);
-  SimulateElementClick("password");
-  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
-}
-
-TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
-  SetManualFallbacksStandalone();
-  LoadHTML(kFormHTML);
-  SetFocused(password_element_);
-  SimulateElementClick("password");
-  EXPECT_TRUE(GetCalledShowManualFallbackSuggestion());
-  fake_driver_.reset_called_manual_fallback_suggestion();
-  password_element_.SetValue("123");
-  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
-  ASSERT_FALSE(GetCalledShowManualFallbackSuggestion());
-}
-
-TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTestBlacklisted) {
-  SetManualFallbacksStandalone();
-  LoadHTML(kFormHTML);
-  password_autofill_agent_->BlacklistedFormFound();
-  SetFocused(password_element_);
-  SimulateElementClick("password");
-  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
 }
 
 TEST_F(PasswordAutofillAgentTest,

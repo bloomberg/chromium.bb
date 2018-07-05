@@ -39,7 +39,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
-  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 };
 
 }  // namespace
@@ -129,7 +128,6 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   FakeFormFetcher fetcher;
   fetcher.Fetch();
   EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
-  EXPECT_CALL(driver_, MatchingBlacklistedFormFound()).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
@@ -175,7 +173,6 @@ TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   FakeFormFetcher fetcher;
   fetcher.Fetch();
-  EXPECT_CALL(driver_, MatchingBlacklistedFormFound());
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
@@ -188,21 +185,6 @@ TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {
   EXPECT_EQ(observed_form_.origin, fill_data.origin);
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
-}
-
-TEST_F(NewPasswordFormManagerTest, SendIntoToRendererOnlyBlacklistedMatch) {
-  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  EXPECT_CALL(driver_, MatchingBlacklistedFormFound());
-  PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
-
-  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
-                                      observed_form_, &fetcher);
-  fetcher.SetNonFederated({&blacklisted_match_}, 0u);
-
-  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(NewPasswordFormManagerTest, SetSubmitted) {

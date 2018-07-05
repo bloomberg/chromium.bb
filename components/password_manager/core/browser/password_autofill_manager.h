@@ -64,11 +64,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                  int options,
                                  const gfx::RectF& bounds);
 
-  // Handles a request from the renderer to show a popup with an option to check
-  // user's saved passwords, used when a password field is not autofilled.
-  void OnShowManualFallbackSuggestion(base::i18n::TextDirection text_direction,
-                                      const gfx::RectF& bounds);
-
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();
 
@@ -121,11 +116,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // The driver that owns |this|.
   PasswordManagerDriver* password_manager_driver_;
-
-  // Context in which the "Show all saved passwords" fallback was shown.
-  metrics_util::ShowAllSavedPasswordsContext
-      show_all_saved_passwords_shown_context_ =
-          metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE;
 
   autofill::AutofillClient* autofill_client_;  // weak
 

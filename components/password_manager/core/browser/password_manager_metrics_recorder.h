@@ -63,8 +63,8 @@ class PasswordManagerMetricsRecorder {
     kUnknown = 0,
 
     // User chose to open the password viewer as part of a manual fallback.
-    kShowAllPasswordsWhileSomeAreSuggested,
-    kShowAllPasswordsWhileNoneAreSuggested,
+    kShowAllPasswordsWhileSomeAreSuggested = 1,
+    kObsoleteShowAllPasswordsWhileNoneAreSuggested = 2,
   };
 
   // Records UKM metrics and reports them on destruction.

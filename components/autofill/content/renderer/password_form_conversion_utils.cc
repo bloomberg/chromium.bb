@@ -981,14 +981,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   return password_form;
 }
 
-bool IsCreditCardVerificationPasswordField(
-    const blink::WebInputElement& field) {
-  if (!field.IsPasswordFieldForAutofill())
-    return false;
-  return StringMatchesCVC(field.GetAttribute("id").Utf16()) ||
-         StringMatchesCVC(field.GetAttribute("name").Utf16());
-}
-
 std::string GetSignOnRealm(const GURL& origin) {
   GURL::Replacements rep;
   rep.SetPathStr("");

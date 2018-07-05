@@ -81,7 +81,6 @@ class ContentPasswordManagerDriver
   void AllowToRunFormClassifier() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  void MatchingBlacklistedFormFound() override;
 
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
@@ -105,8 +104,6 @@ class ContentPasswordManagerDriver
                                const base::string16& typed_username,
                                int options,
                                const gfx::RectF& bounds) override;
-  void ShowManualFallbackSuggestion(base::i18n::TextDirection text_direction,
-                                    const gfx::RectF& bounds) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void SaveGenerationFieldDetectedByClassifier(
