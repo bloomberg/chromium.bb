@@ -258,7 +258,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       prevented_default = event_handler.PerformDragAndDrop(
                               CreateMouseEvent(drag_data), data_transfer) !=
                           WebInputEventResult::kNotHandled;
-      if (!prevented_default) {
+      if (!prevented_default && document_under_mouse_) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
         const HitTestLocation location(local_root.View()->ConvertFromRootFrame(
