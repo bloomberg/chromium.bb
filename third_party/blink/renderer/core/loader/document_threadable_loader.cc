@@ -928,8 +928,9 @@ void DocumentThreadableLoader::ResponseReceived(
   // Note that CORS-preflight is usually handled in the Network Service side,
   // but still done in Blink side when it is needed on redirects.
   // https://crbug.com/736308.
-  if (out_of_blink_cors_ && actual_request_.IsNull() &&
-      !response.WasFetchedViaServiceWorker()) {
+  if (out_of_blink_cors_ && !response.WasFetchedViaServiceWorker()) {
+    DCHECK(actual_request_.IsNull());
+    fallback_request_for_service_worker_ = ResourceRequest();
     client_->DidReceiveResponse(resource->Identifier(), response,
                                 std::move(handle));
     return;
