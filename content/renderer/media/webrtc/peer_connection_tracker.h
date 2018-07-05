@@ -135,23 +135,20 @@ class CONTENT_EXPORT PeerConnectionTracker
   // In Unified Plan: "Transceiver" refers to RTCRtpTransceiver.
   // TODO(hbos): When we support transceivers, take blink::WebRTCRtpTransceiver
   // as the argument. https://crbug.com/777617
-  virtual void TrackAddTransceiver(
-      RTCPeerConnectionHandler* pc_handler,
-      TransceiverUpdatedReason reason,
-      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
-  virtual void TrackModifyTransceiver(
-      RTCPeerConnectionHandler* pc_handler,
-      TransceiverUpdatedReason reason,
-      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+  virtual void TrackAddTransceiver(RTCPeerConnectionHandler* pc_handler,
+                                   TransceiverUpdatedReason reason,
+                                   const blink::WebRTCRtpSender* sender,
+                                   const blink::WebRTCRtpReceiver* receiver);
+  virtual void TrackModifyTransceiver(RTCPeerConnectionHandler* pc_handler,
+                                      TransceiverUpdatedReason reason,
+                                      const blink::WebRTCRtpSender* sender,
+                                      const blink::WebRTCRtpReceiver* receiver);
   // TODO(hbos): When Plan B is removed this is no longer applicable.
   // https://crbug.com/857004
-  virtual void TrackRemoveTransceiver(
-      RTCPeerConnectionHandler* pc_handler,
-      TransceiverUpdatedReason reason,
-      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+  virtual void TrackRemoveTransceiver(RTCPeerConnectionHandler* pc_handler,
+                                      TransceiverUpdatedReason reason,
+                                      const blink::WebRTCRtpSender* sender,
+                                      const blink::WebRTCRtpReceiver* receiver);
 
   // Sends an update when a DataChannel is created.
   virtual void TrackCreateDataChannel(
@@ -207,12 +204,11 @@ class CONTENT_EXPORT PeerConnectionTracker
   // is not registered, the return value will be -1.
   int GetLocalIDForHandler(RTCPeerConnectionHandler* handler) const;
 
-  void TrackTransceiver(
-      const char* callback_type_ending,
-      RTCPeerConnectionHandler* pc_handler,
-      PeerConnectionTracker::TransceiverUpdatedReason reason,
-      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
-      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+  void TrackTransceiver(const char* callback_type_ending,
+                        RTCPeerConnectionHandler* pc_handler,
+                        PeerConnectionTracker::TransceiverUpdatedReason reason,
+                        const blink::WebRTCRtpSender* sender,
+                        const blink::WebRTCRtpReceiver* receiver);
 
   // IPC Message handler for getting all stats.
   void OnGetAllStats();

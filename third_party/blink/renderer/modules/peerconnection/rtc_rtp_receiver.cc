@@ -60,15 +60,12 @@ bool RTCRtpReceiver::StateMatchesWebReceiver() const {
       static_cast<MediaStreamComponent*>(receiver_->Track())) {
     return false;
   }
-  WebVector<WebMediaStream> web_streams = receiver_->Streams();
-  if (streams_.size() != web_streams.size())
+  WebVector<WebString> stream_ids = receiver_->StreamIds();
+  if (streams_.size() != stream_ids.size())
     return false;
-  for (size_t i = 0; i < streams_.size(); ++i) {
-    if (streams_[i]->Descriptor() !=
-        static_cast<MediaStreamDescriptor*>(web_streams[i])) {
+  for (size_t i = 0; i < streams_.size(); ++i)
+    if (static_cast<WebString>(streams_[i]->id()) != stream_ids[i])
       return false;
-    }
-  }
   return true;
 }
 

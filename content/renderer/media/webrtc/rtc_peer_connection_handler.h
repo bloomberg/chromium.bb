@@ -197,14 +197,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddRemoteTrack(
-      scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-          remote_track_adapter_ref,
-      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-          remote_stream_adapter_refs);
-  void OnRemoveRemoteTrack(
-      scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver);
+  void OnAddReceiver(RtpReceiverState receiver_state);
+  void OnRemoveReceiver(uintptr_t receiver_id);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,

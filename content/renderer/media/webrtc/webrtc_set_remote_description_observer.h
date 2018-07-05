@@ -14,8 +14,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
+#include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtcerror.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
@@ -25,32 +25,6 @@
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace content {
-
-// Describes an instance of a receiver at the time the SRD call was completed.
-// Because webrtc and content operate on different threads, webrtc objects may
-// have been modified by the time we synchronize the receivers on the main
-// thread, and members of this class should be inspected rather than members of
-// |receiver|.
-struct CONTENT_EXPORT WebRtcReceiverState {
-  WebRtcReceiverState(
-      scoped_refptr<webrtc::RtpReceiverInterface> receiver,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
-      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-          stream_refs);
-  WebRtcReceiverState(WebRtcReceiverState&& other);
-  ~WebRtcReceiverState();
-
-  WebRtcReceiverState& operator=(WebRtcReceiverState&& other);
-
-  scoped_refptr<webrtc::RtpReceiverInterface> receiver;
-  // The receiver's track when the SRD occurred.
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
-  // The receiver's associated set of streams when the SRD occurred.
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      stream_refs;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcReceiverState);
-};
 
 // The content layer correspondent of
 // webrtc::SetRemoteDescriptionObserverInterface. It's an interface with
@@ -73,9 +47,7 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserver
 
     webrtc::PeerConnectionInterface::SignalingState signaling_state;
     // The receivers at the time of the event.
-    std::vector<WebRtcReceiverState> receiver_states;
-    // Check that the invariants for this structure hold.
-    void CheckInvariants() const;
+    std::vector<RtpReceiverState> receiver_states;
 
     DISALLOW_COPY_AND_ASSIGN(States);
   };
@@ -104,9 +76,10 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
     : public webrtc::SetRemoteDescriptionObserverInterface {
  public:
   static scoped_refptr<WebRtcSetRemoteDescriptionObserverHandler> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
-      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map,
+      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
       scoped_refptr<WebRtcSetRemoteDescriptionObserver> observer);
 
   // webrtc::SetRemoteDescriptionObserverInterface implementation.
@@ -114,9 +87,10 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
 
  protected:
   WebRtcSetRemoteDescriptionObserverHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
-      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map,
+      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
       scoped_refptr<WebRtcSetRemoteDescriptionObserver> observer);
   ~WebRtcSetRemoteDescriptionObserverHandler() override;
 
@@ -125,13 +99,10 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
       webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
           states_or_error);
 
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map() const {
-    return stream_adapter_map_->track_adapter_map();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   scoped_refptr<webrtc::PeerConnectionInterface> pc_;
-  scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
+  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   scoped_refptr<WebRtcSetRemoteDescriptionObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcSetRemoteDescriptionObserverHandler);

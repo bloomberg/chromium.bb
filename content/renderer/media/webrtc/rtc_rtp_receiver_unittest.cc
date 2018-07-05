@@ -63,23 +63,23 @@ class RTCRtpReceiverTest : public ::testing::Test {
 
   std::unique_ptr<RTCRtpReceiver> CreateReceiver(
       scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track) {
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter;
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
     base::RunLoop run_loop;
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverTest::CreateReceiverOnSignalingThread,
                        base::Unretained(this), std::move(webrtc_track),
-                       base::Unretained(&track_adapter),
+                       base::Unretained(&track_ref),
                        base::Unretained(&run_loop)));
     run_loop.Run();
     DCHECK(mock_webrtc_receiver_);
-    DCHECK(track_adapter);
-    return std::make_unique<RTCRtpReceiver>(
-        peer_connection_.get(), main_thread_,
-        dependency_factory_->GetWebRtcSignalingThread(),
-        mock_webrtc_receiver_.get(), std::move(track_adapter),
-        std::vector<
-            std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>());
+    DCHECK(track_ref);
+    RtpReceiverState state(
+        main_thread_, dependency_factory_->GetWebRtcSignalingThread(),
+        mock_webrtc_receiver_.get(), std::move(track_ref), {});
+    state.Initialize();
+    return std::make_unique<RTCRtpReceiver>(peer_connection_.get(),
+                                            std::move(state));
   }
 
   scoped_refptr<WebRTCStatsReportObtainer> GetStats() {
@@ -92,12 +92,11 @@ class RTCRtpReceiverTest : public ::testing::Test {
  protected:
   void CreateReceiverOnSignalingThread(
       scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>*
-          track_adapter,
+      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>* track_ref,
       base::RunLoop* run_loop) {
     mock_webrtc_receiver_ =
         new rtc::RefCountedObject<webrtc::MockRtpReceiver>();
-    *track_adapter =
+    *track_ref =
         stream_map_->track_adapter_map()->GetOrCreateRemoteTrackAdapter(
             webrtc_track);
     run_loop->Quit();
@@ -122,7 +121,7 @@ TEST_F(RTCRtpReceiverTest, CreateReceiver) {
   receiver_ = CreateReceiver(webrtc_track);
   EXPECT_FALSE(receiver_->Track().IsNull());
   EXPECT_EQ(receiver_->Track().Id().Utf8(), webrtc_track->id());
-  EXPECT_EQ(&receiver_->webrtc_track(), webrtc_track);
+  EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
 }
 
 TEST_F(RTCRtpReceiverTest, ShallowCopy) {
@@ -130,17 +129,17 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
       MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
   auto copy = receiver_->ShallowCopy();
-  EXPECT_EQ(&receiver_->webrtc_track(), webrtc_track);
-  auto* webrtc_receiver = receiver_->webrtc_receiver();
+  EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
+  const auto& webrtc_receiver = receiver_->state().webrtc_receiver();
   auto web_track_unique_id = receiver_->Track().UniqueId();
   // Copy is identical to original.
-  EXPECT_EQ(copy->webrtc_receiver(), webrtc_receiver);
-  EXPECT_EQ(&copy->webrtc_track(), webrtc_track);
+  EXPECT_EQ(copy->state().webrtc_receiver(), webrtc_receiver);
+  EXPECT_EQ(copy->state().track_ref()->webrtc_track(), webrtc_track);
   EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
   // Copy keeps the internal state alive.
   receiver_.reset();
-  EXPECT_EQ(copy->webrtc_receiver(), webrtc_receiver);
-  EXPECT_EQ(&copy->webrtc_track(), webrtc_track);
+  EXPECT_EQ(copy->state().webrtc_receiver(), webrtc_receiver);
+  EXPECT_EQ(copy->state().track_ref()->webrtc_track(), webrtc_track);
   EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
 }
 
