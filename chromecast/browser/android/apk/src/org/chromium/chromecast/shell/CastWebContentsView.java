@@ -8,7 +8,7 @@ import android.content.Context;
 import android.widget.FrameLayout;
 
 import org.chromium.chromecast.base.ScopeFactory;
-import org.chromium.components.content_view.ContentView;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
