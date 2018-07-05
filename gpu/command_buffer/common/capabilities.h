@@ -120,6 +120,9 @@ struct GPU_EXPORT Capabilities {
   int num_extensions = 0;
   int num_program_binary_formats = 0;
   int uniform_buffer_offset_alignment = 1;
+  // Describes how many buffers a surface uses in the swap chain. Default to 2
+  // since double buffering is the default in most cases.
+  int num_surface_buffers = 2;
 
   bool post_sub_buffer = false;
   bool swap_buffers_with_bounds = false;

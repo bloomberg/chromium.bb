@@ -287,6 +287,11 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // buffers.
   virtual void SetUsePlaneGpuFences();
 
+  // Returns the number of buffers the surface uses in the swap chain. For
+  // example, most surfaces are double-buffered, so this would return 2. For
+  // triple-buffered surfaces this would return 3, etc.
+  virtual int GetBufferCount() const;
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -381,6 +386,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsSwapTimestamps() const override;
   void SetEnableSwapTimestamps() override;
   void SetUsePlaneGpuFences() override;
+  int GetBufferCount() const override;
 
   GLSurface* surface() const { return surface_.get(); }
 

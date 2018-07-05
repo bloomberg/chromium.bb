@@ -94,6 +94,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(num_extensions)
   IPC_STRUCT_TRAITS_MEMBER(num_program_binary_formats)
   IPC_STRUCT_TRAITS_MEMBER(uniform_buffer_offset_alignment)
+  IPC_STRUCT_TRAITS_MEMBER(num_surface_buffers)
 
   IPC_STRUCT_TRAITS_MEMBER(post_sub_buffer)
   IPC_STRUCT_TRAITS_MEMBER(swap_buffers_with_bounds)
