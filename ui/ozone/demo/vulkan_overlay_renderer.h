@@ -17,6 +17,7 @@
 
 namespace gfx {
 class NativePixmap;
+class GpuFence;
 }  // namespace gfx
 
 namespace gpu {
@@ -43,15 +44,6 @@ class VulkanOverlayRenderer : public RendererBase {
   bool Initialize() override;
 
  private:
-  void DestroyBuffers();
-  void RecreateBuffers();
-  void RenderFrame();
-  void PostRenderFrameTask();
-  void OnFrameSubmitted(uint64_t frame_sequence, gfx::SwapResult swap_result);
-  void OnFramePresented(uint64_t frame_sequence,
-                        const gfx::PresentationFeedback& feedback);
-  void OnFrameReleased(uint64_t frame_sequence);
-
   class Buffer {
    public:
     Buffer(const gfx::Size& size,
@@ -59,12 +51,16 @@ class VulkanOverlayRenderer : public RendererBase {
            VkDeviceMemory vk_device_memory,
            VkImage vk_image,
            VkImageView vk_image_view,
-           VkFramebuffer vk_framebuffer);
+           VkFramebuffer vk_framebuffer,
+           std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer,
+           VkFence fence);
     ~Buffer();
 
     static std::unique_ptr<Buffer> Create(
         SurfaceFactoryOzone* surface_factory_ozone,
-        VkDevice vk_device,
+        gpu::VulkanImplementation* vulkan_implementation,
+        gpu::VulkanDeviceQueue* vulkan_device_queue,
+        gpu::VulkanCommandPool* vulkan_command_pool,
         VkRenderPass vk_render_pass,
         gfx::AcceleratedWidget widget,
         const gfx::Size& size);
@@ -77,6 +73,10 @@ class VulkanOverlayRenderer : public RendererBase {
     VkImage vk_image() const { return vk_image_; }
     VkImageView vk_image_view() const { return vk_image_view_; }
     VkFramebuffer vk_framebuffer() const { return vk_framebuffer_; }
+    gpu::VulkanCommandBuffer* command_buffer() const {
+      return command_buffer_.get();
+    }
+    VkFence fence() const { return fence_; }
 
    private:
     const scoped_refptr<gfx::NativePixmap> native_pixmap_;
@@ -85,7 +85,20 @@ class VulkanOverlayRenderer : public RendererBase {
     const VkImage vk_image_;
     const VkImageView vk_image_view_;
     const VkFramebuffer vk_framebuffer_;
+    const std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer_;
+    const VkFence fence_;
   };
+
+  void DestroyBuffers();
+  void RecreateBuffers();
+  void RenderFrame();
+  std::unique_ptr<gfx::GpuFence> SubmitFence(VkFence fence);
+  void SubmitFrame(const Buffer* buffer);
+  void PostRenderFrameTask();
+  void OnFrameSubmitted(uint64_t frame_sequence, gfx::SwapResult swap_result);
+  void OnFramePresented(uint64_t frame_sequence,
+                        const gfx::PresentationFeedback& feedback);
+  void OnFrameReleased(uint64_t frame_sequence);
 
   uint64_t frame_sequence_ = 0;
   int next_buffer_ = 0;
@@ -96,7 +109,6 @@ class VulkanOverlayRenderer : public RendererBase {
   gpu::VulkanImplementation* const vulkan_implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
   std::unique_ptr<gpu::VulkanCommandPool> command_pool_;
-  std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer_;
   std::unique_ptr<OverlaySurface> overlay_surface_;
 
   VkRenderPass render_pass_;

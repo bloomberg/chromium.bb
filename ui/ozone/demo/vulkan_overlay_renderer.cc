@@ -48,8 +48,6 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
 
 VulkanOverlayRenderer::~VulkanOverlayRenderer() {
   DestroyBuffers();
-  command_buffer_->Destroy();
-  command_buffer_.reset();
   command_pool_->Destroy();
   command_pool_.reset();
   device_queue_->Destroy();
@@ -104,10 +102,6 @@ bool VulkanOverlayRenderer::Initialize() {
   command_pool_ = std::make_unique<gpu::VulkanCommandPool>(device_queue_.get());
   CHECK(command_pool_->Initialize());
 
-  command_buffer_ = std::make_unique<gpu::VulkanCommandBuffer>(
-      device_queue_.get(), command_pool_.get(), true /* primary */);
-  CHECK(command_buffer_->Initialize());
-
   RecreateBuffers();
 
   // Schedule the initial render.
@@ -117,9 +111,16 @@ bool VulkanOverlayRenderer::Initialize() {
 
 void VulkanOverlayRenderer::DestroyBuffers() {
   VkDevice vk_device = device_queue_->GetVulkanDevice();
+
+  VkResult result = vkQueueWaitIdle(device_queue_->GetVulkanQueue());
+  CHECK_EQ(result, VK_SUCCESS);
+
   for (std::unique_ptr<Buffer>& buffer : buffers_) {
     if (!buffer)
       continue;
+
+    vkDestroyFence(vk_device, buffer->fence(), nullptr);
+    buffer->command_buffer()->Destroy();
     vkDestroyFramebuffer(vk_device, buffer->vk_framebuffer(), nullptr);
     vkDestroyImageView(vk_device, buffer->vk_image_view(), nullptr);
     vkDestroyImage(vk_device, buffer->vk_image(), nullptr);
@@ -134,9 +135,9 @@ void VulkanOverlayRenderer::RecreateBuffers() {
   DestroyBuffers();
 
   for (auto& buffer : buffers_) {
-    buffer =
-        Buffer::Create(surface_factory_ozone_, device_queue_->GetVulkanDevice(),
-                       render_pass_, widget_, size_);
+    buffer = Buffer::Create(surface_factory_ozone_, vulkan_implementation_,
+                            device_queue_.get(), command_pool_.get(),
+                            render_pass_, widget_, size_);
     CHECK(buffer);
   }
 }
@@ -153,8 +154,10 @@ void VulkanOverlayRenderer::RenderFrame() {
   ++in_use_buffers_;
   DCHECK_LE(in_use_buffers_, base::size(buffers_));
 
+  gpu::VulkanCommandBuffer& command_buffer = *buffer.command_buffer();
+
   {
-    gpu::ScopedSingleUseCommandBufferRecorder recorder(*command_buffer_);
+    gpu::ScopedSingleUseCommandBufferRecorder recorder(command_buffer);
 
     VkRenderPassBeginInfo begin_info = {};
     begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -171,22 +174,39 @@ void VulkanOverlayRenderer::RenderFrame() {
     vkCmdEndRenderPass(recorder.handle());
   }
 
-  VkSemaphoreCreateInfo sem_create_info = {
-      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-  };
-  VkSemaphore semaphore;
-  vkCreateSemaphore(device_queue_->GetVulkanDevice(), &sem_create_info, NULL,
-                    &semaphore);
+  CHECK(command_buffer.Submit(0, nullptr, 0, nullptr));
 
-  command_buffer_->Submit(1, &semaphore, 0, nullptr);
+  SubmitFrame(&buffer);
+}
 
-  // TODO(spang): Create a gfx::GpuFence and use it for synchronization.
-  command_buffer_->Wait(UINT64_MAX);
+std::unique_ptr<gfx::GpuFence> VulkanOverlayRenderer::SubmitFence(
+    VkFence fence) {
+  VkResult result;
+  VkFence fences[] = {fence};
+  result = vkResetFences(device_queue_->GetVulkanDevice(), base::size(fences),
+                         fences);
+  CHECK_EQ(result, VK_SUCCESS);
+
+  result = vkQueueSubmit(device_queue_->GetVulkanQueue(), 0, nullptr, fence);
+  CHECK_EQ(result, VK_SUCCESS);
+
+  std::unique_ptr<gfx::GpuFence> gpu_fence =
+      vulkan_implementation_->ExportVkFenceToGpuFence(
+          device_queue_->GetVulkanDevice(), fence);
+  if (!gpu_fence)
+    LOG(FATAL) << "Unable to export VkFence to gfx::GpuFence";
+
+  return gpu_fence;
+}
+
+void VulkanOverlayRenderer::SubmitFrame(
+    const VulkanOverlayRenderer::Buffer* buffer) {
+  std::unique_ptr<gfx::GpuFence> gpu_fence = SubmitFence(buffer->fence());
 
   ui::OverlayPlane primary_plane;
-  primary_plane.pixmap = buffer.native_pixmap();
-  primary_plane.display_bounds = gfx::Rect(buffer.size());
-  primary_plane.crop_rect = gfx::RectF(1.f, 1.f);
+  primary_plane.pixmap = buffer->native_pixmap();
+  primary_plane.display_bounds = gfx::Rect(buffer->size());
+  primary_plane.gpu_fence = std::move(gpu_fence);
 
   std::vector<ui::OverlayPlane> overlay_planes;
   overlay_planes.push_back(std::move(primary_plane));
@@ -245,25 +265,32 @@ VulkanOverlayRenderer::Buffer::Buffer(
     VkDeviceMemory vk_device_memory,
     VkImage vk_image,
     VkImageView vk_image_view,
-    VkFramebuffer vk_framebuffer)
+    VkFramebuffer vk_framebuffer,
+    std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer,
+    VkFence fence)
     : native_pixmap_(std::move(native_pixmap)),
       size_(size),
       vk_device_memory_(vk_device_memory),
       vk_image_(vk_image),
       vk_image_view_(vk_image_view),
-      vk_framebuffer_(vk_framebuffer) {}
+      vk_framebuffer_(vk_framebuffer),
+      command_buffer_(std::move(command_buffer)),
+      fence_(fence) {}
 
 VulkanOverlayRenderer::Buffer::~Buffer() {}
 
 std::unique_ptr<VulkanOverlayRenderer::Buffer>
 VulkanOverlayRenderer::Buffer::Create(
     SurfaceFactoryOzone* surface_factory_ozone,
-    VkDevice vk_device,
+    gpu::VulkanImplementation* vulkan_implementation,
+    gpu::VulkanDeviceQueue* vulkan_device_queue,
+    gpu::VulkanCommandPool* vulkan_command_pool,
     VkRenderPass vk_render_pass,
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
 
+  VkDevice vk_device = vulkan_device_queue->GetVulkanDevice();
   VkImage vk_image = VK_NULL_HANDLE;
   VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
   scoped_refptr<gfx::NativePixmap> native_pixmap =
@@ -304,7 +331,7 @@ VulkanOverlayRenderer::Buffer::Create(
   if (result != VK_SUCCESS) {
     LOG(FATAL) << "Failed to create a Vulkan image view.";
   }
-  VkFramebufferCreateInfo vk_framebuffer_create_info{
+  VkFramebufferCreateInfo vk_framebuffer_create_info = {
       .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
       .renderPass = vk_render_pass,
       .attachmentCount = 1,
@@ -321,9 +348,17 @@ VulkanOverlayRenderer::Buffer::Create(
     LOG(FATAL) << "Failed to create a Vulkan framebuffer.";
   }
 
+  auto command_buffer = std::make_unique<gpu::VulkanCommandBuffer>(
+      vulkan_device_queue, vulkan_command_pool, true /* primary */);
+  CHECK(command_buffer->Initialize());
+
+  VkFence fence = vulkan_implementation->CreateVkFenceForGpuFence(vk_device);
+  if (fence == VK_NULL_HANDLE)
+    LOG(FATAL) << "Failed to create VkFence";
+
   return std::make_unique<VulkanOverlayRenderer::Buffer>(
       size, native_pixmap, vk_device_memory, vk_image, vk_image_view,
-      vk_framebuffer);
+      vk_framebuffer, std::move(command_buffer), fence);
 }
 
 }  // namespace ui
