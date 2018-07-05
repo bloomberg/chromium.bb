@@ -267,13 +267,20 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
 
-  // Clear docurl so the deferred activation of a waiting worker
-  // won't associate the new version with a provider being destroyed.
+  // Stop listening to registrations. This must be done before removing the
+  // controllee below, otherwise it can trigger activation of a waiting worker
+  // and OnSkippedWaiting can be called which would associate the version
+  // with this provider being destroyed.
+  RemoveAllMatchingRegistrations();
+
+  // Clear |document_url_| so the activation of a waiting worker upon
+  // RemoveControllee() won't associate the new version with this provider being
+  // destroyed.
+  // TODO(falken): Is this still needed given that we call
+  // RemoveAllMatchingRegistrations?
   document_url_ = GURL();
   if (controller_.get())
     controller_->RemoveControllee(this);
-
-  RemoveAllMatchingRegistrations();
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
