@@ -104,6 +104,13 @@ void FullscreenWebStateObserver::DidFinishNavigation(
 
 void FullscreenWebStateObserver::DidStartLoading(web::WebState* web_state) {
   SetIsLoading(true);
+  if (IsUIRefreshPhase1Enabled()) {
+    // This is done to show the toolbar when navigating to a page that is
+    // considered as being in the SameDocument by the NavigationContext, so the
+    // toolbar isn't shown in the DidFinishNavigation. For example this is
+    // needed to load AMP pages from Google Search Result Page.
+    controller_->ResetModel();
+  }
 }
 
 void FullscreenWebStateObserver::DidStopLoading(web::WebState* web_state) {
