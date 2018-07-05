@@ -91,6 +91,7 @@ class LayoutSelectionTest : public EditingTestBase {
   LayoutObject* Current() const { return current_; }
   void Reset() {
     results.clear();
+    stream = std::stringstream();
     current_ = GetDocument().body()->GetLayoutObject();
   }
 
@@ -98,33 +99,33 @@ class LayoutSelectionTest : public EditingTestBase {
     DCHECK(current_);
     current_ = NextLayoutObjectOnDOMTreeIncludeShadow(*current_);
   }
+  void TestNext(bool result) {
+    results.push_back(result);
+    if (!result) {
+      stream << "case " << results.size() - 1 << " failed.\n";
+    }
+    if (!current_) {
+      stream << "cases are more than layout objects.\n";
+      return;
+    }
+    Next();
+  }
 
   bool CheckResult() {
-    std::stringstream stream;
-    bool has_fails = false;
-    if (current_) {
-      has_fails = true;
+    if (current_)
       stream << "cases are fewer than layout objects.";
+
+    std::string errors = stream.str();
+    if (errors.size()) {
+      std::stringstream layout_tree;
+      PrintLayoutTree(layout_tree);
+      LOG(ERROR) << "\n" << errors << layout_tree.str();
     }
-    std::stringstream fails;
-    int test_fails = 0;
-    for (size_t i = 0; i < results.size(); i++) {
-      if (!results[i]) {
-        has_fails = true;
-        test_fails++;
-        fails << ", " << i;
-      }
-    }
-    if (has_fails) {
-      if (test_fails)
-        stream << "\ncases failed at" << fails.str();
-      PrintLayoutTree(stream);
-      LOG(ERROR) << "\n" << stream.str();
-    }
-    return !has_fails;
+    return !errors.size();
   }
 
   WTF::Vector<bool> results;
+  std::stringstream stream;
 
   void PrintLayoutTree(std::stringstream& stream) {
     for (LayoutObject* runner = GetDocument().body()->GetLayoutObject(); runner;
@@ -171,6 +172,14 @@ class LayoutSelectionTest : public EditingTestBase {
  private:
   LayoutObject* current_ = nullptr;
 };
+
+// You can test SeletionStatus of all LayoutObjects in the body with following
+// macros. See TraverseLayoutObject example below.
+#define TEST_RESET() Reset();
+#define TEST_NEXT(predicate, state, invalidate)                          \
+  TestNext(TestLayoutObject(Current(), predicate, SelectionState::state, \
+                            InvalidateOption::invalidate));
+#define TEST_CHECK() EXPECT_TRUE(CheckResult())
 
 std::ostream& operator<<(std::ostream& ostream, LayoutObject* layout_object) {
   PrintLayoutObjectForSelection(ostream, layout_object);
@@ -281,18 +290,6 @@ static bool TestLayoutObject(LayoutObject* object,
           text),
       state, invalidate);
 }
-
-// You can test SeletionStatus of all LayoutObjects in the body with following
-// macros. See TraverseLayoutObject example just below.
-#define TEST_RESET() Reset();
-
-#define TEST_NEXT(predicate, state, invalidate)                      \
-  results.push_back(TestLayoutObject(Current(), predicate,           \
-                                     SelectionState::state,          \
-                                     InvalidateOption::invalidate)); \
-  Next()
-
-#define TEST_CHECK() EXPECT_TRUE(CheckResult())
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
   SetBodyContent("foo<br>bar");
