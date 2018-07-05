@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
@@ -228,6 +229,49 @@ source_set("perf_tests") {
   ]
 
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
+}
+
+source_set("scheduler_fuzzer_tests") {
+  testonly = true
+
+  sources = []
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/blink/renderer/platform/scheduler:test_support",
+  ]
+
+  if (is_linux) {
+    sources += [
+      "base/sequence_manager_fuzzer_processor.cc",
+      "base/sequence_manager_fuzzer_processor.h",
+      "base/sequence_manager_fuzzer_processor_unittest.cc",
+    ]
+
+    deps += [
+      ":sequence_manager_test_description_proto",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+
+  configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
+}
+
+fuzzer_test("sequence_manager_fuzzer") {
+  sources = [
+    "base/sequence_manager_fuzzer.cc",
+    "base/sequence_manager_fuzzer_processor.cc",
+    "base/sequence_manager_fuzzer_processor.h",
+  ]
+
+  deps = [
+    ":sequence_manager_test_description_proto",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/blink/renderer/platform:test_support",
+    "//third_party/libprotobuf-mutator",
+  ]
 }
 
 proto_library("sequence_manager_test_description_proto") {

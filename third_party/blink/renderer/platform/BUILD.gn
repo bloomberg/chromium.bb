@@ -2053,11 +2053,19 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 test("blink_fuzzer_unittests") {
   deps = [
-    "//third_party/blink/renderer/platform:test_support",
+    ":test_support",
+    "//third_party/blink/public:test_support",
   ]
+
   sources = [
     "testing/run_all_tests.cc",
   ]
+
+  if (is_linux) {
+    deps += [
+      "//third_party/blink/renderer/platform/scheduler:scheduler_fuzzer_tests",
+    ]
+  }
 }
 
 # This source set is used for fuzzers that need an environment similar to unit

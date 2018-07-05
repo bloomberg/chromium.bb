@@ -58,4 +58,7 @@ specific_include_rules = {
     "+base/metrics/field_trial_param_associator.h",
     "+testing",
   ],
+ "sequence_manager_fuzzer.cc": [
+   '+testing/libfuzzer/proto/lpm_interface.h'
+ ],
 }
