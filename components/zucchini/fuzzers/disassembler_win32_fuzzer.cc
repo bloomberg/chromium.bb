@@ -5,68 +5,72 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "base/logging.h"
 #include "components/zucchini/buffer_view.h"
 #include "components/zucchini/disassembler.h"
 #include "components/zucchini/disassembler_win32.h"
 
+namespace {
+
 struct Environment {
   Environment() {
-    logging::SetMinLogLevel(3);  // Disable console spamming.
+    logging::SetMinLogLevel(logging::LOG_FATAL);  // Disable console spamming.
   }
 };
 
-Environment* env = new Environment();
+// Helper function that uses |disassembler| to read all references from
+// |mutable_image| and write them back.
+void ReadAndWriteReferences(
+    std::unique_ptr<zucchini::Disassembler> disassembler,
+    std::vector<uint8_t>* mutable_data) {
+  zucchini::MutableBufferView mutable_image(mutable_data->data(),
+                                            disassembler->size());
+  std::vector<zucchini::Reference> references;
+  auto groups = disassembler->MakeReferenceGroups();
+  std::map<zucchini::PoolTag, std::vector<zucchini::Reference>>
+      references_of_pool;
+  for (const auto& group : groups) {
+    auto reader = group.GetReader(disassembler.get());
+    std::vector<zucchini::Reference>* refs =
+        &references_of_pool[group.pool_tag()];
+    for (auto ref = reader->GetNext(); ref.has_value();
+         ref = reader->GetNext()) {
+      refs->push_back(ref.value());
+    }
+  }
+  for (const auto& group : groups) {
+    auto writer = group.GetWriter(mutable_image, disassembler.get());
+    for (const auto& ref : references_of_pool[group.pool_tag()])
+      writer->PutNext(ref);
+  }
+}
+
+}  // namespace
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Prep data.
-  zucchini::ConstBufferView image(data, size);
+  static Environment env;
+  if (!size)
+    return 0;
+  // Prepare data.
+  std::vector<uint8_t> mutable_data(data, data + size);
+  zucchini::ConstBufferView image(mutable_data.data(), mutable_data.size());
 
   // One of x86 or x64 should return a non-nullptr if the data is valid.
-
-  // Output will be a pointer to zucchini::DisassemblerWin32X86 if successful
-  // or nullptr otherwise.
   auto disassembler_win32x86 =
       zucchini::Disassembler::Make<zucchini::DisassemblerWin32X86>(image);
-  if (disassembler_win32x86 != nullptr) {
-    // Get the image size which has been shruken to the size understood by the
-    // parser.
-    auto parsed_image_size = disassembler_win32x86->image().size();
-
-    // Parse the Win32 PE file and ensure nothing bad occurs.
-    // TODO(ckitagawa): Actually validate that the output reference is within
-    // the image.
-    auto relocx86 = disassembler_win32x86->MakeReadRelocs(0, parsed_image_size);
-    while (relocx86->GetNext().has_value()) {
-    }
-    auto abs32x86 = disassembler_win32x86->MakeReadAbs32(0, parsed_image_size);
-    while (abs32x86->GetNext().has_value()) {
-    }
-    auto rel32x86 = disassembler_win32x86->MakeReadRel32(0, parsed_image_size);
-    while (rel32x86->GetNext().has_value()) {
-    }
+  if (disassembler_win32x86) {
+    ReadAndWriteReferences(std::move(disassembler_win32x86), &mutable_data);
+    return 0;
   }
 
-  // Output will be a pointer to zucchini::DisassemblerWin32X64 if successful
-  // or nullptr otherwise.
   auto disassembler_win32x64 =
       zucchini::Disassembler::Make<zucchini::DisassemblerWin32X64>(image);
-  if (disassembler_win32x64 != nullptr) {
-    // Get the image size which has been shruken to the size understood by the
-    // parser.
-    auto parsed_image_size = disassembler_win32x64->image().size();
-
-    // Parse the Win32 PE file and ensure nothing bad occurs.
-    auto relocx64 = disassembler_win32x64->MakeReadRelocs(0, parsed_image_size);
-    while (relocx64->GetNext().has_value()) {
-    }
-    auto abs32x64 = disassembler_win32x64->MakeReadAbs32(0, parsed_image_size);
-    while (abs32x64->GetNext().has_value()) {
-    }
-    auto rel32x64 = disassembler_win32x64->MakeReadRel32(0, parsed_image_size);
-    while (rel32x64->GetNext().has_value()) {
-    }
-  }
+  if (disassembler_win32x64)
+    ReadAndWriteReferences(std::move(disassembler_win32x64), &mutable_data);
   return 0;
 }
