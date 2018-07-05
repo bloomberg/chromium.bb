@@ -260,6 +260,10 @@ class PasswordManagerClient {
   // incognito context. Callers should guard against this.
   virtual PasswordRequirementsService* GetPasswordRequirementsService();
 
+  // Causes all live PasswordFormManager objects to query the password store
+  // again. Results in updating the fill information on the page.
+  virtual void UpdateFormManagers() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };

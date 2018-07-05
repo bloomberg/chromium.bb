@@ -25,9 +25,12 @@ using ::testing::_;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::Mock;
 using ::testing::Not;
 using ::testing::Pointee;
 using ::testing::UnorderedElementsAre;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 
 namespace {
 
@@ -44,9 +47,15 @@ std::vector<const autofill::PasswordForm*> GetRawPointers(
   return result;
 }
 
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  MOCK_METHOD0(UpdateFormManagers, void());
+};
+
 class ManagePasswordsStateTest : public testing::Test {
  public:
-  ManagePasswordsStateTest() : password_manager_(&stub_client_) {
+  ManagePasswordsStateTest() : password_manager_(&mock_client_) {
     fetcher_.Fetch();
   }
 
@@ -73,7 +82,7 @@ class ManagePasswordsStateTest : public testing::Test {
     test_local_federated_form_.signon_realm =
         "federation://example.com/accounts.com";
 
-    passwords_data_.set_client(&stub_client_);
+    passwords_data_.set_client(&mock_client_);
   }
 
   autofill::PasswordForm& test_local_form() { return test_local_form_; }
@@ -113,7 +122,7 @@ class ManagePasswordsStateTest : public testing::Test {
   std::unique_ptr<password_manager::PasswordFormManager>
   CreateFormManagerInternal(bool include_federated);
 
-  password_manager::StubPasswordManagerClient stub_client_;
+  MockPasswordManagerClient mock_client_;
   password_manager::StubPasswordManagerDriver driver_;
   password_manager::PasswordManager password_manager_;
   password_manager::FakeFormFetcher fetcher_;
@@ -140,7 +149,7 @@ std::unique_ptr<password_manager::PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          &password_manager_, &stub_client_, driver_.AsWeakPtr(),
+          &password_manager_, &mock_client_, driver_.AsWeakPtr(),
           test_local_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
   test_form_manager->Init(nullptr);
@@ -169,9 +178,8 @@ void ManagePasswordsStateTest::TestNoisyUpdates() {
   form.origin = GURL("http://3rdparty.com");
   form.username_value = base::ASCIIToUTF16("username");
   form.password_value = base::ASCIIToUTF16("12345");
-  password_manager::PasswordStoreChange change(
-      password_manager::PasswordStoreChange::ADD, form);
-  password_manager::PasswordStoreChangeList list(1, change);
+  PasswordStoreChange change(PasswordStoreChange::ADD, form);
+  PasswordStoreChangeList list(1, change);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
@@ -179,16 +187,14 @@ void ManagePasswordsStateTest::TestNoisyUpdates() {
 
   // Update the form.
   form.password_value = base::ASCIIToUTF16("password");
-  list[0] = password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::UPDATE, form);
+  list[0] = PasswordStoreChange(PasswordStoreChange::UPDATE, form);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
 
   // Delete the form.
-  list[0] = password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::REMOVE, form);
+  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, form);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
@@ -210,30 +216,44 @@ void ManagePasswordsStateTest::TestAllUpdates() {
   form.signon_realm = form.origin.GetOrigin().spec();
   form.username_value = base::ASCIIToUTF16("user15");
   form.password_value = base::ASCIIToUTF16("12345");
-  password_manager::PasswordStoreChange change(
-      password_manager::PasswordStoreChange::ADD, form);
-  password_manager::PasswordStoreChangeList list(1, change);
+  PasswordStoreChange change(PasswordStoreChange::ADD, form);
+  PasswordStoreChangeList list(1, change);
+  EXPECT_CALL(mock_client_, UpdateFormManagers()).Times(0);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_THAT(passwords_data().GetCurrentForms(), Contains(Pointee(form)));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
+  Mock::VerifyAndClearExpectations(&mock_client_);
+
+  // Remove and Add form.
+  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, form);
+  form.username_value = base::ASCIIToUTF16("user15");
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  EXPECT_CALL(mock_client_, UpdateFormManagers()).Times(0);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+  Mock::VerifyAndClearExpectations(&mock_client_);
+  list.erase(++list.begin());
 
   // Update the form.
   form.password_value = base::ASCIIToUTF16("password");
-  list[0] = password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::UPDATE, form);
+  list[0] = PasswordStoreChange(PasswordStoreChange::UPDATE, form);
+  EXPECT_CALL(mock_client_, UpdateFormManagers()).Times(0);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_THAT(passwords_data().GetCurrentForms(), Contains(Pointee(form)));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
+  Mock::VerifyAndClearExpectations(&mock_client_);
 
   // Delete the form.
-  list[0] = password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::REMOVE, form);
+  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, form);
+  EXPECT_CALL(mock_client_, UpdateFormManagers());
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
+  Mock::VerifyAndClearExpectations(&mock_client_);
 
   TestNoisyUpdates();
 }
@@ -249,17 +269,15 @@ void ManagePasswordsStateTest::TestBlacklistedUpdates() {
   autofill::PasswordForm blacklisted;
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = origin;
-  password_manager::PasswordStoreChangeList list;
-  list.push_back(password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::ADD, blacklisted));
+  PasswordStoreChangeList list;
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, blacklisted));
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
 
   // Delete the blacklisted form.
-  list[0] = password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, blacklisted);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
