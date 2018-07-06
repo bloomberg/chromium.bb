@@ -230,12 +230,15 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   DISALLOW_COPY_AND_ASSIGN(Volume);
 };
 
-// Manages "Volume"s for file manager. Here are "Volume"s.
-// - Drive File System (not yet supported).
+// Manages Volumes for file manager. Example of Volumes:
+// - Drive File System.
 // - Downloads directory.
 // - Removable disks (volume will be created for each partition, not only one
 //   for a device).
 // - Mounted zip archives.
+// - Linux/Crostini file system.
+// - Android/Arc++ file system.
+// - File System Providers.
 class VolumeManager : public KeyedService,
                       public arc::ArcSessionManager::Observer,
                       public drive::DriveIntegrationServiceObserver,
