@@ -32,7 +32,7 @@ namespace app_metro_launch {
 namespace {
 
 void LaunchAppWithId(Profile* profile, const std::string& extension_id) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return;

@@ -421,8 +421,9 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
   }
 
   const Extension* LoadExtensionFromPath(const base::FilePath& path) {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+    extensions::ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service();
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(browser()->profile());
     extensions::TestExtensionRegistryObserver observer(registry);

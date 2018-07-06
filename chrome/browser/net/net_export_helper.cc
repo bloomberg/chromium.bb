@@ -61,7 +61,8 @@ std::unique_ptr<base::ListValue> GetExtensionInfo(Profile* profile) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   if (extension_system) {
-    ExtensionService* extension_service = extension_system->extension_service();
+    extensions::ExtensionService* extension_service =
+        extension_system->extension_service();
     if (extension_service) {
       std::unique_ptr<const extensions::ExtensionSet> extensions(
           extensions::ExtensionRegistry::Get(profile)

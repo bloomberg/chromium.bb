@@ -50,7 +50,7 @@ extensions::ExtensionRegistry* GetExtensionRegistry(Profile* profile) {
   return extensions::ExtensionRegistry::Get(profile);
 }
 
-ExtensionService* GetExtensionService(Profile* profile) {
+extensions::ExtensionService* GetExtensionService(Profile* profile) {
   return extensions::ExtensionSystem::Get(profile)->extension_service();
 }
 

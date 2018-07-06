@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
 }
 
 void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
-                              ExtensionService* extensionService,
+                              extensions::ExtensionService* extensionService,
                               const base::Closure& closure) {
   AppMenuController* appMenuController =
       [toolbarController appMenuController];
