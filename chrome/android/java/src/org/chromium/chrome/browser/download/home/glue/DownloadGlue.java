@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
+import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -96,7 +97,9 @@ public class DownloadGlue implements DownloadObserver {
     // OfflineContentProvider glue implementation.
     /** @see OfflineContentProvider#openItem(ContentId) */
     public void openItem(OfflineItem item) {
-        // TODO(dtrainor): Implement open.
+        // TODO(shaktisahu): May be pass metrics as a param.
+        DownloadManagerService.getDownloadManagerService().openDownload(
+                item.id, item.isOffTheRecord, DownloadMetrics.DOWNLOAD_HOME);
     }
 
     /** @see OfflineContentProvider#removeItem(ContentId) */
