@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_load_service.h"
+#include "chrome/browser/apps/platform_apps/app_load_service.h"
 
 #include "apps/app_restore_service.h"
 #include "apps/launcher.h"
-#include "chrome/browser/apps/app_load_service_factory.h"
+#include "chrome/browser/apps/platform_apps/app_load_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "content/public/browser/browser_context.h"

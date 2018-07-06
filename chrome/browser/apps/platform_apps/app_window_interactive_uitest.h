@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_
-#define CHROME_BROWSER_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace extensions {
@@ -51,4 +51,4 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppWindowInteractiveTest);
 };
 
-#endif  // CHROME_BROWSER_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_APP_WINDOW_INTERACTIVE_UITEST_H_

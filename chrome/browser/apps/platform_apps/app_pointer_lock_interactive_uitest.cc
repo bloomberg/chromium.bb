@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -17,7 +17,7 @@ class ExtensionPointerLockTest : public extensions::PlatformAppBrowserTest {
     extensions::ResultCatcher catcher;
 
     if (!ui_test_utils::ShowAndFocusNativeWindow(
-             GetFirstAppWindow()->GetNativeWindow())) {
+            GetFirstAppWindow()->GetNativeWindow())) {
       message_ = "Can't focus window";
       return false;
     }
@@ -38,12 +38,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionPointerLockTest,
   // Test that pointer lock cannot be accessed from an extension without
   // permission.
   ASSERT_TRUE(RunExtensionPointerLockTest("pointer_lock/no_permission"))
-    << message_;
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPointerLockTest,
                        ExtensionPointerLockAccessPass) {
   // Test that pointer lock can be accessed from an extension with permission.
   ASSERT_TRUE(RunExtensionPointerLockTest("pointer_lock/has_permission"))
-    << message_;
+      << message_;
 }

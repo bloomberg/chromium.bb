@@ -17,7 +17,7 @@
 //chrome/app:test_support
 //chrome/browser:browser
 //chrome/browser:test_support
-//chrome/browser/apps:apps
+//chrome/browser/apps/platform_apps:platform_apps
 //chrome/browser/devtools:devtools
 //chrome/browser/extensions:extensions
 //chrome/browser/media/router:router

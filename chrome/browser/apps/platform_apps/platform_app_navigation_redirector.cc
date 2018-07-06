@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/platform_app_navigation_redirector.h"
+#include "chrome/browser/apps/platform_apps/platform_app_navigation_redirector.h"
 
 #include "apps/launcher.h"
 #include "base/bind.h"
@@ -113,10 +113,9 @@ PlatformAppNavigationRedirector::MaybeCreateThrottleFor(
       DVLOG(1) << "Found matching app handler for redirection: "
                << extension_ref->name() << "(" << extension_ref->id()
                << "):" << handler->id;
-      return std::unique_ptr<content::NavigationThrottle>(
-          new navigation_interception::InterceptNavigationThrottle(
-              handle,
-              base::Bind(&LaunchAppWithUrl, extension_ref, handler->id)));
+      return std::make_unique<
+          navigation_interception::InterceptNavigationThrottle>(
+          handle, base::Bind(&LaunchAppWithUrl, extension_ref, handler->id));
     }
   }
 

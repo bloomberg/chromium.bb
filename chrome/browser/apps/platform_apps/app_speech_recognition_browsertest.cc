@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "media/base/media_switches.h"
@@ -58,5 +58,5 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionTest,
       switches::kUseFakeUIForMediaStream));
   ASSERT_TRUE(
       RunPlatformAppTest("platform_apps/speech/background_page_no_permission"))
-          << message_;
+      << message_;
 }

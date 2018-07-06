@@ -6,7 +6,7 @@
 #define CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 
 #include "base/debug/stack_trace.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"

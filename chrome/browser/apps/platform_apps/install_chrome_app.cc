@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/install_chrome_app.h"
+#include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 
 #include "base/command_line.h"
 #include "base/macros.h"

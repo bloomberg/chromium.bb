@@ -20,7 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -103,14 +103,12 @@ class TabsAddedNotificationObserver
       : content::WindowedNotificationObserver(
             chrome::NOTIFICATION_TAB_ADDED,
             content::NotificationService::AllSources()),
-        observations_(observations) {
-  }
+        observations_(observations) {}
 
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    observed_tabs_.push_back(
-        content::Details<WebContents>(details).ptr());
+    observed_tabs_.push_back(content::Details<WebContents>(details).ptr());
     if (observed_tabs_.size() == observations_)
       content::WindowedNotificationObserver::Observe(type, source, details);
   }
@@ -145,7 +143,7 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
     dialog_size_ = preview_dialog->GetContainerBounds().size();
     ++rendered_page_count_;
     CHECK(rendered_page_count_ <= total_page_count_);
-    if (rendered_page_count_ == total_page_count_ && run_loop_)  {
+    if (rendered_page_count_ == total_page_count_ && run_loop_) {
       run_loop_->Quit();
     }
   }
@@ -159,9 +157,7 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
     run_loop.Run();
   }
 
-  gfx::Size dialog_size() {
-    return dialog_size_;
-  }
+  gfx::Size dialog_size() { return dialog_size_; }
 
  private:
   int total_page_count_ = 1;
@@ -173,13 +169,12 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
 #endif  // ENABLE_PRINT_PREVIEW
 
 #if !defined(OS_CHROMEOS) && !defined(OS_WIN)
-bool CopyTestDataAndGetTestFilePath(
-    const base::FilePath& test_data_file,
-    const base::FilePath& temp_dir,
-    const char* filename,
-    base::FilePath* file_path) {
-  base::FilePath path = temp_dir.AppendASCII(
-      filename).NormalizePathSeparators();
+bool CopyTestDataAndGetTestFilePath(const base::FilePath& test_data_file,
+                                    const base::FilePath& temp_dir,
+                                    const char* filename,
+                                    base::FilePath* file_path) {
+  base::FilePath path =
+      temp_dir.AppendASCII(filename).NormalizePathSeparators();
   if (!(base::CopyFile(test_data_file, path)))
     return false;
 
@@ -188,7 +183,7 @@ bool CopyTestDataAndGetTestFilePath(
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN)
 
-class PlatformAppWithFileBrowserTest: public PlatformAppBrowserTest {
+class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
  public:
   PlatformAppWithFileBrowserTest() {
     set_open_about_blank_on_browser_launch(false);
@@ -245,7 +240,7 @@ class PlatformAppWithFileBrowserTest: public PlatformAppBrowserTest {
   }
 
   base::CommandLine MakeCommandLineWithTestFilePath(
-    const base::FilePath& test_file) {
+      const base::FilePath& test_file) {
     base::CommandLine command_line = *base::CommandLine::ForCurrentProcess();
     command_line.AppendArgPath(test_file);
     return command_line;
@@ -442,8 +437,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // and window.open(). Only the external urls should succeed in opening tabs.
   const size_t kExpectedNumberOfTabs = 2u;
   TabsAddedNotificationObserver observer(kExpectedNumberOfTabs);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation")) <<
-      message_;
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation"))
+      << message_;
   observer.Wait();
   ASSERT_EQ(kExpectedNumberOfTabs, observer.tabs().size());
   content::WaitForLoadStop(observer.tabs()[kExpectedNumberOfTabs - 1]);
@@ -476,8 +471,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 
 // Tests that extensions can't use platform-app-only APIs.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings(
-      "platform_apps/apps_only")) << message_;
+  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("platform_apps/apps_only"))
+      << message_;
 }
 
 // Tests that platform apps have isolated storage by default.
@@ -496,11 +491,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   // Make sure the cookie is set.
   int cookie_size;
   std::string cookie_value;
-  ui_test_utils::GetCookies(
-      set_cookie_url,
-      browser()->tab_strip_model()->GetWebContentsAt(0),
-      &cookie_size,
-      &cookie_value);
+  ui_test_utils::GetCookies(set_cookie_url,
+                            browser()->tab_strip_model()->GetWebContentsAt(0),
+                            &cookie_size, &cookie_value);
   ASSERT_EQ("testCookie=1", cookie_value);
 
   // Let the platform app request the same URL, and make sure that it doesn't
@@ -518,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
   // Initially there should be just the one browser window visible to the
   // extensions API.
-  const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("common/background_page"));
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("common/background_page"));
   ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(extension));
 
   // And no app windows.
@@ -556,21 +549,24 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
 // TODO(benwells/jeremya): tests need a way to specify a handler ID.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_file", kTestFilePath)) << message_;
+      "platform_apps/launch_file", kTestFilePath))
+      << message_;
 }
 
 // Tests that relative paths can be passed through to the platform app.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithRelativeFile) {
-  ASSERT_TRUE(RunPlatformAppTestWithFile(
-      "platform_apps/launch_file",
-      base::FilePath::FromUTF8Unsafe(kTestFilePath))) << message_;
+  ASSERT_TRUE(
+      RunPlatformAppTestWithFile("platform_apps/launch_file",
+                                 base::FilePath::FromUTF8Unsafe(kTestFilePath)))
+      << message_;
 }
 
 // Tests that launch data is sent through if the file extension matches.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileExtension) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_file_by_extension", kTestFilePath)) << message_;
+      "platform_apps/launch_file_by_extension", kTestFilePath))
+      << message_;
 }
 
 // Tests that launch data is sent through to a whitelisted extension if the file
@@ -578,8 +574,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWhiteListedExtensionWithFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_whitelisted_ext_with_file",
-      kTestFilePath)) << message_;
+      "platform_apps/launch_whitelisted_ext_with_file", kTestFilePath))
+      << message_;
 }
 
 // Tests that launch data is sent through if the file extension and MIME type
@@ -597,7 +593,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileWithoutExtension) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_file_with_no_extension",
-      "platform_apps/launch_files/test")) << message_;
+      "platform_apps/launch_files/test"))
+      << message_;
 }
 
 #if !defined(OS_WIN)
@@ -613,7 +610,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
       CopyTestDataAndGetTestFilePath(test_data_dir_.AppendASCII(kTestFilePath),
                                      temp_dir.GetPath(), "test.", &test_file));
   ASSERT_TRUE(RunPlatformAppTestWithFile(
-      "platform_apps/launch_file_with_no_extension", test_file)) << message_;
+      "platform_apps/launch_file_with_no_extension", test_file))
+      << message_;
 }
 
 // Tests that launch data is sent through for a file with an empty extension if
@@ -628,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
       CopyTestDataAndGetTestFilePath(test_data_dir_.AppendASCII(kTestFilePath),
                                      temp_dir.GetPath(), "test.", &test_file));
   ASSERT_TRUE(RunPlatformAppTestWithFile(
-      "platform_apps/launch_file_with_any_extension", test_file)) << message_;
+      "platform_apps/launch_file_with_any_extension", test_file))
+      << message_;
 }
 #endif
 
@@ -638,7 +637,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileWithoutExtensionAcceptAny) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_file_with_any_extension",
-      "platform_apps/launch_files/test")) << message_;
+      "platform_apps/launch_files/test"))
+      << message_;
 }
 
 // Tests that launch data is sent through for a file with an extension if a
@@ -655,7 +655,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithWrongExtension) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_wrong_extension", kTestFilePath)) << message_;
+      "platform_apps/launch_wrong_extension", kTestFilePath))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the file has no extension but
@@ -664,21 +665,24 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithWrongEmptyExtension) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_wrong_extension",
-      "platform_apps/launch_files/test")) << message_;
+      "platform_apps/launch_files/test"))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the file is of the wrong MIME
 // type.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithWrongType) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_wrong_type", kTestFilePath)) << message_;
+      "platform_apps/launch_wrong_type", kTestFilePath))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the platform app does not
 // provide an intent.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithNoIntent) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_no_intent", kTestFilePath)) << message_;
+      "platform_apps/launch_no_intent", kTestFilePath))
+      << message_;
 }
 
 // Tests that launch data is sent through when the file has unknown extension
@@ -687,7 +691,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithSniffableType) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_file_by_extension_and_type",
-      "platform_apps/launch_files/test.unknownextension")) << message_;
+      "platform_apps/launch_files/test.unknownextension"))
+      << message_;
 }
 
 // Tests that launch data is sent through with the MIME type set to
@@ -695,21 +700,23 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNoType) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_application_octet_stream",
-      "platform_apps/launch_files/test_binary.unknownextension")) << message_;
+      "platform_apps/launch_files/test_binary.unknownextension"))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the file does not exist.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNoFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/launch_invalid",
-      "platform_apps/launch_files/doesnotexist.txt")) << message_;
+      "platform_apps/launch_files/doesnotexist.txt"))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the argument is a directory.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithDirectory) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_invalid",
-      "platform_apps/launch_files")) << message_;
+      "platform_apps/launch_invalid", "platform_apps/launch_files"))
+      << message_;
 }
 
 // Tests that no launch data is sent through if there are no arguments passed
@@ -723,7 +730,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithNothing) {
 // function to get the native file system path of a file they are launched with.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, GetDisplayPath) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/get_display_path", kTestFilePath)) << message_;
+      "platform_apps/get_display_path", kTestFilePath))
+      << message_;
 }
 
 // Tests that the file is created if the file does not exist and the app has the
@@ -778,66 +786,46 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   gfx::Rect current_screen_bounds(0, 0, 1600, 900);
   gfx::Size minimum_size(200, 200);
   gfx::Rect bounds;
-  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
-                                                  cached_bounds,
-                                                  cached_screen_bounds,
-                                                  current_screen_bounds,
-                                                  minimum_size,
-                                                  &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
+      window, cached_bounds, cached_screen_bounds, current_screen_bounds,
+      minimum_size, &bounds);
   EXPECT_EQ(bounds, cached_bounds);
 
   // We have an empty screen bounds, the cached bounds didn't need to adjust.
   gfx::Rect empty_screen_bounds;
-  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
-                                                  cached_bounds,
-                                                  empty_screen_bounds,
-                                                  current_screen_bounds,
-                                                  minimum_size,
-                                                  &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
+      window, cached_bounds, empty_screen_bounds, current_screen_bounds,
+      minimum_size, &bounds);
   EXPECT_EQ(bounds, cached_bounds);
 
   // Cached bounds is completely off the new screen bounds in horizontal
   // locations. Expect to reposition the bounds.
   gfx::Rect horizontal_out_of_screen_bounds(-800, 100, 400, 400);
   CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
-      window,
-      horizontal_out_of_screen_bounds,
-      gfx::Rect(-1366, 0, 1600, 900),
-      current_screen_bounds,
-      minimum_size,
-      &bounds);
+      window, horizontal_out_of_screen_bounds, gfx::Rect(-1366, 0, 1600, 900),
+      current_screen_bounds, minimum_size, &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 100, 400, 400));
 
   // Cached bounds is completely off the new screen bounds in vertical
   // locations. Expect to reposition the bounds.
   gfx::Rect vertical_out_of_screen_bounds(10, 1000, 400, 400);
   CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
-      window,
-      vertical_out_of_screen_bounds,
-      gfx::Rect(-1366, 0, 1600, 900),
-      current_screen_bounds,
-      minimum_size,
-      &bounds);
+      window, vertical_out_of_screen_bounds, gfx::Rect(-1366, 0, 1600, 900),
+      current_screen_bounds, minimum_size, &bounds);
   EXPECT_EQ(bounds, gfx::Rect(10, 500, 400, 400));
 
   // From a large screen resulotion to a small one. Expect it fit on screen.
   gfx::Rect big_cache_bounds(10, 10, 1000, 1000);
-  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
-                                                  big_cache_bounds,
-                                                  gfx::Rect(0, 0, 1600, 1000),
-                                                  gfx::Rect(0, 0, 800, 600),
-                                                  minimum_size,
-                                                  &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
+      window, big_cache_bounds, gfx::Rect(0, 0, 1600, 1000),
+      gfx::Rect(0, 0, 800, 600), minimum_size, &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 0, 800, 600));
 
   // Don't resize the bounds smaller than minimum size, when the minimum size is
   // larger than the screen.
-  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
-                                                  big_cache_bounds,
-                                                  gfx::Rect(0, 0, 1600, 1000),
-                                                  gfx::Rect(0, 0, 800, 600),
-                                                  gfx::Size(900, 900),
-                                                  &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
+      window, big_cache_bounds, gfx::Rect(0, 0, 1600, 1000),
+      gfx::Rect(0, 0, 800, 600), gfx::Size(900, 900), &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 0, 900, 900));
 }
 
@@ -853,8 +841,8 @@ class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
   void RunTestWithDevTools(const char* name, int test_flags);
 };
 
-void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
-    const char* name, int test_flags) {
+void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(const char* name,
+                                                         int test_flags) {
   using content::DevToolsAgentHost;
   const Extension* extension = LoadAndLaunchPlatformApp(name, "Launched");
   ASSERT_TRUE(extension);
@@ -980,9 +968,7 @@ class CheckExtensionInstalledObserver
     registry_->RemoveObserver(this);
   }
 
-  bool seen() const {
-    return seen_;
-  }
+  bool seen() const { return seen_; }
 
   // ExtensionRegistryObserver:
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
@@ -1033,8 +1019,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // Component App Test 2 of 3: ensure an installed component app can be launched
 // on a subsequent browser start, without requiring any install/upgrade logic
 // to be run, then perform setup for step 3.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       PRE_ComponentAppBackgroundPage) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PRE_ComponentAppBackgroundPage) {
   // Since the component app is now installed, re-adding it in the same profile
   // should not cause it to be re-installed. Instead, we wait for the OnLaunched
   // in a different observer (which would timeout if not the app was not
@@ -1177,10 +1162,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // doesn't pass in Views mode on OS X.
 #if !defined(OS_MACOSX)
 #define MAYBE_PrintPreviewShouldNotBeTooSmall \
-    DISABLED_PrintPreviewShouldNotBeTooSmall
+  DISABLED_PrintPreviewShouldNotBeTooSmall
 #else
-#define MAYBE_PrintPreviewShouldNotBeTooSmall \
-    PrintPreviewShouldNotBeTooSmall
+#define MAYBE_PrintPreviewShouldNotBeTooSmall PrintPreviewShouldNotBeTooSmall
 #endif
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
@@ -1271,9 +1255,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
 
 class RestartDeviceTest : public PlatformAppBrowserTest {
  public:
-  RestartDeviceTest()
-      : power_manager_client_(NULL),
-        mock_user_manager_(NULL) {}
+  RestartDeviceTest() : power_manager_client_(NULL), mock_user_manager_(NULL) {}
   ~RestartDeviceTest() override {}
 
   // PlatformAppBrowserTest overrides
@@ -1328,8 +1310,8 @@ IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
   ASSERT_EQ(0, num_request_restart_calls());
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  const Extension* extension = LoadAndLaunchPlatformApp("restart_device",
-                                                        &launched_listener);
+  const Extension* extension =
+      LoadAndLaunchPlatformApp("restart_device", &launched_listener);
   ASSERT_TRUE(extension);
 
   launched_listener.Reply("restart");
@@ -1392,8 +1374,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppsIgnoreDefaultZoom) {
   // Now check that the app window's default zoom, and actual zoom level,
   // have not been changed from the default.
   WebContents* web_contents = GetFirstAppWindowWebContents();
-  content::HostZoomMap* app_host_zoom_map = content::HostZoomMap::Get(
-      web_contents->GetSiteInstance());
+  content::HostZoomMap* app_host_zoom_map =
+      content::HostZoomMap::Get(web_contents->GetSiteInstance());
   EXPECT_EQ(0, app_host_zoom_map->GetDefaultZoomLevel());
   EXPECT_EQ(0, app_host_zoom_map->GetZoomLevel(web_contents));
 }

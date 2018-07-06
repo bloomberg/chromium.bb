@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_window_registry_util.h"
+#include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 
 #include <vector>
 
@@ -26,8 +26,7 @@ AppWindow* AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::const_iterator i = profiles.begin();
-       i != profiles.end();
-       ++i) {
+       i != profiles.end(); ++i) {
     AppWindowRegistry* registry =
         Factory::GetForBrowserContext(*i, false /* create */);
     if (!registry)
@@ -47,8 +46,7 @@ bool AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::const_iterator i = profiles.begin();
-       i != profiles.end();
-       ++i) {
+       i != profiles.end(); ++i) {
     AppWindowRegistry* registry =
         Factory::GetForBrowserContext(*i, false /* create */);
     if (!registry)
@@ -60,8 +58,7 @@ bool AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
 
     for (const AppWindow* window : app_windows) {
       if (!window->is_hidden() &&
-          (window_type_mask == 0 ||
-           (window->window_type() & window_type_mask)))
+          (window_type_mask == 0 || (window->window_type() & window_type_mask)))
         return true;
     }
   }
@@ -74,8 +71,7 @@ void AppWindowRegistryUtil::CloseAllAppWindows() {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::const_iterator i = profiles.begin();
-       i != profiles.end();
-       ++i) {
+       i != profiles.end(); ++i) {
     AppWindowRegistry* registry =
         Factory::GetForBrowserContext(*i, false /* create */);
     if (!registry)

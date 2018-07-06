@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 
 #include <memory>
 #include <string>
@@ -103,8 +103,8 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
 
   LaunchPlatformApp(extension);
 
-  EXPECT_TRUE(listener->WaitUntilSatisfied()) << "'" << listener->message()
-                                              << "' message was not receieved";
+  EXPECT_TRUE(listener->WaitUntilSatisfied())
+      << "'" << listener->message() << "' message was not receieved";
 
   return extension;
 }
@@ -119,8 +119,7 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
   return extension;
 }
 
-const Extension* PlatformAppBrowserTest::InstallPlatformApp(
-    const char* name) {
+const Extension* PlatformAppBrowserTest::InstallPlatformApp(const char* name) {
   const Extension* extension = InstallExtension(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII(name), 1);
   EXPECT_TRUE(extension);
@@ -256,10 +255,8 @@ void PlatformAppBrowserTest::CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
     const gfx::Rect& current_screen_bounds,
     const gfx::Size& minimum_size,
     gfx::Rect* bounds) {
-  window->AdjustBoundsToBeVisibleOnScreen(cached_bounds,
-                                          cached_screen_bounds,
-                                          current_screen_bounds,
-                                          minimum_size,
+  window->AdjustBoundsToBeVisibleOnScreen(cached_bounds, cached_screen_bounds,
+                                          current_screen_bounds, minimum_size,
                                           bounds);
 }
 
