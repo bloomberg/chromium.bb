@@ -579,18 +579,25 @@ struct VariantCoreAccess {
     self.index_ = other.index();
   }
 
+  // Access a variant alternative, assuming the index is correct.
   template <std::size_t I, class Variant>
   static VariantAccessResult<I, Variant> Access(Variant&& self) {
-    if (ABSL_PREDICT_FALSE(self.index_ != I)) {
-      TypedThrowBadVariantAccess<VariantAccessResult<I, Variant>>();
-    }
-
     // This cast instead of invocation of AccessUnion with an rvalue is a
     // workaround for msvc. Without this there is a runtime failure when dealing
     // with rvalues.
     // TODO(calabrese) Reduce test case and find a simpler workaround.
     return static_cast<VariantAccessResult<I, Variant>>(
         variant_internal::AccessUnion(self.state_, SizeT<I>()));
+  }
+
+  // Access a variant alternative, throwing if the index is incorrect.
+  template <std::size_t I, class Variant>
+  static VariantAccessResult<I, Variant> CheckedAccess(Variant&& self) {
+    if (ABSL_PREDICT_FALSE(self.index_ != I)) {
+      TypedThrowBadVariantAccess<VariantAccessResult<I, Variant>>();
+    }
+
+    return Access<I>(absl::forward<Variant>(self));
   }
 
   // The implementation of the move-assignment operation for a variant.
@@ -1100,49 +1107,40 @@ using EqualResult = decltype(std::declval<T>() == std::declval<T>());
 template <class T>
 using NotEqualResult = decltype(std::declval<T>() != std::declval<T>());
 
-template <class T>
-using HasLessThan = is_detected_convertible<bool, LessThanResult, T>;
-
-template <class T>
-using HasGreaterThan = is_detected_convertible<bool, GreaterThanResult, T>;
-
-template <class T>
-using HasLessThanOrEqual =
-    is_detected_convertible<bool, LessThanOrEqualResult, T>;
-
-template <class T>
-using HasGreaterThanOrEqual =
-    is_detected_convertible<bool, GreaterThanOrEqualResult, T>;
-
-template <class T>
-using HasEqual = is_detected_convertible<bool, EqualResult, T>;
-
-template <class T>
-using HasNotEqual = is_detected_convertible<bool, NotEqualResult, T>;
-
 template <class... T>
-using RequireAllHaveEqualT =
-    absl::enable_if_t<absl::conjunction<HasEqual<T>...>::value, bool>;
+using RequireAllHaveEqualT = absl::enable_if_t<
+    absl::conjunction<is_detected_convertible<bool, EqualResult, T>...>::value,
+    bool>;
 
 template <class... T>
 using RequireAllHaveNotEqualT =
-    absl::enable_if_t<absl::conjunction<HasEqual<T>...>::value, bool>;
+    absl::enable_if_t<absl::conjunction<is_detected_convertible<
+                          bool, NotEqualResult, T>...>::value,
+                      bool>;
 
 template <class... T>
 using RequireAllHaveLessThanT =
-    absl::enable_if_t<absl::conjunction<HasLessThan<T>...>::value, bool>;
+    absl::enable_if_t<absl::conjunction<is_detected_convertible<
+                          bool, LessThanResult, T>...>::value,
+                      bool>;
 
 template <class... T>
 using RequireAllHaveLessThanOrEqualT =
-    absl::enable_if_t<absl::conjunction<HasLessThan<T>...>::value, bool>;
+    absl::enable_if_t<absl::conjunction<is_detected_convertible<
+                          bool, LessThanOrEqualResult, T>...>::value,
+                      bool>;
 
 template <class... T>
 using RequireAllHaveGreaterThanOrEqualT =
-    absl::enable_if_t<absl::conjunction<HasLessThan<T>...>::value, bool>;
+    absl::enable_if_t<absl::conjunction<is_detected_convertible<
+                          bool, GreaterThanOrEqualResult, T>...>::value,
+                      bool>;
 
 template <class... T>
 using RequireAllHaveGreaterThanT =
-    absl::enable_if_t<absl::conjunction<HasLessThan<T>...>::value, bool>;
+    absl::enable_if_t<absl::conjunction<is_detected_convertible<
+                          bool, GreaterThanResult, T>...>::value,
+                      bool>;
 
 // Helper template containing implementations details of variant that can't go
 // in the private section. For convenience, this takes the variant type as a
