@@ -68,6 +68,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
                            std::vector<int32_t>* value) const;
 
+  // Returns the selection container if inside one.
+  AXPlatformNodeBase* GetSelectionContainer() const;
+
   // Returns the table or ARIA grid if inside one.
   AXPlatformNodeBase* GetTable() const;
 

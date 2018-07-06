@@ -32,6 +32,10 @@ AX_EXPORT bool IsCellOrTableHeaderRole(ax::mojom::Role role);
 // Returns true if this node is a table, a grid or a treegrid.
 AX_EXPORT bool IsTableLikeRole(ax::mojom::Role role);
 
+// Returns true if the provided role is selectable from the standpoint of UI
+// automation.
+AX_EXPORT bool IsUIASelectable(ax::mojom::Role role);
+
 // Returns true if this node is a container with selectable children.
 AX_EXPORT bool IsContainerWithSelectableChildrenRole(ax::mojom::Role role);
 
@@ -53,13 +57,13 @@ AX_EXPORT bool IsHeading(ax::mojom::Role role);
 // Returns true if it's a heading.
 AX_EXPORT bool IsHeadingOrTableHeader(ax::mojom::Role role);
 
-// Returns true if this node can have an orientation
+// Returns true if the provided role can have an orientation.
 AX_EXPORT bool SupportsOrientation(ax::mojom::Role role);
 
-// Returns true if the provided role supports toggle
+// Returns true if the provided role supports toggle.
 AX_EXPORT bool SupportsToggle(ax::mojom::Role role);
 
-// Returns true if the provided role supports expand/collapse
+// Returns true if the provided role supports expand/collapse.
 AX_EXPORT bool SupportsExpandCollapse(ax::mojom::Role role);
 }  // namespace ui
 

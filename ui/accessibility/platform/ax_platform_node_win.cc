@@ -1461,6 +1461,104 @@ STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
 }
 
 //
+// ISelectionItemProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::AddToSelection() {
+  if (!IsUIASelectable(GetData().role))
+    return E_FAIL;
+
+  bool selected;
+  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
+    return E_FAIL;
+  if (selected)
+    return S_OK;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kDoDefault;
+  if (delegate_->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::RemoveFromSelection() {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::Select() {
+  if (!IsUIASelectable(GetData().role))
+    return E_FAIL;
+
+  bool selected;
+  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
+    return E_FAIL;
+  if (selected)
+    return S_OK;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kDoDefault;
+  if (delegate_->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_IsSelected(BOOL* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  if (!IsUIASelectable(GetData().role))
+    return E_FAIL;
+
+  bool selected;
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected)) {
+    *result = selected;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_SelectionContainer(
+    IRawElementProviderSimple** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  auto* node_win = static_cast<AXPlatformNodeWin*>(GetSelectionContainer());
+  if (!node_win)
+    return E_FAIL;
+
+  node_win->AddRef();
+  *result = static_cast<IRawElementProviderSimple*>(node_win);
+  return S_OK;
+}
+
+//
+// ISelectionProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  int child_count = delegate_->GetChildCount();
+  *result = SafeArrayCreateVector(VT_UNKNOWN, 0, child_count);
+  for (long i = 0; i < child_count; ++i) {
+    auto* child = static_cast<AXPlatformNodeWin*>(
+        FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
+    DCHECK(child);
+    child->AddRef();
+    SafeArrayPutElement(*result, &i,
+                        static_cast<IRawElementProviderSimple*>(child));
+  }
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_CanSelectMultiple(BOOL* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetData().HasState(ax::mojom::State::kMultiselectable);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
+  return E_NOTIMPL;
+}
+
+//
 // IToggleProvider implementation.
 //
 
@@ -2771,8 +2869,20 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
 
     // TODO(suproteem): Add checks for control role.
     case UIA_InvokePatternId:
+      break;
+
     case UIA_SelectionItemPatternId:
+      if (IsUIASelectable(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_SelectionPatternId:
+      if (IsContainerWithSelectableChildrenRole(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
       break;
 
     case UIA_TogglePatternId:
@@ -2850,6 +2960,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_ClickablePointPropertyId:
       // TODO(suproteem)
       break;
+
     case UIA_ControllerForPropertyId:
       result->vt = VT_ARRAY;
       relation_attribute = ax::mojom::IntListAttribute::kControlsIds;
