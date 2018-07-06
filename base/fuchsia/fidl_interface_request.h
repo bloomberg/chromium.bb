@@ -33,10 +33,6 @@ namespace fuchsia {
 // ComponentContext.
 class BASE_EXPORT FidlInterfaceRequest {
  public:
-  // Used by FilteredServiceDirectory. Most code should use other constructors
-  // that are type-safe, unlike this one.
-  FidlInterfaceRequest(const char* interface_name, ScopedZxHandle channel);
-
   template <typename Interface>
   explicit FidlInterfaceRequest(fidl::InterfaceRequest<Interface> request)
       : FidlInterfaceRequest(
@@ -57,6 +53,13 @@ class BASE_EXPORT FidlInterfaceRequest {
   FidlInterfaceRequest(FidlInterfaceRequest&&);
   ~FidlInterfaceRequest();
 
+  // Creates an interface request from the specified |channel|. Caller must
+  // ensure that the specified |interface_name| is valid for the specified
+  // |channel|.
+  static FidlInterfaceRequest CreateFromChannelUnsafe(
+      const char* interface_name,
+      ScopedZxHandle channel);
+
   bool is_valid() const { return interface_name_ && channel_; }
 
   const char* interface_name() const { return interface_name_; }
@@ -67,6 +70,8 @@ class BASE_EXPORT FidlInterfaceRequest {
   ScopedZxHandle TakeChannel();
 
  private:
+  FidlInterfaceRequest(const char* interface_name, ScopedZxHandle channel);
+
   const char* interface_name_;
   ScopedZxHandle channel_;
 
