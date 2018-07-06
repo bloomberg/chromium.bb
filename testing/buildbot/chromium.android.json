@@ -3720,7 +3720,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "chrome_public_test_apk"
       },
@@ -6325,7 +6325,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "chrome_public_test_apk"
       },
@@ -9039,7 +9039,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "chrome_public_test_apk"
       },
@@ -14353,7 +14353,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "chrome_public_test_apk"
       },
@@ -19708,7 +19708,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "chrome_public_test_apk"
       },
