@@ -6,6 +6,7 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -24,9 +25,6 @@ const CGFloat kButtonSize = 28;
 const CGFloat kLocationImageToLabelSpacing = 2.0;
 
 const CGFloat kButtonTrailingSpacing = 10;
-
-// Font size used in the omnibox.
-const CGFloat kFontSize = 17.0f;
 
 }  // namespace
 
@@ -134,7 +132,6 @@ const CGFloat kFontSize = 17.0f;
     [_locationLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:UILayoutConstraintAxisVertical];
-    _locationLabel.font = [UIFont systemFontOfSize:kFontSize];
 
     // Container for location label and icon.
     _locationContainerView = [[UIView alloc] init];
@@ -284,6 +281,16 @@ const CGFloat kFontSize = 17.0f;
   }
   _securityLevelAccessibilityString = [string copy];
   [self updateAccessibility];
+}
+
+#pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  self.locationLabel.font =
+      [UIFont systemFontOfSize:IsRegularXRegularSizeClass()
+                                   ? kLocationBarRegularRegularFontSize
+                                   : kLocationBarFontSize];
 }
 
 #pragma mark - UIAccessibilityContainer

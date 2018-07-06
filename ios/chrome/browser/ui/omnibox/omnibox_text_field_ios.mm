@@ -64,6 +64,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 @interface OmniboxTextFieldIOS ()
 
+// Font to use in regular x regular size class. If not set, the regular font is
+// used instead.
+@property(nonatomic, strong) UIFont* largerFont;
+// Font to use in Compact x Any and Any x Compact size class.
+@property(nonatomic, strong) UIFont* normalFont;
+
 // Gets the bounds of the rect covering the URL.
 - (CGRect)preEditLabelRectForBounds:(CGRect)bounds;
 // Creates the UILabel if it doesn't already exist and adds it as a
@@ -82,13 +88,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // value as -|displayedText| but prefer to use this to avoid unnecessary
 // conversion from NSString to base::string16 if possible.
 - (NSString*)nsDisplayedText;
+// Font that should be used in current size class.
+- (UIFont*)currentFont;
 
 @end
 
 @implementation OmniboxTextFieldIOS {
   UILabel* _selection;
   UILabel* _preEditStaticLabel;
-  UIFont* _font;
   UIColor* _displayedTextColor;
   UIColor* _displayedTintColor;
 }
@@ -98,6 +105,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 @synthesize selectedTextBackgroundColor = _selectedTextBackgroundColor;
 @synthesize placeholderTextColor = _placeholderTextColor;
 @synthesize incognito = _incognito;
+@synthesize largerFont = _largerFont;
+@synthesize normalFont = _normalFont;
 @synthesize suggestionCommandsEndpoint = _suggestionCommandsEndpoint;
 
 #pragma mark - Public methods
@@ -111,11 +120,24 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (instancetype)initWithFrame:(CGRect)frame
                          font:(UIFont*)font
+                   largerFont:(UIFont*)largerFont
+                    textColor:(UIColor*)textColor
+                    tintColor:(UIColor*)tintColor {
+  self = [self initWithFrame:frame
+                        font:font
+                   textColor:textColor
+                   tintColor:tintColor];
+  _largerFont = largerFont;
+  return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+                         font:(UIFont*)font
                     textColor:(UIColor*)textColor
                     tintColor:(UIColor*)tintColor {
   self = [super initWithFrame:frame];
   if (self) {
-    _font = font;
+    _normalFont = font;
     _displayedTextColor = textColor;
     if (tintColor) {
       [self setTintColor:tintColor];
@@ -123,7 +145,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     } else {
       _displayedTintColor = self.tintColor;
     }
-    [self setFont:_font];
     [self setTextColor:_displayedTextColor];
     [self setAutocorrectionType:UITextAutocorrectionTypeNo];
     [self setAutocapitalizationType:UITextAutocapitalizationTypeNone];
@@ -359,7 +380,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   _preEditStaticLabel = [[UILabel alloc] initWithFrame:rect];
   _preEditStaticLabel.backgroundColor = [UIColor clearColor];
   _preEditStaticLabel.opaque = YES;
-  _preEditStaticLabel.font = _font;
+  _preEditStaticLabel.font = self.currentFont;
   _preEditStaticLabel.textColor = _displayedTextColor;
   _preEditStaticLabel.lineBreakMode = NSLineBreakByTruncatingHead;
 
@@ -419,6 +440,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [super setDelegate:delegate];
 }
 
+- (UIFont*)currentFont {
+  if (!self.largerFont) {
+    return self.normalFont;
+  }
+
+  return IsRegularXRegularSizeClass() ? self.largerFont : self.normalFont;
+}
+
 #pragma mark - Private methods
 
 #pragma mark - UITextField
@@ -429,7 +458,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   NSRange entireString = NSMakeRange(0, [mutableText length]);
 
   // Set the font.
-  [mutableText addAttribute:NSFontAttributeName value:_font range:entireString];
+  [mutableText addAttribute:NSFontAttributeName
+                      value:self.currentFont
+                      range:entireString];
 
   // When editing, use the default text color for all text.
   if (self.editing) {
@@ -606,6 +637,23 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if (point.y < 0)
     point.y = 0;
   return [super hitTest:point withEvent:event];
+}
+
+#pragma mark - UITraitCollection
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  // Reset the fonts to the appropriate ones in this size class.
+  [self setFont:self.currentFont];
+  // Reset the attributed text to apply the new font.
+  [self setAttributedText:self.attributedText];
+  if (_selection) {
+    _selection.font = self.currentFont;
+  }
+  if (_preEditStaticLabel) {
+    _preEditStaticLabel.font = self.currentFont;
+  }
 }
 
 #pragma mark - UIResponder
@@ -852,7 +900,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // If the pre-edit text is wider than the omnibox, right-align the text so it
   // ends at the same x coord as the blue selection box.
   CGSize textSize =
-      [_preEditStaticLabel.text cr_pixelAlignedSizeWithFont:_font];
+      [_preEditStaticLabel.text cr_pixelAlignedSizeWithFont:self.currentFont];
   // Note, this does not need to support RTL, as URLs are always LTR.
   return textSize.width < _preEditStaticLabel.frame.size.width
              ? NSTextAlignmentLeft
@@ -872,7 +920,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return;
 
   _selection = [[UILabel alloc] initWithFrame:CGRectZero];
-  [_selection setFont:_font];
+  [_selection setFont:self.currentFont];
   [_selection setTextColor:_displayedTextColor];
   [_selection setOpaque:NO];
   [_selection setBackgroundColor:[UIColor clearColor]];
@@ -937,7 +985,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // are used (e.g. 𝗲𝗺𝗽𝗵𝗮𝘀𝗶𝘀).  Setting the NSFontAttributeName in the
   // attributed string to -systemFontOfSize fixes part of the problem, but the
   // baseline changes so text is out of alignment.
-  [self setFont:_font];
+  [self setFont:self.currentFont];
   [self updateTextDirection];
 }
 

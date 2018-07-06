@@ -139,7 +139,8 @@ enum ToolbarControllerStyle {
 // Tint color for location bar and omnibox.
 extern const CGFloat kLocationBarTintBlue;
 
-// Font size used in omnibox and location bar.
+// Font sizes used in omnibox and location bar.
 extern const CGFloat kLocationBarFontSize;
+extern const CGFloat kLocationBarRegularRegularFontSize;
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_CONSTANTS_H_
