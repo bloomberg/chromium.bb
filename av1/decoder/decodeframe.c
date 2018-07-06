@@ -3093,8 +3093,8 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
       TileInfo tile_info = tile_data->tile_info;
       int tile_row = tile_info.tile_row;
 
-      av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end,
-                             tile_row);
+      av1_zero_above_context(cm, &td->xd, tile_info.mi_col_start,
+                             tile_info.mi_col_end, tile_row);
       av1_reset_loop_restoration(&td->xd, num_planes);
 
       for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
