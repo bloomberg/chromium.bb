@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
+
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -10,6 +11,7 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/test_queueing_time_estimator_client.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 
 #include <map>
@@ -19,81 +21,12 @@
 namespace blink {
 namespace scheduler {
 
-using QueueType = MainThreadTaskQueue::QueueType;
-
 namespace {
-
-class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
- public:
-  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
-                                        bool is_disjoint_window) override {
-    expected_queueing_times_.push_back(queueing_time);
-    // Mimic RendererSchedulerImpl::OnQueueingTimeForWindowEstimated.
-    if (is_disjoint_window) {
-      UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
-                          queueing_time);
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "RendererScheduler.ExpectedTaskQueueingDuration3",
-          queueing_time.InMicroseconds(),
-          MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
-          MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
-          MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
-    }
-  }
-  void OnReportFineGrainedExpectedQueueingTime(
-      const char* split_description,
-      base::TimeDelta queueing_time) override {
-    if (split_eqts_.find(split_description) == split_eqts_.end())
-      split_eqts_[split_description] = std::vector<base::TimeDelta>();
-    split_eqts_[split_description].push_back(queueing_time);
-    // Mimic MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime.
-    base::UmaHistogramCustomCounts(
-        split_description, queueing_time.InMicroseconds(),
-        MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
-        MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
-        MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
-  }
-  const std::vector<base::TimeDelta>& expected_queueing_times() {
-    return expected_queueing_times_;
-  }
-  const std::map<const char*, std::vector<base::TimeDelta>>& split_eqts() {
-    return split_eqts_;
-  }
-  const std::vector<base::TimeDelta>& QueueTypeValues(QueueType queue_type) {
-    return split_eqts_[QueueingTimeEstimator::Calculator::
-                           GetReportingMessageFromQueueType(queue_type)];
-  }
-  const std::vector<base::TimeDelta>& FrameStatusValues(
-      FrameStatus frame_status) {
-    return split_eqts_[QueueingTimeEstimator::Calculator::
-                           GetReportingMessageFromFrameStatus(frame_status)];
-  }
-
- private:
-  std::vector<base::TimeDelta> expected_queueing_times_;
-  std::map<const char*, std::vector<base::TimeDelta>> split_eqts_;
-};
-
-class QueueingTimeEstimatorForTest : public QueueingTimeEstimator {
- public:
-  QueueingTimeEstimatorForTest(TestQueueingTimeEstimatorClient* client,
-                               base::TimeDelta window_duration,
-                               int steps_per_window,
-                               base::TimeTicks time)
-      : QueueingTimeEstimator(client, window_duration, steps_per_window) {
-    // If initial state is not foregrounded, foreground.
-    if (kLaunchingProcessIsBackgrounded) {
-      this->OnRendererStateChanged(false, time);
-    }
-  }
-};
 
 struct BucketExpectation {
   int sample;
   int count;
 };
-
-}  // namespace
 
 class QueueingTimeEstimatorTest : public testing::Test {
  protected:
@@ -138,6 +71,8 @@ class QueueingTimeEstimatorTest : public testing::Test {
   base::TimeTicks time;
   TestQueueingTimeEstimatorClient client;
 };
+
+}  // namespace
 
 // Three tasks of one second each, all within a 5 second window. Expected
 // queueing time is the probability of falling into one of these tasks (3/5),
