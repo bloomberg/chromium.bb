@@ -17,13 +17,6 @@
 
 namespace chrome_test_util {
 
-id<GREYAction> LongPressElementForContextMenu(const std::string& elementId,
-                                              bool triggers_context_menu) {
-  return LongPressElementForContextMenu(
-      web::test::ElementSelector::ElementSelectorId(elementId),
-      triggers_context_menu);
-}
-
 id<GREYAction> LongPressElementForContextMenu(
     web::test::ElementSelector selector,
     bool triggers_context_menu) {
