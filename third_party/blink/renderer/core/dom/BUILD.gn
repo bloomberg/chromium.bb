@@ -114,6 +114,8 @@ blink_core_sources("dom") {
     "element_visibility_observer.h",
     "empty_node_list.cc",
     "empty_node_list.h",
+    "event_dispatch_forbidden_scope.cc",
+    "event_dispatch_forbidden_scope.h",
     "events/add_event_listener_options_defaults.h",
     "events/add_event_listener_options_resolved.cc",
     "events/add_event_listener_options_resolved.h",

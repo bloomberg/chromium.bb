@@ -505,8 +505,6 @@ jumbo_component("platform") {
     "date_components.h",
     "drag_image.cc",
     "drag_image.h",
-    "event_dispatch_forbidden_scope.cc",
-    "event_dispatch_forbidden_scope.h",
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
     "exported/platform.cc",
