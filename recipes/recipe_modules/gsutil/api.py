@@ -93,7 +93,7 @@ class GSUtilApi(recipe_api.RecipeApi):
     url = self._normalize_url(url)
     cmd = ['cp'] + args + [url, dest]
     name = kwargs.pop('name', 'download_url')
-    self(cmd, name, **kwargs)
+    return self(cmd, name, **kwargs)
 
   def cat(self, url, args=None, **kwargs):
     args = args or []
@@ -117,6 +117,7 @@ class GSUtilApi(recipe_api.RecipeApi):
     if link_name:
       result.presentation.links[link_name] = self._http_url(
           dest_bucket, dest, unauthenticated_url=unauthenticated_url)
+    return result
 
   def list(self, url, args=None, **kwargs):
     args = args or []
@@ -137,7 +138,7 @@ class GSUtilApi(recipe_api.RecipeApi):
     url = self._normalize_url(url)
     cmd = ['rm'] + args + [url]
     name = kwargs.pop('name', 'remove')
-    self(cmd, name, **kwargs)
+    return self(cmd, name, **kwargs)
 
   def _generate_metadata_args(self, metadata):
     result = []
