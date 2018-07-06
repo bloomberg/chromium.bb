@@ -476,6 +476,14 @@ IN_PROC_BROWSER_TEST_F(
       base::ASCIIToUTF16("John Smith"));
   base::HistogramTester histogram_tester;
   ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  // UMA should have recorded bubble acceptance for both regular save UMA and
+  // the ".RequestingCardholderName" subhistogram.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow.RequestingCardholderName",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and

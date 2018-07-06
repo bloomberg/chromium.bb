@@ -71,7 +71,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
 
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
-      is_reshow_,
+      is_reshow_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -99,7 +99,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
   should_request_name_from_user_ = should_request_name_from_user;
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
-      is_reshow_,
+      is_reshow_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -108,7 +108,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
                                /*escape_apostrophes=*/true)) {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-        is_uploading_, is_reshow_,
+        is_uploading_, is_reshow_, should_request_name_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -135,7 +135,7 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
   is_reshow_ = true;
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
-      is_reshow_,
+      is_reshow_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -203,6 +203,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
   }
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, is_uploading_, is_reshow_,
+      should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -216,6 +217,7 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
   local_save_card_callback_.Reset();
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, is_uploading_, is_reshow_,
+      should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -228,7 +230,7 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
   OpenUrl(url);
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
-      is_uploading_, is_reshow_,
+      is_uploading_, is_reshow_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -282,7 +284,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
       bubble_was_visible
           ? AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING
           : AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN,
-      is_uploading_, is_reshow_,
+      is_uploading_, is_reshow_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -335,6 +337,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, is_uploading_, is_reshow_,
+      should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());

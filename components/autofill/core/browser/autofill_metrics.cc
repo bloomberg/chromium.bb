@@ -716,16 +716,23 @@ void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,
     bool is_reshow,
+    bool is_requesting_cardholder_name,
     int previous_save_credit_card_prompt_user_decision,
     security_state::SecurityLevel security_level) {
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  std::string metric_with_destination_and_show =
+      "Autofill.SaveCreditCardPrompt" + destination + show;
+  base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
+                                NUM_SAVE_CARD_PROMPT_METRICS);
+  if (is_requesting_cardholder_name) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_METRICS);
+  }
   base::UmaHistogramEnumeration(
-      "Autofill.SaveCreditCardPrompt" + destination + show, metric,
-      NUM_SAVE_CARD_PROMPT_METRICS);
-  base::UmaHistogramEnumeration(
-      "Autofill.SaveCreditCardPrompt" + destination + show +
+      metric_with_destination_and_show +
           PreviousSaveCreditCardPromptUserDecisionToString(
               previous_save_credit_card_prompt_user_decision),
       metric, NUM_SAVE_CARD_PROMPT_METRICS);
