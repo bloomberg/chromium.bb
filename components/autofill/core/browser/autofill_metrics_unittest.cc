@@ -7588,6 +7588,7 @@ TEST_F(AutofillMetricsTest,
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
         /*is_uploading=*/true, /*is_reshow=*/false,
+        /*is_requesting_cardholder_name=*/false,
         /*previous_save_credit_card_prompt_user_decision=*/1,
         security_state::SecurityLevel::EV_SECURE);
     histogram_tester.ExpectBucketCount(
@@ -7599,7 +7600,7 @@ TEST_F(AutofillMetricsTest,
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
-        /*is_reshow=*/true,
+        /*is_reshow=*/true, /*is_requesting_cardholder_name=*/false,
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
