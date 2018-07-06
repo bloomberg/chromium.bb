@@ -97,13 +97,18 @@ PeriodicSamplingScheduler::PeriodicSamplingScheduler(
 PeriodicSamplingScheduler::~PeriodicSamplingScheduler() = default;
 
 base::TimeDelta PeriodicSamplingScheduler::GetTimeToNextCollection() {
+  const base::TimeTicks now = Now();
+  // Avoid scheduling in the past in the presence of discontinuous jumps in
+  // the current TimeTicks.
+  period_start_time_ = std::max(period_start_time_, now);
+
   double sampling_offset_seconds =
       (period_duration_ - sampling_duration_).InSecondsF() * RandDouble();
   base::TimeTicks next_collection_time =
       period_start_time_ +
       base::TimeDelta::FromSecondsD(sampling_offset_seconds);
   period_start_time_ += period_duration_;
-  return next_collection_time - Now();
+  return next_collection_time - now;
 }
 
 double PeriodicSamplingScheduler::RandDouble() const {
