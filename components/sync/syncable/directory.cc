@@ -159,13 +159,13 @@ void Directory::InitializeIndices(MetahandlesMap* handles_map) {
     if (!entry->ref(UNIQUE_SERVER_TAG).empty()) {
       DCHECK(kernel_->server_tags_map.find(entry->ref(UNIQUE_SERVER_TAG)) ==
              kernel_->server_tags_map.end())
-          << "Unexpected duplicate use of client tag";
+          << "Unexpected duplicate use of server tag";
       kernel_->server_tags_map[entry->ref(UNIQUE_SERVER_TAG)] = entry;
     }
     if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
-      DCHECK(kernel_->server_tags_map.find(entry->ref(UNIQUE_SERVER_TAG)) ==
-             kernel_->server_tags_map.end())
-          << "Unexpected duplicate use of server tag";
+      DCHECK(kernel_->client_tags_map.find(entry->ref(UNIQUE_CLIENT_TAG)) ==
+             kernel_->client_tags_map.end())
+          << "Unexpected duplicate use of client tag";
       kernel_->client_tags_map[entry->ref(UNIQUE_CLIENT_TAG)] = entry;
     }
     DCHECK(kernel_->ids_map.find(entry->ref(ID).value()) ==
