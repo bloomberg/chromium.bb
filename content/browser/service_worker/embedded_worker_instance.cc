@@ -366,6 +366,11 @@ class EmbeddedWorkerInstance::StartTask {
 
   ~StartTask() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (did_send_start_) {
+      TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
+                                      "INITIALIZING_ON_RENDERER", this);
+    }
+
     TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
                                     "EmbeddedWorkerInstance::Start", this);
 
@@ -389,7 +394,7 @@ class EmbeddedWorkerInstance::StartTask {
         break;
     }
 
-    // Don't have to abort |start_callback_| here. The caller of
+    // Don't have to abort |sent_start_callback_| here. The caller of
     // EmbeddedWorkerInstance::Start(), that is, ServiceWorkerVersion does not
     // expect it when the start worker sequence is canceled by Stop() because
     // the callback, ServiceWorkerVersion::OnStartSentAndScriptEvaluated(),
@@ -397,7 +402,7 @@ class EmbeddedWorkerInstance::StartTask {
     // is stopped, the version attempts to restart the worker if there are
     // requests in the queue. See ServiceWorkerVersion::OnStoppedInternal() for
     // details.
-    // TODO(nhiroki): Reconsider this bizarre layering.
+    // TODO(crbug.com/859912): Reconsider this bizarre layering.
   }
 
   base::TimeTicks start_time() const { return start_time_; }
@@ -417,12 +422,12 @@ class EmbeddedWorkerInstance::StartTask {
   }
 
   void Start(mojom::EmbeddedWorkerStartParamsPtr params,
-             StatusCallback callback) {
+             StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(instance_->context_);
     base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     state_ = ProcessAllocationState::ALLOCATING;
-    start_callback_ = std::move(callback);
+    sent_start_callback_ = std::move(sent_start_callback);
     is_installed_ = params->is_installed;
 
     if (!GetContentClient()->browser()->IsBrowserStartupComplete())
@@ -446,18 +451,6 @@ class EmbeddedWorkerInstance::StartTask {
             std::move(params), std::move(request_), context.get(), context,
             base::BindOnce(&StartTask::OnSetupCompleted,
                            weak_factory_.GetWeakPtr(), process_manager)));
-  }
-
-  static void RunStartCallback(StartTask* task,
-                               blink::ServiceWorkerStatusCode status) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "INITIALIZING_ON_RENDERER",
-                                    task, "Status",
-                                    blink::ServiceWorkerStatusToString(status));
-    StatusCallback callback = std::move(task->start_callback_);
-    task->start_callback_.Reset();
-    std::move(callback).Run(status);
-    // |task| may be destroyed.
   }
 
   bool is_installed() const { return is_installed_; }
@@ -490,9 +483,7 @@ class EmbeddedWorkerInstance::StartTask {
       TRACE_EVENT_NESTABLE_ASYNC_END1(
           "ServiceWorker", "ALLOCATING_PROCESS", this, "Error",
           blink::ServiceWorkerStatusToString(status));
-      StatusCallback callback = std::move(start_callback_);
-      start_callback_.Reset();
-      instance_->OnStartFailed(std::move(callback), status);
+      instance_->OnSetupFailed(std::move(sent_start_callback_), status);
       // |this| may be destroyed.
       return;
     }
@@ -529,9 +520,11 @@ class EmbeddedWorkerInstance::StartTask {
     instance_->SendStartWorker(std::move(params),
                                std::move(factory_for_new_scripts),
                                std::move(cache_storage));
+    std::move(sent_start_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
 
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
                                       "INITIALIZING_ON_RENDERER", this);
+    did_send_start_ = true;
     // |this|'s work is done here, but |instance_| still uses its state until
     // startup is complete.
   }
@@ -542,7 +535,8 @@ class EmbeddedWorkerInstance::StartTask {
   // Ownership is transferred by a PostTask() call after process allocation.
   mojom::EmbeddedWorkerInstanceClientRequest request_;
 
-  StatusCallback start_callback_;
+  StatusCallback sent_start_callback_;
+  bool did_send_start_ = false;
   ProcessAllocationState state_;
 
   // Used for UMA.
@@ -803,15 +797,13 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
     return;
 
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
-
   starting_phase_ = SCRIPT_EVALUATED;
 
-  base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
-  StartTask::RunStartCallback(
-      inflight_start_task_.get(),
-      success ? blink::ServiceWorkerStatusCode::kOk
-              : blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed);
-  // |this| may be destroyed by the callback.
+  if (!success) {
+    // TODO(falken): Move this to OnStarted().
+    owner_version_->OnScriptEvaluateFailed();
+    // |this| may be destroyed.
+  }
 }
 
 void EmbeddedWorkerInstance::OnStarted(
@@ -947,7 +939,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   thread_id_ = kInvalidEmbeddedWorkerThreadId;
 }
 
-void EmbeddedWorkerInstance::OnStartFailed(
+void EmbeddedWorkerInstance::OnSetupFailed(
     StatusCallback callback,
     blink::ServiceWorkerStatusCode status) {
   EmbeddedWorkerStatus old_status = status_;

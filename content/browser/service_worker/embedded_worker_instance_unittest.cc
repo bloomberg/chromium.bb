@@ -37,11 +37,16 @@ namespace content {
 
 namespace {
 
-void SaveStatusAndCall(blink::ServiceWorkerStatusCode* out,
-                       base::OnceClosure callback,
-                       blink::ServiceWorkerStatusCode status) {
-  *out = status;
-  std::move(callback).Run();
+EmbeddedWorkerInstance::StatusCallback ReceiveStatus(
+    base::Optional<blink::ServiceWorkerStatusCode>* out_status,
+    base::OnceClosure quit) {
+  return base::BindOnce(
+      [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
+         base::OnceClosure quit, blink::ServiceWorkerStatusCode status) {
+        *out_status = status;
+        std::move(quit).Run();
+      },
+      out_status, std::move(quit));
 }
 
 }  // namespace
@@ -173,19 +178,29 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     return pair;
   }
 
-  blink::ServiceWorkerStatusCode StartWorker(EmbeddedWorkerInstance* worker,
-                                             int id,
-                                             const GURL& pattern,
-                                             const GURL& url) {
-    blink::ServiceWorkerStatusCode status;
-    base::RunLoop run_loop;
-    mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(id, pattern, url);
-    worker->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    run_loop.Run();
-    return status;
+  // Calls worker->Start() and runs until the start IPC is sent.
+  //
+  // Expects success. For failure cases, call Start() manually.
+  void StartWorkerUntilStartSent(EmbeddedWorkerInstance* worker,
+                                 mojom::EmbeddedWorkerStartParamsPtr params) {
+    base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop loop;
+    worker->Start(std::move(params), CreateProviderInfoGetter(),
+                  ReceiveStatus(&status, loop.QuitClosure()));
+    loop.Run();
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
+  }
+
+  // Calls worker->Start() and runs until startup finishes.
+  //
+  // Expects success. For failure cases, call Start() manually.
+  void StartWorker(EmbeddedWorkerInstance* worker,
+                   mojom::EmbeddedWorkerStartParamsPtr params) {
+    StartWorkerUntilStartSent(worker, std::move(params));
+    // TODO(falken): Listen for OnStarted() instead of this.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
   }
 
   mojom::EmbeddedWorkerStartParamsPtr
@@ -339,16 +354,10 @@ TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
   worker->AddObserver(this);
 
   // Start should succeed.
-  blink::ServiceWorkerStatusCode status;
   base::RunLoop run_loop;
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(service_worker_version_id, pattern, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
-  run_loop.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+  StartWorker(worker.get(), std::move(params));
 
   // The 'WorkerStarted' message should have been sent by
   // EmbeddedWorkerTestHelper.
@@ -386,17 +395,9 @@ TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
 
   {
     // Start once normally.
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
-    base::RunLoop run_loop;
     mojom::EmbeddedWorkerStartParamsPtr params =
         CreateStartParams(service_worker_version_id, pattern, url);
-    worker->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+    StartWorker(worker.get(), std::move(params));
     // The worker should be using the default render process.
     EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
@@ -412,18 +413,11 @@ TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
 
   {
     // Start again.
-    blink::ServiceWorkerStatusCode status;
     base::RunLoop run_loop;
     mojom::EmbeddedWorkerStartParamsPtr params =
         CreateStartParams(service_worker_version_id, pattern, url);
-    worker->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    StartWorker(worker.get(), std::move(params));
 
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
     // The worker should be using the new render process.
     EXPECT_EQ(helper_->new_render_process_id(), worker->process_id());
     worker->Stop();
@@ -442,9 +436,8 @@ TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   // Start the worker and then call StopIfNotAttachedToDevTools().
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StartWorker(worker.get(), service_worker_version_id, pattern, url));
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+  StartWorker(worker.get(),
+              CreateStartParams(service_worker_version_id, pattern, url));
   EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
   worker->StopIfNotAttachedToDevTools();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
@@ -456,9 +449,8 @@ TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   // Set devtools_attached to true, and do the same.
   worker->SetDevToolsAttached(true);
 
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StartWorker(worker.get(), service_worker_version_id, pattern, url));
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+  StartWorker(worker.get(),
+              CreateStartParams(service_worker_version_id, pattern, url));
   EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
   worker->StopIfNotAttachedToDevTools();
   base::RunLoop().RunUntilIdle();
@@ -492,31 +484,9 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   const int64_t version_id2 = pair2.second->version_id();
   int process_id = helper_->mock_render_process_id();
 
-  {
-    // Start worker1.
-    blink::ServiceWorkerStatusCode status;
-    base::RunLoop run_loop;
-    mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(version_id1, pattern, url);
-    worker1->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
-  }
-
-  {
-    // Start worker2.
-    blink::ServiceWorkerStatusCode status;
-    base::RunLoop run_loop;
-    mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(version_id2, pattern, url);
-    worker2->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
-  }
+  // Start workers.
+  StartWorker(worker1.get(), CreateStartParams(version_id1, pattern, url));
+  StartWorker(worker2.get(), CreateStartParams(version_id2, pattern, url));
 
   // The two workers share the same process.
   EXPECT_EQ(worker1->process_id(), worker2->process_id());
@@ -547,21 +517,20 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   worker->AddObserver(this);
 
   // Run the start worker sequence and detach during process allocation.
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  base::Optional<blink::ServiceWorkerStatusCode> status;
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
+  worker->Start(std::move(params), CreateProviderInfoGetter(),
+                ReceiveStatus(&status, base::DoNothing()));
   worker->Detach();
   base::RunLoop().RunUntilIdle();
+  // The start callback should not be aborted by detach (see a comment on the
+  // dtor of EmbeddedWorkerInstance::StartTask).
+  EXPECT_FALSE(status);
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
 
-  // The start callback should not be aborted by detach (see a comment on the
-  // dtor of EmbeddedWorkerInstance::StartTask).
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kMax, status);
 
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
@@ -580,15 +549,8 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
       embedded_worker_registry()->CreateWorker(pair.second.get());
   worker->AddObserver(this);
 
-  // Run the start worker sequence until a start worker message is sent.
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
-  mojom::EmbeddedWorkerStartParamsPtr params =
-      CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
-  base::RunLoop().RunUntilIdle();
-
+  StartWorkerUntilStartSent(worker.get(),
+                            CreateStartParams(version_id, scope, url));
   ASSERT_EQ(2u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -599,10 +561,6 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
-
-  // The start callback should not be aborted by detach (see a comment on the
-  // dtor of EmbeddedWorkerInstance::StartTask).
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kMax, status);
 
   // "STARTED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
@@ -621,13 +579,12 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   worker->AddObserver(this);
 
   // Stop the start worker sequence before a process is allocated.
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  base::Optional<blink::ServiceWorkerStatusCode> status;
 
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
+  worker->Start(std::move(params), CreateProviderInfoGetter(),
+                ReceiveStatus(&status, base::DoNothing()));
   worker->Stop();
   base::RunLoop().RunUntilIdle();
 
@@ -636,7 +593,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
 
   // The start callback should not be aborted by stop (see a comment on the dtor
   // of EmbeddedWorkerInstance::StartTask).
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kMax, status);
+  EXPECT_FALSE(status);
 
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
@@ -645,15 +602,9 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   events_.clear();
 
   // Restart the worker.
-  status = blink::ServiceWorkerStatusCode::kMax;
-  std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
   params = CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, run_loop->QuitClosure()));
-  run_loop->Run();
+  StartWorker(worker.get(), std::move(params));
 
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   ASSERT_EQ(3u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -696,15 +647,14 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   worker->AddObserver(this);
 
   // Run the start worker sequence until pause after download.
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
-
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, scope, url);
   params->pause_after_download = true;
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
+  base::Optional<blink::ServiceWorkerStatusCode> status;
+  worker->Start(std::move(params), CreateProviderInfoGetter(),
+                ReceiveStatus(&status, base::DoNothing()));
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   // Make the worker stopping and attempt to send a resume after download
   // message.
@@ -728,15 +678,8 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
       embedded_worker_registry()->CreateWorker(pair.second.get());
   worker->AddObserver(this);
 
-  // Run the start worker sequence until a start worker message is sent.
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
-  mojom::EmbeddedWorkerStartParamsPtr params =
-      CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
-  base::RunLoop().RunUntilIdle();
-
+  StartWorkerUntilStartSent(worker.get(),
+                            CreateStartParams(version_id, scope, url));
   ASSERT_EQ(2u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -748,10 +691,6 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
 
-  // The start callback should not be aborted by stop (see a comment on the dtor
-  // of EmbeddedWorkerInstance::StartTask).
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kMax, status);
-
   // "STARTED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(STOPPED, events_[0].type);
@@ -761,17 +700,9 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   // Restart the worker.
   static_cast<StalledInStartWorkerHelper*>(helper_.get())
       ->set_force_stall_in_start(false);
-  status = blink::ServiceWorkerStatusCode::kMax;
-  std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
-
-  params = CreateStartParams(version_id, scope, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, run_loop->QuitClosure()));
-  run_loop->Run();
+  StartWorker(worker.get(), CreateStartParams(version_id, scope, url));
 
   // The worker should be started.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   ASSERT_EQ(3u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -789,18 +720,13 @@ TEST_P(EmbeddedWorkerInstanceTest, Detach) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  blink::ServiceWorkerStatusCode status =
-      blink::ServiceWorkerStatusCode::kErrorFailed;
   worker->AddObserver(this);
 
   // Start the worker.
   base::RunLoop run_loop;
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, pattern, url);
-  worker->Start(
-      std::move(params), CreateProviderInfoGetter(),
-      base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-  run_loop.Run();
+  StartWorker(worker.get(), std::move(params));
 
   // Detach.
   int process_id = worker->process_id();
@@ -828,14 +754,21 @@ TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
       embedded_worker_registry()->CreateWorker(pair.second.get());
   worker->AddObserver(this);
 
-  // Attempt to start the worker.
+  // Attempt to start the worker. From the browser process's point of view, the
+  // start IPC was sent.
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, pattern, url);
+  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop loop;
   worker->Start(std::move(params), CreateProviderInfoGetter(),
-                base::DoNothing());
+                ReceiveStatus(&status, loop.QuitClosure()));
+  loop.Run();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
+
+  // But the renderer should not receive the message and the binding is broken.
+  // Worker should handle the failure of binding on the remote side as detach.
   base::RunLoop().RunUntilIdle();
 
-  // Worker should handle the failure of binding on the remote side as detach.
   ASSERT_EQ(3u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -876,11 +809,15 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   // Attempt to start the worker.
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, pattern, url);
+  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop loop;
   worker->Start(std::move(params), CreateProviderInfoGetter(),
-                base::DoNothing());
-  base::RunLoop().RunUntilIdle();
+                ReceiveStatus(&status, loop.QuitClosure()));
+  loop.Run();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   // Worker should handle the sudden shutdown as detach.
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(3u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
@@ -929,12 +866,15 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   // cause a crash.
   std::pair<blink::WebConsoleMessage::Level, std::string> test_message =
       std::make_pair(blink::WebConsoleMessage::kLevelVerbose, "");
+  base::Optional<blink::ServiceWorkerStatusCode> status;
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(version_id, pattern, url);
   worker->Start(std::move(params), CreateProviderInfoGetter(),
-                base::DoNothing());
+                ReceiveStatus(&status, base::DoNothing()));
   worker->AddMessageToConsole(test_message.first, test_message.second);
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
   // Messages sent before sending StartWorker message won't be dispatched.
   ASSERT_EQ(0UL, instance_client_rawptr->message().size());
@@ -942,7 +882,6 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
   EXPECT_EQ(STARTED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
   worker->AddMessageToConsole(test_message.first, test_message.second);
   base::RunLoop().RunUntilIdle();
@@ -1007,16 +946,9 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   // First, test a worker without pause after download.
   {
     // Start the worker.
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
-    base::RunLoop run_loop;
     mojom::EmbeddedWorkerStartParamsPtr params =
         CreateStartParams(version_id, scope, url);
-    worker->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    StartWorker(worker.get(), std::move(params));
 
     // Cache storage should have been sent.
     EXPECT_TRUE(helper_rawptr->had_cache_storage());
@@ -1029,20 +961,18 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   // Second, test a worker with pause after download.
   {
     // Start the worker until paused.
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
     mojom::EmbeddedWorkerStartParamsPtr params =
         CreateStartParams(version_id, scope, url);
     params->pause_after_download = true;
-    worker->Start(
-        std::move(params), CreateProviderInfoGetter(),
-        base::BindOnce(&SaveStatusAndCall, &status, base::DoNothing::Once<>()));
+    worker->Start(std::move(params), CreateProviderInfoGetter(),
+                  base::DoNothing());
     base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
 
     // Finish starting.
     worker->ResumeAfterDownload();
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
     // Cache storage should not have been sent.
     EXPECT_FALSE(helper_rawptr->had_cache_storage());
