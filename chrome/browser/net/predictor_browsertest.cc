@@ -902,10 +902,11 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
 
   // Flood with delayed requests, then wait.
   FloodResolveRequestsOnUIThread(names);
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(500));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   ExpectUrlLookupIsInProgressOnUIThread(delayed_url);
   EXPECT_FALSE(observer()->HasHostBeenLookedUp(delayed_url));
