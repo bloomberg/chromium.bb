@@ -243,7 +243,9 @@ void TestSuite::AddTestLauncherResultPrinter() {
   }
 
   printer_ = new XmlUnitTestResultPrinter;
-  CHECK(printer_->Initialize(output_path));
+  CHECK(printer_->Initialize(output_path))
+      << "Output path is " << output_path.AsUTF8Unsafe()
+      << " and PathExists(output_path) is " << PathExists(output_path);
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(printer_);
