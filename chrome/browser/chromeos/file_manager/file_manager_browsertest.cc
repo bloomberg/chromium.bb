@@ -174,6 +174,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("audioOpenDownloads"),
 #endif
                       TestCase("audioOpenDrive"),
+                      TestCase("audioOpenDrive").EnableDriveFs(),
                       TestCase("audioAutoAdvanceDrive"),
                       TestCase("audioRepeatAllModeSingleFileDrive"),
                       TestCase("audioNoRepeatModeSingleFileDrive"),
@@ -188,8 +189,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
                       TestCase("imageOpenDrive"),
+                      TestCase("imageOpenDrive").EnableDriveFs(),
                       TestCase("imageOpenGalleryOpenDownloads"),
-                      TestCase("imageOpenGalleryOpenDrive")));
+                      TestCase("imageOpenGalleryOpenDrive"),
+                      TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -366,7 +369,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("traverseDownloads").InGuestMode(),
                       TestCase("traverseDownloads"),
-                      TestCase("traverseDrive")));
+                      TestCase("traverseDrive"),
+                      TestCase("traverseDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Tasks, /* tasks.js */
@@ -377,6 +381,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("executeDefaultTaskDrive").EnableDriveFs(),
                       TestCase("defaultTaskDialogDownloads"),
                       TestCase("defaultTaskDialogDownloads").InGuestMode(),
+                      TestCase("defaultTaskDialogDrive"),
                       TestCase("defaultTaskDialogDrive").EnableDriveFs(),
                       TestCase("genericTaskIsNotExecuted"),
                       TestCase("genericTaskAndNonGenericTask")));
@@ -403,25 +408,32 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         EventCase("tabindexFocusDownloads").InGuestMode(),
         EventCase("tabindexFocusDirectorySelected"),
         EventCase("tabindexOpenDialogDrive"),
+        EventCase("tabindexOpenDialogDrive").EnableDriveFs(),
         EventCase("tabindexOpenDialogDownloads"),
         EventCase("tabindexOpenDialogDownloads").InGuestMode(),
         EventCase("tabindexSaveFileDialogDrive"),
+        EventCase("tabindexSaveFileDialogDrive").EnableDriveFs(),
         EventCase("tabindexSaveFileDialogDownloads"),
         EventCase("tabindexSaveFileDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDialog, /* file_dialog.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("openFileDialogUnload"),
-                      TestCase("openFileDialogDownloads"),
-                      TestCase("openFileDialogDownloads").InGuestMode(),
-                      TestCase("openFileDialogDownloads").InIncognito(),
-                      TestCase("openFileDialogCancelDownloads"),
-                      TestCase("openFileDialogEscapeDownloads"),
-                      TestCase("openFileDialogDrive"),
-                      TestCase("openFileDialogDrive").InIncognito(),
-                      TestCase("openFileDialogCancelDrive"),
-                      TestCase("openFileDialogEscapeDrive")));
+    ::testing::Values(
+        TestCase("openFileDialogUnload"),
+        TestCase("openFileDialogDownloads"),
+        TestCase("openFileDialogDownloads").InGuestMode(),
+        TestCase("openFileDialogDownloads").InIncognito(),
+        TestCase("openFileDialogCancelDownloads"),
+        TestCase("openFileDialogEscapeDownloads"),
+        TestCase("openFileDialogDrive"),
+        TestCase("openFileDialogDrive").InIncognito(),
+        TestCase("openFileDialogDrive").EnableDriveFs(),
+        TestCase("openFileDialogDrive").InIncognito().EnableDriveFs(),
+        TestCase("openFileDialogCancelDrive"),
+        TestCase("openFileDialogCancelDrive").EnableDriveFs(),
+        TestCase("openFileDialogEscapeDrive"),
+        TestCase("openFileDialogEscapeDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
