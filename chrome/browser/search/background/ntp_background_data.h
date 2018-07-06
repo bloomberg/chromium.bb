@@ -65,6 +65,8 @@ struct CollectionImage {
   GURL image_url;
   // The attribution list for the image.
   std::vector<std::string> attribution;
+  // A URL that can be accessed to find out more information about the image.
+  GURL attribution_action_url;
 };
 
 bool operator==(const CollectionImage& lhs, const CollectionImage& rhs);

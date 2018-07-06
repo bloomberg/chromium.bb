@@ -300,6 +300,8 @@ base::Value ConvertCollectionImageToDict(
       attributions.GetList().push_back(base::Value(attribution));
     }
     dict.SetKey("attributions", std::move(attributions));
+    dict.SetKey("attributionActionUrl",
+                base::Value(image.attribution_action_url.spec()));
     images.GetList().push_back(std::move(dict));
   }
   return images;
