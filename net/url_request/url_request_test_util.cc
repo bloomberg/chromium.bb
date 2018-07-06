@@ -189,29 +189,26 @@ TestURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 
-TestDelegate::TestDelegate()
-    : legacy_on_complete_(
-          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()),
-      buf_(new IOBuffer(kBufferSize)) {}
+TestDelegate::TestDelegate() : buf_(new IOBuffer(kBufferSize)) {}
 
 TestDelegate::~TestDelegate() = default;
 
 void TestDelegate::RunUntilComplete() {
-  legacy_on_complete_.Reset();
+  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_complete_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilRedirect() {
-  legacy_on_complete_.Reset();
+  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_redirect_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilAuthRequired() {
-  legacy_on_complete_.Reset();
+  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_auth_required_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -318,8 +315,8 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
       request_status_ = request->Cancel();
       // If bytes_read is 0, won't get a notification on cancelation.
       if (bytes_read == 0) {
-        if (legacy_on_complete_)
-          legacy_on_complete_.Run();
+        if (use_legacy_on_complete_)
+          base::RunLoop::QuitCurrentWhenIdleDeprecated();
         else
           std::move(on_complete_).Run();
       }
@@ -345,8 +342,8 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   response_completed_ = true;
-  if (legacy_on_complete_)
-    legacy_on_complete_.Run();
+  if (use_legacy_on_complete_)
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   else
     std::move(on_complete_).Run();
 }
