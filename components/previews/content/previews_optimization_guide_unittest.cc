@@ -150,6 +150,120 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(
       guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
                              PreviewsType::NOSCRIPT));
+
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com/example"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+}
+
+// Test when resource loading hints are enabled.
+TEST_F(PreviewsOptimizationGuideTest,
+       ProcessHintsWhitelistForResourceLoadingHintsPopulatedCorrectly) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("facebook.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization1 =
+      hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  // Add a second optimization to ensure that the applicable optimizations are
+  // still whitelisted.
+  optimization_guide::proto::Optimization* optimization2 =
+      hint1->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::TYPE_UNSPECIFIED);
+  // Add a second hint.
+  optimization_guide::proto::Hint* hint2 = config.add_hints();
+  hint2->set_key("twitter.com");
+  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization3 =
+      hint2->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+
+  // Twitter and Facebook should be whitelisted but not Google.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.facebook.com")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.twitter.com/example")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(
+      guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
+                             PreviewsType::RESOURCE_LOADING_HINTS));
+
+  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.facebook.com/example.html"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com/example"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+}
+
+// Test when both NoScript and resource loading hints are enabled.
+TEST_F(
+    PreviewsOptimizationGuideTest,
+    ProcessHintsWhitelistForNoScriptAndResourceLoadingHintsPopulatedCorrectly) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("facebook.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization1 =
+      hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  // Add a second optimization to ensure that the applicable optimizations are
+  // still whitelisted.
+  optimization_guide::proto::Optimization* optimization2 =
+      hint1->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::TYPE_UNSPECIFIED);
+  // Add a second hint.
+  optimization_guide::proto::Hint* hint2 = config.add_hints();
+  hint2->set_key("twitter.com");
+  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization3 =
+      hint2->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+
+  // Twitter and Facebook should be whitelisted but not Google.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.facebook.com")),
+      PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.facebook.com/example.html")),
+      PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.twitter.com/example")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(
+      guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
+                             PreviewsType::RESOURCE_LOADING_HINTS));
+
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com/example"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, ProcessHintsUnsupportedKeyRepIsIgnored) {
@@ -368,6 +482,22 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
       CreateRequestWithURL(GURL("https://outdoor.sports.yahoo.com"));
   // Uses "sports.yahoo.com" match before "yahoo.com" match.
   EXPECT_FALSE(guide()->IsWhitelisted(*request5, PreviewsType::NOSCRIPT));
+
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://yahoo.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com/example"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://outdoor.sports.yahoo.com"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://outdoor.sports.yahoo.com/index.html"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
