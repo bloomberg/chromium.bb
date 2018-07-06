@@ -35,6 +35,10 @@
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "content/common/sandbox_policy_fuchsia.h"
+#endif
+
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
@@ -233,6 +237,10 @@ class ChildProcessLauncherHelper :
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;
   bool java_peer_avaiable_on_client_thread_ = false;
+#endif
+
+#if defined(OS_FUCHSIA)
+  SandboxPolicyFuchsia sandbox_policy_;
 #endif
 };
 
