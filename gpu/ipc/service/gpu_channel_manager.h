@@ -27,7 +27,6 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
-#include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -48,6 +47,7 @@ class GpuWatchdogThread;
 class MailboxManager;
 class Scheduler;
 class SyncPointManager;
+struct VideoMemoryUsageStats;
 
 namespace gles2 {
 class Outputter;
@@ -110,8 +110,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
     return &framebuffer_completeness_cache_;
   }
 
-  GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
-
   GpuChannel* LookupChannel(int32_t client_id) const;
 
   gl::GLSurface* GetDefaultOffscreenSurface();
@@ -132,6 +130,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
+
+  // Retrieve GPU Resource consumption statistics for the task manager
+  void GetVideoMemoryUsageStats(
+      VideoMemoryUsageStats* video_memory_usage_stats) const;
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
@@ -164,7 +166,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
 
   std::unique_ptr<MailboxManager> mailbox_manager_;
   std::unique_ptr<gles2::Outputter> outputter_;
-  GpuMemoryManager gpu_memory_manager_;
   Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   SyncPointManager* sync_point_manager_;

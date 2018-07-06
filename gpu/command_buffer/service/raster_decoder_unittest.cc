@@ -38,7 +38,8 @@ class MockMemoryTracker : public gles2::MemoryTracker {
  public:
   MockMemoryTracker() {}
 
-  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) override {}
+  void TrackMemoryAllocatedChange(uint64_t delta) override {}
+  uint64_t GetSize() const override { return 0; }
 
   uint64_t ClientTracingId() const override { return 0; }
   int ClientId() const override { return 0; }

@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
-#include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/size.h"
@@ -173,8 +172,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   const int32_t route_id_;
 
  private:
-  GpuMemoryManager* GetMemoryManager() const;
-
   void Destroy();
 
   bool MakeCurrent();

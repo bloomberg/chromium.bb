@@ -258,10 +258,11 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
   scoped_refptr<FeatureInfo> feature_info_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)   \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                          \
-              TrackMemoryAllocatedChange(old_size, new_size)) \
-      .Times(1).RetiresOnSaturation()
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)    \
+  EXPECT_CALL(*mock_memory_tracker_.get(),                     \
+              TrackMemoryAllocatedChange(new_size - old_size)) \
+      .Times(1)                                                \
+      .RetiresOnSaturation()
 
 TEST_F(BufferManagerTest, Basic) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
@@ -310,7 +311,6 @@ TEST_F(BufferManagerMemoryTrackerTest, Basic) {
   const GLsizeiptr kBuffer1Size1 = 123;
   const GLsizeiptr kBuffer1Size2 = 456;
   // Check we can create buffer.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
   manager_->CreateBuffer(kClientBuffer1Id, kServiceBuffer1Id);
   // Check buffer got created.
   Buffer* buffer1 = manager_->GetBuffer(kClientBuffer1Id);

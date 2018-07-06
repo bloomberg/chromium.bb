@@ -458,8 +458,7 @@ void GpuServiceImpl::GetVideoMemoryUsageStats(
     return;
   }
   gpu::VideoMemoryUsageStats video_memory_usage_stats;
-  gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
-      &video_memory_usage_stats);
+  gpu_channel_manager_->GetVideoMemoryUsageStats(&video_memory_usage_stats);
   std::move(callback).Run(video_memory_usage_stats);
 }
 

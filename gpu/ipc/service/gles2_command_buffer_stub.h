@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_SERVICE_GLES2_COMMAND_BUFFER_STUB_H_
 #define GPU_IPC_SERVICE_GLES2_COMMAND_BUFFER_STUB_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
