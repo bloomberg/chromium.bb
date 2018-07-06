@@ -44,7 +44,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override;
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
-                       const GetLocalChangesCallback& callback) override;
+                       GetLocalChangesCallback callback) override;
   void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,

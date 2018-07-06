@@ -98,12 +98,12 @@ void BookmarkModelTypeProcessor::DisconnectSync() {
 
 void BookmarkModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
-    const GetLocalChangesCallback& callback) {
+    GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BookmarkLocalChangesBuilder builder(bookmark_tracker_.get());
   std::vector<syncer::CommitRequestData> local_changes =
       builder.BuildCommitRequests(max_entries);
-  callback.Run(std::move(local_changes));
+  std::move(callback).Run(std::move(local_changes));
 }
 
 void BookmarkModelTypeProcessor::OnCommitCompleted(
