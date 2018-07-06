@@ -7,8 +7,10 @@
 
 #include <memory>
 
+#include "chromeos/services/multidevice_setup/host_status_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 class PrefService;
 
@@ -32,7 +34,8 @@ class EligibleHostDevicesProvider;
 class SetupFlowCompletionRecorder;
 
 // Concrete MultiDeviceSetup implementation.
-class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
+class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
+                             public HostStatusProvider::Observer {
  public:
   class Factory {
    public:
@@ -51,6 +54,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
   ~MultiDeviceSetupImpl() override;
 
  private:
+  friend class MultiDeviceSetupImplTest;
+
   MultiDeviceSetupImpl(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
@@ -59,9 +64,22 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
       mojom::AccountStatusChangeDelegatePtr delegate) override;
+  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
+  void SetHostDevice(const std::string& host_public_key,
+                     SetHostDeviceCallback callback) override;
+  void RemoveHostDevice() override;
+  void GetHostStatus(GetHostStatusCallback callback) override;
+  void RetrySetHostNow(RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
+
+  // HostStatusProvider::Observer:
+  void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
+                              host_status_with_device) override;
+
+  void FlushForTesting();
 
   std::unique_ptr<EligibleHostDevicesProvider> eligible_host_devices_provider_;
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
@@ -69,6 +87,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
   std::unique_ptr<HostStatusProvider> host_status_provider_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
+
+  mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };
