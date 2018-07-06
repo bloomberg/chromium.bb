@@ -381,7 +381,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
                                  metadata.top_controls_shown_ratio,
                                  scrollable_viewport_size_dip);
 
-  // ViewAndroid::content_offset() must be in CSS scale
+  // ViewAndroid::content_offset() must be in dip.
   float top_content_offset_dip = IsUseZoomForDSFEnabled()
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
@@ -403,7 +403,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
         metadata.root_overflow_y_hidden);
   }
 
-  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
+  // All offsets and sizes except |top_shown_pix| are in dip.
   gesture_listener_manager_->UpdateScrollInfo(
       root_scroll_offset_dip, metadata.page_scale_factor,
       metadata.min_page_scale_factor, metadata.max_page_scale_factor,
@@ -1265,17 +1265,17 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
                                  metadata.top_controls_height,
                                  metadata.top_controls_shown_ratio,
                                  scrollable_viewport_size_dip);
-  // ViewAndroid::content_offset() must be in CSS scale
+  // ViewAndroid::content_offset() must be in dip
   float top_content_offset_dip = IsUseZoomForDSFEnabled()
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
-  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
+  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset_dip});
   bool controls_changed = UpdateControls(
       view_.GetDipScale(), metadata.top_controls_height,
       metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
       metadata.bottom_controls_shown_ratio);
 
-  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
+  // All offsets and sizes except |top_shown_pix| are in dip.
   gesture_listener_manager_->UpdateScrollInfo(
       root_scroll_offset_dip, metadata.page_scale_factor,
       metadata.min_page_scale_factor, metadata.max_page_scale_factor,
