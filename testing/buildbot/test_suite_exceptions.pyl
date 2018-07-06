@@ -923,10 +923,6 @@
   },
   'content_unittests': {
     'remove_from': [
-      # chromium.linux
-      # Fails due to package install issues (https://crbug.com/858692).
-      'Fuchsia x64',
-
       # chromium.fyi
       'Fuchsia (dbg)',
       'Fuchsia ARM64',
