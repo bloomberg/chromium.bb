@@ -6,10 +6,10 @@ static_library("content") {
   sources = [
     "previews_content_util.cc",
     "previews_content_util.h",
+    "previews_decider_impl.cc",
+    "previews_decider_impl.h",
     "previews_hints.cc",
     "previews_hints.h",
-    "previews_io_data.cc",
-    "previews_io_data.h",
     "previews_optimization_guide.cc",
     "previews_optimization_guide.h",
     "previews_ui_service.cc",
@@ -33,7 +33,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "previews_content_util_unittest.cc",
-    "previews_io_data_unittest.cc",
+    "previews_decider_impl_unittest.cc",
     "previews_optimization_guide_unittest.cc",
     "previews_ui_service_unittest.cc",
   ]

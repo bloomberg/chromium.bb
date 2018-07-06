@@ -21,7 +21,7 @@ class OptimizationGuideService;
 }
 
 namespace previews {
-class PreviewsIOData;
+class PreviewsDeciderImpl;
 class PreviewsUIService;
 }
 
@@ -32,13 +32,13 @@ class PreviewsService : public KeyedService {
   PreviewsService();
   ~PreviewsService() override;
 
-  // Initializes the UI Service. |previews_io_data| is the main previews IO
+  // Initializes the UI Service. |previews_decider_impl| is the main previews IO
   // object, and cannot be null. |optimization_guide_service| is the
   // Optimization Guide Service that is being listened to and is guaranteed to
   // outlive |this|. |io_task_runner| is the IO thread task runner.
   // |profile_path| is the path to user data on disc.
   void Initialize(
-      previews::PreviewsIOData* previews_io_data,
+      previews::PreviewsDeciderImpl* previews_decider_impl,
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const base::FilePath& profile_path);

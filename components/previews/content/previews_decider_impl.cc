@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_io_data.h"
+#include "components/previews/content/previews_decider_impl.h"
 
 #include <algorithm>
 #include <utility>
@@ -90,7 +90,7 @@ bool IsPreviewsBlacklistIgnoredViaFlag() {
 
 }  // namespace
 
-PreviewsIOData::PreviewsIOData(
+PreviewsDeciderImpl::PreviewsDeciderImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : blacklist_ignored_(IsPreviewsBlacklistIgnoredViaFlag()),
@@ -99,9 +99,9 @@ PreviewsIOData::PreviewsIOData(
       page_id_(1u),
       weak_factory_(this) {}
 
-PreviewsIOData::~PreviewsIOData() {}
+PreviewsDeciderImpl::~PreviewsDeciderImpl() {}
 
-void PreviewsIOData::Initialize(
+void PreviewsDeciderImpl::Initialize(
     base::WeakPtr<PreviewsUIService> previews_ui_service,
     std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
@@ -115,34 +115,35 @@ void PreviewsIOData::Initialize(
   // Set up the IO thread portion of |this|.
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&PreviewsIOData::InitializeOnIOThread,
+      base::BindOnce(&PreviewsDeciderImpl::InitializeOnIOThread,
                      base::Unretained(this), std::move(previews_opt_out_store),
                      std::move(allowed_previews)));
 }
 
-void PreviewsIOData::OnNewBlacklistedHost(const std::string& host,
-                                          base::Time time) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&PreviewsUIService::OnNewBlacklistedHost,
-                                       previews_ui_service_, host, time));
-}
-
-void PreviewsIOData::OnUserBlacklistedStatusChange(bool blacklisted) {
+void PreviewsDeciderImpl::OnNewBlacklistedHost(const std::string& host,
+                                               base::Time time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PreviewsUIService::OnUserBlacklistedStatusChange,
-                            previews_ui_service_, blacklisted));
+      FROM_HERE, base::BindOnce(&PreviewsUIService::OnNewBlacklistedHost,
+                                previews_ui_service_, host, time));
 }
 
-void PreviewsIOData::OnBlacklistCleared(base::Time time) {
+void PreviewsDeciderImpl::OnUserBlacklistedStatusChange(bool blacklisted) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&PreviewsUIService::OnBlacklistCleared,
-                                       previews_ui_service_, time));
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PreviewsUIService::OnUserBlacklistedStatusChange,
+                     previews_ui_service_, blacklisted));
 }
 
-void PreviewsIOData::InitializeOnIOThread(
+void PreviewsDeciderImpl::OnBlacklistCleared(base::Time time) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PreviewsUIService::OnBlacklistCleared,
+                                previews_ui_service_, time));
+}
+
+void PreviewsDeciderImpl::InitializeOnIOThread(
     std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -150,27 +151,28 @@ void PreviewsIOData::InitializeOnIOThread(
       std::move(previews_opt_out_store), base::DefaultClock::GetInstance(),
       this, std::move(allowed_previews)));
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PreviewsUIService::SetIOData, previews_ui_service_,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&PreviewsUIService::SetIOData, previews_ui_service_,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void PreviewsIOData::SetPreviewsBlacklistForTesting(
+void PreviewsDeciderImpl::SetPreviewsBlacklistForTesting(
     std::unique_ptr<PreviewsBlackList> previews_back_list) {
   previews_black_list_ = std::move(previews_back_list);
 }
 
-void PreviewsIOData::LogPreviewNavigation(const GURL& url,
-                                          bool opt_out,
-                                          PreviewsType type,
-                                          base::Time time,
-                                          uint64_t page_id) const {
+void PreviewsDeciderImpl::LogPreviewNavigation(const GURL& url,
+                                               bool opt_out,
+                                               PreviewsType type,
+                                               base::Time time,
+                                               uint64_t page_id) const {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PreviewsUIService::LogPreviewNavigation,
                      previews_ui_service_, url, type, opt_out, time, page_id));
 }
 
-void PreviewsIOData::LogPreviewDecisionMade(
+void PreviewsDeciderImpl::LogPreviewDecisionMade(
     PreviewsEligibilityReason reason,
     const GURL& url,
     base::Time time,
@@ -184,33 +186,33 @@ void PreviewsIOData::LogPreviewDecisionMade(
                                 std::move(passed_reasons), page_id));
 }
 
-void PreviewsIOData::AddPreviewNavigation(const GURL& url,
-                                          bool opt_out,
-                                          PreviewsType type,
-                                          uint64_t page_id) {
+void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
+                                               bool opt_out,
+                                               PreviewsType type,
+                                               uint64_t page_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
   LogPreviewNavigation(url, opt_out, type, time, page_id);
 }
 
-void PreviewsIOData::ClearBlackList(base::Time begin_time,
-                                    base::Time end_time) {
+void PreviewsDeciderImpl::ClearBlackList(base::Time begin_time,
+                                         base::Time end_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_->ClearBlackList(begin_time, end_time);
 }
 
-void PreviewsIOData::SetIgnorePreviewsBlacklistDecision(bool ignored) {
+void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   blacklist_ignored_ = ignored;
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged,
-                 previews_ui_service_, blacklist_ignored_));
+      base::BindOnce(&PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged,
+                     previews_ui_service_, blacklist_ignored_));
 }
 
-bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
-                                        PreviewsType type) const {
+bool PreviewsDeciderImpl::ShouldAllowPreview(const net::URLRequest& request,
+                                             PreviewsType type) const {
   DCHECK(type == PreviewsType::OFFLINE || type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
   // Consumers that need to specify a blacklist or ignore flag should use
@@ -220,7 +222,7 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                  std::vector<std::string>(), false);
 }
 
-bool PreviewsIOData::ShouldAllowPreviewAtECT(
+bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
     const net::URLRequest& request,
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
@@ -362,8 +364,8 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   return true;
 }
 
-bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
-                                            PreviewsType type) const {
+bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
+                                                 PreviewsType type) const {
   DCHECK(PreviewsType::NOSCRIPT == type ||
          PreviewsType::RESOURCE_LOADING_HINTS == type);
   if (previews_black_list_ && !blacklist_ignored_) {
@@ -401,7 +403,8 @@ bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
   return true;
 }
 
-PreviewsEligibilityReason PreviewsIOData::IsPreviewAllowedByOptmizationHints(
+PreviewsEligibilityReason
+PreviewsDeciderImpl::IsPreviewAllowedByOptmizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
@@ -418,7 +421,7 @@ PreviewsEligibilityReason PreviewsIOData::IsPreviewAllowedByOptmizationHints(
   return PreviewsEligibilityReason::ALLOWED;
 }
 
-uint64_t PreviewsIOData::GeneratePageId() {
+uint64_t PreviewsDeciderImpl::GeneratePageId() {
   return ++page_id_;
 }
 
