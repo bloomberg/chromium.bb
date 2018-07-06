@@ -10,8 +10,12 @@ crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Ski
 
 # Multicol enforces legacy layout. The refs do not use multicol. Legacy and NG
 # disagree on where to put line boxes in vertical-lr sometimes (off by one pixel):
+crbug.com/850504 fast/multicol/newmulticol/hide-box-vertical-lr.html [ Skip ]
 crbug.com/850504 fast/multicol/span/vertical-lr.html [ Skip ]
 crbug.com/850504 fast/multicol/vertical-lr/ [ Skip ]
+
+# NG doesn't have bug 450202, so the following test will never pass.
+crbug.com/450202 fast/multicol/span/overflow-on-multicol.html [ Skip ]
 
 # Fails because we don't yet special-case marquee like legacy does:
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
@@ -458,9 +462,7 @@ crbug.com/591099 fast/lists/004.html [ Failure ]
 crbug.com/591099 fast/lists/list-item-line-height.html [ Failure ]
 crbug.com/591099 fast/lists/marker-before-empty-inline.html [ Failure ]
 crbug.com/591099 fast/masking/clip-path-selection.html [ Failure ]
-crbug.com/850504 fast/multicol/newmulticol/hide-box-vertical-lr.html [ Skip ]
-crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
-crbug.com/824918 fast/multicol/span/overflow-on-multicol.html [ Failure ]
+crbug.com/860415 fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
 crbug.com/591099 fast/overflow/overflow-update-transform.html [ Failure ]
 crbug.com/591099 fast/overflow/recompute-overflow-of-layout-root-container.html [ Failure ]
 crbug.com/591099 fast/parser/001.html [ Failure ]
