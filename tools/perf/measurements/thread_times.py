@@ -43,7 +43,7 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
     self._timeline_controller.Stop(tab, results)
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
-        self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)
+        self._timeline_controller.model.GetFirstRendererThread(tab.id)
     if self._report_silk_details:
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(self._timeline_controller.model, renderer_thread,

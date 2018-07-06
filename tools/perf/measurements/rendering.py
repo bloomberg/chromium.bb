@@ -77,7 +77,7 @@ class Rendering(legacy_page_test.LegacyPageTest):
     results.AddValue(trace_value)
 
     model = model_module.TimelineModel(trace_result)
-    renderer_thread = model.GetRendererThreadFromTabId(tab.id)
+    renderer_thread = model.GetFirstRendererThread(tab.id)
     records = _CollectRecordsFromRendererThreads(model, renderer_thread)
 
     smoothness_metric = smoothness.SmoothnessMetric()

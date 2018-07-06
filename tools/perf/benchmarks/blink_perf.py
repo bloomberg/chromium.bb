@@ -315,7 +315,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       trace_events_to_measure = tab.EvaluateJavaScript(
           'window.testRunner.traceEventsToMeasure')
       model = model_module.TimelineModel(trace_data)
-      renderer_thread = model.GetRendererThreadFromTabId(tab.id)
+      renderer_thread = model.GetFirstRendererThread(tab.id)
       trace_cpu_time_metrics = _ComputeTraceEventsThreadTimeForBlinkPerf(
           model, renderer_thread, trace_events_to_measure)
 
