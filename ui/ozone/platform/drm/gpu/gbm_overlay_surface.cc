@@ -63,7 +63,8 @@ void GbmOverlaySurface::SubmitFrame() {
   page_flip_pending_ = true;
 }
 
-void GbmOverlaySurface::OnSubmission(gfx::SwapResult swap_result) {
+void GbmOverlaySurface::OnSubmission(gfx::SwapResult swap_result,
+                                     std::unique_ptr<gfx::GpuFence> out_fence) {
   DCHECK(page_flip_pending_);
   DCHECK(have_unsubmitted_frame_);
 

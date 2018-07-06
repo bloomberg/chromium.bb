@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -134,7 +135,7 @@ void DrmWindow::SchedulePageFlip(
   if (force_buffer_reallocation_) {
     force_buffer_reallocation_ = false;
     std::move(submission_callback)
-        .Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
+        .Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS, nullptr);
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
@@ -142,7 +143,7 @@ void DrmWindow::SchedulePageFlip(
   last_submitted_planes_ = DrmOverlayPlane::Clone(planes);
 
   if (!controller_) {
-    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }

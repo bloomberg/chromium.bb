@@ -19,7 +19,8 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
 
   // HardwareDisplayPlaneManager:
   bool Commit(HardwareDisplayPlaneList* plane_list,
-              scoped_refptr<PageFlipRequest> page_flip_request) override;
+              scoped_refptr<PageFlipRequest> page_flip_request,
+              std::unique_ptr<gfx::GpuFence>* out_fence) override;
   bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
   bool SetColorCorrectionOnAllCrtcPlanes(
@@ -43,6 +44,9 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
   bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
+  bool AddOutFencePtrProperties(drmModeAtomicReqPtr property_set,
+                                const std::vector<CrtcController*>& crtcs,
+                                std::vector<base::ScopedFD>* out_fence_fds);
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerAtomic);
 };

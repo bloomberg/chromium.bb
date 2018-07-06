@@ -242,7 +242,7 @@ void GbmSurfaceless::SubmitFrame() {
         submitted_frame_->ScheduleOverlayPlanes(widget_);
 
     if (!schedule_planes_succeeded) {
-      OnSubmission(gfx::SwapResult::SWAP_FAILED);
+      OnSubmission(gfx::SwapResult::SWAP_FAILED, nullptr);
       OnPresentation(gfx::PresentationFeedback::Failure());
       return;
     }
@@ -269,7 +269,8 @@ void GbmSurfaceless::FenceRetired(PendingFrame* frame) {
   SubmitFrame();
 }
 
-void GbmSurfaceless::OnSubmission(gfx::SwapResult result) {
+void GbmSurfaceless::OnSubmission(gfx::SwapResult result,
+                                  std::unique_ptr<gfx::GpuFence> out_fence) {
   submitted_frame_->swap_result = result;
 }
 

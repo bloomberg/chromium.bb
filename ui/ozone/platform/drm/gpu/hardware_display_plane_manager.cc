@@ -352,6 +352,8 @@ bool HardwareDisplayPlaneManager::InitializeCrtcProperties(DrmDevice* drm) {
     return false;
   }
 
+  unsigned int num_crtcs_with_out_fence_ptr = 0;
+
   for (int i = 0; i < resources->count_crtcs; ++i) {
     CrtcProperties p{};
     p.id = resources->crtcs[i];
@@ -372,8 +374,21 @@ bool HardwareDisplayPlaneManager::InitializeCrtcProperties(DrmDevice* drm) {
     GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT", &p.degamma_lut);
     GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT_SIZE",
                           &p.degamma_lut_size);
+    GetDrmPropertyForName(drm, props.get(), "OUT_FENCE_PTR", &p.out_fence_ptr);
+
+    num_crtcs_with_out_fence_ptr += (p.out_fence_ptr.id != 0);
 
     crtc_properties_.push_back(p);
+  }
+
+  // Check that either all or none of the crtcs support the OUT_FENCE_PTR
+  // property. Otherwise we will get an incomplete, and thus not useful,
+  // out-fence set when we perform a commit involving the problematic
+  // crtcs.
+  if (num_crtcs_with_out_fence_ptr != 0 &&
+      num_crtcs_with_out_fence_ptr != crtc_properties_.size()) {
+    LOG(ERROR) << "Only some of the crtcs support the OUT_FENCE_PTR property";
+    return false;
   }
 
   return true;

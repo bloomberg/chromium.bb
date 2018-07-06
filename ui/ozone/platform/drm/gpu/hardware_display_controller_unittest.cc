@@ -47,7 +47,8 @@ class HardwareDisplayControllerTest : public testing::Test {
 
   void InitializeDrmDevice(bool use_atomic);
   void SchedulePageFlip(ui::DrmOverlayPlaneList planes);
-  void OnSubmission(gfx::SwapResult swap_result);
+  void OnSubmission(gfx::SwapResult swap_result,
+                    std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
  protected:
@@ -144,7 +145,9 @@ void HardwareDisplayControllerTest::SchedulePageFlip(
                      base::Unretained(this)));
 }
 
-void HardwareDisplayControllerTest::OnSubmission(gfx::SwapResult result) {
+void HardwareDisplayControllerTest::OnSubmission(
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> out_fence) {
   last_swap_result_ = result;
 }
 

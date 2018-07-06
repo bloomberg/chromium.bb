@@ -34,6 +34,7 @@ constexpr uint32_t kGammaLutPropId = 304;
 constexpr uint32_t kGammaLutSizePropId = 305;
 constexpr uint32_t kDegammaLutPropId = 306;
 constexpr uint32_t kDegammaLutSizePropId = 307;
+constexpr uint32_t kOutFencePtrPropId = 308;
 constexpr uint32_t kInFormatsBlobPropId = 400;
 
 const uint32_t kDummyFormat = 0;
@@ -134,6 +135,7 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
   property_names_.insert({kGammaLutSizePropId, "GAMMA_LUT_SIZE"});
   property_names_.insert({kDegammaLutPropId, "DEGAMMA_LUT"});
   property_names_.insert({kDegammaLutSizePropId, "DEGAMMA_LUT_SIZE"});
+  property_names_.insert({kOutFencePtrPropId, "OUT_FENCE_PTR"});
 }
 
 using HardwareDisplayPlaneManagerLegacyTest = HardwareDisplayPlaneManagerTest;
@@ -355,14 +357,16 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id, &crtc));
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request));
+  EXPECT_TRUE(
+      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
   assigns.clear();
   assigns.push_back(ui::DrmOverlayPlane(primary_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id, &crtc));
   EXPECT_EQ(0, fake_drm_->get_overlay_clear_call_count());
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request));
+  EXPECT_TRUE(
+      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
   EXPECT_EQ(1, fake_drm_->get_overlay_clear_call_count());
 }
 
@@ -528,6 +532,64 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
     EXPECT_EQ(2, fake_drm_->get_commit_count());
   else
     EXPECT_EQ(4, fake_drm_->get_set_object_property_count());
+}
+
+TEST_P(HardwareDisplayPlaneManagerAtomicTest,
+       CommitReturnsNullOutFenceIfOutFencePtrNotSupported) {
+  scoped_refptr<ui::ScanoutBuffer> fake_buffer2 =
+      new ui::MockScanoutBuffer(kDefaultBufferSize);
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, use_atomic_);
+
+  ui::CrtcController crtc1(fake_drm_, crtc_properties_[0].id, 0);
+  ui::CrtcController crtc2(fake_drm_, crtc_properties_[1].id, 0);
+
+  ui::DrmOverlayPlaneList assigns1;
+  assigns1.push_back(ui::DrmOverlayPlane(fake_buffer_, nullptr));
+  ui::DrmOverlayPlaneList assigns2;
+  assigns2.push_back(ui::DrmOverlayPlane(fake_buffer2, nullptr));
+
+  fake_drm_->plane_manager()->BeginFrame(&state_);
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns1, crtc_properties_[0].id, &crtc1));
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns2, crtc_properties_[1].id, &crtc2));
+
+  scoped_refptr<ui::PageFlipRequest> page_flip_request =
+      base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
+
+  std::unique_ptr<gfx::GpuFence> out_fence;
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
+                                                 &out_fence));
+  EXPECT_EQ(nullptr, out_fence);
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest,
+       InitializationFailsIfSupportForOutFencePropertiesIsPartial) {
+  InitializeDrmState(/*crtc_count=*/3, /*planes_per_crtc=*/1);
+  crtc_properties_[0].properties.push_back(
+      {.id = kOutFencePtrPropId, .value = 1});
+  crtc_properties_[2].properties.push_back(
+      {.id = kOutFencePtrPropId, .value = 2});
+
+  EXPECT_FALSE(fake_drm_->InitializeStateWithResult(
+      crtc_properties_, plane_properties_, property_names_, use_atomic_));
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest,
+       InitializationSucceedsIfSupportForOutFencePropertiesIsComplete) {
+  InitializeDrmState(/*crtc_count=*/3, /*planes_per_crtc=*/1);
+  crtc_properties_[0].properties.push_back(
+      {.id = kOutFencePtrPropId, .value = 1});
+  crtc_properties_[1].properties.push_back(
+      {.id = kOutFencePtrPropId, .value = 2});
+  crtc_properties_[2].properties.push_back(
+      {.id = kOutFencePtrPropId, .value = 3});
+
+  EXPECT_TRUE(fake_drm_->InitializeStateWithResult(
+      crtc_properties_, plane_properties_, property_names_, use_atomic_));
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,

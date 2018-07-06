@@ -45,7 +45,8 @@ class GbmOverlaySurface : public OverlaySurface {
 
   void SubmitFrame();
 
-  void OnSubmission(gfx::SwapResult swap_result);
+  void OnSubmission(gfx::SwapResult result,
+                    std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& presentation_feedback);
 
   std::unique_ptr<DrmWindowProxy> window_;

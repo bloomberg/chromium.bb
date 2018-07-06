@@ -19,7 +19,8 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
 
   // HardwareDisplayPlaneManager:
   bool Commit(HardwareDisplayPlaneList* plane_list,
-              scoped_refptr<PageFlipRequest> page_flip_request) override;
+              scoped_refptr<PageFlipRequest> page_flip_request,
+              std::unique_ptr<gfx::GpuFence>* out_fence) override;
   bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
   bool SetColorCorrectionOnAllCrtcPlanes(
