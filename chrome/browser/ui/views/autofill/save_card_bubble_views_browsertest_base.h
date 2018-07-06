@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -62,6 +63,15 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
 
+  // BrowserTestBase:
+  void SetUpInProcessBrowserTestFixture() override;
+
+  // Sets up the ability to sign in the user.
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context);
+
+  // Signs in the user with the provided |full_name|.
+  void SignInWithFullName(const std::string& full_name);
+
   // Will call JavaScript to fill and submit the form in different ways.
   void SubmitForm();
   void FillAndSubmitForm();
@@ -105,6 +115,10 @@ class SaveCardBubbleViewsBrowserTestBase
   void WaitForObservedEvent();
 
   network::TestURLLoaderFactory* test_url_loader_factory();
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
@@ -308,6 +309,8 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
         ui::TextInputType::TEXT_INPUT_TYPE_TEXT);
     cardholder_name_textfield_->SetText(
         base::ASCIIToUTF16(controller_->GetAccountInfo().full_name));
+    AutofillMetrics::LogSaveCardCardholderNamePrefilled(
+        !cardholder_name_textfield_->text().empty());
     view->AddChildView(cardholder_name_textfield_);
   }
 

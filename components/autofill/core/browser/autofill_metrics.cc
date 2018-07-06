@@ -676,6 +676,11 @@ void AutofillMetrics::LogUploadAcceptedCardOriginMetric(
 }
 
 // static
+void AutofillMetrics::LogSaveCardCardholderNamePrefilled(bool prefilled) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.SaveCardCardholderNamePrefilled", prefilled);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
