@@ -13,12 +13,11 @@ import datetime
 import httplib
 import httplib2
 import json
-import logging
 import os
 import subprocess
 import sys
-import stat
 import traceback
+import tempfile
 import urllib
 import urllib2
 import uuid
@@ -220,12 +219,6 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
   for k, v in revisions_dict.iteritems():
     add_diagnostics_args.extend((k, v))
 
-  # Try setting writtable permission for histograms_file
-  if not os.access(histograms_file, os.W_OK):
-    print 'No write access for %s' % histograms_file
-    print 'Trying to set write persmission for %s' % histograms_file
-    os.chmod(histograms_file, stat.S_IWUSR | stat.S_IWOTH)
-
   add_diagnostics_args.append(histograms_file)
 
   # Subprocess only accepts string args
@@ -234,33 +227,22 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
   add_reserved_diagnostics_path = os.path.join(
       path_util.GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing',
       'bin', 'add_reserved_diagnostics')
-  cmd = [sys.executable, add_reserved_diagnostics_path] + add_diagnostics_args
+
+  tf = tempfile.NamedTemporaryFile(delete=False)
+  tf.close()
+  temp_histogram_output_file = tf.name
+
+  cmd = ([sys.executable, add_reserved_diagnostics_path] +
+         add_diagnostics_args + ['--output_path', temp_histogram_output_file])
 
   try:
     subprocess.check_call(cmd)
-  except subprocess.CalledProcessError:
-    logging.error(
-        'Error executing add_reserved_diagnostics, other processes '
-        'may be accessing the histograms file')
-    log_open_file_handle(histograms_file)
-
-  # TODO: Handle reference builds
-  with open(histograms_file) as f:
-    hs = json.load(f)
-
-  return hs
-
-
-def log_open_file_handle(file_path):
-  if not psutil:
-    return
-  file_path = os.path.abspath(file_path)
-  for proc in psutil.process_iter():
-    try:
-      if file_path in proc.open_files():
-        print 'Process % is accessing %s' % (proc.name(), file_path)
-    except psutil.NoSuchProcess:
-      pass
+    # TODO: Handle reference builds
+    with open(temp_histogram_output_file) as f:
+      hs = json.load(f)
+    return hs
+  finally:
+    os.remove(temp_histogram_output_file)
 
 
 def MakeListOfPoints(charts, bot, test_name, buildername,
