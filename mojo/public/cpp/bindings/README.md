@@ -16,7 +16,7 @@ This document provides a detailed guide to bindings API usage with example code
 snippets. For a detailed API references please consult the headers in
 [//mojo/public/cpp/bindings](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/README.md).
 
-For a simplified guide targeted at Chroimum developers, see [this
+For a simplified guide targeted at Chromium developers, see [this
 link](/docs/mojo_guide.md).
 
 ## Getting Started
