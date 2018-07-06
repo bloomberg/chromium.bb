@@ -18,13 +18,12 @@ namespace gpu {
 class DecoderContext;
 struct Mailbox;
 namespace gles2 {
-class TextureRef;
+class AbstractTexture;
 }  // namespace gles2
 }  // namespace gpu
 
 namespace gl {
 class GLContext;
-class GLImage;
 }  // namespace gl
 
 namespace media {
@@ -42,12 +41,14 @@ class MEDIA_GPU_EXPORT GLES2DecoderHelper {
   virtual bool MakeContextCurrent() = 0;
 
   // Creates a texture and configures it as a video frame (linear filtering,
-  // clamp to edge). The context must be current.
+  // clamp to edge). The context must be current.  It is up to the caller to
+  // ensure that the entire texture is initialized before providing it to the
+  // renderer.  For th
   //
   // See glTexImage2D() for parameter definitions.
   //
   // Returns nullptr on failure, but there are currently no failure paths.
-  virtual scoped_refptr<gpu::gles2::TextureRef> CreateTexture(
+  virtual std::unique_ptr<gpu::gles2::AbstractTexture> CreateTexture(
       GLenum target,
       GLenum internal_format,
       GLsizei width,
@@ -55,19 +56,12 @@ class MEDIA_GPU_EXPORT GLES2DecoderHelper {
       GLenum format,
       GLenum type) = 0;
 
-  // Sets the cleared flag on level 0 of the texture.
-  virtual void SetCleared(gpu::gles2::TextureRef* texture_ref) = 0;
-
-  // Binds level 0 of the texture to an image.
-  virtual void BindImage(gpu::gles2::TextureRef* texture_ref,
-                         gl::GLImage* image,
-                         bool can_bind_to_sampler) = 0;
-
   // Gets the associated GLContext.
   virtual gl::GLContext* GetGLContext() = 0;
 
   // Creates a mailbox for a texture.
-  virtual gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) = 0;
+  virtual gpu::Mailbox CreateMailbox(
+      gpu::gles2::AbstractTexture* texture_ref) = 0;
 };
 
 }  // namespace media

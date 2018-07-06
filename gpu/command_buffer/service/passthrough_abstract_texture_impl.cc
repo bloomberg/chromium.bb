@@ -56,6 +56,24 @@ void PassthroughAbstractTextureImpl::BindStreamTextureImage(
   NOTREACHED();
 }
 
+void PassthroughAbstractTextureImpl::ReleaseImage() {
+  if (!texture_passthrough_)
+    return;
+
+  texture_passthrough_->set_is_bind_pending(false);
+  const GLuint target = texture_passthrough_->target();
+  const GLuint level = 0;
+  gl::GLImage* image = texture_passthrough_->GetLevelImage(target, level);
+  if (image) {
+    image->ReleaseTexImage(target);
+    texture_passthrough_->SetLevelImage(target, level, nullptr);
+  }
+}
+
+void PassthroughAbstractTextureImpl::SetCleared() {
+  // The passthrough decoder has no notion of 'cleared', so do nothing.
+}
+
 scoped_refptr<TexturePassthrough>
 PassthroughAbstractTextureImpl::OnDecoderWillDestroy() {
   // Make sure that destruction_cb_ does nothing when destroyed, since
