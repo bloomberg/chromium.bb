@@ -57,6 +57,8 @@ class BackgroundFetchDelegateImpl
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
+  void UpdateUI(const std::string& job_unique_id,
+                const std::string& title) override;
 
   // Abort all ongoing downloads and fail the fetch. Currently only used when
   // the bytes downloaded exceed the total download size, if specified.

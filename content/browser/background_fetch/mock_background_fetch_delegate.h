@@ -74,6 +74,8 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
+  void UpdateUI(const std::string& job_unique_id,
+                const std::string& title) override;
 
   void RegisterResponse(const GURL& url,
                         std::unique_ptr<TestResponse> response);
