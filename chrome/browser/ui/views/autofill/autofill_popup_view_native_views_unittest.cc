@@ -225,7 +225,12 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion(::testing::_))
       .Times(click.click);
   gfx::Point center =
-      view()->GetRowsForTesting()[0]->GetLocalBounds().CenterPoint();
+      view()->GetRowsForTesting()[0]->GetBoundsInScreen().CenterPoint();
+
+  // Because we use GetBoundsInScreen above, and because macOS may reposition
+  // the window, we need to turn this bit off or the clicks will miss their
+  // targets.
+  generator_->set_assume_window_at_origin(false);
   generator_->set_current_location(center);
   generator_->ClickLeftButton();
   view()->RemoveAllChildViews(true /* delete_children */);

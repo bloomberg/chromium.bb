@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
@@ -114,6 +115,22 @@ void AutofillPopupBaseView::DoHide() {
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
                                                   const gfx::Rect& new_bounds) {
   DCHECK_EQ(widget, parent_widget_);
+  HideController();
+}
+
+void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK_EQ(widget, parent_widget_);
+
+  // Normally this happens at destruct-time or hide-time, but because it depends
+  // on |parent_widget_| (which is about to go away), it needs to happen sooner
+  // in this case.
+  RemoveObserver();
+
+  // Because the parent widget is about to be destroyed, we null out the weak
+  // reference to it and protect against possibly accessing it during
+  // destruction (e.g., by attempting to remove observers).
+  parent_widget_ = nullptr;
+
   HideController();
 }
 
@@ -292,20 +309,16 @@ void AutofillPopupBaseView::ClearSelection() {
 void AutofillPopupBaseView::HideController() {
   if (delegate_)
     delegate_->Hide();
+  // This will eventually result in the deletion of |this|, as the delegate
+  // will hide |this|. See |DoHide| above for an explanation on why the precise
+  // timing of that deletion is tricky.
 }
 
 gfx::Rect AutofillPopupBaseView::CalculateClippingBounds() const {
   if (parent_widget_)
     return parent_widget_->GetClientAreaBoundsInScreen();
 
-  gfx::NativeWindow window =
-      platform_util::GetTopLevel(delegate_->container_view());
-  Browser* browser = chrome::FindBrowserWithWindow(window);
-  DCHECK(browser);
-
-  // This is not the same as "GetClientAreaBoundsInScreen()", but it gives us
-  // the lower bounds the popup will have to clip to on the screen.
-  return browser->window()->GetBounds();
+  return PopupViewCommon().GetWindowBounds(delegate_->container_view());
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {

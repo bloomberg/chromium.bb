@@ -7,11 +7,18 @@
 #include <algorithm>
 #include <utility>
 
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
+#include "build/build_config.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "ui/gfx/geometry/vector2d.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
+#else  // defined(OS_ANDROID)
+#include "ui/views/widget/widget.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace autofill {
 
@@ -21,26 +28,23 @@ namespace {
 // the starting point and the width of the popup, taking into account the
 // direction it's supposed to grow (either to the left or to the right).
 // Components |y| and |height| of |popup_bounds| are not changed.
-void CalculatePopupXAndWidth(const display::Display& left_display,
-                             const display::Display& right_display,
+void CalculatePopupXAndWidth(int leftmost_available_x,
+                             int rightmost_available_x,
                              int popup_required_width,
                              const gfx::Rect& element_bounds,
                              bool is_rtl,
                              gfx::Rect* popup_bounds) {
-  int leftmost_display_x = left_display.bounds().x();
-  int rightmost_display_x =
-      right_display.GetSizeInPixel().width() + right_display.bounds().x();
-
   // Calculate the start coordinates for the popup if it is growing right or
   // the end position if it is growing to the left, capped to screen space.
-  int right_growth_start = std::max(
-      leftmost_display_x, std::min(rightmost_display_x, element_bounds.x()));
+  int right_growth_start =
+      std::max(leftmost_available_x,
+               std::min(rightmost_available_x, element_bounds.x()));
   int left_growth_end =
-      std::max(leftmost_display_x,
-               std::min(rightmost_display_x, element_bounds.right()));
+      std::max(leftmost_available_x,
+               std::min(rightmost_available_x, element_bounds.right()));
 
-  int right_available = rightmost_display_x - right_growth_start;
-  int left_available = left_growth_end - leftmost_display_x;
+  int right_available = rightmost_available_x - right_growth_start;
+  int left_available = left_growth_end - leftmost_available_x;
 
   int popup_width =
       std::min(popup_required_width, std::max(right_available, left_available));
@@ -66,77 +70,105 @@ void CalculatePopupXAndWidth(const display::Display& left_display,
 // the starting point and the height of the popup, taking into account the
 // direction it's supposed to grow (either up or down). Components |x| and
 // |width| of |popup_bounds| are not changed.
-void CalculatePopupYAndHeight(const display::Display& top_display,
-                              const display::Display& bottom_display,
+void CalculatePopupYAndHeight(int topmost_available_y,
+                              int bottommost_available_y,
                               int popup_required_height,
                               const gfx::Rect& element_bounds,
                               gfx::Rect* popup_bounds) {
-  int topmost_display_y = top_display.bounds().y();
-  int bottommost_display_y =
-      bottom_display.GetSizeInPixel().height() + bottom_display.bounds().y();
-
   // Calculate the start coordinates for the popup if it is growing down or
   // the end position if it is growing up, capped to screen space.
-  int top_growth_end = std::max(
-      topmost_display_y, std::min(bottommost_display_y, element_bounds.y()));
+  int top_growth_end =
+      std::max(topmost_available_y,
+               std::min(bottommost_available_y, element_bounds.y()));
   int bottom_growth_start =
-      std::max(topmost_display_y,
-               std::min(bottommost_display_y, element_bounds.bottom()));
+      std::max(topmost_available_y,
+               std::min(bottommost_available_y, element_bounds.bottom()));
 
-  int top_available = bottom_growth_start - topmost_display_y;
-  int bottom_available = bottommost_display_y - top_growth_end;
+  int top_available = top_growth_end - topmost_available_y;
+  int bottom_available = bottommost_available_y - bottom_growth_start;
 
-  // TODO(csharp): Restrict the popup height to what is available.
-  popup_bounds->set_height(popup_required_height);
   if (bottom_available >= popup_required_height ||
       bottom_available >= top_available) {
     // The popup can appear below the field.
+    popup_bounds->set_height(std::min(bottom_available, popup_required_height));
     popup_bounds->set_y(bottom_growth_start);
   } else {
     // The popup must appear above the field.
-    popup_bounds->set_y(top_growth_end - popup_required_height);
+    popup_bounds->set_height(std::min(top_available, popup_required_height));
+    popup_bounds->set_y(top_growth_end - popup_bounds->height());
   }
 }
 
 }  // namespace
+
+void PopupViewCommon::CalculatePopupHorizontalBounds(
+    int desired_width,
+    const gfx::Rect& element_bounds,
+    gfx::NativeView container_view,
+    bool is_rtl,
+    gfx::Rect* popup_bounds) {
+  const gfx::Rect bounds = GetWindowBounds(container_view);
+  CalculatePopupXAndWidth(/*leftmost_available_x=*/bounds.x(),
+                          /*rightmost_available_x=*/bounds.x() + bounds.width(),
+                          desired_width, element_bounds, is_rtl, popup_bounds);
+}
+
+void PopupViewCommon::CalculatePopupVerticalBounds(
+    int desired_height,
+    const gfx::Rect& element_bounds,
+    gfx::NativeView container_view,
+    gfx::Rect* popup_bounds) {
+  const gfx::Rect window_bounds = GetWindowBounds(container_view);
+  CalculatePopupYAndHeight(
+      /*topmost_available_y=*/window_bounds.y(),
+      /*bottommost_available_y=*/window_bounds.y() + window_bounds.height(),
+      desired_height, element_bounds, popup_bounds);
+}
 
 gfx::Rect PopupViewCommon::CalculatePopupBounds(int desired_width,
                                                 int desired_height,
                                                 const gfx::Rect& element_bounds,
                                                 gfx::NativeView container_view,
                                                 bool is_rtl) {
-  // This is the top left point of the popup if the popup is above the element
-  // and grows to the left (since that is the highest and furthest left the
-  // popup go could).
-  gfx::Point top_left_corner_of_popup =
-      element_bounds.origin() +
-      gfx::Vector2d(element_bounds.width() - desired_width, -desired_height);
-
-  // This is the bottom right point of the popup if the popup is below the
-  // element and grows to the right (since the is the lowest and furthest right
-  // the popup could go).
-  gfx::Point bottom_right_corner_of_popup =
-      element_bounds.origin() +
-      gfx::Vector2d(desired_width, element_bounds.height() + desired_height);
-
-  display::Display top_left_display =
-      GetDisplayNearestPoint(top_left_corner_of_popup, container_view);
-  display::Display bottom_right_display =
-      GetDisplayNearestPoint(bottom_right_corner_of_popup, container_view);
+  const gfx::Rect window_bounds = GetWindowBounds(container_view);
 
   gfx::Rect popup_bounds;
-  CalculatePopupXAndWidth(top_left_display, bottom_right_display, desired_width,
-                          element_bounds, is_rtl, &popup_bounds);
-  CalculatePopupYAndHeight(top_left_display, bottom_right_display,
-                           desired_height, element_bounds, &popup_bounds);
+  CalculatePopupXAndWidth(
+      /*leftmost_available_x=*/window_bounds.x(),
+      /*rightmost_available_x=*/window_bounds.x() + window_bounds.width(),
+      desired_width, element_bounds, is_rtl, &popup_bounds);
+  CalculatePopupYAndHeight(
+      /*topmost_available_y=*/window_bounds.y(),
+      /*bottommost_available_y=*/window_bounds.y() + window_bounds.height(),
+      desired_height, element_bounds, &popup_bounds);
 
   return popup_bounds;
 }
 
-display::Display PopupViewCommon::GetDisplayNearestPoint(
-    const gfx::Point& point,
-    gfx::NativeView container_view) {
-  return display::Screen::GetScreen()->GetDisplayNearestPoint(point);
+gfx::Rect PopupViewCommon::GetWindowBounds(gfx::NativeView container_view) {
+// The call to FindBrowserWithWindow will fail on Android, so we use
+// platform-specific calls.
+#if defined(OS_ANDROID)
+  return container_view->GetWindowAndroid()->bounds();
+#else
+  views::Widget* widget =
+      views::Widget::GetTopLevelWidgetForNativeView(container_view);
+  if (widget)
+    return widget->GetWindowBoundsInScreen();
+
+  // If the widget is null, try to get these bounds from a browser window. This
+  // is common on Mac when the window is drawn using Cocoa.
+  gfx::NativeWindow window = platform_util::GetTopLevel(container_view);
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  if (browser)
+    return browser->window()->GetBounds();
+
+  // If the browser is null, simply return an empty rect. The most common reason
+  // to end up here is that the NativeView has been destroyed externally, which
+  // can happen at any time. This happens fairly commonly on Windows (e.g., at
+  // shutdown) in particular.
+  return gfx::Rect();
+#endif
 }
 
 }  // namespace autofill

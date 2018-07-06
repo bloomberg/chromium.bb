@@ -17,6 +17,10 @@
 #include <memory>
 #include <vector>
 
+namespace views {
+class BoxLayout;
+}
+
 namespace autofill {
 
 class AutofillPopupController;
@@ -76,9 +80,6 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   void Show() override;
   void Hide() override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
   // AutofillPopupBaseView:
   // TODO(crbug.com/831603): Remove these overrides and the corresponding
   // methods in AutofillPopupBaseView once deprecation of
@@ -96,6 +97,10 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // Creates child views based on the suggestions given by |controller_|.
   void CreateChildViews();
 
+  // Applies certain rounding rules to the given width, such as matching the
+  // element width when possible.
+  int AdjustWidth(int width) const;
+
   // AutofillPopupBaseView:
   void AddExtraInitParams(views::Widget::InitParams* params) override;
   std::unique_ptr<views::View> CreateWrapperView() override;
@@ -104,10 +109,10 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
 
   // Controller for this view.
   AutofillPopupController* controller_;
-
   std::vector<AutofillPopupRowView*> rows_;
-
   views::BubbleBorder* bubble_border_;
+  views::BoxLayout* layout_;
+  views::ScrollView* scroll_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViews);
 };

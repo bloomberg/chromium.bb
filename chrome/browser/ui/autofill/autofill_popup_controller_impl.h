@@ -135,9 +135,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 
-  // Contains common popup functionality such as popup layout. Protected for
-  // testing.
-  PopupControllerCommon controller_common_;
+  AutofillPopupLayoutModel& LayoutModelForTesting() { return layout_model_; }
 
  private:
 #if !defined(OS_ANDROID)
@@ -158,7 +156,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   friend class AutofillPopupControllerUnitTest;
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
-  AutofillPopupView* view_;  // Weak reference.
+  PopupControllerCommon controller_common_;
+  AutofillPopupView* view_ = nullptr;  // Weak reference.
   AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
@@ -181,7 +180,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // is drawn by Cocoa on macOS.
   gfx::Typesetter typesetter_ = gfx::Typesetter::HARFBUZZ;
 
-  base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupControllerImpl);
 };

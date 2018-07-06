@@ -6,37 +6,49 @@
 #define CHROME_BROWSER_UI_AUTOFILL_POPUP_VIEW_COMMON_H_
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace display {
-class Display;
-}
-
-namespace gfx {
-class Point;
-class Rect;
-}  // namespace gfx
 
 namespace autofill {
 
 // Provides utility functions for popup-style views.
 class PopupViewCommon {
  public:
-  // Returns the bounds that the popup should be placed at, given the desired
-  // width and height. By default this places the popup below |element_bounds|
-  // but it will be placed above if there isn't enough space.
+  PopupViewCommon() = default;
+  virtual ~PopupViewCommon() = default;
+
+  // Writes the |x| and |width| properties to |popup_bounds| for the popup's
+  // placement based on the element's location, the desired width, whether or
+  // not this is RTL, and the space available in the window to the left/right
+  // of the element.
+  void CalculatePopupHorizontalBounds(int desired_width,
+                                      const gfx::Rect& element_bounds,
+                                      gfx::NativeView container_view,
+                                      bool is_rtl,
+                                      gfx::Rect* popup_bounds);
+
+  // Writes the |y| and |height| properties to |popup_bounds| for the popup's
+  // placement based on the element's location, the desired height, and the
+  // space available in the window above/below the element. The popup will be
+  // placed below the element as long as there is sufficient space.
+  void CalculatePopupVerticalBounds(int desired_height,
+                                    const gfx::Rect& element_bounds,
+                                    gfx::NativeView container_view,
+                                    gfx::Rect* popup_bounds);
+
+  // Convenience method which handles both the vertical and horizontal bounds
+  // and returns a new Rect.
   gfx::Rect CalculatePopupBounds(int desired_width,
                                  int desired_height,
                                  const gfx::Rect& element_bounds,
                                  gfx::NativeView container_view,
                                  bool is_rtl);
 
- protected:
-  // A helper function to get the display closest to the given point (virtual
-  // for testing).
-  virtual display::Display GetDisplayNearestPoint(
-      const gfx::Point& point,
-      gfx::NativeView container_view);
+  // Returns the bounds of the containing window in screen space. Virtual for
+  // testing.
+  virtual gfx::Rect GetWindowBounds(gfx::NativeView container_view);
+
+  DISALLOW_COPY_AND_ASSIGN(PopupViewCommon);
 };
 
 }  // namespace autofill

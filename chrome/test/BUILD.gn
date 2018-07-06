@@ -2637,6 +2637,8 @@ test("unit_tests") {
     "../browser/ui/autofill/autofill_dialog_models_unittest.cc",
     "../browser/ui/autofill/autofill_popup_layout_model_unittest.cc",
     "../browser/ui/autofill/popup_view_common_unittest.cc",
+    "../browser/ui/autofill/popup_view_test_helpers.cc",
+    "../browser/ui/autofill/popup_view_test_helpers.h",
     "../browser/ui/bloated_renderer/bloated_renderer_tab_helper_unittest.cc",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
     "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_unittest.cc",

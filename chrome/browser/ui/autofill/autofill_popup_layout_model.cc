@@ -95,6 +95,7 @@ AutofillPopupLayoutModel::AutofillPopupLayoutModel(
   smaller_font_list_ =
       normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
   bold_font_list_ = normal_font_list_.DeriveWithWeight(gfx::Font::Weight::BOLD);
+  view_common_ = std::make_unique<PopupViewCommon>();
 #endif
 }
 
@@ -152,7 +153,7 @@ void AutofillPopupLayoutModel::UpdatePopupBounds() {
   int popup_width = GetDesiredPopupWidth();
   int popup_height = GetDesiredPopupHeight();
 
-  popup_bounds_ = view_common_.CalculatePopupBounds(
+  popup_bounds_ = view_common_->CalculatePopupBounds(
       popup_width, popup_height, RoundedElementBounds(),
       delegate_->container_view(), delegate_->IsRTL());
 }
@@ -281,6 +282,11 @@ int AutofillPopupLayoutModel::GetIconAccessibleNameResourceId(
       return kDataResources[i].accessible_string_id;
   }
   return kResourceNotFoundId;
+}
+
+void AutofillPopupLayoutModel::SetUpForTesting(
+    std::unique_ptr<PopupViewCommon> view_common) {
+  view_common_ = std::move(view_common);
 }
 
 const gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {

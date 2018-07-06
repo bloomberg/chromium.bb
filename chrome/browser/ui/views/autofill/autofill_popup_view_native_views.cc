@@ -30,6 +30,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -41,8 +42,8 @@ namespace {
 
 // By spec, dropdowns should have a min width of 64, and should always have
 // a width which is a multiple of 12.
-const int kAutofillPopupDropdownWidthMultiple = 12;
-const int kAutofillPopupDropdownMinWidth = 64;
+const int kAutofillPopupWidthMultiple = 12;
+const int kAutofillPopupMinWidth = 64;
 
 // TODO(crbug.com/831603): Determine how colors should be shared with menus
 // and/or omnibox, and how these should interact (if at all) with native
@@ -381,9 +382,9 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
-  views::BoxLayout* layout = SetLayoutManager(
+  layout_ = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout_->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
   SetBackground(views::CreateSolidBackground(kAutofillPopupBackgroundColor));
@@ -400,31 +401,6 @@ void AutofillPopupViewNativeViews::Hide() {
   controller_ = nullptr;
 
   DoHide();
-}
-
-gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
-  // The border of the input element should be aligned with the border of the
-  // dropdown when suggestions are not too wide.
-  int contents_width =
-      gfx::ToEnclosingRect(controller_->element_bounds()).width();
-
-  // Allow the dropdown to grow beyond the element width if it requires more
-  // horizontal space to render the suggestions.
-  gfx::Size size = AutofillPopupBaseView::CalculatePreferredSize();
-  if (contents_width < size.width()) {
-    contents_width = size.width();
-    // Use multiples of |kAutofillPopupDropdownWidthMultiple| if the required
-    // width is larger than the element width.
-    if (contents_width % kAutofillPopupDropdownWidthMultiple) {
-      contents_width += kAutofillPopupDropdownWidthMultiple -
-                        (contents_width % kAutofillPopupDropdownWidthMultiple);
-    }
-  }
-
-  // Notwithstanding all the above rules, enforce a hard minimum so the dropdown
-  // is not too small to interact with.
-  size.set_width(std::max(kAutofillPopupDropdownMinWidth, contents_width));
-  return size;
 }
 
 void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
@@ -510,7 +486,12 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     line_number++;
   }
 
-  AddChildView(body_container);
+  scroll_view_ = new views::ScrollView();
+  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetContents(body_container);
+  AddChildView(scroll_view_);
+  layout_->SetFlexForView(scroll_view_, 1);
+  scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
 
   // All the remaining rows (where index >= |line_number|) are part of the
   // footer. This needs to be in its own container because it should not be
@@ -534,7 +515,32 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     }
 
     AddChildView(footer_container);
+    layout_->SetFlexForView(footer_container, 0);
   }
+}
+
+int AutofillPopupViewNativeViews::AdjustWidth(int width) const {
+  // The border of the input element should be aligned with the border of the
+  // dropdown when suggestions are not too wide.
+  int adjusted_width =
+      gfx::ToEnclosingRect(controller_->element_bounds()).width();
+
+  // Allow the dropdown to grow beyond the element width if it requires more
+  // horizontal space to render the suggestions.
+  if (adjusted_width < width) {
+    adjusted_width = width;
+    // Use multiples of |kAutofillPopupWidthMultiple| if the required width is
+    // larger than the element width.
+    if (adjusted_width % kAutofillPopupWidthMultiple) {
+      adjusted_width += kAutofillPopupWidthMultiple -
+                        (adjusted_width % kAutofillPopupWidthMultiple);
+    }
+  }
+
+  // Notwithstanding all the above rules, enforce a hard minimum so the dropdown
+  // is not too small to interact with.
+  adjusted_width = std::max(kAutofillPopupMinWidth, adjusted_width);
+  return adjusted_width;
 }
 
 void AutofillPopupViewNativeViews::AddExtraInitParams(
@@ -567,16 +573,33 @@ std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
 }
 
 void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
-  SizeToPreferredSize();
+  gfx::Size size = CalculatePreferredSize();
+  gfx::Rect popup_bounds;
 
-  // When a bubble border is shown, the contents area (inside the shadow) is
-  // supposed to be aligned with input element boundaries.
-  gfx::Rect popup_bounds = PopupViewCommon().CalculatePopupBounds(
-      size().width(), size().height(),
-      gfx::ToEnclosingRect(controller_->element_bounds()),
-      controller_->container_view(), controller_->IsRTL());
+  PopupViewCommon().CalculatePopupVerticalBounds(
+      size.height(), gfx::ToEnclosingRect(controller_->element_bounds()),
+      controller_->container_view(), &popup_bounds);
 
-  // Expand the widget bounds to include the border.
+  // Adjust the width to compensate for a scroll bar, if necessary, and for
+  // other rules.
+  int scroll_width = 0;
+  if (size.height() > popup_bounds.height()) {
+    size.set_height(popup_bounds.height());
+
+    // Because the preferred size is greater than the bounds available, the
+    // contents will have to scroll. The scroll bar will steal width from the
+    // content and smoosh everything together. Instead, add to the width to
+    // compensate.
+    scroll_width = scroll_view_->GetScrollBarLayoutWidth();
+  }
+  size.set_width(AdjustWidth(size.width() + scroll_width));
+
+  PopupViewCommon().CalculatePopupHorizontalBounds(
+      size.width(), gfx::ToEnclosingRect(controller_->element_bounds()),
+      controller_->container_view(), controller_->IsRTL(), &popup_bounds);
+
+  SetSize(size);
+
   popup_bounds.Inset(-bubble_border_->GetInsets());
 
   GetWidget()->SetBounds(popup_bounds);

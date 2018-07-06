@@ -76,6 +76,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // views::WidgetObserver implementation.
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Stop observing the widget.
   void RemoveObserver();
