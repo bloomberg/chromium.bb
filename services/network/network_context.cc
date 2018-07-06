@@ -1092,8 +1092,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   // have to figure out which of the latter needs to move to the network
   // process). TODO: http://crbug.com/789644
   if (params_->cookie_path) {
-    net::CookieCryptoDelegate* crypto_delegate = nullptr;
-
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::MessageLoopCurrent::Get()->task_runner();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
@@ -1110,6 +1108,15 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
           new net::DefaultChannelIDStore(channel_id_db.get()));
     }
 
+    net::CookieCryptoDelegate* crypto_delegate = nullptr;
+    if (params_->enable_encrypted_cookies) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
+      DCHECK(network_service_->os_crypt_config_set())
+          << "NetworkService::SetCryptConfig must be called before creating a "
+             "NetworkContext with encrypted cookies.";
+#endif
+      crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+    }
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
             params_->cookie_path.value(), client_task_runner,
