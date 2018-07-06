@@ -225,6 +225,7 @@ crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough/redirect-password-base-https-other-https.html [ Pass Timeout ]
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough/scheme-blob-base-https-other-https.html [ Pass Timeout ]
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough/scheme-data-base-https-other-https.html [ Pass Timeout ]
+crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials-base-https-other-https.html  [ Failure Timeout ]
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/window/thorough/access-control-base-https-other-https.html [ Pass Timeout ]
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/window/thorough/auth-base-https-other-https.html [ Pass Timeout ]
 crbug.com/854630 virtual/outofblink-cors/http/tests/fetch/window/thorough/auth-nocors-base-https-other-https.html [ Pass Timeout ]
