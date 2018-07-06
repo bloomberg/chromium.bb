@@ -323,7 +323,6 @@ AccountReconcilorTest::AccountReconcilorTest()
                       &cookie_manager_service_),
 #endif
       url_fetcher_factory_(nullptr) {
-  signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());

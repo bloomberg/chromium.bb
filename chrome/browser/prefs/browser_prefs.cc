@@ -107,7 +107,6 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sessions/core/session_id_generator.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
@@ -554,7 +553,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   secure_origin_whitelist::RegisterProfilePrefs(registry);
   SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
-  signin::RegisterAccountConsistencyProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
   syncer::PerUserTopicRegistrationManager::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);

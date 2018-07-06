@@ -22,11 +22,13 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_command_line.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -38,9 +40,7 @@
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
-#include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,6 +59,10 @@
 #include "net/url_request/url_request_filter.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+
+#if !BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "components/signin/core/browser/signin_header_helper.h"
+#endif
 
 using content::ResourceType;
 using testing::HasSubstr;
@@ -257,6 +261,9 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
   }
 }
 
+// Mirror is not supported on Dice platforms.
+#if !BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 namespace {
 
 // A URLRequestMockHTTPJob to that reports HTTP request headers of outgoing
@@ -390,7 +397,7 @@ void SetDelegateOnIO(content::ResourceDispatcherHostDelegate* new_delegate) {
 class ChromeResourceDispatcherHostDelegateMirrorBrowserTest
     : public ChromeResourceDispatcherHostDelegateBrowserTest {
  private:
-  signin::ScopedAccountConsistencyMirror scoped_mirror_;
+  ScopedAccountConsistencyMirror scoped_mirror_;
 };
 
 // Verify the following items:
@@ -520,6 +527,8 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
     }
   }
 }
+
+#endif  // !BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // Check that exactly one set of throttles is added to smaller downloads, which
 // have their mime type determined only after the response is completely

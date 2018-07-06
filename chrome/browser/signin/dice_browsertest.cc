@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,7 +45,6 @@
 #include "components/signin/core/browser/dice_header_helper.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -595,7 +595,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
-  signin::ScopedAccountConsistency scoped_account_consistency_;
+  ScopedAccountConsistency scoped_account_consistency_;
   net::EmbeddedTestServer https_server_;
   bool enable_sync_requested_;
   bool token_requested_;

@@ -34,6 +34,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/buildflags.h"
@@ -86,7 +87,6 @@
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -357,20 +357,20 @@ const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const FeatureEntry::FeatureParam kAccountConsistencyDice[] = {
-    {signin::kAccountConsistencyFeatureMethodParameter,
-     signin::kAccountConsistencyFeatureMethodDice}};
+    {kAccountConsistencyFeatureMethodParameter,
+     kAccountConsistencyFeatureMethodDice}};
 
 const FeatureEntry::FeatureParam kAccountConsistencyDicePrepareMigration[] = {
-    {signin::kAccountConsistencyFeatureMethodParameter,
-     signin::kAccountConsistencyFeatureMethodDicePrepareMigration}};
+    {kAccountConsistencyFeatureMethodParameter,
+     kAccountConsistencyFeatureMethodDicePrepareMigration}};
 
 const FeatureEntry::FeatureParam kAccountConsistencyDiceMigration[] = {
-    {signin::kAccountConsistencyFeatureMethodParameter,
-     signin::kAccountConsistencyFeatureMethodDiceMigration}};
+    {kAccountConsistencyFeatureMethodParameter,
+     kAccountConsistencyFeatureMethodDiceMigration}};
 
 const FeatureEntry::FeatureParam kAccountConsistencyDiceFixAuthErrors[] = {
-    {signin::kAccountConsistencyFeatureMethodParameter,
-     signin::kAccountConsistencyFeatureMethodDiceFixAuthErrors}};
+    {kAccountConsistencyFeatureMethodParameter,
+     kAccountConsistencyFeatureMethodDiceFixAuthErrors}};
 
 const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
     {"Dice", kAccountConsistencyDice, arraysize(kAccountConsistencyDice),
@@ -1811,7 +1811,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"account-consistency", flag_descriptions::kAccountConsistencyName,
      flag_descriptions::kAccountConsistencyDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kAccountConsistencyFeature,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kAccountConsistencyFeature,
                                     kAccountConsistencyFeatureVariations,
                                     "AccountConsistencyVariations")},
 #endif

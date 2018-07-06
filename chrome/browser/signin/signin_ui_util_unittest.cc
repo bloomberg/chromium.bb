@@ -14,11 +14,11 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -214,7 +214,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     }
   }
 
-  const signin::ScopedAccountConsistency scoped_account_consistency_;
+  const ScopedAccountConsistency scoped_account_consistency_;
   signin_metrics::AccessPoint access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -130,8 +130,7 @@ class ProfileChooserViewExtensionsTest
     constexpr char kSupervisedUser[] = "SupervisedUser";
 
     Browser* target_browser = browser();
-    std::unique_ptr<signin::ScopedAccountConsistency>
-        scoped_account_consistency;
+    std::unique_ptr<ScopedAccountConsistency> scoped_account_consistency;
 
     if (name == kSignedIn || name == kManageAccountLink) {
       constexpr char kEmail[] = "verylongemailfortesting@gmail.com";
@@ -155,9 +154,8 @@ class ProfileChooserViewExtensionsTest
       target_browser = chrome::FindAnyBrowser(guest, true);
     }
     if (name == kManageAccountLink) {
-      scoped_account_consistency =
-          std::make_unique<signin::ScopedAccountConsistency>(
-              signin::AccountConsistencyMethod::kMirror);
+      scoped_account_consistency = std::make_unique<ScopedAccountConsistency>(
+          signin::AccountConsistencyMethod::kMirror);
     }
     Profile* supervised = nullptr;
     if (name == kSupervisedOwner || name == kSupervisedUser) {
@@ -496,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_Guest) {
 // flag is enabled.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        DISABLED_InvokeUi_DiceGuest) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  ScopedAccountConsistencyDice scoped_dice;
   ShowAndVerifyUi();
 }
 
@@ -530,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 // below the threshold.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        IncrementDiceSigninPromoShowCounter) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  ScopedAccountConsistencyDice scoped_dice;
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
@@ -541,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 // ensures that the profile chooser is shown correctly above this threshold.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        DiceSigninPromoWithoutIllustration) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  ScopedAccountConsistencyDice scoped_dice;
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));

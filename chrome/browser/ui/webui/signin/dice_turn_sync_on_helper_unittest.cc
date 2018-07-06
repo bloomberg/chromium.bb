@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -33,7 +34,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -365,7 +365,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   bool expected_sync_settings_shown_ = false;
 
  private:
-  signin::ScopedAccountConsistencyDicePrepareMigration scoped_dice;
+  ScopedAccountConsistencyDicePrepareMigration scoped_dice;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
