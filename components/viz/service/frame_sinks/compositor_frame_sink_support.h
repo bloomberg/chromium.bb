@@ -101,6 +101,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   std::vector<std::unique_ptr<CopyOutputRequest>> TakeCopyOutputRequests(
       const LocalSurfaceId& local_surface_id) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
+  void OnSurfaceProcessed(Surface* surface) override;
+  void OnSurfaceAggregatedDamage(
+      Surface* surface,
+      const LocalSurfaceId& local_surface_id,
+      const CompositorFrame& frame,
+      const gfx::Rect& damage_rect,
+      base::TimeTicks expected_display_time) override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -184,11 +191,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void UpdateNeedsBeginFramesInternal();
   Surface* CreateSurface(const SurfaceInfo& surface_info);
-
-  void OnAggregatedDamage(const LocalSurfaceId& local_surface_id,
-                          const CompositorFrame& frame,
-                          const gfx::Rect& damage_rect,
-                          base::TimeTicks expected_display_time) const;
 
   // For the sync API calls, if we are blocking a client callback, runs it once
   // BeginFrame and FrameAck are done.

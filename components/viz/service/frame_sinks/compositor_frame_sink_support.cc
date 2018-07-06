@@ -128,6 +128,30 @@ void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
   frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_, frame_token);
 }
 
+void CompositorFrameSinkSupport::OnSurfaceProcessed(Surface* surface) {
+  DidReceiveCompositorFrameAck();
+}
+
+void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
+    Surface* surface,
+    const LocalSurfaceId& local_surface_id,
+    const CompositorFrame& frame,
+    const gfx::Rect& damage_rect,
+    base::TimeTicks expected_display_time) {
+  DCHECK(!damage_rect.IsEmpty());
+
+  const gfx::Size& frame_size_in_pixels = frame.size_in_pixels();
+  if (aggregated_damage_callback_) {
+    aggregated_damage_callback_.Run(local_surface_id, frame_size_in_pixels,
+                                    damage_rect, expected_display_time);
+  }
+
+  for (CapturableFrameSink::Client* client : capture_clients_) {
+    client->OnFrameDamaged(frame_size_in_pixels, damage_rect,
+                           expected_display_time, frame.metadata);
+  }
+}
+
 void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {
   if (surface->surface_id() == last_activated_surface_id_)
     last_activated_surface_id_ = SurfaceId();
@@ -376,10 +400,6 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
 
   bool result = current_surface->QueueFrame(
       std::move(frame), frame_index, std::move(frame_rejected_callback),
-      base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                     weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&CompositorFrameSinkSupport::OnAggregatedDamage,
-                          weak_factory_.GetWeakPtr()),
       frame.metadata.request_presentation_feedback
           ? base::BindOnce(
                 &CompositorFrameSinkSupport::DidPresentCompositorFrame,
@@ -627,25 +647,6 @@ const char* CompositorFrameSinkSupport::GetSubmitResultAsString(
   }
   NOTREACHED();
   return nullptr;
-}
-
-void CompositorFrameSinkSupport::OnAggregatedDamage(
-    const LocalSurfaceId& local_surface_id,
-    const CompositorFrame& frame,
-    const gfx::Rect& damage_rect,
-    base::TimeTicks expected_display_time) const {
-  DCHECK(!damage_rect.IsEmpty());
-
-  const gfx::Size& frame_size_in_pixels = frame.size_in_pixels();
-  if (aggregated_damage_callback_) {
-    aggregated_damage_callback_.Run(local_surface_id, frame_size_in_pixels,
-                                    damage_rect, expected_display_time);
-  }
-
-  for (CapturableFrameSink::Client* client : capture_clients_) {
-    client->OnFrameDamaged(frame_size_in_pixels, damage_rect,
-                           expected_display_time, frame.metadata);
-  }
 }
 
 int64_t CompositorFrameSinkSupport::ComputeTraceId() {
