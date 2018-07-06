@@ -123,8 +123,7 @@ class PostMessageTimer final
         target_origin_(std::move(target_origin)),
         location_(std::move(location)),
         user_gesture_token_(user_gesture_token),
-        disposal_allowed_(true) {
-  }
+        disposal_allowed_(true) {}
 
   MessageEvent* Event() const { return event_; }
   const SecurityOrigin* TargetOrigin() const { return target_origin_.get(); }
@@ -329,12 +328,12 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 }
 
 void LocalDOMWindow::EnqueueWindowEvent(Event* event, TaskType task_type) {
-  EnqueueAsyncEvent(event, task_type);
+  EnqueueEvent(event, task_type);
 }
 
 void LocalDOMWindow::EnqueueDocumentEvent(Event* event, TaskType task_type) {
   if (document_)
-    document_->EnqueueAsyncEvent(event, task_type);
+    document_->EnqueueEvent(event, task_type);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {
