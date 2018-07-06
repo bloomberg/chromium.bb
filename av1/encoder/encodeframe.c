@@ -588,9 +588,10 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (aq_mode == VARIANCE_AQ) {
     if (cpi->vaq_refresh) {
-      const int energy =
-          bsize <= BLOCK_16X16 ? x->mb_energy : av1_block_energy(cpi, x, bsize);
-      mbmi->segment_id = av1_vaq_segment_id(energy);
+      const int energy = bsize <= BLOCK_16X16
+                             ? x->mb_energy
+                             : av1_log_block_var(cpi, x, bsize);
+      mbmi->segment_id = energy;
     }
     x->rdmult = set_segment_rdmult(cpi, x, mbmi->segment_id);
   } else if (aq_mode == COMPLEXITY_AQ) {
@@ -1691,7 +1692,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh) {
     set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
-    x->mb_energy = av1_block_energy(cpi, x, bsize);
+    x->mb_energy = av1_log_block_var(cpi, x, bsize);
   }
 
   if (do_partition_search &&
@@ -2456,7 +2457,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
-    x->mb_energy = av1_block_energy(cpi, x, bsize);
+    x->mb_energy = av1_log_block_var(cpi, x, bsize);
 
   xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
   xd->left_txfm_context =
@@ -3143,7 +3144,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
-    x->mb_energy = av1_block_energy(cpi, x, bsize);
+    x->mb_energy = av1_log_block_var(cpi, x, bsize);
 
   if (cpi->sf.cb_partition_search && bsize == BLOCK_16X16) {
     const int cb_partition_search_ctrl =
@@ -4039,7 +4040,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
             cpi, block_wavelet_energy_level);
       } else {
         const int block_var_level =
-            av1_block_energy(cpi, x, cm->seq_params.sb_size);
+            av1_log_block_var(cpi, x, cm->seq_params.sb_size);
         x->sb_energy_level = block_var_level;
         offset_qindex =
             av1_compute_deltaq_from_energy_level(cpi, block_var_level);

@@ -3979,8 +3979,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
                             : cpi->common.MBs;
     // The multiplication by 256 reverses a scaling factor of (>> 8)
     // applied when combining MB error values for the frame.
-    twopass->mb_av_energy =
-        log(((this_frame.intra_error * 256.0) / num_mbs) + 1.0);
+    twopass->mb_av_energy = log((this_frame.intra_error / num_mbs) + 1.0);
     twopass->frame_avg_haar_energy =
         log((this_frame.frame_avg_wavelet_energy / num_mbs) + 1.0);
   }
