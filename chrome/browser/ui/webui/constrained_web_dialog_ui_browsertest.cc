@@ -93,10 +93,11 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
         return false;
       }
 
+      base::RunLoop run_loop;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+          FROM_HERE, run_loop.QuitClosure(),
           base::TimeDelta::FromMilliseconds(20));
-      content::RunMessageLoop();
+      run_loop.Run();
     }
     return true;
   }
