@@ -660,11 +660,11 @@ testcase.checkPasteDisabledForReadOnlyFolderInTree = function() {
  *
  * @param {string} commandId ID of the command in the context menu to check.
  * @param {string} teamDriveName Team drive name to open the context menu for.
- * @param {boolean} expectedEnabledState True if the command should be enabled
- *     in the context menu, false if not.
+ * @param {Object} expectedContextMenuState Map of context-menu options to True
+ *     if the command should be enabled in the context menu, false if not.
  */
 function checkTeamDriveContextMenuInTree(
-    commandId, teamDriveName, expectedEnabledState) {
+    teamDriveName, expectedContextMenuState) {
   let navItemSelector = `#directory-tree ` +
       `.tree-item[full-path-for-testing="/team_drives/${teamDriveName}"]`;
   let appId;
@@ -717,15 +717,19 @@ function checkTeamDriveContextMenuInTree(
           .waitForElement(appId, '#directory-tree-context-menu:not([hidden])')
           .then(this.next);
     },
-    // Wait for the command option to appear.
+    // Wait for the command options to appear.
     function() {
       let query;
-      if (expectedEnabledState) {
-        query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
-      } else {
-        query = `[command="#${commandId}"][disabled]:not([hidden])`;
+      let promises = [];
+      for (let commandId in expectedContextMenuState) {
+        if (expectedContextMenuState[commandId] == true) {
+          query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+        } else {
+          query = `[command="#${commandId}"][disabled]:not([hidden])`;
+        }
+        promises.push(remoteCall.waitForElement(appId, query));
       }
-      remoteCall.waitForElement(appId, query).then(this.next);
+      Promise.all(promises).then(this.next);
     },
     // Check for Javascript errors.
     function() {
@@ -735,37 +739,15 @@ function checkTeamDriveContextMenuInTree(
 }
 
 /**
- * Tests that the Cut menu item is disabled if a Team Drive Root is selected.
+ * Tests that the context menu contains the correct items with the correct
+ * enabled/disabled state if a Team Drive Root is selected.
  */
-testcase.checkCutDisabledForTeamDriveRoot = function() {
-  checkTeamDriveContextMenuInTree('cut', 'Team Drive A', false);
-};
-
-/**
- * Tests that the Copy menu item is enabled if a Team Drive Root is selected.
- */
-testcase.checkCopyEnabledForTeamDriveRoot = function() {
-  checkTeamDriveContextMenuInTree('copy', 'Team Drive A', true);
-};
-
-/**
- * Tests that the Rename menu item is disabled if a Team Drive Root is selected.
- */
-testcase.checkRenameDisabledForTeamDriveRoot = function() {
-  checkTeamDriveContextMenuInTree('rename', 'Team Drive A', false);
-};
-
-/**
- * Tests that the Delete menu item is disabled if a Team Drive Root is selected.
- */
-testcase.checkDeleteDisabledForTeamDriveRoot = function() {
-  checkTeamDriveContextMenuInTree('delete', 'Team Drive A', false);
-};
-
-/**
- * Tests that the New Folder menu item is enabled if a Team Drive Root is
- * selected.
- */
-testcase.checkNewFolderEnabledForTeamDriveRoot = function() {
-  checkTeamDriveContextMenuInTree('new-folder', 'Team Drive A', true);
+testcase.checkContextMenuForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('Team Drive A', {
+    'cut': false,
+    'copy': true,
+    'rename': false,
+    'delete': false,
+    'new-folder': true
+  });
 };
