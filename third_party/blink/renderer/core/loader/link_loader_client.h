@@ -53,6 +53,7 @@ class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
   virtual void DidStopLinkPrerender() = 0;
   virtual void DidSendLoadForLinkPrerender() = 0;
   virtual void DidSendDOMContentLoadedForLinkPrerender() = 0;
+  virtual bool IsLinkCreatedByParser() = 0;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetLoadingTaskRunner() = 0;

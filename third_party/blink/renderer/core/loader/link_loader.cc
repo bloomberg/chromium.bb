@@ -352,7 +352,8 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
                                  Document& document,
                                  const KURL& base_url,
                                  LinkCaller caller,
-                                 ViewportDescription* viewport_description) {
+                                 ViewportDescription* viewport_description,
+                                 ParserDisposition parser_disposition) {
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
 
@@ -420,6 +421,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
 
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::link;
+  options.parser_disposition = parser_disposition;
   FetchParameters link_fetch_params(resource_request, options);
   link_fetch_params.SetCharset(document.Encoding());
 
@@ -645,7 +647,7 @@ void LinkLoader::LoadLinksFromHeader(
               : nullptr;
 
       PreloadIfNeeded(params, *document, base_url, kLinkCalledFromHeader,
-                      viewport_description);
+                      viewport_description, kNotParserInserted);
       PrefetchIfNeeded(params, *document);
       ModulePreloadIfNeeded(params, *document, viewport_description, nullptr);
     }
@@ -672,8 +674,9 @@ bool LinkLoader::LoadLink(
   PreconnectIfNeeded(params, &document, document.GetFrame(),
                      network_hints_interface, kLinkCalledFromMarkup);
 
-  Resource* resource = PreloadIfNeeded(params, document, NullURL(),
-                                       kLinkCalledFromMarkup, nullptr);
+  Resource* resource = PreloadIfNeeded(
+      params, document, NullURL(), kLinkCalledFromMarkup, nullptr,
+      client_->IsLinkCreatedByParser() ? kParserInserted : kNotParserInserted);
   if (!resource) {
     resource = PrefetchIfNeeded(params, document);
   }

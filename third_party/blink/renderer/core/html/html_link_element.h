@@ -99,6 +99,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   // From LinkLoaderClient
   bool ShouldLoadLink() override;
+  bool IsLinkCreatedByParser() override;
 
   // For LinkStyle
   bool LoadLink(const LinkLoadParameters&);
