@@ -13,6 +13,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "chrome/browser/ui/autofill/popup_view_test_helpers.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -96,7 +98,10 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
                                     NULL,
                                     NULL,
                                     element_bounds,
-                                    base::i18n::UNKNOWN_DIRECTION) {}
+                                    base::i18n::UNKNOWN_DIRECTION) {
+    LayoutModelForTesting().SetUpForTesting(
+        std::make_unique<MockPopupViewCommonForUnitTesting>());
+  }
   ~TestAutofillPopupController() override {}
 
   // Making protected functions public for testing
