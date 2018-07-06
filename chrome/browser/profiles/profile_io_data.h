@@ -322,7 +322,7 @@ class ProfileIOData {
     ~ProfileParams();
 
     base::FilePath path;
-    IOThread* io_thread;
+    IOThread* io_thread = nullptr;
 
     // Used to configure the main URLRequestContext through the IOThread's
     // in-process network service.
@@ -334,7 +334,8 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
-    signin::AccountConsistencyMethod account_consistency;
+    signin::AccountConsistencyMethod account_consistency =
+        signin::AccountConsistencyMethod::kDisabled;
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -350,14 +351,14 @@ class ProfileIOData {
 #if defined(OS_CHROMEOS)
     std::unique_ptr<policy::PolicyCertVerifier> policy_cert_verifier;
     std::string username_hash;
-    SystemKeySlotUseType system_key_slot_use_type;
+    SystemKeySlotUseType system_key_slot_use_type = SystemKeySlotUseType::kNone;
     std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
-    void* profile;
+    void* profile = nullptr;
   };
 
   explicit ProfileIOData(Profile::ProfileType profile_type);

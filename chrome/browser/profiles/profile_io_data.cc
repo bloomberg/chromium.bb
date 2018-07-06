@@ -614,15 +614,9 @@ ProfileIOData::AppRequestContext::~AppRequestContext() {
   AssertNoURLRequests();
 }
 
-ProfileIOData::ProfileParams::ProfileParams()
-    : io_thread(NULL),
-#if defined(OS_CHROMEOS)
-      system_key_slot_use_type(SystemKeySlotUseType::kNone),
-#endif
-      profile(NULL) {
-}
+ProfileIOData::ProfileParams::ProfileParams() = default;
 
-ProfileIOData::ProfileParams::~ProfileParams() {}
+ProfileIOData::ProfileParams::~ProfileParams() = default;
 
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
