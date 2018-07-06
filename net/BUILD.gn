@@ -372,6 +372,11 @@ component("net") {
     sources += [ "base/net_errors_posix.cc" ]
   }
 
+  defines = []
+  if (disable_brotli_filter || is_nacl) {
+    defines += [ "NET_DISABLE_BROTLI" ]
+  }
+
   deps = [
     ":net_deps",
   ]

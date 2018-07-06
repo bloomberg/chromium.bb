@@ -65,6 +65,10 @@
 #include "net/ssl/ssl_key_logger.h"
 #endif
 
+#if !defined(NET_DISABLE_BROTLI)
+#include "third_party/brotli/include/brotli/decode.h"
+#endif
+
 namespace net {
 
 namespace {
@@ -263,6 +267,31 @@ RSAKeyUsage CheckRSAKeyUsage(const X509Certificate* cert,
                                 : RSAKeyUsage::kMissingDigitalSignature;
 }
 
+#if !defined(NET_DISABLE_BROTLI)
+int DecompressBrotliCert(SSL* ssl,
+                         CRYPTO_BUFFER** out,
+                         size_t uncompressed_len,
+                         const uint8_t* in,
+                         size_t in_len) {
+  uint8_t* data;
+  bssl::UniquePtr<CRYPTO_BUFFER> decompressed(
+      CRYPTO_BUFFER_alloc(&data, uncompressed_len));
+  if (!decompressed) {
+    return 0;
+  }
+
+  size_t output_size = uncompressed_len;
+  if (BrotliDecoderDecompress(in_len, in, &output_size, data) !=
+          BROTLI_DECODER_RESULT_SUCCESS ||
+      output_size != uncompressed_len) {
+    return 0;
+  }
+
+  *out = decompressed.release();
+  return 1;
+}
+#endif
+
 }  // namespace
 
 class SSLClientSocketImpl::SSLContext {
@@ -324,6 +353,12 @@ class SSLClientSocketImpl::SSLContext {
 
     SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
+
+#if !defined(NET_DISABLE_BROTLI)
+    SSL_CTX_add_cert_compression_alg(
+        ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
+        nullptr /* compression not supported */, DecompressBrotliCert);
+#endif
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
