@@ -612,9 +612,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportArcStatusEnabled,
     prefs::kReportArcStatusEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kNativePrinters,
-    prefs::kRecommendedNativePrinters,
-    base::Value::Type::LIST },
   { key::kEcryptfsMigrationStrategy,
     arc::prefs::kEcryptfsMigrationStrategy,
     base::Value::Type::INTEGER },
@@ -1164,6 +1161,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ScreenMagnifierPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<LoginScreenPowerManagementPolicyHandler>(chrome_schema));
+
+  // Handler for another policy with JSON strings, lenient but shows warnings.
+  handlers->AddHandler(
+      std::make_unique<SimpleJsonStringSchemaValidatingPolicyHandler>(
+          key::kNativePrinters, prefs::kRecommendedNativePrinters,
+          chrome_schema.GetValidationSchema(),
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       power_management_idle_legacy_policies;
