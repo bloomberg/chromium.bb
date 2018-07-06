@@ -10,6 +10,10 @@
 #include <string>
 #include "base/macros.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace blink {
 
 class OriginPolicyParser {
@@ -21,6 +25,12 @@ class OriginPolicyParser {
  private:
   OriginPolicyParser();
   ~OriginPolicyParser();
+
+  bool DoParse(base::StringPiece);
+  bool ParseContentSecurityPolicies(const base::Value&);
+  bool ParseContentSecurityPolicy(const base::Value&);
+
+  std::unique_ptr<OriginPolicy> policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyParser);
 };

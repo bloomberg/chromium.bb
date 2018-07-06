@@ -21,14 +21,18 @@ class BLINK_COMMON_EXPORT OriginPolicy {
   // Create & parse the manifest.
   static std::unique_ptr<OriginPolicy> From(base::StringPiece);
 
-  base::StringPiece GetContentSecurityPolicy() const;
+  struct CSP {
+    std::string policy;
+    bool report_only;
+  };
+  const std::vector<CSP>& GetContentSecurityPolicies() const { return csp_; }
 
  private:
   friend class OriginPolicyParser;
 
   OriginPolicy();
 
-  std::string csp_;
+  std::vector<CSP> csp_;
 };
 
 }  // namespace blink

@@ -15,10 +15,6 @@ std::unique_ptr<OriginPolicy> OriginPolicy::From(
   return OriginPolicyParser::Parse(manifest_text);
 }
 
-base::StringPiece OriginPolicy::GetContentSecurityPolicy() const {
-  return csp_;
-}
-
 OriginPolicy::OriginPolicy() {}
 
 }  // namespace blink
