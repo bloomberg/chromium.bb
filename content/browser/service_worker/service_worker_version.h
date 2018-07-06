@@ -479,6 +479,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   static bool IsInstalled(ServiceWorkerVersion::Status status);
 
+  // For ServiceWorkerRegisterJob to know if the worker started up with an
+  // uncaught runtime error occurred.
+  // TODO(falken): Move to a status in OnStarted().
+  void OnScriptEvaluateFailed();
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerReadFromCacheJobTest;
@@ -624,7 +629,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                               int line_number,
                               const GURL& source_url) override;
 
-  void OnStartSentAndScriptEvaluated(blink::ServiceWorkerStatusCode status);
+  void OnStartSent(blink::ServiceWorkerStatusCode status);
 
   // Implements blink::mojom::ServiceWorkerHost.
   void SetCachedMetadata(const GURL& url,

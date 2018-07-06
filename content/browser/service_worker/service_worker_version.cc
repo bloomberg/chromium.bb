@@ -1002,6 +1002,12 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
   OnStoppedInternal(old_status);
 }
 
+void ServiceWorkerVersion::OnScriptEvaluateFailed() {
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+  FinishStartWorker(DeduceStartWorkerFailureReason(
+      blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed));
+}
+
 void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
   for (auto& observer : observers_)
     observer.OnDevToolsRoutingIdChanged(this);
@@ -1029,8 +1035,7 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
   }
 }
 
-void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
-    blink::ServiceWorkerStatusCode status) {
+void ServiceWorkerVersion::OnStartSent(blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     scoped_refptr<ServiceWorkerVersion> protect(this);
     FinishStartWorker(DeduceStartWorkerFailureReason(status));
@@ -1555,7 +1560,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       // |embedded_worker_| whose owner is |this|.
       base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
                      std::move(provider_host), context()),
-      base::BindOnce(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
+      base::BindOnce(&ServiceWorkerVersion::OnStartSent,
                      weak_factory_.GetWeakPtr()));
 }
 

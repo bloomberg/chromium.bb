@@ -128,7 +128,6 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
   EmbeddedWorkerInstance* worker =
       helper_->registry()->GetWorker(params->embedded_worker_id);
   ASSERT_TRUE(worker);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
 
   helper_->OnStartWorkerStub(std::move(params));
 }
@@ -846,7 +845,6 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params->embedded_worker_id);
   ASSERT_TRUE(worker);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(

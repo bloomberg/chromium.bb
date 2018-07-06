@@ -129,17 +129,20 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ~EmbeddedWorkerInstance() override;
 
   // Starts the worker. It is invalid to call this when the worker is not in
-  // STOPPED status. |callback| is invoked after the worker script has been
-  // started and evaluated, or when an error occurs.
-  // |params| should be populated with service worker version info needed
-  // to start the worker.
+  // STOPPED status.
+  //
+  // |sent_start_callback| is invoked once the Start IPC is sent, or if an error
+  // prevented that from happening. The callback is not invoked in some cases,
+  // e.g., when Stop() is called and aborts the start procedure. Note that when
+  // the callback is invoked with kOk status, the service worker has not yet
+  // finished starting. Observe OnStarted()/OnStopped() for when start completed
+  // or failed.
   //
   // |provider_info_getter| is called when this instance
   // allocates a process and is ready to send a StartWorker message.
-  void Start(
-      mojom::EmbeddedWorkerStartParamsPtr params,
-      ProviderInfoGetter provider_info_getter,
-      StatusCallback callback);
+  void Start(mojom::EmbeddedWorkerStartParamsPtr params,
+             ProviderInfoGetter provider_info_getter,
+             StatusCallback sent_start_callback);
 
   // Stops the worker. It is invalid to call this when the worker is not in
   // STARTING or RUNNING status.
@@ -290,7 +293,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called back from StartTask when the startup sequence failed. Calls
   // ReleaseProcess() and invokes |callback| with |status|. May destroy |this|.
-  void OnStartFailed(StatusCallback callback,
+  void OnSetupFailed(StatusCallback callback,
                      blink::ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
