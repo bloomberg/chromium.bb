@@ -71,7 +71,7 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
   scheme.placeholderColor = [UIColor colorWithWhite:0 alpha:0.3];
-  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.3];
+  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.7];
 
   return scheme;
 }
@@ -82,7 +82,7 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   scheme.fontColor = [UIColor whiteColor];
   scheme.placeholderColor = [UIColor colorWithWhite:1 alpha:0.5];
-  scheme.trailingButtonColor = [UIColor colorWithWhite:1 alpha:0.5];
+  scheme.trailingButtonColor = [UIColor whiteColor];
 
   return scheme;
 }
