@@ -1138,14 +1138,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kDefaultPrinterSelection,
           prefs::kPrintPreviewDefaultDestinationSelectionRules,
           chrome_schema.GetValidationSchema(),
-          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
       std::make_unique<SimpleJsonStringSchemaValidatingPolicyHandler>(
           key::kAutoSelectCertificateForUrls,
           prefs::kManagedAutoSelectCertificateForUrls,
           chrome_schema.GetValidationSchema(),
-          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif
 
