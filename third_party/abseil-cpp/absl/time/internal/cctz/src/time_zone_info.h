@@ -71,12 +71,15 @@ class TimeZoneInfo : public TimeZoneIf {
 
   // TimeZoneIf implementations.
   time_zone::absolute_lookup BreakTime(
-      const time_point<sys_seconds>& tp) const override;
+      const time_point<seconds>& tp) const override;
   time_zone::civil_lookup MakeTime(
       const civil_second& cs) const override;
+  bool NextTransition(const time_point<seconds>& tp,
+                      time_zone::civil_transition* trans) const override;
+  bool PrevTransition(const time_point<seconds>& tp,
+                      time_zone::civil_transition* trans) const override;
+  std::string Version() const override;
   std::string Description() const override;
-  bool NextTransition(time_point<sys_seconds>* tp) const override;
-  bool PrevTransition(time_point<sys_seconds>* tp) const override;
 
  private:
   struct Header {  // counts of:
@@ -98,7 +101,7 @@ class TimeZoneInfo : public TimeZoneIf {
                         std::uint_fast8_t tt2_index) const;
   void ExtendTransitions(const std::string& name, const Header& hdr);
 
-  bool ResetToBuiltinUTC(const sys_seconds& offset);
+  bool ResetToBuiltinUTC(const seconds& offset);
   bool Load(const std::string& name, ZoneInfoSource* zip);
 
   // Helpers for BreakTime() and MakeTime().
@@ -114,6 +117,7 @@ class TimeZoneInfo : public TimeZoneIf {
   std::uint_fast8_t default_transition_type_;  // for before first transition
   std::string abbreviations_;  // all the NUL-terminated abbreviations
 
+  std::string version_;      // the tzdata version if available
   std::string future_spec_;  // for after the last zic transition
   bool extended_;            // future_spec_ was used to generate transitions
   year_t last_year_;         // the final year of the generated transitions

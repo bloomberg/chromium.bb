@@ -45,6 +45,7 @@ source_set("bad_any_cast") {
   ]
   deps = [
     ":bad_any_cast_impl",
+    "../base:config",
   ]
 }
 

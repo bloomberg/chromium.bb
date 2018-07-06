@@ -290,7 +290,7 @@ constexpr bool holds_alternative(const variant<Types...>& v) noexcept {
 // Overload for getting a variant's lvalue by type.
 template <class T, class... Types>
 constexpr T& get(variant<Types...>& v) {  // NOLINT
-  return variant_internal::VariantCoreAccess::Access<
+  return variant_internal::VariantCoreAccess::CheckedAccess<
       variant_internal::IndexOf<T, Types...>::value>(v);
 }
 
@@ -298,14 +298,14 @@ constexpr T& get(variant<Types...>& v) {  // NOLINT
 // Note: `absl::move()` is required to allow use of constexpr in C++11.
 template <class T, class... Types>
 constexpr T&& get(variant<Types...>&& v) {
-  return variant_internal::VariantCoreAccess::Access<
+  return variant_internal::VariantCoreAccess::CheckedAccess<
       variant_internal::IndexOf<T, Types...>::value>(absl::move(v));
 }
 
 // Overload for getting a variant's const lvalue by type.
 template <class T, class... Types>
 constexpr const T& get(const variant<Types...>& v) {
-  return variant_internal::VariantCoreAccess::Access<
+  return variant_internal::VariantCoreAccess::CheckedAccess<
       variant_internal::IndexOf<T, Types...>::value>(v);
 }
 
@@ -313,7 +313,7 @@ constexpr const T& get(const variant<Types...>& v) {
 // Note: `absl::move()` is required to allow use of constexpr in C++11.
 template <class T, class... Types>
 constexpr const T&& get(const variant<Types...>&& v) {
-  return variant_internal::VariantCoreAccess::Access<
+  return variant_internal::VariantCoreAccess::CheckedAccess<
       variant_internal::IndexOf<T, Types...>::value>(absl::move(v));
 }
 
@@ -321,7 +321,7 @@ constexpr const T&& get(const variant<Types...>&& v) {
 template <std::size_t I, class... Types>
 constexpr variant_alternative_t<I, variant<Types...>>& get(
     variant<Types...>& v) {  // NOLINT
-  return variant_internal::VariantCoreAccess::Access<I>(v);
+  return variant_internal::VariantCoreAccess::CheckedAccess<I>(v);
 }
 
 // Overload for getting a variant's rvalue by index.
@@ -329,14 +329,14 @@ constexpr variant_alternative_t<I, variant<Types...>>& get(
 template <std::size_t I, class... Types>
 constexpr variant_alternative_t<I, variant<Types...>>&& get(
     variant<Types...>&& v) {
-  return variant_internal::VariantCoreAccess::Access<I>(absl::move(v));
+  return variant_internal::VariantCoreAccess::CheckedAccess<I>(absl::move(v));
 }
 
 // Overload for getting a variant's const lvalue by index.
 template <std::size_t I, class... Types>
 constexpr const variant_alternative_t<I, variant<Types...>>& get(
     const variant<Types...>& v) {
-  return variant_internal::VariantCoreAccess::Access<I>(v);
+  return variant_internal::VariantCoreAccess::CheckedAccess<I>(v);
 }
 
 // Overload for getting a variant's const rvalue by index.
@@ -344,7 +344,7 @@ constexpr const variant_alternative_t<I, variant<Types...>>& get(
 template <std::size_t I, class... Types>
 constexpr const variant_alternative_t<I, variant<Types...>>&& get(
     const variant<Types...>&& v) {
-  return variant_internal::VariantCoreAccess::Access<I>(absl::move(v));
+  return variant_internal::VariantCoreAccess::CheckedAccess<I>(absl::move(v));
 }
 
 // get_if()
@@ -362,8 +362,10 @@ constexpr const variant_alternative_t<I, variant<Types...>>&& get(
 template <std::size_t I, class... Types>
 constexpr absl::add_pointer_t<variant_alternative_t<I, variant<Types...>>>
 get_if(variant<Types...>* v) noexcept {
-  return (v != nullptr && v->index() == I) ? std::addressof(absl::get<I>(*v))
-                                           : nullptr;
+  return (v != nullptr && v->index() == I)
+             ? std::addressof(
+                   variant_internal::VariantCoreAccess::Access<I>(*v))
+             : nullptr;
 }
 
 // Overload for getting a pointer to the const value stored in the given
@@ -371,8 +373,10 @@ get_if(variant<Types...>* v) noexcept {
 template <std::size_t I, class... Types>
 constexpr absl::add_pointer_t<const variant_alternative_t<I, variant<Types...>>>
 get_if(const variant<Types...>* v) noexcept {
-  return (v != nullptr && v->index() == I) ? std::addressof(absl::get<I>(*v))
-                                           : nullptr;
+  return (v != nullptr && v->index() == I)
+             ? std::addressof(
+                   variant_internal::VariantCoreAccess::Access<I>(*v))
+             : nullptr;
 }
 
 // Overload for getting a pointer to the value stored in the given variant by
@@ -445,9 +449,11 @@ constexpr bool operator!=(monostate, monostate) noexcept { return false; }
 //------------------------------------------------------------------------------
 template <typename T0, typename... Tn>
 class variant<T0, Tn...> : private variant_internal::VariantBase<T0, Tn...> {
+  // Intentionally not qualifing `negation` with `absl::` to work around a bug
+  // in MSVC 2015 with inline namespace and variadic template.
   static_assert(absl::conjunction<std::is_object<T0>, std::is_object<Tn>...,
-                                  absl::negation<std::is_array<T0>>,
-                                  absl::negation<std::is_array<Tn>>...,
+                                  negation<std::is_array<T0> >,
+                                  negation<std::is_array<Tn> >...,
                                   std::is_nothrow_destructible<T0>,
                                   std::is_nothrow_destructible<Tn>...>::value,
                 "Attempted to instantiate a variant with an unsupported type.");
