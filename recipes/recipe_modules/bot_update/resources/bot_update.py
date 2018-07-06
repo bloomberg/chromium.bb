@@ -579,7 +579,10 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
     # This will also not work if somebody passes a local refspec like
     # refs/heads/master. It needs to translate to refs/remotes/origin/master
     # first. See also https://crbug.com/740456 .
-    treeish = branch if branch.startswith('refs/') else 'origin/%s' % branch
+    if branch.startswith(('refs/', 'origin/')):
+      treeish = branch
+    else:
+      treeish = 'origin/' + branch
 
   # Note that -- argument is necessary to ensure that git treats `treeish`
   # argument as revision or ref, and not as a file/directory which happens to
