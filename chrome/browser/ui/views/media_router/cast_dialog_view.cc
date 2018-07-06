@@ -102,13 +102,13 @@ base::string16 CastDialogView::GetDialogButtonLabel(
              : sink_buttons_.at(selected_sink_index_)->GetActionText();
 }
 
+int CastDialogView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
+}
+
 bool CastDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return !sink_buttons_.empty() &&
          GetSelectedSink().state != UIMediaSinkState::CONNECTING;
-}
-
-int CastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 views::View* CastDialogView::CreateExtraView() {
@@ -168,6 +168,41 @@ void CastDialogView::OnControllerInvalidated() {
   MaybeSizeToContents();
 }
 
+void CastDialogView::ButtonPressed(views::Button* sender,
+                                   const ui::Event& event) {
+  if (sender->tag() == kAlternativeSourceButtonId)
+    ShowSourcesMenu();
+  else
+    SelectSinkAtIndex(sender->tag());
+}
+
+gfx::Size CastDialogView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_BUBBLE_PREFERRED_WIDTH);
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void CastDialogView::OnPaint(gfx::Canvas* canvas) {
+  views::BubbleDialogDelegateView::OnPaint(canvas);
+  if (!start_time_.is_null()) {
+    MediaRouterMetrics::RecordMediaRouterDialogPaint(base::Time::Now() -
+                                                     start_time_);
+    start_time_ = base::Time();
+  }
+}
+
+bool CastDialogView::IsCommandIdChecked(int command_id) const {
+  return command_id == selected_source_;
+}
+
+bool CastDialogView::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
+  selected_source_ = command_id;
+}
+
 CastDialogView::CastDialogView(views::View* anchor_view,
                                CastDialogController* controller,
                                Browser* browser,
@@ -184,41 +219,6 @@ CastDialogView::CastDialogView(views::View* anchor_view,
 CastDialogView::~CastDialogView() {
   if (controller_)
     controller_->RemoveObserver(this);
-}
-
-void CastDialogView::ButtonPressed(views::Button* sender,
-                                   const ui::Event& event) {
-  if (sender->tag() == kAlternativeSourceButtonId)
-    ShowSourcesMenu();
-  else
-    SelectSinkAtIndex(sender->tag());
-}
-
-bool CastDialogView::IsCommandIdChecked(int command_id) const {
-  return command_id == selected_source_;
-}
-
-bool CastDialogView::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
-  selected_source_ = command_id;
-}
-
-gfx::Size CastDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_BUBBLE_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-void CastDialogView::OnPaint(gfx::Canvas* canvas) {
-  views::BubbleDialogDelegateView::OnPaint(canvas);
-  if (!start_time_.is_null()) {
-    MediaRouterMetrics::RecordMediaRouterDialogPaint(base::Time::Now() -
-                                                     start_time_);
-    start_time_ = base::Time();
-  }
 }
 
 void CastDialogView::Init() {
