@@ -18,7 +18,7 @@ PopupsOnlyUiDelegate::PopupsOnlyUiDelegate() {
   ui_controller_.reset(new message_center::UiController(this));
   alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
   popup_collection_.reset(new message_center::MessagePopupCollection(
-      message_center(), ui_controller_.get(), alignment_delegate_.get()));
+      message_center(), alignment_delegate_.get()));
   message_center()->SetHasMessageCenterView(false);
 }
 
