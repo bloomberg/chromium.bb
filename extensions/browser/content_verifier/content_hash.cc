@@ -219,6 +219,7 @@ void ContentHash::DidFetchVerifiedContents(
     return;
   }
 
+  RecordFetchResult(true);
   scoped_refptr<ContentHash> hash =
       new ContentHash(key, std::move(verified_contents), nullptr);
   const bool did_fetch_verified_contents = true;
@@ -232,11 +233,17 @@ void ContentHash::DispatchFetchFailure(
     const ExtensionKey& key,
     CreatedCallback created_callback,
     const IsCancelledCallback& is_cancelled) {
+  RecordFetchResult(false);
   // NOTE: bare new because ContentHash constructor is private.
   scoped_refptr<ContentHash> content_hash =
       new ContentHash(key, nullptr, nullptr);
   std::move(created_callback)
       .Run(content_hash, is_cancelled && is_cancelled.Run());
+}
+
+// static
+void ContentHash::RecordFetchResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Extensions.ContentVerification.FetchResult", success);
 }
 
 bool ContentHash::CreateHashes(const base::FilePath& hashes_file,

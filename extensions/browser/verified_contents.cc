@@ -10,7 +10,9 @@
 #include "base/base64url.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/crx_file/id_util.h"
@@ -59,6 +61,41 @@ const DictionaryValue* FindDictionaryWithValue(const ListValue* list,
   return NULL;
 }
 
+// Helper to record UMA for results of initializing verified_contents.json file.
+// TODO(lazyboy): Merge this with ScopedUMARecorder in computed_hashes.cc.
+class ScopedUMARecorder {
+ public:
+  ScopedUMARecorder() = default;
+
+  ~ScopedUMARecorder() {
+    if (recorded_)
+      return;
+    RecordImpl(false);
+  }
+
+  void RecordSuccess() {
+    recorded_ = true;
+    RecordImpl(true);
+  }
+
+ private:
+  void RecordImpl(bool success) {
+    if (success) {
+      UMA_HISTOGRAM_TIMES(
+          "Extensions.ContentVerification.VerifiedContentsInitTime",
+          timer_.Elapsed());
+    }
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.ContentVerification.VerifiedContentsInitResult", success);
+  }
+
+ private:
+  base::ElapsedTimer timer_;
+  bool recorded_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUMARecorder);
+};
+
 #if defined(OS_WIN)
 // Returns true if |path| ends with (.| )+.
 // |out_path| will contain "." and/or " " suffix removed from |path|.
@@ -106,6 +143,7 @@ VerifiedContents::~VerifiedContents() {
 //   ]
 // }
 bool VerifiedContents::InitFrom(const base::FilePath& path) {
+  ScopedUMARecorder uma_recorder;
   std::string payload;
   if (!GetPayload(path, &payload))
     return false;
@@ -117,8 +155,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
 
   std::string item_id;
   if (!dictionary->GetString(kItemIdKey, &item_id) ||
-      !crx_file::id_util::IdIsValid(item_id))
+      !crx_file::id_util::IdIsValid(item_id)) {
     return false;
+  }
   extension_id_ = item_id;
 
   std::string version_string;
@@ -143,8 +182,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
     int block_size = 0;
     int hash_block_size = 0;
     if (!hashes->GetInteger(kBlockSizeKey, &block_size) ||
-        !hashes->GetInteger(kHashBlockSizeKey, &hash_block_size))
+        !hashes->GetInteger(kHashBlockSizeKey, &hash_block_size)) {
       return false;
+    }
     block_size_ = block_size;
 
     // We don't support using a different block_size and hash_block_size at
@@ -168,8 +208,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
           !data->GetString(kRootHashKey, &encoded_root_hash) ||
           !base::Base64UrlDecode(encoded_root_hash,
                                  base::Base64UrlDecodePolicy::IGNORE_PADDING,
-                                 &root_hash))
+                                 &root_hash)) {
         return false;
+      }
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
       base::FilePath::StringType lowercase_file_path =
@@ -190,6 +231,7 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
 
     break;
   }
+  uma_recorder.RecordSuccess();
   return true;
 }
 
