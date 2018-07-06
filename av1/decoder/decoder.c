@@ -71,6 +71,7 @@ static void dec_free_mi(AV1_COMMON *cm) {
   cm->mip = NULL;
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
+  cm->mi_alloc_size = 0;
 }
 
 AV1Decoder *av1_decoder_create(BufferPool *const pool) {
