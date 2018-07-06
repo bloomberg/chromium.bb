@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_ACCOUNT_CONSISTENCY_MODE_MANAGER_H_
 #define CHROME_BROWSER_SIGNIN_ACCOUNT_CONSISTENCY_MODE_MANAGER_H_
 
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/buildflag.h"
@@ -18,6 +19,20 @@ class PrefRegistrySyncable;
 }
 
 class Profile;
+
+// Account consistency feature. Only used on platforms where Mirror is not
+// always enabled (ENABLE_MIRROR is false).
+extern const base::Feature kAccountConsistencyFeature;
+
+// The account consistency method feature parameter name.
+extern const char kAccountConsistencyFeatureMethodParameter[];
+
+// Account consistency method feature values.
+extern const char kAccountConsistencyFeatureMethodMirror[];
+extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
+extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
+extern const char kAccountConsistencyFeatureMethodDiceMigration[];
+extern const char kAccountConsistencyFeatureMethodDice[];
 
 // Manages the account consistency mode for each profile.
 class AccountConsistencyModeManager : public KeyedService {

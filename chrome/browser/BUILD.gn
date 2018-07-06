@@ -4824,6 +4824,8 @@ static_library("test_support") {
     "signin/fake_profile_oauth2_token_service_builder.h",
     "signin/fake_signin_manager_builder.cc",
     "signin/fake_signin_manager_builder.h",
+    "signin/scoped_account_consistency.cc",
+    "signin/scoped_account_consistency.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
     "subresource_filter/test_ruleset_publisher.cc",

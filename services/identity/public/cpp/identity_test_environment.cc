@@ -61,7 +61,6 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
-  signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
 
   account_tracker_.Initialize(&signin_client_);
 

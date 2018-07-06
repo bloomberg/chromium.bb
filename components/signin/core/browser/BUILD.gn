@@ -152,7 +152,6 @@ static_library("browser") {
     "//sql",
     "//third_party/icu",
     "//third_party/re2",
-    "//ui/base",
   ]
 
   if (is_chromeos) {
@@ -194,8 +193,6 @@ static_library("test_support") {
     "fake_profile_oauth2_token_service.h",
     "fake_signin_manager.cc",
     "fake_signin_manager.h",
-    "scoped_account_consistency.cc",
-    "scoped_account_consistency.h",
     "scoped_unified_consent.cc",
     "scoped_unified_consent.h",
     "test_signin_client.cc",

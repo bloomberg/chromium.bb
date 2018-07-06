@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/scoped_account_consistency.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 
 #include <map>
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 
-namespace signin {
+using signin::AccountConsistencyMethod;
 
 ScopedAccountConsistency::ScopedAccountConsistency(
     AccountConsistencyMethod method) {
@@ -57,9 +56,6 @@ ScopedAccountConsistency::ScopedAccountConsistency(
 
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       kAccountConsistencyFeature, feature_params);
-  DCHECK_EQ(method, GetAccountConsistencyMethod());
 }
 
 ScopedAccountConsistency::~ScopedAccountConsistency() {}
-
-}  // namespace signin

@@ -66,7 +66,6 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       account_info_(GetAccountInfo(profile, account_id)),
       weak_pointer_factory_(this) {
   DCHECK(delegate_);
-  DCHECK(signin::IsDicePrepareMigrationEnabled());
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
   DCHECK(!signin_manager_->IsAuthenticated());

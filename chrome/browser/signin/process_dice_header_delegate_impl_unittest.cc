@@ -45,7 +45,6 @@ class ProcessDiceHeaderDelegateImplTest
         account_id_("12345"),
         email_("foo@bar.com"),
         auth_error_(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
-    signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     account_tracker_service_.Initialize(&signin_client_);

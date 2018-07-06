@@ -5,8 +5,8 @@
 #include "chrome/browser/signin/unified_consent_helper.h"
 
 #include "build/buildflag.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/scoped_unified_consent.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -17,7 +17,7 @@
 // On Dice platforms, unified consent can only be enabled for Dice profiles.
 TEST(UnifiedConsentHelperTest, DiceDisabled) {
   // Disable Dice.
-  signin::ScopedAccountConsistencyDiceFixAuthErrors dice_fix_auth_errors;
+  ScopedAccountConsistencyDiceFixAuthErrors dice_fix_auth_errors;
 
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
@@ -41,7 +41,7 @@ TEST(UnifiedConsentHelperTest, DiceDisabled) {
 TEST(UnifiedConsentHelperTest, FeatureState) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Enable Dice.
-  signin::ScopedAccountConsistencyDice dice;
+  ScopedAccountConsistencyDice dice;
 #endif
 
   content::TestBrowserThreadBundle thread_bundle;

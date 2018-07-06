@@ -9,32 +9,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_MANAGEMENT_SWITCHES_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_MANAGEMENT_SWITCHES_H_
 
-#include <memory>
-
-#include "base/callback_forward.h"
 #include "base/feature_list.h"
 
-class PrefService;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace signin {
-
-// Account consistency feature. Only used on platforms where Mirror is not
-// always enabled (ENABLE_MIRROR is false).
-extern const base::Feature kAccountConsistencyFeature;
-
-// The account consistency method feature parameter name.
-extern const char kAccountConsistencyFeatureMethodParameter[];
-
-// Account consistency method feature values.
-extern const char kAccountConsistencyFeatureMethodMirror[];
-extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
-extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
-extern const char kAccountConsistencyFeatureMethodDiceMigration[];
-extern const char kAccountConsistencyFeatureMethodDice[];
 
 // Improved and unified consent for privacy-related features.
 extern const base::Feature kUnifiedConsent;
@@ -84,49 +61,7 @@ bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
                               AccountConsistencyMethod b);
 
 ////////////////////////////////////////////////////////////////////////////////
-// AccountConsistencyMethod related functions:
-
-// WARNING: DEPRECATED. These methods are global, but account consistency is per
-// profile.
-
-// Returns the account consistency method.
-AccountConsistencyMethod GetAccountConsistencyMethod();
-
-// Checks whether Mirror account consistency is enabled. If enabled, the account
-// management UI is available in the avatar bubble.
-bool IsAccountConsistencyMirrorEnabled();
-
-// Returns true if the account consistency method is kDiceFixAuthErrors or
-// greater.
-bool IsDiceFixAuthErrorsEnabled();
-
-// Returns true if the account consistency method is
-// kDicePrepareMigration or greater.
-bool IsDicePrepareMigrationEnabled();
-
-// Returns true if Dice account consistency is enabled or if the Dice migration
-// process is in progress (account consistency method is kDice or
-// kDiceMigration).
-// To check wether Dice is enabled (i.e. the migration is complete), use
-// IsDiceEnabledForProfile().
-bool IsDiceMigrationEnabled();
-
-////////////////////////////////////////////////////////////////////////////////
-// Functions to test if Dice is enabled for a user profile:
-
-// If true, then account management is done through Gaia webpages.
-// Can only be used on the UI thread.
-bool IsDiceEnabledForProfile(const PrefService* user_prefs);
-
-// Called to migrate a profile to Dice. After this call, it is enabled forever.
-void MigrateProfileToDice(PrefService* user_prefs);
-
-////////////////////////////////////////////////////////////////////////////////
 // Other functions:
-
-// Register account consistency user preferences.
-void RegisterAccountConsistencyProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry);
 
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
