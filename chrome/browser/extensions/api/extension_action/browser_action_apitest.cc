@@ -39,6 +39,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -872,6 +873,7 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
   enum ExpectedNavigationStatus {
     EXPECTING_NAVIGATION_SUCCESS,
     EXPECTING_NAVIGATION_FAILURE,
+    EXPECTING_NO_NAVIGATION,
   };
 
   void TestPopupNavigationViaGet(
@@ -919,6 +921,7 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
     // Try to navigate the pop-up.
     bool ignored_script_result = false;
     content::WebContentsDestroyedWatcher popup_destruction_watcher(popup);
+    content::TestNavigationObserver popup_navigation_observer(popup);
     EXPECT_TRUE(ExecuteScriptAndExtractBool(popup, script_to_execute,
                                             &ignored_script_result));
     popup = popup_destruction_watcher.web_contents();
@@ -932,7 +935,14 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
     } else {
       // If the extension popup is still opened, then wait until there is no
       // load in progress, and verify whether the navigation succeeded or not.
-      WaitForLoadStop(popup);
+      if (expected_navigation_status != EXPECTING_NO_NAVIGATION) {
+        popup_navigation_observer.Wait();
+      } else {
+        EXPECT_FALSE(popup->IsLoading());
+      }
+      // The popup should still be alive.
+      ASSERT_TRUE(popup_destruction_watcher.web_contents());
+
       if (expected_navigation_status == EXPECTING_NAVIGATION_SUCCESS) {
         EXPECT_EQ(target_url, popup->GetLastCommittedURL())
             << "Navigation to " << target_url
@@ -976,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, Webpage) {
 
   // The GET request will be blocked in ExtensionViewHost::OpenURLFromTab
   // (which silently drops navigations with CURRENT_TAB disposition).
-  TestPopupNavigationViaGet(web_url, EXPECTING_NAVIGATION_FAILURE);
+  TestPopupNavigationViaGet(web_url, EXPECTING_NO_NAVIGATION);
 
   // POST requests don't go through ExtensionViewHost::OpenURLFromTab.
   TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);
@@ -999,7 +1009,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
                        PageInOtherExtension) {
   GURL other_extension_url = other_extension().GetResourceURL("other.html");
-  TestPopupNavigationViaGet(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
+  TestPopupNavigationViaGet(other_extension_url, EXPECTING_NO_NAVIGATION);
   TestPopupNavigationViaPost(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
 }
 
