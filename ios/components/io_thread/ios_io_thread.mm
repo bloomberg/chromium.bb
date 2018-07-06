@@ -310,7 +310,7 @@ void IOSIOThread::Init() {
   globals_->cert_transparency_verifier.reset(new net::MultiLogCTVerifier());
   globals_->ct_policy_enforcer.reset(new net::DefaultCTPolicyEnforcer());
 
-  globals_->ssl_config_service.reset(new net::SSLConfigServiceDefaults());
+  globals_->ssl_config_service = new net::SSLConfigServiceDefaults();
 
   CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());

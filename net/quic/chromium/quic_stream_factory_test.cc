@@ -71,11 +71,12 @@ namespace {
 class MockSSLConfigService : public SSLConfigService {
  public:
   MockSSLConfigService() {}
-  ~MockSSLConfigService() override {}
 
   void GetSSLConfig(SSLConfig* config) override { *config = config_; }
 
  private:
+  ~MockSSLConfigService() override {}
+
   SSLConfig config_;
 };
 
@@ -791,7 +792,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockHostResolver host_resolver_;
-  std::unique_ptr<SSLConfigService> ssl_config_service_;
+  scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<MockClientSocketFactory> socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   quic::test::MockRandom random_generator_;
