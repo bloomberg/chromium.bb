@@ -386,18 +386,18 @@ class MakeRequestFail {
  public:
   // Sets up the filter on IO thread such that requests to |host| fail.
   explicit MakeRequestFail(const std::string& host) : host_(host) {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(MakeRequestFailOnIO, host_),
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    content::RunMessageLoop();
+    base::RunLoop run_loop;
+    BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                    base::BindOnce(MakeRequestFailOnIO, host_),
+                                    run_loop.QuitClosure());
+    run_loop.Run();
   }
   ~MakeRequestFail() {
+    base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(UndoMakeRequestFailOnIO, host_),
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    content::RunMessageLoop();
+        base::BindOnce(UndoMakeRequestFailOnIO, host_), run_loop.QuitClosure());
+    run_loop.Run();
   }
 
  private:
@@ -809,25 +809,31 @@ class PolicyTest : public InProcessBrowserTest {
   class QuitMessageLoopAfterScreenshot
       : public ChromeScreenshotGrabberTestObserver {
    public:
+    explicit QuitMessageLoopAfterScreenshot(base::OnceClosure done)
+        : done_(std::move(done)) {}
     void OnScreenshotCompleted(
         ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::IO, FROM_HERE, base::DoNothing(),
-          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+      BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                      base::DoNothing(), std::move(done_));
     }
 
     ~QuitMessageLoopAfterScreenshot() override {}
+
+   private:
+    base::OnceClosure done_;
   };
 
   void TestScreenshotFile(bool enabled) {
-    // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
-    // is tied to the test instead.
+    base::RunLoop run_loop;
+    QuitMessageLoopAfterScreenshot observer_(run_loop.QuitClosure());
+
     ChromeScreenshotGrabber* grabber = ChromeScreenshotGrabber::Get();
     grabber->test_observer_ = &observer_;
     SetScreenshotPolicy(enabled);
     grabber->HandleTakeScreenshotForAllRootWindows();
-    content::RunMessageLoop();
+    run_loop.Run();
+
     grabber->test_observer_ = nullptr;
   }
 #endif  // defined(OS_CHROMEOS)
@@ -983,9 +989,6 @@ class PolicyTest : public InProcessBrowserTest {
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
   extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
-#if defined(OS_CHROMEOS)
-  QuitMessageLoopAfterScreenshot observer_;
-#endif
 };
 
 // A subclass of PolicyTest that runs each test with the old interstitial code
