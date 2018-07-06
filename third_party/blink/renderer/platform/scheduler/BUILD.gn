@@ -151,8 +151,6 @@ jumbo_source_set("test_support") {
     "test/lazy_thread_controller_for_test.cc",
     "test/lazy_thread_controller_for_test.h",
     "test/renderer_scheduler_test_support.cc",
-    "test/test_queueing_time_estimator_client.cc",
-    "test/test_queueing_time_estimator_client.h",
   ]
 
   deps = [
@@ -220,7 +218,6 @@ source_set("perf_tests") {
 
   sources = [
     "base/sequence_manager_perftest.cc",
-    "test/queueing_time_estimator_perf_test.cc",
   ]
 
   deps = [
