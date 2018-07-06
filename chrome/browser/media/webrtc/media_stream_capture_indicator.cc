@@ -90,23 +90,21 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   WebContentsDeviceUsage(scoped_refptr<MediaStreamCaptureIndicator> indicator,
                          WebContents* web_contents)
       : WebContentsObserver(web_contents),
-        indicator_(indicator),
-        audio_ref_count_(0),
-        video_ref_count_(0),
-        mirroring_ref_count_(0),
-        weak_factory_(this) {
-  }
+        indicator_(std::move(indicator)),
+        weak_factory_(this) {}
 
-  bool IsCapturingAudio() const { return audio_ref_count_ > 0; }
-  bool IsCapturingVideo() const { return video_ref_count_ > 0; }
-  bool IsMirroring() const { return mirroring_ref_count_ > 0; }
+  bool IsCapturingAudio() const { return audio_stream_count_ > 0; }
+  bool IsCapturingVideo() const { return video_stream_count_ > 0; }
+  bool IsMirroring() const { return mirroring_stream_count_ > 0; }
+  bool IsCapturingDesktop() const { return desktop_stream_count_ > 0; }
 
   std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
-      const content::MediaStreamDevices& devices);
+      const content::MediaStreamDevices& devices,
+      std::unique_ptr<MediaStreamUI> ui);
 
   // Increment ref-counts up based on the type of each device provided.
   void AddDevices(const content::MediaStreamDevices& devices,
-                  const base::Closure& close_callback);
+                  base::OnceClosure stop_callback);
 
   // Decrement ref-counts up based on the type of each device provided.
   void RemoveDevices(const content::MediaStreamDevices& devices);
@@ -115,17 +113,20 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   void NotifyStopped();
 
  private:
+  int& GetStreamCount(content::MediaStreamType type);
+
   // content::WebContentsObserver overrides.
   void WebContentsDestroyed() override {
     indicator_->UnregisterWebContents(web_contents());
   }
 
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
-  int audio_ref_count_;
-  int video_ref_count_;
-  int mirroring_ref_count_;
+  int audio_stream_count_ = 0;
+  int video_stream_count_ = 0;
+  int mirroring_stream_count_ = 0;
+  int desktop_stream_count_ = 0;
 
-  base::Closure stop_callback_;
+  base::OnceClosure stop_callback_;
   base::WeakPtrFactory<WebContentsDeviceUsage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDeviceUsage);
@@ -139,59 +140,61 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
 class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
  public:
   UIDelegate(base::WeakPtr<WebContentsDeviceUsage> device_usage,
-             const content::MediaStreamDevices& devices)
-      : device_usage_(device_usage),
-        devices_(devices),
-        started_(false) {
+             const content::MediaStreamDevices& devices,
+             std::unique_ptr<::MediaStreamUI> ui)
+      : device_usage_(device_usage), devices_(devices), ui_(std::move(ui)) {
     DCHECK(!devices_.empty());
   }
 
   ~UIDelegate() override {
-    if (started_ && device_usage_.get())
+    if (started_ && device_usage_)
       device_usage_->RemoveDevices(devices_);
   }
 
  private:
   // content::MediaStreamUI interface.
-  gfx::NativeViewId OnStarted(const base::Closure& close_callback) override {
+  gfx::NativeViewId OnStarted(const base::Closure& stop_callback) override {
     DCHECK(!started_);
     started_ = true;
-    if (device_usage_.get())
-      device_usage_->AddDevices(devices_, close_callback);
+
+    if (device_usage_) {
+      // |device_usage_| handles |stop_callback| when |ui_| is unspecified.
+      device_usage_->AddDevices(devices_,
+                                ui_ ? base::Closure() : stop_callback);
+    }
+
+    // If a custom |ui_| is specified, notify it that the stream started and let
+    // it handle the |stop_callback|.
+    if (ui_)
+      return ui_->OnStarted(stop_callback);
+
     return 0;
   }
 
   base::WeakPtr<WebContentsDeviceUsage> device_usage_;
-  content::MediaStreamDevices devices_;
-  bool started_;
+  const content::MediaStreamDevices devices_;
+  const std::unique_ptr<::MediaStreamUI> ui_;
+  bool started_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UIDelegate);
 };
 
 std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
-    const content::MediaStreamDevices& devices) {
-  return std::make_unique<UIDelegate>(weak_factory_.GetWeakPtr(), devices);
+    const content::MediaStreamDevices& devices,
+    std::unique_ptr<MediaStreamUI> ui) {
+  return std::make_unique<UIDelegate>(weak_factory_.GetWeakPtr(), devices,
+                                      std::move(ui));
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     const content::MediaStreamDevices& devices,
-    const base::Closure& close_callback) {
-  for (content::MediaStreamDevices::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    if (content::IsScreenCaptureMediaType(it->type)) {
-      ++mirroring_ref_count_;
-    } else if (content::IsAudioInputMediaType(it->type)) {
-      ++audio_ref_count_;
-    } else if (content::IsVideoMediaType(it->type)) {
-      ++video_ref_count_;
-    } else {
-      NOTIMPLEMENTED();
-    }
-  }
+    base::OnceClosure stop_callback) {
+  for (const auto& device : devices)
+    ++GetStreamCount(device.type);
 
   if (web_contents()) {
-    stop_callback_ = close_callback;
+    stop_callback_ = std::move(stop_callback);
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 
@@ -200,32 +203,43 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
     const content::MediaStreamDevices& devices) {
-  for (content::MediaStreamDevices::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    if (IsScreenCaptureMediaType(it->type)) {
-      --mirroring_ref_count_;
-    } else if (content::IsAudioInputMediaType(it->type)) {
-      --audio_ref_count_;
-    } else if (content::IsVideoMediaType(it->type)) {
-      --video_ref_count_;
-    } else {
-      NOTIMPLEMENTED();
-    }
+  for (const auto& device : devices) {
+    int& stream_count = GetStreamCount(device.type);
+    --stream_count;
+    DCHECK_GE(stream_count, 0);
   }
 
-  DCHECK_GE(audio_ref_count_, 0);
-  DCHECK_GE(video_ref_count_, 0);
-  DCHECK_GE(mirroring_ref_count_, 0);
+  if (web_contents())
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   indicator_->UpdateNotificationUserInterface();
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::NotifyStopped() {
-  if (!stop_callback_.is_null()) {
-    base::Closure callback = stop_callback_;
-    stop_callback_.Reset();
-    callback.Run();
+  if (stop_callback_)
+    std::move(stop_callback_).Run();
+}
+
+int& MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount(
+    content::MediaStreamType type) {
+  switch (type) {
+    case content::MEDIA_DEVICE_AUDIO_CAPTURE:
+      return audio_stream_count_;
+
+    case content::MEDIA_DEVICE_VIDEO_CAPTURE:
+      return video_stream_count_;
+
+    case content::MEDIA_TAB_AUDIO_CAPTURE:
+    case content::MEDIA_TAB_VIDEO_CAPTURE:
+      return mirroring_stream_count_;
+
+    case content::MEDIA_DESKTOP_VIDEO_CAPTURE:
+    case content::MEDIA_DESKTOP_AUDIO_CAPTURE:
+      return desktop_stream_count_;
+
+    default:
+      NOTREACHED();
+      return video_stream_count_;
   }
 }
 
@@ -244,12 +258,13 @@ MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
 std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::RegisterMediaStream(
     content::WebContents* web_contents,
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    std::unique_ptr<MediaStreamUI> ui) {
   auto& usage = usage_map_[web_contents];
   if (!usage)
     usage = std::make_unique<WebContentsDeviceUsage>(this, web_contents);
 
-  return usage->RegisterMediaStream(devices);
+  return usage->RegisterMediaStream(devices, std::move(ui));
 }
 
 void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
@@ -296,6 +311,14 @@ bool MediaStreamCaptureIndicator::IsBeingMirrored(
 
   auto it = usage_map_.find(web_contents);
   return it != usage_map_.end() && it->second->IsMirroring();
+}
+
+bool MediaStreamCaptureIndicator::IsCapturingDesktop(
+    content::WebContents* web_contents) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto it = usage_map_.find(web_contents);
+  return it != usage_map_.end() && it->second->IsCapturingDesktop();
 }
 
 void MediaStreamCaptureIndicator::NotifyStopped(

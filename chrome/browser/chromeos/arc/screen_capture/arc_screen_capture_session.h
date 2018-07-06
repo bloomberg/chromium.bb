@@ -15,13 +15,14 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/compositor/compositor_animation_observer.h"
 
+class ScreenCaptureNotificationUI;
+
 namespace aura {
 class Window;
 }  // namespace aura
 
 namespace content {
 struct DesktopMediaID;
-class MediaStreamUI;
 }  // namespace content
 
 namespace gfx {
@@ -104,7 +105,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   std::queue<std::unique_ptr<DesktopTexture>> texture_queue_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   std::unique_ptr<viz::GLHelper::ScalerInterface> scaler_;
-  std::unique_ptr<content::MediaStreamUI> notification_ui_;
+  std::unique_ptr<ScreenCaptureNotificationUI> notification_ui_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 
   base::WeakPtrFactory<ArcScreenCaptureSession> weak_ptr_factory_;

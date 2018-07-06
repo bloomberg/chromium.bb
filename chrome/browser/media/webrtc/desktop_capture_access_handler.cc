@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -147,6 +148,7 @@ base::string16 GetStopSharingUIString(
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
+    content::WebContents* web_contents,
     content::MediaStreamDevices* devices,
     content::DesktopMediaID media_id,
     bool capture_audio,
@@ -155,7 +157,6 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<content::MediaStreamUI> ui;
 
   DVLOG(2) << __func__ << ": media_id " << media_id.ToString()
            << ", capture_audio " << capture_audio << ", disable_local_echo "
@@ -191,15 +192,16 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   }
 
   // If required, register to display the notification for stream capture.
-  if (!display_notification) {
-    return ui;
+  std::unique_ptr<ScreenCaptureNotificationUI> notification_ui;
+  if (display_notification) {
+    notification_ui = ScreenCaptureNotificationUI::Create(
+        GetStopSharingUIString(application_title, registered_extension_name,
+                               capture_audio, media_id.type));
   }
 
-  ui = ScreenCaptureNotificationUI::Create(GetStopSharingUIString(
-      application_title, registered_extension_name, capture_audio,
-      media_id.type));
-
-  return ui;
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->GetMediaStreamCaptureIndicator()
+      ->RegisterMediaStream(web_contents, *devices, std::move(notification_ui));
 }
 
 #if !defined(OS_ANDROID)
@@ -339,8 +341,9 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       const bool display_notification = ShouldDisplayNotification(extension);
 
       ui = GetDevicesForDesktopCapture(
-          &devices, screen_id, capture_audio, request.disable_local_echo,
-          display_notification, application_title, application_title);
+          web_contents, &devices, screen_id, capture_audio,
+          request.disable_local_echo, display_notification, application_title,
+          application_title);
       DCHECK(!devices.empty());
     }
 
@@ -461,8 +464,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
   // Determine if the extension is required to display a notification.
   const bool display_notification = ShouldDisplayNotification(extension);
 
-  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio,
-                                   request.disable_local_echo,
+  ui = GetDevicesForDesktopCapture(web_contents, &devices, media_id,
+                                   capture_audio, request.disable_local_echo,
                                    display_notification,
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
