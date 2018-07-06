@@ -55,11 +55,7 @@ bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
 aura::Window* GetModalTransientChild(
     aura::Window* activatable,
     aura::Window* original) {
-  for (aura::Window::Windows::const_iterator it =
-           GetTransientChildren(activatable).begin();
-       it != GetTransientChildren(activatable).end();
-       ++it) {
-    aura::Window* transient = *it;
+  for (aura::Window* transient : GetTransientChildren(activatable)) {
     if (IsModalTransientChild(transient, original)) {
       if (GetTransientChildren(transient).empty())
         return transient;
@@ -68,7 +64,7 @@ aura::Window* GetModalTransientChild(
       return modal_child ? modal_child : transient;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -79,12 +75,12 @@ void SetModalParent(aura::Window* child, aura::Window* parent) {
 
 aura::Window* GetModalTransient(aura::Window* window) {
   if (!window)
-    return NULL;
+    return nullptr;
 
   // We always want to check the for the transient child of the toplevel window.
   aura::Window* toplevel = GetToplevelWindow(window);
   if (!toplevel)
-    return NULL;
+    return nullptr;
 
   return GetModalTransientChild(toplevel, window);
 }

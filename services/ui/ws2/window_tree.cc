@@ -24,6 +24,7 @@
 #include "services/ui/ws2/window_delegate_impl.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
@@ -41,6 +42,8 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/window_modality_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ui {
 namespace ws2 {
@@ -737,6 +740,112 @@ bool WindowTree::RemoveWindowFromParentImpl(
   return false;
 }
 
+bool WindowTree::AddTransientWindowImpl(const ClientWindowId& parent_id,
+                                        const ClientWindowId& transient_id) {
+  DVLOG(3) << "adding transient window client=" << client_id_
+           << " parent_id= " << parent_id << " transient_id=" << transient_id;
+  aura::Window* parent = GetWindowByClientId(parent_id);
+  aura::Window* transient = GetWindowByClientId(transient_id);
+  if (!parent || !transient) {
+    DVLOG(1) << "AddTransientWindow failed (invalid window parent_id="
+             << parent_id << " transient_id=" << transient_id << ")";
+    return false;
+  }
+
+  if (parent->Contains(transient)) {
+    DVLOG(1) << "AddTransientWindow failed (parent contains transient"
+             << " parent_id=" << parent_id << " transient_id=" << transient_id
+             << ")";
+    return false;
+  }
+
+  if (!IsClientCreatedWindow(parent) || !IsClientCreatedWindow(transient)) {
+    DVLOG(1) << "SetModalType failed (access policy disallowed parent_id="
+             << parent_id << " transient_id=" << transient_id << ")";
+    return false;
+  }
+
+  ::wm::AddTransientChild(parent, transient);
+  return true;
+}
+
+bool WindowTree::RemoveTransientWindowFromParentImpl(
+    const ClientWindowId& transient_id) {
+  DVLOG(3) << "removing transient window from parent client=" << client_id_
+           << " transient_id=" << transient_id;
+  aura::Window* transient = GetWindowByClientId(transient_id);
+  aura::Window* parent = ::wm::GetTransientParent(transient);
+  if (!parent || !transient) {
+    DVLOG(1) << "AddTransientWindow failed (invalid window or no transient"
+             << " parent transient_id=" << transient_id << ")";
+    return false;
+  }
+
+  if (!IsClientCreatedWindow(parent) || !IsClientCreatedWindow(transient)) {
+    DVLOG(1) << "SetModalType failed (access policy disallowed transient_id="
+             << transient_id << ")";
+    return false;
+  }
+
+  ::wm::RemoveTransientChild(parent, transient);
+  return true;
+}
+
+bool WindowTree::SetModalTypeImpl(const ClientWindowId& client_window_id,
+                                  ui::ModalType type) {
+  DVLOG(3) << "setting window modal type client=" << client_id_
+           << " client_window_id= " << client_window_id << " type=" << type;
+  aura::Window* window = GetWindowByClientId(client_window_id);
+  if (!window) {
+    DVLOG(1) << "SetModalType failed (invalid window id="
+             << client_window_id.ToString() << ")";
+    return false;
+  }
+
+  if (!IsClientRootWindow(window) && type == MODAL_TYPE_SYSTEM) {
+    DVLOG(1) << "SetModalType failed (not allowed for embedded clients)";
+    return false;
+  }
+
+  if (type == MODAL_TYPE_SYSTEM &&
+      window->type() != aura::client::WINDOW_TYPE_NORMAL &&
+      window->type() != aura::client::WINDOW_TYPE_POPUP) {
+    DVLOG(1) << "Window type cannot be made system modal: " << window->type();
+    return false;
+  }
+
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetModalType failed (access policy disallowed id="
+             << client_window_id.ToString() << ")";
+    return false;
+  }
+
+  window_service_->delegate()->SetModalType(window, type);
+  return true;
+}
+
+bool WindowTree::SetChildModalParentImpl(const ClientWindowId& child_id,
+                                         const ClientWindowId& parent_id) {
+  DVLOG(3) << "setting child window modal parent client=" << client_id_
+           << " child_id= " << child_id << " parent_id=" << parent_id;
+  aura::Window* child = GetWindowByClientId(child_id);
+  aura::Window* parent = GetWindowByClientId(parent_id);
+  // A value of null for |parent_id| resets the modal parent.
+  if (!child) {
+    DVLOG(1) << "SetChildModalParent failed (invalid id)";
+    return false;
+  }
+
+  if (!IsClientCreatedWindow(child) ||
+      (parent && !IsClientCreatedWindow(parent))) {
+    DVLOG(1) << "SetChildModalParent failed (access denied)";
+    return false;
+  }
+
+  wm::SetModalParent(child, parent);
+  return true;
+}
+
 bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
                                          bool visible) {
   aura::Window* window = GetWindowByClientId(window_id);
@@ -1297,24 +1406,32 @@ void WindowTree::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
 void WindowTree::AddTransientWindow(uint32_t change_id,
                                     Id window_id,
                                     Id transient_window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id,
+      AddTransientWindowImpl(MakeClientWindowId(window_id),
+                             MakeClientWindowId(transient_window_id)));
 }
 
 void WindowTree::RemoveTransientWindowFromParent(uint32_t change_id,
                                                  Id transient_window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id, RemoveTransientWindowFromParentImpl(
+                     MakeClientWindowId(transient_window_id)));
 }
 
 void WindowTree::SetModalType(uint32_t change_id,
                               Id window_id,
                               ui::ModalType type) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetModalTypeImpl(MakeClientWindowId(window_id), type));
 }
 
 void WindowTree::SetChildModalParent(uint32_t change_id,
                                      Id window_id,
                                      Id parent_window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetChildModalParentImpl(MakeClientWindowId(window_id),
+                                         MakeClientWindowId(parent_window_id)));
 }
 
 void WindowTree::ReorderWindow(uint32_t change_id,
