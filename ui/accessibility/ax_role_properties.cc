@@ -139,6 +139,19 @@ bool IsContainerWithSelectableChildrenRole(ax::mojom::Role role) {
   }
 }
 
+bool IsUIASelectable(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsRowContainer(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kTree:

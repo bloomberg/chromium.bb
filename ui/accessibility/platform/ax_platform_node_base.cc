@@ -329,6 +329,20 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() {
   return value;
 }
 
+AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {
+  if (!delegate_)
+    return nullptr;
+  AXPlatformNodeBase* container = const_cast<AXPlatformNodeBase*>(this);
+  while (container &&
+         !IsContainerWithSelectableChildrenRole(container->GetData().role)) {
+    gfx::NativeViewAccessible parent_accessible = container->GetParent();
+    AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
+
+    container = parent;
+  }
+  return container;
+}
+
 AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
   if (!delegate_)
     return nullptr;

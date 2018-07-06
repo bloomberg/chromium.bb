@@ -245,6 +245,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IRangeValueProvider,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
+                        public ISelectionItemProvider,
+                        public ISelectionProvider,
                         public IServiceProvider,
                         public IToggleProvider,
                         public IValueProvider,
@@ -265,6 +267,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
+    COM_INTERFACE_ENTRY(ISelectionItemProvider)
+    COM_INTERFACE_ENTRY(ISelectionProvider)
     COM_INTERFACE_ENTRY(IToggleProvider)
     COM_INTERFACE_ENTRY(IValueProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
@@ -429,7 +433,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                   LONG* child_id) override;
 
   //
-  // IExpandCollapseProvider methods..
+  // IExpandCollapseProvider methods.
   //
 
   STDMETHODIMP Collapse() override;
@@ -443,6 +447,31 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   //
 
   STDMETHODIMP ScrollIntoView() override;
+
+  //
+  // ISelectionItemProvider methods.
+  //
+
+  STDMETHODIMP AddToSelection() override;
+
+  STDMETHODIMP RemoveFromSelection() override;
+
+  STDMETHODIMP Select() override;
+
+  STDMETHODIMP get_IsSelected(BOOL* result) override;
+
+  STDMETHODIMP get_SelectionContainer(
+      IRawElementProviderSimple** result) override;
+
+  //
+  // ISelectionProvider methods.
+  //
+
+  STDMETHODIMP GetSelection(SAFEARRAY** result) override;
+
+  STDMETHODIMP get_CanSelectMultiple(BOOL* result) override;
+
+  STDMETHODIMP get_IsSelectionRequired(BOOL* result) override;
 
   //
   // IToggleProvider methods.
