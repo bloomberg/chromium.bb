@@ -89,10 +89,7 @@ std::unique_ptr<ECPrivateKey> ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
 
 std::unique_ptr<ECPrivateKey> ECPrivateKey::Copy() const {
   std::unique_ptr<ECPrivateKey> copy(new ECPrivateKey());
-  if (key_) {
-    EVP_PKEY_up_ref(key_.get());
-    copy->key_.reset(key_.get());
-  }
+  copy->key_ = bssl::UpRef(key_);
   return copy;
 }
 

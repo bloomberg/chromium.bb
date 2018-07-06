@@ -2478,8 +2478,7 @@ class CertBuilder {
     ASSERT_FALSE(key_);
 
     auto private_key = crypto::RSAPrivateKey::Create(2048);
-    key_.reset(private_key->key());
-    EVP_PKEY_up_ref(key_.get());
+    key_ = bssl::UpRef(private_key->key());
   }
 
   // Adds bytes (specified as a StringPiece) to the given CBB.

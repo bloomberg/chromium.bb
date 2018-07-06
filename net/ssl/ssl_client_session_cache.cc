@@ -74,11 +74,10 @@ void SSLClientSessionCache::Insert(const std::string& cache_key,
                                    SSL_SESSION* session) {
   base::AutoLock lock(lock_);
 
-  SSL_SESSION_up_ref(session);
   auto iter = cache_.Get(cache_key);
   if (iter == cache_.end())
     iter = cache_.Put(cache_key, Entry());
-  iter->second.Push(bssl::UniquePtr<SSL_SESSION>(session));
+  iter->second.Push(bssl::UpRef(session));
 }
 
 void SSLClientSessionCache::Flush() {
@@ -174,13 +173,12 @@ void SSLClientSessionCache::Entry::Push(bssl::UniquePtr<SSL_SESSION> session) {
 bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Entry::Pop() {
   if (sessions[0] == nullptr)
     return nullptr;
-  SSL_SESSION* session = sessions[0].get();
-  SSL_SESSION_up_ref(session);
-  if (SSL_SESSION_should_be_single_use(session)) {
+  bssl::UniquePtr<SSL_SESSION> session = bssl::UpRef(sessions[0]);
+  if (SSL_SESSION_should_be_single_use(session.get())) {
     sessions[0] = std::move(sessions[1]);
     sessions[1] = nullptr;
   }
-  return bssl::UniquePtr<SSL_SESSION>(session);
+  return session;
 }
 
 bool SSLClientSessionCache::Entry::ExpireSessions(time_t now) {
