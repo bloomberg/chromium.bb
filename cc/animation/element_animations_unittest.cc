@@ -3755,5 +3755,39 @@ TEST_F(ElementAnimationsTest, TickingKeyframeModelsCount) {
   EXPECT_EQ(0u, host_->CompositedAnimationsCount());
 }
 
+// This test verifies that finished keyframe models don't get copied over to
+// impl thread.
+TEST_F(ElementAnimationsTest, FinishedKeyframeModelsNotCopiedToImpl) {
+  CreateTestLayer(false, false);
+  AttachTimelineAnimationLayer();
+  CreateImplTimelineAndAnimation();
+
+  animation_->AddKeyframeModel(KeyframeModel::Create(
+      std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 1, 1,
+      TargetProperty::TRANSFORM));
+  animation_->AddKeyframeModel(KeyframeModel::Create(
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(2.0, 0.f, 1.f)),
+      2, 2, TargetProperty::OPACITY));
+
+  // Finish the first keyframe model.
+  animation_->Tick(kInitialTickTime);
+  animation_->UpdateState(true, nullptr);
+  animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animation_->UpdateState(true, nullptr);
+
+  EXPECT_EQ(
+      KeyframeModel::FINISHED,
+      animation_->keyframe_effect()->GetKeyframeModelById(1)->run_state());
+  EXPECT_EQ(
+      KeyframeModel::RUNNING,
+      animation_->keyframe_effect()->GetKeyframeModelById(2)->run_state());
+
+  PushProperties();
+
+  // Finished keyframe model doesn't get copied to impl thread.
+  EXPECT_FALSE(animation_impl_->keyframe_effect()->GetKeyframeModelById(1));
+  EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(2));
+}
+
 }  // namespace
 }  // namespace cc

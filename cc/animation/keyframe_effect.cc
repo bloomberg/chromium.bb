@@ -680,6 +680,11 @@ void KeyframeEffect::PushNewKeyframeModelsToImplThread(
   // Any new KeyframeModels owned by the main thread's Animation are
   // cloned and added to the impl thread's Animation.
   for (const auto& keyframe_model : keyframe_models_) {
+    // If the keyframe_model is finished, do not copy it over to impl since the
+    // impl instance, if there was one, was just removed in
+    // |RemoveKeyframeModelsCompletedOnMainThread|.
+    if (keyframe_model->is_finished())
+      continue;
     // If the keyframe_model is already running on the impl thread, there is no
     // need to copy it over.
     if (keyframe_effect_impl->GetKeyframeModelById(keyframe_model->id()))
@@ -784,12 +789,8 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   // aborted KeyframeModels and pushing any new animations.
   MarkAbortedKeyframeModelsForDeletion(keyframe_effect_impl);
   PurgeKeyframeModelsMarkedForDeletion(/* impl_only */ false);
-  PushNewKeyframeModelsToImplThread(keyframe_effect_impl);
-
-  // Remove finished impl side KeyframeModels only after pushing,
-  // and only after the KeyframeModels are deleted on the main thread
-  // this insures we will never push a keyframe model twice.
   RemoveKeyframeModelsCompletedOnMainThread(keyframe_effect_impl);
+  PushNewKeyframeModelsToImplThread(keyframe_effect_impl);
 
   // Now that the keyframe model lists are synchronized, push the properties for
   // the individual KeyframeModels.
