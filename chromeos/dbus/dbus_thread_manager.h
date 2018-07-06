@@ -100,8 +100,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // making it a Singleton, to ensure clean startup and shutdown.
   // This will initialize real or fake DBusClients depending on command-line
   // arguments and whether this process runs in a ChromeOS environment.
-  // Only D-Bus clients available in the processes in |process_mask| will be
-  // created.
+  // Only D-Bus clients specified in |client_set| will be created.
   static void Initialize(ClientSet client_set);
 
   // Equivalent to Initialize(kAll).
