@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -37,6 +38,8 @@ class DevToolsVideoConsumer;
 class DevToolsIOContext;
 class FrameTreeNode;
 class NavigationHandleImpl;
+class RenderFrameHost;
+class RenderProcessHost;
 
 namespace protocol {
 
@@ -113,7 +116,10 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   CONTENT_EXPORT static base::trace_event::TraceConfig
       GetTraceConfigFromDevToolsConfig(
           const base::DictionaryValue& devtools_config);
-  void SetupProcessFilter(RenderFrameHostImpl*);
+  void SetupProcessFilter(RenderFrameHost*);
+  void AppendProcessId(RenderFrameHost*,
+                       std::unordered_set<base::ProcessId>* process_set);
+  void OnProcessReady(RenderProcessHost*);
 
   std::unique_ptr<base::Timer> buffer_usage_poll_timer_;
 

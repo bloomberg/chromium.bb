@@ -412,29 +412,48 @@ void TracingHandler::Start(Maybe<std::string> categories,
 }
 
 void TracingHandler::SetupProcessFilter(
-    RenderFrameHostImpl* new_render_frame_host) {
+    RenderFrameHost* new_render_frame_host) {
   if (!frame_tree_node_)
     return;
 
   base::ProcessId browser_pid = base::Process::Current().Pid();
   std::unordered_set<base::ProcessId> included_process_ids({browser_pid});
-  if (new_render_frame_host) {
-    included_process_ids.insert(
-        new_render_frame_host->GetProcess()->GetProcess().Pid());
-  }
+  if (new_render_frame_host)
+    AppendProcessId(new_render_frame_host, &included_process_ids);
   for (FrameTreeNode* node :
        frame_tree_node_->frame_tree()->SubtreeNodes(frame_tree_node_)) {
     RenderFrameHost* frame_host = node->current_frame_host();
-    if (!frame_host)
-      continue;
-    const base::Process& process_handle =
-        frame_host->GetProcess()->GetProcess();
-    if (process_handle.IsValid())
-      included_process_ids.insert(process_handle.Pid());
+    if (frame_host)
+      AppendProcessId(frame_host, &included_process_ids);
   }
   trace_config_.SetProcessFilterConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig(
           included_process_ids));
+}
+
+void TracingHandler::AppendProcessId(
+    RenderFrameHost* render_frame_host,
+    std::unordered_set<base::ProcessId>* process_set) {
+  RenderProcessHost* process_host = render_frame_host->GetProcess();
+  if (process_host->GetProcess().IsValid()) {
+    process_set->insert(process_host->GetProcess().Pid());
+  } else {
+    process_host->PostTaskWhenProcessIsReady(
+        base::BindOnce(&TracingHandler::OnProcessReady,
+                       weak_factory_.GetWeakPtr(), process_host));
+  }
+}
+
+void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
+  if (!did_initiate_recording_)
+    return;
+  std::unordered_set<base::ProcessId> included_process_ids(
+      {process_host->GetProcess().Pid()});
+  trace_config_.SetProcessFilterConfig(
+      base::trace_event::TraceConfig::ProcessFilterConfig(
+          included_process_ids));
+  TracingController::GetInstance()->StartTracing(
+      trace_config_, base::RepeatingCallback<void()>());
 }
 
 void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
