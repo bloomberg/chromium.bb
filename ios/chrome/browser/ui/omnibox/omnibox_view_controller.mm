@@ -59,6 +59,7 @@ const CGFloat kClearButtonSize = 28.0f;
   self.view = [[OmniboxContainerView alloc]
       initWithFrame:CGRectZero
                font:[UIFont systemFontOfSize:kLocationBarFontSize]
+         largerFont:[UIFont systemFontOfSize:kLocationBarRegularRegularFontSize]
           textColor:textColor
       textFieldTint:textFieldTintColor
            iconTint:iconTintColor];
