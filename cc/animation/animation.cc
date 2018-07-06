@@ -237,6 +237,10 @@ void Animation::AbortKeyframeModels(TargetProperty::Type target_property,
 }
 
 void Animation::PushPropertiesTo(Animation* animation_impl) {
+  // In general when pushing proerties to impl thread we first push attached
+  // properties to impl followed by removing the detached ones. However, we
+  // never remove individual keyframe effect from an animation so there is no
+  // need to remove the detached ones.
   PushAttachedKeyframeEffectsToImplThread(animation_impl);
   PushPropertiesToImplThread(animation_impl);
 }
