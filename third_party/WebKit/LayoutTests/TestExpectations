@@ -4700,3 +4700,5 @@ crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-
 
 # Sheriff 2018-07-05
 crbug.com/831796 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
+
+crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
