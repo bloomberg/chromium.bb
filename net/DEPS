@@ -61,6 +61,10 @@ specific_include_rules = {
     "+third_party/brotli",
   ],
 
+  "ssl_client_socket_impl\.cc": [
+    "+third_party/brotli",
+  ],
+
   "fuzzer_test_support.cc": [
     "+base/i18n",
   ],
