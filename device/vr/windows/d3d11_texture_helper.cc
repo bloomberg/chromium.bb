@@ -21,6 +21,10 @@ D3D11TextureHelper::D3D11TextureHelper() {}
 
 D3D11TextureHelper::~D3D11TextureHelper() {}
 
+void D3D11TextureHelper::Reset() {
+  render_state_ = {};
+}
+
 bool D3D11TextureHelper::CopyTextureToBackBuffer(bool flipY) {
   if (!EnsureInitialized())
     return false;

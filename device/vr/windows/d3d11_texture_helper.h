@@ -19,6 +19,8 @@ class D3D11TextureHelper {
   D3D11TextureHelper();
   ~D3D11TextureHelper();
 
+  void Reset();
+
   bool EnsureInitialized();
   bool SetAdapterIndex(int32_t index);
   bool SetAdapterLUID(const LUID& luid);
