@@ -30,15 +30,9 @@ import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
 import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
-import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
-import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
@@ -51,7 +45,6 @@ public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
-    private static DocumentTabModelSelector sDocumentTabModelSelector;
     private DiscardableReferencePool mReferencePool;
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
@@ -153,23 +146,6 @@ public class ChromeApplication extends Application {
             return;
         }
         InvalidStartupDialog.show(activity, e.getErrorCode());
-    }
-
-    /**
-     * Returns the singleton instance of the DocumentTabModelSelector.
-     * TODO(dfalcantara): Find a better place for this once we differentiate between activity and
-     *                    application-level TabModelSelectors.
-     * @return The DocumentTabModelSelector for the application.
-     */
-    public static DocumentTabModelSelector getDocumentTabModelSelector() {
-        ThreadUtils.assertOnUiThread();
-        if (sDocumentTabModelSelector == null) {
-            ActivityDelegateImpl activityDelegate = new ActivityDelegateImpl(
-                    DocumentActivity.class, IncognitoDocumentActivity.class);
-            sDocumentTabModelSelector = new DocumentTabModelSelector(activityDelegate,
-                    new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
-        }
-        return sDocumentTabModelSelector;
     }
 
     /**

@@ -19,7 +19,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -31,7 +30,9 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
+import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.TabSwitcherCallout;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
@@ -64,6 +65,23 @@ import java.util.Set;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentModeAssassin {
+    private static DocumentTabModelSelector sDocumentTabModelSelector;
+
+    /**
+     * Returns the singleton instance of the DocumentTabModelSelector.
+     * @return The DocumentTabModelSelector for the application.
+     */
+    private static DocumentTabModelSelector getDocumentTabModelSelector() {
+        ThreadUtils.assertOnUiThread();
+        if (sDocumentTabModelSelector == null) {
+            ActivityDelegateImpl activityDelegate = new ActivityDelegateImpl(
+                    DocumentActivity.class, IncognitoDocumentActivity.class);
+            sDocumentTabModelSelector = new DocumentTabModelSelector(activityDelegate,
+                    new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
+        }
+        return sDocumentTabModelSelector;
+    }
+
     /** Alerted about progress along the migration pipeline. */
     public static class DocumentModeAssassinObserver {
         /**
@@ -554,7 +572,7 @@ public class DocumentModeAssassin {
 
     /** @return The {@link DocumentTabModelImpl} for regular tabs. */
     protected DocumentTabModel getNormalDocumentTabModel() {
-        return ChromeApplication.getDocumentTabModelSelector().getModel(false);
+        return getDocumentTabModelSelector().getModel(false);
     }
 
     /** @return Where document mode data is stored for the normal {@link DocumentTabModel}. */
