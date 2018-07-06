@@ -9,11 +9,11 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "content/public/common/media_stream_request.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 
 // Interface for screen capture notification UI shown when content of the screen
 // is being captured.
-class ScreenCaptureNotificationUI : public content::MediaStreamUI {
+class ScreenCaptureNotificationUI : public MediaStreamUI {
  public:
   ScreenCaptureNotificationUI() = default;
   ~ScreenCaptureNotificationUI() override = default;

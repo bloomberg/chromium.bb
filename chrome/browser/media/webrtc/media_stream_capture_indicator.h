@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "content/public/common/media_stream_request.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
@@ -24,36 +25,57 @@ class ImageSkia;
 
 class StatusIcon;
 
-// This indicator is owned by MediaCaptureDevicesDispatcher
-// (MediaCaptureDevicesDispatcher is a singleton).
+// Interface to display custom UI during stream capture.
+class MediaStreamUI {
+ public:
+  // Called when stream capture is stopped.
+  virtual ~MediaStreamUI() = default;
+
+  // Called when stream capture starts. |stop_callback| is a callback to stop
+  // the stream. Returns the platform-dependent window ID for the UI, or 0 if
+  // not applicable.
+  virtual gfx::NativeViewId OnStarted(const base::Closure& stop) = 0;
+};
+
+// Keeps track of which WebContents are capturing media streams. Used to display
+// indicators (e.g. in the tab strip, via notifications) and to make resource
+// allocation decisions (e.g. WebContents capturing streams are not discarded).
+//
+// Owned by MediaCaptureDevicesDispatcher, which is a singleton.
 class MediaStreamCaptureIndicator
     : public base::RefCountedThreadSafe<MediaStreamCaptureIndicator>,
       public StatusIconMenuModel::Delegate {
  public:
   MediaStreamCaptureIndicator();
 
-  // Registers a new media stream for |web_contents| and returns UI object
-  // that's used by the content layer to notify about state of the stream.
+  // Registers a new media stream for |web_contents| and returns an object used
+  // by the content layer to notify about the state of the stream. Optionally,
+  // |ui| is used to display custom UI while the stream is captured.
   std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
       content::WebContents* web_contents,
-      const content::MediaStreamDevices& devices);
+      const content::MediaStreamDevices& devices,
+      std::unique_ptr<MediaStreamUI> ui = nullptr);
 
   // Overrides from StatusIconMenuModel::Delegate implementation.
   void ExecuteCommand(int command_id, int event_flags) override;
 
-  // Returns true if the |web_contents| is capturing user media (e.g., webcam or
+  // Returns true if |web_contents| is capturing user media (e.g., webcam or
   // microphone input).
   bool IsCapturingUserMedia(content::WebContents* web_contents) const;
 
-  // Returns true if the |web_contents| is capturing video (e.g., webcam).
+  // Returns true if |web_contents| is capturing video (e.g., webcam).
   bool IsCapturingVideo(content::WebContents* web_contents) const;
 
-  // Returns true if the |web_contents| is capturing audio (e.g., microphone).
+  // Returns true if |web_contents| is capturing audio (e.g., microphone).
   bool IsCapturingAudio(content::WebContents* web_contents) const;
 
-  // Returns true if the |web_contents| itself is being mirrored (e.g., a source
-  // of media for remote broadcast).
+  // Returns true if |web_contents| itself is being mirrored (e.g., a source of
+  // media for remote broadcast).
   bool IsBeingMirrored(content::WebContents* web_contents) const;
+
+  // Returns true if |web_contents| is capturing the desktop (screen, window,
+  // audio).
+  bool IsCapturingDesktop(content::WebContents* web_contents) const;
 
   // Called when STOP button in media capture notification is clicked.
   void NotifyStopped(content::WebContents* web_contents) const;
