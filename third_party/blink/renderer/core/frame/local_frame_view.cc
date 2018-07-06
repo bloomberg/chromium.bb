@@ -2615,7 +2615,7 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
     container_layer->CcLayer()->RemoveAllChildren();
     RecordForeignLayer(context, *container_layer,
                        DisplayItem::kForeignLayerWrapper,
-                       container_layer->CcLayer(), IntPoint(),
+                       container_layer->CcLayer(), FloatPoint(),
                        IntSize(container_layer->CcLayer()->bounds()));
   }
 
@@ -2628,7 +2628,7 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
 
     scale_layer->CcLayer()->RemoveAllChildren();
     RecordForeignLayer(context, *scale_layer, DisplayItem::kForeignLayerWrapper,
-                       scale_layer->CcLayer(), IntPoint(), IntSize());
+                       scale_layer->CcLayer(), FloatPoint(), IntSize());
   }
 
   // Collect the visual viewport scroll layer.
@@ -2641,7 +2641,7 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
     scroll_layer->CcLayer()->RemoveAllChildren();
     RecordForeignLayer(context, *scroll_layer,
                        DisplayItem::kForeignLayerWrapper,
-                       scroll_layer->CcLayer(), IntPoint(),
+                       scroll_layer->CcLayer(), FloatPoint(),
                        IntSize(scroll_layer->CcLayer()->bounds()));
   }
 }

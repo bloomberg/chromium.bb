@@ -603,7 +603,7 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
                          scrollbar_thickness;
 
   // Use the GraphicsLayer to position the scrollbars.
-  scrollbar_graphics_layer->SetPosition(IntPoint(x_position, y_position));
+  scrollbar_graphics_layer->SetPosition(FloatPoint(x_position, y_position));
   scrollbar_graphics_layer->SetSize(IntSize(width, height));
   scrollbar_graphics_layer->SetContentsRect(IntRect(0, 0, width, height));
 }

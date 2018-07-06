@@ -288,7 +288,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
       url_string = StringTruncator::CenterTruncate(
           url_string, image_size.Width() - (kDragLabelBorderX * 2.0f),
           url_font);
-    IntPoint text_pos(
+    FloatPoint text_pos(
         kDragLabelBorderX,
         image_size.Height() -
             (kLabelBorderYOffset + url_font_data->GetFontMetrics().Descent()));

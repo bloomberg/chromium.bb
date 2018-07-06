@@ -642,7 +642,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   web_view->SetPageScaleFactor(2);
 
-  IntPoint visual_offset(35, 60);
+  FloatPoint visual_offset(35, 60);
   web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
@@ -773,7 +773,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   // pinch-zoom).
   float page_scale = 2;
   web_view->SetPageScaleFactor(page_scale);
-  IntPoint visual_offset(35, 60);
+  FloatPoint visual_offset(35, 60);
   web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,

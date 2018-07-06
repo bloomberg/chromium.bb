@@ -50,8 +50,8 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
   InputType* file_input = FileInputType::Create(*input);
 
   DataObject* native_file_raw_drag_data = DataObject::Create();
-  const DragData native_file_drag_data(native_file_raw_drag_data, IntPoint(),
-                                       IntPoint(), kDragOperationCopy);
+  const DragData native_file_drag_data(native_file_raw_drag_data, FloatPoint(),
+                                       FloatPoint(), kDragOperationCopy);
   native_file_drag_data.PlatformData()->Add(File::Create("/native/path"));
   native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");
   file_input->ReceiveDroppedFiles(&native_file_drag_data);
@@ -61,7 +61,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
 
   DataObject* non_native_file_raw_drag_data = DataObject::Create();
   const DragData non_native_file_drag_data(non_native_file_raw_drag_data,
-                                           IntPoint(), IntPoint(),
+                                           FloatPoint(), FloatPoint(),
                                            kDragOperationCopy);
   FileMetadata metadata;
   metadata.length = 1234;

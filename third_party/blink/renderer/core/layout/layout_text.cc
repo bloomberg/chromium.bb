@@ -1452,7 +1452,7 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
 }
 
 FloatPoint LayoutText::FirstRunOrigin() const {
-  return IntPoint(FirstRunX(), FirstRunY());
+  return FloatPoint(FirstRunX(), FirstRunY());
 }
 
 float LayoutText::FirstRunX() const {

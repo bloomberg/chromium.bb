@@ -346,7 +346,7 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
   // scroll position because fullscreen container is fixed-positioned.
   // We should reset layer position here since we are going to reattach the
   // layer at the very top level.
-  video_layer->SetPosition(IntPoint());
+  video_layer->SetPosition(FloatPoint());
 
   // Only steal fullscreen video layer and clear all other layers if we are the
   // main frame.
