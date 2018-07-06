@@ -1338,8 +1338,8 @@ def generate_performance_test(tester_config, test):
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
-    'expiration': 10 * 60 * 60, # 10 hour timeout
-    'hard_timeout': 10 * 60 * 60, # 10 hours for full suite
+    'expiration': 6 * 60 * 60, # 6 hours timeout
+    'hard_timeout': 7 * 60 * 60, # 7 hours timeout for full suite
     'ignore_task_failure': False,
     'io_timeout': 30 * 60, # 30 minutes
     'dimension_sets': [
