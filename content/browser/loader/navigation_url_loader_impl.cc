@@ -40,6 +40,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
+#include "content/common/net/record_load_histograms.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
@@ -331,6 +332,18 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   ~URLLoaderRequestController() override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    // If neither OnCompleted nor OnReceivedResponse has been invoked, the
+    // request was canceled before receiving a response, so log a cancellation.
+    // Results after receiving a non-error response are logged in the renderer,
+    // if the request is passed to one. If it's a download, or not passed to a
+    // renderer for some other reason, results will not be logged for the
+    // request. The net::OK check may not be necessary - the case where OK is
+    // received without receiving any headers looks broken, anyways.
+    if (!received_response_ && (!status_ || status_->error_code != net::OK)) {
+      RecordLoadHistograms(url_, resource_request_->resource_type,
+                           status_ ? status_->error_code : net::ERR_ABORTED);
+    }
   }
 
   static uint32_t GetURLLoaderOptions(bool is_main_frame) {

@@ -417,7 +417,7 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
 void NetworkMetricsProvider::LogAggregatedMetrics() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::HistogramBase* error_codes = base::SparseHistogram::FactoryGet(
-      "Net.ErrorCodesForMainFrame3",
+      "Net.ErrorCodesForMainFrame4",
       base::HistogramBase::kUmaTargetedHistogramFlag);
   std::unique_ptr<base::HistogramSamples> samples =
       error_codes->SnapshotSamples();

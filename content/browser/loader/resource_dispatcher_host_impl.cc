@@ -625,22 +625,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
   // Record final result of all resource loads.
   if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
-    // This enumeration has "3" appended to its name to distinguish it from
-    // older versions.
-    base::UmaHistogramSparse("Net.ErrorCodesForMainFrame3",
-                             -loader->request()->status().error());
-
     if (loader->request()->url().SchemeIsCryptographic()) {
-      if (loader->request()->url().host_piece() == "www.google.com") {
-        base::UmaHistogramSparse("Net.ErrorCodesForHTTPSGoogleMainFrame2",
-                                 -loader->request()->status().error());
-      }
-
-      if (net::IsTLS13ExperimentHost(loader->request()->url().host_piece())) {
-        base::UmaHistogramSparse("Net.ErrorCodesForTLS13ExperimentMainFrame",
-                                 -loader->request()->status().error());
-      }
-
       int num_valid_scts = std::count_if(
           loader->request()->ssl_info().signed_certificate_timestamps.begin(),
           loader->request()->ssl_info().signed_certificate_timestamps.end(),
@@ -648,14 +633,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
       UMA_HISTOGRAM_COUNTS_100(
           "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
     }
-  } else {
-    if (info->GetResourceType() == RESOURCE_TYPE_IMAGE) {
-      base::UmaHistogramSparse("Net.ErrorCodesForImages",
-                               -loader->request()->status().error());
-    }
-    // This enumeration has "2" appended to distinguish it from older versions.
-    base::UmaHistogramSparse("Net.ErrorCodesForSubresources2",
-                             -loader->request()->status().error());
   }
 
   if (delegate_)

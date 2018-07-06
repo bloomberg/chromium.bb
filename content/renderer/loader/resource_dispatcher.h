@@ -28,6 +28,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -214,7 +215,10 @@ class CONTENT_EXPORT ResourceDispatcher {
         navigation_response_override;
     bool should_follow_redirect = true;
     bool always_access_network = false;
-    bool did_request_complete = false;
+    // Network error code the request completed with, or net::ERR_IO_PENDING if
+    // it's not completed. Used both to distinguish completion from
+    // cancellation, and to log histograms.
+    int net_error = net::ERR_IO_PENDING;
 
     std::vector<content::mojom::RedirectInfoPtr> redirect_info_chain;
 
