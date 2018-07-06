@@ -75,11 +75,6 @@ class SurfaceManager;
 // the event of missing dependencies at display time.
 class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
  public:
-  using AggregatedDamageCallback =
-      base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
-                                   const CompositorFrame& frame,
-                                   const gfx::Rect& damage_rect,
-                                   base::TimeTicks expected_display_time)>;
   using PresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
 
@@ -129,19 +124,12 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
-  // |draw_callback| is called once to notify the client that the previously
-  // submitted CompositorFrame is processed and that another frame can be
-  // there is visible damage.
-  // |aggregated_damage_callback| is called when |surface| or one of its
-  // descendents is determined to be damaged at aggregation time.
   // |presented_callback| is called when the |frame| has been turned into light
   // the first time on display, or if the |frame| is replaced by another prior
   // to display.
   bool QueueFrame(CompositorFrame frame,
                   uint64_t frame_index,
                   base::ScopedClosureRunner frame_rejected_callback,
-                  base::OnceClosure draw_callback,
-                  const AggregatedDamageCallback& aggregated_damage_callback,
                   PresentedCallback presented_callback);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
@@ -211,7 +199,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool HasActiveFrame() const { return active_frame_data_.has_value(); }
   bool HasPendingFrame() const { return pending_frame_data_.has_value(); }
   bool HasUndrawnActiveFrame() const {
-    return HasActiveFrame() && active_frame_data_->draw_callback;
+    return HasActiveFrame() && !active_frame_data_->frame_processed;
   }
 
   // SurfaceDeadlineClient implementation:
@@ -229,16 +217,16 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   struct FrameData {
     FrameData(CompositorFrame&& frame,
               uint64_t frame_index,
-              base::OnceClosure draw_callback,
-              const AggregatedDamageCallback& aggregated_damage_callback,
               PresentedCallback presented_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
+
     CompositorFrame frame;
     uint64_t frame_index;
-    base::OnceClosure draw_callback;
-    AggregatedDamageCallback aggregated_damage_callback;
+    // Whether the frame has been processed (displayed, or discarded), or not.
+    bool frame_processed = false;
+    // TODO(sad): This callback would ideally become part of SurfaceClient API.
     PresentedCallback presented_callback;
   };
 

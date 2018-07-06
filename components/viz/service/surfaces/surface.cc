@@ -135,8 +135,6 @@ bool Surface::QueueFrame(
     CompositorFrame frame,
     uint64_t frame_index,
     base::ScopedClosureRunner frame_rejected_callback,
-    base::OnceClosure callback,
-    const AggregatedDamageCallback& aggregated_damage_callback,
     PresentedCallback presented_callback) {
   late_activation_dependencies_.clear();
 
@@ -169,13 +167,11 @@ bool Surface::QueueFrame(
       (deadline_ && !deadline.deadline_in_frames())) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(
-        FrameData(std::move(frame), frame_index, std::move(callback),
-                  aggregated_damage_callback, std::move(presented_callback)),
+        FrameData(std::move(frame), frame_index, std::move(presented_callback)),
         base::nullopt);
   } else {
     pending_frame_data_ =
-        FrameData(std::move(frame), frame_index, std::move(callback),
-                  aggregated_damage_callback, std::move(presented_callback));
+        FrameData(std::move(frame), frame_index, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
     // If the deadline is in the past, then we will activate immediately.
@@ -265,16 +261,12 @@ void Surface::ActivatePendingFrameForDeadline(
   ActivatePendingFrame(duration);
 }
 
-Surface::FrameData::FrameData(
-    CompositorFrame&& frame,
-    uint64_t frame_index,
-    base::OnceClosure draw_callback,
-    const AggregatedDamageCallback& aggregated_damage_callback,
-    PresentedCallback presented_callback)
+Surface::FrameData::FrameData(CompositorFrame&& frame,
+                              uint64_t frame_index,
+                              PresentedCallback presented_callback)
     : frame(std::move(frame)),
       frame_index(frame_index),
-      draw_callback(std::move(draw_callback)),
-      aggregated_damage_callback(aggregated_damage_callback),
+      frame_processed(false),
       presented_callback(std::move(presented_callback)) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
@@ -498,19 +490,20 @@ bool Surface::TakePresentedCallback(PresentedCallback* callback) {
 }
 
 void Surface::RunDrawCallback() {
-  if (active_frame_data_ && !active_frame_data_->draw_callback.is_null())
-    std::move(active_frame_data_->draw_callback).Run();
+  if (!active_frame_data_ || active_frame_data_->frame_processed)
+    return;
+  active_frame_data_->frame_processed = true;
+  if (surface_client_)
+    surface_client_->OnSurfaceProcessed(this);
 }
 
 void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
                                      base::TimeTicks expected_display_time) {
-  if (!active_frame_data_ ||
-      active_frame_data_->aggregated_damage_callback.is_null())
+  if (!active_frame_data_ || !surface_client_)
     return;
-
-  active_frame_data_->aggregated_damage_callback.Run(
-      surface_id().local_surface_id(), active_frame_data_->frame, damage_rect,
-      expected_display_time);
+  surface_client_->OnSurfaceAggregatedDamage(
+      this, surface_id().local_surface_id(), active_frame_data_->frame,
+      damage_rect, expected_display_time);
 }
 
 void Surface::OnDeadline(base::TimeDelta duration) {
@@ -531,8 +524,8 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
     resource.sync_token.Clear();
   surface_client_->UnrefResources(resources);
 
-  if (frame_data->draw_callback)
-    std::move(frame_data->draw_callback).Run();
+  if (!frame_data->frame_processed)
+    surface_client_->OnSurfaceProcessed(this);
 
   if (frame_data->presented_callback) {
     std::move(frame_data->presented_callback)
