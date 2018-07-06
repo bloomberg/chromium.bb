@@ -47,7 +47,7 @@ void AppLoadService::Shutdown() {
 
 void AppLoadService::RestartApplication(const std::string& extension_id) {
   post_reload_actions_[extension_id].action_type = RESTART;
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(context_)->extension_service();
   DCHECK(service);
   service->ReloadExtension(extension_id);
@@ -62,7 +62,7 @@ void AppLoadService::RestartApplicationIfRunning(
 bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
                                    const base::CommandLine& command_line,
                                    const base::FilePath& current_dir) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       ExtensionSystem::Get(context_)->extension_service();
   std::string extension_id;
   if (!extensions::UnpackedInstaller::Create(extension_service)
@@ -80,7 +80,7 @@ bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
 }
 
 bool AppLoadService::Load(const base::FilePath& extension_path) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       ExtensionSystem::Get(context_)->extension_service();
   std::string extension_id;
   return extensions::UnpackedInstaller::Create(extension_service)

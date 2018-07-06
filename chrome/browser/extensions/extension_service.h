@@ -734,9 +734,4 @@ class ExtensionService : public ExtensionServiceInterface,
 
 }  // namespace extensions
 
-// TODO(devlin): Remove these once all references are updated.
-// https://crbug.com/117261
-using extensions::ExtensionService;
-using extensions::ExtensionServiceInterface;
-
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_

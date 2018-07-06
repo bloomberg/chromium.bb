@@ -66,8 +66,9 @@ class NaClExtensionTest : public extensions::ExtensionBrowserTest {
 
   const Extension* InstallExtension(const base::FilePath& file_path,
                                     InstallType install_type) {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+    extensions::ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service();
     const Extension* extension = NULL;
     switch (install_type) {
       case INSTALL_TYPE_COMPONENT:

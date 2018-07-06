@@ -216,7 +216,7 @@ void ReplaceWebAppIcons(
 class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
                              public content::WebContentsObserver {
  public:
-  BookmarkAppInstaller(ExtensionService* service,
+  BookmarkAppInstaller(extensions::ExtensionService* service,
                        const WebApplicationInfo& web_app_info)
       : service_(service), web_app_info_(web_app_info) {}
 
@@ -321,7 +321,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
     installer->InstallWebApp(web_app_info_);
   }
 
-  ExtensionService* service_;
+  extensions::ExtensionService* service_;
   WebApplicationInfo web_app_info_;
 
   std::unique_ptr<content::WebContents> web_contents_;
@@ -848,7 +848,7 @@ void BookmarkAppHelper::Observe(int type,
   }
 }
 
-void CreateOrUpdateBookmarkApp(ExtensionService* service,
+void CreateOrUpdateBookmarkApp(extensions::ExtensionService* service,
                                WebApplicationInfo* web_app_info) {
   scoped_refptr<BookmarkAppInstaller> installer(
       new BookmarkAppInstaller(service, *web_app_info));
