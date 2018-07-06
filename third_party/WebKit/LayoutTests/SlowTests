@@ -392,3 +392,8 @@ crbug.com/853977 [ Linux ] http/tests/fetch/chromium/call-extra-crash-tee.html [
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
 crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
 crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
+
+# This test checks multiple types of sensors and performs a lot of asynchronous
+# calls and waits for events in each of them. Even on a release Linux build it
+# can take almost 6 seconds to run, and it often times out on the Mac bots.
+crbug.com/833215 external/wpt/accelerometer/Accelerometer.https.html [ Slow ]
