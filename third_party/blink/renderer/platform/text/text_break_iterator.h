@@ -363,6 +363,14 @@ PLATFORM_EXPORT unsigned NumGraphemeClusters(const String&);
 // Returns the number of code units that the next grapheme cluster is made of.
 PLATFORM_EXPORT unsigned LengthOfGraphemeCluster(const String&, unsigned = 0);
 
+// Returns a list of graphemes cluster at each character using character break
+// rules.
+PLATFORM_EXPORT void GraphemesClusterList(const UChar* text,
+                                          unsigned text_length,
+                                          unsigned start,
+                                          unsigned length,
+                                          Vector<unsigned>* graphemes);
+
 }  // namespace blink
 
 #endif

@@ -71,6 +71,15 @@ class TextBreakIteratorTest : public testing::Test {
     return LengthOfGraphemeCluster(test_string_);
   }
 
+  Vector<unsigned> GraphemesClusterList(String input,
+                                        unsigned start,
+                                        unsigned length) {
+    Vector<unsigned> result;
+    ::blink::GraphemesClusterList(input.Characters16(), input.length(), start,
+                                  length, &result);
+    return result;
+  }
+
  private:
   String test_string_;
 };
@@ -266,6 +275,23 @@ TEST_F(TextBreakIteratorTest, LengthOfGraphemeCluster) {
 
   SetTestString16({'g', 0x308, 'b', 'c'});
   EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+}
+
+TEST_F(TextBreakIteratorTest, GraphemesClusterListTest) {
+  EXPECT_EQ(GraphemesClusterList(u"hello", 0, 5),
+            Vector<unsigned>({0, 1, 2, 3, 4}));
+  EXPECT_EQ(GraphemesClusterList(u"hello", 2, 2), Vector<unsigned>({0, 1}));
+  EXPECT_EQ(GraphemesClusterList(u"voila\u0300!", 0, 7),
+            Vector<unsigned>({0, 1, 2, 3, 4, 4, 5}));
+  EXPECT_EQ(GraphemesClusterList(u"di\u0303\u031c\u0337!", 0, 6),
+            Vector<unsigned>({0, 1, 1, 1, 1, 2}));
+  EXPECT_EQ(GraphemesClusterList(u"🇨🇦", 0, 4), Vector<unsigned>({0, 0, 0, 0}));
+
+  EXPECT_EQ(GraphemesClusterList(u"🏳️‍🌈", 0, 6),
+            Vector<unsigned>({0, 0, 0, 0, 0, 0}));
+  // NO ZWJ on this sequence.
+  EXPECT_EQ(GraphemesClusterList(u"🏳🌈", 0, 4),
+            Vector<unsigned>({0, 0, 1, 1}));
 }
 
 }  // namespace blink
