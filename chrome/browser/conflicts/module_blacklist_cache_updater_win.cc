@@ -44,6 +44,15 @@ static constexpr size_t kMaxModuleCount = 5000u;
 // deleted.
 static constexpr base::TimeDelta kMaxEntryAge = base::TimeDelta::FromDays(180);
 
+// This enum is used for UMA. Therefore, the values should never change.
+enum class BlacklistStatus {
+  // A module was marked as blacklisted during the current browser execution.
+  kNewlyBlacklisted = 0,
+  // A module was blocked when it tried to load into the process.
+  kBlocked = 1,
+  kMaxValue = kBlocked,
+};
+
 // Updates the module blacklist cache asynchronously on a background sequence
 // and return a CacheUpdateResult value.
 ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
@@ -55,6 +64,17 @@ ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
     size_t max_module_count,
     uint32_t min_time_date_stamp) {
   DCHECK(module_list_filter);
+
+  // Emit some UMA metrics about the update.
+  for (size_t i = 0; i < newly_blacklisted_modules.size(); ++i) {
+    UMA_HISTOGRAM_ENUMERATION("ModuleBlacklistCache.BlacklistStatus",
+                              BlacklistStatus::kNewlyBlacklisted);
+  }
+  for (size_t i = 0; i < blocked_modules.size(); ++i) {
+    UMA_HISTOGRAM_ENUMERATION("ModuleBlacklistCache.BlacklistStatus",
+                              BlacklistStatus::kBlocked);
+  }
+
   ModuleBlacklistCacheUpdater::CacheUpdateResult result;
 
   // Read the existing cache.

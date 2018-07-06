@@ -31424,6 +31424,11 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Invalid MD5 digest"/>
 </enum>
 
+<enum name="ModuleBlacklistStatus">
+  <int value="0" label="Newly blacklisted"/>
+  <int value="1" label="Blocked"/>
+</enum>
+
 <enum name="ModuleIndex">
   <int value="0" label="chrome.dll"/>
   <int value="1" label="chrome_elf.dll"/>
