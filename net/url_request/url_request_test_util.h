@@ -159,7 +159,7 @@ class TestDelegate : public URLRequest::Delegate {
   // Sets the closure to be run on completion, for tests which need more fine-
   // grained control than RunUntilComplete().
   void set_on_complete(base::OnceClosure on_complete) {
-    legacy_on_complete_.Reset();
+    use_legacy_on_complete_ = false;
     on_complete_ = std::move(on_complete);
   }
 
@@ -229,10 +229,9 @@ class TestDelegate : public URLRequest::Delegate {
   bool allow_certificate_errors_ = false;
   AuthCredentials credentials_;
 
-  // Holds the legacy on-complete behaviour, or is null if one or more of the
-  // Until*() APIs has been used. This holds QuitCurrentWhenIdleDeprecated() by
-  // default, unless one of the Until*() APIs is used.
-  base::RepeatingClosure legacy_on_complete_;
+  // True if legacy on-complete behaviour, using QuitCurrent*Deprecated(), is
+  // enabled. This is cleared if any of the Until*() APIs are used.
+  bool use_legacy_on_complete_ = true;
 
   // Used to register RunLoop quit closures, to implement the Until*() closures.
   base::OnceClosure on_complete_;

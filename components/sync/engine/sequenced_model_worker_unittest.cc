@@ -45,7 +45,7 @@ class SequencedModelWorkerTest : public testing::Test {
   SyncerError DoWork() {
     EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
     scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        FROM_HERE, run_loop_.QuitClosure());
     did_do_work_ = true;
     return SYNCER_OK;
   }
@@ -56,7 +56,7 @@ class SequencedModelWorkerTest : public testing::Test {
     ADD_FAILURE()
         << "Timed out waiting for work to be done on the DB sequence.";
     scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        FROM_HERE, run_loop_.QuitClosure());
   }
 
  protected:
@@ -73,6 +73,10 @@ class SequencedModelWorkerTest : public testing::Test {
   scoped_refptr<SequencedModelWorker> worker_;
   base::OneShotTimer timer_;
 
+ protected:
+  base::RunLoop run_loop_;
+
+ private:
   base::WeakPtrFactory<SequencedModelWorkerTest> weak_factory_;
 };
 
@@ -80,7 +84,7 @@ TEST_F(SequencedModelWorkerTest, DoesWorkOnDatabaseSequence) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SequencedModelWorkerTest::ScheduleWork,
                             factory()->GetWeakPtr()));
-  base::RunLoop().Run();
+  run_loop_.Run();
   EXPECT_TRUE(did_do_work());
 }
 

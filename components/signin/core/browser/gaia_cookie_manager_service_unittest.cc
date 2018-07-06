@@ -254,11 +254,12 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   helper.AddAccountToCookie("acc1@gmail.com", GaiaConstants::kChromeSource);
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
+  base::RunLoop run_loop;
   // Transient error incurs a retry after 1 second.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::RunLoop().Run();
+  run_loop.Run();
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
 }
@@ -279,19 +280,25 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   // Transient error incurs a retry after 1 second.
   EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromMilliseconds(1100));
-  base::RunLoop().Run();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(1100));
+    run_loop.Run();
+  }
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Next transient error incurs a retry after 3 seconds.
   EXPECT_LT(helper.GetBackoffEntry()->GetTimeUntilRelease(),
       base::TimeDelta::FromMilliseconds(3100));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromMilliseconds(3100));
-  base::RunLoop().Run();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(3100));
+    run_loop.Run();
+  }
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
   histograms.ExpectUniqueSample("OAuth2Login.MergeSessionRetry",
