@@ -31,6 +31,10 @@ class LocalSiteCharacteristicsDataWriter
   void NotifyUsesAudioInBackground() override;
   void NotifyUsesNotificationsInBackground() override;
 
+  internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
+    return impl_.get();
+  }
+
  private:
   friend class LocalSiteCharacteristicsDataWriterTest;
   friend class LocalSiteCharacteristicsDataStoreTest;

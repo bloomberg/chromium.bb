@@ -12,4 +12,9 @@ std::string SerializeOriginIntoDatabaseKey(const url::Origin& origin) {
   return base::MD5String(origin.host());
 }
 
+bool URLShouldBeStoredInLocalDatabase(const GURL& url) {
+  // Only store information for the HTTP(S) sites for now.
+  return url.SchemeIsHTTPOrHTTPS();
+}
+
 }  // namespace resource_coordinator

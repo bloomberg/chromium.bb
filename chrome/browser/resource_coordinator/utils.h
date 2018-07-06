@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace resource_coordinator {
@@ -14,6 +15,10 @@ namespace resource_coordinator {
 // Serialize an Origin into the representation used by the different databases
 // that need it.
 std::string SerializeOriginIntoDatabaseKey(const url::Origin& origin);
+
+// Indicates if |url| should have an entry in the local site characteristics
+// database.
+bool URLShouldBeStoredInLocalDatabase(const GURL& url);
 
 }  // namespace resource_coordinator
 

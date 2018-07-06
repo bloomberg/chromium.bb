@@ -113,6 +113,12 @@ class LocalSiteCharacteristicsDataImpl
 
   const url::Origin& origin() const { return origin_; }
 
+  void ExpireAllObservationWindowsForTesting();
+
+  void ClearObservationsAndInvalidateReadOperationForTesting() {
+    ClearObservationsAndInvalidateReadOperation();
+  }
+
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class LocalSiteCharacteristicsDataImplTest;

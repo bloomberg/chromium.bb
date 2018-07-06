@@ -5,11 +5,10 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
@@ -75,22 +74,13 @@ std::unique_ptr<KeyedService> BuildMockDataStoreForContext(
 }
 
 class LocalSiteCharacteristicsWebContentsObserverTest
-    : public ChromeRenderViewHostTestHarness {
+    : public testing::ChromeTestHarnessWithLocalDB {
  protected:
-  LocalSiteCharacteristicsWebContentsObserverTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
-  }
+  LocalSiteCharacteristicsWebContentsObserverTest() = default;
   ~LocalSiteCharacteristicsWebContentsObserverTest() override = default;
 
   void SetUp() override {
-    // Enable the LocalSiteCharacteristicsDataStoreFactory before calling
-    // ChromeRenderViewHostTestHarness::SetUp(), this will prevent the creation
-    // of a non-mock version of a data store when browser_context() gets
-    // initialized.
-    LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
-
-    ChromeRenderViewHostTestHarness::SetUp();
+    testing::ChromeTestHarnessWithLocalDB::SetUp();
 
     // Set the testing factory for the test browser context.
     LocalSiteCharacteristicsDataStoreFactory::GetInstance()->SetTestingFactory(
@@ -107,7 +97,7 @@ class LocalSiteCharacteristicsWebContentsObserverTest
     TabLoadTracker::Get()->StopTracking(web_contents());
     DeleteContents();
     observer_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
+    testing::ChromeTestHarnessWithLocalDB::TearDown();
   }
 
   MockDataWriter* NavigateAndReturnMockWriter(const GURL& url) {
@@ -127,8 +117,6 @@ class LocalSiteCharacteristicsWebContentsObserverTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsWebContentsObserverTest);
 };

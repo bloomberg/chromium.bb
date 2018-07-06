@@ -25,6 +25,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/variations/variations_associated_data.h"
@@ -112,7 +113,7 @@ enum TestIndicies {
 
 }  // namespace
 
-class TabManagerTest : public ChromeRenderViewHostTestHarness {
+class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
  public:
   TabManagerTest()
       : scoped_context_(
@@ -124,14 +125,22 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<WebContents> CreateWebContents() {
     std::unique_ptr<WebContents> web_contents = CreateTestWebContents();
+    ResourceCoordinatorTabHelper::CreateForWebContents(web_contents.get());
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
         ->NavigateAndCommit(GURL("https://www.example.com"));
+
+    base::RepeatingClosure run_loop_cb = base::BindRepeating(
+       &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
+
+    testing::WaitForLocalDBEntryToBeInitialized(web_contents.get(),
+                                                run_loop_cb);
+    testing::ExpireLocalDBObservationWindows(web_contents.get());
     return web_contents;
   }
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
+    ChromeTestHarnessWithLocalDB::SetUp();
     tab_manager_ = g_browser_process->GetTabManager();
   }
 
@@ -146,7 +155,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     throttle3_.reset();
 
     // WebContents must be deleted before
-    // ChromeRenderViewHostTestHarness::TearDown() deletes the
+    // ChromeTestHarnessWithLocalDB::TearDown() deletes the
     // RenderProcessHost.
     contents1_.reset();
     contents2_.reset();
@@ -158,7 +167,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
 
     task_runner_->RunUntilIdle();
     scoped_context_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
+    ChromeTestHarnessWithLocalDB::TearDown();
   }
 
   void PrepareTabs(const char* url1 = kTestUrl,
