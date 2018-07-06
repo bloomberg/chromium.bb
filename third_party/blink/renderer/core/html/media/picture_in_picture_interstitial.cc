@@ -14,8 +14,10 @@
 
 namespace {
 
-constexpr double kPictureInPictureStyleChangeTransSeconds = 0.2;
-constexpr double kPictureInPictureHiddenAnimationSeconds = 0.3;
+constexpr TimeDelta kPictureInPictureStyleChangeTransitionDuration =
+    TimeDelta::FromMilliseconds(200);
+constexpr TimeDelta kPictureInPictureHiddenAnimationSeconds =
+    TimeDelta::FromMilliseconds(300);
 
 }  // namespace
 
@@ -54,8 +56,8 @@ void PictureInPictureInterstitial::Show() {
     interstitial_timer_.Stop();
   should_be_visible_ = true;
   RemoveInlineStyleProperty(CSSPropertyDisplay);
-  interstitial_timer_.StartOneShot(kPictureInPictureStyleChangeTransSeconds,
-                                   FROM_HERE);
+  interstitial_timer_.StartOneShot(
+      kPictureInPictureStyleChangeTransitionDuration, FROM_HERE);
 
   DCHECK(GetVideoElement().CcLayer());
   GetVideoElement().CcLayer()->SetIsDrawable(false);
