@@ -9117,7 +9117,7 @@ interface XRCoordinateSystem
     attribute @@toStringTag
     method constructor
     method getTransformTo
-interface XRDevice : EventTarget
+interface XRDevice
     attribute @@toStringTag
     method constructor
     method requestSession

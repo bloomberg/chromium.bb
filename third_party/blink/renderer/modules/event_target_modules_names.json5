@@ -54,7 +54,6 @@
     "modules/webmidi/MIDIInput",
     "modules/webmidi/MIDIPort",
     "modules/xr/XR",
-    "modules/xr/XRDevice",
     "modules/xr/XRSession",
     {
       name: "modules/websockets/WebSocket",

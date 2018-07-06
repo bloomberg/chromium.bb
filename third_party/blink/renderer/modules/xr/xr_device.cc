@@ -51,14 +51,6 @@ XRDevice::XRDevice(
   SetXRDisplayInfo(std::move(display_info));
 }
 
-ExecutionContext* XRDevice::GetExecutionContext() const {
-  return xr_->GetExecutionContext();
-}
-
-const AtomicString& XRDevice::InterfaceName() const {
-  return EventTargetNames::XRDevice;
-}
-
 const char* XRDevice::checkSessionSupport(
     const XRSessionCreationOptions& options) const {
   if (!options.exclusive()) {
@@ -311,7 +303,7 @@ void XRDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
-  EventTargetWithInlineData::Trace(visitor);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

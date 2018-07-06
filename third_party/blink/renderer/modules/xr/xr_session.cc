@@ -96,7 +96,7 @@ XRSession::XRSession(XRDevice* device,
     : device_(device),
       exclusive_(exclusive),
       output_context_(output_context),
-      callback_collection_(device->GetExecutionContext()) {
+      callback_collection_(device->xr()->GetExecutionContext()) {
   blurred_ = !HasAppropriateFocus();
 
   // When an output context is provided, monitor it for resize events.
@@ -167,7 +167,7 @@ void XRSession::SetNonExclusiveProjectionMatrix(
 }
 
 ExecutionContext* XRSession::GetExecutionContext() const {
-  return device_->GetExecutionContext();
+  return device_->xr()->GetExecutionContext();
 }
 
 const AtomicString& XRSession::InterfaceName() const {

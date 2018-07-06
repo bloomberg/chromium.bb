@@ -9,8 +9,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -22,7 +22,7 @@ class XR;
 class XRFrameProvider;
 class XRSession;
 
-class XRDevice final : public EventTargetWithInlineData,
+class XRDevice final : public ScriptWrappable,
                        public device::mojom::blink::VRDisplayClient {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -38,11 +38,6 @@ class XRDevice final : public EventTargetWithInlineData,
 
   ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions&);
   ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions&);
-
-  // EventTarget overrides.
-  ExecutionContext* GetExecutionContext() const override;
-  const AtomicString& InterfaceName() const override;
-  void Trace(blink::Visitor*) override;
 
   // XRDisplayClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -81,6 +76,8 @@ class XRDevice final : public EventTargetWithInlineData,
   bool SupportsExclusive() { return supports_exclusive_; }
 
   int64_t GetSourceId() const;
+
+  void Trace(blink::Visitor*) override;
 
  private:
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr);
