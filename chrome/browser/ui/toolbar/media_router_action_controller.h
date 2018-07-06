@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class ComponentActionDelegate;
@@ -18,7 +20,8 @@ class ComponentActionDelegate;
 // action icon on the toolbar. There should be one instance of this class per
 // profile, and it should only be used on the UI thread.
 class MediaRouterActionController : public media_router::IssuesObserver,
-                                    public media_router::MediaRoutesObserver {
+                                    public media_router::MediaRoutesObserver,
+                                    public MediaRouterContextualMenu::Observer {
  public:
   explicit MediaRouterActionController(Profile* profile);
   // Constructor for injecting dependencies in tests.
@@ -49,6 +52,10 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   // visibility of the action icon. Overridden in tests.
   virtual void OnDialogShown();
   virtual void OnDialogHidden();
+
+  // MediaRouterContextualMenu::Observer:
+  void OnContextMenuShown() override;
+  void OnContextMenuHidden() override;
 
  private:
   friend class MediaRouterActionControllerUnitTest;
@@ -83,7 +90,13 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   // The number of dialogs that are currently open.
   size_t dialog_count_ = 0;
 
+  // Whether the Cast toolbar icon is showing a context menu. The toolbar icon
+  // should not be hidden while a context menu is shown.
+  bool context_menu_shown_ = false;
+
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::WeakPtrFactory<MediaRouterActionController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterActionController);
 };

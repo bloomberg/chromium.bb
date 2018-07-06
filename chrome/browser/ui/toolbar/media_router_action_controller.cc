@@ -79,6 +79,22 @@ void MediaRouterActionController::OnDialogHidden() {
   DCHECK_GT(dialog_count_, 0u);
   if (dialog_count_)
     dialog_count_--;
+  // Call MaybeAddOrRemoveAction() asynchronously, so that the action icon
+  // doesn't get hidden until we have a chance to show a context menu.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&MediaRouterActionController::MaybeAddOrRemoveAction,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void MediaRouterActionController::OnContextMenuShown() {
+  DCHECK(!context_menu_shown_);
+  context_menu_shown_ = true;
+}
+
+void MediaRouterActionController::OnContextMenuHidden() {
+  DCHECK(context_menu_shown_);
+  context_menu_shown_ = false;
   MaybeAddOrRemoveAction();
 }
 
@@ -91,7 +107,8 @@ MediaRouterActionController::MediaRouterActionController(
       profile_(profile),
       component_action_delegate_(component_action_delegate),
       shown_by_policy_(
-          MediaRouterActionController::IsActionShownByPolicy(profile)) {
+          MediaRouterActionController::IsActionShownByPolicy(profile)),
+      weak_factory_(this) {
   CHECK(profile_);
   media_router::IssuesObserver::Init();
   pref_change_registrar_.Init(profile->GetPrefs());
@@ -117,5 +134,6 @@ void MediaRouterActionController::MaybeAddOrRemoveAction() {
 
 bool MediaRouterActionController::ShouldEnableAction() const {
   return shown_by_policy_ || has_local_display_route_ || has_issue_ ||
-         dialog_count_ || GetAlwaysShowActionPref(profile_);
+         dialog_count_ || context_menu_shown_ ||
+         GetAlwaysShowActionPref(profile_);
 }

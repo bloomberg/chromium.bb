@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/run_loop.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/toolbar/component_action_delegate.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
@@ -81,6 +82,7 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
   }
 
   bool ActionExists() {
+    base::RunLoop().RunUntilIdle();
     return component_action_delegate_->HasComponentAction(
         ComponentToolbarActionsFactory::kMediaRouterActionId);
   }
@@ -192,6 +194,22 @@ TEST_F(MediaRouterActionControllerUnitTest, EphemeralIconForDialog) {
   controller()->OnDialogHidden();
   EXPECT_TRUE(ActionExists());
   controller()->OnIssuesCleared();
+  EXPECT_FALSE(ActionExists());
+}
+
+TEST_F(MediaRouterActionControllerUnitTest, EphemeralIconForContextMenu) {
+  EXPECT_FALSE(ActionExists());
+
+  controller()->OnDialogShown();
+  EXPECT_TRUE(ActionExists());
+  controller()->OnDialogHidden();
+  controller()->OnContextMenuShown();
+  // Hiding the dialog immediately before showing a context menu shouldn't hide
+  // the icon.
+  EXPECT_TRUE(ActionExists());
+
+  // Hiding the context menu should hide the icon.
+  controller()->OnContextMenuHidden();
   EXPECT_FALSE(ActionExists());
 }
 

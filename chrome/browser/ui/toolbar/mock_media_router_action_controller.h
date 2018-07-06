@@ -20,6 +20,8 @@ class MockMediaRouterActionController : public MediaRouterActionController {
                         joinable_route_ids));
   MOCK_METHOD0(OnDialogShown, void());
   MOCK_METHOD0(OnDialogHidden, void());
+  MOCK_METHOD0(OnContextMenuShown, void());
+  MOCK_METHOD0(OnContextMenuHidden, void());
   MOCK_METHOD0(MaybeAddOrRemoveAction, void());
 
  private:

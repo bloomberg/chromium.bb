@@ -14,18 +14,29 @@ class Browser;
 // The class for the contextual menu for the Media Router action.
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
  public:
+  class Observer {
+   public:
+    virtual void OnContextMenuShown() = 0;
+    virtual void OnContextMenuHidden() = 0;
+  };
+
   // Creates an instance for a Media Router Action shown in the toolbar.
+  // |observer| must outlive the context menu.
   static std::unique_ptr<MediaRouterContextualMenu> CreateForToolbar(
-      Browser* browser);
+      Browser* browser,
+      Observer* observer);
 
   // Creates an instance for a Media Router Action shown in the overflow menu.
+  // |observer| must outlive the context menu.
   static std::unique_ptr<MediaRouterContextualMenu> CreateForOverflowMenu(
-      Browser* browser);
+      Browser* browser,
+      Observer* observer);
 
   // Constructor called by the static Create* methods above and tests.
   MediaRouterContextualMenu(Browser* browser,
                             bool is_action_in_toolbar,
-                            bool shown_by_policy);
+                            bool shown_by_policy,
+                            Observer* observer);
   ~MediaRouterContextualMenu() override;
 
   ui::SimpleMenuModel* menu_model() { return &menu_model_; }
@@ -62,6 +73,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   // visibility of the action (e.g. "Hide in Chrome menu" / "Show in toolbar")
   // depending on the location of the action.
   int GetChangeVisibilityTextId();
+
+  Observer* const observer_;
 
   Browser* const browser_;
   ui::SimpleMenuModel menu_model_;
