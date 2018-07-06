@@ -391,6 +391,12 @@ const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
 
+const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateName[] =
+    "Show unlabeled expiration dates on the save card dialog";
+const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription[] =
+    "If enabled, expiration dates on the save card dialog (both local and "
+    "upstream) are shown without an 'Exp:' label.";
+
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
     "Send experiment flag IDs in calls to Google Payments";
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =

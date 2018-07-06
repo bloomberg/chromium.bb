@@ -2956,6 +2956,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(autofill::kAutofillExpandedPopupViews)},
+    {"enable-autofill-save-card-dialog-unlabeled-expiration-date",
+     flag_descriptions::
+         kEnableAutofillSaveCardDialogUnlabeledExpirationDateName,
+     flag_descriptions::
+         kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::kAutofillSaveCardDialogUnlabeledExpirationDate)},
     {"enable-autofill-send-experiment-ids-in-payments-rpcs",
      flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
      flag_descriptions::
