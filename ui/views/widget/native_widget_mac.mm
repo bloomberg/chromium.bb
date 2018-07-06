@@ -700,12 +700,6 @@ void Widget::CloseAllSecondaryWidgets() {
   }
 }
 
-bool Widget::ConvertRect(const Widget* source,
-                         const Widget* target,
-                         gfx::Rect* rect) {
-  return false;
-}
-
 const ui::NativeTheme* Widget::GetNativeTheme() const {
   return ui::NativeTheme::GetInstanceForNativeUi();
 }

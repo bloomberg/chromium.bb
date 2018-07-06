@@ -1066,12 +1066,6 @@ void Widget::CloseAllSecondaryWidgets() {
 #endif
 }
 
-bool Widget::ConvertRect(const Widget* source,
-                         const Widget* target,
-                         gfx::Rect* rect) {
-  return false;
-}
-
 const ui::NativeTheme* Widget::GetNativeTheme() const {
 #if defined(USE_X11)
   const LinuxUI* linux_ui = LinuxUI::instance();
