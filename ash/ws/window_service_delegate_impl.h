@@ -40,6 +40,7 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
   void UpdateImeVisibility(aura::Window* window,
                            bool visible,
                            ui::mojom::TextInputStatePtr state) override;
+  void SetModalType(aura::Window* window, ui::ModalType type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowServiceDelegateImpl);

@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_utils.h"
@@ -181,6 +182,19 @@ void WindowServiceDelegateImpl::UpdateImeVisibility(
 
   RootWindowController::ForWindow(window)->ash_host()->UpdateImeVisibility(
       visible, std::move(state));
+}
+
+void WindowServiceDelegateImpl::SetModalType(aura::Window* window,
+                                             ui::ModalType type) {
+  const ui::ModalType old_type = window->GetProperty(aura::client::kModalKey);
+  if (old_type == type)
+    return;
+
+  window->SetProperty(aura::client::kModalKey, type);
+
+  // Reparent the window if it will become, or will no longer be, system modal.
+  if (type == ui::MODAL_TYPE_SYSTEM || old_type == ui::MODAL_TYPE_SYSTEM)
+    wm::GetDefaultParent(window, window->GetBoundsInScreen())->AddChild(window);
 }
 
 }  // namespace ash

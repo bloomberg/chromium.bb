@@ -19,6 +19,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/window_modality_controller.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(ui::ws2::ServerWindow*);
 
@@ -185,6 +186,8 @@ class ServerWindowEventHandler : public ui::EventHandler {
       // window() is the the target.
       return true;
     }
+    if (wm::GetModalTransient(window()))
+      return true;  // Do not send events to clients blocked by a modal window.
     return ShouldIgnoreEventType(event.type());
   }
 
