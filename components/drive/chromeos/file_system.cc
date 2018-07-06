@@ -294,7 +294,6 @@ FileSystem::FileSystem(EventLogger* logger,
       cache_(cache),
       scheduler_(scheduler),
       resource_metadata_(resource_metadata),
-      last_update_check_error_(FILE_ERROR_OK),
       blocking_task_runner_(blocking_task_runner),
       temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
@@ -403,18 +402,17 @@ void FileSystem::CheckForUpdates() {
 void FileSystem::OnUpdateChecked(const std::string& team_drive_id,
                                  const base::RepeatingClosure& closure,
                                  FileError error) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "CheckForUpdates finished: " << FileErrorToString(error);
-  // TODO(slangley): Store the error reasons for team drives and show them on
-  // chrome://drive-internals.
-  if (team_drive_id.empty()) {
-    last_update_check_error_ = error;
-  }
+
+  last_update_metadata_[team_drive_id].last_update_check_error = error;
+  last_update_metadata_[team_drive_id].last_update_check_time =
+      base::Time::Now();
   closure.Run();
 }
 
 void FileSystem::OnUpdateCompleted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  last_update_check_time_ = base::Time::Now();
 }
 
 void FileSystem::AddObserver(FileSystemObserver* observer) {
@@ -885,6 +883,8 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
             team_drive_change_list_loaders_.find(change.team_drive_id());
         DCHECK(it != team_drive_change_list_loaders_.end());
         team_drive_change_list_loaders_.erase(it);
+        // If we were tracking the update status we can remove that as well.
+        last_update_metadata_.erase(change.team_drive_id());
       } else if (change.IsAddOrUpdate()) {
         DCHECK(team_drive_change_list_loaders_.count(change.team_drive_id()) ==
                0);
@@ -956,8 +956,12 @@ void FileSystem::GetMetadata(
                      base::Owned(team_drive_metadata)));
 
   metadata->refreshing = default_corpus_change_list_loader_->IsRefreshing();
-  metadata->last_update_check_time = last_update_check_time_;
-  metadata->last_update_check_error = last_update_check_error_;
+  metadata->last_update_check_time =
+      last_update_metadata_[util::kTeamDriveIdDefaultCorpus]
+          .last_update_check_time;
+  metadata->last_update_check_error =
+      last_update_metadata_[util::kTeamDriveIdDefaultCorpus]
+          .last_update_check_error;
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -968,8 +972,13 @@ void FileSystem::GetMetadata(
       base::Bind(&OnGetStartPageToken, closure));
 
   for (auto& team_drive : team_drive_change_list_loaders_) {
+    const FileSystemMetadata& last_update_metadata =
+        last_update_metadata_[team_drive.first];
     FileSystemMetadata& md = (*team_drive_metadata)[team_drive.first];
+
     md.refreshing = team_drive.second->IsRefreshing();
+    md.last_update_check_time = last_update_metadata.last_update_check_time;
+    md.last_update_check_error = last_update_metadata.last_update_check_error;
 
     base::PostTaskAndReplyWithResult(
         blocking_task_runner_.get(), FROM_HERE,
