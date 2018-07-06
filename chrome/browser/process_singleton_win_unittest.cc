@@ -315,8 +315,9 @@ TEST_F(ProcessSingletonTest, DoesntKillWithoutUserPermission) {
   // visible window.
   EXPECT_TRUE(should_kill_called());
 
-  histogram_tester().ExpectTotalCount(
-      "Chrome.ProcessSingleton.RemoteProcessInteractionResult", 0);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult",
+      ProcessSingleton::USER_REFUSED_TERMINATION, 1u);
 
   // Make sure the process hasn't been killed.
   int exit_code = 0;

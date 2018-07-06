@@ -317,6 +317,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
   // If there is a visible browser window, ask the user before killing it.
   if (visible_window && !should_kill_remote_process_callback_.Run()) {
+    SendRemoteProcessInteractionResultHistogram(USER_REFUSED_TERMINATION);
     // The user denied. Quit silently.
     return PROCESS_NOTIFIED;
   }
