@@ -1015,8 +1015,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   EXPECT_EQ(1, access_token_failure_count_);
 
   // Notify of network change and ensure that request now runs.
-  oauth2_service_delegate_->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  oauth2_service_delegate_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(),

@@ -17,9 +17,9 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "content/public/browser/network_connection_tracker.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/network_change_notifier.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -28,7 +28,7 @@ class PrefRegistrySyncable;
 class MutableProfileOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
       public WebDataServiceConsumer,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public content::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
@@ -72,9 +72,8 @@ class MutableProfileOAuth2TokenServiceDelegate
   void Shutdown() override;
   LoadCredentialsState GetLoadCredentialsState() const override;
 
-  // Overridden from NetworkChangeObserver.
-  void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type)
-      override;
+  // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Overridden from OAuth2TokenServiceDelegate.
   const net::BackoffEntry* BackoffEntry() const override;
