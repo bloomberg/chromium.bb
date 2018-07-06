@@ -158,6 +158,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
@@ -302,6 +303,7 @@ typedef NS_ENUM(NSInteger, ContextMenuHistogram) {
   ACTION_SAVE_IMAGE = 6,
   ACTION_OPEN_IMAGE = 7,
   ACTION_OPEN_IMAGE_IN_NEW_TAB = 8,
+  ACTION_COPY_IMAGE = 9,
   ACTION_SEARCH_BY_IMAGE = 11,
   ACTION_OPEN_JAVASCRIPT = 21,
   ACTION_READ_LATER = 22,
@@ -674,6 +676,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, weak) UIView* tabStripView;
 // Helper for saving images.
 @property(nonatomic, strong) ImageSaver* imageSaver;
+// Helper for copying images.
+@property(nonatomic, strong) ImageCopier* imageCopier;
 // Helper for the bvc.
 @property(nonatomic, strong) BrowserViewControllerHelper* helper;
 
@@ -928,6 +932,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @synthesize footerFullscreenProgress = _footerFullscreenProgress;
 @synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
+@synthesize imageCopier = _imageCopier;
 @synthesize helper = _helper;
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
@@ -1996,6 +2001,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _imageFetcher = std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
       _browserState->GetSharedURLLoaderFactory());
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
+  self.imageCopier = [[ImageCopier alloc] initWithBaseViewController:self];
 
   // Register for bookmark changed notification (BookmarkModel may be null
   // during testing, so explicitly support this).
@@ -3519,6 +3525,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [weakSelf saveImageAtURL:imageUrl referrer:referrer];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
+    // Copy Image.
+    if (base::FeatureList::IsEnabled(kCopyImage)) {
+      title =
+          l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
+      action = ^{
+        Record(ACTION_COPY_IMAGE, isImage, isLink);
+        [weakSelf copyImageAtURL:imageUrl referrer:referrer];
+      };
+      [_contextMenuCoordinator addItemWithTitle:title action:action];
+    }
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
@@ -3671,6 +3687,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         [self.imageSaver saveImageData:data withMetadata:metadata];
+      };
+  _imageFetcher->FetchImageDataWebpDecoded(
+      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
+      web::PolicyForNavigation(url, referrer));
+}
+
+// Copies the image at the given URL to system's Pasteboard. The referrer is
+// used to download the image.
+- (void)copyImageAtURL:(const GURL&)url
+              referrer:(const web::Referrer&)referrer {
+  DCHECK(url.is_valid());
+
+  ImageCopierSessionId context_id = [self.imageCopier beginSession];
+
+  image_fetcher::ImageDataFetcherBlock callback =
+      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
+        [self.imageCopier endSession:context_id withImageData:data];
       };
   _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
