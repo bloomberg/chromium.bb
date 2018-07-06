@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/ui/prerender_final_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -472,6 +473,12 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
+  [tab notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
+}
+
+- (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
   DCHECK_EQ(webState, webState_.get());
   // Cancel prerendering if response is "application/octet-stream". It can be a
@@ -495,20 +502,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   DCHECK(webState_);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
   return [tab openExternalURL:URL sourceURL:sourceURL linkClicked:linkClicked];
-}
-
-- (BOOL)webController:(CRWWebController*)webController
-        shouldOpenURL:(const GURL&)URL
-      mainDocumentURL:(const GURL&)mainDocumentURL {
-  DCHECK(webState_);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  SEL selector = @selector(webController:shouldOpenURL:mainDocumentURL:);
-  if ([tab respondsToSelector:selector]) {
-    return [tab webController:webController
-                shouldOpenURL:URL
-              mainDocumentURL:mainDocumentURL];
-  }
-  return NO;
 }
 
 - (BOOL)webController:(CRWWebController*)webController

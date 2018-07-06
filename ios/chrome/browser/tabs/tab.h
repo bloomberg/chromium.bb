@@ -162,6 +162,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;
 
+// Sends a notification to indicate that |url| is going to start loading.
+- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url;
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_H_

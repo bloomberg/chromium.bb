@@ -760,11 +760,6 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
   void SetUp() override {
     CRWWebControllerTest::SetUp();
     mock_delegate_ = OCMProtocolMock(@protocol(CRWWebDelegate));
-    GURL test_gurl;
-    [[[[static_cast<id>(mock_delegate_) stub] ignoringNonObjectArgs]
-        andReturnBool:YES] webController:[OCMArg any]
-                           shouldOpenURL:test_gurl
-                         mainDocumentURL:test_gurl];
     [web_controller() setDelegate:mock_delegate_];
   }
   // Calls webView:decidePolicyForNavigationAction:decisionHandler: callback

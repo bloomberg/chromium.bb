@@ -368,6 +368,16 @@ NSString* const kTabUrlKey = @"url";
   [_overscrollActionsController clear];
 }
 
+- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url {
+  NSString* urlString = base::SysUTF8ToNSString(url.spec());
+  if ([urlString length]) {
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
+                      object:self
+                    userInfo:@{kTabUrlKey : urlString}];
+  }
+}
+
 #pragma mark - Public API (relatinge to User agent)
 
 - (BOOL)usesDesktopUserAgent {
@@ -397,6 +407,10 @@ NSString* const kTabUrlKey = @"url";
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  // Notify tab of Url may start loading, this notification is not sent in cases
+  // of app launching, history api navigations, and hash change navigations.
+  [self notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
+
   [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
 }
@@ -495,26 +509,6 @@ NSString* const kTabUrlKey = @"url";
     return YES;
   }
   return NO;
-}
-
-- (BOOL)webController:(CRWWebController*)webController
-        shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL {
-  // Always allow frame loads.
-  if (url != mainDocumentURL)
-    return YES;
-
-  // TODO(crbug.com/546402): If this turns out to be useful, find a less hacky
-  // hook point to send this from.
-  NSString* urlString = base::SysUTF8ToNSString(url.spec());
-  if ([urlString length]) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
-                      object:self
-                    userInfo:@{kTabUrlKey : urlString}];
-  }
-
-  return YES;
 }
 
 - (BOOL)webController:(CRWWebController*)webController
