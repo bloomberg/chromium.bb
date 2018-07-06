@@ -1164,11 +1164,11 @@ void LoginDisplayHostWebUI::ShowGaiaDialog(
   NOTREACHED();
 }
 
-void LoginDisplayHostWebUI::HideGaiaDialog() {
+void LoginDisplayHostWebUI::HideOobeDialog() {
   NOTREACHED();
 }
 
-void LoginDisplayHostWebUI::UpdateGaiaDialogSize(int width, int height) {
+void LoginDisplayHostWebUI::UpdateOobeDialogSize(int width, int height) {
   NOTREACHED();
 }
 
@@ -1179,6 +1179,8 @@ const user_manager::UserList LoginDisplayHostWebUI::GetUsers() {
 void LoginDisplayHostWebUI::ShowFeedback() {
   NOTREACHED();
 }
+
+void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // external

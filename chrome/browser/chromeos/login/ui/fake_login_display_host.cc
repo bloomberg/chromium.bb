@@ -123,9 +123,9 @@ void FakeLoginDisplayHost::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {}
 
-void FakeLoginDisplayHost::HideGaiaDialog() {}
+void FakeLoginDisplayHost::HideOobeDialog() {}
 
-void FakeLoginDisplayHost::UpdateGaiaDialogSize(int width, int height) {}
+void FakeLoginDisplayHost::UpdateOobeDialogSize(int width, int height) {}
 
 const user_manager::UserList FakeLoginDisplayHost::GetUsers() {
   return user_manager::UserList();

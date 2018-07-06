@@ -576,9 +576,9 @@ void GaiaScreenHandler::RegisterMessages() {
   AddRawCallback("showAddUser", &GaiaScreenHandler::HandleShowAddUser);
   AddCallback("getIsSamlUserPasswordless",
               &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
-  AddCallback("updateGaiaDialogSize",
-              &GaiaScreenHandler::HandleUpdateGaiaDialogSize);
-  AddCallback("hideGaiaDialog", &GaiaScreenHandler::HandleHideGaiaDialog);
+  AddCallback("updateOobeDialogSize",
+              &GaiaScreenHandler::HandleUpdateOobeDialogSize);
+  AddCallback("hideOobeDialog", &GaiaScreenHandler::HandleHideOobeDialog);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -814,14 +814,14 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     LoginDisplayHost::default_host()->OnGaiaScreenReady();
 }
 
-void GaiaScreenHandler::HandleUpdateGaiaDialogSize(int width, int height) {
+void GaiaScreenHandler::HandleUpdateOobeDialogSize(int width, int height) {
   if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->UpdateGaiaDialogSize(width, height);
+    LoginDisplayHost::default_host()->UpdateOobeDialogSize(width, height);
 }
 
-void GaiaScreenHandler::HandleHideGaiaDialog() {
+void GaiaScreenHandler::HandleHideOobeDialog() {
   if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->HideGaiaDialog();
+    LoginDisplayHost::default_host()->HideOobeDialog();
 }
 
 void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {

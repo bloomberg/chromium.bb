@@ -53,7 +53,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void LoadWallpaper(const AccountId& account_id) final;
   void LoadSigninWallpaper() final;
   bool IsUserWhitelisted(const AccountId& account_id) final;
-  void CancelPasswordChangedFlow() override;
+  void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
 
@@ -69,6 +69,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   virtual void OnBrowserCreated() = 0;
   virtual void OnStartUserAdding() = 0;
   virtual void OnFinalize() = 0;
+  virtual void OnCancelPasswordChangedFlow() = 0;
 
   // Deletes |auth_prewarmer_|.
   void OnAuthPrewarmDone();

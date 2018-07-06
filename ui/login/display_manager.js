@@ -704,7 +704,7 @@ cr.define('cr.ui.login', function() {
 
       var screenId = screen.id;
       if (screenId == SCREEN_ACCOUNT_PICKER && this.showingViewsLogin) {
-        chrome.send('hideGaiaDialog');
+        chrome.send('hideOobeDialog');
         return;
       }
 
@@ -808,7 +808,7 @@ cr.define('cr.ui.login', function() {
       screen.style.margin = 'auto';
 
       if (this.showingViewsLogin) {
-        chrome.send('updateGaiaDialogSize', [width, height]);
+        chrome.send('updateOobeDialogSize', [width, height]);
         $('scroll-container').classList.toggle('disable-scroll', true);
         $('inner-container').classList.toggle('disable-scroll', true);
         $('inner-container').style.top =

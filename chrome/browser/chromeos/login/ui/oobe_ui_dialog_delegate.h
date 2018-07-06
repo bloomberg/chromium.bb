@@ -64,11 +64,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // Close the widget, and it will delete this object.
   void Close();
 
-  // Hide the dialog widget.
+  // Hide the dialog widget, but do not shut it down.
   void Hide();
-
-  // Initialize the dialog widget.
-  void Init();
 
   content::WebContents* GetWebContents();
 

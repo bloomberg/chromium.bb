@@ -55,8 +55,8 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD2(ShowGaiaDialog,
                void(bool can_close,
                     const base::Optional<AccountId>& prefilled_account));
-  MOCK_METHOD0(HideGaiaDialog, void());
-  MOCK_METHOD2(UpdateGaiaDialogSize, void(int width, int height));
+  MOCK_METHOD0(HideOobeDialog, void());
+  MOCK_METHOD2(UpdateOobeDialogSize, void(int width, int height));
   MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
   MOCK_METHOD1(CompleteLogin, void(const UserContext&));
@@ -71,6 +71,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(MigrateUserData, void(const std::string&));
   MOCK_METHOD0(ResyncUserData, void());
   MOCK_METHOD0(ShowFeedback, void());
+  MOCK_METHOD0(OnCancelPasswordChangedFlow, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

@@ -47,8 +47,8 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
       weak_factory_(this) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
-  // Preload the WebUI for post-login screens.
-  InitWidgetAndView();
+  // Preload webui-based OOBE for add user, kiosk apps, etc.
+  LoadOobeDialog();
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
@@ -230,7 +230,7 @@ bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
 void LoginDisplayHostMojo::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
-  DCHECK(dialog_);
+  DCHECK(GetOobeUI());
   can_close_dialog_ = can_close;
 
   // Always disabling closing if there are no users, otherwise a blank screen
@@ -251,13 +251,13 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
   return;
 }
 
-void LoginDisplayHostMojo::HideGaiaDialog() {
+void LoginDisplayHostMojo::HideOobeDialog() {
   DCHECK(dialog_);
   if (!can_close_dialog_)
     return;
 
-  // The dialog can not be closed if there is no user on the login screen.
-  // Refresh the dialog instead.
+  // The dialog can not be hidden if there are no users on the login screen.
+  // Reload it instead.
   if (!login_display_->IsSigninInProgress() && users_.empty()) {
     GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
     return;
@@ -267,7 +267,7 @@ void LoginDisplayHostMojo::HideGaiaDialog() {
   dialog_->Hide();
 }
 
-void LoginDisplayHostMojo::UpdateGaiaDialogSize(int width, int height) {
+void LoginDisplayHostMojo::UpdateOobeDialogSize(int width, int height) {
   if (dialog_)
     dialog_->UpdateSizeAndPosition(width, height);
 }
@@ -278,14 +278,11 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
 
 void LoginDisplayHostMojo::ShowFeedback() {
   DCHECK(GetOobeUI());
-  GetOobeUI()->web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.ui.Oobe.handleAccelerator", base::Value(kAccelSendFeedback));
+  GetOobeUI()->ForwardAccelerator(kAccelSendFeedback);
 }
 
-void LoginDisplayHostMojo::CancelPasswordChangedFlow() {
-  // Close the Oobe UI dialog.
-  HideGaiaDialog();
-  LoginDisplayHostCommon::CancelPasswordChangedFlow();
+void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
+  HideOobeDialog();
 }
 
 void LoginDisplayHostMojo::HandleAuthenticateUser(
@@ -382,12 +379,11 @@ void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
   }
 }
 
-void LoginDisplayHostMojo::InitWidgetAndView() {
+void LoginDisplayHostMojo::LoadOobeDialog() {
   if (dialog_)
     return;
 
   dialog_ = new OobeUIDialogDelegate(weak_factory_.GetWeakPtr());
-  dialog_->Init();
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(
       login_display_.get());
 }

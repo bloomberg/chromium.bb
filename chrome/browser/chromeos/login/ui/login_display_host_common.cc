@@ -234,6 +234,8 @@ void LoginDisplayHostCommon::CancelPasswordChangedFlow() {
       ExistingUserController::current_controller();
   if (controller)
     controller->CancelPasswordChangedFlow();
+
+  OnCancelPasswordChangedFlow();
 }
 
 void LoginDisplayHostCommon::MigrateUserData(const std::string& old_password) {
@@ -266,6 +268,8 @@ void LoginDisplayHostCommon::Observe(
                       content::NotificationService::AllSources());
   }
 }
+
+void LoginDisplayHostCommon::OnCancelPasswordChangedFlow() {}
 
 void LoginDisplayHostCommon::OnAuthPrewarmDone() {
   auth_prewarmer_.reset();
