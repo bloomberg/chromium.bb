@@ -492,7 +492,9 @@ if(CONFIG_AV1_DECODER)
               "av1-1-b8-01-size-66x64.ivf"
               "av1-1-b8-01-size-66x64.ivf.md5"
               "av1-1-b8-01-size-66x66.ivf"
-              "av1-1-b8-01-size-66x66.ivf.md5")
+              "av1-1-b8-01-size-66x66.ivf.md5"
+              "av1-1-b8-02-allintra.ivf"
+              "av1-1-b8-02-allintra.ivf.md5")
 endif()
 
 if(ENABLE_ENCODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
