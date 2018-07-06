@@ -140,13 +140,10 @@ Polymer({
           map.set(settings.routes.SYNC.path, '#sync-status .subpage-arrow');
         if (settings.routes.MANAGE_PASSWORDS) {
           map.set(
-              settings.routes.MANAGE_PASSWORDS.path,
-              '#passwordManagerButton .subpage-arrow');
+              settings.routes.MANAGE_PASSWORDS.path, '#passwordManagerButton');
         }
         if (settings.routes.AUTOFILL) {
-          map.set(
-              settings.routes.AUTOFILL.path,
-              '#autofillManagerButton .subpage-arrow');
+          map.set(settings.routes.AUTOFILL.path, '#paymentManagerButton');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {
