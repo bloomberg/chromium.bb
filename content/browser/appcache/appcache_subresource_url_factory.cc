@@ -10,7 +10,6 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -38,15 +37,16 @@ namespace {
 class SubresourceLoader : public network::mojom::URLLoader,
                           public network::mojom::URLLoaderClient {
  public:
-  SubresourceLoader(network::mojom::URLLoaderRequest url_loader_request,
-                    int32_t routing_id,
-                    int32_t request_id,
-                    uint32_t options,
-                    const network::ResourceRequest& request,
-                    network::mojom::URLLoaderClientPtr client,
-                    const net::MutableNetworkTrafficAnnotationTag& annotation,
-                    base::WeakPtr<AppCacheHost> appcache_host,
-                    scoped_refptr<URLLoaderFactoryGetter> net_factory_getter)
+  SubresourceLoader(
+      network::mojom::URLLoaderRequest url_loader_request,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& annotation,
+      base::WeakPtr<AppCacheHost> appcache_host,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory)
       : remote_binding_(this, std::move(url_loader_request)),
         remote_client_(std::move(client)),
         request_(request),
@@ -54,7 +54,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
         request_id_(request_id),
         options_(options),
         traffic_annotation_(annotation),
-        network_loader_factory_(std::move(net_factory_getter)),
+        network_loader_factory_(std::move(network_loader_factory)),
         local_client_binding_(this),
         host_(appcache_host),
         weak_factory_(this) {
@@ -116,7 +116,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
     DCHECK(!appcache_loader_);
     network::mojom::URLLoaderClientPtr client_ptr;
     local_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-    network_loader_factory_->GetNetworkFactory()->CreateLoaderAndStart(
+    network_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
         request_, std::move(client_ptr), traffic_annotation_);
     if (has_set_priority_)
@@ -284,7 +284,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
   int32_t request_id_;
   uint32_t options_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
-  scoped_refptr<URLLoaderFactoryGetter> network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
   net::RedirectInfo redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
   bool did_receive_network_response_ = false;
@@ -312,9 +312,9 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
 // Implements the URLLoaderFactory mojom for AppCache requests.
 AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
-    URLLoaderFactoryGetter* default_url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::WeakPtr<AppCacheHost> host)
-    : default_url_loader_factory_getter_(default_url_loader_factory_getter),
+    : network_loader_factory_(std::move(network_loader_factory)),
       appcache_host_(host),
       weak_factory_(this) {
   bindings_.set_connection_error_handler(
@@ -326,7 +326,7 @@ AppCacheSubresourceURLFactory::~AppCacheSubresourceURLFactory() {}
 
 // static
 void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-    URLLoaderFactoryGetter* default_url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::WeakPtr<AppCacheHost> host,
     network::mojom::URLLoaderFactoryPtr* loader_factory) {
   DCHECK(host.get());
@@ -334,7 +334,7 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
   // to it and will get deleted when all clients drop their connections.
   // Please see OnConnectionError() for details.
   auto* impl = new AppCacheSubresourceURLFactory(
-      default_url_loader_factory_getter, host);
+      std::move(network_loader_factory), host);
   impl->Clone(mojo::MakeRequest(loader_factory));
 
   // Save the factory in the host to ensure that we don't create it again when
@@ -353,7 +353,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   new SubresourceLoader(std::move(url_loader_request), routing_id, request_id,
                         options, request, std::move(client), traffic_annotation,
-                        appcache_host_, default_url_loader_factory_getter_);
+                        appcache_host_, network_loader_factory_);
 }
 
 void AppCacheSubresourceURLFactory::Clone(

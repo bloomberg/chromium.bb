@@ -22,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
@@ -34,6 +33,7 @@
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -202,15 +202,14 @@ class AppCacheRequestHandlerTest
   };
 
   static void SetUpTestCase() {
-    scoped_task_environment_.reset(new base::test::ScopedTaskEnvironment);
-    io_thread_.reset(new base::Thread("AppCacheRequestHandlerTest Thread"));
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-    io_thread_->StartWithOptions(options);
+    thread_bundle_.reset(
+        new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
+    io_task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
 
   static void TearDownTestCase() {
-    io_thread_.reset();
-    scoped_task_environment_.reset();
+    thread_bundle_.reset();
+    io_task_runner_ = nullptr;
   }
 
   // Test harness --------------------------------------------------
@@ -231,7 +230,7 @@ class AppCacheRequestHandlerTest
     test_finished_event_.reset(new base::WaitableEvent(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
-    io_thread_->task_runner()->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheRequestHandlerTest::MethodWrapper<Method>,
                        base::Unretained(this), method));
@@ -239,7 +238,7 @@ class AppCacheRequestHandlerTest
   }
 
   void SetUpTest() {
-    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     mock_service_.reset(new MockAppCacheService);
     // Initializes URLRequestContext on the IO thread.
     empty_context_.reset(new net::URLRequestContext);
@@ -258,7 +257,7 @@ class AppCacheRequestHandlerTest
   }
 
   void TearDownTest() {
-    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     appcache_url_request_job_.reset();
     appcache_url_loader_job_.reset();
     handler_.reset();
@@ -276,7 +275,7 @@ class AppCacheRequestHandlerTest
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheRequestHandlerTest::TestFinishedUnwound,
@@ -293,7 +292,7 @@ class AppCacheRequestHandlerTest
   }
 
   void ScheduleNextTask() {
-    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     if (task_stack_.empty()) {
       TestFinished();
       return;
@@ -969,18 +968,18 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<AppCacheURLRequestJob> appcache_url_request_job_;
   base::WeakPtr<AppCacheURLLoaderJob> appcache_url_loader_job_;
 
-  static std::unique_ptr<base::Thread> io_thread_;
-  static std::unique_ptr<base::test::ScopedTaskEnvironment>
-      scoped_task_environment_;
+  static std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  static scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   RequestHandlerType request_handler_type_;
   base::test::ScopedFeatureList feature_list_;
 };
 
 // static
-std::unique_ptr<base::Thread> AppCacheRequestHandlerTest::io_thread_;
-std::unique_ptr<base::test::ScopedTaskEnvironment>
-    AppCacheRequestHandlerTest::scoped_task_environment_;
+std::unique_ptr<TestBrowserThreadBundle>
+    AppCacheRequestHandlerTest::thread_bundle_;
+scoped_refptr<base::SingleThreadTaskRunner>
+    AppCacheRequestHandlerTest::io_task_runner_;
 
 TEST_P(AppCacheRequestHandlerTest, MainResource_Miss) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Miss);

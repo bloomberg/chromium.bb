@@ -525,7 +525,8 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   network::mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
 
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-      service()->url_loader_factory_getter(), GetWeakPtr(), &factory_ptr);
+      service()->url_loader_factory_getter()->GetNetworkFactory(), GetWeakPtr(),
+      &factory_ptr);
 
   frontend_->OnSetSubresourceFactory(host_id(), std::move(factory_ptr));
 }

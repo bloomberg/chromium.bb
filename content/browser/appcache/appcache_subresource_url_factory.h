@@ -13,13 +13,16 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace content {
 
 class AppCacheHost;
 class AppCacheJob;
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
-class URLLoaderFactoryGetter;
 
 // Implements the URLLoaderFactory mojom for AppCache subresource requests.
 class CONTENT_EXPORT AppCacheSubresourceURLFactory
@@ -28,13 +31,12 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   ~AppCacheSubresourceURLFactory() override;
 
   // Factory function to create an instance of the factory.
-  // 1. The |factory_getter| parameter is used to query the network service
-  //    to pass network requests to.
-  // 2. The |host| parameter contains the appcache host instance. This is used
-  //    to create the AppCacheRequestHandler instances for handling subresource
-  //    requests.
+  // The |host| parameter contains the appcache host instance. This is used
+  // to create the AppCacheRequestHandler instances for handling subresource
+  // requests.
+  // |network_loader_factory| is a factory to the Network Service.
   static void CreateURLLoaderFactory(
-      URLLoaderFactoryGetter* factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       base::WeakPtr<AppCacheHost> host,
       network::mojom::URLLoaderFactoryPtr* loader_factory);
 
@@ -56,12 +58,13 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
 
   // TODO(michaeln): Declare SubresourceLoader here and add unittests.
 
-  AppCacheSubresourceURLFactory(URLLoaderFactoryGetter* factory_getter,
-                                base::WeakPtr<AppCacheHost> host);
+  AppCacheSubresourceURLFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+      base::WeakPtr<AppCacheHost> host);
   void OnConnectionError();
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   base::WeakPtrFactory<AppCacheSubresourceURLFactory> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AppCacheSubresourceURLFactory);
