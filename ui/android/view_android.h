@@ -39,10 +39,10 @@ class ViewAndroidObserver;
 
 // View-related parameters from frame updates.
 struct FrameInfo {
-  gfx::SizeF viewport_size;  // In CSS pixels.
+  gfx::SizeF viewport_size;  // In dip.
 
   // Content offset from the top. Used to translate snapshots to
-  // the correct part of the view. In CSS pixels.
+  // the correct part of the view. In dip.
   float content_offset;
 };
 
@@ -98,7 +98,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   virtual ~ViewAndroid();
 
   void UpdateFrameInfo(const FrameInfo& frame_info);
-  // content_offset is in CSS scale.
+  // content_offset is in dip.
   float content_offset() const { return frame_info_.content_offset; }
   gfx::SizeF viewport_size() const { return frame_info_.viewport_size; }
 
