@@ -14,8 +14,13 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -38,7 +43,57 @@ constexpr char kRebootRequiredSwitch[] = "mock-reboot-required";
 constexpr char kRegistryKeysReportingSwitch[] = "registry-keys-reporting";
 constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 
+scoped_refptr<extensions::Extension> CreateExtension(const base::string16& name,
+                                                     const base::string16& id,
+                                                     std::string* error) {
+  base::DictionaryValue manifest;
+  manifest.SetKey("name", base::Value(name));
+  manifest.SetKey("version", base::Value("0"));
+  manifest.SetKey("manifest_version", base::Value(2));
+
+  return extensions::Extension::Create(base::FilePath(),
+                                       extensions::Manifest::INTERNAL, manifest,
+                                       0, base::UTF16ToUTF8(id), error);
+}
+
 }  // namespace
+
+const base::char16 MockChromeCleanerProcess::kInstalledExtensionId1[] =
+    L"aaaabbbbccccddddeeeeffffgggghhhh";
+const base::char16 MockChromeCleanerProcess::kInstalledExtensionName1[] =
+    L"Some Extension";
+const base::char16 MockChromeCleanerProcess::kInstalledExtensionId2[] =
+    L"ababababcdcdcdcdefefefefghghghgh";
+const base::char16 MockChromeCleanerProcess::kInstalledExtensionName2[] =
+    L"Another Extension";
+const base::char16 MockChromeCleanerProcess::kUnknownExtensionId[] =
+    L"unexpectedextensionidabcdefghijk";
+
+// static
+void MockChromeCleanerProcess::AddMockExtensionsToProfile(Profile* profile) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  scoped_refptr<extensions::Extension> extension;
+  std::string error;
+
+  extension =
+      CreateExtension(MockChromeCleanerProcess::kInstalledExtensionName1,
+                      MockChromeCleanerProcess::kInstalledExtensionId1, &error);
+  if (extension && error.empty()) {
+    extension_registry->AddEnabled(extension);
+  } else {
+    LOG(ERROR) << "Error creating mock extension: " << error;
+  }
+
+  extension =
+      CreateExtension(MockChromeCleanerProcess::kInstalledExtensionName2,
+                      MockChromeCleanerProcess::kInstalledExtensionId2, &error);
+  if (extension && error.empty()) {
+    extension_registry->AddEnabled(extension);
+  } else {
+    LOG(ERROR) << "Error creating mock extension: " << error;
+  }
+}
 
 // static
 bool MockChromeCleanerProcess::Options::FromCommandLine(

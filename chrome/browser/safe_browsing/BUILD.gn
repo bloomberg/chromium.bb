@@ -16,6 +16,7 @@ static_library("safe_browsing") {
     "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
     "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
     "chrome_cleaner/chrome_cleaner_controller_win.h",
+    "chrome_cleaner/chrome_cleaner_extensions_util_win.h",
     "chrome_cleaner/chrome_cleaner_fetcher_win.cc",
     "chrome_cleaner/chrome_cleaner_fetcher_win.h",
     "chrome_cleaner/chrome_cleaner_navigation_util_win.cc",
@@ -72,6 +73,12 @@ static_library("safe_browsing") {
       "settings_reset_prompt/settings_reset_prompt_util_win.h",
     ]
     deps += [ "//components/keep_alive_registry" ]
+  }
+
+  if (is_chrome_branded && is_win) {
+    sources += [ "chrome_cleaner/chrome_cleaner_extension_util_win.cc" ]
+  } else {
+    sources += [ "chrome_cleaner/chrome_cleaner_extension_util_win_noop.cc" ]
   }
 
   if (safe_browsing_mode != 0) {

@@ -3147,6 +3147,9 @@ test("unit_tests") {
     if (is_posix || is_fuchsia) {
       sources += [ "../browser/process_singleton_posix_unittest.cc" ]
     }
+    if (is_chrome_branded && is_win) {
+      sources += [ "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_extension_util_win_unittest.cc" ]
+    }
 
     deps += [
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",

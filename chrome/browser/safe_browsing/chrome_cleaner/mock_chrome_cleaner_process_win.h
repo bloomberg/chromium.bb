@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace safe_browsing {
@@ -62,6 +64,14 @@ class MockChromeCleanerProcess {
   static constexpr int kDeclinedExitCode = 44;
   static constexpr int kRebootRequiredExitCode = 15;
   static constexpr int kRebootNotRequiredExitCode = 0;
+
+  static const base::char16 kInstalledExtensionId1[];
+  static const base::char16 kInstalledExtensionName1[];
+  static const base::char16 kInstalledExtensionId2[];
+  static const base::char16 kInstalledExtensionName2[];
+  static const base::char16 kUnknownExtensionId[];
+
+  static void AddMockExtensionsToProfile(Profile* profile);
 
   class Options {
    public:
