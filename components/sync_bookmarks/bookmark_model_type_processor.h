@@ -40,7 +40,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void ConnectSync(std::unique_ptr<syncer::CommitQueue> worker) override;
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
-                       const GetLocalChangesCallback& callback) override;
+                       GetLocalChangesCallback callback) override;
   void OnCommitCompleted(
       const sync_pb::ModelTypeState& type_state,
       const syncer::CommitResponseDataList& response_list) override;

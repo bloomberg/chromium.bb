@@ -33,10 +33,10 @@ class ModelTypeProcessor {
   // Sync engine calls GetLocalChanges to request local entities to be committed
   // to server. Processor should call callback passing local entites when they
   // are ready. Processor should not pass more than |max_entities|.
-  // TODO(mamir): Change to OnceCallback.
-  using GetLocalChangesCallback = base::Callback<void(CommitRequestDataList&&)>;
+  using GetLocalChangesCallback =
+      base::OnceCallback<void(CommitRequestDataList&&)>;
   virtual void GetLocalChanges(size_t max_entries,
-                               const GetLocalChangesCallback& callback) = 0;
+                               GetLocalChangesCallback callback) = 0;
 
   // Informs this object that some of its commit requests have been
   // successfully serviced.

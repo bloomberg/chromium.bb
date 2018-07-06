@@ -77,7 +77,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
-                       const GetLocalChangesCallback& callback) override;
+                       GetLocalChangesCallback callback) override;
   void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
@@ -132,15 +132,14 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // ModelTypeSyncBridge::GetData() callback for pending loading data upon
   // GetLocalChanges call.
   void OnPendingDataLoaded(size_t max_entries,
-                           const GetLocalChangesCallback& callback,
+                           GetLocalChangesCallback callback,
                            std::unique_ptr<DataBatch> data_batch);
 
   // Caches EntityData from the |data_batch| in the entity trackers.
   void ConsumeDataBatch(std::unique_ptr<DataBatch> data_batch);
 
   // Prepares Commit requests and passes them to the GetLocalChanges callback.
-  void CommitLocalChanges(size_t max_entries,
-                          const GetLocalChangesCallback& callback);
+  void CommitLocalChanges(size_t max_entries, GetLocalChangesCallback callback);
 
   // Nudges worker if there are any local entities to be committed.
   void NudgeForCommitIfNeeded();

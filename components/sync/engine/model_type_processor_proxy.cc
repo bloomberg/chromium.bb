@@ -33,22 +33,22 @@ void ModelTypeProcessorProxy::DisconnectSync() {
 void ForwardGetLocalChangesCall(
     base::WeakPtr<ModelTypeProcessor> processor,
     size_t max_entries,
-    const ModelTypeProcessor::GetLocalChangesCallback& callback) {
+    ModelTypeProcessor::GetLocalChangesCallback callback) {
   if (processor) {
-    processor->GetLocalChanges(max_entries, callback);
+    processor->GetLocalChanges(max_entries, std::move(callback));
   } else {
     // If the processor is not valid anymore call the callback to unblock sync
     // thread.
-    callback.Run(CommitRequestDataList());
+    std::move(callback).Run(CommitRequestDataList());
   }
 }
 
 void ModelTypeProcessorProxy::GetLocalChanges(
     size_t max_entries,
-    const GetLocalChangesCallback& callback) {
+    GetLocalChangesCallback callback) {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ForwardGetLocalChangesCall, processor_,
-                                    max_entries, callback));
+                         base::BindOnce(&ForwardGetLocalChangesCall, processor_,
+                                        max_entries, std::move(callback)));
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(

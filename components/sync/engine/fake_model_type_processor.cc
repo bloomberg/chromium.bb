@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/fake_model_type_processor.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "components/sync/engine/commit_queue.h"
 
@@ -16,10 +18,9 @@ void FakeModelTypeProcessor::ConnectSync(std::unique_ptr<CommitQueue> worker) {}
 
 void FakeModelTypeProcessor::DisconnectSync() {}
 
-void FakeModelTypeProcessor::GetLocalChanges(
-    size_t max_entries,
-    const GetLocalChangesCallback& callback) {
-  callback.Run(CommitRequestDataList());
+void FakeModelTypeProcessor::GetLocalChanges(size_t max_entries,
+                                             GetLocalChangesCallback callback) {
+  std::move(callback).Run(CommitRequestDataList());
 }
 void FakeModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,

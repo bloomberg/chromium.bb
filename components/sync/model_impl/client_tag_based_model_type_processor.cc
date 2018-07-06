@@ -418,7 +418,7 @@ bool ClientTagBasedModelTypeProcessor::HasLocalChanges() const {
 
 void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
-    const GetLocalChangesCallback& callback) {
+    GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(max_entries, 0U);
 
@@ -432,13 +432,13 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
   if (!entities_requiring_data.empty()) {
     bridge_->GetData(
         std::move(entities_requiring_data),
-        base::BindRepeating(
-            &ClientTagBasedModelTypeProcessor::OnPendingDataLoaded,
-            weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries, callback));
+        base::BindOnce(&ClientTagBasedModelTypeProcessor::OnPendingDataLoaded,
+                       weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries,
+                       std::move(callback)));
   } else {
     // All commit data can be availbale in memory for those entries passed in
     // the .put() method.
-    CommitLocalChanges(max_entries, callback);
+    CommitLocalChanges(max_entries, std::move(callback));
   }
 }
 
@@ -799,7 +799,7 @@ void ClientTagBasedModelTypeProcessor::OnInitialUpdateReceived(
 
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
     size_t max_entries,
-    const GetLocalChangesCallback& callback,
+    GetLocalChangesCallback callback,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -810,7 +810,7 @@ void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
   ConsumeDataBatch(std::move(data_batch));
 
   ConnectIfReady();
-  CommitLocalChanges(max_entries, callback);
+  CommitLocalChanges(max_entries, std::move(callback));
 }
 
 void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
@@ -829,7 +829,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
 
 void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
     size_t max_entries,
-    const GetLocalChangesCallback& callback) {
+    GetLocalChangesCallback callback) {
   CommitRequestDataList commit_requests;
   // TODO(rlarocque): Do something smarter than iterate here.
   for (const auto& kv : entities_) {
@@ -843,7 +843,7 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
       }
     }
   }
-  callback.Run(std::move(commit_requests));
+  std::move(callback).Run(std::move(commit_requests));
 }
 
 std::string ClientTagBasedModelTypeProcessor::GetHashForTag(

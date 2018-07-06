@@ -28,12 +28,11 @@ void MockModelTypeProcessor::DisconnectSync() {
   }
 }
 
-void MockModelTypeProcessor::GetLocalChanges(
-    size_t max_entries,
-    const GetLocalChangesCallback& callback) {
+void MockModelTypeProcessor::GetLocalChanges(size_t max_entries,
+                                             GetLocalChangesCallback callback) {
   DCHECK_LE(commit_request_.size(), max_entries);
   get_local_changes_call_count_++;
-  callback.Run(std::move(commit_request_));
+  std::move(callback).Run(std::move(commit_request_));
   commit_request_.clear();
 }
 
