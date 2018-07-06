@@ -101,9 +101,9 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="device/usb/android/java/src"/>
     <classpathentry kind="src" path="device/vibration/android/java/src"/>
     <classpathentry kind="src" path="media/base/android/java/src"/>
-    <classpathentry kind="src" path="mojo/android/system/src"/>
-    <classpathentry kind="src" path="mojo/android/javatests/src"/>
+    <classpathentry kind="src" path="mojo/public/java/base/src"/>
     <classpathentry kind="src" path="mojo/public/java/bindings/src"/>
+    <classpathentry kind="src" path="mojo/public/java/system/javatests/src"/>
     <classpathentry kind="src" path="mojo/public/java/system/src"/>
     <classpathentry kind="src" path="net/android/java/src"/>
     <classpathentry kind="src" path="net/android/javatests/src"/>
@@ -285,9 +285,9 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/device/vibration/mojo_bindings_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/media/base/android/media_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/media/midi/midi_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/mojo/android/system_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/mojo/public/java/bindings.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/mojo/public/java/system.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/mojo/public/java/system/system_impl_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/net/android/net_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/printing/printing_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/services/data_decoder/public/android/safe_json_java.jar"/>

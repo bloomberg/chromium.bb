@@ -17,7 +17,7 @@ group("mojo") {
   }
 
   if (is_android) {
-    deps += [ "//mojo/android" ]
+    deps += [ "//mojo/public/java/system" ]
   }
 
   deps += [ "//services/service_manager:all" ]

@@ -73,7 +73,7 @@ android_library("base_java") {
 
   deps = [
     ":system_java",
-    "//mojo/android:system_java",
+    "//mojo/public/java/system:system_impl_java",
     "//mojo/public/mojom/base:base_java",
   ]
 }

@@ -24,7 +24,7 @@ source_set("common_initialization") {
   ]
 
   if (is_android) {
-    deps += [ "//mojo/android:libsystem_java" ]
+    deps += [ "//mojo/public/java/system:native_support" ]
   }
   if (!is_ios) {
     deps += [ "//services/service_manager/public/cpp/standalone_service" ]
