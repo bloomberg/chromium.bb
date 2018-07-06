@@ -157,6 +157,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
                                    CreatedCallback created_callback,
                                    const IsCancelledCallback& is_cancelled);
 
+  static void RecordFetchResult(bool success);
+
   // Computes hashes for all files in |key_.extension_root|, and uses
   // a ComputedHashes::Writer to write that information into |hashes_file|.
   // Returns true on success.

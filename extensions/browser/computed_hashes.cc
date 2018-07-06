@@ -12,7 +12,9 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -28,6 +30,43 @@ const char kVersionKey[] = "version";
 const int kVersion = 2;
 }  // namespace computed_hashes
 
+namespace {
+
+// Helper to record UMA for ComputedHashes::Reader::InitFromFile.
+// Records failure UMA if RecordSuccess() isn't explicitly called.
+class ScopedUMARecorder {
+ public:
+  ScopedUMARecorder() = default;
+
+  ~ScopedUMARecorder() {
+    if (recorded_)
+      return;
+    RecordImpl(false);
+  }
+
+  void RecordSuccess() {
+    recorded_ = true;
+    RecordImpl(true);
+  }
+
+ private:
+  void RecordImpl(bool succeeded) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.ContentVerification.ComputedHashesReadResult", succeeded);
+    if (succeeded) {
+      UMA_HISTOGRAM_TIMES(
+          "Extensions.ContentVerification.ComputedHashesInitTime",
+          timer_.Elapsed());
+    }
+  }
+
+  bool recorded_ = false;
+  base::ElapsedTimer timer_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedUMARecorder);
+};
+
+}  // namespace
+
 ComputedHashes::Reader::Reader() {
 }
 
@@ -35,6 +74,7 @@ ComputedHashes::Reader::~Reader() {
 }
 
 bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
+  ScopedUMARecorder uma_recorder;
   std::string contents;
   if (!base::ReadFileToString(path, &contents))
     return false;
@@ -96,6 +136,7 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
       }
     }
   }
+  uma_recorder.RecordSuccess();
   return true;
 }
 

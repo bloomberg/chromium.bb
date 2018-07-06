@@ -10,10 +10,12 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/content_hash_fetcher.h"
@@ -230,10 +232,13 @@ class ContentVerifier::HashHelper {
 
     void Cancel() { cancelled_checker->Cancel(); }
 
+    base::TimeDelta elapsed() const { return elapsed_timer.Elapsed(); }
+
     scoped_refptr<IsCancelledChecker> cancelled_checker;
     // TODO(lazyboy): Use std::list?
     std::vector<ContentHashCallback> callbacks;
     bool force_missing_computed_hashes_creation = false;
+    base::ElapsedTimer elapsed_timer;
   };
 
   using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
@@ -326,6 +331,8 @@ class ContentVerifier::HashHelper {
     auto iter = callback_infos_.find(key);
     DCHECK(iter != callback_infos_.end());
     auto& callback_info = iter->second;
+    UMA_HISTOGRAM_TIMES("Extensions.ContentVerification.ReadContentHashTime",
+                        callback_info.elapsed());
 
     for (auto& callback : callback_info.callbacks)
       std::move(callback).Run(content_hash);
