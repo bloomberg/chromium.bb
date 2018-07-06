@@ -749,7 +749,13 @@ CommandHandler.COMMANDS_['select-all'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.directoryModel.getFileList().length > 0;
+    // Check we are not inside an input element (e.g. the search box).
+    const inputElementActive =
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement ||
+        document.activeElement.tagName.toLowerCase() === 'cr-input';
+    event.canExecute = !inputElementActive &&
+        fileManager.directoryModel.getFileList().length > 0;
   }
 });
 
