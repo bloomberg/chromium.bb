@@ -80,7 +80,8 @@ class PageCappingObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness,
       public blacklist::OptOutBlacklistDelegate {
  public:
-  PageCappingObserverTest() : test_blacklist_(this) {}
+  PageCappingObserverTest()
+      : test_blacklist_(std::make_unique<TestPageLoadCappingBlacklist>(this)) {}
   ~PageCappingObserverTest() override = default;
 
   void SetUpTest(bool enabled, std::map<std::string, std::string> params) {
@@ -124,7 +125,7 @@ class PageCappingObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     auto observer = std::make_unique<TestPageCappingPageLoadMetricsObserver>(
-        fuzzing_offset_, &test_blacklist_,
+        fuzzing_offset_, test_blacklist_.get(),
         base::BindRepeating(&PageCappingObserverTest::UpdateSavings,
                             base::Unretained(this)));
     observer_ = observer.get();
@@ -141,7 +142,7 @@ class PageCappingObserverTest
   int64_t savings_ = 0;
   int64_t fuzzing_offset_ = 0;
   TestPageCappingPageLoadMetricsObserver* observer_;
-  TestPageLoadCappingBlacklist test_blacklist_;
+  std::unique_ptr<TestPageLoadCappingBlacklist> test_blacklist_;
 };
 
 TEST_F(PageCappingObserverTest, ExperimentDisabled) {
@@ -573,18 +574,36 @@ TEST_F(PageCappingObserverTest, FuzzingOffset) {
   EXPECT_EQ(1u, InfoBarCount());
 }
 
+TEST_F(PageCappingObserverTest, NullBlacklistBlocksInfoBar) {
+  test_blacklist_ = nullptr;
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
+  base::HistogramTester histogram_tester;
+
+  // Load a resource of 1 MB.
+  // This should be enough to trigger an InfoBar (when ignoring the blacklist).
+  SimulateBytes(1024 * 1024);
+
+  // Because the blacklist is null (as in the case of incognito profiles), the
+  // InfoBar should not be shown.
+  EXPECT_EQ(0u, InfoBarCount());
+
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.BlacklistReason", 0);
+}
+
 TEST_F(PageCappingObserverTest, BlacklistOnTwoOptOuts) {
   SetUpTest(true, {{"MediaPageCapMiB", "1"},
                    {"PageCapMiB", "1"},
                    {"PageTypicalLargePageMiB", "2"}});
   base::HistogramTester histogram_tester;
 
-  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
-  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_->AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_->AddEntry(GURL(kTestURL).host(), true, 0);
 
   // Verify the blacklist is reporting not allowed.
   std::vector<blacklist::BlacklistReason> passed_reasons;
-  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  auto blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
@@ -605,10 +624,10 @@ TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
                    {"PageCapMiB", "1"},
                    {"PageTypicalLargePageMiB", "2"}});
 
-  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_->AddEntry(GURL(kTestURL).host(), true, 0);
 
   std::vector<blacklist::BlacklistReason> passed_reasons;
-  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  auto blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
@@ -623,7 +642,7 @@ TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
   NavigateToUntrackedUrl();
 
   // Check that the opt out caused a blacklisted state.
-  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 }
@@ -633,10 +652,10 @@ TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
                    {"PageCapMiB", "1"},
                    {"PageTypicalLargePageMiB", "2"}});
 
-  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_->AddEntry(GURL(kTestURL).host(), true, 0);
 
   std::vector<blacklist::BlacklistReason> passed_reasons;
-  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  auto blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
@@ -655,7 +674,7 @@ TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
   NavigateToUntrackedUrl();
 
   // Check that the non-opt out did not cause a blacklisted state.
-  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 }
@@ -665,10 +684,10 @@ TEST_F(PageCappingObserverTest, ResumedInfoBarTriggersOptOut) {
                    {"PageCapMiB", "1"},
                    {"PageTypicalLargePageMiB", "2"}});
 
-  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_->AddEntry(GURL(kTestURL).host(), true, 0);
 
   std::vector<blacklist::BlacklistReason> passed_reasons;
-  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  auto blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
@@ -692,7 +711,7 @@ TEST_F(PageCappingObserverTest, ResumedInfoBarTriggersOptOut) {
   NavigateToUntrackedUrl();
 
   // Check that the opt out caused a blacklisted state.
-  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+  blacklist_reason = test_blacklist_->IsLoadedAndAllowed(
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 }

@@ -61,8 +61,7 @@ class PageCappingPageLoadMetricsObserver
 
   // Virtual for testing.
   // Gets the page load capping blacklist from the page load capping service.
-  // This is null for incognito profiles, but this object should not created for
-  // incognito profiles.
+  // Returns null for incognito profiles.
   virtual PageLoadCappingBlacklist* GetPageLoadCappingBlacklist() const;
 
  private:
@@ -88,6 +87,7 @@ class PageCappingPageLoadMetricsObserver
   // If this is the first time this is called, queries the page load capping
   // blacklist for whether the InfoBar should be allowed and records UMA.
   // Otherwise, this returns the cached value.
+  // Records nothing for incognito Profiles and returns false.
   bool IsBlacklisted();
 
   // Reports whether the page was an opt out or not to the blacklist.
