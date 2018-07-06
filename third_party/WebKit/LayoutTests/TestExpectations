@@ -2525,9 +2525,6 @@ crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 crbug.com/v8/7486 http/tests/devtools/startup/console/console-format-startup-bigint.js [ Skip ]
 crbug.com/v8/7486 http/tests/devtools/console/console-format-bigint.js [ Skip ]
 
-crbug.com/860101 [ Mac10.13 Debug ] http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
-crbug.com/860101 [ Mac10.13 Debug ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
-
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
