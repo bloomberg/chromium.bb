@@ -16,17 +16,19 @@ def DoGcc(options):
   gcc_cmd = [ 'gcc' ]  # invoke host gcc.
   if options.defines:
     gcc_cmd.extend(sum(map(lambda w: ['-D', w], options.defines), []))
-  gcc_cmd.extend([
-      '-E',                  # stop after preprocessing.
-      '-D', 'ANDROID',       # Specify ANDROID define for pre-processor.
-      '-x', 'c-header',      # treat sources as C header files
-      '-P',                  # disable line markers, i.e. '#line 309'
-      '-I', options.include_path,
-      '-o', options.output,
-      options.template
-      ])
 
-  build_utils.CheckOutput(gcc_cmd)
+  with build_utils.AtomicOutput(options.output) as f:
+    gcc_cmd.extend([
+        '-E',                  # stop after preprocessing.
+        '-D', 'ANDROID',       # Specify ANDROID define for pre-processor.
+        '-x', 'c-header',      # treat sources as C header files
+        '-P',                  # disable line markers, i.e. '#line 309'
+        '-I', options.include_path,
+        '-o', f.name,
+        options.template
+    ])
+
+    build_utils.CheckOutput(gcc_cmd)
 
 
 def main(args):

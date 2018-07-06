@@ -31,7 +31,8 @@ def main():
   output = options.output
   base_dir = options.base_dir
 
-  build_utils.DoZip(inputs, output, base_dir)
+  with build_utils.AtomicOutput(output) as f:
+    build_utils.DoZip(inputs, f, base_dir)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, output)

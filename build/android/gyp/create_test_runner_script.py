@@ -153,7 +153,7 @@ def main(args):
         ('--robolectric-runtime-deps-dir',
          RelativizePathToScript(args.robolectric_runtime_deps_dir)))
 
-  with open(args.script_output_path, 'w') as script:
+  with build_utils.AtomicOutput(args.script_output_path) as script:
     script.write(SCRIPT_TEMPLATE.format(
         test_runner_path=str(test_runner_path),
         test_runner_args=str(test_runner_args),

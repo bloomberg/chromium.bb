@@ -62,8 +62,9 @@ def main():
 
   path_transform = _CreatePathTransform(
       args.exclude_globs, args.include_globs, args.strip_resource_classes_for)
-  build_utils.MergeZips(
-      args.output, [args.input], path_transform=path_transform)
+  with build_utils.AtomicOutput(args.output) as f:
+    build_utils.MergeZips(
+        f.name, [args.input], path_transform=path_transform)
 
 
 if __name__ == '__main__':
