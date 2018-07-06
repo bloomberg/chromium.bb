@@ -91,6 +91,11 @@ class MockDrmDevice : public DrmDevice {
                        const std::vector<PlaneProperties>& plane_properties,
                        const std::map<uint32_t, std::string>& property_names,
                        bool use_atomic);
+  bool InitializeStateWithResult(
+      const std::vector<CrtcProperties>& crtc_properties,
+      const std::vector<PlaneProperties>& plane_properties,
+      const std::map<uint32_t, std::string>& property_names,
+      bool use_atomic);
 
   void RunCallbacks();
 

@@ -101,6 +101,15 @@ void MockDrmDevice::InitializeState(
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
+  CHECK(InitializeStateWithResult(crtc_properties, plane_properties,
+                                  property_names, use_atomic));
+}
+
+bool MockDrmDevice::InitializeStateWithResult(
+    const std::vector<CrtcProperties>& crtc_properties,
+    const std::vector<PlaneProperties>& plane_properties,
+    const std::map<uint32_t, std::string>& property_names,
+    bool use_atomic) {
   crtc_properties_ = crtc_properties;
   plane_properties_ = plane_properties;
   property_names_ = property_names;
@@ -110,7 +119,7 @@ void MockDrmDevice::InitializeState(
     plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
   }
 
-  CHECK(plane_manager_->Initialize(this));
+  return plane_manager_->Initialize(this);
 }
 
 MockDrmDevice::~MockDrmDevice() {}

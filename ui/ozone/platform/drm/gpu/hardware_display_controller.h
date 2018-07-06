@@ -173,7 +173,8 @@ class HardwareDisplayController {
  private:
   void OnModesetComplete(const DrmOverlayPlane& primary);
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
-                              scoped_refptr<PageFlipRequest> page_flip_request);
+                              scoped_refptr<PageFlipRequest> page_flip_request,
+                              std::unique_ptr<gfx::GpuFence>* out_fence);
 
   HardwareDisplayPlaneList owned_hardware_planes_;
 

@@ -18,6 +18,7 @@
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace gfx {
+class GpuFence;
 class Rect;
 }  // namespace gfx
 
@@ -101,8 +102,13 @@ class HardwareDisplayPlaneManager {
   //
   // If |page_flip_request| is null, this tests the plane configuration without
   // submitting it.
+  // The fence returned in |out_fence| will signal when the currently scanned
+  // out buffers are replaced, and not when the buffers are scheduled with
+  // |page_flip_request|. Note that the returned fence may be a nullptr
+  // if the system doesn't support out fences.
   virtual bool Commit(HardwareDisplayPlaneList* plane_list,
-                      scoped_refptr<PageFlipRequest> page_flip_request) = 0;
+                      scoped_refptr<PageFlipRequest> page_flip_request,
+                      std::unique_ptr<gfx::GpuFence>* out_fence) = 0;
 
   // Disable all the overlay planes previously submitted and now stored in
   // plane_list->old_plane_list.
@@ -147,6 +153,7 @@ class HardwareDisplayPlaneManager {
     DrmDevice::Property gamma_lut_size;
     DrmDevice::Property degamma_lut;
     DrmDevice::Property degamma_lut_size;
+    DrmDevice::Property out_fence_ptr;
   };
 
   bool InitializeCrtcProperties(DrmDevice* drm);

@@ -72,7 +72,8 @@ class DrmWindowTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void OnSubmission(gfx::SwapResult result) {
+  void OnSubmission(gfx::SwapResult result,
+                    std::unique_ptr<gfx::GpuFence> out_fence) {
     last_swap_buffers_result_ = result;
   }
 

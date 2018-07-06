@@ -94,7 +94,8 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
-  void OnSubmission(gfx::SwapResult result);
+  void OnSubmission(gfx::SwapResult result,
+                    std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   GbmSurfaceFactory* surface_factory_;

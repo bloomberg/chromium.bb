@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
@@ -100,8 +101,10 @@ void HardwareDisplayController::SchedulePageFlip(
   DCHECK(!page_flip_request_);
   scoped_refptr<PageFlipRequest> page_flip_request =
       base::MakeRefCounted<PageFlipRequest>(GetRefreshInterval());
+  std::unique_ptr<gfx::GpuFence> out_fence;
 
-  bool status = ScheduleOrTestPageFlip(plane_list, page_flip_request);
+  bool status =
+      ScheduleOrTestPageFlip(plane_list, page_flip_request, &out_fence);
   CHECK(status) << "SchedulePageFlip failed";
 
   if (page_flip_request->page_flip_count() == 0) {
@@ -109,12 +112,13 @@ void HardwareDisplayController::SchedulePageFlip(
     // able to happen but both CrtcController::AssignOverlayPlanes and
     // HardwareDisplayPlaneManagerLegacy::Commit appear to have cases
     // where we ACK without actually scheduling a page flip.
-    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
-  std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+  std::move(submission_callback)
+      .Run(gfx::SwapResult::SWAP_ACK, std::move(out_fence));
 
   // Everything was submitted successfully, wait for asynchronous completion.
   page_flip_request->TakeCallback(base::BindOnce(
@@ -125,12 +129,13 @@ void HardwareDisplayController::SchedulePageFlip(
 
 bool HardwareDisplayController::TestPageFlip(
     const DrmOverlayPlaneList& plane_list) {
-  return ScheduleOrTestPageFlip(plane_list, nullptr);
+  return ScheduleOrTestPageFlip(plane_list, nullptr, nullptr);
 }
 
 bool HardwareDisplayController::ScheduleOrTestPageFlip(
     const DrmOverlayPlaneList& plane_list,
-    scoped_refptr<PageFlipRequest> page_flip_request) {
+    scoped_refptr<PageFlipRequest> page_flip_request,
+    std::unique_ptr<gfx::GpuFence>* out_fence) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
   DCHECK(!is_disabled_);
 
@@ -151,8 +156,8 @@ bool HardwareDisplayController::ScheduleOrTestPageFlip(
                                               pending_planes);
   }
 
-  status &= GetDrmDevice()->plane_manager()->Commit(&owned_hardware_planes_,
-                                                    page_flip_request);
+  status &= GetDrmDevice()->plane_manager()->Commit(
+      &owned_hardware_planes_, page_flip_request, out_fence);
 
   return status;
 }
