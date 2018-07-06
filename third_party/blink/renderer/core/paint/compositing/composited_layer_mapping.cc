@@ -1530,7 +1530,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
     IntPoint parent_location(
         child_containment_layer_->Parent()->OffsetFromLayoutObject());
     child_containment_layer_->SetPosition(
-        IntPoint(clipping_box.Location() - parent_location));
+        FloatPoint(clipping_box.Location() - parent_location));
   } else {
     IntRect clipping_box = PixelSnappedIntRect(
         ToLayoutBox(GetLayoutObject())
@@ -1541,7 +1541,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
     IntPoint parent_location(
         child_containment_layer_->Parent()->OffsetFromLayoutObject());
     child_containment_layer_->SetPosition(
-        IntPoint(clipping_box.Location() - parent_location));
+        FloatPoint(clipping_box.Location() - parent_location));
   }
 
   if (child_clipping_mask_layer_ && !scrolling_layer_ &&
@@ -1773,7 +1773,7 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
   }
   IntPoint parent_location(ParentForSublayers()->OffsetFromLayoutObject());
   foreground_layer_->SetPosition(
-      IntPoint(compositing_bounds.Location() - parent_location));
+      FloatPoint(compositing_bounds.Location() - parent_location));
 }
 
 void CompositedLayerMapping::UpdateDecorationOutlineLayerGeometry(
