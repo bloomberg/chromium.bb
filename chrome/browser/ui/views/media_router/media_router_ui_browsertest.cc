@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -113,6 +114,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   bool ActionExists() {
+    base::RunLoop().RunUntilIdle();
     return ToolbarActionsModel::Get(browser()->profile())
         ->HasComponentAction(
             ComponentToolbarActionsFactory::kMediaRouterActionId);
@@ -364,16 +366,19 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
   // Get the index for "Hide in Chrome menu" / "Show in toolbar" menu item.
   const int command_index = GetActionContextMenu()->GetIndexOfCommandId(
       IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR);
+  GetMediaRouterAction()->OnContextMenuClosed();
 
   // Start out with the action visible on the main bar.
   EXPECT_TRUE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
   GetActionContextMenu()->ActivatedAt(command_index);
+  GetMediaRouterAction()->OnContextMenuClosed();
 
   // The action should get hidden in the overflow menu.
   EXPECT_FALSE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
   GetActionContextMenu()->ActivatedAt(command_index);
+  GetMediaRouterAction()->OnContextMenuClosed();
 
   // The action should be back on the main bar.
   EXPECT_TRUE(

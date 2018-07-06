@@ -14,7 +14,13 @@
 namespace media_router {
 
 MediaRouterUIService::MediaRouterUIService(Profile* profile)
+    : MediaRouterUIService(profile, nullptr) {}
+
+MediaRouterUIService::MediaRouterUIService(
+    Profile* profile,
+    std::unique_ptr<MediaRouterActionController> action_controller)
     : profile_(profile),
+      action_controller_(std::move(action_controller)),
       profile_pref_registrar_(std::make_unique<PrefChangeRegistrar>()) {
   profile_pref_registrar_->Init(profile->GetPrefs());
   profile_pref_registrar_->Add(

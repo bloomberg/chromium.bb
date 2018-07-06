@@ -14,8 +14,10 @@
 #include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/grit/generated_resources.h"
@@ -135,11 +137,15 @@ gfx::NativeView MediaRouterAction::GetPopupNativeView() {
 }
 
 ui::MenuModel* MediaRouterAction::GetContextMenu() {
+  MediaRouterActionController* controller =
+      media_router::MediaRouterUIService::Get(browser_->profile())
+          ->action_controller();
   if (toolbar_actions_bar_->IsActionVisibleOnMainBar(this)) {
-    contextual_menu_ = MediaRouterContextualMenu::CreateForToolbar(browser_);
+    contextual_menu_ =
+        MediaRouterContextualMenu::CreateForToolbar(browser_, controller);
   } else {
     contextual_menu_ =
-        MediaRouterContextualMenu::CreateForOverflowMenu(browser_);
+        MediaRouterContextualMenu::CreateForOverflowMenu(browser_, controller);
   }
   return contextual_menu_->menu_model();
 }
@@ -149,6 +155,7 @@ void MediaRouterAction::OnContextMenuClosed() {
       !GetMediaRouterDialogController()->IsShowingMediaRouterDialog()) {
     toolbar_actions_bar_->UndoPopOut();
   }
+  contextual_menu_.reset();
 }
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {

@@ -37,24 +37,30 @@
 
 // static
 std::unique_ptr<MediaRouterContextualMenu>
-MediaRouterContextualMenu::CreateForToolbar(Browser* browser) {
+MediaRouterContextualMenu::CreateForToolbar(Browser* browser,
+                                            Observer* observer) {
   return std::make_unique<MediaRouterContextualMenu>(
       browser, true,
-      MediaRouterActionController::IsActionShownByPolicy(browser->profile()));
+      MediaRouterActionController::IsActionShownByPolicy(browser->profile()),
+      observer);
 }
 
 // static
 std::unique_ptr<MediaRouterContextualMenu>
-MediaRouterContextualMenu::CreateForOverflowMenu(Browser* browser) {
+MediaRouterContextualMenu::CreateForOverflowMenu(Browser* browser,
+                                                 Observer* observer) {
   return std::make_unique<MediaRouterContextualMenu>(
       browser, false,
-      MediaRouterActionController::IsActionShownByPolicy(browser->profile()));
+      MediaRouterActionController::IsActionShownByPolicy(browser->profile()),
+      observer);
 }
 
 MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                                      bool is_action_in_toolbar,
-                                                     bool shown_by_policy)
-    : browser_(browser),
+                                                     bool shown_by_policy,
+                                                     Observer* observer)
+    : observer_(observer),
+      browser_(browser),
       menu_model_(this),
       is_action_in_toolbar_(is_action_in_toolbar) {
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
@@ -90,9 +96,12 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
     menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
                                     IDS_MEDIA_ROUTER_REPORT_ISSUE);
   }
+  observer_->OnContextMenuShown();
 }
 
-MediaRouterContextualMenu::~MediaRouterContextualMenu() {}
+MediaRouterContextualMenu::~MediaRouterContextualMenu() {
+  observer_->OnContextMenuHidden();
+}
 
 bool MediaRouterContextualMenu::GetAlwaysShowActionPref() const {
   return MediaRouterActionController::GetAlwaysShowActionPref(

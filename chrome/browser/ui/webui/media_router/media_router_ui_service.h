@@ -25,6 +25,10 @@ class MediaRouterUIService : public KeyedService {
   };
 
   explicit MediaRouterUIService(Profile* profile);
+  // Used by tests to inject an action controller.
+  MediaRouterUIService(
+      Profile* profile,
+      std::unique_ptr<MediaRouterActionController> action_controller);
   ~MediaRouterUIService() override;
 
   // KeyedService:
