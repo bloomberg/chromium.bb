@@ -3315,6 +3315,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8"
       label="CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER"/>
   <int value="9" label="CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING"/>
+  <int value="10" label="CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED"/>
+  <int value="11"
+      label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
+  <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP"/>
+  <int value="13" label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM"/>
 </enum>
 
 <enum name="BadSyncDataReason">
