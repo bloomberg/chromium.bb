@@ -66,7 +66,7 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
       std::make_unique<AshPopupAlignmentDelegate>(owner->shelf());
   message_popup_collection_ =
       std::make_unique<message_center::MessagePopupCollection>(
-          message_center::MessageCenter::Get(), ui_controller_.get(),
+          message_center::MessageCenter::Get(),
           popup_alignment_delegate_.get());
   display::Screen* screen = display::Screen::GetScreen();
   popup_alignment_delegate_->StartObserving(

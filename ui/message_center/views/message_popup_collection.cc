@@ -22,7 +22,6 @@
 #include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
@@ -46,10 +45,8 @@ const int kToastMarginY = kMarginBetweenPopups;
 
 MessagePopupCollection::MessagePopupCollection(
     MessageCenter* message_center,
-    UiController* tray,
     PopupAlignmentDelegate* alignment_delegate)
     : message_center_(message_center),
-      tray_(tray),
       alignment_delegate_(alignment_delegate) {
   DCHECK(message_center_);
   message_center_->AddObserver(this);

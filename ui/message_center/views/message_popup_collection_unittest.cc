@@ -80,7 +80,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
     MessageCenter::Initialize();
     MessageCenter::Get()->DisableTimersForTest();
     alignment_delegate_.reset(new TestPopupAlignmentDelegate(GetContext()));
-    collection_.reset(new MessagePopupCollection(MessageCenter::Get(), NULL,
+    collection_.reset(new MessagePopupCollection(MessageCenter::Get(),
                                                  alignment_delegate_.get()));
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume

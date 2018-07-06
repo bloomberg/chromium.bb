@@ -321,8 +321,7 @@ NotificationTray::NotificationTray(Shelf* shelf,
   popup_alignment_delegate_ =
       std::make_unique<AshPopupAlignmentDelegate>(shelf);
   popup_collection_ = std::make_unique<message_center::MessagePopupCollection>(
-      message_center(), message_center_ui_controller_.get(),
-      popup_alignment_delegate_.get());
+      message_center(), popup_alignment_delegate_.get());
   display::Screen* screen = display::Screen::GetScreen();
   popup_alignment_delegate_->StartObserving(
       screen, screen->GetDisplayNearestWindow(status_area_window_));
