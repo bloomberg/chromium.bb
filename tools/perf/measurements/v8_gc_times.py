@@ -37,7 +37,7 @@ class V8GCTimes(legacy_page_test.LegacyPageTest):
     trace_data = tab.browser.platform.tracing_controller.StopTracing()[0]
     timeline_model = TimelineModel(trace_data)
 
-    renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
+    renderer_process = timeline_model.GetFirstRendererProcess(tab.id)
     self._AddV8MetricsToResults(renderer_process, results)
 
   def DidRunPage(self, platform):

@@ -68,8 +68,8 @@ class TimelineController(object):
         results.current_page, timeline_data, **kwargs))
 
     self._model = TimelineModel(timeline_data)
-    self._renderer_process = self._model.GetRendererProcessFromTabId(tab.id)
-    renderer_thread = self.model.GetRendererThreadFromTabId(tab.id)
+    renderer_thread = self.model.GetFirstRendererThread(tab.id)
+    self._renderer_process = renderer_thread.parent
 
     run_smooth_actions_record = None
     self._smooth_records = []

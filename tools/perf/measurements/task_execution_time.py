@@ -56,7 +56,7 @@ class TaskExecutionTime(legacy_page_test.LegacyPageTest):
     trace_data = tab.browser.platform.tracing_controller.StopTracing()[0]
     timeline_model = TimelineModel(trace_data)
 
-    self._renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
+    self._renderer_process = timeline_model.GetFirstRendererProcess(tab.id)
     self._browser_process = timeline_model.browser_process
     self._AddResults(results)
 
