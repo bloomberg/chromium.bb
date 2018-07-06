@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ class EventDispatchForbiddenScope {
   };
 
  private:
-  PLATFORM_EXPORT static unsigned count_;
+  CORE_EXPORT static unsigned count_;
 };
 
 #else
@@ -72,4 +72,4 @@ class EventDispatchForbiddenScope {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
