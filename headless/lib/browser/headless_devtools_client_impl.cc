@@ -116,6 +116,7 @@ HeadlessDevToolsClientImpl::CreateSession(const std::string& session_id) {
       std::make_unique<HeadlessDevToolsClientImpl>();
   client->parent_client_ = this;
   client->session_id_ = session_id;
+  client->browser_main_thread_ = browser_main_thread_;
   sessions_[session_id] = client.get();
   return client;
 }
