@@ -38,8 +38,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -81,8 +81,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -124,8 +124,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -170,8 +170,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 16,
@@ -213,8 +213,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -261,8 +261,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -304,8 +304,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -347,8 +347,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -390,8 +390,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -436,8 +436,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 16,
@@ -479,8 +479,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -529,8 +529,8 @@
               "pool": "chrome.tests.perf-webview"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 16,
@@ -579,8 +579,8 @@
               "pool": "chrome.tests.perf-webview"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 16,
@@ -629,8 +629,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 16,
@@ -672,8 +672,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -736,8 +736,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 5,
@@ -781,8 +781,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -822,8 +822,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -866,8 +866,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 5,
@@ -907,8 +907,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -952,8 +952,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -993,8 +993,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1034,8 +1034,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1077,8 +1077,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1121,8 +1121,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 5,
@@ -1164,8 +1164,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1209,8 +1209,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1250,8 +1250,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1291,8 +1291,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1335,8 +1335,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 5,
@@ -1390,8 +1390,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1431,8 +1431,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1472,8 +1472,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1516,8 +1516,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 26,
@@ -1557,8 +1557,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1602,8 +1602,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1643,8 +1643,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1687,8 +1687,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 26,
@@ -1732,8 +1732,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1773,8 +1773,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
@@ -1817,8 +1817,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 26,
@@ -1858,8 +1858,8 @@
               "pool": "chrome.tests.perf"
             }
           ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
+          "expiration": 21600,
+          "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 1,
