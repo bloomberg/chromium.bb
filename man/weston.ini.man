@@ -406,31 +406,11 @@ for more details.
 sets the output mode (string). The mode parameter is handled differently
 depending on the backend. On the X11 backend, it just sets the WIDTHxHEIGHT of
 the weston window.
-The DRM backend accepts different modes:
-.PP
-.RS 10
-.nf
-.BR "WIDTHxHEIGHT    " "Resolution size width and height in pixels"
-.BR "preferred       " "Uses the preferred mode"
-.BR "current         " "Uses the current crt controller mode"
-.BR "off             " "Disables the output"
-.fi
-.RE
-.RS
-.PP
-Optionally, a user may specify a modeline, such as:
-.PP
-.nf
-.in +4n
-.nf
-173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
-.fi
-.in
-.PP
-It consists of the refresh rate in Hz, horizontal and vertical resolution,
-options for horizontal and vertical synchronisation. The program
-.B "cvt(1)"
-can provide suitable modeline string.
+The DRM backend accepts different modes, along with an option of a modeline string.
+
+See
+.B "weston-drm(7)"
+for examples of modes-formats supported by DRM backend.
 .RE
 .TP 7
 .BI "transform=" normal
