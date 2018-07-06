@@ -566,9 +566,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
-  g_routing_id_frame_map.Get().insert(std::make_pair(
-      RenderFrameHostID(GetProcess()->GetID(), routing_id_),
-      this));
+  g_routing_id_frame_map.Get().emplace(
+      RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);
   site_instance_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
@@ -703,8 +702,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.  (It may also be null in tests.)
   swapout_event_monitor_timeout_.reset();
 
-  for (const auto& iter : visual_state_callbacks_)
-    iter.second.Run(false);
+  for (auto& iter : visual_state_callbacks_)
+    std::move(iter.second).Run(false);
 
   if (render_widget_host_ &&
       render_widget_host_->owned_by_render_frame_host()) {
@@ -826,7 +825,7 @@ void RenderFrameHostImpl::ExecuteJavaScript(
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
                                              javascript,
                                              key, true));
-  javascript_callbacks_.insert(std::make_pair(key, callback));
+  javascript_callbacks_.emplace(key, callback);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
@@ -842,7 +841,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
   int key = g_next_javascript_callback_id++;
   Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_, javascript,
                                                      key, true, false));
-  javascript_callbacks_.insert(std::make_pair(key, callback));
+  javascript_callbacks_.emplace(key, callback);
 }
 
 
@@ -869,7 +868,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
   if (!callback.is_null()) {
     request_reply = true;
     key = g_next_javascript_callback_id++;
-    javascript_callbacks_.insert(std::make_pair(key, callback));
+    javascript_callbacks_.emplace(key, callback);
   }
 
   Send(new FrameMsg_JavaScriptExecuteRequestInIsolatedWorld(
@@ -2134,7 +2133,7 @@ void RenderFrameHostImpl::OnSmartClipDataExtracted(int32_t callback_id,
 void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
   auto it = visual_state_callbacks_.find(id);
   if (it != visual_state_callbacks_.end()) {
-    it->second.Run(true);
+    std::move(it->second).Run(true);
     visual_state_callbacks_.erase(it);
   } else {
     NOTREACHED() << "Received script response for unknown request";
@@ -4168,8 +4167,7 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   int callback_id = next_id++;
   Send(new AccessibilityMsg_SnapshotTree(routing_id_, callback_id,
                                          ax_mode.mode()));
-  ax_tree_snapshot_callbacks_.insert(
-      std::make_pair(callback_id, std::move(callback)));
+  ax_tree_snapshot_callbacks_.emplace(callback_id, std::move(callback));
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
@@ -4231,11 +4229,11 @@ void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
 }
 
 void RenderFrameHostImpl::InsertVisualStateCallback(
-    const VisualStateCallback& callback) {
+    VisualStateCallback callback) {
   static uint64_t next_id = 1;
   uint64_t key = next_id++;
   Send(new FrameMsg_VisualStateRequest(routing_id_, key));
-  visual_state_callbacks_.insert(std::make_pair(key, callback));
+  visual_state_callbacks_.emplace(key, std::move(callback));
 }
 
 bool RenderFrameHostImpl::IsRenderFrameLive() {

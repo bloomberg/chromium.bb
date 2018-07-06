@@ -200,9 +200,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // call are visible on screen. The call completes asynchronously by running
   // the supplied |callback| with a value of true upon successful completion and
   // false otherwise (when the frame is destroyed, detached, etc..).
-  typedef base::Callback<void(bool)> VisualStateCallback;
-  virtual void InsertVisualStateCallback(
-      const VisualStateCallback& callback) = 0;
+  using VisualStateCallback = base::OnceCallback<void(bool)>;
+  virtual void InsertVisualStateCallback(VisualStateCallback callback) = 0;
 
   // Copies the image at the location in viewport coordinates (not frame
   // coordinates) to the clipboard. If there is no image at that location, does
