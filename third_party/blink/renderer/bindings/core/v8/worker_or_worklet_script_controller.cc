@@ -136,7 +136,9 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
     debugger->ContextWillBeDestroyed(global_scope_->GetThread(),
                                      script_state_->GetContext());
   }
+
   script_state_->DisposePerContextData();
+  script_state_->DissociateContext();
 }
 
 bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(

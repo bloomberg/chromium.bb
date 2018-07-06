@@ -146,6 +146,12 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
   V8PerContextData* PerContextData() const { return per_context_data_.get(); }
   void DisposePerContextData();
 
+  // This method is expected to be called only from
+  // WorkerOrWorkletScriptController to run operations that should have been
+  // invoked by a weak callback if a V8 GC were run, in a worker thread
+  // termination.
+  void DissociateContext();
+
  protected:
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
 

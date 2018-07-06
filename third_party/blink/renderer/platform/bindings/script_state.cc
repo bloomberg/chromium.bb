@@ -61,4 +61,22 @@ void ScriptState::DisposePerContextData() {
       InstanceCounters::kDetachedScriptStateCounter);
 }
 
+void ScriptState::DissociateContext() {
+  DCHECK(!per_context_data_);
+
+  // On a worker thread we tear down V8's isolate without running a GC.
+  // Alternately we manually clear all references between V8 and Blink, and run
+  // operations that should have been invoked by weak callbacks if a GC were
+  // run.
+
+  v8::HandleScope scope(GetIsolate());
+  // Cut the reference from V8 context to ScriptState.
+  GetContext()->SetAlignedPointerInEmbedderData(kV8ContextPerContextDataIndex,
+                                                nullptr);
+  Release();
+
+  // Cut the reference from ScriptState to V8 context.
+  ClearContext();
+}
+
 }  // namespace blink
