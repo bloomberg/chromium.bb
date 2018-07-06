@@ -26,11 +26,13 @@ class AutofillProviderAndroid : public AutofillProvider {
   ~AutofillProviderAndroid() override;
 
   // AutofillProvider:
-  void OnQueryFormFieldAutofill(AutofillHandlerProxy* handler,
-                                int32_t id,
-                                const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box) override;
+  void OnQueryFormFieldAutofill(
+      AutofillHandlerProxy* handler,
+      int32_t id,
+      const FormData& form,
+      const FormFieldData& field,
+      const gfx::RectF& bounding_box,
+      bool /*unused_autoselect_first_suggestion*/) override;
   void OnTextFieldDidChange(AutofillHandlerProxy* handler,
                             const FormData& form,
                             const FormFieldData& field,

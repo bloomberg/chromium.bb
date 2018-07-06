@@ -106,10 +106,11 @@ class MockAutofillClient : public autofill::TestAutofillClient {
       : sync_service_(sync_service) {
     LOG(ERROR) << "init mpck client";
   }
-  MOCK_METHOD4(ShowAutofillPopup,
+  MOCK_METHOD5(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
                     const std::vector<Suggestion>& suggestions,
+                    bool autoselect_first_suggestion,
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
   MOCK_METHOD0(HideAutofillPopup, void());
   MOCK_METHOD1(ExecuteCommand, void(int));
@@ -269,7 +270,8 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     EXPECT_CALL(
         *autofill_client,
         ShowAutofillPopup(
-            _, _, SuggestionVectorIdsAre(testing::ElementsAreArray(ids)), _));
+            _, _, SuggestionVectorIdsAre(testing::ElementsAreArray(ids)), false,
+            _));
 
     int show_suggestion_options =
         is_suggestion_on_password_field ? autofill::IS_PASSWORD_FIELD : 0;
@@ -322,7 +324,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
               SuggestionVectorLabelsAre(testing::AllOf(
                   testing::Contains(base::UTF8ToUTF16(data.preferred_realm)),
                   testing::Contains(base::UTF8ToUTF16(additional.realm))))),
-          _));
+          false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), 0,
       element_bounds);
@@ -333,7 +335,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({additional_username}))),
-                        _));
+                        false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("John"), 0,
       element_bounds);
@@ -345,7 +347,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
           element_bounds, _,
           SuggestionVectorValuesAre(testing::ElementsAreArray(
               GetSuggestionList({test_username_, additional_username}))),
-          _));
+          false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"),
       autofill::SHOW_ALL, element_bounds);
@@ -379,7 +381,7 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
                                         "android://com.example1.android/")),
                                     testing::Contains(base::ASCIIToUTF16(
                                         "android://com.example2.android/")))),
-                                _));
+                                false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), 0, gfx::RectF());
 }
@@ -412,7 +414,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({test_username_}))),
-                        _));
+                        false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
@@ -453,7 +455,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
                   element_bounds, _,
                   SuggestionVectorValuesAre(testing::UnorderedElementsAreArray(
                       GetSuggestionList({username, additional_username}))),
-                  _));
+                  false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), 0,
       element_bounds);
@@ -489,7 +491,7 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
-  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _)).Times(0);
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _, _)).Times(0);
 
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("oo"), 0,
@@ -533,7 +535,7 @@ TEST_F(PasswordAutofillManagerTest,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({additional_username}))),
-                        _));
+                        false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo@exam"), 0,
       element_bounds);
@@ -576,7 +578,7 @@ TEST_F(PasswordAutofillManagerTest,
                   element_bounds, _,
                   SuggestionVectorValuesAre(testing::ElementsAreArray(
                       GetSuggestionList({username, additional_username}))),
-                  _));
+                  false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,
       element_bounds);
@@ -594,7 +596,7 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
 
   // Simulate that the user clicks on a username field.
-  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _));
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _, _));
   gfx::RectF element_bounds;
   password_autofill_manager_->OnShowPasswordSuggestions(
       fill_data_id(), base::i18n::RIGHT_TO_LEFT, base::string16(), false,
@@ -649,7 +651,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({test_username_}))),
-                        _));
+                        false, _));
 
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
@@ -721,7 +723,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({test_username_}))),
-                        _));
+                        false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
 }

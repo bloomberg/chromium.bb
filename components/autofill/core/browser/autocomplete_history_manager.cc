@@ -134,7 +134,7 @@ void AutocompleteHistoryManager::SendSuggestions(
     }
   }
 
-  external_delegate_->OnSuggestionsReturned(query_id_, suggestions);
+  external_delegate_->OnSuggestionsReturned(query_id_, suggestions, false);
   query_id_ = 0;
 }
 

@@ -77,6 +77,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
 void AutofillExternalDelegate::OnSuggestionsReturned(
     int query_id,
     const std::vector<Suggestion>& input_suggestions,
+    bool autoselect_first_suggestion,
     bool is_all_server_suggestions) {
   if (query_id != query_id_)
     return;
@@ -161,10 +162,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Send to display.
   if (query_field_.is_focusable) {
-    manager_->client()->ShowAutofillPopup(element_bounds_,
-                                          query_field_.text_direction,
-                                          suggestions,
-                                          GetWeakPtr());
+    manager_->client()->ShowAutofillPopup(
+        element_bounds_, query_field_.text_direction, suggestions,
+        autoselect_first_suggestion, GetWeakPtr());
   }
 }
 

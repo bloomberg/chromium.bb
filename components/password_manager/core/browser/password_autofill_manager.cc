@@ -244,10 +244,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     }
   }
 
-  autofill_client_->ShowAutofillPopup(bounds,
-                                      text_direction,
-                                      suggestions,
-                                      weak_ptr_factory_.GetWeakPtr());
+  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
+                                      false, weak_ptr_factory_.GetWeakPtr());
 }
 
 void PasswordAutofillManager::DidNavigateMainFrame() {

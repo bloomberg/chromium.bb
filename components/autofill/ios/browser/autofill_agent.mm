@@ -384,7 +384,9 @@ void GetFormAndField(autofill::FormData* form,
 
   // Query the AutofillManager for suggestions. Results will arrive in
   // [AutofillController showAutofillPopup].
-  autofillManager->OnQueryFormFieldAutofill(queryId, form, field, gfx::RectF());
+  autofillManager->OnQueryFormFieldAutofill(
+      queryId, form, field, gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName

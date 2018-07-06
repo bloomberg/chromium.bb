@@ -72,6 +72,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // to be displayed.  Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(int query_id,
                                      const std::vector<Suggestion>& suggestions,
+                                     bool autoselect_first_suggestion,
                                      bool is_all_server_suggestions = false);
 
   // Returns true if there is a screen reader installed on the machine.

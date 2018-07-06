@@ -126,8 +126,8 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
     : autofill_on_empty_values(false),
       requires_caret_at_end(false),
       show_full_suggestion_list(false),
-      show_password_suggestions_only(false) {
-}
+      show_password_suggestions_only(false),
+      autoselect_first_suggestion(false) {}
 
 AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
@@ -355,6 +355,8 @@ void AutofillAgent::TextFieldDidReceiveKeyDown(const WebInputElement& element,
     ShowSuggestionsOptions options;
     options.autofill_on_empty_values = true;
     options.requires_caret_at_end = true;
+    options.autoselect_first_suggestion =
+        ShouldAutoselectFirstSuggestionOnArrowDown();
     ShowSuggestions(element, options);
   }
 }
@@ -627,7 +629,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
     return;
   }
 
-  QueryAutofillSuggestions(element);
+  QueryAutofillSuggestions(element, options.autoselect_first_suggestion);
 }
 
 void AutofillAgent::SetQueryPasswordSuggestion(bool query) {
@@ -643,7 +645,8 @@ void AutofillAgent::SetFocusRequiresScroll(bool require) {
 }
 
 void AutofillAgent::QueryAutofillSuggestions(
-    const WebFormControlElement& element) {
+    const WebFormControlElement& element,
+    bool autoselect_first_suggestion) {
   if (!element.GetDocument().GetFrame())
     return;
 
@@ -686,7 +689,8 @@ void AutofillAgent::QueryAutofillSuggestions(
   GetAutofillDriver()->SetDataList(data_list_values, data_list_labels);
   GetAutofillDriver()->QueryFormFieldAutofill(
       autofill_query_id_, form, field,
-      render_frame()->GetRenderView()->ElementBoundsInWindow(element_));
+      render_frame()->GetRenderView()->ElementBoundsInWindow(element_),
+      autoselect_first_suggestion);
 }
 
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,

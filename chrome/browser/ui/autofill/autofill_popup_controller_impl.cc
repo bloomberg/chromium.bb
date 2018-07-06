@@ -76,7 +76,8 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
-    const std::vector<autofill::Suggestion>& suggestions) {
+    const std::vector<autofill::Suggestion>& suggestions,
+    bool autoselect_first_suggestion) {
   SetValues(suggestions);
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());

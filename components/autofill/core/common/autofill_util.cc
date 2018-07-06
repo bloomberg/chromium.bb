@@ -201,4 +201,9 @@ bool SanitizedFieldIsEmpty(const base::string16& value) {
   return (value.find_first_not_of(formatting) == base::StringPiece::npos);
 }
 
+bool ShouldAutoselectFirstSuggestionOnArrowDown() {
+  // TODO(https://crbug.com/848427): Enable this on desktop.
+  return false;
+}
+
 }  // namespace autofill

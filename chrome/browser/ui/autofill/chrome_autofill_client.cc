@@ -273,6 +273,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
     const std::vector<autofill::Suggestion>& suggestions,
+    bool autoselect_first_suggestion,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // TODO(https://crbug.com/779126): We currently don't support rendering popups
   // while in VR, so we just don't show it.
@@ -293,7 +294,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
                                                element_bounds_in_screen_space,
                                                text_direction);
 
-  popup_controller_->Show(suggestions);
+  popup_controller_->Show(suggestions, autoselect_first_suggestion);
 }
 
 void ChromeAutofillClient::UpdateAutofillPopupDataListValues(

@@ -154,6 +154,10 @@ class AutofillAgent : public content::RenderFrameObserver,
     // Specifies that only show a suggestions box if |element| is part of a
     // password form, otherwise show no suggestions.
     bool show_password_suggestions_only;
+
+    // Specifies that the first suggestion must be auto-selected when the
+    // dropdown is shown. Enabled when the user presses ARROW_DOWN on a field.
+    bool autoselect_first_suggestion;
   };
 
   // content::RenderFrameObserver:
@@ -213,7 +217,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
-  void QueryAutofillSuggestions(const blink::WebFormControlElement& element);
+  void QueryAutofillSuggestions(const blink::WebFormControlElement& element,
+                                bool autoselect_first_suggestion);
 
   // Sets the element value to reflect the selected |suggested_value|.
   void DoAcceptDataListSuggestion(const base::string16& suggested_value);

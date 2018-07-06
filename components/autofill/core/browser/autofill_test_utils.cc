@@ -506,7 +506,8 @@ void GenerateTestAutofillPopup(
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(base::ASCIIToUTF16("Test suggestion")));
-  autofill_external_delegate->OnSuggestionsReturned(query_id, suggestions);
+  autofill_external_delegate->OnSuggestionsReturned(
+      query_id, suggestions, /*autoselect_first_suggestion=*/false);
 }
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {

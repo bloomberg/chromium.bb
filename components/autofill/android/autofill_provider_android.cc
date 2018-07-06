@@ -53,7 +53,8 @@ void AutofillProviderAndroid::OnQueryFormFieldAutofill(
     int32_t id,
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const gfx::RectF& bounding_box,
+    bool /*unused_autoselect_first_suggestion*/) {
   // The id isn't passed to Java side because Android API guarantees the
   // response is always for current session, so we just use the current id
   // in response, see OnAutofillAvailable.
