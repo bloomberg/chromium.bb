@@ -13,7 +13,6 @@ EXTRA_DIST =					\
 	inpos_pass2.ctb				\
 	inpos_pass3.ctb				\
 	large.ctb				\
-	letterDefTest.ctb			\
 	loop.ctb				\
 	lowercase_with_unicode.ctb		\
 	new_emph.utb				\
