@@ -73,7 +73,7 @@ def main(args):
       'split_globs': options.split_globs,
   }
 
-  with open(options.output_path, 'w') as f:
+  with build_utils.AtomicOutput(options.output_path) as f:
     json.dump(data, f, indent=2, sort_keys=True)
 
   if options.depfile:

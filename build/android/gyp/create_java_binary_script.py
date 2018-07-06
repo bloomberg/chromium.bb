@@ -96,7 +96,7 @@ def main(argv):
   bootclasspath = [os.path.relpath(p, run_dir) for p in bootclasspath]
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
 
-  with open(options.output, 'w') as script:
+  with build_utils.AtomicOutput(options.output) as script:
     script.write(script_template.format(
       classpath=('"%s"' % '", "'.join(classpath)),
       bootclasspath=('"%s"' % '", "'.join(bootclasspath)

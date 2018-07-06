@@ -146,6 +146,9 @@ def AtomicOutput(path, only_if_changed=True):
   with tempfile.NamedTemporaryFile(suffix=os.path.basename(path),
                                    dir=os.path.dirname(path)) as f:
     yield f
+
+    # Written content should be flushed before comparison.
+    f.file.flush()
     if not (
         only_if_changed and os.path.exists(path) and filecmp.cmp(f.name, path)):
       shutil.move(f.name, path)

@@ -65,7 +65,7 @@ def main(args):
     for p in build_utils.ParseGnList(args.packed_libs):
       script_path_args.append(('--packed-lib', relativize(p)))
 
-  with open(args.script_output_path, 'w') as script:
+  with build_utils.AtomicOutput(args.script_output_path) as script:
     script.write(SCRIPT_TEMPLATE.format(
         script_path=script_path,
         script_args=script_args,
