@@ -21,9 +21,7 @@
 namespace timers {
 
 SimpleAlarmTimer::SimpleAlarmTimer()
-    : base::Timer(true, false),
-      alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, 0)),
-      weak_factory_(this) {}
+    : alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, 0)), weak_factory_(this) {}
 
 SimpleAlarmTimer::~SimpleAlarmTimer() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
@@ -37,24 +35,24 @@ void SimpleAlarmTimer::Stop() {
     return;
 
   if (!CanWakeFromSuspend()) {
-    base::Timer::Stop();
+    base::RetainingOneShotTimer::Stop();
     return;
   }
 
   // Cancel any previous callbacks.
   weak_factory_.InvalidateWeakPtrs();
 
-  base::Timer::set_is_running(false);
+  base::RetainingOneShotTimer::set_is_running(false);
   alarm_fd_watcher_.reset();
   pending_task_.reset();
 }
 
 void SimpleAlarmTimer::Reset() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!base::Timer::user_task().is_null());
+  DCHECK(!base::RetainingOneShotTimer::user_task().is_null());
 
   if (!CanWakeFromSuspend()) {
-    base::Timer::Reset();
+    base::RetainingOneShotTimer::Reset();
     return;
   }
 
@@ -63,15 +61,16 @@ void SimpleAlarmTimer::Reset() {
   alarm_fd_watcher_.reset();
 
   // Ensure that the delay is not negative.
-  const base::TimeDelta delay =
-      std::max(base::TimeDelta(), base::Timer::GetCurrentDelay());
+  const base::TimeDelta delay = std::max(
+      base::TimeDelta(), base::RetainingOneShotTimer::GetCurrentDelay());
 
   // Set up the pending task.
-  base::Timer::set_desired_run_time(
+  base::RetainingOneShotTimer::set_desired_run_time(
       delay.is_zero() ? base::TimeTicks() : base::TimeTicks::Now() + delay);
   pending_task_ = std::make_unique<base::PendingTask>(
-      base::Timer::posted_from(), base::Timer::user_task(),
-      base::Timer::desired_run_time());
+      base::RetainingOneShotTimer::posted_from(),
+      base::RetainingOneShotTimer::user_task(),
+      base::RetainingOneShotTimer::desired_run_time());
 
   // Set |alarm_fd_| to be signaled when the delay expires. If the delay is
   // zero, |alarm_fd_| will never be signaled. This overrides the previous
@@ -85,7 +84,7 @@ void SimpleAlarmTimer::Reset() {
     PLOG(ERROR) << "Error while setting alarm time.  Timer will not fire";
 
   // The timer is running.
-  base::Timer::set_is_running(true);
+  base::RetainingOneShotTimer::set_is_running(true);
 
   // If the delay is zero, post the task now.
   if (delay.is_zero()) {
@@ -106,7 +105,7 @@ void SimpleAlarmTimer::Reset() {
 
 void SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(base::Timer::IsRunning());
+  DCHECK(base::RetainingOneShotTimer::IsRunning());
 
   // Read from |alarm_fd_| to ack the event.
   char val[sizeof(uint64_t)];
@@ -118,7 +117,7 @@ void SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking() {
 
 void SimpleAlarmTimer::OnTimerFired() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(base::Timer::IsRunning());
+  DCHECK(base::RetainingOneShotTimer::IsRunning());
   DCHECK(pending_task_.get());
 
   // Take ownership of the PendingTask to prevent it from being deleted if the

@@ -184,7 +184,7 @@ TEST_F(HeartbeatManagerTest, StartThenUpdateInterval) {
 // timer.
 TEST_F(HeartbeatManagerTest, UpdateTimerBeforeStart) {
   manager()->UpdateHeartbeatTimer(
-      base::WrapUnique(new base::Timer(true, false)));
+      std::make_unique<base::RetainingOneShotTimer>());
   EXPECT_TRUE(manager()->GetNextHeartbeatTime().is_null());
 }
 
@@ -195,7 +195,7 @@ TEST_F(HeartbeatManagerTest, UpdateTimerAfterStart) {
   base::TimeTicks heartbeat = manager()->GetNextHeartbeatTime();
 
   manager()->UpdateHeartbeatTimer(
-      base::WrapUnique(new base::Timer(true, false)));
+      std::make_unique<base::RetainingOneShotTimer>());
   EXPECT_LT(manager()->GetNextHeartbeatTime() - heartbeat,
             base::TimeDelta::FromMilliseconds(5));
 }

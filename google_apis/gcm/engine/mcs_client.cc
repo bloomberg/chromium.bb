@@ -378,7 +378,8 @@ void MCSClient::SendMessage(const MCSMessage& message) {
   MaybeSendMessage();
 }
 
-void MCSClient::UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) {
+void MCSClient::UpdateHeartbeatTimer(
+    std::unique_ptr<base::RetainingOneShotTimer> timer) {
   heartbeat_manager_.UpdateHeartbeatTimer(std::move(timer));
 }
 

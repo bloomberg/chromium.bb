@@ -200,7 +200,8 @@ void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
 void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
 }
 
-void FakeGCMClient::UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) {}
+void FakeGCMClient::UpdateHeartbeatTimer(
+    std::unique_ptr<base::RetainingOneShotTimer> timer) {}
 
 void FakeGCMClient::AddInstanceIDData(const std::string& app_id,
                                       const std::string& instance_id,

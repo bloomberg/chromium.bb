@@ -26,7 +26,7 @@
 
 namespace base {
 class Clock;
-class Timer;
+class RetainingOneShotTimer;
 }  // namespace base
 
 namespace google {
@@ -151,7 +151,7 @@ class GCM_EXPORT MCSClient {
   std::string GetStateString() const;
 
   // Updates the timer used by |heartbeat_manager_| for sending heartbeats.
-  void UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer);
+  void UpdateHeartbeatTimer(std::unique_ptr<base::RetainingOneShotTimer> timer);
 
   // Allows a caller to set a heartbeat interval (in milliseconds) with which
   // the MCS connection will be monitored on both ends, to detect device
