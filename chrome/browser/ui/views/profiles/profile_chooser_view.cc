@@ -852,14 +852,19 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   }
 
   if (autofill_home_view) {
+    const int content_list_vert_spacing =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
     if (!current_profile_signed_in) {
       // If the user is signed in then the autofill data is a part of the
       // account logically. Otherwise, use a separator.
       layout->StartRow(0, 0);
       layout->AddView(new views::Separator());
+      layout->AddPaddingRow(1.0, content_list_vert_spacing);
     }
     layout->StartRow(0, 0);
     layout->AddView(autofill_home_view);
+    layout->AddPaddingRow(1.0, content_list_vert_spacing);
   }
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
