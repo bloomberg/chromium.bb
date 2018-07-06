@@ -43,23 +43,26 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
 
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 AppCacheNavigationHandleCore::~AppCacheNavigationHandleCore() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   precreated_host_.reset(nullptr);
   g_appcache_handle_map.Get().erase(appcache_host_id_);
 }
 
 void AppCacheNavigationHandleCore::Initialize() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(precreated_host_.get() == nullptr);
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(precreated_host_.get() == nullptr);
   precreated_host_.reset(
       new AppCacheHost(appcache_host_id_, this, GetAppCacheService()));
 
-  DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
-         g_appcache_handle_map.Get().end());
+  CHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
+        g_appcache_handle_map.Get().end());
   g_appcache_handle_map.Get()[appcache_host_id_] = this;
 
   if (debug_log_)
@@ -69,7 +72,8 @@ void AppCacheNavigationHandleCore::Initialize() {
 // static
 std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
     int host_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   auto index = g_appcache_handle_map.Get().find(host_id);
   if (index != g_appcache_handle_map.Get().end()) {
     AppCacheNavigationHandleCore* instance = index->second;
@@ -91,16 +95,17 @@ AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
 }
 
 void AppCacheNavigationHandleCore::AddRequestToDebugLog(const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (debug_log_)
+  if (debug_log_) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     debug_log_->emplace_back("Req:host=" + HostToString() +
                              ",url=" + url.spec().substr(0, 64));
+  }
 }
 
 void AppCacheNavigationHandleCore::AddDefaultFactoryRunToDebugLog(
     bool was_request_intercepted) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (debug_log_) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     debug_log_->emplace_back(
         base::StringPrintf("Fac:host=%s,int=%s", HostToString().c_str(),
                            was_request_intercepted ? "T" : "F"));
@@ -108,21 +113,23 @@ void AppCacheNavigationHandleCore::AddDefaultFactoryRunToDebugLog(
 }
 
 void AppCacheNavigationHandleCore::AddCreateURLLoaderToDebugLog() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (debug_log_)
+  if (debug_log_) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     debug_log_->emplace_back("Load:host=" + HostToString());
+  }
 }
 
 void AppCacheNavigationHandleCore::AddNavigationStartToDebugLog() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (debug_log_)
+  if (debug_log_) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     debug_log_->emplace_back("Start:host=" + HostToString());
+  }
 }
 
 std::string AppCacheNavigationHandleCore::GetDebugLog() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!debug_log_)
     return "debug log is not enabled";
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::string log;
   for (const auto& event : *debug_log_)
     log += event + " ";
