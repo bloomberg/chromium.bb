@@ -4,6 +4,8 @@
 
 source_set("image_util") {
   sources = [
+    "image_copier.h",
+    "image_copier.mm",
     "image_saver.h",
     "image_saver.mm",
     "image_util.h",
@@ -16,6 +18,7 @@ source_set("image_util") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator_internal",
     "//net",
     "//ui/base",
   ]
