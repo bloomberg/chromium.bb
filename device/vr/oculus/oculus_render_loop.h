@@ -31,7 +31,11 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
                               mojom::VRPresentationProviderPtrInfo,
                               mojom::VRDisplayFrameTransportOptionsPtr)>;
 
-  OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid);
+  OculusRenderLoop(
+      base::RepeatingCallback<void()> on_presentation_ended,
+      base::RepeatingCallback<
+          void(ovrInputState, ovrInputState, ovrTrackingState, bool, bool)>
+          on_controller_updated);
   ~OculusRenderLoop() override;
 
   void RequestSession(mojom::XRDeviceRuntimeSessionOptionsPtr options,
@@ -62,6 +66,12 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   void CleanUp() override;
 
   void ClearPendingFrame();
+  void StartOvrSession();
+  void StopOvrSession();
+  void CreateOvrSwapChain();
+  void DestroyOvrSwapChain();
+
+  void UpdateControllerState();
 
   mojom::VRPosePtr GetPose();
 
@@ -89,13 +99,17 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   gfx::Size source_size_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   mojom::VRSubmitFrameClientPtr submit_client_;
-  ovrSession session_;
-  ovrGraphicsLuid luid_;
+  ovrSession session_ = nullptr;
+  ovrGraphicsLuid luid_ = {};
   ovrPosef last_render_pose_;
   ovrTextureSwapChain texture_swap_chain_ = 0;
   double sensor_time_;
   mojo::Binding<mojom::VRPresentationProvider> binding_;
   bool primary_input_pressed[kMaxOculusRenderLoopInputId];
+  base::RepeatingCallback<void()> on_presentation_ended_;
+  base::RepeatingCallback<
+      void(ovrInputState, ovrInputState, ovrTrackingState, bool, bool)>
+      on_controller_updated_;
 
   base::WeakPtrFactory<OculusRenderLoop> weak_ptr_factory_;
 

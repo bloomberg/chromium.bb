@@ -170,8 +170,8 @@ void SetTouchData(PadState* state,
 }  // namespace
 
 OculusGamepadDataFetcher::Factory::Factory(unsigned int display_id,
-                                           ovrSession session)
-    : display_id_(display_id), session_(session) {
+                                           OculusGamepadDataProvider* provider)
+    : display_id_(display_id), provider_(provider) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
 }
 
@@ -181,17 +181,21 @@ OculusGamepadDataFetcher::Factory::~Factory() {
 
 std::unique_ptr<GamepadDataFetcher>
 OculusGamepadDataFetcher::Factory::CreateDataFetcher() {
-  return std::make_unique<OculusGamepadDataFetcher>(display_id_, session_);
+  return std::make_unique<OculusGamepadDataFetcher>(display_id_, provider_);
 }
 
 GamepadSource OculusGamepadDataFetcher::Factory::source() {
   return GAMEPAD_SOURCE_OCULUS;
 }
 
-OculusGamepadDataFetcher::OculusGamepadDataFetcher(unsigned int display_id,
-                                                   ovrSession session)
-    : display_id_(display_id), session_(session) {
+OculusGamepadDataFetcher::OculusGamepadDataFetcher(
+    unsigned int display_id,
+    OculusGamepadDataProvider* provider)
+    : display_id_(display_id), weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
+
+  // Register for updates.
+  provider->RegisterDataFetcher(this);
 }
 
 OculusGamepadDataFetcher::~OculusGamepadDataFetcher() {
@@ -205,20 +209,17 @@ GamepadSource OculusGamepadDataFetcher::source() {
 void OculusGamepadDataFetcher::OnAddedToProvider() {}
 
 void OculusGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
-  ovrInputState input_state;
-  if ((OVR_SUCCESS(ovr_GetInputState(session_, ovrControllerType_Touch,
-                                     &input_state)))) {
-    ovrTrackingState tracking_state = ovr_GetTrackingState(session_, 0, false);
+  base::AutoLock lock(lock_);
+  if (data_.have_input_touch) {
     SetTouchData(GetPadState(ovrControllerType_LTouch),
-                 tracking_state.HandPoses[ovrHand_Left], input_state,
+                 data_.tracking.HandPoses[ovrHand_Left], data_.input_touch,
                  ovrHand_Left, display_id_);
     SetTouchData(GetPadState(ovrControllerType_RTouch),
-                 tracking_state.HandPoses[ovrHand_Right], input_state,
+                 data_.tracking.HandPoses[ovrHand_Right], data_.input_touch,
                  ovrHand_Right, display_id_);
   }
 
-  if ((OVR_SUCCESS(ovr_GetInputState(session_, ovrControllerType_Remote,
-                                     &input_state)))) {
+  if (data_.have_input_remote) {
     PadState* state = GetPadState(ovrControllerType_Remote);
     if (state) {
       Gamepad& pad = state->data;
@@ -232,14 +233,19 @@ void OculusGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
       pad.timestamp = CurrentTimeInMicroseconds();
       pad.axes_length = 0;
       pad.buttons_length = 0;
-      SetGamepadButton(&pad, input_state, ovrButton_Enter);
-      SetGamepadButton(&pad, input_state, ovrButton_Back);
-      SetGamepadButton(&pad, input_state, ovrButton_Up);
-      SetGamepadButton(&pad, input_state, ovrButton_Down);
-      SetGamepadButton(&pad, input_state, ovrButton_Left);
-      SetGamepadButton(&pad, input_state, ovrButton_Right);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Enter);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Back);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Up);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Down);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Left);
+      SetGamepadButton(&pad, data_.input_remote, ovrButton_Right);
     }
   }
+}
+
+void OculusGamepadDataFetcher::UpdateGamepadData(OculusInputData data) {
+  base::AutoLock lock(lock_);
+  data_ = data;
 }
 
 void OculusGamepadDataFetcher::PauseHint(bool paused) {}

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "device/vr/oculus/oculus_gamepad_data_fetcher.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,9 +19,11 @@ namespace device {
 
 class OculusRenderLoop;
 
-class OculusDevice : public VRDeviceBase, public mojom::XRSessionController {
+class OculusDevice : public VRDeviceBase,
+                     public mojom::XRSessionController,
+                     public OculusGamepadDataProvider {
  public:
-  explicit OculusDevice(ovrSession session, ovrGraphicsLuid luid);
+  explicit OculusDevice();
   ~OculusDevice() override;
 
   // VRDeviceBase
@@ -36,15 +39,32 @@ class OculusDevice : public VRDeviceBase, public mojom::XRSessionController {
       mojom::VRPresentationProviderPtrInfo provider_info,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
+  bool IsInitialized() { return !!session_; }
+
  private:
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
   void OnPresentingControllerMojoConnectionError();
 
+  // OculusGamepadDataProvider
+  void RegisterDataFetcher(OculusGamepadDataFetcher*) override;
+
+  void OnPresentationEnded();
+  void StartOvrSession();
+  void StopOvrSession();
+
+  void OnControllerUpdated(ovrInputState input,
+                           ovrInputState remote,
+                           ovrTrackingState tracking,
+                           bool has_touch,
+                           bool has_remote);
+
   std::unique_ptr<OculusRenderLoop> render_loop_;
+  OculusGamepadDataFetcher* data_fetcher_ = nullptr;
   mojom::VRDisplayInfoPtr display_info_;
-  ovrSession session_;
+  ovrSession session_ = nullptr;
+  OculusGamepadDataFetcher::Factory* oculus_gamepad_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
