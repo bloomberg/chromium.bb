@@ -47,6 +47,11 @@ Polymer({
     'blur': '_rippleUp',
   },
 
+  focus: function() {
+    // Forward focus to the button wrapper.
+    this.$$('button').focus();
+  },
+
   _rippleDown: function() {
     this.getRipple().uiDownAction();
   },
