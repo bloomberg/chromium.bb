@@ -17,7 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
@@ -30,15 +30,14 @@ namespace {
 
 // This test class intercepts the |is_enabled_callback| and is used to test its
 // validity.
-class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
+class TestPreviewsIOData : public previews::PreviewsIOData {
  public:
-  TestPreviewsDeciderImpl()
-      : previews::PreviewsDeciderImpl(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI),
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI)) {}
-  ~TestPreviewsDeciderImpl() override {}
+  TestPreviewsIOData()
+      : previews::PreviewsIOData(content::BrowserThread::GetTaskRunnerForThread(
+                                     content::BrowserThread::UI),
+                                 content::BrowserThread::GetTaskRunnerForThread(
+                                     content::BrowserThread::UI)) {}
+  ~TestPreviewsIOData() override {}
 
   void Initialize(
       base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
@@ -58,7 +57,7 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
   previews::PreviewsIsEnabledCallback enabled_callback_;
 };
 
-// Class to test the validity of the callback passed to PreviewsDeciderImpl from
+// Class to test the validity of the callback passed to PreviewsIOData from
 // PreviewsService.
 class PreviewsServiceTest : public testing::Test {
  public:
@@ -67,11 +66,11 @@ class PreviewsServiceTest : public testing::Test {
       : field_trial_list_(nullptr), scoped_feature_list_() {}
 
   void SetUp() override {
-    previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>();
+    io_data_ = std::make_unique<TestPreviewsIOData>();
 
     service_ = std::make_unique<PreviewsService>();
     base::FilePath file_path;
-    service_->Initialize(previews_decider_impl_.get(),
+    service_->Initialize(io_data_.get(),
                          nullptr /* optimization_guide_service */,
                          content::BrowserThread::GetTaskRunnerForThread(
                              content::BrowserThread::UI),
@@ -85,14 +84,12 @@ class PreviewsServiceTest : public testing::Test {
 
   ~PreviewsServiceTest() override {}
 
-  TestPreviewsDeciderImpl* previews_decider_impl() const {
-    return previews_decider_impl_.get();
-  }
+  TestPreviewsIOData* io_data() const { return io_data_.get(); }
 
  private:
   content::TestBrowserThreadBundle threads_;
   base::FieldTrialList field_trial_list_;
-  std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;
+  std::unique_ptr<TestPreviewsIOData> io_data_;
   std::unique_ptr<PreviewsService> service_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -100,8 +97,7 @@ class PreviewsServiceTest : public testing::Test {
 }  // namespace
 
 TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
-  EXPECT_TRUE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::OFFLINE));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::OFFLINE));
 }
 
 TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
@@ -113,8 +109,7 @@ TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
   base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::SetInstance(std::move(feature_list));
 
-  EXPECT_FALSE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::OFFLINE));
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::OFFLINE));
   base::FeatureList::ClearInstanceForTesting();
 }
 
@@ -127,8 +122,7 @@ TEST_F(PreviewsServiceTest, TestClientLoFiFeatureEnabled) {
            kDataReductionProxyDecidesTransform} /* disabled features */);
 
   base::FieldTrialList::CreateFieldTrial("PreviewsClientLoFi", "Enabled");
-  EXPECT_TRUE(
-      previews_decider_impl()->IsPreviewEnabled(previews::PreviewsType::LOFI));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiEnabled) {
@@ -139,8 +133,7 @@ TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiEnabled) {
            kDataReductionProxyDecidesTransform} /* enabled features */,
       {} /* disabled features */);
 
-  EXPECT_TRUE(
-      previews_decider_impl()->IsPreviewEnabled(previews::PreviewsType::LOFI));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiNotEnabled) {
@@ -150,8 +143,7 @@ TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiNotEnabled) {
       {previews::features::kClientLoFi,
        data_reduction_proxy::features::
            kDataReductionProxyDecidesTransform} /* disabled features */);
-  EXPECT_FALSE(
-      previews_decider_impl()->IsPreviewEnabled(previews::PreviewsType::LOFI));
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
@@ -160,8 +152,7 @@ TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
       {previews::features::kPreviews} /* enabled features */,
       {data_reduction_proxy::features::
            kDataReductionProxyDecidesTransform} /* disabled features */);
-  EXPECT_FALSE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::LITE_PAGE));
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }
 
 TEST_F(PreviewsServiceTest, TestServerLoFiProxyDecidesTransform) {
@@ -170,8 +161,7 @@ TEST_F(PreviewsServiceTest, TestServerLoFiProxyDecidesTransform) {
       {previews::features::kPreviews,
        data_reduction_proxy::features::kDataReductionProxyDecidesTransform},
       {});
-  EXPECT_TRUE(
-      previews_decider_impl()->IsPreviewEnabled(previews::PreviewsType::LOFI));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
@@ -180,16 +170,13 @@ TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
       {previews::features::kPreviews,
        data_reduction_proxy::features::kDataReductionProxyDecidesTransform},
       {});
-  EXPECT_TRUE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::LITE_PAGE));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }
 
 TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
-  EXPECT_FALSE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::NOSCRIPT));
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::NOSCRIPT));
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       previews::features::kNoScriptPreviews);
-  EXPECT_TRUE(previews_decider_impl()->IsPreviewEnabled(
-      previews::PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::NOSCRIPT));
 }

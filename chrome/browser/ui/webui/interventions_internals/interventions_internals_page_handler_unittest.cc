@@ -30,7 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
-#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
@@ -212,11 +212,11 @@ class TestUINetworkQualityEstimatorService
 };
 
 // A dummy class to setup PreviewsUIService.
-class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
+class TestPreviewsIOData : public previews::PreviewsIOData {
  public:
-  TestPreviewsDeciderImpl() : PreviewsDeciderImpl(nullptr, nullptr) {}
+  TestPreviewsIOData() : PreviewsIOData(nullptr, nullptr) {}
 
-  // previews::PreviewsDeciderImpl:
+  // previews::PreviewsIOData:
   void Initialize(
       base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
       std::unique_ptr<blacklist::OptOutStore> opt_out_store,
@@ -231,9 +231,9 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
 // Mocked TestPreviewsService for testing InterventionsInternalsPageHandler.
 class TestPreviewsUIService : public previews::PreviewsUIService {
  public:
-  TestPreviewsUIService(TestPreviewsDeciderImpl* previews_decider_impl,
+  TestPreviewsUIService(TestPreviewsIOData* io_data,
                         std::unique_ptr<previews::PreviewsLogger> logger)
-      : PreviewsUIService(previews_decider_impl,
+      : PreviewsUIService(io_data,
                           nullptr, /* io_task_runner */
                           nullptr, /* previews_opt_out_store */
                           nullptr, /* previews_opt_guide */
@@ -264,7 +264,7 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   ~InterventionsInternalsPageHandlerTest() override {}
 
   void SetUp() override {
-    TestPreviewsDeciderImpl io_data;
+    TestPreviewsIOData io_data;
     std::unique_ptr<TestPreviewsLogger> logger =
         std::make_unique<TestPreviewsLogger>();
     logger_ = logger.get();
