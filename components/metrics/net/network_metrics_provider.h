@@ -125,7 +125,7 @@ class NetworkMetricsProvider
   // Helper object for retrieving connected wifi access point information.
   std::unique_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
 
-  // These metrics track histogram totals for the Net.ErrorCodesForMainFrame3
+  // These metrics track histogram totals for the Net.ErrorCodesForMainFrame4
   // histogram. They are used to compute deltas at upload time.
   base::HistogramBase::Count total_aborts_;
   base::HistogramBase::Count total_codes_;

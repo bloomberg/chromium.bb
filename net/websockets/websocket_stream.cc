@@ -364,7 +364,7 @@ void Delegate::OnReceivedRedirect(URLRequest* request,
 void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
   DCHECK_NE(ERR_IO_PENDING, net_error);
   // All error codes, including OK and ABORTED, as with
-  // Net.ErrorCodesForMainFrame3
+  // Net.ErrorCodesForMainFrame4
   base::UmaHistogramSparse("Net.WebSocket.ErrorCodes", -net_error);
   if (net::IsLocalhost(request->url())) {
     base::UmaHistogramSparse("Net.WebSocket.ErrorCodes_Localhost", -net_error);
