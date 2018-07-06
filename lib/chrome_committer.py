@@ -94,6 +94,15 @@ class ChromeCommitter(object):
     logging.info('Uploading commit.')
 
     try:
+      # TODO(crbug.com/860584): Remove after we fix the bug.
+      git.RunGit(self._checkout_dir,
+                 self._git_committer_args + ['cl', 'creds-check', '-v', '-v'],
+                 print_cmd=True, redirect_stderr=True, capture_output=False)
+    except cros_build_lib.RunCommandError as e:
+      # We just want to log the results, not block on success.
+      pass
+
+    try:
       # Run 'git cl upload' with --bypass-hooks to skip running scripts that are
       # not part of the shallow checkout, -f to skip editing the CL message,
       upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
