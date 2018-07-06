@@ -179,6 +179,16 @@ void av1_decoder_remove(AV1Decoder *pbi) {
     AVxWorker *const worker = &pbi->tile_workers[i];
     aom_get_worker_interface()->end(worker);
   }
+#if CONFIG_MULTITHREAD
+  if (pbi->row_mt_mutex_ != NULL) {
+    pthread_mutex_destroy(pbi->row_mt_mutex_);
+    aom_free(pbi->row_mt_mutex_);
+  }
+  if (pbi->row_mt_cond_ != NULL) {
+    pthread_cond_destroy(pbi->row_mt_cond_);
+    aom_free(pbi->row_mt_cond_);
+  }
+#endif
   for (i = 0; i < pbi->allocated_tiles; i++) {
     TileDataDec *const tile_data = pbi->tile_data + i;
     av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);

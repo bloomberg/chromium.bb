@@ -3094,14 +3094,126 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   return !td->xd.corrupted;
 }
 
+static int get_next_job_info(AV1Decoder *const pbi,
+                             AV1DecRowMTJobInfo *next_job_info,
+                             int *end_of_frame) {
+  AV1_COMMON *cm = &pbi->common;
+  TileDataDec *tile_data;
+  AV1DecRowMTSync *dec_row_mt_sync;
+  AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
+  TileInfo tile_info;
+  const int tile_rows_start = frame_row_mt_info->tile_rows_start;
+  const int tile_rows_end = frame_row_mt_info->tile_rows_end;
+  const int tile_cols_start = frame_row_mt_info->tile_cols_start;
+  const int tile_cols_end = frame_row_mt_info->tile_cols_end;
+  const int start_tile = frame_row_mt_info->start_tile;
+  const int end_tile = frame_row_mt_info->end_tile;
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
+  int num_mis_to_decode, num_threads_working;
+  int min_threads_working = INT_MAX;
+  int max_mis_available = 0;
+  int tile_row_idx, tile_col_idx;
+  int tile_row = 0;
+  int tile_col = 0;
+
+  memset(next_job_info, 0, sizeof(*next_job_info));
+
+  // Frame decode is completed or error is encountered.
+  *end_of_frame = (frame_row_mt_info->mi_rows_decode_started ==
+                   frame_row_mt_info->mi_rows_to_decode) ||
+                  (frame_row_mt_info->row_mt_exit == 1);
+  if (*end_of_frame) {
+    return 1;
+  }
+
+  // Decoding cannot start as bit-stream parsing is not complete.
+  if (frame_row_mt_info->mi_rows_parse_done -
+          frame_row_mt_info->mi_rows_decode_started ==
+      0)
+    return 0;
+
+  // Choose the tile to decode.
+  for (tile_row_idx = tile_rows_start; tile_row_idx < tile_rows_end;
+       ++tile_row_idx) {
+    for (tile_col_idx = tile_cols_start; tile_col_idx < tile_cols_end;
+         ++tile_col_idx) {
+      if (tile_row_idx * cm->tile_cols + tile_col_idx < start_tile ||
+          tile_row_idx * cm->tile_cols + tile_col_idx > end_tile)
+        continue;
+
+      tile_data = pbi->tile_data + tile_row_idx * cm->tile_cols + tile_col_idx;
+      dec_row_mt_sync = &tile_data->dec_row_mt_sync;
+
+      num_threads_working = dec_row_mt_sync->num_threads_working;
+      num_mis_to_decode = (dec_row_mt_sync->mi_rows_parse_done -
+                           dec_row_mt_sync->mi_rows_decode_started) *
+                          dec_row_mt_sync->mi_cols;
+
+      // Pick the tile which has minimum number of threads working on it.
+      if (num_mis_to_decode > 0 && num_threads_working < min_threads_working) {
+        min_threads_working = num_threads_working;
+        max_mis_available = 0;
+      }
+
+      if (num_threads_working == min_threads_working &&
+          num_mis_to_decode > max_mis_available) {
+        max_mis_available = num_mis_to_decode;
+        tile_row = tile_row_idx;
+        tile_col = tile_col_idx;
+      }
+    }
+  }
+
+  tile_data = pbi->tile_data + tile_row * cm->tile_cols + tile_col;
+  tile_info = tile_data->tile_info;
+  dec_row_mt_sync = &tile_data->dec_row_mt_sync;
+
+  next_job_info->job_available = 1;
+  next_job_info->tile_row = tile_row;
+  next_job_info->tile_col = tile_col;
+  next_job_info->mi_row =
+      dec_row_mt_sync->mi_rows_decode_started + tile_info.mi_row_start;
+
+  dec_row_mt_sync->num_threads_working++;
+  dec_row_mt_sync->mi_rows_decode_started += sb_mi_size;
+  frame_row_mt_info->mi_rows_decode_started += sb_mi_size;
+
+  return 1;
+}
+
+static INLINE void signal_parse_sb_row_done(AV1Decoder *const pbi,
+                                            TileDataDec *const tile_data,
+                                            const int sb_mi_size) {
+  AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
+#if CONFIG_MULTITHREAD
+  pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+  tile_data->dec_row_mt_sync.mi_rows_parse_done += sb_mi_size;
+  frame_row_mt_info->mi_rows_parse_done += sb_mi_size;
+#if CONFIG_MULTITHREAD
+  pthread_cond_broadcast(pbi->row_mt_cond_);
+  pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
+}
+
 static int row_mt_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
   AV1_COMMON *cm = &pbi->common;
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
+  AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
+  td->xd.corrupted = 0;
 
   if (!call_setjmp(thread_data)) {
+#if CONFIG_MULTITHREAD
+    pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+    frame_row_mt_info->row_mt_exit = 1;
+#if CONFIG_MULTITHREAD
+    pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
     return 0;
   }
 
@@ -3143,21 +3255,59 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
           decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
                            cm->seq_params.sb_size, 0x1);
         }
+        signal_parse_sb_row_done(pbi, tile_data, sb_mi_size);
       }
 
       int corrupted =
           (check_trailing_bits_after_symbol_coder(td->bit_reader)) ? 1 : 0;
       aom_merge_corrupted_flag(&td->xd.corrupted, corrupted);
-
-      set_decode_func_pointers(td, 0x2);
-
-      for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
-           mi_row += cm->seq_params.mib_size) {
-        decode_tile_sb_row(pbi, td, tile_info, mi_row);
-      }
     } else {
       break;
     }
+  }
+
+  set_decode_func_pointers(td, 0x2);
+
+  while (1) {
+    AV1DecRowMTJobInfo next_job_info;
+    int end_of_frame = 0;
+
+#if CONFIG_MULTITHREAD
+    pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+    while (!get_next_job_info(pbi, &next_job_info, &end_of_frame)) {
+#if CONFIG_MULTITHREAD
+      pthread_cond_wait(pbi->row_mt_cond_, pbi->row_mt_mutex_);
+#endif
+    }
+#if CONFIG_MULTITHREAD
+    pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
+
+    if (end_of_frame) break;
+
+    int tile_row = next_job_info.tile_row;
+    int tile_col = next_job_info.tile_col;
+    int mi_row = next_job_info.mi_row;
+
+    TileDataDec *tile_data =
+        pbi->tile_data + tile_row * cm->tile_cols + tile_col;
+    AV1DecRowMTSync *dec_row_mt_sync = &tile_data->dec_row_mt_sync;
+    TileInfo tile_info = tile_data->tile_info;
+
+    av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
+    av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+    td->xd.error_info = &thread_data->error_info;
+
+    decode_tile_sb_row(pbi, td, tile_info, mi_row);
+
+#if CONFIG_MULTITHREAD
+    pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+    dec_row_mt_sync->num_threads_working--;
+#if CONFIG_MULTITHREAD
+    pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
   }
   thread_data->error_info.setjmp = 0;
   return !td->xd.corrupted;
@@ -3464,6 +3614,72 @@ static void dec_alloc_cb_buf(AV1Decoder *pbi) {
   }
 }
 
+static void row_mt_frame_init(AV1Decoder *pbi, int tile_rows_start,
+                              int tile_rows_end, int tile_cols_start,
+                              int tile_cols_end, int start_tile, int end_tile,
+                              int max_sb_rows) {
+  AV1_COMMON *const cm = &pbi->common;
+  AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
+
+  frame_row_mt_info->tile_rows_start = tile_rows_start;
+  frame_row_mt_info->tile_rows_end = tile_rows_end;
+  frame_row_mt_info->tile_cols_start = tile_cols_start;
+  frame_row_mt_info->tile_cols_end = tile_cols_end;
+  frame_row_mt_info->start_tile = start_tile;
+  frame_row_mt_info->end_tile = end_tile;
+  frame_row_mt_info->mi_rows_to_decode = 0;
+  frame_row_mt_info->mi_rows_parse_done = 0;
+  frame_row_mt_info->mi_rows_decode_started = 0;
+  frame_row_mt_info->row_mt_exit = 0;
+
+  for (int tile_row = tile_rows_start; tile_row < tile_rows_end; ++tile_row) {
+    for (int tile_col = tile_cols_start; tile_col < tile_cols_end; ++tile_col) {
+      if (tile_row * cm->tile_cols + tile_col < start_tile ||
+          tile_row * cm->tile_cols + tile_col > end_tile)
+        continue;
+
+      TileDataDec *const tile_data =
+          pbi->tile_data + tile_row * cm->tile_cols + tile_col;
+      TileInfo tile_info = tile_data->tile_info;
+
+      tile_data->dec_row_mt_sync.mi_rows_parse_done = 0;
+      tile_data->dec_row_mt_sync.mi_rows_decode_started = 0;
+      tile_data->dec_row_mt_sync.num_threads_working = 0;
+      tile_data->dec_row_mt_sync.mi_rows =
+          ALIGN_POWER_OF_TWO(tile_info.mi_row_end - tile_info.mi_row_start,
+                             cm->seq_params.mib_size_log2);
+      tile_data->dec_row_mt_sync.mi_cols =
+          ALIGN_POWER_OF_TWO(tile_info.mi_col_end - tile_info.mi_col_start,
+                             cm->seq_params.mib_size_log2);
+
+      frame_row_mt_info->mi_rows_to_decode +=
+          tile_data->dec_row_mt_sync.mi_rows;
+
+      // Initialize cur_sb_col to -1 for all SB rows.
+      memset(tile_data->dec_row_mt_sync.cur_sb_col, -1,
+             sizeof(*tile_data->dec_row_mt_sync.cur_sb_col) * max_sb_rows);
+    }
+  }
+
+#if CONFIG_MULTITHREAD
+  if (pbi->row_mt_mutex_ == NULL) {
+    CHECK_MEM_ERROR(cm, pbi->row_mt_mutex_,
+                    aom_malloc(sizeof(*(pbi->row_mt_mutex_))));
+    if (pbi->row_mt_mutex_) {
+      pthread_mutex_init(pbi->row_mt_mutex_, NULL);
+    }
+  }
+
+  if (pbi->row_mt_cond_ == NULL) {
+    CHECK_MEM_ERROR(cm, pbi->row_mt_cond_,
+                    aom_malloc(sizeof(*(pbi->row_mt_cond_))));
+    if (pbi->row_mt_cond_) {
+      pthread_cond_init(pbi->row_mt_cond_, NULL);
+    }
+  }
+#endif
+}
+
 static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
                                           const uint8_t *data_end,
                                           int start_tile, int end_tile) {
@@ -3497,7 +3713,7 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
     tile_cols_end = tile_cols;
   }
   tile_count_tg = end_tile - start_tile + 1;
-  num_workers = AOMMIN(pbi->max_threads, tile_count_tg);
+  num_workers = pbi->max_threads;
 
   // No tiles to decode.
   if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start ||
@@ -3513,6 +3729,8 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
   assert(num_workers > 0);
   assert(start_tile <= end_tile);
   assert(start_tile >= 0 && end_tile < n_tiles);
+
+  (void)tile_count_tg;
 
   decode_mt_init(pbi);
 
@@ -3556,6 +3774,9 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
                 tile_cols_start, tile_cols_end, start_tile, end_tile);
 
   dec_alloc_cb_buf(pbi);
+
+  row_mt_frame_init(pbi, tile_rows_start, tile_rows_end, tile_cols_start,
+                    tile_cols_end, start_tile, end_tile, max_sb_rows);
 
   reset_dec_workers(pbi, row_mt_worker_hook, num_workers);
   launch_dec_workers(pbi, data_end, num_workers);

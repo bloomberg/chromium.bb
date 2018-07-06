@@ -64,6 +64,13 @@ typedef struct ThreadData {
   cfl_store_inter_block_visitor_fn_t cfl_store_inter_block_visit;
 } ThreadData;
 
+typedef struct AV1DecRowMTJobInfo {
+  int tile_row;
+  int tile_col;
+  int mi_row;
+  int job_available;
+} AV1DecRowMTJobInfo;
+
 typedef struct AV1DecRowMTSyncData {
 #if CONFIG_MULTITHREAD
   pthread_mutex_t *mutex_;
@@ -72,7 +79,25 @@ typedef struct AV1DecRowMTSyncData {
   int allocated_sb_rows;
   int *cur_sb_col;
   int sync_range;
+  int mi_rows;
+  int mi_cols;
+  int mi_rows_parse_done;
+  int mi_rows_decode_started;
+  int num_threads_working;
 } AV1DecRowMTSync;
+
+typedef struct AV1DecRowMTInfo {
+  int tile_rows_start;
+  int tile_rows_end;
+  int tile_cols_start;
+  int tile_cols_end;
+  int start_tile;
+  int end_tile;
+  int mi_rows_parse_done;
+  int mi_rows_decode_started;
+  int mi_rows_to_decode;
+  int row_mt_exit;
+} AV1DecRowMTInfo;
 
 typedef struct TileDataDec {
   TileInfo tile_info;
@@ -203,6 +228,13 @@ typedef struct AV1Decoder {
   int cb_buffer_alloc_size;
 
   int allocated_row_mt_sync_rows;
+
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *row_mt_mutex_;
+  pthread_cond_t *row_mt_cond_;
+#endif
+
+  AV1DecRowMTInfo frame_row_mt_info;
 } AV1Decoder;
 
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error
