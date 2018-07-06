@@ -191,8 +191,6 @@ target(link_target_type, "gles2_sources") {
     "raster_cmd_validation_implementation_autogen.h",
     "raster_decoder.cc",
     "raster_decoder.h",
-    "raster_decoder_context_state.cc",
-    "raster_decoder_context_state.h",
     "renderbuffer_manager.cc",
     "renderbuffer_manager.h",
     "sampler_manager.cc",
