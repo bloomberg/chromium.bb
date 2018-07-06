@@ -224,10 +224,13 @@ void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
 }
 
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
-  if (bubble_)
+  if (bubble_) {
     CloseBubble();
-  else
-    ShowBubble(true /* show_by_click */);
+  } else {
+    ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
+    if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
+      ActivateBubble();
+  }
   return true;
 }
 
