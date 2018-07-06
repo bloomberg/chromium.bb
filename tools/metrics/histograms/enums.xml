@@ -40188,6 +40188,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="Failed to extract pid from lock file path"/>
   <int value="12" label="Invalid lock file"/>
   <int value="13" label="Orphaned lock file"/>
+  <int value="14" label="User refused to terminate process"/>
 </enum>
 
 <enum name="RemotingStartTrigger">

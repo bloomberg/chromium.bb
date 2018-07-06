@@ -78,6 +78,11 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
     return result ? NOTIFY_SUCCESS : NOTIFY_FAILED;
   }
 
+  // If SendMessageTimeout failed to send message consider this as
+  // NOTIFY_FAILED.
+  if (::GetLastError() != ERROR_TIMEOUT)
+    return NOTIFY_FAILED;
+
   // It is possible that the process owning this window may have died by now.
   if (!::IsWindow(remote_window))
     return NOTIFY_FAILED;
