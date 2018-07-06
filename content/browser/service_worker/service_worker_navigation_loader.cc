@@ -105,6 +105,9 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   status_ = Status::kCompleted;
   // This could be called multiple times in some cases because we simply
@@ -226,7 +229,9 @@ void ServiceWorkerNavigationLoader::ReturnNetworkError() {
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(!url_loader_client_.is_bound());
-  DCHECK(loader_callback_);
+  // Temporary CHECKs for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(loader_callback_);
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartErrorResponse,
                           weak_factory_.GetWeakPtr()));
@@ -261,6 +266,9 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
+  // Temporary CHECK for https://crbug.com/857005.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
