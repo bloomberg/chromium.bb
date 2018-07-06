@@ -252,7 +252,7 @@ void GetFileMetadataRespondOnUIThread(
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateEnableExternalFileSchemeFunction::Run() {
-  ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+  ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(
       render_frame_host()->GetProcess()->GetID(), content::kExternalFileScheme);
   return RespondNow(NoArguments());
 }

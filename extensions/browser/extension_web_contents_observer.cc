@@ -83,11 +83,12 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
     return;
 
   // |render_frame_host->GetProcess()| is an extension process. Grant permission
-  // to commit pages from chrome-extension:// origins.
+  // to request pages from the extension's origin.
   content::ChildProcessSecurityPolicy* security_policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   int process_id = render_frame_host->GetProcess()->GetID();
-  security_policy->GrantScheme(process_id, extensions::kExtensionScheme);
+  security_policy->GrantRequestOrigin(
+      process_id, url::Origin::Create(frame_extension->url()));
 
   // Notify the render frame of the view type.
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
@@ -133,7 +134,7 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
       type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
     if (prefs->AllowFileAccess(extension->id())) {
-      content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(
           render_frame_host->GetProcess()->GetID(), url::kFileScheme);
     }
   }

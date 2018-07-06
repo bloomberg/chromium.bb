@@ -5,6 +5,8 @@
 #include <limits>
 #include <utility>
 
+#include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -157,47 +159,76 @@ class PingTestWebUIController : public TestWebUIController,
 // WebUIControllerFactory that creates TestWebUIController.
 class TestWebUIControllerFactory : public WebUIControllerFactory {
  public:
-  TestWebUIControllerFactory() : run_loop_(nullptr) {}
+  TestWebUIControllerFactory()
+      : run_loop_(nullptr),
+        registered_controllers_(
+            {{"ping", base::BindRepeating(
+                          &TestWebUIControllerFactory::CreatePingController,
+                          base::Unretained(this))},
+             {"hybrid", base::BindRepeating(
+                            &TestWebUIControllerFactory::CreateHybridController,
+                            base::Unretained(this))},
+             {"webui_bindings",
+              base::BindRepeating(
+                  &TestWebUIControllerFactory::CreateWebUIController,
+                  base::Unretained(this))}}) {}
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
 
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
       const GURL& url) const override {
-    if (url.query() == "ping")
-      return std::make_unique<PingTestWebUIController>(web_ui, run_loop_);
-    if (url.query() == "webui_bindings") {
-      return std::make_unique<TestWebUIController>(web_ui, run_loop_,
-                                                   BINDINGS_POLICY_WEB_UI);
-    }
-    if (url.query() == "hybrid") {
-      return std::make_unique<TestWebUIController>(
-          web_ui, run_loop_,
-          BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
-    }
+    if (!web_ui_enabled_ || !url.SchemeIs(kChromeUIScheme))
+      return nullptr;
+
+    auto it = registered_controllers_.find(url.query());
+    if (it != registered_controllers_.end())
+      return it->second.Run(web_ui);
 
     return std::make_unique<TestWebUIController>(web_ui, run_loop_);
   }
+
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {
-    if (!web_ui_enabled_)
+    if (!web_ui_enabled_ || !url.SchemeIs(kChromeUIScheme))
       return WebUI::kNoWebUI;
+
     return reinterpret_cast<WebUI::TypeID>(1);
   }
+
   bool UseWebUIForURL(BrowserContext* browser_context,
                       const GURL& url) const override {
-    return true;
+    return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                               const GURL& url) const override {
-    return true;
+    return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
 
   void set_web_ui_enabled(bool enabled) { web_ui_enabled_ = enabled; }
 
  private:
+  std::unique_ptr<WebUIController> CreatePingController(WebUI* web_ui) {
+    return std::make_unique<PingTestWebUIController>(web_ui, run_loop_);
+  }
+
+  std::unique_ptr<WebUIController> CreateHybridController(WebUI* web_ui) {
+    return std::make_unique<TestWebUIController>(
+        web_ui, run_loop_,
+        BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
+  }
+
+  std::unique_ptr<WebUIController> CreateWebUIController(WebUI* web_ui) {
+    return std::make_unique<TestWebUIController>(web_ui, run_loop_,
+                                                 BINDINGS_POLICY_WEB_UI);
+  }
+
   base::RunLoop* run_loop_;
   bool web_ui_enabled_ = true;
+  const base::flat_map<
+      std::string,
+      base::RepeatingCallback<std::unique_ptr<WebUIController>(WebUI*)>>
+      registered_controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };

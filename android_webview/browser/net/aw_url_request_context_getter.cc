@@ -148,7 +148,7 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
   // Note that even though the content:// scheme handler is created here,
   // it cannot be used by child processes until access to it is granted via
-  // ChildProcessSecurityPolicy::GrantScheme(). This is done in
+  // ChildProcessSecurityPolicy::GrantRequestScheme(). This is done in
   // AwContentBrowserClient.
   request_interceptors.push_back(CreateAndroidContentRequestInterceptor());
   request_interceptors.push_back(CreateAndroidAssetFileRequestInterceptor());

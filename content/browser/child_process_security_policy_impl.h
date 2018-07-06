@@ -75,8 +75,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                const std::string& filesystem_id) override;
   void GrantDeleteFromFileSystem(int child_id,
                                  const std::string& filesystem_id) override;
-  void GrantOrigin(int child_id, const url::Origin& origin) override;
-  void GrantScheme(int child_id, const std::string& scheme) override;
+  void GrantCommitOrigin(int child_id, const url::Origin& origin) override;
+  void GrantRequestOrigin(int child_id, const url::Origin& origin) override;
+  void GrantRequestScheme(int child_id, const std::string& scheme) override;
   bool CanRequestURL(int child_id, const GURL& url) override;
   bool CanCommitURL(int child_id, const GURL& url) override;
   bool CanReadFile(int child_id, const base::FilePath& file) override;
@@ -93,8 +94,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
-  bool HasSpecificPermissionForOrigin(int child_id,
-                                      const url::Origin& origin) override;
   bool GetMatchingIsolatedOrigin(const url::Origin& origin,
                                  url::Origin* result) override;
 
@@ -137,11 +136,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // this method exactly once.
   void Remove(int child_id);
 
-  // Whenever the browser processes commands the child process to request a URL,
+  // Whenever the browser processes commands the child process to commit a URL,
   // it should call this method to grant the child process the capability to
-  // request the URL, along with permission to request all URLs of the same
-  // scheme.
-  void GrantRequestURL(int child_id, const GURL& url);
+  // commit anything from the URL's origin, along with permission to request all
+  // URLs of the same scheme.
+  void GrantCommitURL(int child_id, const GURL& url);
 
   // Whenever the browser process drops a file icon on a tab, it should call
   // this method to grant the child process the capability to request this one
