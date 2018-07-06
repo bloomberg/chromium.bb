@@ -2214,14 +2214,16 @@ class CertVerifyProcInternalWithNetFetchingTest
   }
 
   // Registers a handler with the test server that responds with the given
-  // Content-Type and response body for GET requests to |relative_path|.
-  void RegisterSimpleTestServerHandler(std::string relative_path,
+  // Content-Type, HTTP status code, and response body, for GET requests
+  // to |path|.
+  void RegisterSimpleTestServerHandler(std::string path,
+                                       HttpStatusCode status_code,
                                        std::string content_type,
                                        std::string content) {
     base::AutoLock lock(request_handlers_lock_);
-    request_handlers_.push_back(
-        base::BindRepeating(&SimpleTestServerHandler, std::move(relative_path),
-                            std::move(content_type), std::move(content)));
+    request_handlers_.push_back(base::BindRepeating(
+        &SimpleTestServerHandler, std::move(path), status_code,
+        std::move(content_type), std::move(content)));
   }
 
   // Returns a random URL path (starting with /) that has the given suffix.
@@ -2229,9 +2231,9 @@ class CertVerifyProcInternalWithNetFetchingTest
     return "/" + MakeRandomHexString(12) + suffix.as_string();
   }
 
-  // Returns a URL to |relative_path| for the current test server.
-  GURL GetTestServerAbsoluteUrl(const std::string& relative_path) {
-    return test_server_.GetURL(relative_path);
+  // Returns a URL to |path| for the current test server.
+  GURL GetTestServerAbsoluteUrl(const std::string& path) {
+    return test_server_.GetURL(path);
   }
 
  private:
@@ -2248,19 +2250,20 @@ class CertVerifyProcInternalWithNetFetchingTest
     return nullptr;
   }
 
-  // Serves (|content_type|, |content|) in response to GET requests for
-  // |relative_url|.
+  // Serves (|status_code|, |content_type|, |content|) in response to GET
+  // requests for |path|.
   static std::unique_ptr<test_server::HttpResponse> SimpleTestServerHandler(
-      const std::string& relative_url,
+      const std::string& path,
+      HttpStatusCode status_code,
       const std::string& content_type,
       const std::string& content,
       const test_server::HttpRequest& request) {
-    if (request.relative_url != relative_url)
+    if (request.relative_url != path)
       return nullptr;
 
     auto http_response = std::make_unique<test_server::BasicHttpResponse>();
 
-    http_response->set_code(net::HTTP_OK);
+    http_response->set_code(status_code);
     http_response->set_content_type(content_type);
     http_response->set_content(content);
     return http_response;
@@ -2779,15 +2782,19 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
   ASSERT_EQ(3U, orig_certs.size());
 
   // Build a slightly modified variant of |orig_certs|, in which the leaf points
-  // to an AIA for obtaining the missing intermediate. This URL is however NOT
-  // registered on the test server, so will result in a 404.
+  // to an AIA for obtaining the missing intermediate. This URL responds
+  // with a 404 (and a non-certificate response body and MIME).
   CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
   CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
   CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
 
-  GURL ca_issuers_url = GetTestServerAbsoluteUrl(MakeRandomPath(".cer"));
+  std::string ca_issuers_path = MakeRandomPath(".cer");
+  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_path);
   leaf.SetCaIssuersUrl(ca_issuers_url);
   leaf.SetSubjectAltName(kHostname);
+
+  RegisterSimpleTestServerHandler(ca_issuers_path, HTTP_NOT_FOUND, "text/plain",
+                                  "Not Found");
 
   // Trust the root certificate.
   auto root_cert = root.GetX509Certificate();
@@ -2849,14 +2856,14 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   // Make the leaf certificate have an AIA (CA Issuers) that points to the
   // embedded test server. This uses a random URL for predictable behavior in
   // the presence of global caching.
-  std::string ca_issuers_relative_path = MakeRandomPath(".cer");
-  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_relative_path);
+  std::string ca_issuers_path = MakeRandomPath(".cer");
+  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_path);
   leaf.SetCaIssuersUrl(ca_issuers_url);
   leaf.SetSubjectAltName(kHostname);
 
   // Setup the test server to reply with the correct intermediate.
   RegisterSimpleTestServerHandler(
-      ca_issuers_relative_path, "application/pkix-cert", intermediate.GetDER());
+      ca_issuers_path, HTTP_OK, "application/pkix-cert", intermediate.GetDER());
 
   // Trust the root certificate.
   auto root_cert = root.GetX509Certificate();
@@ -2904,8 +2911,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   // Make the leaf certificate have an AIA (CA Issuers) that points to the
   // embedded test server. This uses a random URL for predictable behavior in
   // the presence of global caching.
-  std::string ca_issuers_relative_path = MakeRandomPath(".cer");
-  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_relative_path);
+  std::string ca_issuers_path = MakeRandomPath(".cer");
+  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_path);
   leaf.SetCaIssuersUrl(ca_issuers_url);
   leaf.SetSubjectAltName(kHostname);
 
@@ -2925,7 +2932,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Setup the test server to reply with the SHA256 intermediate.
   RegisterSimpleTestServerHandler(
-      ca_issuers_relative_path, "application/pkix-cert",
+      ca_issuers_path, HTTP_OK, "application/pkix-cert",
       x509_util::CryptoBufferAsStringPiece(intermediate_sha256.get())
           .as_string());
 
