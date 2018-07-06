@@ -4,12 +4,15 @@
 
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 
+#include "base/optional.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -28,7 +31,7 @@ class AnchorElementMetricsTest : public SimTest {
         ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
     anchor_element->SetHref(AtomicString(target));
 
-    return AnchorElementMetrics::CreateFrom(anchor_element)
+    return AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element)
         .value()
         .GetIsUrlIncrementedByOne();
   }
@@ -39,7 +42,10 @@ class AnchorElementMetricsTest : public SimTest {
   void SetUp() override {
     SimTest::SetUp();
     WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    feature_list_.InitAndEnableFeature(kRecordAnchorMetricsClicked);
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Test for IsUrlIncrementedByOne().
@@ -64,6 +70,33 @@ TEST_F(AnchorElementMetricsTest, IsUrlIncrementedByOne) {
                                   "http://example.com/p10/cat2"));
 }
 
+// Test that Finch can control the collection of anchor element metrics.
+TEST_F(AnchorElementMetricsTest, FinchControl) {
+  HistogramTester histogram_tester;
+
+  SimRequest resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  resource.Complete("<a id='anchor' href='https://google.com/'>google</a>");
+  HTMLAnchorElement* anchor_element =
+      ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+
+  // With feature kRecordAnchorMetricsClicked disabled, we should not see any
+  // count in histograms.
+  base::test::ScopedFeatureList disabled_feature_list;
+  disabled_feature_list.InitAndDisableFeature(kRecordAnchorMetricsClicked);
+  AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+                                    0);
+
+  // If we enable feature kRecordAnchorMetricsClicked, we should see count is 1
+  // in histograms.
+  base::test::ScopedFeatureList enabled_feature_list;
+  enabled_feature_list.InitAndEnableFeature(kRecordAnchorMetricsClicked);
+  AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+                                    1);
+}
+
 // The main frame contains an anchor element, which contains an image element.
 TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
   SimRequest main_resource("https://example.com/", "text/html");
@@ -84,7 +117,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
   Element* anchor = GetDocument().getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_FLOAT_EQ(0.25, feature.GetRatioArea());
   EXPECT_FLOAT_EQ(0.25, feature.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature.GetRatioDistanceTopToVisibleTop());
@@ -117,7 +151,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   Element* anchor = GetDocument().getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_GT(feature.GetRatioArea(), 0);
   EXPECT_FLOAT_EQ(feature.GetRatioDistanceRootTop(), 2);
   EXPECT_FLOAT_EQ(feature.GetRatioDistanceTopToVisibleTop(), 2);
@@ -139,7 +174,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.5), kProgrammaticScroll);
 
-  auto feature2 = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature2 =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_LT(0, feature2.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature2.GetRatioDistanceTopToVisibleTop());
   EXPECT_LT(0.5, feature2.GetRatioDistanceCenterToVisibleTop());
@@ -186,7 +222,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_LT(0, feature.GetRatioArea());
   EXPECT_FLOAT_EQ(0, feature.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(2.5, feature.GetRatioDistanceTopToVisibleTop());
@@ -201,7 +238,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.8), kProgrammaticScroll);
 
-  auto feature2 = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature2 =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_LT(0, feature2.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.7, feature2.GetRatioDistanceTopToVisibleTop());
   EXPECT_FLOAT_EQ(2.5, feature2.GetRatioDistanceRootTop());
@@ -210,7 +248,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   subframe->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 0.2), kProgrammaticScroll);
 
-  auto feature3 = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  auto feature3 =
+      AnchorElementMetrics::MaybeExtractMetricsClicked(anchor_element).value();
   EXPECT_LT(0, feature3.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature3.GetRatioDistanceTopToVisibleTop());
   EXPECT_FLOAT_EQ(2.5, feature3.GetRatioDistanceRootTop());

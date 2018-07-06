@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_ANCHOR_ELEMENT_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_ANCHOR_ELEMENT_METRICS_H_
 
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -12,15 +13,18 @@
 
 namespace blink {
 
+CORE_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
+
 class HTMLAnchorElement;
 
 class CORE_EXPORT AnchorElementMetrics {
   STACK_ALLOCATED();
 
  public:
-  // Extract features of the anchor element.
-  static base::Optional<AnchorElementMetrics> CreateFrom(
-      const HTMLAnchorElement* anchor_element);
+  // Creates AnchorElementMetrics from anchor element if possible. Then records
+  // the metrics, and sends them to the browser process.
+  static base::Optional<AnchorElementMetrics> MaybeExtractMetricsClicked(
+      const HTMLAnchorElement*);
 
   // Upload anchor element features.
   void RecordMetrics() const;
@@ -47,6 +51,9 @@ class CORE_EXPORT AnchorElementMetrics {
   bool GetIsUrlIncrementedByOne() const { return is_url_incremented_by_one_; }
 
  private:
+  // Extract features of the anchor element.
+  static base::Optional<AnchorElementMetrics> Create(const HTMLAnchorElement*);
+
   // The anchor element that this class is associated with.
   Member<const HTMLAnchorElement> anchor_element_;
 
