@@ -27,6 +27,7 @@ EXTRA_DIST =					\
 	issue-584.yaml				\
 	issue-615.yaml				\
 	issue-77.yaml 				\
+	lastworditalafter.yaml		\
 	letterDefTest_harness.yaml		\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
@@ -34,6 +35,7 @@ EXTRA_DIST =					\
 	multipass-negation.yaml			\
 	new_emph.yaml				\
 	noletsignafter.yaml			\
+	pass0_typebuf.yaml			\
 	present_progressive.yaml			\
 	squash_space.yaml				\
 	syllable.yaml

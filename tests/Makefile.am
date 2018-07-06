@@ -20,9 +20,7 @@ findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
-lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 logging_SOURCES = logging.c
-pass0_typebuf_SOURCES = pass0_typebuf.c
 resolve_table_SOURCES = resolve_table.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
@@ -37,9 +35,7 @@ program_TESTS =					\
 	getTable				\
 	hash_collision				\
 	hyphenate_xxx				\
-	lastworditalafter			\
 	logging					\
-	pass0_typebuf				\
 	resolve_table				\
 	typeform				\
 	typeform_for_emphclass			\
@@ -57,9 +53,6 @@ dist_check_SCRIPTS +=	 			\
 	multiple_table_path.pl			\
 	ueb_test_data.pl
 endif
-
-XFAIL_TESTS =					\
-	lastworditalafter
 
 dist_braille_specs_TESTS =				  \
 	braille-specs/ar-ar-g1_harness.yaml		  \
@@ -187,6 +180,7 @@ dist_yaml_TESTS =			  \
 	yaml/issue-584.yaml		  \
 	yaml/issue-615.yaml		  \
 	yaml/issue-77.yaml 		  \
+	yaml/lastworditalafter.yaml	  \
 	yaml/letterDefTest_harness.yaml	  \
 	yaml/multipass-backward.yaml	  \
 	yaml/multipass-forward.yaml	  \
@@ -196,6 +190,7 @@ dist_yaml_TESTS =			  \
 	yaml/noletsignafter.yaml	  \
 	yaml/noUndefinedDots.yaml	  \
 	yaml/partialTrans.yaml		  \
+	yaml/pass0_typebuf.yaml		  \
 	yaml/present_progressive.yaml	  \
 	yaml/squash_space.yaml		  \
 	yaml/syllable.yaml
@@ -207,7 +202,7 @@ LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS) $(YAML_LOG_COMPILER_SCRIPT)
 
-XFAIL_TESTS +=					\
+XFAIL_TESTS =					\
 	ueb_test_data.pl
 
 

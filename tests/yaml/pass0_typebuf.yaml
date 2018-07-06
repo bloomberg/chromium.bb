@@ -1,0 +1,9 @@
+# Converted from pass0_typebuf.c
+
+table: [tests/tables/pass0_typebuf.ctb]
+tests:
+  - - foo baz
+    - foobar .baz
+    - typeform:
+        italic: '    +++'
+        
