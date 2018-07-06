@@ -88,12 +88,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return ContextResult::kFatalFailure;
   }
 
-  if (surface_handle_ != kNullSurfaceHandle) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "RenderInterface clients must render offscreen.";
-    return gpu::ContextResult::kFatalFailure;
-  }
-
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
       manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
   gpu::GpuMemoryBufferFactory* gmb_factory =
@@ -108,37 +102,87 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       manager->watchdog() /* progress_reporter */, manager->gpu_feature_info(),
       manager->discardable_manager());
 
-  ContextResult result;
-  auto raster_decoder_context_state =
-      manager->GetRasterDecoderContextState(init_params.attribs, &result);
-  if (!raster_decoder_context_state) {
+#if defined(OS_MACOSX)
+  // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
+  // performance regressions when enabling FCM.
+  // http://crbug.com/180463
+  if (init_params.attribs.gpu_preference == gl::PreferIntegratedGpu)
+    use_virtualized_gl_context_ = true;
+#endif
+
+  use_virtualized_gl_context_ |=
+      context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
+
+  // MailboxManagerSync synchronization correctness currently depends on having
+  // only a single context. See crbug.com/510243 for details.
+  use_virtualized_gl_context_ |= manager->mailbox_manager()->UsesSync();
+
+  if (surface_handle_ != kNullSurfaceHandle) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "Failed to create raster decoder state.";
-    DCHECK_NE(result, gpu::ContextResult::kSuccess);
-    return result;
+                  "RenderInterface clients must render offscreen.";
+    return gpu::ContextResult::kFatalFailure;
   }
 
-  surface_ = raster_decoder_context_state->surface;
-  share_group_ = raster_decoder_context_state->share_group;
-  use_virtualized_gl_context_ =
-      raster_decoder_context_state->use_virtualized_gl_contexts;
+  surface_ = manager->GetDefaultOffscreenSurface();
+  if (!surface_) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "Failed to create default offscreen surface.";
+    return gpu::ContextResult::kFatalFailure;
+  }
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->transfer_buffer_manager());
   std::unique_ptr<raster::RasterDecoder> decoder(raster::RasterDecoder::Create(
-      this, command_buffer_.get(), manager->outputter(), context_group_.get(),
-      raster_decoder_context_state));
+      this, command_buffer_.get(), manager->outputter(), context_group_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
 
+  if (context_group_->use_passthrough_cmd_decoder()) {
+    // When using the passthrough command decoder, only share with other
+    // contexts in the explicitly requested share group
+      share_group_ = new gl::GLShareGroup();
+  } else {
+    // When using the validating command decoder, always use the global share
+    // group
+    share_group_ = channel_->share_group();
+  }
+
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
 
-  scoped_refptr<gl::GLContext> context = raster_decoder_context_state->context;
+  scoped_refptr<gl::GLContext> context;
   if (use_virtualized_gl_context_) {
+    context = share_group_->GetSharedContext(surface_.get());
+    if (!context) {
+      context = gl::init::CreateGLContext(
+          share_group_.get(), surface_.get(),
+          GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
+      if (!context) {
+        // TODO(piman): This might not be fatal, we could recurse into
+        // CreateGLContext to get more info, tho it should be exceedingly
+        // rare and may not be recoverable anyway.
+        LOG(ERROR) << "ContextResult::kFatalFailure: "
+                      "Failed to create shared context for virtualization.";
+        return gpu::ContextResult::kFatalFailure;
+      }
+      // Ensure that context creation did not lose track of the intended share
+      // group.
+      DCHECK(context->share_group() == share_group_.get());
+      share_group_->SetSharedContext(surface_.get(), context.get());
+
+      // This needs to be called against the real shared context, not the
+      // virtual context created below.
+      manager->gpu_feature_info().ApplyToGLContext(context.get());
+    }
+    // This should be either:
+    // (1) a non-virtual GL context, or
+    // (2) a mock/stub context.
+    DCHECK(context->GetHandle() ||
+           gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
+           gl::GetGLImplementation() == gl::kGLImplementationStubGL);
     context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), context.get(), decoder->AsWeakPtr());
     if (!context->Initialize(surface_.get(),
@@ -154,8 +198,19 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
                     "Failed to initialize virtual GL context.";
       return gpu::ContextResult::kFatalFailure;
     }
+  } else {
+    context = gl::init::CreateGLContext(
+        share_group_.get(), surface_.get(),
+        GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
+    if (!context) {
+      // TODO(piman): This might not be fatal, we could recurse into
+      // CreateGLContext to get more info, tho it should be exceedingly
+      // rare and may not be recoverable anyway.
+      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create context.";
+      return gpu::ContextResult::kFatalFailure;
+    }
 
-    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder->AsWeakPtr()));
+    manager->gpu_feature_info().ApplyToGLContext(context.get());
   }
 
   if (!context->MakeCurrent(surface_.get())) {
@@ -164,15 +219,19 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return gpu::ContextResult::kTransientFailure;
   }
 
+  if (!context->GetGLStateRestorer()) {
+    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder->AsWeakPtr()));
+  }
+
   if (!context_group_->has_program_cache() &&
       !context_group_->feature_info()->workarounds().disable_program_cache) {
     context_group_->set_program_cache(manager->program_cache());
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  result = decoder->Initialize(surface_, context, true /* offscreen */,
-                               gpu::gles2::DisallowedFeatures(),
-                               init_params.attribs);
+  auto result = decoder->Initialize(surface_, context, true /* offscreen */,
+                                    gpu::gles2::DisallowedFeatures(),
+                                    init_params.attribs);
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     return result;

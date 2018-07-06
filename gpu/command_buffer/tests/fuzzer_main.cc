@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/raster_decoder.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -355,14 +354,9 @@ class CommandBufferSetup {
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
-    scoped_refptr<raster::RasterDecoderContextState> context_state =
-        new raster::RasterDecoderContextState(
-            share_group_, surface_, context_,
-            config_.workarounds.use_virtualized_gl_contexts);
-    context_state->InitializeGrContext(config_.workarounds);
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
-        context_group.get(), std::move(context_state)));
+        context_group.get()));
 #else
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,

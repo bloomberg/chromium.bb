@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -265,13 +264,8 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
-  scoped_refptr<raster::RasterDecoderContextState> context_state =
-      new raster::RasterDecoderContextState(
-          new gl::GLShareGroup(), surface_, context_,
-          feature_info->workarounds().use_virtualized_gl_contexts);
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
-                                       &outputter_, group_.get(),
-                                       std::move(context_state)));
+                                       &outputter_, group_.get()));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
