@@ -46,6 +46,26 @@ testcase.showMyFiles = function() {
       chrome.test.assertEq(expectedElementLabels, visibleElements);
       this.next();
     },
+    // Select Downloads folder.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'selectVolume', appId, ['downloads'], this.next);
+
+    },
+    // Get the breadcrumbs elements.
+    function() {
+      const breadcrumbsQuery = ['#location-breadcrumbs .breadcrumb-path'];
+      remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, breadcrumbsQuery, this.next);
+    },
+    // Check that My Files is displayed on breadcrumbs.
+    function(breadcrumbs) {
+      const expectedBreadcrumbs = 'My Files > Downloads';
+      const resultBreadscrubms =
+          breadcrumbs.map(crumb => crumb.text).join(' > ');
+      chrome.test.assertEq(expectedBreadcrumbs, resultBreadscrubms);
+      this.next();
+    },
     function() {
       checkIfNoErrorsOccured(this.next);
     },

@@ -265,6 +265,12 @@ class EntryList {
    */
   addEntry(entry) {
     this.children_.push(entry);
+    // Only VolumeEntry can have prefix set becuase it sets on VolumeInfo
+    // which's then used on LocationInfo/LocationLine.
+    if (entry.type_name == 'VolumeEntry') {
+      const volumeEntry = /** @type {VolumeEntry} */ (entry);
+      volumeEntry.setPrefix(this);
+    }
   }
 
   /**
@@ -391,5 +397,14 @@ class VolumeEntry {
    */
   createReader() {
     return this.rootEntry_.createReader();
+  }
+
+  /**
+   * @param {!FilesAppEntry} entry An entry to be used as prefix of this
+   *     instance on breadcrumbs path, e.g. "My Files > Downloads", "My Files"
+   *     is a prefixEntry on "Downloads" VolumeInfo.
+   */
+  setPrefix(entry) {
+    this.volumeInfo_.prefixEntry = entry;
   }
 }
