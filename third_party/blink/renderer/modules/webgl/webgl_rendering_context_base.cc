@@ -5192,9 +5192,10 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
   else
     function_type = kTexSubImage;
   if (!ValidateTexFunc(func_name, function_type, kSourceHTMLCanvasElement,
-                       target, level, internalformat, canvas->width(),
-                       canvas->height(), depth, 0, format, type, xoffset,
-                       yoffset, zoffset))
+                       target, level, internalformat,
+                       source_sub_rectangle.Width(),
+                       source_sub_rectangle.Height(), depth, 0, format, type,
+                       xoffset, yoffset, zoffset))
     return;
 
   // Note that the sub-rectangle validation is needed for the GPU-GPU
