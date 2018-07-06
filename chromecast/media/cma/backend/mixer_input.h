@@ -86,6 +86,8 @@ class MixerInput {
              FilterGroup* filter_group);
   ~MixerInput();
 
+  void SetFilterGroup(FilterGroup* filter_group);
+
   Source* source() const { return source_; }
   int num_channels() const { return num_channels_; }
   int input_samples_per_second() const { return input_samples_per_second_; }
@@ -144,7 +146,7 @@ class MixerInput {
   const std::string device_id_;
   const AudioContentType content_type_;
 
-  FilterGroup* filter_group_;
+  FilterGroup* filter_group_ = nullptr;
 
   float stream_volume_multiplier_;
   float type_volume_multiplier_;

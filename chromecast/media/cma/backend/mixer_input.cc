@@ -42,7 +42,6 @@ MixerInput::MixerInput(Source* source,
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
-      filter_group_(filter_group),
       stream_volume_multiplier_(1.0f),
       type_volume_multiplier_(1.0f),
       mute_volume_multiplier_(1.0f),
@@ -77,17 +76,29 @@ MixerInput::MixerInput(Source* source,
 
   source_->InitializeAudioPlayback(source_read_size, initial_rendering_delay);
 
-  if (filter_group_) {
-    filter_group_->AddInput(this);
-  }
+  SetFilterGroup(filter_group);
 }
 
 MixerInput::~MixerInput() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetFilterGroup(nullptr);
+  source_->FinalizeAudioPlayback();
+}
+
+void MixerInput::SetFilterGroup(FilterGroup* filter_group) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!filter_group || !filter_group_);
+
+  if (filter_group == filter_group_) {
+    return;
+  }
   if (filter_group_) {
     filter_group_->RemoveInput(this);
   }
-  source_->FinalizeAudioPlayback();
+  if (filter_group) {
+    filter_group->AddInput(this);
+  }
+  filter_group_ = filter_group;
 }
 
 int MixerInput::FillAudioData(int num_frames,

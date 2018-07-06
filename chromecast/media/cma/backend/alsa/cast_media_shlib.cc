@@ -199,6 +199,10 @@ void CastMediaShlib::RemoveLoopbackAudioObserver(
   StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
 }
 
+void CastMediaShlib::ResetPostProcessors() {
+  StreamMixer::Get()->ResetPostProcessors();
+}
+
 void CastMediaShlib::SetPostProcessorConfig(const std::string& name,
                                             const std::string& config) {
   StreamMixer::Get()->SetPostProcessorConfig(name, config);
