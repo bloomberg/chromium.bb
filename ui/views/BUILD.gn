@@ -682,13 +682,13 @@ jumbo_component("views") {
           configs += [ "//build/config/linux/atk" ]
         }
       } else if (is_win) {
+        public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_win.cc",
           "widget/desktop_aura/desktop_drag_drop_client_win.h",
           "widget/desktop_aura/desktop_screen_win.cc",
           "widget/desktop_aura/desktop_screen_win.h",
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
-          "widget/desktop_aura/desktop_window_tree_host_win.h",
         ]
         deps += [ "//ui/events:dom_keyboard_layout" ]
       } else if (use_ozone) {
