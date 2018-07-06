@@ -248,4 +248,16 @@ bool QuicChromiumPacketWriter::SupportsReleaseTime() const {
   return false;
 }
 
+bool QuicChromiumPacketWriter::IsBatchMode() const {
+  return false;
+}
+
+char* QuicChromiumPacketWriter::GetNextWriteLocation() const {
+  return nullptr;
+}
+
+quic::WriteResult QuicChromiumPacketWriter::Flush() {
+  return quic::WriteResult(quic::WRITE_STATUS_OK, 0);
+}
+
 }  // namespace net

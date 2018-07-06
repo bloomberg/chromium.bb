@@ -45,6 +45,18 @@ bool QuicPacketWriterWrapper::SupportsReleaseTime() const {
   return writer_->SupportsReleaseTime();
 }
 
+bool QuicPacketWriterWrapper::IsBatchMode() const {
+  return writer_->IsBatchMode();
+}
+
+char* QuicPacketWriterWrapper::GetNextWriteLocation() const {
+  return writer_->GetNextWriteLocation();
+}
+
+WriteResult QuicPacketWriterWrapper::Flush() {
+  return writer_->Flush();
+}
+
 void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
   unset_writer();
   writer_ = writer;

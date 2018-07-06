@@ -137,6 +137,9 @@ class QuicEndpoint : public Endpoint,
     QuicByteCount GetMaxPacketSize(
         const QuicSocketAddress& peer_address) const override;
     bool SupportsReleaseTime() const override;
+    bool IsBatchMode() const override;
+    char* GetNextWriteLocation() const override;
+    WriteResult Flush() override;
 
    private:
     QuicEndpoint* endpoint_;

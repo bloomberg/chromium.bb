@@ -59,6 +59,9 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
   quic::QuicByteCount GetMaxPacketSize(
       const quic::QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
+  bool IsBatchMode() const override;
+  char* GetNextWriteLocation() const override;
+  quic::WriteResult Flush() override;
 
  private:
   UDPServerSocket* socket_;

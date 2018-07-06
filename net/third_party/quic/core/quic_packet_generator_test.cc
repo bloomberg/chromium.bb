@@ -46,6 +46,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
                     IsHandshake handshake));
   MOCK_METHOD0(GetUpdatedAckFrame, const QuicFrame());
   MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
+  MOCK_METHOD0(GetPacketBuffer, char*());
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD3(OnUnrecoverableError,
                void(QuicErrorCode, const QuicString&, ConnectionCloseSource));
@@ -151,6 +152,7 @@ class QuicPacketGeneratorTest : public QuicTest {
                 Perspective::IS_CLIENT),
         generator_(42, &framer_, &random_generator_, &delegate_, &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
+    EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
     creator_->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
         QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));

@@ -14,6 +14,7 @@
 namespace quic {
 
 // A connection-specific packet writer that wraps a shared writer.
+// TODO(wub): Get rid of this class.
 class QuicPerConnectionPacketWriter : public QuicPacketWriter {
  public:
   // Does not take ownership of |shared_writer|.
@@ -33,6 +34,10 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   QuicByteCount GetMaxPacketSize(
       const QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
+
+  bool IsBatchMode() const override;
+  char* GetNextWriteLocation() const override;
+  WriteResult Flush() override;
 
  private:
   QuicPacketWriter* shared_writer_;  // Not owned.

@@ -107,4 +107,16 @@ bool QuicSimpleServerPacketWriter::SupportsReleaseTime() const {
   return false;
 }
 
+bool QuicSimpleServerPacketWriter::IsBatchMode() const {
+  return false;
+}
+
+char* QuicSimpleServerPacketWriter::GetNextWriteLocation() const {
+  return nullptr;
+}
+
+quic::WriteResult QuicSimpleServerPacketWriter::Flush() {
+  return quic::WriteResult(quic::WRITE_STATUS_OK, 0);
+}
+
 }  // namespace net
