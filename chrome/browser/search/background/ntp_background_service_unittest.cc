@@ -158,6 +158,7 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
   image.set_asset_id(12345);
   image.set_image_url("https://wallpapers.co/some_image");
   image.add_attribution()->set_text("attribution text");
+  image.set_action_url("https://wallpapers.co/some_image/learn_more");
   ntp::background::GetImagesInCollectionResponse response;
   *response.add_images() = image;
   std::string response_string;
@@ -177,6 +178,7 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
   collection_image.thumbnail_image_url = GURL(image.image_url());
   collection_image.image_url = GURL(image.image_url() + kImageOptions);
   collection_image.attribution.push_back(image.attribution(0).text());
+  collection_image.attribution_action_url = GURL(image.action_url());
 
   EXPECT_FALSE(service()->collection_images().empty());
   EXPECT_THAT(service()->collection_images().at(0), Eq(collection_image));

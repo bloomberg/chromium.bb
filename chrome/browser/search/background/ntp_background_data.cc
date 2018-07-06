@@ -47,7 +47,8 @@ bool operator==(const CollectionImage& lhs, const CollectionImage& rhs) {
   return lhs.collection_id == rhs.collection_id &&
          lhs.asset_id == rhs.asset_id &&
          lhs.thumbnail_image_url == rhs.thumbnail_image_url &&
-         lhs.image_url == rhs.image_url && lhs.attribution == rhs.attribution;
+         lhs.image_url == rhs.image_url && lhs.attribution == rhs.attribution &&
+         lhs.attribution_action_url == rhs.attribution_action_url;
 }
 
 bool operator!=(const CollectionImage& lhs, const CollectionImage& rhs) {
@@ -71,6 +72,7 @@ CollectionImage CollectionImage::CreateFromProto(
   for (const auto& attribution : image.attribution()) {
     collection_image.attribution.push_back(attribution.text());
   }
+  collection_image.attribution_action_url = GURL(image.action_url());
 
   return collection_image;
 }
