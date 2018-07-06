@@ -520,13 +520,6 @@ void FormStructure::ParseQueryResponse(
 
   VLOG(1) << "Autofill query response was successfully parsed:\n" << response;
 
-  ProcessQueryResponse(response, forms);
-}
-
-// static
-void FormStructure::ProcessQueryResponse(
-    const AutofillQueryResponseContents& response,
-    const std::vector<FormStructure*>& forms) {
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
 
   bool heuristics_detected_fillable_field = false;

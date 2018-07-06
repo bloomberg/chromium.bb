@@ -81,16 +81,10 @@ class FormStructure {
                                  std::vector<std::string>* encoded_signatures,
                                  autofill::AutofillQueryContents* query);
 
-  // Parses response as AutofillQueryResponseContents proto and calls
-  // ProcessQueryResponse.
-  static void ParseQueryResponse(std::string response,
-                                 const std::vector<FormStructure*>& forms);
-
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
-  static void ProcessQueryResponse(
-      const AutofillQueryResponseContents& response,
-      const std::vector<FormStructure*>& forms);
+  static void ParseQueryResponse(std::string response,
+                                 const std::vector<FormStructure*>& forms);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
