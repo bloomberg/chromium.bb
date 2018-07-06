@@ -32,8 +32,10 @@ class ThreadController {
   // main message loop.
   virtual void SetWorkBatchSize(int work_batch_size = 1) = 0;
 
-  // Notifies that |pending_task| was enqueued. Needed for tracing purposes.
-  virtual void DidQueueTask(const PendingTask& pending_task) = 0;
+  // Notifies that |pending_task| is about to be enqueued. Needed for tracing
+  // purposes. The impl may use this opportunity add metadata to |pending_task|
+  // before it is moved into the queue.
+  virtual void WillQueueTask(PendingTask* pending_task) = 0;
 
   // Notify the controller that its associated sequence has immediate work
   // to run. Shortly after this is called, the thread associated with this

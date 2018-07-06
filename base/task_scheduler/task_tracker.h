@@ -128,7 +128,8 @@ class BASE_EXPORT TaskTracker {
 
   // Informs this TaskTracker that |task| is about to be posted. Returns true if
   // this operation is allowed (|task| should be posted if-and-only-if it is).
-  bool WillPostTask(const Task& task);
+  // This method may also modify metadata on |task| if desired.
+  bool WillPostTask(Task* task);
 
   // Informs this TaskTracker that |sequence| is about to be scheduled. If this
   // returns |sequence|, it is expected that RunAndPopNextTask() will soon be

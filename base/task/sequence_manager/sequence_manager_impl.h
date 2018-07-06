@@ -239,8 +239,10 @@ class BASE_EXPORT SequenceManagerImpl
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
-  // Called by the task queue to register a new pending task.
-  void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
+  // Called by the task queue to inform this SequenceManager of a task that's
+  // about to be queued. This SequenceManager may use this opportunity to add
+  // metadata to |pending_task| before it is moved into the queue.
+  void WillQueueTask(internal::TaskQueueImpl::Task* pending_task);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.

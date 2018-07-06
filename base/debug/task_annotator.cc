@@ -35,27 +35,27 @@ TaskAnnotator::TaskAnnotator() = default;
 
 TaskAnnotator::~TaskAnnotator() = default;
 
-void TaskAnnotator::DidQueueTask(const char* queue_function,
-                                 const PendingTask& pending_task) {
+void TaskAnnotator::WillQueueTask(const char* queue_function,
+                                  PendingTask* pending_task) {
   if (queue_function) {
     TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                            queue_function,
-                           TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
+                           TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
                            TRACE_EVENT_FLAG_FLOW_OUT);
   }
 
-  // TODO(https://crbug.com/826902): Fix callers that invoke DidQueueTask()
+  // TODO(https://crbug.com/826902): Fix callers that invoke WillQueueTask()
   // twice for the same PendingTask.
   // DCHECK(!pending_task.task_backtrace[0])
   //     << "Task backtrace was already set, task posted twice??";
-  if (!pending_task.task_backtrace[0]) {
+  if (!pending_task->task_backtrace[0]) {
     const PendingTask* parent_task = GetTLSForCurrentPendingTask()->Get();
     if (parent_task) {
-      pending_task.task_backtrace[0] =
+      pending_task->task_backtrace[0] =
           parent_task->posted_from.program_counter();
       std::copy(parent_task->task_backtrace.begin(),
                 parent_task->task_backtrace.end() - 1,
-                pending_task.task_backtrace.begin() + 1);
+                pending_task->task_backtrace.begin() + 1);
     }
   }
 }

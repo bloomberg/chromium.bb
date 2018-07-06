@@ -58,7 +58,7 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, RunTask) {
             Bind([](bool* did_run) { *did_run = true; }, Unretained(&did_run)),
             TaskTraits(), TimeDelta());
 
-  EXPECT_TRUE(tracker_.WillPostTask(task));
+  EXPECT_TRUE(tracker_.WillPostTask(&task));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task));
   EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
@@ -81,7 +81,7 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, FileDescriptorWatcher) {
   // FileDescriptorWatcher::WatchReadable needs a SequencedTaskRunnerHandle.
   task.sequenced_task_runner_ref = MakeRefCounted<NullTaskRunner>();
 
-  EXPECT_TRUE(tracker_.WillPostTask(task));
+  EXPECT_TRUE(tracker_.WillPostTask(&task));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task));
   EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));

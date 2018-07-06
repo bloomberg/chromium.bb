@@ -34,7 +34,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
 
   // ThreadController:
   void SetWorkBatchSize(int work_batch_size) override;
-  void DidQueueTask(const PendingTask& pending_task) override;
+  void WillQueueTask(PendingTask* pending_task) override;
   void ScheduleWork() override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;

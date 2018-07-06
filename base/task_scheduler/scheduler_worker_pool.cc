@@ -145,7 +145,7 @@ bool SchedulerWorkerPool::PostTaskWithSequence(
   DCHECK(task.task);
   DCHECK(sequence);
 
-  if (!task_tracker_->WillPostTask(task))
+  if (!task_tracker_->WillPostTask(&task))
     return false;
 
   if (task.delayed_run_time.is_null()) {
