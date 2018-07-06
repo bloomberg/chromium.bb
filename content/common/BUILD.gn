@@ -491,7 +491,10 @@ source_set("common") {
       "sandbox_policy_fuchsia.h",
     ]
 
-    deps += [ "//third_party/fuchsia-sdk:fdio" ]
+    deps += [
+      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk:fonts",
+    ]
   }
 }
 

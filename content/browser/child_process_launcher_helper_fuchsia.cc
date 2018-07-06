@@ -54,6 +54,8 @@ void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
+
+  sandbox_policy_.Initialize(delegate_->GetSandboxType());
 }
 
 base::Optional<mojo::NamedPlatformChannel>
@@ -75,7 +77,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   mojo_channel_->PrepareToPassRemoteEndpoint(&options->handles_to_transfer,
                                              command_line());
-  UpdateLaunchOptionsForSandbox(delegate_->GetSandboxType(), options);
+  sandbox_policy_.UpdateLaunchOptionsForSandbox(options);
+
   return true;
 }
 

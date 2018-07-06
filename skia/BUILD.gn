@@ -479,7 +479,6 @@ component("skia") {
   if (is_fuchsia) {
     sources += [
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
       "ext/fontmgr_default_fuchsia.cc",
       "ext/fontmgr_default_fuchsia.h",
       "ext/fontmgr_fuchsia.cc",
