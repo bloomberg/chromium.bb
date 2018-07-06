@@ -3064,7 +3064,6 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
   AV1_COMMON *cm = &pbi->common;
-  const int num_planes = av1_num_planes(cm);
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
 
@@ -3075,6 +3074,7 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   }
   thread_data->error_info.setjmp = 1;
 
+  const int num_planes = av1_num_planes(cm);
   allow_update_cdf = cm->large_scale_tile ? 0 : 1;
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
 
