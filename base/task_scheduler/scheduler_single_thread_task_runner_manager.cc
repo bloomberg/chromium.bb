@@ -249,7 +249,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                                  },
                                  std::move(msg)),
                              TaskTraits(MayBlock()), TimeDelta());
-      if (task_tracker_->WillPostTask(pump_message_task)) {
+      if (task_tracker_->WillPostTask(&pump_message_task)) {
         bool was_empty =
             message_pump_sequence_->PushTask(std::move(pump_message_task));
         DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
@@ -300,7 +300,7 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     Task task(from_here, std::move(closure), traits_, delay);
     task.single_thread_task_runner_ref = this;
 
-    if (!outer_->task_tracker_->WillPostTask(task))
+    if (!outer_->task_tracker_->WillPostTask(&task))
       return false;
 
     if (task.delayed_run_time.is_null()) {

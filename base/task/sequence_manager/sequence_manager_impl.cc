@@ -397,9 +397,9 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) {
   return delay_till_next_task;
 }
 
-void SequenceManagerImpl::DidQueueTask(
-    const internal::TaskQueueImpl::Task& pending_task) {
-  controller_->DidQueueTask(pending_task);
+void SequenceManagerImpl::WillQueueTask(
+    internal::TaskQueueImpl::Task* pending_task) {
+  controller_->WillQueueTask(pending_task);
 }
 
 void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,

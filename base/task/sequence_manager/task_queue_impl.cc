@@ -251,7 +251,7 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task,
     TimeTicks now) {
-  main_thread_only().sequence_manager->DidQueueTask(pending_task);
+  main_thread_only().sequence_manager->WillQueueTask(&pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
   LazyNow lazy_now(now);
@@ -261,7 +261,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
-  any_thread().sequence_manager->DidQueueTask(pending_task);
+  any_thread().sequence_manager->WillQueueTask(&pending_task);
 
   EnqueueOrder thread_hop_task_sequence_number =
       any_thread().sequence_manager->GetNextSequenceNumber();
@@ -307,9 +307,8 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task task) {
   {
     AutoLock lock(immediate_incoming_queue_lock_);
     was_immediate_incoming_queue_empty = immediate_incoming_queue().empty();
+    any_thread().sequence_manager->WillQueueTask(&task);
     immediate_incoming_queue().push_back(std::move(task));
-    any_thread().sequence_manager->DidQueueTask(
-        immediate_incoming_queue().back());
   }
 
   if (was_immediate_incoming_queue_empty) {

@@ -186,7 +186,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
                   BindOnce(&TaskSchedulerWorkerTest::RunTaskCallback,
                            Unretained(outer_)),
                   TaskTraits(), TimeDelta());
-        EXPECT_TRUE(outer_->task_tracker_.WillPostTask(task));
+        EXPECT_TRUE(outer_->task_tracker_.WillPostTask(&task));
         sequence->PushTask(std::move(task));
       }
 
@@ -453,7 +453,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
             Unretained(&controls_->work_running_)),
         {WithBaseSyncPrimitives(), TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         TimeDelta());
-    EXPECT_TRUE(task_tracker_->WillPostTask(task));
+    EXPECT_TRUE(task_tracker_->WillPostTask(&task));
     sequence->PushTask(std::move(task));
     sequence =
         task_tracker_->WillScheduleSequence(std::move(sequence), nullptr);

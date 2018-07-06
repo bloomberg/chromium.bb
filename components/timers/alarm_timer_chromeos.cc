@@ -94,8 +94,8 @@ void SimpleAlarmTimer::Reset() {
   } else {
     // Otherwise, if the delay is not zero, generate a tracing event to indicate
     // that the task was posted and watch |alarm_fd_|.
-    base::debug::TaskAnnotator().DidQueueTask("SimpleAlarmTimer::Reset",
-                                              *pending_task_);
+    base::debug::TaskAnnotator().WillQueueTask("SimpleAlarmTimer::Reset",
+                                               pending_task_.get());
     alarm_fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
         alarm_fd_,
         base::BindRepeating(&SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking,

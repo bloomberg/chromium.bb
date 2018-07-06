@@ -338,23 +338,23 @@ void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
   }
 }
 
-bool TaskTracker::WillPostTask(const Task& task) {
-  DCHECK(task.task);
+bool TaskTracker::WillPostTask(Task* task) {
+  DCHECK(task->task);
 
-  if (!BeforePostTask(task.traits.shutdown_behavior()))
+  if (!BeforePostTask(task->traits.shutdown_behavior()))
     return false;
 
-  if (task.delayed_run_time.is_null())
+  if (task->delayed_run_time.is_null())
     subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
   {
     TRACE_EVENT_WITH_FLOW0(
         kTaskSchedulerFlowTracingCategory, kQueueFunctionName,
-        TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(task)),
+        TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(*task)),
         TRACE_EVENT_FLAG_FLOW_OUT);
   }
 
-  task_annotator_.DidQueueTask(nullptr, task);
+  task_annotator_.WillQueueTask(nullptr, task);
 
   return true;
 }

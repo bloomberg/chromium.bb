@@ -339,7 +339,7 @@ bool IncomingTaskQueue::PostPendingTaskLockRequired(PendingTask* pending_task) {
   // delayed_run_time value) and for identifying the task in about:tracing.
   pending_task->sequence_num = next_sequence_num_++;
 
-  task_annotator_.DidQueueTask("MessageLoop::PostTask", *pending_task);
+  task_annotator_.WillQueueTask("MessageLoop::PostTask", pending_task);
 
   bool was_empty = incoming_queue_.empty();
   incoming_queue_.push(std::move(*pending_task));

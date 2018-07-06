@@ -44,9 +44,9 @@ struct BASE_EXPORT PendingTask {
   // The time when the task should be run.
   base::TimeTicks delayed_run_time;
 
-  // Task backtrace. mutable so it can be set while annotating const PendingTask
-  // objects from TaskAnnotator::DidQueueTask().
-  mutable std::array<const void*, 4> task_backtrace = {};
+  // Chain of up-to-four symbols of the parent tasks which led to this one being
+  // posted.
+  std::array<const void*, 4> task_backtrace = {};
 
   // Secondary sort key for run time.
   int sequence_num = 0;
