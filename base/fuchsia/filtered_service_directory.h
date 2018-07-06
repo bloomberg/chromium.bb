@@ -18,7 +18,7 @@ class ComponentContext;
 
 // ServiceDirectory that uses the supplied ComponentContext to satisfy requests
 // for only a restricted set of services.
-class FilteredServiceDirectory {
+class BASE_EXPORT FilteredServiceDirectory {
  public:
   // Creates proxy that proxies requests to the specified |component_context|,
   // which must outlive the proxy.
