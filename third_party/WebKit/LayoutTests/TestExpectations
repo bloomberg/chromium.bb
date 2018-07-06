@@ -4311,24 +4311,6 @@ crbug.com/814889 idle-callback/test-runner-run-idle-tasks.html [ Crash Timeout P
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
 crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
 
-# Sheriff failures 2018-07-06
-crbug.com/860588 [ Mac10.10 Mac10.11 Mac10.13 ] fast/text/selection/atsui-partial-selection.html [ Failure ]
-crbug.com/860588 [ Mac10.10 Mac10.11 Mac10.13 Win10 ] fast/text/selection/emphasis.html [ Failure ]
-crbug.com/860588 [ Mac10.10 Mac10.11 Mac10.13 ] fast/text/selection/justified-selection-at-edge.html [ Failure ]
-crbug.com/860588 [ Mac10.10 Mac10.11 Mac10.13 Win10 ] fast/text/selection/justified-selection.html [ Failure ]
-crbug.com/860588 [ Mac10.10 Mac10.11 Mac10.13 Win10 ] fast/text/selection/selection-multiple-runs.html [ Failure ]
-crbug.com/860588 [ Mac10.13 ] fast/text/selection/selection-painted-separately.html [ Failure ]
-crbug.com/860588 [ Win10 ] editing/selection/replaced-boundaries-1.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/atsui-kerning-and-ligatures.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/atsui-rtl-override-selection.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/complex-text-rtl-selection-repaint.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/khmer-selection.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/selection-painting-hidpi.html [ Failure ]
-crbug.com/860588 [ Win10 ] fast/text/selection/shaping-selection-rect.html [ Failure ]
-crbug.com/860588 [ Win10 ] paint/invalidation/repaint-across-writing-mode-boundary.html [ Failure ]
-crbug.com/860588 [ Win10 ] paint/selection/text-selection-inline-block-rtl.html [ Failure ]
-crbug.com/860588 [ Win10 ] paint/selection/text-selection-inline-block.html [ Failure ]
-
 # MSAN
 crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass Failure ]
 
