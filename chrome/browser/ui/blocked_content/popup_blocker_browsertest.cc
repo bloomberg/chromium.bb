@@ -128,7 +128,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
     // create a to-be-blocked window.
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    if (!content::ExecuteScript(tab, std::string())) {
+    if (!content::ExecuteScriptWithoutUserGesture(tab, std::string())) {
       ADD_FAILURE() << "Failed to execute script in active tab.";
       return -1;
     }
