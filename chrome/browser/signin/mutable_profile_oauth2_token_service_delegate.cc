@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -359,7 +360,8 @@ MutableProfileOAuth2TokenServiceDelegate::
   backoff_policy_.maximum_backoff_ms = 15 * 60 * 1000;
   backoff_policy_.entry_lifetime_ms = -1;
   backoff_policy_.always_use_initial_delay = false;
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
 
 #if !defined(OS_CHROMEOS)
   // Ensure the device ID is not empty.
@@ -372,7 +374,8 @@ MutableProfileOAuth2TokenServiceDelegate::
     ~MutableProfileOAuth2TokenServiceDelegate() {
   VLOG(1) << "MutablePO2TS::~MutablePO2TS";
   DCHECK(server_revokes_.empty());
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
 // static
@@ -886,8 +889,8 @@ void MutableProfileOAuth2TokenServiceDelegate::Shutdown() {
   refresh_tokens_.clear();
 }
 
-void MutableProfileOAuth2TokenServiceDelegate::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void MutableProfileOAuth2TokenServiceDelegate::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   // If our network has changed, reset the backoff timer so that errors caused
   // by a previous lack of network connectivity don't prevent new requests.
   backoff_entry_.Reset();
