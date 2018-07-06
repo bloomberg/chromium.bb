@@ -69,9 +69,10 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="sync/test/android/javatests/src"/>
 <classpathentry kind="src" path="sync/android/java/src"/>
 <classpathentry kind="src" path="sync/android/javatests/src"/>
-<classpathentry kind="src" path="mojo/public/java/src"/>
-<classpathentry kind="src" path="mojo/android/system/src"/>
-<classpathentry kind="src" path="mojo/android/javatests/src"/>
+<classpathentry kind="src" path="mojo/public/java/base/src"/>
+<classpathentry kind="src" path="mojo/public/java/bindings/src"/>
+<classpathentry kind="src" path="mojo/public/java/system/javatests/src"/>
+<classpathentry kind="src" path="mojo/public/java/system/src"/>
 <classpathentry kind="src" path="testing/android/java/src"/>
 <classpathentry kind="src" path="printing/android/java/src"/>
 <classpathentry kind="src" path="tools/binary_size/java/src"/>

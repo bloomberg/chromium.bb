@@ -396,7 +396,7 @@ jumbo_static_library("test_support") {
   if (is_android) {
     deps += [
       "//content/shell:android_shell_descriptors",
-      "//mojo/android:libsystem_java",
+      "//mojo/public/java/system:native_support",
     ]
   }
 

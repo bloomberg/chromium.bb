@@ -853,7 +853,7 @@
     "type": "console_test_launcher",
   },
   "mojo_test_apk": {
-    "label": "//mojo/android:mojo_test_apk",
+    "label": "//mojo/public/java/system:mojo_test_apk",
     "type": "console_test_launcher",
   },
   "monochrome_apk_checker": {

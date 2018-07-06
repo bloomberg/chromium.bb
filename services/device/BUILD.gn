@@ -267,9 +267,9 @@ if (is_android) {
     ]
     deps = [
       "//base:base_java",
-      "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
+      "//mojo/public/java/system:system_impl_java",
       "//services/device/battery/android:battery_monitor_java",
       "//services/device/generic_sensor:java",
       "//services/device/geolocation:geolocation_java",

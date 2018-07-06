@@ -6,7 +6,6 @@ include_rules = [
   "+components/viz/host",
   "+components/viz/service",
   "+components/viz/test",
-  "+mojo/android/system/mojo_jni_registrar.h",
   "+services/audio/public/mojom",
   "+services/network",
   "+services/resource_coordinator",

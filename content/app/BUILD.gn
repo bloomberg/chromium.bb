@@ -125,7 +125,7 @@ template("implement_content_app") {
         "android/library_loader_hooks.h",
       ]
       deps += [
-        "//mojo/android:libsystem_java",
+        "//mojo/public/java/system:native_support",
         "//ui/gl",
       ]
     } else {
