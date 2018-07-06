@@ -141,7 +141,8 @@ typedef base::Callback<void(FileError error,
                             const GURL& share_url)> GetShareUrlCallback;
 
 // Used to get filesystem metadata.
-typedef base::Callback<void(const FileSystemMetadata&)>
+typedef base::Callback<void(const FileSystemMetadata&,
+                            const std::map<std::string, FileSystemMetadata>&)>
     GetFilesystemMetadataCallback;
 
 // Used to mark cached files mounted.
