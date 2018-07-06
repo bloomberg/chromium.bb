@@ -686,23 +686,27 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
       return result;
   }
 
-  cc::EventListenerProperties properties =
-      input_handler_->GetEventListenerProperties(
-          cc::EventListenerClass::kMouseWheel);
-  switch (properties) {
-    case cc::EventListenerProperties::kPassive:
-      result = DID_HANDLE_NON_BLOCKING;
-      break;
-    case cc::EventListenerProperties::kBlockingAndPassive:
-    case cc::EventListenerProperties::kBlocking:
-      result = DID_NOT_HANDLE;
-      break;
-    case cc::EventListenerProperties::kNone:
-      result = DROP_EVENT;
-      break;
-    default:
-      NOTREACHED();
-      result = DROP_EVENT;
+  WebFloatPoint position_in_widget = wheel_event.PositionInWidget();
+  if (input_handler_->HasWheelEventHandlerAt(
+          gfx::Point(position_in_widget.x, position_in_widget.y))) {
+    result = DID_NOT_HANDLE;
+  } else {
+    cc::EventListenerProperties properties =
+        input_handler_->GetEventListenerProperties(
+            cc::EventListenerClass::kMouseWheel);
+    switch (properties) {
+      case cc::EventListenerProperties::kBlockingAndPassive:
+      case cc::EventListenerProperties::kPassive:
+        result = DID_HANDLE_NON_BLOCKING;
+        break;
+      case cc::EventListenerProperties::kNone:
+        result = DROP_EVENT;
+        break;
+      default:
+        // If properties is kBlocking, and the event falls outside wheel event
+        // handler region, we should handle it the same as kNone.
+        result = DROP_EVENT;
+    }
   }
 
   mouse_wheel_result_ = result;

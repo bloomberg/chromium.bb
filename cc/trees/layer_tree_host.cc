@@ -1072,6 +1072,22 @@ void LayerTreeHost::SetEventListenerProperties(
   if (event_listener_properties_[index] == properties)
     return;
 
+  // TODO(sunxd): Remove NeedsFullTreeSync when computing mouse wheel event
+  // handler region is done.
+  // We only do full tree sync if the mouse wheel event listener property
+  // changes from kNone/kPassive to kBlocking/kBlockingAndPassive.
+  if (event_class == EventListenerClass::kMouseWheel &&
+      !(event_listener_properties_[index] ==
+            EventListenerProperties::kBlocking ||
+        event_listener_properties_[index] ==
+            EventListenerProperties::kBlockingAndPassive) &&
+      (properties == EventListenerProperties::kBlocking ||
+       properties == EventListenerProperties::kBlockingAndPassive)) {
+    if (root_layer())
+      root_layer()->SetSubtreePropertyChanged();
+    SetNeedsFullTreeSync();
+  }
+
   event_listener_properties_[index] = properties;
   SetNeedsCommit();
 }

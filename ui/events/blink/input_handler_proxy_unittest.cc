@@ -182,6 +182,7 @@ class MockInputHandler : public cc::InputHandler {
                cc::InputHandler::TouchStartOrMoveEventListenerType(
                    const gfx::Point& point,
                    cc::TouchAction* touch_action));
+  MOCK_CONST_METHOD1(HasWheelEventHandlerAt, bool(const gfx::Point&));
 
   MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
   MOCK_METHOD1(SetSynchronousInputHandlerRootScrollOffset,
@@ -348,6 +349,11 @@ class TestInputHandlerProxy : public InputHandlerProxy {
       cc::TouchAction* white_listed_touch_action) {
     return HitTestTouchEvent(touch_event, is_touching_scrolling_layer,
                              white_listed_touch_action);
+  }
+
+  EventDisposition HandleMouseWheelForTest(
+      const blink::WebMouseWheelEvent& wheel_event) {
+    return HandleMouseWheel(wheel_event);
   }
 };
 
@@ -583,6 +589,8 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
 
 TEST_P(InputHandlerProxyTest, MouseWheelNoListener) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
@@ -596,6 +604,8 @@ TEST_P(InputHandlerProxyTest, MouseWheelNoListener) {
 
 TEST_P(InputHandlerProxyTest, MouseWheelPassiveListener) {
   expected_disposition_ = InputHandlerProxy::DID_HANDLE_NON_BLOCKING;
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
@@ -609,9 +619,8 @@ TEST_P(InputHandlerProxyTest, MouseWheelPassiveListener) {
 
 TEST_P(InputHandlerProxyTest, MouseWheelBlockingListener) {
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  EXPECT_CALL(mock_input_handler_,
-              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
-      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(true));
 
   WebMouseWheelEvent wheel(WebInputEvent::kMouseWheel,
                            WebInputEvent::kControlKey,
@@ -622,14 +631,57 @@ TEST_P(InputHandlerProxyTest, MouseWheelBlockingListener) {
 
 TEST_P(InputHandlerProxyTest, MouseWheelBlockingAndPassiveListener) {
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  // We will not call GetEventListenerProperties because we early out when we
+  // hit blocking region.
+  WebMouseWheelEvent wheel(WebInputEvent::kMouseWheel,
+                           WebInputEvent::kControlKey,
+                           WebInputEvent::GetStaticTimeStampForTests());
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_P(InputHandlerProxyTest, MouseWheelEventOutsideBlockingListener) {
+  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::Property(
+                                       &gfx::Point::y, testing::Gt(10))))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::Property(
+                                       &gfx::Point::y, testing::Le(10))))
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
-      .WillOnce(
+      .WillRepeatedly(testing::Return(cc::EventListenerProperties::kBlocking));
+
+  WebMouseWheelEvent wheel(WebInputEvent::kMouseWheel,
+                           WebInputEvent::kControlKey,
+                           WebInputEvent::GetStaticTimeStampForTests());
+  wheel.SetPositionInScreen(0, 5);
+  wheel.SetPositionInWidget(0, 5);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_P(InputHandlerProxyTest,
+       MouseWheelEventOutsideBlockingListenerWithPassiveListener) {
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE_NON_BLOCKING;
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::Property(
+                                       &gfx::Point::y, testing::Gt(10))))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::Property(
+                                       &gfx::Point::y, testing::Le(10))))
+      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillRepeatedly(
           testing::Return(cc::EventListenerProperties::kBlockingAndPassive));
 
   WebMouseWheelEvent wheel(WebInputEvent::kMouseWheel,
                            WebInputEvent::kControlKey,
                            WebInputEvent::GetStaticTimeStampForTests());
+  wheel.SetPositionInScreen(0, 5);
+  wheel.SetPositionInWidget(0, 5);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
   VERIFY_AND_RESET_MOCKS();
 }
@@ -1616,6 +1668,8 @@ TEST_P(InputHandlerProxyTest, WheelScrollingThreadStatusHistogram) {
       blink::kWebGestureDeviceTouchpad);
 
   // Wheel event with passive event listener.
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
@@ -1639,10 +1693,11 @@ TEST_P(InputHandlerProxyTest, WheelScrollingThreadStatusHistogram) {
 
   VERIFY_AND_RESET_MOCKS();
 
-  // Wheel event with blocking event listener.
-  EXPECT_CALL(mock_input_handler_,
-              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
-      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
+  // Wheel event with blocking event listener. If there is a wheel event handler
+  // at the point, we do not need to call GetEventListenerProperties since it
+  // indicates kBlocking.
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(true));
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
 
@@ -1664,6 +1719,8 @@ TEST_P(InputHandlerProxyTest, WheelScrollingThreadStatusHistogram) {
   VERIFY_AND_RESET_MOCKS();
 
   // Wheel scrolling on main thread.
+  EXPECT_CALL(mock_input_handler_, HasWheelEventHandlerAt(testing::_))
+      .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kMainThreadScrollState));
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;

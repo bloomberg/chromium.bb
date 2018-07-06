@@ -781,6 +781,18 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartOrMoveAt(
                      : InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
 }
 
+bool LayerTreeHostImpl::HasWheelEventHandlerAt(
+    const gfx::Point& viewport_point) const {
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
+
+  LayerImpl* layer_impl_with_wheel_event_handler =
+      active_tree_->FindLayerThatIsHitByPointInWheelEventHandlerRegion(
+          device_viewport_point);
+
+  return layer_impl_with_wheel_event_handler;
+}
+
 std::unique_ptr<SwapPromiseMonitor>
 LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {

@@ -1892,31 +1892,6 @@ static bool PointHitsRect(
   return true;
 }
 
-static bool PointHitsRegion(const gfx::PointF& screen_space_point,
-                            const gfx::Transform& screen_space_transform,
-                            const Region& layer_space_region) {
-  // If the transform is not invertible, then assume that this point doesn't hit
-  // this region.
-  gfx::Transform inverse_screen_space_transform(
-      gfx::Transform::kSkipInitialization);
-  if (!screen_space_transform.GetInverse(&inverse_screen_space_transform))
-    return false;
-
-  // Transform the hit test point from screen space to the local space of the
-  // given region.
-  bool clipped = false;
-  gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
-      inverse_screen_space_transform, screen_space_point, &clipped);
-
-  // If ProjectPoint could not project to a valid value, then we assume that
-  // this point doesn't hit this region.
-  if (clipped)
-    return false;
-
-  return layer_space_region.Contains(
-      gfx::ToRoundedPoint(hit_test_point_in_layer_space));
-}
-
 static bool PointIsClippedByAncestorClipNode(
     const gfx::PointF& screen_space_point,
     const LayerImpl* layer) {
@@ -1960,6 +1935,41 @@ static bool PointIsClippedBySurfaceOrClipRect(
   // Walk up the layer tree and hit-test any render_surfaces and any layer
   // clip rects that are active.
   return PointIsClippedByAncestorClipNode(screen_space_point, layer);
+}
+
+static bool PointHitsRegion(const gfx::PointF& screen_space_point,
+                            const gfx::Transform& screen_space_transform,
+                            const Region& layer_space_region,
+                            const LayerImpl* layer_impl) {
+  if (layer_space_region.IsEmpty())
+    return false;
+
+  // If the transform is not invertible, then assume that this point doesn't hit
+  // this region.
+  gfx::Transform inverse_screen_space_transform(
+      gfx::Transform::kSkipInitialization);
+  if (!screen_space_transform.GetInverse(&inverse_screen_space_transform))
+    return false;
+
+  // Transform the hit test point from screen space to the local space of the
+  // given region.
+  bool clipped = false;
+  gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
+      inverse_screen_space_transform, screen_space_point, &clipped);
+
+  // If ProjectPoint could not project to a valid value, then we assume that
+  // this point doesn't hit this region.
+  if (clipped)
+    return false;
+
+  // We need to walk up the parents to ensure that the layer is not clipped in
+  // such a way that it is impossible for the point to hit the layer.
+  if (layer_impl &&
+      PointIsClippedBySurfaceOrClipRect(screen_space_point, layer_impl))
+    return false;
+
+  return layer_space_region.Contains(
+      gfx::ToRoundedPoint(hit_test_point_in_layer_space));
 }
 
 static bool PointHitsLayer(const LayerImpl* layer,
@@ -2072,42 +2082,47 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
   return state.closest_match;
 }
 
-static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
-                                         LayerImpl* layer_impl) {
-  if (layer_impl->touch_action_region().region().IsEmpty())
-    return false;
-
-  if (!PointHitsRegion(screen_space_point, layer_impl->ScreenSpaceTransform(),
-                       layer_impl->touch_action_region().region()))
-    return false;
-
-  // At this point, we think the point does hit the touch event handler region
-  // on the layer, but we need to walk up the parents to ensure that the layer
-  // was not clipped in such a way that the hit point actually should not hit
-  // the layer.
-  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer_impl))
-    return false;
-
-  return true;
-}
-
 struct FindTouchEventLayerFunctor {
   bool operator()(LayerImpl* layer) const {
-    return LayerHasTouchEventHandlersAt(screen_space_point, layer);
+    return PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
+                           layer->touch_action_region().region(), layer);
   }
   const gfx::PointF screen_space_point;
 };
 
-LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
-    const gfx::PointF& screen_space_point) {
+struct FindWheelEventHandlerLayerFunctor {
+  bool operator()(LayerImpl* layer) const {
+    return PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
+                           layer->wheel_event_handler_region(), layer);
+  }
+  const gfx::PointF screen_space_point;
+};
+
+template <typename Functor>
+LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInEventHandlerRegion(
+    const gfx::PointF& screen_space_point,
+    const Functor& func) {
   if (layer_list_.empty())
     return nullptr;
   if (!UpdateDrawProperties())
     return nullptr;
-  FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0], func, &state);
   return state.closest_match;
+}
+
+LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
+    const gfx::PointF& screen_space_point) {
+  FindTouchEventLayerFunctor func = {screen_space_point};
+  return FindLayerThatIsHitByPointInEventHandlerRegion(screen_space_point,
+                                                       func);
+}
+
+LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInWheelEventHandlerRegion(
+    const gfx::PointF& screen_space_point) {
+  FindWheelEventHandlerLayerFunctor func = {screen_space_point};
+  return FindLayerThatIsHitByPointInEventHandlerRegion(screen_space_point,
+                                                       func);
 }
 
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {

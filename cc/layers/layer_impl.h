@@ -331,6 +331,16 @@ class CC_EXPORT LayerImpl {
     return touch_action_region_;
   }
 
+  // Set or get the region that contains wheel event handler.
+  // The |wheel_event_handler_region| specify the area where wheel event handler
+  // could block impl scrolling.
+  void SetWheelEventHandlerRegion(const Region& wheel_event_handler_region) {
+    wheel_event_handler_region_ = wheel_event_handler_region;
+  }
+  const Region& wheel_event_handler_region() const {
+    return wheel_event_handler_region_;
+  }
+
   // Note this rect is in layer space (not content space).
   void SetUpdateRect(const gfx::Rect& update_rect);
   const gfx::Rect& update_rect() const { return update_rect_; }
@@ -523,6 +533,7 @@ class CC_EXPORT LayerImpl {
 
   Region non_fast_scrollable_region_;
   TouchActionRegion touch_action_region_;
+  Region wheel_event_handler_region_;
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
