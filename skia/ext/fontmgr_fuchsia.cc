@@ -212,8 +212,10 @@ FuchsiaFontManager::FuchsiaFontManager(
 
   // Get default font.
   default_typeface_.reset(onMatchFamilyStyle(kDefaultFont, SkFontStyle()));
-  if (!default_typeface_)
-    LOG(FATAL) << "Failed to get default font from the FontProvider.";
+  if (!default_typeface_) {
+    default_typeface_ = sk_make_sp<SkTypeface_Empty>();
+    LOG(ERROR) << "Failed to get default font from the FontProvider.";
+  }
 }
 
 FuchsiaFontManager::~FuchsiaFontManager() = default;
