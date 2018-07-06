@@ -497,6 +497,10 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/services/font/public/interfaces/constants.mojom.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -3636,6 +3640,12 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
   (*services)[chrome::mojom::kFileUtilServiceName] = base::BindRepeating(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_FILE_UTILITY_NAME);
+#endif
+
+#if defined(OS_LINUX)
+  (*services)[font_service::mojom::kServiceName] =
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_FONT_SERVICE_UTILITY_NAME);
 #endif
 
   (*services)[patch::mojom::kServiceName] = base::BindRepeating(

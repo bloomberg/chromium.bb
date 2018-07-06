@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "content/public/child/child_process_sandbox_support_linux.h"
+#include "components/services/font/public/cpp/font_loader.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 struct WebFallbackFont;
@@ -20,7 +21,8 @@ namespace content {
 // specified by |character|, a UTF-32 character. |preferred_locale| contains the
 // preferred locale identifier for |character|. The instance has an empty font
 // name if the request could not be satisfied.
-void GetFallbackFontForCharacter(const int32_t character,
+void GetFallbackFontForCharacter(sk_sp<font_service::FontLoader> font_loader,
+                                 const int32_t character,
                                  const char* preferred_locale,
                                  blink::WebFallbackFont* family);
 
@@ -28,7 +30,8 @@ void GetFallbackFontForCharacter(const int32_t character,
 // |size_and_style| stores the bold setting in its least-significant bit, the
 // italic setting in its second-least-significant bit, and holds the requested
 // size in pixels into its remaining bits.
-void GetRenderStyleForStrike(const char* family,
+void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
+                             const char* family,
                              int size,
                              bool is_bold,
                              bool is_italic,

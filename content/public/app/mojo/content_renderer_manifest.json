@@ -33,6 +33,7 @@
           "font_loader",
           "renderer"
         ],
+        "font_service": [ "font_service" ],
         "metrics": [ "url_keyed_metrics" ],
         "device": [
           "device:power_monitor",

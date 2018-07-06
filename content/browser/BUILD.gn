@@ -1249,8 +1249,6 @@ jumbo_source_set("browser") {
     "renderer_host/event_with_latency_info.h",
     "renderer_host/file_utilities_host_impl.cc",
     "renderer_host/file_utilities_host_impl.h",
-    "renderer_host/font_utils_linux.cc",
-    "renderer_host/font_utils_linux.h",
     "renderer_host/frame_connector_delegate.cc",
     "renderer_host/frame_connector_delegate.h",
     "renderer_host/frame_metadata_util.cc",
@@ -2045,6 +2043,9 @@ jumbo_source_set("browser") {
     }
     if (use_pangocairo) {
       sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
+    }
+    if (is_linux && !is_android) {
+      deps += [ "//components/services/font:ppapi_fontconfig_matching" ]
     }
   }
 

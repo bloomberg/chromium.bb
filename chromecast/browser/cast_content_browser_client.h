@@ -183,6 +183,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void RegisterInProcessServices(
       StaticServiceMap* services,
       content::ServiceManagerConnection* connection) override;
+  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece service_name) override;
   void GetAdditionalMappedFilesForChildProcess(

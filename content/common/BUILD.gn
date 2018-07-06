@@ -116,8 +116,6 @@ source_set("common") {
     "fileapi/file_system_messages.h",
     "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",
-    "font_config_ipc_linux.cc",
-    "font_config_ipc_linux.h",
     "font_list.cc",
     "font_list.h",
     "font_list_android.cc",
