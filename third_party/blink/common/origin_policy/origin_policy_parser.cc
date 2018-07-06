@@ -11,35 +11,56 @@
 
 namespace blink {
 
+std::unique_ptr<OriginPolicy> OriginPolicyParser::Parse(
+    base::StringPiece text) {
+  OriginPolicyParser parser;
+  if (!parser.DoParse(text))
+    return nullptr;
+  return std::move(parser.policy_);
+}
+
 OriginPolicyParser::OriginPolicyParser() {}
 OriginPolicyParser::~OriginPolicyParser() {}
 
-std::unique_ptr<OriginPolicy> OriginPolicyParser::Parse(
-    base::StringPiece text) {
-  if (text.empty())
-    return nullptr;
+bool OriginPolicyParser::DoParse(base::StringPiece policy_text) {
+  policy_ = base::WrapUnique(new OriginPolicy);
 
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(text);
+  if (policy_text.empty())
+    return false;
+
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(policy_text);
   if (!json || !json->is_dict())
-    return nullptr;
+    return false;
 
-  auto* headers = json->FindKey("headers");
-  if (!headers || !headers->is_list())
-    return nullptr;
+  base::Value* csp = json->FindKey("content-security-policy");
+  return !csp || ParseContentSecurityPolicies(*csp);
+}
 
-  std::unique_ptr<OriginPolicy> manifest = base::WrapUnique(new OriginPolicy);
-  for (auto& header : headers->GetList()) {
-    if (!header.is_dict())
-      continue;
-    auto* name = header.FindKey("name");
-    auto* value = header.FindKey("value");
-    if (name && name->is_string() && value && value->is_string() &&
-        name->GetString() == "Content-Security-Policy") {
-      manifest->csp_ = value->GetString();
-    }
+bool OriginPolicyParser::ParseContentSecurityPolicies(
+    const base::Value& policies) {
+  if (!policies.is_list())
+    return false;
+
+  bool ok = true;
+  for (const auto& csp : policies.GetList()) {
+    ok &= ParseContentSecurityPolicy(csp);
   }
+  return ok;
+}
 
-  return manifest;
+bool OriginPolicyParser::ParseContentSecurityPolicy(const base::Value& csp) {
+  if (!csp.is_dict())
+    return false;
+
+  const auto* policy = csp.FindKeyOfType("policy", base::Value::Type::STRING);
+  if (!policy)
+    return false;
+
+  const auto* report_only =
+      csp.FindKeyOfType("report-only", base::Value::Type::BOOLEAN);
+  policy_->csp_.push_back(
+      {policy->GetString(), report_only && report_only->GetBool()});
+  return true;
 }
 
 }  // namespace blink
