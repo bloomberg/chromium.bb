@@ -26,6 +26,24 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
 
   mojom::AccountStatusChangeDelegatePtr& delegate() { return delegate_; }
 
+  std::vector<mojom::HostStatusObserverPtr>& observers() { return observers_; }
+
+  std::vector<GetEligibleHostDevicesCallback>& get_eligible_hosts_args() {
+    return get_eligible_hosts_args_;
+  }
+
+  std::vector<std::pair<std::string, SetHostDeviceCallback>>& set_host_args() {
+    return set_host_args_;
+  }
+
+  size_t num_remove_host_calls() { return num_remove_host_calls_; }
+
+  std::vector<GetHostStatusCallback>& get_host_args() { return get_host_args_; }
+
+  std::vector<RetrySetHostNowCallback>& retry_set_host_now_args() {
+    return retry_set_host_now_args_;
+  }
+
   std::vector<std::pair<mojom::EventTypeForDebugging,
                         TriggerEventForDebuggingCallback>>&
   triggered_debug_events() {
@@ -36,12 +54,24 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
       mojom::AccountStatusChangeDelegatePtr delegate) override;
+  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
+  void SetHostDevice(const std::string& host_public_key,
+                     SetHostDeviceCallback callback) override;
+  void RemoveHostDevice() override;
+  void GetHostStatus(GetHostStatusCallback callback) override;
+  void RetrySetHostNow(RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
   mojom::AccountStatusChangeDelegatePtr delegate_;
-
+  std::vector<mojom::HostStatusObserverPtr> observers_;
+  std::vector<GetEligibleHostDevicesCallback> get_eligible_hosts_args_;
+  std::vector<std::pair<std::string, SetHostDeviceCallback>> set_host_args_;
+  size_t num_remove_host_calls_ = 0u;
+  std::vector<GetHostStatusCallback> get_host_args_;
+  std::vector<RetrySetHostNowCallback> retry_set_host_now_args_;
   std::vector<
       std::pair<mojom::EventTypeForDebugging, TriggerEventForDebuggingCallback>>
       triggered_debug_events_;

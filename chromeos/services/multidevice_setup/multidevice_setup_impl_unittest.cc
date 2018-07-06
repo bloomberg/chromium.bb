@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -13,6 +15,7 @@
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
@@ -23,6 +26,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +35,26 @@ namespace chromeos {
 namespace multidevice_setup {
 
 namespace {
+
+const size_t kNumTestDevices = 3;
+
+cryptauth::RemoteDeviceList RefListToRawList(
+    const cryptauth::RemoteDeviceRefList& ref_list) {
+  cryptauth::RemoteDeviceList raw_list;
+  std::transform(ref_list.begin(), ref_list.end(), std::back_inserter(raw_list),
+                 [](const cryptauth::RemoteDeviceRef ref) {
+                   return *GetMutableRemoteDevice(ref);
+                 });
+  return raw_list;
+}
+
+base::Optional<cryptauth::RemoteDevice> RefToRaw(
+    const base::Optional<cryptauth::RemoteDeviceRef>& ref) {
+  if (!ref)
+    return base::nullopt;
+
+  return *GetMutableRemoteDevice(*ref);
+}
 
 class FakeEligibleHostDevicesProviderFactory
     : public EligibleHostDevicesProviderImpl::Factory {
@@ -278,7 +302,9 @@ class FakeAccountStatusChangeDelegateNotifierFactory
 
 class MultiDeviceSetupImplTest : public testing::Test {
  protected:
-  MultiDeviceSetupImplTest() = default;
+  MultiDeviceSetupImplTest()
+      : test_devices_(
+            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupImplTest() override = default;
 
   void SetUp() override {
@@ -356,9 +382,63 @@ class MultiDeviceSetupImplTest : public testing::Test {
     EXPECT_TRUE(fake_account_status_change_delegate_notifier()->delegate());
   }
 
-  bool CallTriggerEventForDebugging(mojom::EventTypeForDebugging type) {
-    EXPECT_FALSE(last_debug_event_success_);
+  cryptauth::RemoteDeviceList CallGetEligibleHostDevices() {
+    base::RunLoop run_loop;
+    multidevice_setup_->GetEligibleHostDevices(
+        base::BindOnce(&MultiDeviceSetupImplTest::OnEligibleDevicesFetched,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
+    cryptauth::RemoteDeviceList eligible_devices_list =
+        *last_eligible_devices_list_;
+    last_eligible_devices_list_.reset();
+
+    return eligible_devices_list;
+  }
+
+  bool CallSetHostDevice(const std::string& host_public_key) {
+    base::RunLoop run_loop;
+    multidevice_setup_->SetHostDevice(
+        host_public_key,
+        base::BindOnce(&MultiDeviceSetupImplTest::OnHostSet,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    bool success = *last_set_host_success_;
+    last_set_host_success_.reset();
+
+    return success;
+  }
+
+  std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+  CallGetHostStatus() {
+    base::RunLoop run_loop;
+    multidevice_setup_->GetHostStatus(
+        base::BindOnce(&MultiDeviceSetupImplTest::OnHostStatusReceived,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+        host_status_update = *last_host_status_;
+    last_host_status_.reset();
+
+    return host_status_update;
+  }
+
+  bool CallRetrySetHostNow() {
+    base::RunLoop run_loop;
+    multidevice_setup_->RetrySetHostNow(
+        base::BindOnce(&MultiDeviceSetupImplTest::OnHostRetried,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    bool success = *last_retry_success_;
+    last_retry_success_.reset();
+
+    return success;
+  }
+
+  bool CallTriggerEventForDebugging(mojom::EventTypeForDebugging type) {
     base::RunLoop run_loop;
     multidevice_setup_->TriggerEventForDebugging(
         type, base::BindOnce(&MultiDeviceSetupImplTest::OnDebugEventTriggered,
@@ -375,22 +455,105 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return success;
   }
 
-  FakeAccountStatusChangeDelegateNotifier*
-  fake_account_status_change_delegate_notifier() {
-    return fake_account_status_change_delegate_notifier_factory_->instance();
+  void VerifyCurrentHostStatus(
+      mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDeviceRef>& host_device,
+      FakeHostStatusObserver* observer = nullptr,
+      size_t expected_observer_index = 0u) {
+    std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+        host_status_and_device = CallGetHostStatus();
+    EXPECT_EQ(host_status, host_status_and_device.first);
+    EXPECT_EQ(RefToRaw(host_device), host_status_and_device.second);
+
+    if (!observer)
+      return;
+
+    EXPECT_EQ(host_status,
+              observer->host_status_updates()[expected_observer_index].first);
+    EXPECT_EQ(RefToRaw(host_device),
+              observer->host_status_updates()[expected_observer_index].second);
+  }
+
+  void SendPendingObserverMessages() {
+    MultiDeviceSetupImpl* derived_ptr =
+        static_cast<MultiDeviceSetupImpl*>(multidevice_setup_.get());
+    derived_ptr->FlushForTesting();
   }
 
   FakeAccountStatusChangeDelegate* fake_account_status_change_delegate() {
     return fake_account_status_change_delegate_.get();
   }
 
+  FakeEligibleHostDevicesProvider* fake_eligible_host_devices_provider() {
+    return fake_eligible_host_devices_provider_factory_->instance();
+  }
+
+  FakeHostBackendDelegate* fake_host_backend_delegate() {
+    return fake_host_backend_delegate_factory_->instance();
+  }
+
+  FakeHostVerifier* fake_host_verifier() {
+    return fake_host_verifier_factory_->instance();
+  }
+
+  FakeHostStatusProvider* fake_host_status_provider() {
+    return fake_host_status_provider_factory_->instance();
+  }
+
+  FakeSetupFlowCompletionRecorder* fake_setup_flow_completion_recorder() {
+    return fake_setup_flow_completion_recorder_factory_->instance();
+  }
+
+  FakeAccountStatusChangeDelegateNotifier*
+  fake_account_status_change_delegate_notifier() {
+    return fake_account_status_change_delegate_notifier_factory_->instance();
+  }
+
+  cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+
+  mojom::MultiDeviceSetup* multidevice_setup() {
+    return multidevice_setup_.get();
+  }
+
  private:
+  void OnEligibleDevicesFetched(
+      base::OnceClosure quit_closure,
+      const cryptauth::RemoteDeviceList& eligible_devices_list) {
+    EXPECT_FALSE(last_eligible_devices_list_);
+    last_eligible_devices_list_ = eligible_devices_list;
+    std::move(quit_closure).Run();
+  }
+
+  void OnHostSet(base::OnceClosure quit_closure, bool success) {
+    EXPECT_FALSE(last_set_host_success_);
+    last_set_host_success_ = success;
+    std::move(quit_closure).Run();
+  }
+
+  void OnHostStatusReceived(
+      base::OnceClosure quit_closure,
+      mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDevice>& host_device) {
+    EXPECT_FALSE(last_host_status_);
+    last_host_status_ = std::make_pair(host_status, host_device);
+    std::move(quit_closure).Run();
+  }
+
+  void OnHostRetried(base::OnceClosure quit_closure, bool success) {
+    EXPECT_FALSE(last_retry_success_);
+    last_retry_success_ = success;
+    std::move(quit_closure).Run();
+  }
+
   void OnDebugEventTriggered(base::OnceClosure quit_closure, bool success) {
+    EXPECT_FALSE(last_debug_event_success_);
     last_debug_event_success_ = success;
     std::move(quit_closure).Run();
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
@@ -412,7 +575,14 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   std::unique_ptr<FakeAccountStatusChangeDelegate>
       fake_account_status_change_delegate_;
+
   base::Optional<bool> last_debug_event_success_;
+  base::Optional<cryptauth::RemoteDeviceList> last_eligible_devices_list_;
+  base::Optional<bool> last_set_host_success_;
+  base::Optional<
+      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>
+      last_host_status_;
+  base::Optional<bool> last_retry_success_;
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_;
 
@@ -446,6 +616,89 @@ TEST_F(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {
       mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded));
   EXPECT_EQ(1u, fake_account_status_change_delegate()
                     ->num_existing_user_chromebook_added_events_handled());
+}
+
+TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
+  // Start with no eligible devices.
+  EXPECT_TRUE(CallGetEligibleHostDevices().empty());
+  VerifyCurrentHostStatus(mojom::HostStatus::kNoEligibleHosts,
+                          base::nullopt /* host_device */);
+
+  // Cannot retry without a host.
+  EXPECT_FALSE(CallRetrySetHostNow());
+
+  // Add a status observer.
+  auto observer = std::make_unique<FakeHostStatusObserver>();
+  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+
+  // Simulate a sync occurring; now, all of the test devices are eligible hosts.
+  fake_eligible_host_devices_provider()->set_eligible_host_devices(
+      test_devices());
+  EXPECT_EQ(RefListToRawList(test_devices()), CallGetEligibleHostDevices());
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+      base::nullopt /* host_device */);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+                          base::nullopt /* host_device */, observer.get(),
+                          0u /* expected_observer_index */);
+
+  // There are eligible hosts, but none is set; thus, cannot retry.
+  EXPECT_FALSE(CallRetrySetHostNow());
+
+  // Set an invalid host as the host device; this should fail.
+  EXPECT_FALSE(CallSetHostDevice("invalidHostPublicKey"));
+  EXPECT_FALSE(fake_host_backend_delegate()->HasPendingHostRequest());
+
+  // Set device 0 as the host; this should succeed.
+  EXPECT_TRUE(CallSetHostDevice(test_devices()[0].public_key()));
+  EXPECT_TRUE(fake_host_backend_delegate()->HasPendingHostRequest());
+  EXPECT_EQ(test_devices()[0],
+            fake_host_backend_delegate()->GetPendingHostRequest());
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation,
+      test_devices()[0]);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(
+      mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation,
+      test_devices()[0], observer.get(), 1u /* expected_observer_index */);
+
+  // It should now be possible to retry.
+  EXPECT_TRUE(CallRetrySetHostNow());
+
+  // Simulate the retry succeeding and the host being set on the back-end.
+  fake_host_backend_delegate()->NotifyHostChangedOnBackend(test_devices()[0]);
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kHostSetButNotYetVerified, test_devices()[0]);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(mojom::HostStatus::kHostSetButNotYetVerified,
+                          test_devices()[0], observer.get(),
+                          2u /* expected_observer_index */);
+
+  // It should still be possible to retry (this time, retrying verification).
+  EXPECT_TRUE(CallRetrySetHostNow());
+
+  // Simulate verification succeeding.
+  fake_host_verifier()->set_is_host_verified(true);
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kHostVerified, test_devices()[0]);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(mojom::HostStatus::kHostVerified, test_devices()[0],
+                          observer.get(), 3u /* expected_observer_index */);
+
+  // Remove the host.
+  multidevice_setup()->RemoveHostDevice();
+  fake_host_verifier()->set_is_host_verified(false);
+  fake_host_status_provider()->SetHostWithStatus(
+      mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+      base::nullopt /* host_device */);
+  SendPendingObserverMessages();
+  VerifyCurrentHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+                          base::nullopt /* host_device */, observer.get(),
+                          4u /* expected_observer_index */);
+
+  // Simulate the host being removed on the back-end.
+  fake_host_backend_delegate()->NotifyHostChangedOnBackend(base::nullopt);
 }
 
 }  // namespace multidevice_setup

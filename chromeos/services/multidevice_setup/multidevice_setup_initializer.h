@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_INITIALIZER_H_
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_INITIALIZER_H_
 
+#include <vector>
+
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -52,6 +54,13 @@ class MultiDeviceSetupInitializer
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
       mojom::AccountStatusChangeDelegatePtr delegate) override;
+  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
+  void SetHostDevice(const std::string& host_public_key,
+                     SetHostDeviceCallback callback) override;
+  void RemoveHostDevice() override;
+  void GetHostStatus(GetHostStatusCallback callback) override;
+  void RetrySetHostNow(RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
@@ -67,10 +76,21 @@ class MultiDeviceSetupInitializer
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_impl_;
 
-  // If SetAccountStatusChangeDelegate() is called before initialization is
-  // complete, |pending_delegate_| stores the pointer until it can be passed to
-  // the full MultiDeviceSetup implementation.
+  // If API functions are called before initialization is complete, their
+  // parameters are cached here. Once asynchronous initialization is complete,
+  // the parameters are passed to |multidevice_setup_impl_|.
   mojom::AccountStatusChangeDelegatePtr pending_delegate_;
+  std::vector<mojom::HostStatusObserverPtr> pending_observers_;
+  std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;
+  std::vector<GetHostStatusCallback> pending_get_host_args_;
+  std::vector<RetrySetHostNowCallback> pending_retry_set_host_args_;
+
+  // Special case: for SetHostDevice() and RemoveHostDevice(), only keep track
+  // of the most recent call. Since each call to either of these functions
+  // overwrites the previous call, only one needs to be passed.
+  base::Optional<std::pair<std::string, SetHostDeviceCallback>>
+      pending_set_host_args_;
+  bool pending_should_remove_host_device_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupInitializer);
 };

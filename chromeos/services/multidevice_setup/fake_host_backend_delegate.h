@@ -36,15 +36,13 @@ class FakeHostBackendDelegate : public HostBackendDelegate {
   // HostBackendDelegate:
   void AttemptToSetMultiDeviceHostOnBackend(
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
-
- private:
-  // HostBackendDelegate:
   bool HasPendingHostRequest() override;
   base::Optional<cryptauth::RemoteDeviceRef> GetPendingHostRequest()
       const override;
   base::Optional<cryptauth::RemoteDeviceRef> GetMultiDeviceHostFromBackend()
       const override;
 
+ private:
   size_t num_attempt_to_set_calls_ = 0u;
   base::Optional<base::Optional<cryptauth::RemoteDeviceRef>>
       pending_host_request_;

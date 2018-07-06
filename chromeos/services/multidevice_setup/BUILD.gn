@@ -78,6 +78,8 @@ static_library("test_support") {
     "fake_eligible_host_devices_provider.h",
     "fake_host_backend_delegate.cc",
     "fake_host_backend_delegate.h",
+    "fake_host_status_observer.cc",
+    "fake_host_status_observer.h",
     "fake_host_status_provider.cc",
     "fake_host_status_provider.h",
     "fake_host_verifier.cc",

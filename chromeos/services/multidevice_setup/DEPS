@@ -2,6 +2,6 @@ include_rules = [
   "+components/proximity_auth/logging/logging.h",
   "+components/cryptauth",
   "+components/sync_preferences/testing_pref_service_syncable.h",
-  "+mojo/public/cpp/bindings/binding_set.h",
+  "+mojo/public/cpp/bindings",
   "+services/service_manager/public",
 ]
