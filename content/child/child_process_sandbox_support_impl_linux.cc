@@ -73,9 +73,15 @@ void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
     return;
 
   font_service::mojom::FontRenderStylePtr font_render_style;
-  font_loader->FontRenderStyleForStrike(family, size, is_bold, is_italic,
-                                        device_scale_factor,
-                                        &font_render_style);
+  if (!font_loader->FontRenderStyleForStrike(family, size, is_bold, is_italic,
+                                             device_scale_factor,
+                                             &font_render_style) ||
+      font_render_style.is_null()) {
+    LOG(ERROR) << "GetRenderStyleForStrike did not receive a response for "
+                  "family and size: "
+               << family << ", " << size;
+    return;
+  }
 
   out->use_bitmaps = static_cast<char>(font_render_style->use_bitmaps);
   out->use_auto_hint = static_cast<char>(font_render_style->use_autohint);
