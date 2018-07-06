@@ -309,13 +309,14 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
              locked->fader_.FramesNeededFromSource(num_frames) ||
          (!locked->started_ &&
           locked->queued_frames_ < start_threshold_frames_))) {
-      if (locked->started_) {
-        LOG(INFO) << "Stream underrun for " << device_id_ << " (" << this
-                  << ")";
-      }
+      LOG_IF(INFO, locked->started_)
+          << "Stream underrun for " << device_id_ << " (" << this << ")";
       locked->zero_fader_frames_ = true;
       locked->started_ = false;
     } else {
+      LOG_IF(INFO, !locked->started_)
+          << "Stream start or underrun recovered for " << device_id_ << " ("
+          << this << ")";
       locked->zero_fader_frames_ = false;
       locked->started_ = true;
     }
