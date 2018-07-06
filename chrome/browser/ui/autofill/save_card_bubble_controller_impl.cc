@@ -91,7 +91,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     return;
 
   // Fetch the logged-in user's AccountInfo if it has not yet been done.
-  if (should_request_name_from_user && !account_info_.IsEmpty())
+  if (should_request_name_from_user && account_info_.IsEmpty())
     FetchAccountInfo();
 
   is_uploading_ = true;

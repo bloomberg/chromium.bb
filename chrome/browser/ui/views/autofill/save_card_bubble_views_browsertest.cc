@@ -438,10 +438,6 @@ IN_PROC_BROWSER_TEST_F(
             views::LabelButton::ButtonState::STATE_NORMAL);
 }
 
-// TODO(jsaul): Figure out how to sign in to a Google Account in browser tests,
-//              then create the following test:
-// Upload_RequestedCardholderNameTextfieldIsPrepopulatedWithFocusName
-
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested, filling it and clicking [Save] closes the dialog.
 IN_PROC_BROWSER_TEST_F(
@@ -484,6 +480,78 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow.RequestingCardholderName",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+// Tests the upload save bubble. Ensures that if cardholder name is explicitly
+// requested, it is prefilled with the name from the user's Google Account.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
+  // Enable the EditableCardholderName experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamEditableCardholderName);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  base::HistogramTester histogram_tester;
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // The textfield should be prefilled with the name on the user's Google
+  // Account, and UMA should have logged its value's existence.
+  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
+      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+  EXPECT_EQ(cardholder_name_textfield->text(),
+            base::ASCIIToUTF16("John Smith"));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardCardholderNamePrefilled", true, 1);
+}
+
+// Tests the upload save bubble. Ensures that if cardholder name is explicitly
+// requested but the name on the user's Google Account is unable to be fetched
+// for any reason, the textfield is left blank.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_RequestedCardholderNameTextfieldIsNotPrefilledWithFocusNameIfMissing) {
+  // Enable the EditableCardholderName experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamEditableCardholderName);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Don't sign the user in. In this case, the user's Account cannot be fetched
+  // and their name is not available.
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  base::HistogramTester histogram_tester;
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // The textfield should be blank, and UMA should have logged its value's
+  // absence.
+  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
+      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardCardholderNamePrefilled", false, 1);
 }
 
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and
