@@ -150,6 +150,7 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   for (const auto& download_guid : details.fetch_description->current_guids) {
     DCHECK(!download_job_unique_id_map_.count(download_guid));
     download_job_unique_id_map_.emplace(download_guid, job_unique_id);
+    download_service_->ResumeDownload(download_guid);
   }
 
   for (auto* observer : observers_) {

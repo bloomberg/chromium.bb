@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
+#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
@@ -127,6 +128,24 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
                                          out_registration->unique_id);
   }
 
+  // Starts the Fetch without completing it. Only creates a registration.
+  void StartFetch(int64_t service_worker_registration_id,
+                  const std::string& developer_id,
+                  const std::vector<ServiceWorkerFetchRequest>& requests,
+                  const BackgroundFetchOptions& options,
+                  const SkBitmap& icon) {
+    BackgroundFetchRegistrationId registration_id(
+        service_worker_registration_id, origin(), developer_id,
+        kExampleUniqueId);
+
+    base::RunLoop run_loop;
+    context_->data_manager_->CreateRegistration(
+        registration_id, requests, options, icon,
+        base::BindOnce(&BackgroundFetchServiceTest::DidStartFetch,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   // Calls BackgroundFetchServiceImpl::Fetch() and unregisters the service
   // worker before Fetch has completed but after the controller has been
   // initialized.
@@ -235,6 +254,13 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     run_loop.Run();
   }
 
+  std::set<std::string> GetJobIDs() {
+    std::set<std::string> job_ids;
+    for (const auto& it : context_->job_controllers_)
+      job_ids.insert(it.first);
+    return job_ids;
+  }
+
   // BackgroundFetchTestBase overrides:
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
@@ -275,6 +301,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     *out_registration =
         registration ? registration.value() : BackgroundFetchRegistration();
 
+    std::move(quit_closure).Run();
+  }
+
+  void DidStartFetch(
+      base::Closure quit_closure,
+      blink::mojom::BackgroundFetchError error,
+      std::unique_ptr<BackgroundFetchRegistration> registration) {
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     std::move(quit_closure).Run();
   }
 
@@ -1041,6 +1075,58 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   ASSERT_EQ(error,
             blink::mojom::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE);
   EXPECT_TRUE(registration.developer_id.empty());
+}
+
+TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
+  // Initially there are no jobs in the JobController map.
+  EXPECT_TRUE(GetJobIDs().empty());
+
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  std::vector<ServiceWorkerFetchRequest> requests;
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", GURL("https://example.com/mildly_funny_cat.txt"),
+      TestResponseBuilder(200)
+          .SetResponseData("A mildly funny cat.")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .Build()));
+  BackgroundFetchOptions options;
+
+  // Only register the Fetch.
+  StartFetch(service_worker_registration_id, kExampleDeveloperId, requests,
+             options, SkBitmap());
+
+  // Simulate browser restart by re-creating |context_| and |service_|.
+  SetUp();
+
+  // Give initialization tasks a chance to finish.
+  base::RunLoop().RunUntilIdle();
+
+  // At this point the Fetch ran up until the MarkRequestCompleteTask, since it
+  // is waiting for the Cache Storage to respond which runs on another thread.
+  // Check that the job is re-loaded into the job map.
+  ASSERT_EQ(GetJobIDs().size(), 1u);
+  EXPECT_EQ(*GetJobIDs().begin(), kExampleUniqueId);
+
+  BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchError error;
+
+  // NOTE: This GetRegistration works because it runs between the
+  // MarkRequestCompleteTask and the GetSettledFetchesTask.
+  GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
+                  &registration);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  EXPECT_EQ(registration.developer_id, kExampleDeveloperId);
+
+  // Allow the fetch to completely finish.
+  thread_bundle_.RunUntilIdle();
+
+  EXPECT_TRUE(GetJobIDs().empty());
+  GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
+                  &registration);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 }
 
 }  // namespace content
