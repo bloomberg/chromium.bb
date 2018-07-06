@@ -353,6 +353,22 @@ interface NetworkContext {
                  mojo_base.mojom.Time end_time,
                  ClearDataFilter? filter) => ();
 
+  // Computes the size of cache objects last accessed between |start_time| and
+  // |end_time|.
+  //
+  // If you don't want a lower bound, pass base::Time() for |start_time|.
+  // If you don't want an upper bound, pass base::Time::Max()
+  //
+  // |upper_bound| will be returned as true if the implementation had to
+  // overestimate; this may be as bad as giving the size of the entire cache.
+  //
+  // |size_or_error|, if non-negative, is the result in bytes; and a net error
+  // code if negative.
+  ComputeHttpCacheSize(mojo_base.mojom.Time start_time,
+                       mojo_base.mojom.Time end_time)
+      => (bool is_upper_bound, int64 size_or_error);
+
+
   // Clears channel IDs. A specific range of time can be specified with
   // |start_time| and |end_time|. This supports unbounded deletes in either
   // direction by using null Time values for either argument.

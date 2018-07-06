@@ -8,13 +8,19 @@
 #include <string>
 
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/cache_test_util.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using browsing_data::ConditionalCacheCountingHelper;
 using content::BrowserThread;
@@ -23,17 +29,14 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
  public:
   const int64_t kTimeoutMs = 1000;
 
-  void SetUpOnMainThread() override {
-    count_callback_ =
-        base::Bind(&ConditionalCacheCountingHelperBrowserTest::CountCallback,
-                   base::Unretained(this));
-
-    cache_util_ = std::make_unique<content::CacheTestUtil>(
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile()));
+  ConditionalCacheCountingHelperBrowserTest() {
+    EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
   }
 
-  void TearDownOnMainThread() override { cache_util_.reset(); }
+  void SetUpOnMainThread() override {
+    net::test_server::RegisterDefaultHandlers(embedded_test_server());
+    embedded_test_server()->StartAcceptingConnections();
+  }
 
   void CountCallback(bool is_upper_limit, int64_t size) {
     // Negative values represent an unexpected error.
@@ -55,9 +58,13 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
   void CountEntries(base::Time begin_time, base::Time end_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     last_size_ = -1;
-    auto* helper = ConditionalCacheCountingHelper::CreateForRange(
-        cache_util_->partition(), begin_time, end_time);
-    helper->CountAndDestroySelfWhenFinished(count_callback_);
+    ConditionalCacheCountingHelper::Count(
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile()),
+        begin_time, end_time,
+        base::BindOnce(
+            &ConditionalCacheCountingHelperBrowserTest::CountCallback,
+            base::Unretained(this)));
   }
 
   int64_t GetResult() {
@@ -69,12 +76,30 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
 
   int64_t GetResultOrError() { return last_size_; }
 
-  content::CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
+  void CreateCacheEntries(const std::set<std::string>& keys) {
+    for (const std::string& key : keys) {
+      // A cache entry is synthesized by fetching a cacheable URL
+      // from the test server.
+      std::unique_ptr<network::ResourceRequest> request =
+          std::make_unique<network::ResourceRequest>();
+      request->url =
+          embedded_test_server()->GetURL(base::StrCat({"/cachetime/", key}));
+      content::SimpleURLLoaderTestHelper simple_loader_helper;
+      std::unique_ptr<network::SimpleURLLoader> simple_loader =
+          network::SimpleURLLoader::Create(std::move(request),
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
+      simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+          content::BrowserContext::GetDefaultStoragePartition(
+              browser()->profile())
+              ->GetURLLoaderFactoryForBrowserProcess()
+              .get(),
+          simple_loader_helper.GetCallback());
+      simple_loader_helper.WaitForCallback();
+    }
+  }
 
  private:
-  ConditionalCacheCountingHelper::CacheCountCallback count_callback_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<content::CacheTestUtil> cache_util_;
 
   int64_t last_size_;
   bool last_is_upper_limit_;
@@ -87,14 +112,14 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheCountingHelperBrowserTest, Count) {
   std::set<std::string> keys1 = {"1", "2", "3", "4", "5"};
 
   base::Time t1 = base::Time::Now();
-  GetCacheTestUtil()->CreateCacheEntries(keys1);
+  CreateCacheEntries(keys1);
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
   base::Time t2 = base::Time::Now();
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
 
   std::set<std::string> keys2 = {"6", "7"};
-  GetCacheTestUtil()->CreateCacheEntries(keys2);
+  CreateCacheEntries(keys2);
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
   base::Time t3 = base::Time::Now();

@@ -20,10 +20,12 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/disk_cache/disk_cache.h"
-#include "net/http/http_cache.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -32,9 +34,16 @@ namespace {
 
 class CacheCounterTest : public InProcessBrowserTest {
  public:
+  CacheCounterTest() {}
+
   void SetUpOnMainThread() override {
+    run_loop_ = std::make_unique<base::RunLoop>();
     SetCacheDeletionPref(true);
     SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    net::test_server::RegisterDefaultHandlers(embedded_test_server());
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void SetCacheDeletionPref(bool value) {
@@ -47,87 +56,29 @@ class CacheCounterTest : public InProcessBrowserTest {
         browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
-  // One step in the process of creating a cache entry. Every step must be
-  // executed on IO thread after the previous one has finished.
-  void CreateCacheEntryStep(int return_value) {
-    net::CompletionCallback callback =
-        base::Bind(&CacheCounterTest::CreateCacheEntryStep,
-                   base::Unretained(this));
-
-    switch (next_step_) {
-      case GET_CACHE: {
-        next_step_ = CREATE_ENTRY;
-        net::URLRequestContextGetter* context_getter =
-            storage_partition_->GetURLRequestContext();
-        net::HttpCache* http_cache = context_getter->GetURLRequestContext()->
-            http_transaction_factory()->GetCache();
-        return_value = http_cache->GetBackend(&backend_, callback);
-        break;
-      }
-
-      case CREATE_ENTRY: {
-        next_step_ = WRITE_DATA;
-        return_value =
-            backend_->CreateEntry("entry_key", net::HIGHEST, &entry_, callback);
-        break;
-      }
-
-      case WRITE_DATA: {
-        next_step_ = DONE;
-        std::string data = "entry data";
-        scoped_refptr<net::StringIOBuffer> buffer =
-            new net::StringIOBuffer(data);
-        return_value =
-            entry_->WriteData(0, 0, buffer.get(), data.size(), callback, true);
-        break;
-      }
-
-      case DONE: {
-        entry_->Close();
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(&CacheCounterTest::Callback,
-                                               base::Unretained(this)));
-        return;
-      }
-    }
-
-    if (return_value >= 0) {
-      // Success.
-      CreateCacheEntryStep(net::OK);
-    } else if (return_value == net::ERR_IO_PENDING) {
-      // The callback will trigger the next step.
-    } else {
-      // Error.
-      NOTREACHED();
-    }
-  }
-
-  // Create a cache entry on the IO thread.
   void CreateCacheEntry() {
-    storage_partition_ =
-        BrowserContext::GetDefaultStoragePartition(browser()->profile());
-    next_step_ = GET_CACHE;
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&CacheCounterTest::CreateCacheEntryStep,
-                       base::Unretained(this), net::OK));
-    WaitForIOThread();
+    // A cache entry is synthesized by fetching a cacheable URL
+    // from the test server.
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = embedded_test_server()->GetURL("/cachetime/yay");
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get(),
+        simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
   }
 
-  // Wait for IO thread operations, such as cache creation, counting, writing,
-  // deletion etc.
-  void WaitForIOThread() {
+  void WaitForCountingResult() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
-  }
-
-  // General completion callback.
-  void Callback() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (run_loop_)
-      run_loop_->Quit();
+    run_loop_.reset(new base::RunLoop());
   }
 
   // Callback from the counter.
@@ -158,17 +109,6 @@ class CacheCounterTest : public InProcessBrowserTest {
   }
 
  private:
-  enum CacheEntryCreationStep {
-    GET_CACHE,
-    CREATE_ENTRY,
-    WRITE_DATA,
-    DONE
-  };
-  CacheEntryCreationStep next_step_;
-  content::StoragePartition* storage_partition_;
-  disk_cache::Backend* backend_;
-  disk_cache::Entry* entry_;
-
   std::unique_ptr<base::RunLoop> run_loop_;
 
   bool finished_;
@@ -186,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, Empty) {
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   counter.Restart();
 
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(0u, GetResult());
 }
 
@@ -201,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, NonEmpty) {
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   counter.Restart();
 
-  WaitForIOThread();
+  WaitForCountingResult();
 
   EXPECT_NE(0u, GetResult());
 }
@@ -217,11 +157,12 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, AfterDoom) {
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
 
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-      ->ClearHttpAndMediaCaches(
-          base::Time(), base::Time::Max(), base::Callback<bool(const GURL&)>(),
-          base::Bind(&CacheCounter::Restart, base::Unretained(&counter)));
+      ->GetNetworkContext()
+      ->ClearHttpCache(
+          base::Time(), base::Time::Max(), nullptr,
+          base::BindOnce(&CacheCounter::Restart, base::Unretained(&counter)));
 
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(0u, GetResult());
 }
 
@@ -237,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefChanged) {
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   SetCacheDeletionPref(true);
 
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(0u, GetResult());
 }
 
@@ -252,23 +193,23 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
-  WaitForIOThread();
+  WaitForCountingResult();
   browsing_data::BrowsingDataCounter::ResultInt result = GetResult();
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_DAY);
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(result, GetResult());
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_WEEK);
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(result, GetResult());
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::FOUR_WEEKS);
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(result, GetResult());
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
-  WaitForIOThread();
+  WaitForCountingResult();
   EXPECT_EQ(result, GetResult());
   EXPECT_FALSE(IsUpperLimit());
 }

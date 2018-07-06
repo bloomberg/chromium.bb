@@ -229,12 +229,11 @@ void StorageHandler::UpdateBrowsingDataSize() {
   has_browser_cache_size_ = false;
   has_browser_site_data_size_ = false;
   // Fetch the size of http cache in browsing data.
-  // ConditionalCacheCountingHelper deletes itself when it is done.
-  browsing_data::ConditionalCacheCountingHelper::CreateForRange(
+  browsing_data::ConditionalCacheCountingHelper::Count(
       content::BrowserContext::GetDefaultStoragePartition(profile_),
-      base::Time(), base::Time::Max())
-      ->CountAndDestroySelfWhenFinished(base::Bind(
-          &StorageHandler::OnGetCacheSize, weak_ptr_factory_.GetWeakPtr()));
+      base::Time(), base::Time::Max(),
+      base::BindOnce(&StorageHandler::OnGetCacheSize,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {

@@ -340,9 +340,6 @@
 -IOThreadEctFieldTrialAndCommandLineBrowserTest.ECTFromCommandLineOverridesFieldTrial
 -IOThreadEctFieldTrialBrowserTest.ForceECTUsingFieldTrial
 
-# Fails on Windows. It's passing on Linux but this feature needs to be converted
-# to work with network service.
--ConditionalCacheCountingHelperBrowserTest.Count
 
 # Channel ID is not hooked up to the network service yet.
 # https://crbug.com/840412

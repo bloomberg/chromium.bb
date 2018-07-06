@@ -42,13 +42,11 @@ void CacheCounter::Count() {
   calculated_size_ = 0;
   is_upper_limit_ = false;
   pending_sources_ = 1;
-  base::WeakPtr<browsing_data::ConditionalCacheCountingHelper> counter =
-      browsing_data::ConditionalCacheCountingHelper::CreateForRange(
-          content::BrowserContext::GetDefaultStoragePartition(profile_),
-          GetPeriodStart(), base::Time::Max())
-          ->CountAndDestroySelfWhenFinished(
-              base::Bind(&CacheCounter::OnCacheSizeCalculated,
-                         weak_ptr_factory_.GetWeakPtr()));
+  browsing_data::ConditionalCacheCountingHelper::Count(
+      content::BrowserContext::GetDefaultStoragePartition(profile_),
+      GetPeriodStart(), base::Time::Max(),
+      base::BindOnce(&CacheCounter::OnCacheSizeCalculated,
+                     weak_ptr_factory_.GetWeakPtr()));
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   if (offline_pages::OfflinePageUtils::GetCachedOfflinePageSizeBetween(
           profile_,

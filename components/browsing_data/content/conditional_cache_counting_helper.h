@@ -27,20 +27,16 @@ class ConditionalCacheCountingHelper {
  public:
   // Returns if this value is an upper estimate and the number bytes in the
   // selected range.
-  typedef base::Callback<void(bool, int64_t)> CacheCountCallback;
+  typedef base::OnceCallback<void(bool, int64_t)> CacheCountCallback;
 
-  static ConditionalCacheCountingHelper* CreateForRange(
-      content::StoragePartition* storage_partition,
-      base::Time begin_time,
-      base::Time end_time);
-
-  // Count the cache entries according to the specified time range. Destroys
-  // this instance of ConditionalCacheCountingHelper when finished.
-  // Must be called on the UI thread!
+  // Counts the cache entries according to the specified time range.
+  // Must be called on the UI thread.
   //
   // The |completion_callback| will be invoked when the operation completes.
-  base::WeakPtr<ConditionalCacheCountingHelper> CountAndDestroySelfWhenFinished(
-      const CacheCountCallback& result_callback);
+  static void Count(content::StoragePartition* storage_partition,
+                    base::Time begin_time,
+                    base::Time end_time,
+                    CacheCountCallback result_callback);
 
  private:
   enum class CacheState {
@@ -58,13 +54,16 @@ class ConditionalCacheCountingHelper {
       base::Time begin_time,
       base::Time end_time,
       net::URLRequestContextGetter* main_context_getter,
-      net::URLRequestContextGetter* media_context_getter);
+      net::URLRequestContextGetter* media_context_getter,
+      CacheCountCallback result_callback);
   ~ConditionalCacheCountingHelper();
 
   void Finished();
 
   void CountHttpCacheOnIOThread();
   void DoCountCache(int rv);
+
+  // State used for legacy path. Will eventually go away.
 
   // Stores the cache size computation result before it can be returned
   // via a callback. This is either the sum of size of the the two cache
@@ -85,8 +84,6 @@ class ConditionalCacheCountingHelper {
   disk_cache::Backend* cache_;
 
   std::unique_ptr<disk_cache::Backend::Iterator> iterator_;
-
-  base::WeakPtrFactory<ConditionalCacheCountingHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConditionalCacheCountingHelper);
 };
