@@ -32,7 +32,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
  protected:
   FeedSchedulerHostTest() : weak_factory_(this) {
     Time now;
-    CHECK(Time::FromUTCString(kNowString, &now));
+    EXPECT_TRUE(Time::FromUTCString(kNowString, &now));
     test_clock_.SetNow(now);
 
     FeedSchedulerHost::RegisterProfilePrefs(pref_service_.registry());

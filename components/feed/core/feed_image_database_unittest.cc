@@ -20,8 +20,10 @@ using testing::_;
 namespace feed {
 
 namespace {
-const std::string kImageURL = "http://pie.com/";
-const std::string kImageData = "pie image";
+
+constexpr char kImageURL[] = "http://pie.com/";
+constexpr char kImageData[] = "pie image";
+
 }  // namespace
 
 class FeedImageDatabaseTest : public testing::Test {
@@ -63,7 +65,7 @@ class FeedImageDatabaseTest : public testing::Test {
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
-  MOCK_METHOD1(OnImageLoaded, void(std::string));
+  MOCK_METHOD1(OnImageLoaded, void(const std::string&));
   MOCK_METHOD1(OnGarbageCollected, void(bool));
 
  private:

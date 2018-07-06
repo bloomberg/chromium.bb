@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_FEED_CORE_FEED_IMAGE_MANAGER_H_
 #define COMPONENTS_FEED_CORE_FEED_IMAGE_MANAGER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/feed/core/feed_image_database.h"
@@ -51,7 +55,7 @@ class FeedImageManager {
   void OnImageFetchedFromDatabase(size_t url_index,
                                   std::vector<std::string> urls,
                                   ImageFetchedCallback callback,
-                                  std::string image_data);
+                                  const std::string& image_data);
   void OnImageDecodedFromDatabase(size_t url_index,
                                   std::vector<std::string> urls,
                                   ImageFetchedCallback callback,

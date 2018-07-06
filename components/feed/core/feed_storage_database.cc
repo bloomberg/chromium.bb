@@ -4,6 +4,8 @@
 
 #include "components/feed/core/feed_storage_database.h"
 
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
@@ -344,7 +346,7 @@ void FeedStorageDatabase::OnGetEntryForLoadJournal(
 
 void FeedStorageDatabase::OnGetEntryAppendToJournal(
     ConfirmationCallback callback,
-    std::string key,
+    const std::string& key,
     std::vector<std::string> entries,
     bool success,
     std::unique_ptr<FeedStorageProto> journal) {
@@ -376,7 +378,7 @@ void FeedStorageDatabase::OnGetEntryAppendToJournal(
 
 void FeedStorageDatabase::OnGetEntryForCopyJournal(
     ConfirmationCallback callback,
-    std::string to_key,
+    const std::string& to_key,
     bool success,
     std::unique_ptr<FeedStorageProto> journal) {
   if (!success || !journal) {
@@ -413,6 +415,7 @@ void FeedStorageDatabase::OnLoadEntriesForLoadAllJournals(
     DCHECK_NE(entry.journal_data_size(), 0);
 
     std::vector<std::string> journal;
+    journal.reserve(entry.journal_data_size());
     for (int i = 0; i < entry.journal_data_size(); ++i) {
       journal.emplace_back(entry.journal_data(i));
     }

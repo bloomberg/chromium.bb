@@ -116,7 +116,7 @@ class FeedImageManagerTest : public testing::Test {
     return &test_url_loader_factory_;
   }
 
-  MOCK_METHOD1(OnImageLoaded, void(std::string));
+  MOCK_METHOD1(OnImageLoaded, void(const std::string&));
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;

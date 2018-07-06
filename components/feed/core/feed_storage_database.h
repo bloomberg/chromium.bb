@@ -5,6 +5,11 @@
 #ifndef COMPONENTS_FEED_CORE_FEED_STORAGE_DATABASE_H_
 #define COMPONENTS_FEED_CORE_FEED_STORAGE_DATABASE_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -137,12 +142,12 @@ class FeedStorageDatabase {
                                 bool success,
                                 std::unique_ptr<FeedStorageProto> journal);
   void OnGetEntryAppendToJournal(ConfirmationCallback callback,
-                                 std::string key,
+                                 const std::string& key,
                                  std::vector<std::string> entries,
                                  bool success,
                                  std::unique_ptr<FeedStorageProto> journal);
   void OnGetEntryForCopyJournal(ConfirmationCallback callback,
-                                std::string to_key,
+                                const std::string& to_key,
                                 bool success,
                                 std::unique_ptr<FeedStorageProto> journal);
   void OnLoadEntriesForLoadAllJournals(
