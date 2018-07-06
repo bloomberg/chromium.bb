@@ -88,8 +88,6 @@ crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pa
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
 
-crbug.com/816045 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Timeout ]
-
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
@@ -100,13 +98,6 @@ crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents
 # SwiftShader Failures
 crbug.com/726075 [ Win Linux Mac ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Timeout ]
-
-# SwiftShader MacOS specific flaky tests
-crbug.com/726075 [ Mac ] css3/filters/effect-combined-hw.html [ Pass Timeout ]
-crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
-crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Pass Timeout ]
-
-crbug.com/693568 [ Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure Pass Timeout ]
 
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
@@ -2787,7 +2778,6 @@ crbug.com/626703 external/wpt/console/console-number-format-specifiers-symbol-ma
 crbug.com/626703 [ Mac10.13 ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/encoding/textdecoder-fatal-single-byte.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/range/sw.https.window.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
@@ -2913,7 +2903,6 @@ crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Timeout ]
 
 # Grouped frame-policy gunk (flaky copypasta).
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
@@ -2953,7 +2942,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
 crbug.com/626703 external/wpt/css/cssom/cssstyledeclaration-mutationrecord-001.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
@@ -3868,9 +3856,6 @@ crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass 
 crbug.com/703518 virtual/threaded/http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 
-# Sheriff failure 2017-05-05
-crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Pass Timeout ]
-
 # Sheriff failures 2017-05-11
 crbug.com/724027 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
 crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
@@ -4224,9 +4209,6 @@ crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-sti
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 
-# Sheriff failures 2017-11-21
-crbug.com/786641 [ Win Linux Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
-
 # Sheriff failures 2017-11-28
 crbug.com/785179 [ Mac10.11 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 
@@ -4304,7 +4286,6 @@ crbug.com/798592 [ Win7 Mac ] virtual/threaded/http/tests/devtools/tracing/timel
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
 crbug.com/804682 [ Mac ] external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Pass Failure ]
-crbug.com/799137 [ Mac ] media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 
 # This test is flaking (failing, crashing) on mac_chromium_rel_ng.
 crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-scroll-impl-to-main.html [ Skip ]
@@ -4528,17 +4509,14 @@ crbug.com/840659 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/vi
 
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
-crbug.com/831686 [ Linux Mac ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
 crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
-crbug.com/831230 [ Linux Mac ] virtual/threaded/compositing/webgl/webgl-reflection.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
 crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
-crbug.com/818324 [ Linux Mac ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Pass Timeout ]
 crbug.com/800745 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
 
 crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
@@ -4573,10 +4551,6 @@ crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-
 
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
 
-# Sheriff 2018-05-17
-crbug.com/810437 [ Mac ] fast/events/hr-timestamp/input-events.html [ Pass Timeout ]
-
-
 # This will break for now
 crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
 
@@ -4600,7 +4574,6 @@ crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Timeout P
 crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-crbug.com/847205 [ Mac ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Crash Timeout ]
 
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
 
@@ -4613,8 +4586,6 @@ crbug.com/848398 http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ P
 
 # Sheriff 2018-06-01
 crbug.com/848851 virtual/exotic-color-space/images/image-hover-display-alt.html [ Failure Pass ]
-crbug.com/848799 [ Mac ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
-crbug.com/828962 [ Mac ] fast/webgl/webgl-composite-modes-tabswitching.html [ Pass Timeout ]
 
 # Flakes 2018-06-02
 crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
@@ -4625,7 +4596,6 @@ crbug.com/615885 external/wpt/content-security-policy/securitypolicyviolation/im
 # Flakes 2018-06-04
 crbug.com/847870 fast/webgl/texImage-imageBitmap-from-canvas-resize.html [ Timeout Pass ]
 crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
-crbug.com/849284 [ Mac ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Timeout Pass ]
 
 # Sheriff 2018-06-06
 crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
@@ -4688,10 +4658,7 @@ crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ 
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Failure Pass ]
-crbug.com/855222 [ Mac10.10 Mac10.11 Mac10.12 Retina ] external/wpt/magnetometer/Magnetometer-iframe-access.https.html [ Failure Pass ]
-
-# Sheriff 2018-06-22
-crbug.com/855055 [ Mac ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Pass Timeout ]
+crbug.com/855222 [ Mac ] external/wpt/magnetometer/Magnetometer-iframe-access.https.html [ Failure Pass ]
 
 # Sheriff 2018-06-25
 crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
