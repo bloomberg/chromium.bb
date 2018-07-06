@@ -11,6 +11,11 @@
   width: 28px;
 }
 
+html[dir=rtl] #edit-bg {
+  left: 16px;
+  right: auto;
+}
+
 #edit-bg:hover {
   background-color: rgb(241, 243, 244);
 }
@@ -58,12 +63,21 @@
   width: 325px;
 }
 
+html[dir=rtl] #edit-bg-dialog {
+  left: 16px;
+  right: auto;
+}
+
 #edit-bg-title {
   color: rgb(32, 33, 36);
   font-family: 'Roboto', arial, sans-serif;
   font-size: 15px;
   height: 30px;
   padding: 16px 0 0 16px;
+}
+
+html[dir=rtl] #edit-bg-title {
+  padding: 16px 16px 0 0;
 }
 
 .bg-option {
@@ -87,6 +101,10 @@
   text-align: center;
   vertical-align: middle;
   width: 24px;
+}
+
+html[dir=rtl] .bg-option-img {
+  margin: 0 16px 0 0;
 }
 
 #edit-bg-google-photos .bg-option-img {
@@ -116,6 +134,11 @@
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
+}
+
+html[dir=rtl] .bg-option-text {
+  padding-left: auto;
+  padding-right: 16px;
 }
 
 #bg-sel-menu::backdrop {
@@ -160,6 +183,11 @@
   width: 100%;
 }
 
+html[dir=rtl] #bg-sel-tiles {
+  padding-left: auto;
+  padding-right: 8px;
+}
+
 #bg-sel-tiles::-webkit-scrollbar {
     display: none;
 }
@@ -176,7 +204,6 @@
   background-size: 16px 16px;
   display: none;
   height: 16px;
-  margin: 0 0 0 16px;
   vertical-align: middle;
   width: 16px;
 }
@@ -189,7 +216,13 @@
 .is-img-sel #bg-sel-back {
   display: inline-block;
   float: left;
-  margin-top: 18px;
+  margin: 18px 0 0 16px;
+}
+
+html[dir=rtl] .is-img-sel #bg-sel-back {
+  float: right;
+  margin: 18px 16px 0 0;
+  transform: scaleX(-1);
 }
 
 #bg-sel-title {
@@ -209,6 +242,12 @@
 .is-img-sel #bg-sel-title {
   float: left;
   padding: 18px 0 0 16px;
+  text-align: left;
+}
+
+html[dir=rtl] .is-img-sel #bg-sel-title {
+  float: right;
+  padding: 18px 16px 0 0;
   text-align: left;
 }
 
@@ -243,6 +282,11 @@
   width: 62px;
 }
 
+html[dir=rtl] #bg-sel-footer-done {
+  left: 16px;
+  right: auto;
+}
+
 #bg-sel-footer-cancel {
   background-color: #fff;
   border: 1px solid rgb(218, 220, 224);
@@ -252,6 +296,12 @@
   padding-top: 8px;
   right: 78px;
   width: 66px;
+}
+
+html[dir=rtl] #bg-sel-footer-cancel {
+  left: 78px;
+  margin-left: 8px;
+  right: auto;
 }
 
 #bg-sel-footer-cancel:hover {
@@ -288,6 +338,10 @@
   width: 156px;
 }
 
+html[dir=rtl] .bg-sel-tile {
+  margin: 6px 8px 0 0;
+}
+
 .bg-selected {
   border-radius: 4px;
 }
@@ -305,9 +359,12 @@
   border-radius: 50%;
   display: block;
   height: 20px;
-  margin-left: 66px;
-  margin-top: 46px;
+  margin: 46px 0 0 66px;
   width: 20px;
+}
+
+html[dir=rtl] .selected-check {
+  margin: 46px 66px 0 0;
 }
 
 .bg-sel-tile-title {
