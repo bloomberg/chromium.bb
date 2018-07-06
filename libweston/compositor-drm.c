@@ -197,9 +197,36 @@ enum wdrm_connector_property {
 	WDRM_CONNECTOR__COUNT
 };
 
+enum wdrm_dpms_state {
+	WDRM_DPMS_STATE_OFF = 0,
+	WDRM_DPMS_STATE_ON,
+	WDRM_DPMS_STATE_STANDBY, /* unused */
+	WDRM_DPMS_STATE_SUSPEND, /* unused */
+	WDRM_DPMS_STATE__COUNT
+};
+
+static struct drm_property_enum_info dpms_state_enums[] = {
+	[WDRM_DPMS_STATE_OFF] = {
+		.name = "Off",
+	},
+	[WDRM_DPMS_STATE_ON] = {
+		.name = "On",
+	},
+	[WDRM_DPMS_STATE_STANDBY] = {
+		.name = "Standby",
+	},
+	[WDRM_DPMS_STATE_SUSPEND] = {
+		.name = "Suspend",
+	},
+};
+
 static const struct drm_property_info connector_props[] = {
 	[WDRM_CONNECTOR_EDID] = { .name = "EDID" },
-	[WDRM_CONNECTOR_DPMS] = { .name = "DPMS" },
+	[WDRM_CONNECTOR_DPMS] = {
+		.name = "DPMS",
+		.enum_values = dpms_state_enums,
+		.num_enum_values = WDRM_DPMS_STATE__COUNT,
+	},
 	[WDRM_CONNECTOR_CRTC_ID] = { .name = "CRTC_ID", },
 };
 
@@ -2265,6 +2292,8 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 				     current_mode->blob_id);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 1);
 
+		/* No need for the DPMS property, since it is implicit in
+		 * routing and CRTC activity. */
 		wl_list_for_each(head, &output->base.head_list, base.output_link) {
 			ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID,
 						  output->crtc_id);
@@ -2273,6 +2302,8 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_MODE_ID, 0);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 0);
 
+		/* No need for the DPMS property, since it is implicit in
+		 * routing and CRTC activity. */
 		wl_list_for_each(head, &output->base.head_list, base.output_link)
 			ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID, 0);
 	}
@@ -2354,14 +2385,6 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 			info = &head->props_conn[WDRM_CONNECTOR_CRTC_ID];
 			err = drmModeAtomicAddProperty(req, head->connector_id,
 						       info->prop_id, 0);
-			if (err <= 0)
-				ret = -1;
-
-			info = &head->props_conn[WDRM_CONNECTOR_DPMS];
-			if (info->prop_id > 0)
-				err = drmModeAtomicAddProperty(req, head->connector_id,
-							       info->prop_id,
-							       DRM_MODE_DPMS_OFF);
 			if (err <= 0)
 				ret = -1;
 		}
