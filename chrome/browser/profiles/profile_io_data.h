@@ -187,6 +187,10 @@ class ProfileIOData {
     return account_consistency_;
   }
 
+#if !defined(OS_CHROMEOS)
+  std::string GetSigninScopedDeviceId() const;
+#endif
+
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
     return username_hash_;
@@ -555,6 +559,10 @@ class ProfileIOData {
   mutable BooleanPrefMember sync_suppress_start_;
   mutable BooleanPrefMember sync_first_setup_complete_;
   mutable signin::AccountConsistencyMethod account_consistency_;
+
+#if !defined(OS_CHROMEOS)
+  mutable StringPrefMember signin_scoped_device_id_;
+#endif
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember force_google_safesearch_;

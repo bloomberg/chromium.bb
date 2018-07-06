@@ -228,7 +228,8 @@ bool AppendOrRemoveDiceRequestHeader(
     bool sync_enabled,
     bool sync_has_auth_error,
     AccountConsistencyMethod account_consistency,
-    const content_settings::CookieSettings* cookie_settings);
+    const content_settings::CookieSettings* cookie_settings,
+    const std::string& device_id);
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.
