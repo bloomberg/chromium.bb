@@ -187,7 +187,8 @@ class LocalSiteCharacteristicsDataImpl
 
   // Helper function to update a given |SiteCharacteristicsFeatureProto| when a
   // feature gets used.
-  void NotifyFeatureUsage(SiteCharacteristicsFeatureProto* feature_proto);
+  void NotifyFeatureUsage(SiteCharacteristicsFeatureProto* feature_proto,
+                          const char* feature_name);
 
   bool IsLoaded() const { return loaded_tabs_count_ > 0U; }
 

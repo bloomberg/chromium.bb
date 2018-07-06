@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/time.h"
 
@@ -113,21 +115,25 @@ LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
 
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesFaviconInBackground() {
   NotifyFeatureUsage(
-      site_characteristics_.mutable_updates_favicon_in_background());
+      site_characteristics_.mutable_updates_favicon_in_background(),
+      "FaviconUpdateInBackground");
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesTitleInBackground() {
   NotifyFeatureUsage(
-      site_characteristics_.mutable_updates_title_in_background());
+      site_characteristics_.mutable_updates_title_in_background(),
+      "TitleUpdateInBackground");
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUsesAudioInBackground() {
-  NotifyFeatureUsage(site_characteristics_.mutable_uses_audio_in_background());
+  NotifyFeatureUsage(site_characteristics_.mutable_uses_audio_in_background(),
+                     "AudioUsageInBackground");
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
   NotifyFeatureUsage(
-      site_characteristics_.mutable_uses_notifications_in_background());
+      site_characteristics_.mutable_uses_notifications_in_background(),
+      "NotificationsUsageInBackground");
 }
 
 void LocalSiteCharacteristicsDataImpl::ExpireAllObservationWindowsForTesting() {
@@ -292,10 +298,23 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
-    SiteCharacteristicsFeatureProto* feature_proto) {
+    SiteCharacteristicsFeatureProto* feature_proto,
+    const char* feature_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsLoaded());
   DCHECK_GT(loaded_tabs_in_background_count_, 0U);
+
+  // Report the observation time if this is the first time this feature is
+  // observed.
+  if (feature_proto->observation_duration() != 0) {
+    base::UmaHistogramCustomTimes(
+        base::StringPrintf(
+            "ResourceCoordinator.LocalDB.ObservationTimeBeforeFirstUse.%s",
+            feature_name),
+        InternalRepresentationToTimeDelta(
+            feature_proto->observation_duration()),
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 100);
+  }
 
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
