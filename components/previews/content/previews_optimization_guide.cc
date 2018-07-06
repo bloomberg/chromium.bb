@@ -34,6 +34,7 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
 
 bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
                                               PreviewsType type) const {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
@@ -47,6 +48,16 @@ bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
     previews_user_data->SetDataSavingsInflationPercent(inflation_percent);
 
   return true;
+}
+
+bool PreviewsOptimizationGuide::IsHostWhitelistedAtNavigation(
+    const GURL& url,
+    previews::PreviewsType type) const {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (!hints_)
+    return false;
+  return hints_->IsHostWhitelistedAtNavigation(url, type);
 }
 
 void PreviewsOptimizationGuide::OnHintsProcessed(

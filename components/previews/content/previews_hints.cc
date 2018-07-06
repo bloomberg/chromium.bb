@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 
 namespace previews {
@@ -80,6 +81,20 @@ enum class PreviewsProcessHintsResult {
   MAX,
 };
 
+// Returns base::nullopt if |optimization_type| can't be converted.
+base::Optional<PreviewsType>
+ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+    optimization_guide::proto::OptimizationType optimization_type) {
+  switch (optimization_type) {
+    case optimization_guide::proto::TYPE_UNSPECIFIED:
+      return base::nullopt;
+    case optimization_guide::proto::NOSCRIPT:
+      return PreviewsType::NOSCRIPT;
+    case optimization_guide::proto::RESOURCE_LOADING:
+      return PreviewsType::RESOURCE_LOADING_HINTS;
+  }
+}
+
 void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
   UMA_HISTOGRAM_ENUMERATION("Previews.ProcessHintsResult",
                             static_cast<int>(result),
@@ -128,6 +143,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   url_matcher::URLMatcherConditionSet::Vector all_conditions;
   std::set<std::string> seen_host_suffixes;
 
+  std::vector<std::string> activation_list;
+
   // Process hint configuration.
   for (const auto hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
@@ -151,10 +168,16 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     // whitelisted for the host suffix.
     std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
     for (const auto optimization : hint.whitelisted_optimizations()) {
-      if (optimization.optimization_type() ==
-          optimization_guide::proto::NOSCRIPT) {
+      base::Optional<PreviewsType> previews_type =
+          ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+              optimization.optimization_type());
+      if (previews_type.has_value()) {
         whitelisted_optimizations.insert(std::make_pair(
-            PreviewsType::NOSCRIPT, optimization.inflation_percent()));
+            previews_type.value(), optimization.inflation_percent()));
+
+        if (previews_type == previews::PreviewsType::RESOURCE_LOADING_HINTS) {
+          activation_list.push_back(hint.key());
+        }
       }
     }
     url_matcher::URLMatcherCondition condition =
@@ -165,6 +188,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     id++;
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
+  hints->activation_list_ = std::make_unique<ActivationList>(activation_list);
+
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
@@ -204,6 +229,17 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
     }
   }
   return false;
+}
+
+bool PreviewsHints::IsHostWhitelistedAtNavigation(
+    const GURL& url,
+    previews::PreviewsType type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!activation_list_)
+    return false;
+
+  return activation_list_->IsHostWhitelistedAtNavigation(url, type);
 }
 
 }  // namespace previews
