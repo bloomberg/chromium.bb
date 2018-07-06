@@ -723,9 +723,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
-// Returns whether |url| should be opened.
-- (BOOL)shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
@@ -2893,7 +2890,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
   GURL requestURL = net::GURLWithNSURL(request.URL);
   GURL mainDocumentURL = net::GURLWithNSURL(request.mainDocumentURL);
   DCHECK(_webView);
-  if (![self shouldOpenURL:requestURL mainDocumentURL:mainDocumentURL]) {
+
+  // App specific pages have elevated privileges and WKWebView uses the same
+  // renderer process for all page frames. With that Chromium does not allow
+  // running App specific pages in the same process as a web site from the
+  // internet.
+  if (web::GetWebClient()->IsAppSpecificURL(requestURL) &&
+      !web::GetWebClient()->IsAppSpecificURL(mainDocumentURL)) {
     return NO;
   }
 
@@ -3636,29 +3639,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 #pragma mark -
 #pragma mark WebDelegate Calls
-
-- (BOOL)shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL {
-  // App specific pages have elevated privileges and WKWebView uses the same
-  // renderer process for all page frames. With that Chromium does not allow
-  // running App specific pages in the same process as a web site from the
-  // internet.
-  if (web::GetWebClient()->IsAppSpecificURL(url) &&
-      !web::GetWebClient()->IsAppSpecificURL(mainDocumentURL)) {
-    return NO;
-  }
-
-  // TODO(crbug.com/546402): Remove the call to CRWWebDelegate's method once
-  // kTabUrlMayStartLoadingNotificationForCrashReporting is reported from
-  // different place.
-  if (![_delegate respondsToSelector:@selector
-                  (webController:shouldOpenURL:mainDocumentURL:)]) {
-    return YES;
-  }
-  return [_delegate webController:self
-                    shouldOpenURL:url
-                  mainDocumentURL:mainDocumentURL];
-}
 
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
   if (action.targetFrame) {
