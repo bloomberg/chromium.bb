@@ -58,8 +58,12 @@ open CONFIG_FILE, $opts{config} or
 
 my %config = ();
 while (<CONFIG_FILE>) {
+  next if !/^\#define /;
+  s/\#define //;
   next if !/^(?:CONFIG_|HAVE_)/;
   chomp;
+  s/ 0/=/;
+  s/ 1/=yes/;
   s/\r$//;
   my @pair = split /=/;
   $config{$pair[0]} = $pair[1];

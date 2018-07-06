@@ -40,14 +40,6 @@ include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
-# Build a list of all configurable variables.
-get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
-foreach(var ${cmake_cache_vars})
-  if("${var}" MATCHES "^CONFIG_")
-    list(APPEND AOM_CONFIG_VARS ${var})
-  endif()
-endforeach()
-
 # Detect target CPU.
 if(NOT AOM_TARGET_CPU)
   if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR
@@ -334,9 +326,6 @@ if(NOT PERL_FOUND)
   message(FATAL_ERROR "Perl is required to build libaom.")
 endif()
 
-configure_file("${AOM_CONFIG_DIR}/rtcd_config.cmake"
-               "${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd")
-
 set(AOM_RTCD_CONFIG_FILE_LIST "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
     "${AOM_ROOT}/av1/common/av1_rtcd_defs.pl")
@@ -355,13 +344,12 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
   list(GET AOM_RTCD_HEADER_FILE_LIST ${NUM} AOM_RTCD_HEADER_FILE)
   list(GET AOM_RTCD_SOURCE_FILE_LIST ${NUM} AOM_RTCD_SOURCE_FILE)
   list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
-  execute_process(
-    COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
-            --arch=${AOM_TARGET_CPU}
-            --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
-            --config=${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd
-            ${AOM_RTCD_CONFIG_FILE}
-    OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
+  execute_process(COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
+                          --arch=${AOM_TARGET_CPU}
+                          --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
+                          --config=${AOM_CONFIG_DIR}/config/aom_config.h
+                          ${AOM_RTCD_CONFIG_FILE}
+                  OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
 
 # Generate aom_version.h.
