@@ -235,6 +235,9 @@ extern const char kLanguageSettingsLearnMoreUrl[];
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];
 
+// The URL for the Learn More page about Linux for Chromebooks.
+extern const char kLinuxAppsLearnMoreURL[];
+
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
 

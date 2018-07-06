@@ -283,6 +283,9 @@ const char kLanguageSettingsLearnMoreUrl[] =
 const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromebook/?p=managed";
 
+const char kLinuxAppsLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_linuxapps";
+
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
