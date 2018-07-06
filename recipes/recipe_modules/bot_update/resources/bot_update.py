@@ -553,7 +553,9 @@ def _get_target_branch_and_revision(solution_name, git_url, revisions):
   if len(parts) == 2:
     # Support for "branch:revision" syntax.
     return parts
-  return 'master', configured
+  if COMMIT_HASH_RE.match(configured):
+    return 'master', configured
+  return configured, 'HEAD'
 
 
 def get_target_pin(solution_name, git_url, revisions):
