@@ -19,6 +19,13 @@ std::string SigninClient::GenerateSigninScopedDeviceID(bool for_ephemeral) {
   return for_ephemeral ? kEphemeralUserDeviceIDPrefix + guid : guid;
 }
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+void SigninClient::RecreateSigninScopedDeviceId() {
+  GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
+                        GenerateSigninScopedDeviceID(false));
+}
+#endif
+
 std::string SigninClient::GetOrCreateScopedDeviceIdPref(PrefService* prefs) {
   std::string signin_scoped_device_id =
       prefs->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
@@ -43,6 +50,5 @@ void SigninClient::PreGaiaLogout(base::OnceClosure callback) {
 }
 
 void SigninClient::SignOut() {
-  GetPrefs()->ClearPref(prefs::kGoogleServicesSigninScopedDeviceId);
   OnSignedOut();
 }

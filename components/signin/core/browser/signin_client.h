@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -145,6 +146,12 @@ class SigninClient : public KeyedService {
 
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}
+
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  // Forces the generation of a new device ID, and stores it in the pref
+  // service.
+  void RecreateSigninScopedDeviceId();
+#endif
 
  protected:
   // Returns device id that is scoped to single signin.

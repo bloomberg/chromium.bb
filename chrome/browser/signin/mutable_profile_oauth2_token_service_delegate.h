@@ -183,6 +183,14 @@ class MutableProfileOAuth2TokenServiceDelegate
                         const std::string& refresh_token,
                         const GoogleServiceAuthError& error);
 
+  // Creates a new device ID if there are no accounts, or if the current device
+  // ID is empty.
+  void RecreateDeviceIdIfNeeded();
+
+  // Called at when tokens are loaded. Performs housekeeping tasks and notifies
+  // the observers.
+  void FinishLoadingCredentials();
+
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
   typedef std::map<std::string, std::unique_ptr<AccountStatus>>

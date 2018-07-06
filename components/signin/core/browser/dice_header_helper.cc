@@ -198,7 +198,8 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
 }
 
 std::string DiceHeaderHelper::BuildRequestHeader(
-    const std::string& sync_account_id) {
+    const std::string& sync_account_id,
+    const std::string& device_id) {
   // When fixing auth errors, only add the header when Sync is actually in error
   // state.
   DCHECK(
@@ -210,6 +211,8 @@ std::string DiceHeaderHelper::BuildRequestHeader(
   parts.push_back(base::StringPrintf("version=%s", kDiceProtocolVersion));
   parts.push_back("client_id=" +
                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  if (!device_id.empty())
+    parts.push_back("device_id=" + device_id);
   if (!sync_account_id.empty())
     parts.push_back("sync_account_id=" + sync_account_id);
 

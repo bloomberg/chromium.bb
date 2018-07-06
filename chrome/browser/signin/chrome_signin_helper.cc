@@ -60,10 +60,6 @@ namespace {
 
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
-#endif
-
 // Key for RequestDestructionObserverUserData.
 const void* const kRequestDestructionObserverUserDataKey =
     &kRequestDestructionObserverUserDataKey;
@@ -71,6 +67,10 @@ const void* const kRequestDestructionObserverUserDataKey =
 // TODO(droger): Remove this delay when the Dice implementation is finished on
 // the server side.
 int g_dice_account_reconcilor_blocked_delay_ms = 1000;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 
 // Refcounted wrapper to allow creating and deleting a AccountReconcilor::Lock
 // from the IO thread.
@@ -137,6 +137,8 @@ bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
   return (resource_type == content::RESOURCE_TYPE_XHR) &&
          gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
 }
+
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
  public:
@@ -494,11 +496,12 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
 
   // If new url is eligible to have the header, add it, otherwise remove it.
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
       io_data->SyncHasAuthError(), account_consistency,
-      io_data->GetCookieSettings());
+      io_data->GetCookieSettings(), io_data->GetSigninScopedDeviceId());
 
   // Block the AccountReconcilor while the Dice requests are in flight. This
   // allows the DiceReponseHandler to process the response before the reconcilor
@@ -514,6 +517,7 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
     request->SetDestructionCallback(
         base::BindOnce(&DestroyLockWrapperAfterDelay, std::move(lock_wrapper)));
   }
+#endif
 
   // Mirror header:
   AppendOrRemoveMirrorRequestHeader(

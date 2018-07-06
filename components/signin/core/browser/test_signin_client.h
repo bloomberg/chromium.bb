@@ -46,7 +46,7 @@ class TestSigninClient : public SigninClient {
   // Returns true.
   bool CanRevokeCredentials() override;
 
-  // Returns empty string.
+  // Returns a dummy device ID.
   std::string GetSigninScopedDeviceId() override;
 
   // Does nothing.
