@@ -48,12 +48,16 @@ BackgroundFetchContext::BackgroundFetchContext(
 
 BackgroundFetchContext::~BackgroundFetchContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   service_worker_context_->RemoveObserver(this);
+  data_manager_->RemoveObserver(this);
 }
 
 void BackgroundFetchContext::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->AddObserver(this);
+
+  data_manager_->AddObserver(this);
   data_manager_->InitializeOnIOThread();
   data_manager_->GetInitializationData(
       base::BindOnce(&BackgroundFetchContext::DidGetInitializationData,
@@ -201,11 +205,8 @@ void BackgroundFetchContext::UpdateUI(
     return;
   }
 
-  data_manager_->UpdateRegistrationUI(
-      registration_id, title,
-      base::BindOnce(&BackgroundFetchContext::DidUpdateStoredUI,
-                     weak_factory_.GetWeakPtr(), registration_id.unique_id(),
-                     title, std::move(callback)));
+  data_manager_->UpdateRegistrationUI(registration_id, title,
+                                      std::move(callback));
 }
 
 void BackgroundFetchContext::AbandonFetches(
@@ -245,6 +246,16 @@ void BackgroundFetchContext::AbandonFetches(
   }
 }
 
+void BackgroundFetchContext::OnUpdatedUI(
+    const BackgroundFetchRegistrationId& registration_id,
+    const std::string& title) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto iter = job_controllers_.find(registration_id.unique_id());
+  if (iter != job_controllers_.end())
+    iter->second->UpdateUI(title);
+}
+
 void BackgroundFetchContext::OnRegistrationDeleted(
     int64_t service_worker_registration_id,
     const GURL& pattern) {
@@ -255,24 +266,6 @@ void BackgroundFetchContext::OnRegistrationDeleted(
 void BackgroundFetchContext::OnStorageWiped() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   AbandonFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
-}
-
-void BackgroundFetchContext::DidUpdateStoredUI(
-    const std::string& unique_id,
-    const std::string& title,
-    blink::mojom::BackgroundFetchService::UpdateUICallback callback,
-    blink::mojom::BackgroundFetchError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(delphick): The controller might not exist if the developer updates the
-  // UI from the event using event.waitUntil. Consider showing a message in the
-  // console.
-  if (error == blink::mojom::BackgroundFetchError::NONE &&
-      job_controllers_.count(unique_id)) {
-    job_controllers_[unique_id]->UpdateUI(title);
-  }
-
-  std::move(callback).Run(error);
 }
 
 void BackgroundFetchContext::CreateController(
