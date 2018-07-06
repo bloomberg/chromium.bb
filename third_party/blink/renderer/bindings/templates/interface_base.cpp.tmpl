@@ -121,7 +121,8 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endif %}
 {{overload_resolution_method(method.overloads, world_suffix)}}
 {% endif %}
-{% if method.is_cross_origin and method.visible %}
+{% if method.is_cross_origin and method.visible and
+      (not method.overload_index or method.overloads) %}
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
 {% endfor %}
@@ -173,7 +174,8 @@ static const struct {
   },
   {% endfor %}
   {##### Cross-origin methods #####}
-  {% for method in methods if method.is_cross_origin %}
+  {% for method in methods if method.is_cross_origin and
+        (not method.overload_index or method.overloads) %}
   {"{{method.name}}", &{{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter, nullptr},
   {% endfor %}
 };
@@ -219,7 +221,8 @@ static const struct {
 {{method_callback(method, world_suffix)}}
 {% endif %}
 {% endif %}
-{% if method.is_cross_origin and method.visible %}
+{% if method.is_cross_origin and method.visible and
+     (not method.overload_index or method.overloads) %}
 {{origin_safe_method_getter_callback(method, world_suffix)}}
 {% endif %}
 {% endfor %}

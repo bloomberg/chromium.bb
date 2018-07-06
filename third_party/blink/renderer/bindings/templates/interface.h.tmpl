@@ -199,9 +199,9 @@ class {{v8_class}} {
   {# with considering partial overloads #}
   {{exported}}static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
-  {% endif %}
   {% if method.is_cross_origin and method.visible %}
   {{exported}}static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+  {% endif %}
   {% endif %}
   {% endfor %}
   {% endfor %}
