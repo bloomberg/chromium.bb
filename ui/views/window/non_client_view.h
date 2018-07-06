@@ -104,9 +104,6 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   bool DoesIntersectRect(const View* target,
                          const gfx::Rect& rect) const override;
 
-  // View:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
   void set_active_state_override(bool* active_state_override) {
     active_state_override_ = active_state_override;
   }
