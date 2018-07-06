@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
@@ -689,6 +690,14 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
     bool available,
     const base::Optional<
         autofill::password_generation::PasswordGenerationUIData>& ui_data) {
+  using password_manager::BadMessageReason;
+  if (ui_data &&
+      !password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(),
+          ui_data->password_form,
+          BadMessageReason::
+              CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED))
+    return;
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (!base::FeatureList::IsEnabled(
@@ -727,12 +736,24 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
 
 void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
+  using password_manager::BadMessageReason;
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(),
+          ui_data.password_form,
+          BadMessageReason::
+              CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP))
+    return;
   ShowPasswordGenerationPopup(ui_data, true /* is_manually_triggered */);
 }
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
     const autofill::PasswordForm& form) {
+  using password_manager::BadMessageReason;
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(), form,
+          BadMessageReason::CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP))
+    return;
   auto* driver = driver_factory_->GetDriverForFrame(
       password_manager_client_bindings_.GetCurrentTargetFrame());
   DCHECK(driver);
@@ -751,6 +772,11 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
 
 void ChromePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {
+  using password_manager::BadMessageReason;
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(), form,
+          BadMessageReason::CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM))
+    return;
   password_manager_.GenerationAvailableForForm(form);
 }
 
@@ -762,6 +788,12 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::PasswordForm& password_form) {
+  using password_manager::BadMessageReason;
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(),
+          password_form,
+          BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD))
+    return;
   if (popup_controller_)
     popup_controller_->UpdatePassword(password_form.password_value);
 
@@ -770,6 +802,12 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
     const autofill::PasswordForm& password_form) {
+  using password_manager::BadMessageReason;
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+          password_manager_client_bindings_.GetCurrentTargetFrame(),
+          password_form,
+          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
+    return;
   password_manager_.OnPasswordNoLongerGenerated(password_form);
 }
 
