@@ -18,7 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -305,9 +305,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
-  if (widget_->compositor()) {
+  if (widget_->layer_tree_view()) {
     latency_info_swap_promise_monitor =
-        widget_->compositor()->CreateLatencyInfoSwapPromiseMonitor(
+        widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
             &swap_latency_info);
   }
 

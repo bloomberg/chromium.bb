@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 
 #include <stddef.h>
 #include <string>
@@ -37,7 +37,7 @@
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "content/renderer/gpu/render_widget_compositor_delegate.h"
+#include "content/renderer/gpu/layer_tree_view_delegate.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -62,7 +62,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
   ReportTimeSwapPromise(ReportTimeCallback callback,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        base::WeakPtr<RenderWidgetCompositor> compositor);
+                        base::WeakPtr<LayerTreeView> layer_tree_view);
   ~ReportTimeSwapPromise() override;
 
   void DidActivate() override {}
@@ -74,7 +74,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
  private:
   ReportTimeCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtr<RenderWidgetCompositor> compositor_;
+  base::WeakPtr<LayerTreeView> layer_tree_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
@@ -82,10 +82,10 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 ReportTimeSwapPromise::ReportTimeSwapPromise(
     ReportTimeCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<RenderWidgetCompositor> compositor)
+    base::WeakPtr<LayerTreeView> layer_tree_view)
     : callback_(std::move(callback)),
       task_runner_(std::move(task_runner)),
-      compositor_(compositor) {}
+      layer_tree_view_(std::move(layer_tree_view)) {}
 
 ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
@@ -96,7 +96,7 @@ void ReportTimeSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &RenderWidgetCompositor::AddPresentationCallback, compositor_,
+          &LayerTreeView::AddPresentationCallback, layer_tree_view_,
           metadata->frame_token,
           base::BindOnce(std::move(callback_),
                          blink::WebLayerTreeView::SwapResult::kDidSwap)));
@@ -167,7 +167,7 @@ cc::LayerSelection ConvertFromWebSelection(
   return cc_selection;
 }
 
-// Check cc::BrowserControlsState, and blink::WebBrowserControlsState
+// Check cc::BrowserControlsState, and WebBrowserControlsState
 // are kept in sync.
 static_assert(int(blink::kWebBrowserControlsBoth) == int(cc::BOTH),
               "mismatching enums: BOTH");
@@ -183,8 +183,8 @@ static cc::BrowserControlsState ConvertBrowserControlsState(
 
 }  // namespace
 
-RenderWidgetCompositor::RenderWidgetCompositor(
-    RenderWidgetCompositorDelegate* delegate,
+LayerTreeView::LayerTreeView(
+    LayerTreeViewDelegate* delegate,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
     cc::TaskGraphRunner* task_graph_runner,
@@ -197,9 +197,9 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       animation_host_(cc::AnimationHost::CreateMainInstance()),
       weak_factory_(this) {}
 
-RenderWidgetCompositor::~RenderWidgetCompositor() = default;
+LayerTreeView::~LayerTreeView() = default;
 
-void RenderWidgetCompositor::Initialize(
+void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
   const bool is_threaded = !!compositor_thread_;
@@ -228,77 +228,75 @@ void RenderWidgetCompositor::Initialize(
   }
 }
 
-void RenderWidgetCompositor::SetNeverVisible() {
+void LayerTreeView::SetNeverVisible() {
   DCHECK(!layer_tree_host_->IsVisible());
   never_visible_ = true;
 }
 
-const base::WeakPtr<cc::InputHandler>&
-RenderWidgetCompositor::GetInputHandler() {
+const base::WeakPtr<cc::InputHandler>& LayerTreeView::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
 }
 
-void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
+void LayerTreeView::SetNeedsDisplayOnAllLayers() {
   layer_tree_host_->SetNeedsDisplayOnAllLayers();
 }
 
-void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
+void LayerTreeView::SetRasterizeOnlyVisibleContent() {
   cc::LayerTreeDebugState current = layer_tree_host_->GetDebugState();
   current.rasterize_only_visible_content = true;
   layer_tree_host_->SetDebugState(current);
 }
 
-void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+void LayerTreeView::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
-bool RenderWidgetCompositor::IsSurfaceSynchronizationEnabled() const {
+bool LayerTreeView::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_host_->GetSettings().enable_surface_synchronization;
 }
 
-void RenderWidgetCompositor::SetNeedsForcedRedraw() {
+void LayerTreeView::SetNeedsForcedRedraw() {
   layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }
 
 std::unique_ptr<cc::SwapPromiseMonitor>
-RenderWidgetCompositor::CreateLatencyInfoSwapPromiseMonitor(
-    ui::LatencyInfo* latency) {
+LayerTreeView::CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) {
   return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
       latency, layer_tree_host_->GetSwapPromiseManager(), nullptr);
 }
 
-void RenderWidgetCompositor::QueueSwapPromise(
+void LayerTreeView::QueueSwapPromise(
     std::unique_ptr<cc::SwapPromise> swap_promise) {
   layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
 }
 
-int RenderWidgetCompositor::GetSourceFrameNumber() const {
+int LayerTreeView::GetSourceFrameNumber() const {
   return layer_tree_host_->SourceFrameNumber();
 }
 
-void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {
+void LayerTreeView::NotifyInputThrottledUntilCommit() {
   layer_tree_host_->NotifyInputThrottledUntilCommit();
 }
 
-const cc::Layer* RenderWidgetCompositor::GetRootLayer() const {
+const cc::Layer* LayerTreeView::GetRootLayer() const {
   return layer_tree_host_->root_layer();
 }
 
-int RenderWidgetCompositor::ScheduleMicroBenchmark(
+int LayerTreeView::ScheduleMicroBenchmark(
     const std::string& name,
     std::unique_ptr<base::Value> value,
-    const base::Callback<void(std::unique_ptr<base::Value>)>& callback) {
+    base::OnceCallback<void(std::unique_ptr<base::Value>)> callback) {
   return layer_tree_host_->ScheduleMicroBenchmark(name, std::move(value),
-                                                  callback);
+                                                  std::move(callback));
 }
 
-bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
+bool LayerTreeView::SendMessageToMicroBenchmark(
     int id,
     std::unique_ptr<base::Value> value) {
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-void RenderWidgetCompositor::SetViewportSizeAndScale(
+void LayerTreeView::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
     const viz::LocalSurfaceId& local_surface_id) {
@@ -306,49 +304,44 @@ void RenderWidgetCompositor::SetViewportSizeAndScale(
       device_viewport_size, device_scale_factor, local_surface_id);
 }
 
-void RenderWidgetCompositor::RequestNewLocalSurfaceId() {
+void LayerTreeView::RequestNewLocalSurfaceId() {
   layer_tree_host_->RequestNewLocalSurfaceId();
 }
 
-bool RenderWidgetCompositor::HasNewLocalSurfaceIdRequest() const {
-  return layer_tree_host_->new_local_surface_id_request_for_testing();
-}
-
-void RenderWidgetCompositor::SetViewportVisibleRect(
-    const gfx::Rect& visible_rect) {
+void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   layer_tree_host_->SetViewportVisibleRect(visible_rect);
 }
 
-viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
+viz::FrameSinkId LayerTreeView::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void RenderWidgetCompositor::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+void LayerTreeView::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   layer_tree_host_->SetRootLayer(std::move(layer));
 }
 
-void RenderWidgetCompositor::ClearRootLayer() {
+void LayerTreeView::ClearRootLayer() {
   layer_tree_host_->SetRootLayer(nullptr);
 }
 
-cc::AnimationHost* RenderWidgetCompositor::CompositorAnimationHost() {
+cc::AnimationHost* LayerTreeView::CompositorAnimationHost() {
   return animation_host_.get();
 }
 
-blink::WebSize RenderWidgetCompositor::GetViewportSize() const {
-  return layer_tree_host_->device_viewport_size();
+blink::WebSize LayerTreeView::GetViewportSize() const {
+  return blink::WebSize(layer_tree_host_->device_viewport_size());
 }
 
-blink::WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
+blink::WebFloatPoint LayerTreeView::adjustEventPointForPinchZoom(
     const blink::WebFloatPoint& point) const {
   return point;
 }
 
-void RenderWidgetCompositor::SetBackgroundColor(SkColor color) {
+void LayerTreeView::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
 }
 
-void RenderWidgetCompositor::SetVisible(bool visible) {
+void LayerTreeView::SetVisible(bool visible) {
   if (never_visible_)
     return;
 
@@ -358,19 +351,17 @@ void RenderWidgetCompositor::SetVisible(bool visible) {
     DidFailToInitializeLayerTreeFrameSink();
 }
 
-void RenderWidgetCompositor::SetPageScaleFactorAndLimits(
-    float page_scale_factor,
-    float minimum,
-    float maximum) {
+void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
+                                                float minimum,
+                                                float maximum) {
   layer_tree_host_->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
                                                 maximum);
 }
 
-void RenderWidgetCompositor::StartPageScaleAnimation(
-    const blink::WebPoint& destination,
-    bool use_anchor,
-    float new_page_scale,
-    double duration_sec) {
+void LayerTreeView::StartPageScaleAnimation(const blink::WebPoint& destination,
+                                            bool use_anchor,
+                                            float new_page_scale,
+                                            double duration_sec) {
   base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
       duration_sec * base::Time::kMicrosecondsPerSecond);
   layer_tree_host_->StartPageScaleAnimation(
@@ -378,25 +369,24 @@ void RenderWidgetCompositor::StartPageScaleAnimation(
       duration);
 }
 
-bool RenderWidgetCompositor::HasPendingPageScaleAnimation() const {
+bool LayerTreeView::HasPendingPageScaleAnimation() const {
   return layer_tree_host_->HasPendingPageScaleAnimation();
 }
 
-void RenderWidgetCompositor::HeuristicsForGpuRasterizationUpdated(
+void LayerTreeView::HeuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
   layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
 }
 
-void RenderWidgetCompositor::SetNeedsBeginFrame() {
+void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void RenderWidgetCompositor::DidStopFlinging() {
+void LayerTreeView::DidStopFlinging() {
   layer_tree_host_->DidStopFlinging();
 }
 
-void RenderWidgetCompositor::RegisterViewportLayers(
-    const blink::WebLayerTreeView::ViewportLayers& layers) {
+void LayerTreeView::RegisterViewportLayers(const ViewportLayers& layers) {
   cc::LayerTreeHost::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity = layers.overscroll_elasticity;
   viewport_layers.page_scale = layers.page_scale;
@@ -407,27 +397,26 @@ void RenderWidgetCompositor::RegisterViewportLayers(
   layer_tree_host_->RegisterViewportLayers(viewport_layers);
 }
 
-void RenderWidgetCompositor::ClearViewportLayers() {
+void LayerTreeView::ClearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(cc::LayerTreeHost::ViewportLayers());
 }
 
-void RenderWidgetCompositor::RegisterSelection(
-    const blink::WebSelection& selection) {
+void LayerTreeView::RegisterSelection(const blink::WebSelection& selection) {
   layer_tree_host_->RegisterSelection(ConvertFromWebSelection(selection));
 }
 
-void RenderWidgetCompositor::ClearSelection() {
+void LayerTreeView::ClearSelection() {
   cc::LayerSelection empty_selection;
   layer_tree_host_->RegisterSelection(empty_selection);
 }
 
-void RenderWidgetCompositor::SetMutatorClient(
+void LayerTreeView::SetMutatorClient(
     std::unique_ptr<cc::LayerTreeMutator> client) {
-  TRACE_EVENT0("cc", "RenderWidgetCompositor::setMutatorClient");
+  TRACE_EVENT0("cc", "LayerTreeView::setMutatorClient");
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 
-void RenderWidgetCompositor::ForceRecalculateRasterScales() {
+void LayerTreeView::ForceRecalculateRasterScales() {
   layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
@@ -457,7 +446,7 @@ static_assert(static_cast<cc::EventListenerProperties>(
                   cc::EventListenerProperties::kBlockingAndPassive,
               "EventListener and WebEventListener enums must match");
 
-void RenderWidgetCompositor::SetEventListenerProperties(
+void LayerTreeView::SetEventListenerProperties(
     blink::WebEventListenerClass eventClass,
     blink::WebEventListenerProperties properties) {
   layer_tree_host_->SetEventListenerProperties(
@@ -465,23 +454,22 @@ void RenderWidgetCompositor::SetEventListenerProperties(
       static_cast<cc::EventListenerProperties>(properties));
 }
 
-blink::WebEventListenerProperties
-RenderWidgetCompositor::EventListenerProperties(
+blink::WebEventListenerProperties LayerTreeView::EventListenerProperties(
     blink::WebEventListenerClass event_class) const {
   return static_cast<blink::WebEventListenerProperties>(
       layer_tree_host_->event_listener_properties(
           static_cast<cc::EventListenerClass>(event_class)));
 }
 
-void RenderWidgetCompositor::SetHaveScrollEventHandlers(bool has_handlers) {
+void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
   layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
 }
 
-bool RenderWidgetCompositor::HaveScrollEventHandlers() const {
+bool LayerTreeView::HaveScrollEventHandlers() const {
   return layer_tree_host_->have_scroll_event_handlers();
 }
 
-bool RenderWidgetCompositor::CompositeIsSynchronous() const {
+bool LayerTreeView::CompositeIsSynchronous() const {
   if (!compositor_thread_) {
     DCHECK(!layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
     return true;
@@ -489,7 +477,7 @@ bool RenderWidgetCompositor::CompositeIsSynchronous() const {
   return false;
 }
 
-void RenderWidgetCompositor::LayoutAndPaintAsync(base::OnceClosure callback) {
+void LayerTreeView::LayoutAndPaintAsync(base::OnceClosure callback) {
   DCHECK(layout_and_paint_async_callback_.is_null());
   layout_and_paint_async_callback_ = std::move(callback);
 
@@ -498,15 +486,14 @@ void RenderWidgetCompositor::LayoutAndPaintAsync(base::OnceClosure callback) {
     // dispatched after layout and paint for all compositing modes.
     const bool raster = false;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster, nullptr));
+        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                                  weak_factory_.GetWeakPtr(), raster, nullptr));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
 }
 
-void RenderWidgetCompositor::SetLayerTreeFrameSink(
+void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   if (!layer_tree_frame_sink) {
     DidFailToInitializeLayerTreeFrameSink();
@@ -515,12 +502,12 @@ void RenderWidgetCompositor::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
+void LayerTreeView::InvokeLayoutAndPaintCallback() {
   if (!layout_and_paint_async_callback_.is_null())
     std::move(layout_and_paint_async_callback_).Run();
 }
 
-void RenderWidgetCompositor::CompositeAndReadbackAsync(
+void LayerTreeView::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(layout_and_paint_async_callback_.is_null());
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
@@ -549,10 +536,9 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
     // with rasterization is done.
     const bool raster = true;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster,
-                       std::move(swap_promise)));
+        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                                  weak_factory_.GetWeakPtr(), raster,
+                                  std::move(swap_promise)));
   } else {
     // Force a redraw to ensure that the copy swap promise isn't cancelled due
     // to no damage.
@@ -562,15 +548,15 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
   }
 }
 
-void RenderWidgetCompositor::SynchronouslyCompositeNoRasterForTesting() {
+void LayerTreeView::SynchronouslyCompositeNoRasterForTesting() {
   SynchronouslyComposite(false /* raster */, nullptr /* swap_promise */);
 }
 
-void RenderWidgetCompositor::CompositeWithRasterForTesting() {
+void LayerTreeView::CompositeWithRasterForTesting() {
   SynchronouslyComposite(true /* raster */, nullptr /* swap_promise */);
 }
 
-void RenderWidgetCompositor::SynchronouslyComposite(
+void LayerTreeView::SynchronouslyComposite(
     bool raster,
     std::unique_ptr<cc::SwapPromise> swap_promise) {
   DCHECK(CompositeIsSynchronous());
@@ -600,27 +586,27 @@ void RenderWidgetCompositor::SynchronouslyComposite(
   layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
 }
 
-void RenderWidgetCompositor::SetDeferCommits(bool defer_commits) {
+void LayerTreeView::SetDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
-int RenderWidgetCompositor::LayerTreeId() const {
+int LayerTreeView::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }
 
-void RenderWidgetCompositor::SetShowFPSCounter(bool show) {
+void LayerTreeView::SetShowFPSCounter(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_fps_counter = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::SetShowPaintRects(bool show) {
+void LayerTreeView::SetShowPaintRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_paint_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::SetShowDebugBorders(bool show) {
+void LayerTreeView::SetShowDebugBorders(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   if (show)
     debug_state.show_debug_borders.set();
@@ -629,7 +615,7 @@ void RenderWidgetCompositor::SetShowDebugBorders(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::SetShowScrollBottleneckRects(bool show) {
+void LayerTreeView::SetShowScrollBottleneckRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
@@ -637,7 +623,7 @@ void RenderWidgetCompositor::SetShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::UpdateBrowserControlsState(
+void LayerTreeView::UpdateBrowserControlsState(
     blink::WebBrowserControlsState constraints,
     blink::WebBrowserControlsState current,
     bool animate) {
@@ -646,19 +632,18 @@ void RenderWidgetCompositor::UpdateBrowserControlsState(
       ConvertBrowserControlsState(current), animate);
 }
 
-void RenderWidgetCompositor::SetBrowserControlsHeight(float top_height,
-                                                      float bottom_height,
-                                                      bool shrink) {
+void LayerTreeView::SetBrowserControlsHeight(float top_height,
+                                             float bottom_height,
+                                             bool shrink) {
   layer_tree_host_->SetBrowserControlsHeight(top_height, bottom_height, shrink);
 }
 
-void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
+void LayerTreeView::SetBrowserControlsShownRatio(float ratio) {
   layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 
-void RenderWidgetCompositor::RequestDecode(
-    const cc::PaintImage& image,
-    base::OnceCallback<void(bool)> callback) {
+void LayerTreeView::RequestDecode(const cc::PaintImage& image,
+                                  base::OnceCallback<void(bool)> callback) {
   layer_tree_host_->QueueImageDecode(image, std::move(callback));
 
   // If we're compositing synchronously, the SetNeedsCommit call which will be
@@ -669,43 +654,40 @@ void RenderWidgetCompositor::RequestDecode(
   if (CompositeIsSynchronous()) {
     const bool raster = true;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster, nullptr));
+        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                                  weak_factory_.GetWeakPtr(), raster, nullptr));
   }
 }
 
-void RenderWidgetCompositor::SetOverscrollBehavior(
+void LayerTreeView::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
   layer_tree_host_->SetOverscrollBehavior(behavior);
 }
 
-void RenderWidgetCompositor::WillBeginMainFrame() {
+void LayerTreeView::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }
 
-void RenderWidgetCompositor::DidBeginMainFrame() {}
+void LayerTreeView::DidBeginMainFrame() {}
 
-void RenderWidgetCompositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
+void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
   web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
 }
 
-void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
+void LayerTreeView::BeginMainFrameNotExpectedSoon() {
   web_main_thread_scheduler_->BeginFrameNotExpectedSoon();
 }
 
-void RenderWidgetCompositor::BeginMainFrameNotExpectedUntil(
-    base::TimeTicks time) {
+void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void RenderWidgetCompositor::UpdateLayerTreeHost(
-    VisualStateUpdate requested_update) {
+void LayerTreeView::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
   delegate_->UpdateVisualState(requested_update);
 }
 
-void RenderWidgetCompositor::ApplyViewportDeltas(
+void LayerTreeView::ApplyViewportDeltas(
     const gfx::Vector2dF& inner_delta,
     const gfx::Vector2dF& outer_delta,
     const gfx::Vector2dF& elastic_overscroll_delta,
@@ -716,61 +698,58 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
                                  top_controls_delta);
 }
 
-void RenderWidgetCompositor::RecordWheelAndTouchScrollingCount(
+void LayerTreeView::RecordWheelAndTouchScrollingCount(
     bool has_scrolled_by_wheel,
     bool has_scrolled_by_touch) {
   delegate_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
                                                has_scrolled_by_touch);
 }
 
-void RenderWidgetCompositor::RequestNewLayerTreeFrameSink() {
+void LayerTreeView::RequestNewLayerTreeFrameSink() {
   // If the host is closing, then no more compositing is possible.  This
   // prevents shutdown races between handling the close message and
   // the CreateLayerTreeFrameSink task.
   if (delegate_->IsClosing())
     return;
-  delegate_->RequestNewLayerTreeFrameSink(
-      base::Bind(&RenderWidgetCompositor::SetLayerTreeFrameSink,
-                 weak_factory_.GetWeakPtr()));
+  delegate_->RequestNewLayerTreeFrameSink(base::BindOnce(
+      &LayerTreeView::SetLayerTreeFrameSink, weak_factory_.GetWeakPtr()));
 }
 
-void RenderWidgetCompositor::DidInitializeLayerTreeFrameSink() {
-}
+void LayerTreeView::DidInitializeLayerTreeFrameSink() {}
 
-void RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink() {
+void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
   if (!layer_tree_host_->IsVisible()) {
     layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
   }
   layer_tree_frame_sink_request_failed_while_invisible_ = false;
   layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidgetCompositor::RequestNewLayerTreeFrameSink,
-                     weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&LayerTreeView::RequestNewLayerTreeFrameSink,
+                                weak_factory_.GetWeakPtr()));
 }
 
-void RenderWidgetCompositor::WillCommit() {
+void LayerTreeView::WillCommit() {
   InvokeLayoutAndPaintCallback();
 }
 
-void RenderWidgetCompositor::DidCommit() {
+void LayerTreeView::DidCommit() {
   delegate_->DidCommitCompositorFrame();
   web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
 
-void RenderWidgetCompositor::DidCommitAndDrawFrame() {
+void LayerTreeView::DidCommitAndDrawFrame() {
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
-void RenderWidgetCompositor::DidReceiveCompositorFrameAck() {
+void LayerTreeView::DidReceiveCompositorFrameAck() {
   delegate_->DidReceiveCompositorFrameAck();
 }
 
-void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
+void LayerTreeView::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
 
-void RenderWidgetCompositor::DidPresentCompositorFrame(
+void LayerTreeView::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(layer_tree_host_->GetTaskRunnerProvider()
@@ -786,54 +765,51 @@ void RenderWidgetCompositor::DidPresentCompositorFrame(
   }
 }
 
-void RenderWidgetCompositor::RequestScheduleAnimation() {
+void LayerTreeView::RequestScheduleAnimation() {
   delegate_->RequestScheduleAnimation();
 }
 
-void RenderWidgetCompositor::DidSubmitCompositorFrame() {}
+void LayerTreeView::DidSubmitCompositorFrame() {}
 
-void RenderWidgetCompositor::DidLoseLayerTreeFrameSink() {}
+void LayerTreeView::DidLoseLayerTreeFrameSink() {}
 
-void RenderWidgetCompositor::SetFrameSinkId(
-    const viz::FrameSinkId& frame_sink_id) {
+void LayerTreeView::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
 }
 
-void RenderWidgetCompositor::SetRasterColorSpace(
-    const gfx::ColorSpace& color_space) {
+void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);
 }
 
-void RenderWidgetCompositor::ClearCachesOnNextCommit() {
+void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
 }
 
-void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
+void LayerTreeView::SetContentSourceId(uint32_t id) {
   layer_tree_host_->SetContentSourceId(id);
 }
 
-void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
+void LayerTreeView::NotifySwapTime(ReportTimeCallback callback) {
   QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(callback),
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),
       weak_factory_.GetWeakPtr()));
 }
 
-void RenderWidgetCompositor::RequestBeginMainFrameNotExpected(bool new_state) {
+void LayerTreeView::RequestBeginMainFrameNotExpected(bool new_state) {
   layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
 }
 
-const cc::LayerTreeSettings& RenderWidgetCompositor::GetLayerTreeSettings()
-    const {
+const cc::LayerTreeSettings& LayerTreeView::GetLayerTreeSettings() const {
   return layer_tree_host_->GetSettings();
 }
 
-void RenderWidgetCompositor::SetRenderFrameObserver(
+void LayerTreeView::SetRenderFrameObserver(
     std::unique_ptr<cc::RenderFrameMetadataObserver> observer) {
   layer_tree_host_->SetRenderFrameObserver(std::move(observer));
 }
 
-void RenderWidgetCompositor::AddPresentationCallback(
+void LayerTreeView::AddPresentationCallback(
     uint32_t frame_token,
     base::OnceCallback<void(base::TimeTicks)> callback) {
   if (!presentation_callbacks_.empty()) {
@@ -852,7 +828,7 @@ void RenderWidgetCompositor::AddPresentationCallback(
   DCHECK_LE(presentation_callbacks_.size(), 25u);
 }
 
-void RenderWidgetCompositor::SetURLForUkm(const GURL& url) {
+void LayerTreeView::SetURLForUkm(const GURL& url) {
   layer_tree_host_->SetURLForUkm(url);
 }
 

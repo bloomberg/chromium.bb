@@ -1962,7 +1962,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
-    const LayerTreeFrameSinkCallback& callback,
+    LayerTreeFrameSinkCallback callback,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
     mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr) {
@@ -2001,20 +2001,20 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #if defined(USE_AURA)
   if (!features::IsAshInBrowserProcess()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
-      callback.Run(nullptr);
+      std::move(callback).Run(nullptr);
       return;
     }
     scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.
     if (!channel) {
-      callback.Run(nullptr);
+      std::move(callback).Run(nullptr);
       return;
     }
     RendererWindowTreeClient::Get(routing_id)
         ->RequestLayerTreeFrameSink(
             gpu_->CreateContextProvider(std::move(channel)),
-            GetGpuMemoryBufferManager(), callback);
+            GetGpuMemoryBufferManager(), std::move(callback));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         routing_id, std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
@@ -2036,8 +2036,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         routing_id, std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
-    callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-        nullptr, nullptr, &params));
+    std::move(callback).Run(
+        std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+            nullptr, nullptr, &params));
     return;
   }
 
@@ -2046,7 +2047,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (!gpu_channel_host) {
     // Wait and try again. We may hear that the compositing mode has switched
     // to software in the meantime.
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -2054,7 +2055,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       SharedCompositorWorkerContextProvider();
   if (!worker_context_provider) {
     // Cause the compositor to wait and try again.
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -2090,7 +2091,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   if (layout_test_deps_) {
     if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
-      callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
+      std::move(callback).Run(layout_test_deps_->CreateLayerTreeFrameSink(
           routing_id, std::move(gpu_channel_host), std::move(context_provider),
           std::move(worker_context_provider), GetGpuMemoryBufferManager(),
           this));
@@ -2107,7 +2108,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
     if (view) {
-      callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
+      std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
           sync_message_filter(), routing_id, g_next_layer_tree_frame_sink_id++,
@@ -2129,9 +2130,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       routing_id, std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
-  callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-      std::move(context_provider), std::move(worker_context_provider),
-      &params));
+  std::move(callback).Run(
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+          std::move(context_provider), std::move(worker_context_provider),
+          &params));
 }
 
 blink::AssociatedInterfaceRegistry*

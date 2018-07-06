@@ -284,7 +284,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // See RenderFrameObserver::DidMeaningfulLayout declaration for details.
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type);
 
-  // Draw commands have been issued by RenderWidgetCompositor.
+  // Draw commands have been issued by blink::LayerTreeView.
   void DidCommitAndDrawCompositorFrame();
 
   // Returns the unique name of the RenderFrame.

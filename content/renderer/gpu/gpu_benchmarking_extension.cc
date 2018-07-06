@@ -33,7 +33,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/gpu/actions_parser.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -182,11 +182,7 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
 
 class GpuBenchmarkingContext {
  public:
-  GpuBenchmarkingContext()
-      : web_frame_(nullptr),
-        web_view_(nullptr),
-        render_view_impl_(nullptr),
-        compositor_(nullptr) {}
+  GpuBenchmarkingContext() = default;
 
   bool Init(bool init_compositor) {
     web_frame_ = WebLocalFrame::FrameForCurrentContext();
@@ -209,8 +205,8 @@ class GpuBenchmarkingContext {
     if (!init_compositor)
       return true;
 
-    compositor_ = render_view_impl_->GetWidget()->compositor();
-    if (!compositor_) {
+    layer_tree_view_ = render_view_impl_->GetWidget()->layer_tree_view();
+    if (!layer_tree_view_) {
       web_frame_ = nullptr;
       web_view_ = nullptr;
       render_view_impl_ = nullptr;
@@ -232,16 +228,16 @@ class GpuBenchmarkingContext {
     DCHECK(render_view_impl_ != nullptr);
     return render_view_impl_;
   }
-  RenderWidgetCompositor* compositor() const {
-    DCHECK(compositor_ != nullptr);
-    return compositor_;
+  LayerTreeView* layer_tree_view() const {
+    DCHECK(layer_tree_view_ != nullptr);
+    return layer_tree_view_;
   }
 
  private:
-  WebLocalFrame* web_frame_;
-  WebView* web_view_;
-  RenderViewImpl* render_view_impl_;
-  RenderWidgetCompositor* compositor_;
+  WebLocalFrame* web_frame_ = nullptr;
+  WebView* web_view_ = nullptr;
+  RenderViewImpl* render_view_impl_ = nullptr;
+  LayerTreeView* layer_tree_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
 };
@@ -558,7 +554,7 @@ void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
   if (!context.Init(true))
     return;
 
-  context.compositor()->SetNeedsDisplayOnAllLayers();
+  context.layer_tree_view()->SetNeedsDisplayOnAllLayers();
 }
 
 void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
@@ -566,7 +562,7 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
   if (!context.Init(true))
     return;
 
-  context.compositor()->SetRasterizeOnlyVisibleContent();
+  context.layer_tree_view()->SetRasterizeOnlyVisibleContent();
 }
 
 namespace {
@@ -596,7 +592,7 @@ void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
   if (!context.Init(true))
     return;
 
-  const cc::Layer* root_layer = context.compositor()->GetRootLayer();
+  const cc::Layer* root_layer = context.layer_tree_view()->GetRootLayer();
   if (!root_layer)
     return;
 
@@ -1040,10 +1036,10 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
   std::unique_ptr<base::Value> value =
       V8ValueConverter::Create()->FromV8Value(arguments, v8_context);
 
-  return context.compositor()->ScheduleMicroBenchmark(
+  return context.layer_tree_view()->ScheduleMicroBenchmark(
       name, std::move(value),
-      base::Bind(&OnMicroBenchmarkCompleted,
-                 base::RetainedRef(callback_and_context)));
+      base::BindOnce(&OnMicroBenchmarkCompleted,
+                     base::RetainedRef(callback_and_context)));
 }
 
 bool GpuBenchmarking::SendMessageToMicroBenchmark(
@@ -1058,8 +1054,8 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   std::unique_ptr<base::Value> value =
       V8ValueConverter::Create()->FromV8Value(message, v8_context);
 
-  return context.compositor()->SendMessageToMicroBenchmark(id,
-                                                           std::move(value));
+  return context.layer_tree_view()->SendMessageToMicroBenchmark(
+      id, std::move(value));
 }
 
 bool GpuBenchmarking::HasGpuChannel() {

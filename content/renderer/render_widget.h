@@ -38,7 +38,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
-#include "content/renderer/gpu/render_widget_compositor_delegate.h"
+#include "content/renderer/gpu/layer_tree_view_delegate.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -108,12 +108,12 @@ class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
+class LayerTreeView;
 class MainThreadEventQueue;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
-class RenderWidgetCompositor;
 class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
@@ -135,7 +135,7 @@ class CONTENT_EXPORT RenderWidget
       public IPC::Sender,
       virtual public blink::WebWidgetClient,
       public mojom::Widget,
-      public RenderWidgetCompositorDelegate,
+      public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
       public base::RefCounted<RenderWidget>,
@@ -251,7 +251,7 @@ class CONTENT_EXPORT RenderWidget
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
-  // RenderWidgetCompositorDelegate
+  // LayerTreeViewDelegate
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
@@ -261,7 +261,7 @@ class CONTENT_EXPORT RenderWidget
                                          bool has_scrolled_by_touch) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
   void RequestNewLayerTreeFrameSink(
-      const LayerTreeFrameSinkCallback& callback) override;
+      LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
@@ -360,7 +360,7 @@ class CONTENT_EXPORT RenderWidget
   // Stop compositing.
   void WillCloseLayerTreeView();
 
-  RenderWidgetCompositor* compositor() const;
+  LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
 
   WidgetInputHandlerManager* widget_input_handler_manager() {
     return widget_input_handler_manager_.get();
@@ -717,7 +717,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidgetOwnerDelegate* owner_delegate_;
 
   // This is lazily constructed and must not outlive webwidget_.
-  std::unique_ptr<RenderWidgetCompositor> compositor_;
+  std::unique_ptr<LayerTreeView> layer_tree_view_;
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;

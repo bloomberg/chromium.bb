@@ -73,7 +73,7 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
@@ -1206,11 +1206,11 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
 }
 
 void RenderViewImpl::OnForceRedraw(int snapshot_id) {
-  if (RenderWidgetCompositor* rwc = compositor()) {
-    rwc->layer_tree_host()->RequestPresentationTimeForNextFrame(
+  if (LayerTreeView* ltv = layer_tree_view()) {
+    ltv->layer_tree_host()->RequestPresentationTimeForNextFrame(
         base::BindOnce(&RenderViewImpl::OnForceDrawFramePresented,
                        weak_ptr_factory_.GetWeakPtr(), snapshot_id));
-    rwc->SetNeedsForcedRedraw();
+    ltv->SetNeedsForcedRedraw();
   }
 }
 
@@ -2128,7 +2128,7 @@ void RenderViewImpl::DidCompletePageScaleAnimation() {
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {
-  if (webview() && compositor()) {
+  if (webview() && layer_tree_view()) {
     if (enabled)
       webview()->EnableDeviceEmulation(params);
     else
@@ -2342,8 +2342,8 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.local_surface_id = local_surface_id_from_parent_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (compositor_)
-    compositor_->RequestNewLocalSurfaceId();
+  if (layer_tree_view())
+    layer_tree_view()->RequestNewLocalSurfaceId();
 
   OnSynchronizeVisualProperties(visual_properties);
 }
@@ -2383,8 +2383,8 @@ void RenderViewImpl::SetDeviceColorSpaceForTesting(
   visual_properties.local_surface_id = local_surface_id_from_parent_;
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (compositor_)
-    compositor_->RequestNewLocalSurfaceId();
+  if (layer_tree_view())
+    layer_tree_view()->RequestNewLocalSurfaceId();
   OnSynchronizeVisualProperties(visual_properties);
 }
 

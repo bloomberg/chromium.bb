@@ -127,7 +127,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // Out-of-process child frames receive a signal from RenderWidgetCompositor
+  // Out-of-process child frames receive a signal from blink::LayerTreeView
   // when a compositor frame will begin.
   void WillBeginCompositorFrame();
 

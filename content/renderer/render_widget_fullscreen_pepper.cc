@@ -14,7 +14,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -334,15 +334,15 @@ void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
 void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   layer_ = layer;
   if (!layer_) {
-    if (compositor_)
-      compositor_->ClearRootLayer();
+    if (layer_tree_view())
+      layer_tree_view()->ClearRootLayer();
     return;
   }
-  if (!compositor())
+  if (!layer_tree_view())
     InitializeLayerTreeView();
   UpdateLayerBounds();
   layer_->SetIsDrawable(true);
-  compositor_->SetRootLayer(layer_);
+  layer_tree_view()->SetRootLayer(layer_);
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {

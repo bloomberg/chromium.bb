@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -23,7 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
@@ -386,13 +387,19 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   widget()->SynchronizeVisualProperties(visual_properties);
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
             widget()->local_surface_id_from_parent());
-  EXPECT_FALSE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
+  EXPECT_FALSE(widget()
+                   ->layer_tree_view()
+                   ->layer_tree_host()
+                   ->new_local_surface_id_request_for_testing());
 
   constexpr gfx::Size size(200, 200);
   widget()->DidAutoResize(size);
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
             widget()->local_surface_id_from_parent());
-  EXPECT_TRUE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
+  EXPECT_TRUE(widget()
+                  ->layer_tree_view()
+                  ->layer_tree_host()
+                  ->new_local_surface_id_request_for_testing());
 }
 
 class PopupRenderWidget : public RenderWidget {

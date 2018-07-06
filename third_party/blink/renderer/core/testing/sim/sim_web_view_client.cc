@@ -8,11 +8,11 @@
 
 namespace blink {
 
-SimWebViewClient::SimWebViewClient(content::RenderWidgetCompositor& compositor)
+SimWebViewClient::SimWebViewClient(content::LayerTreeView& layer_tree_view)
     : visually_non_empty_layout_count_(0),
       finished_parsing_layout_count_(0),
       finished_loading_layout_count_(0),
-      compositor_(&compositor) {}
+      layer_tree_view_(&layer_tree_view) {}
 
 void SimWebViewClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {
@@ -30,7 +30,7 @@ void SimWebViewClient::DidMeaningfulLayout(
 }
 
 WebLayerTreeView* SimWebViewClient::InitializeLayerTreeView() {
-  return compositor_;
+  return layer_tree_view_;
 }
 
 WebView* SimWebViewClient::CreateView(WebLocalFrame* opener,

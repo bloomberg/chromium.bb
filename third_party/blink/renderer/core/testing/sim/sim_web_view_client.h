@@ -8,16 +8,16 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 
 namespace content {
-class RenderWidgetCompositor;
+class LayerTreeView;
 }
 
 namespace blink {
 
 class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
  public:
-  // The RenderWidgetCompositor to be returned from InitializeLayerTreeView()
+  // The LayerTreeView to be returned from InitializeLayerTreeView()
   // must be constructed before this class, and given to it.
-  explicit SimWebViewClient(content::RenderWidgetCompositor&);
+  explicit SimWebViewClient(content::LayerTreeView&);
 
   int VisuallyNonEmptyLayoutCount() const {
     return visually_non_empty_layout_count_;
@@ -47,7 +47,7 @@ class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
   int finished_parsing_layout_count_;
   int finished_loading_layout_count_;
 
-  content::RenderWidgetCompositor* compositor_;
+  content::LayerTreeView* layer_tree_view_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 

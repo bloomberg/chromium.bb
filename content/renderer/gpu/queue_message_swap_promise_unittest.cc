@@ -16,7 +16,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/mock_render_process.h"
 #include "ipc/ipc_message.h"

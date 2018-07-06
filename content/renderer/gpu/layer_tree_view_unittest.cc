@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 
 #include <utility>
 
@@ -19,11 +19,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/test/test_context_provider.h"
-#include "content/public/common/screen_info.h"
-#include "content/public/test/mock_render_thread.h"
-#include "content/renderer/render_widget.h"
-#include "content/test/fake_compositor_dependencies.h"
-#include "content/test/stub_render_widget_compositor_delegate.h"
+#include "content/test/stub_layer_tree_view_delegate.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,17 +38,16 @@ enum FailureMode {
   GPU_CHANNEL_FAILURE,
 };
 
-class FakeRenderWidgetCompositorDelegate
-    : public StubRenderWidgetCompositorDelegate {
+class FakeLayerTreeViewDelegate : public StubLayerTreeViewDelegate {
  public:
-  FakeRenderWidgetCompositorDelegate() = default;
+  FakeLayerTreeViewDelegate() = default;
 
   void RequestNewLayerTreeFrameSink(
-      const LayerTreeFrameSinkCallback& callback) override {
+      LayerTreeFrameSinkCallback callback) override {
     // Subtract one cuz the current request has already been counted but should
     // not be included for this.
     if (num_requests_since_last_success_ - 1 < num_requests_before_success_) {
-      callback.Run(std::unique_ptr<cc::LayerTreeFrameSink>());
+      std::move(callback).Run(nullptr);
       return;
     }
 
@@ -61,7 +56,7 @@ class FakeRenderWidgetCompositorDelegate
       context_provider->UnboundTestContextGL()->LoseContextCHROMIUM(
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
-    callback.Run(
+    std::move(callback).Run(
         cc::FakeLayerTreeFrameSink::Create3d(std::move(context_provider)));
   }
 
@@ -113,7 +108,7 @@ class FakeRenderWidgetCompositorDelegate
   int num_failures_since_last_success_ = 0;
   int num_successes_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetCompositorDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FakeLayerTreeViewDelegate);
 };
 
 // Verify that failing to create an output surface will cause the compositor
@@ -121,19 +116,19 @@ class FakeRenderWidgetCompositorDelegate
 // The use null output surface parameter allows testing whether failures
 // from RenderWidget (couldn't create an output surface) vs failures from
 // the compositor (couldn't bind the output surface) are handled identically.
-class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
+class LayerTreeViewWithFrameSinkTracking : public LayerTreeView {
  public:
-  RenderWidgetLayerTreeFrameSink(
-      FakeRenderWidgetCompositorDelegate* delegate,
+  LayerTreeViewWithFrameSinkTracking(
+      FakeLayerTreeViewDelegate* delegate,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
       cc::TaskGraphRunner* task_graph_runner,
       blink::scheduler::WebThreadScheduler* scheduler)
-      : RenderWidgetCompositor(delegate,
-                               std::move(main_thread),
-                               std::move(compositor_thread),
-                               task_graph_runner,
-                               scheduler),
+      : LayerTreeView(delegate,
+                      std::move(main_thread),
+                      std::move(compositor_thread),
+                      task_graph_runner,
+                      scheduler),
         delegate_(delegate) {}
 
   // Force a new output surface to be created.
@@ -148,11 +143,11 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
 
   void RequestNewLayerTreeFrameSink() override {
     delegate_->add_request();
-    RenderWidgetCompositor::RequestNewLayerTreeFrameSink();
+    LayerTreeView::RequestNewLayerTreeFrameSink();
   }
 
   void DidInitializeLayerTreeFrameSink() override {
-    RenderWidgetCompositor::DidInitializeLayerTreeFrameSink();
+    LayerTreeView::DidInitializeLayerTreeFrameSink();
     delegate_->add_success();
     if (delegate_->num_successes() == expected_successes_) {
       EXPECT_EQ(delegate_->num_requests(), expected_requests_);
@@ -162,13 +157,14 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
       // reentrantly as a part of RequestNewLayerTreeFrameSink.
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
-          base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
-                         base::Unretained(this)));
+          base::BindOnce(
+              &LayerTreeViewWithFrameSinkTracking::SynchronousComposite,
+              base::Unretained(this)));
     }
   }
 
   void DidFailToInitializeLayerTreeFrameSink() override {
-    RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink();
+    LayerTreeView::DidFailToInitializeLayerTreeFrameSink();
     delegate_->add_failure();
     if (delegate_->num_requests() == expected_requests_) {
       EXPECT_EQ(delegate_->num_successes(), expected_successes_);
@@ -198,32 +194,32 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
   void EndTest() { run_loop_->Quit(); }
 
  private:
-  FakeRenderWidgetCompositorDelegate* delegate_;
+  FakeLayerTreeViewDelegate* delegate_;
   base::RunLoop* run_loop_ = nullptr;
   int expected_successes_ = 0;
   int expected_requests_ = 0;
   FailureMode failure_mode_ = NO_FAILURE;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetLayerTreeFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeViewWithFrameSinkTracking);
 };
 
-class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
+class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
  public:
-  RenderWidgetLayerTreeFrameSinkTest()
-      : render_widget_compositor_(
-            &compositor_delegate_,
+  LayerTreeViewWithFrameSinkTrackingTest()
+      : layer_tree_view_(
+            &layer_tree_view_delegate_,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
             /*compositor_thread=*/nullptr,
             &test_task_graph_runner_,
             &fake_renderer_scheduler_) {
     cc::LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
-    render_widget_compositor_.Initialize(
-        settings, std::make_unique<cc::TestUkmRecorderFactory>());
+    layer_tree_view_.Initialize(settings,
+                                std::make_unique<cc::TestUkmRecorderFactory>());
   }
 
   void RunTest(int expected_successes, FailureMode failure_mode) {
-    compositor_delegate_.Reset();
+    layer_tree_view_delegate_.Reset();
     // 6 is just an artibrary "large" number to show it keeps trying.
     const int kTries = 6;
     // If it should fail, then it will fail every attempt, otherwise it fails
@@ -231,91 +227,90 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
     int tries_before_success = kTries - (expected_successes ? 1 : 0);
     switch (failure_mode) {
       case NO_FAILURE:
-        compositor_delegate_.set_num_failures_before_success(0);
-        compositor_delegate_.set_num_requests_before_success(0);
+        layer_tree_view_delegate_.set_num_failures_before_success(0);
+        layer_tree_view_delegate_.set_num_requests_before_success(0);
         break;
       case BIND_CONTEXT_FAILURE:
-        compositor_delegate_.set_num_failures_before_success(
+        layer_tree_view_delegate_.set_num_failures_before_success(
             tries_before_success);
-        compositor_delegate_.set_num_requests_before_success(0);
+        layer_tree_view_delegate_.set_num_requests_before_success(0);
         break;
       case GPU_CHANNEL_FAILURE:
-        compositor_delegate_.set_num_failures_before_success(0);
-        compositor_delegate_.set_num_requests_before_success(
+        layer_tree_view_delegate_.set_num_failures_before_success(0);
+        layer_tree_view_delegate_.set_num_requests_before_success(
             tries_before_success);
         break;
     }
     base::RunLoop run_loop;
-    render_widget_compositor_.SetUp(expected_successes, kTries, failure_mode,
-                                    &run_loop);
-    render_widget_compositor_.SetVisible(true);
+    layer_tree_view_.SetUp(expected_successes, kTries, failure_mode, &run_loop);
+    layer_tree_view_.SetVisible(true);
     blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE,
-        base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
-                       base::Unretained(&render_widget_compositor_)));
+        base::BindOnce(
+            &LayerTreeViewWithFrameSinkTracking::SynchronousComposite,
+            base::Unretained(&layer_tree_view_)));
     run_loop.Run();
   }
 
  protected:
   base::MessageLoop ye_olde_message_loope_;
-  MockRenderThread render_thread_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
-  FakeRenderWidgetCompositorDelegate compositor_delegate_;
-  RenderWidgetLayerTreeFrameSink render_widget_compositor_;
+  FakeLayerTreeViewDelegate layer_tree_view_delegate_;
+  LayerTreeViewWithFrameSinkTracking layer_tree_view_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetLayerTreeFrameSinkTest);
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeViewWithFrameSinkTrackingTest);
 };
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedOnce) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedOnce) {
   RunTest(1, NO_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedOnce_AfterNullChannel) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedOnce_AfterNullChannel) {
   RunTest(1, GPU_CHANNEL_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedOnce_AfterLostContext) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedOnce_AfterLostContext) {
   RunTest(1, BIND_CONTEXT_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedTwice) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedTwice) {
   RunTest(2, NO_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedTwice_AfterNullChannel) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedTwice_AfterNullChannel) {
   RunTest(2, GPU_CHANNEL_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedTwice_AfterLostContext) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, SucceedTwice_AfterLostContext) {
   RunTest(2, BIND_CONTEXT_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailWithNullChannel) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, FailWithNullChannel) {
   RunTest(0, GPU_CHANNEL_FAILURE);
 }
 
-TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailWithLostContext) {
+TEST_F(LayerTreeViewWithFrameSinkTrackingTest, FailWithLostContext) {
   RunTest(0, BIND_CONTEXT_FAILURE);
 }
 
-class VisibilityTestRenderWidgetCompositor : public RenderWidgetCompositor {
+class VisibilityTestLayerTreeView : public LayerTreeView {
  public:
-  VisibilityTestRenderWidgetCompositor(
-      StubRenderWidgetCompositorDelegate* delegate,
+  VisibilityTestLayerTreeView(
+      StubLayerTreeViewDelegate* delegate,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
       cc::TaskGraphRunner* task_graph_runner,
       blink::scheduler::WebThreadScheduler* scheduler)
-      : RenderWidgetCompositor(delegate,
-                               std::move(main_thread),
-                               std::move(compositor_thread),
-                               task_graph_runner,
-                               scheduler) {}
+      : LayerTreeView(delegate,
+                      std::move(main_thread),
+                      std::move(compositor_thread),
+                      task_graph_runner,
+                      scheduler) {}
 
   void RequestNewLayerTreeFrameSink() override {
-    RenderWidgetCompositor::RequestNewLayerTreeFrameSink();
+    LayerTreeView::RequestNewLayerTreeFrameSink();
     num_requests_sent_++;
     if (run_loop_)
       run_loop_->Quit();
@@ -329,8 +324,8 @@ class VisibilityTestRenderWidgetCompositor : public RenderWidgetCompositor {
   base::RunLoop* run_loop_;
 };
 
-TEST(RenderWidgetCompositorTest, VisibilityTest) {
-  // Test that RenderWidgetCompositor does not retry FrameSink request while
+TEST(LayerTreeViewTest, VisibilityTest) {
+  // Test that LayerTreeView does not retry FrameSink request while
   // invisible.
 
   base::MessageLoop message_loop;
@@ -338,42 +333,42 @@ TEST(RenderWidgetCompositorTest, VisibilityTest) {
   cc::TestTaskGraphRunner test_task_graph_runner;
   blink::scheduler::FakeRendererScheduler fake_renderer_scheduler;
   // Synchronously callback with null FrameSink.
-  StubRenderWidgetCompositorDelegate compositor_delegate;
-  VisibilityTestRenderWidgetCompositor render_widget_compositor(
-      &compositor_delegate,
+  StubLayerTreeViewDelegate layer_tree_view_delegate;
+  VisibilityTestLayerTreeView layer_tree_view(
+      &layer_tree_view_delegate,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner,
       &fake_renderer_scheduler);
 
-  render_widget_compositor.Initialize(
-      cc::LayerTreeSettings(), std::make_unique<cc::TestUkmRecorderFactory>());
+  layer_tree_view.Initialize(cc::LayerTreeSettings(),
+                             std::make_unique<cc::TestUkmRecorderFactory>());
 
   {
     // Make one request and stop immediately while invisible.
     base::RunLoop run_loop;
-    render_widget_compositor.set_run_loop(&run_loop);
-    render_widget_compositor.SetVisible(false);
-    render_widget_compositor.RequestNewLayerTreeFrameSink();
+    layer_tree_view.set_run_loop(&run_loop);
+    layer_tree_view.SetVisible(false);
+    layer_tree_view.RequestNewLayerTreeFrameSink();
     run_loop.Run();
-    render_widget_compositor.set_run_loop(nullptr);
-    EXPECT_EQ(1, render_widget_compositor.num_requests_sent());
+    layer_tree_view.set_run_loop(nullptr);
+    EXPECT_EQ(1, layer_tree_view.num_requests_sent());
   }
 
   {
     // Make sure there are no more requests.
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
-    EXPECT_EQ(1, render_widget_compositor.num_requests_sent());
+    EXPECT_EQ(1, layer_tree_view.num_requests_sent());
   }
 
   {
     // Becoming visible retries request.
     base::RunLoop run_loop;
-    render_widget_compositor.set_run_loop(&run_loop);
-    render_widget_compositor.SetVisible(true);
+    layer_tree_view.set_run_loop(&run_loop);
+    layer_tree_view.SetVisible(true);
     run_loop.Run();
-    render_widget_compositor.set_run_loop(nullptr);
-    EXPECT_EQ(2, render_widget_compositor.num_requests_sent());
+    layer_tree_view.set_run_loop(nullptr);
+    EXPECT_EQ(2, layer_tree_view.num_requests_sent());
   }
 }
 

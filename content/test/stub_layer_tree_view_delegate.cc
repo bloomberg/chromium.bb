@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/stub_render_widget_compositor_delegate.h"
+#include "content/test/stub_layer_tree_view_delegate.h"
+
+#include <utility>
 
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/swap_promise.h"
@@ -10,17 +12,17 @@
 
 namespace content {
 
-void StubRenderWidgetCompositorDelegate::RequestNewLayerTreeFrameSink(
-    const LayerTreeFrameSinkCallback& callback) {
-  callback.Run(nullptr);
+void StubLayerTreeViewDelegate::RequestNewLayerTreeFrameSink(
+    LayerTreeFrameSinkCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
-bool StubRenderWidgetCompositorDelegate::IsClosing() const {
+bool StubLayerTreeViewDelegate::IsClosing() const {
   return false;
 }
 
 std::unique_ptr<cc::SwapPromise>
-StubRenderWidgetCompositorDelegate::RequestCopyOfOutputForLayoutTest(
+StubLayerTreeViewDelegate::RequestCopyOfOutputForLayoutTest(
     std::unique_ptr<viz::CopyOutputRequest> request) {
   return nullptr;
 }

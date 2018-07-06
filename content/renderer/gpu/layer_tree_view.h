@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
-#define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
+#ifndef CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_
+#define CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_
 
 #include <stdint.h>
 
@@ -40,7 +40,7 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-}
+}  // namespace cc
 
 namespace gfx {
 class ColorSpace;
@@ -51,9 +51,9 @@ class LatencyInfo;
 }
 
 namespace content {
-class RenderWidgetCompositorDelegate;
+class LayerTreeViewDelegate;
 
-class CONTENT_EXPORT RenderWidgetCompositor
+class CONTENT_EXPORT LayerTreeView
     : public blink::WebLayerTreeView,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
@@ -62,13 +62,12 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // main thread (where it is constructed). The |compositor_thread| is the task
   // runner for the compositor thread, but is null if the compositor will run in
   // single-threaded mode (in tests only).
-  RenderWidgetCompositor(
-      RenderWidgetCompositorDelegate* delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
-      cc::TaskGraphRunner* task_graph_runner,
-      blink::scheduler::WebThreadScheduler* scheduler);
-  ~RenderWidgetCompositor() override;
+  LayerTreeView(LayerTreeViewDelegate* delegate,
+                scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+                scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+                cc::TaskGraphRunner* task_graph_runner,
+                blink::scheduler::WebThreadScheduler* scheduler);
+  ~LayerTreeView() override;
 
   // The |ukm_recorder_factory| may be null to disable recording (in tests
   //  only).
@@ -102,7 +101,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   int ScheduleMicroBenchmark(
       const std::string& name,
       std::unique_ptr<base::Value> value,
-      const base::Callback<void(std::unique_ptr<base::Value>)>& callback);
+      base::OnceCallback<void(std::unique_ptr<base::Value>)> callback);
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
@@ -112,11 +111,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                float device_scale_factor,
                                const viz::LocalSurfaceId& local_surface_id);
   void RequestNewLocalSurfaceId();
-  bool HasNewLocalSurfaceIdRequest() const;
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);
 
-  // WebLayerTreeView implementation.
+  // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ClearRootLayer() override;
@@ -143,8 +141,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SynchronouslyCompositeNoRasterForTesting() override;
   void CompositeWithRasterForTesting() override;
   void SetDeferCommits(bool defer_commits) override;
-  void RegisterViewportLayers(
-      const blink::WebLayerTreeView::ViewportLayers& viewport_layers) override;
+  void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const blink::WebSelection& selection) override;
   void ClearSelection() override;
@@ -232,7 +229,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SynchronouslyComposite(bool raster,
                               std::unique_ptr<cc::SwapPromise> swap_promise);
 
-  RenderWidgetCompositorDelegate* const delegate_;
+  LayerTreeViewDelegate* const delegate_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
   cc::TaskGraphRunner* const task_graph_runner_;
@@ -252,11 +249,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>
       presentation_callbacks_;
 
-  base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
+  base::WeakPtrFactory<LayerTreeView> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositor);
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeView);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
+#endif  // CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_

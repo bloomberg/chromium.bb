@@ -369,11 +369,11 @@ void WebViewHelper::Resize(WebSize size) {
 }
 
 void WebViewHelper::SetViewportSize(const WebSize& size) {
-  content::RenderWidgetCompositor* compositor =
-      test_web_view_client_->compositor();
-  compositor->SetViewportSizeAndScale(
+  content::LayerTreeView* layer_tree_view =
+      test_web_view_client_->layer_tree_view();
+  layer_tree_view->SetViewportSizeAndScale(
       static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-      compositor->layer_tree_host()->local_surface_id_from_parent());
+      layer_tree_view->layer_tree_host()->local_surface_id_from_parent());
 }
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
@@ -472,12 +472,12 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   self_owned_.reset();
 }
 
-content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize() {
+content::LayerTreeView* LayerTreeViewFactory::Initialize() {
   return Initialize(/*delegate=*/nullptr);
 }
 
-content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize(
-    content::RenderWidgetCompositorDelegate* specified_delegate) {
+content::LayerTreeView* LayerTreeViewFactory::Initialize(
+    content::LayerTreeViewDelegate* specified_delegate) {
   cc::LayerTreeSettings settings;
   // Use synchronous compositing so that the MessageLoop becomes idle and the
   // test makes progress.
@@ -491,23 +491,23 @@ content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize(
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     settings.use_layer_lists = true;
 
-  compositor_ = std::make_unique<content::RenderWidgetCompositor>(
+  layer_tree_view_ = std::make_unique<content::LayerTreeView>(
       specified_delegate ? specified_delegate : &delegate_,
       Platform::Current()->CurrentThread()->GetTaskRunner(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
       &fake_renderer_scheduler_);
-  compositor_->Initialize(settings,
-                          std::make_unique<cc::TestUkmRecorderFactory>());
-  return compositor_.get();
+  layer_tree_view_->Initialize(settings,
+                               std::make_unique<cc::TestUkmRecorderFactory>());
+  return layer_tree_view_.get();
 }
 
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
-  return compositor_factory_.Initialize();
+  return layer_tree_view_factory_.Initialize();
 }
 
 WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
-  compositor_ = compositor_factory_.Initialize();
-  return compositor_;
+  layer_tree_view_ = layer_tree_view_factory_.Initialize();
+  return layer_tree_view_;
 }
 
 }  // namespace FrameTestHelpers
