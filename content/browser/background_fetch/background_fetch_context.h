@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
+#include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,7 +55,6 @@ class CONTENT_EXPORT BackgroundFetchContext
       const scoped_refptr<content::CacheStorageContextImpl>&
           cache_storage_context);
 
-  // Adds service worker context observer and initializes |data_manager_|.
   void InitializeOnIOThread();
 
   // Called by the StoragePartitionImpl destructor.
@@ -134,16 +134,10 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
+      size_t num_completed_requests,
       size_t num_requests,
+      const std::vector<std::string>& outstanding_guids,
       std::unique_ptr<BackgroundFetchRegistration> registration);
-
-  // Initializes the new Job Controller.
-  void InitializeController(
-      const std::string& unique_id,
-      std::unique_ptr<BackgroundFetchJobController> controller,
-      std::unique_ptr<BackgroundFetchRegistration> registration,
-      size_t total_downloads,
-      size_t completed_downloads);
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.
@@ -194,6 +188,12 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Called when the notification UI for the background fetch job associated
   // with |unique_id| is activated.
   void DispatchClickEvent(const std::string& unique_id);
+
+  // Called when the data manager finishes getting the initialization data.
+  void DidGetInitializationData(
+      blink::mojom::BackgroundFetchError error,
+      std::vector<background_fetch::BackgroundFetchInitializationData>
+          initialization_data);
 
   // Called when all processing for the |registration_id| has been finished and
   // the job is ready to be deleted. |blob_handles| are unused, but some callers

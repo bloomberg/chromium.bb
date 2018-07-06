@@ -55,6 +55,27 @@ void BackgroundFetchContext::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->AddObserver(this);
   data_manager_->InitializeOnIOThread();
+  data_manager_->GetInitializationData(
+      base::BindOnce(&BackgroundFetchContext::DidGetInitializationData,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void BackgroundFetchContext::DidGetInitializationData(
+    blink::mojom::BackgroundFetchError error,
+    std::vector<background_fetch::BackgroundFetchInitializationData>
+        initialization_data) {
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    // TODO(crbug.com/780025): Log failures to UMA.
+    return;
+  }
+
+  for (auto& data : initialization_data) {
+    CreateController(data.registration_id, data.options, data.icon,
+                     data.num_completed_requests, data.num_requests,
+                     data.active_fetch_guids,
+                     std::make_unique<BackgroundFetchRegistration>(
+                         std::move(data.registration)));
+  }
 }
 
 void BackgroundFetchContext::GetRegistration(
@@ -156,8 +177,9 @@ void BackgroundFetchContext::DidCreateRegistration(
   DCHECK(registration);
 
   // Create the BackgroundFetchJobController to do the actual fetching.
-  CreateController(registration_id, options, icon, num_requests,
-                   std::move(registration));
+  CreateController(registration_id, options, icon,
+                   0u /* num_completed_requests */, num_requests,
+                   {} /* outstanding_guids */, std::move(registration));
 }
 
 void BackgroundFetchContext::AddRegistrationObserver(
@@ -257,7 +279,9 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    size_t num_completed_requests,
     size_t num_requests,
+    const std::vector<std::string>& outstanding_guids,
     std::unique_ptr<BackgroundFetchRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -270,32 +294,12 @@ void BackgroundFetchContext::CreateController(
       base::BindOnce(
           &BackgroundFetchContext::DidFinishJob, weak_factory_.GetWeakPtr(),
           base::Bind(&background_fetch::RecordSchedulerFinishedError)));
-  data_manager_->GetNumCompletedRequests(
-      registration_id,
-      base::BindOnce(&BackgroundFetchContext::InitializeController,
-                     weak_factory_.GetWeakPtr(), registration_id.unique_id(),
-                     std::move(controller), std::move(registration),
-                     num_requests));
-}
 
-void BackgroundFetchContext::InitializeController(
-    const std::string& unique_id,
-    std::unique_ptr<BackgroundFetchJobController> controller,
-    std::unique_ptr<BackgroundFetchRegistration> registration,
-    size_t total_downloads,
-    size_t completed_downloads) {
-  controller->InitializeRequestStatus(completed_downloads, total_downloads,
-                                      {} /* outstanding download GUIDs */);
-
+  controller->InitializeRequestStatus(num_completed_requests, num_requests,
+                                      outstanding_guids);
   scheduler_->AddJobController(controller.get());
+  job_controllers_.emplace(registration_id.unique_id(), std::move(controller));
 
-  // Workaround for GLIBC C++ < 7.3 that fails to insert with braces
-  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82522
-  auto pair = std::make_pair(unique_id, std::move(controller));
-  job_controllers_.insert(std::move(pair));
-
-  const BackgroundFetchRegistrationId& registration_id =
-      job_controllers_[unique_id]->registration_id();
   auto fetch_callback_iter = fetch_callbacks_.find(registration_id);
   if (fetch_callback_iter != fetch_callbacks_.end()) {
     std::move(fetch_callback_iter->second)

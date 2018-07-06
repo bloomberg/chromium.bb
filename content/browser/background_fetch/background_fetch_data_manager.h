@@ -152,12 +152,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
-  // Gets the number of fetch requests that have been completed for a given
-  // registration.
-  void GetNumCompletedRequests(
-      const BackgroundFetchRegistrationId& registration_id,
-      NumRequestsCallback callback);
-
   const base::RepeatingClosure& abandon_fetches_callback() {
     return abandon_fetches_callback_;
   }
