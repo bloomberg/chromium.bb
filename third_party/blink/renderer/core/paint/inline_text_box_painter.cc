@@ -374,7 +374,6 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       start_offset = selection_end;
       end_offset = selection_start;
     }
-
     text_painter.Paint(start_offset, end_offset, length, text_style);
 
     // Paint line-through decoration if needed.
@@ -387,8 +386,28 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
   if ((paint_selected_text_only || paint_selected_text_separately) &&
       selection_start < selection_end) {
-    // paint only the text that is selected
-    text_painter.Paint(selection_start, selection_end, length, selection_style);
+    // paint only the text that is selected.
+    // Because only a part of the text glyph can be selected, we need to draw
+    // the selection twice:
+    LayoutRect selection_rect =
+        GetSelectionRect<InlineTextBoxPainter::PaintOptions::kNormal>(
+            context, box_rect, style_to_use, font);
+
+    // the first time, we draw the glyphs outside the selection area, with
+    // the original style.
+    {
+      GraphicsContextStateSaver state_saver(context);
+      context.ClipOut(FloatRect(selection_rect));
+      text_painter.Paint(selection_start, selection_end, length, text_style);
+    }
+    // the second time, we draw the glyphs inside the selection area, with
+    // the selection style.
+    {
+      GraphicsContextStateSaver state_saver(context);
+      context.Clip(FloatRect(selection_rect));
+      text_painter.Paint(selection_start, selection_end, length,
+                         selection_style);
+    }
   }
 
   if (paint_info.phase == PaintPhase::kForeground) {
@@ -651,28 +670,17 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
-void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
-                                          const LayoutRect& box_rect,
-                                          const ComputedStyle& style,
-                                          const Font& font,
-                                          Color text_color,
-                                          LayoutTextCombine* combined_text) {
+LayoutRect InlineTextBoxPainter::GetSelectionRect(
+    GraphicsContext& context,
+    const LayoutRect& box_rect,
+    const ComputedStyle& style,
+    const Font& font,
+    LayoutTextCombine* combined_text) {
   // See if we have a selection to paint at all.
-  int s_pos, e_pos;
-  inline_text_box_.SelectionStartEnd(s_pos, e_pos);
-  if (s_pos >= e_pos)
-    return;
-
-  auto layout_item = inline_text_box_.GetLineLayoutItem();
-  Color c = SelectionPaintingUtils::SelectionBackgroundColor(
-      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
-  if (!c.Alpha())
-    return;
-
-  // If the text color ends up being the same as the selection background,
-  // invert the selection background.
-  if (text_color == c)
-    c = Color(0xff - c.Red(), 0xff - c.Green(), 0xff - c.Blue());
+  int start_pos, end_pos;
+  inline_text_box_.SelectionStartEnd(start_pos, end_pos);
+  if (start_pos >= end_pos)
+    return LayoutRect();
 
   // If the text is truncated, let the thing being painted in the truncation
   // draw its own highlight.
@@ -688,7 +696,7 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
     // so we need to start after it. Otherwise we just need to make sure
     // the end of the text is where the ellipsis starts.
     if (ltr != flow_is_ltr)
-      s_pos = std::max<int>(s_pos, inline_text_box_.Truncation());
+      start_pos = std::max<int>(start_pos, inline_text_box_.Truncation());
     else
       length = inline_text_box_.Truncation();
   }
@@ -696,26 +704,20 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
                     static_cast<unsigned>(length));
 
   StringBuilder characters_with_hyphen;
-  bool respect_hyphen = e_pos == length && inline_text_box_.HasHyphen();
+  bool respect_hyphen = end_pos == length && inline_text_box_.HasHyphen();
   TextRun text_run = inline_text_box_.ConstructTextRun(
       style, string,
       inline_text_box_.GetLineLayoutItem().TextLength() -
           inline_text_box_.Start(),
       respect_hyphen ? &characters_with_hyphen : nullptr);
   if (respect_hyphen)
-    e_pos = text_run.length();
-
-  GraphicsContextStateSaver state_saver(context);
+    end_pos = text_run.length();
 
   if (options == InlineTextBoxPainter::PaintOptions::kCombinedText) {
     DCHECK(combined_text);
     // We can't use the height of m_inlineTextBox because LayoutTextCombine's
     // inlineTextBox is horizontal within vertical flow
     combined_text->TransformToInlineCoordinates(context, box_rect, true);
-    context.DrawHighlightForText(font, text_run,
-                                 FloatPoint(box_rect.Location()),
-                                 box_rect.Height().ToInt(), c, s_pos, e_pos);
-    return;
   }
 
   LayoutUnit selection_bottom = inline_text_box_.Root().SelectionBottom();
@@ -730,7 +732,7 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   FloatPoint local_origin(box_rect.X().ToFloat(),
                           (box_rect.Y() - delta_y).ToFloat());
   LayoutRect selection_rect = LayoutRect(font.SelectionRectForText(
-      text_run, local_origin, sel_height, s_pos, e_pos));
+      text_run, local_origin, sel_height, start_pos, end_pos));
   // For line breaks, just painting a selection where the line break itself
   // is rendered is sufficient. Don't select it if there's an ellipsis
   // there.
@@ -746,9 +748,36 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   if (!inline_text_box_.IsLeftToRightDirection() &&
       inline_text_box_.IsLineBreak())
     selection_rect.Move(-selection_rect.Width(), LayoutUnit());
-  if (!flow_is_ltr && !ltr && inline_text_box_.Truncation() != kCNoTruncation)
+  if (!flow_is_ltr && !ltr && inline_text_box_.Truncation() != kCNoTruncation) {
     selection_rect.Move(
         inline_text_box_.LogicalWidth() - selection_rect.Width(), LayoutUnit());
+  }
+
+  return selection_rect;
+}
+
+template <InlineTextBoxPainter::PaintOptions options>
+void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
+                                          const LayoutRect& box_rect,
+                                          const ComputedStyle& style,
+                                          const Font& font,
+                                          Color text_color,
+                                          LayoutTextCombine* combined_text) {
+  auto layout_item = inline_text_box_.GetLineLayoutItem();
+  Color c = SelectionPaintingUtils::SelectionBackgroundColor(
+      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
+  if (!c.Alpha())
+    return;
+
+  LayoutRect selection_rect =
+      GetSelectionRect<options>(context, box_rect, style, font, combined_text);
+
+  // If the text color ends up being the same as the selection background,
+  // invert the selection background.
+  if (text_color == c)
+    c = Color(0xff - c.Red(), 0xff - c.Green(), 0xff - c.Blue());
+
+  GraphicsContextStateSaver state_saver(context);
 
   context.FillRect(FloatRect(selection_rect), c);
 }
