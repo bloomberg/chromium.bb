@@ -18,9 +18,9 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
 class NetworkDelegate;
@@ -109,7 +109,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   InitializeForNavigationNetworkService(
       const network::ResourceRequest& request,
       AppCacheNavigationHandleCore* appcache_handle_core,
-      URLLoaderFactoryGetter* url_loader_factory_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory);
 
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
@@ -257,8 +257,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // RequestHandler for non-error cases.
   bool should_create_subresource_loader_ = false;
 
-  // Points to the getter for the network URL loader.
-  scoped_refptr<URLLoaderFactoryGetter> network_url_loader_factory_getter_;
+  // The network URL loader factory.
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   // The AppCache host instance. We pass this to the
   // AppCacheSubresourceURLFactory instance on creation.

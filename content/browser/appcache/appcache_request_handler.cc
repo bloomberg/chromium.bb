@@ -225,13 +225,13 @@ std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForNavigationNetworkService(
     const network::ResourceRequest& request,
     AppCacheNavigationHandleCore* appcache_handle_core,
-    URLLoaderFactoryGetter* url_loader_factory_getter) {
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_handle_core->host()->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
-  handler->network_url_loader_factory_getter_ = url_loader_factory_getter;
+  handler->network_loader_factory_ = std::move(network_loader_factory);
   handler->appcache_host_ = appcache_handle_core->host()->GetWeakPtr();
   return handler;
 }
@@ -600,7 +600,7 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // The factory is destroyed when the renderer drops the connection.
   network::mojom::URLLoaderFactoryPtr factory_ptr;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-      network_url_loader_factory_getter_.get(), appcache_host_, &factory_ptr);
+      network_loader_factory_, appcache_host_, &factory_ptr);
 
   SubresourceLoaderParams params;
   params.loader_factory_info = factory_ptr.PassInterface();

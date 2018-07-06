@@ -313,7 +313,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           initial_interceptors,
       std::unique_ptr<network::ResourceRequest> resource_request,
       ResourceContext* resource_context,
-      scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
       const GURL& url,
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
@@ -322,7 +321,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
-        default_url_loader_factory_getter_(default_url_loader_factory_getter),
         url_(url),
         owner_(owner),
         response_loader_binding_(this),
@@ -397,7 +395,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     default_loader_used_ = true;
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
-      DCHECK(!default_url_loader_factory_getter_);
+      DCHECK(!network_loader_factory_);
       // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
@@ -542,6 +540,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void Start(
       net::URLRequestContextGetter* url_request_context_getter,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          network_loader_factory_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -558,6 +558,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     web_contents_getter_ =
         base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id);
     navigation_ui_data_ = std::move(navigation_ui_data);
+
+    DCHECK(network_loader_factory_info);
+    network_loader_factory_ = network::SharedURLLoaderFactory::Create(
+        std::move(network_loader_factory_info));
 
     if (resource_request_->request_body) {
       GetBodyBlobDataHandles(resource_request_->request_body.get(),
@@ -603,7 +607,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
           AppCacheRequestHandler::InitializeForNavigationNetworkService(
               *resource_request_, appcache_handle_core,
-              default_url_loader_factory_getter_.get());
+              network_loader_factory_);
       if (appcache_interceptor)
         interceptors_.push_back(std::move(appcache_interceptor));
     }
@@ -625,8 +629,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
           request_info->devtools_frame_token, request_info->report_raw_headers,
-          request_info->begin_params->load_flags,
-          default_url_loader_factory_getter_->GetNetworkFactory(),
+          request_info->begin_params->load_flags, network_loader_factory_,
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
               base::Unretained(this)),
@@ -812,12 +815,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           !resource_request_->url.SchemeIs(url::kDataScheme)) {
         DCHECK(proxied_factory_info_.is_valid());
         // We don't worry about reconnection since it's a single navigation.
-        default_url_loader_factory_getter_->CloneNetworkFactory(
-            std::move(proxied_factory_request_));
+        network_loader_factory_->Clone(std::move(proxied_factory_request_));
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(proxied_factory_info_));
       } else {
-        factory = default_url_loader_factory_getter_->GetNetworkFactory();
+        factory = network_loader_factory_;
       }
     }
     url_chain_.push_back(resource_request_->url);
@@ -1175,7 +1177,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   ResourceContext* resource_context_;
   base::Callback<WebContents*()> web_contents_getter_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
-  scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
 
@@ -1297,7 +1299,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         /* initial_interceptors = */
         std::vector<std::unique_ptr<NavigationLoaderInterceptor>>(),
         std::move(new_request), resource_context,
-        /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
@@ -1378,15 +1379,16 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), resource_context,
-      partition->url_loader_factory_getter(), request_info->common_params.url,
-      std::move(proxied_factory_request), std::move(proxied_factory_info),
-      std::move(known_schemes), weak_factory_.GetWeakPtr());
+      request_info->common_params.url, std::move(proxied_factory_request),
+      std::move(proxied_factory_info), std::move(known_schemes),
+      weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
           base::RetainedRef(storage_partition->GetURLRequestContext()),
+          partition->url_loader_factory_getter()->GetNetworkFactoryInfo(),
           service_worker_navigation_handle_core, appcache_handle_core,
           std::move(request_info), std::move(navigation_ui_data),
           std::move(factory_for_webui), frame_tree_node_id,
