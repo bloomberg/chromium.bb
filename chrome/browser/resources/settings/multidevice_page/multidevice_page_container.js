@@ -18,6 +18,8 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page-container',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
     prefs: {
@@ -25,36 +27,41 @@ Polymer({
       notify: true,
     },
 
-    /** @type {MultiDevicePageContentData} */
-    pageContentData_: Object,
-
     /**
      * Whether a phone was found on the account that is either connected to the
      * Chromebook or has the potential to be.
      * @type {boolean}
      */
     doesPotentialConnectedPhoneExist: {
-      notify: true,
       type: Boolean,
       computed: 'computeDoesPotentialConnectedPhoneExist(pageContentData_)',
+      notify: true,
     },
+
+    /** @private {MultiDevicePageContentData} */
+    pageContentData_: Object,
   },
+
+  /** @private {?settings.MultiDeviceBrowserProxy} */
+  browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.onStatusChanged_({
-      mode: settings.MultiDeviceSettingsMode.NO_HOST_SET,
-      hostDevice: null,
-    });
+    this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+
+    this.addWebUIListener(
+        'settings.updateMultidevicePageContentData',
+        this.onPageContentDataChanged_.bind(this));
+
+    this.browserProxy_.getPageContentData().then(
+        this.onPageContentDataChanged_.bind(this));
   },
 
-  // TODO(jordynass): Set this as a callback for the browser proxy once it is
-  // added
   /**
    * @param {!MultiDevicePageContentData} newData
    * @private
    */
-  onStatusChanged_: function(newData) {
+  onPageContentDataChanged_: function(newData) {
     if (!this.isStatusChangeValid_(newData)) {
       console.error('Invalid status change');
       return;

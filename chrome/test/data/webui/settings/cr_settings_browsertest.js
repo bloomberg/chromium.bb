@@ -1813,6 +1813,7 @@ CrSettingsMultidevicePageContainerTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
     'multidevice_page_container_tests.js',
   ]),
 };

@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.MultideviceBrowserProxy} */
+/**
+ * @implements {settings.MultideviceBrowserProxy}
+ * Note: Only showMultiDeviceSetupDialog is used by the multidevice-page
+ * element.
+ */
 class TestMultideviceBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super(['showMultiDeviceSetupDialog']);
+    super([
+      'showMultiDeviceSetupDialog',
+      'getPageContentData',
+    ]);
   }
 
   /** @override */
@@ -16,14 +23,11 @@ class TestMultideviceBrowserProxy extends TestBrowserProxy {
 
 suite('Multidevice', function() {
   let multidevicePage = null;
-
   let browserProxy = null;
-
+  let HOST_SET_MODES;
   const HOST_DEVICE = {
     name: 'Pixel XL',
   };
-
-  let HOST_SET_MODES;
 
   suiteSetup(function() {
     HOST_SET_MODES = [
