@@ -221,3 +221,21 @@ function testVolumeEntryGetMetadata(testReportCallback) {
       }),
       testReportCallback);
 }
+
+/**
+ * Test EntryList.addEntry sets prefix on VolumeEntry.
+ */
+function testEntryListAddEntrySetsPrefix() {
+  const fakeRootEntry = createFakeDisplayRoot();
+  const fakeVolumeInfo = {
+    displayRoot: fakeRootEntry,
+    label: 'Fake Filesystem',
+  };
+  const volumeEntry = new VolumeEntry(fakeVolumeInfo);
+  const entryList = new EntryList('My Files', 'my_files');
+
+  entryList.addEntry(volumeEntry);
+  assertEquals(1, entryList.children.length);
+  // entryList is parent of volumeEntry so it should be its prefix.
+  assertEquals(entryList, volumeEntry.volumeInfo.prefixEntry);
+}

@@ -48,6 +48,13 @@ function VolumeInfoImpl(
   this.displayRoot_ = null;
   this.teamDriveDisplayRoot_ = null;
 
+  /**
+   * @type {FilesAppEntry} an entry to be used as prefix of this volume on
+   *     breadcrumbs, e.g. "My Files > Downloads", "My Files" is a prefixEntry
+   *     on "Downloads" VolumeInfo.
+   */
+  this.prefixEntry_ = null;
+
   /** @type {Promise<boolean>} */
   this.isTeamDrivesEnabledPromise_ = new Promise(resolve => {
     chrome.commandLinePrivate.hasSwitch('disable-team-drives', enabled => {
@@ -216,7 +223,18 @@ VolumeInfoImpl.prototype = /** @struct */ {
    */
   get iconSet() {
     return this.iconSet_;
-  }
+  },
+  /**
+   * @type {FilesAppEntry} an entry to be used as prefix of this volume on
+   *     breadcrumbs, e.g. "My Files > Downloads", "My Files" is a prefixEntry
+   *     on "Downloads" VolumeInfo.
+   */
+  get prefixEntry() {
+    return this.prefixEntry_;
+  },
+  set prefixEntry(entry) {
+    this.prefixEntry_ = entry;
+  },
 };
 
 /**
