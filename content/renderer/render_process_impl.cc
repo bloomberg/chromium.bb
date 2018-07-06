@@ -115,7 +115,6 @@ RenderProcessImpl::RenderProcessImpl(
     // closer to V8s normal performance and behavior.
     constexpr char kDisabledFlags[] =
         "--noturbo_verify "
-        "--noverify_csa "
         "--noturbo_verify_allocation "
         "--nodebug_code";
 
