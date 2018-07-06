@@ -293,6 +293,11 @@ bool PageCappingPageLoadMetricsObserver::IsBlacklisted() {
     return blacklisted_.value();
 
   auto* blacklist = GetPageLoadCappingBlacklist();
+  // Treat incognito profiles as blacklisted.
+  if (!blacklist) {
+    blacklisted_ = true;
+    return true;
+  }
   std::vector<blacklist::BlacklistReason> passed_reasons;
   auto blacklist_reason = blacklist->IsLoadedAndAllowed(
       url_host_,
@@ -307,7 +312,10 @@ bool PageCappingPageLoadMetricsObserver::IsBlacklisted() {
 
 PageLoadCappingBlacklist*
 PageCappingPageLoadMetricsObserver::GetPageLoadCappingBlacklist() const {
-  return PageLoadCappingServiceFactory::GetForBrowserContext(
-             web_contents_->GetBrowserContext())
-      ->page_load_capping_blacklist();
+  auto* page_capping_service =
+      PageLoadCappingServiceFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext());
+  if (!page_capping_service)
+    return nullptr;
+  return page_capping_service->page_load_capping_blacklist();
 }

@@ -72,8 +72,13 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
   void NavigateToHeavyPage() { NavigateToHeavyPageAnchor(std::string()); }
 
   void NavigateToHeavyPageAnchor(const std::string& anchor) {
+    NavigateToHeavyPageAnchorInBrowser(browser(), anchor);
+  }
+
+  void NavigateToHeavyPageAnchorInBrowser(Browser* browser,
+                                          const std::string& anchor) {
     ui_test_utils::NavigateToURL(
-        browser(), GetURL(std::string("/page_capping.html").append(anchor)));
+        browser, GetURL(std::string("/page_capping.html").append(anchor)));
   }
 
   size_t images_attempted() const { return images_attempted_; }
@@ -384,4 +389,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   // After clearing history, the InfoBar should be allowed again.
   NavigateToHeavyPage();
   ASSERT_EQ(1u, InfoBarCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, IncognitoTest) {
+  // Verifies the InfoBar is not shown in incognito.
+  auto* browser = CreateIncognitoBrowser();
+
+  // Navigate to the page.
+  NavigateToHeavyPageAnchorInBrowser(browser, std::string());
+
+  DCHECK_EQ(0u, InfoBarService::FromWebContents(
+                    browser->tab_strip_model()->GetActiveWebContents())
+                    ->infobar_count());
 }
