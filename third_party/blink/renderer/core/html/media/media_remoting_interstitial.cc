@@ -13,9 +13,10 @@
 
 namespace {
 
-constexpr double kStyleChangeTransSeconds = 0.2;
-constexpr double kHiddenAnimationSeconds = 0.3;
-constexpr double kShowToastSeconds = 5;
+constexpr TimeDelta kStyleChangeTransitionDuration =
+    TimeDelta::FromMilliseconds(200);
+constexpr TimeDelta kHiddenAnimationDuration = TimeDelta::FromMilliseconds(300);
+constexpr TimeDelta kShowToastDuration = TimeDelta::FromSeconds(5);
 
 }  // namespace
 
@@ -74,7 +75,8 @@ void MediaRemotingInterstitial::Show(
   RemoveInlineStyleProperty(CSSPropertyDisplay);
   SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
-  toggle_interstitial_timer_.StartOneShot(kStyleChangeTransSeconds, FROM_HERE);
+  toggle_interstitial_timer_.StartOneShot(kStyleChangeTransitionDuration,
+                                          FROM_HERE);
 }
 
 void MediaRemotingInterstitial::Hide(WebLocalizedString::Name error_msg) {
@@ -96,7 +98,7 @@ void MediaRemotingInterstitial::Hide(WebLocalizedString::Name error_msg) {
   }
   SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
-  toggle_interstitial_timer_.StartOneShot(kHiddenAnimationSeconds, FROM_HERE);
+  toggle_interstitial_timer_.StartOneShot(kHiddenAnimationDuration, FROM_HERE);
 }
 
 void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
@@ -126,7 +128,7 @@ void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
     toast_message_->SetInlineStyleProperty(
         CSSPropertyOpacity, 1, CSSPrimitiveValue::UnitType::kNumber);
     state_ = HIDDEN;
-    toggle_interstitial_timer_.StartOneShot(kShowToastSeconds, FROM_HERE);
+    toggle_interstitial_timer_.StartOneShot(kShowToastDuration, FROM_HERE);
   }
 }
 

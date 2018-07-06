@@ -16,7 +16,7 @@ namespace blink {
 
 namespace {
 
-constexpr double kCheckFullscreenIntervalSeconds = 1.0f;
+constexpr TimeDelta kCheckFullscreenInterval = TimeDelta::FromSeconds(1);
 constexpr float kMostlyFillViewportThresholdOfOccupationProportion = 0.85f;
 constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 
@@ -121,8 +121,8 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
     return;
   }
 
-  check_viewport_intersection_timer_.StartOneShot(
-      kCheckFullscreenIntervalSeconds, FROM_HERE);
+  check_viewport_intersection_timer_.StartOneShot(kCheckFullscreenInterval,
+                                                  FROM_HERE);
 }
 
 void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
