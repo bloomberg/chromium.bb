@@ -20,10 +20,12 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,6 +37,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -138,6 +141,11 @@ bool CrostiniInstallerView::Accept() {
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
 
   progress_bar_->SetVisible(true);
+
+  // |learn_more_link_| should only be present in State::PROMPT.
+  delete learn_more_link_;
+  learn_more_link_ = nullptr;
+
   StepProgress();
 
   // HandleError needs the |progress_bar_|, so we delay our Offline check until
@@ -175,6 +183,15 @@ bool CrostiniInstallerView::Cancel() {
 
 gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kOOBEWindowWidth, kOOBEWindowHeight);
+}
+
+void CrostiniInstallerView::LinkClicked(views::Link* source, int event_flags) {
+  DCHECK_EQ(source, learn_more_link_);
+
+  NavigateParams params(profile_, GURL(chrome::kLinuxAppsLearnMoreURL),
+                        ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
 }
 
 void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
@@ -291,10 +308,22 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
       ui::FormatBytesWithUnits(kDownloadSizeInBytes, ui::DATA_UNITS_MEBIBYTE,
                                /*show_units=*/true));
 
+  // Make a view to keep |message_label_| and |learn_more_link_| together with
+  // less vertical spacing than the other dialog views.
+  views::View* message_view = new views::View();
+  message_view->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   message_label_ = new views::Label(message);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  upper_container_view->AddChildView(message_label_);
+  message_view->AddChildView(message_label_);
+
+  learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link_->set_listener(this);
+  learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message_view->AddChildView(learn_more_link_);
+
+  upper_container_view->AddChildView(message_view);
 
   // Make a slot for the progress bar, but it's not initially visible.
   progress_bar_ = new views::ProgressBar();
