@@ -370,14 +370,14 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   border_scrollbar_padding_ =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
 
-  NGLogicalSize size = CalculateBorderBoxSize(
+  NGLogicalSize border_box_size = CalculateBorderBoxSize(
       ConstraintSpace(), Style(), min_max_size, CalculateDefaultBlockSize());
 
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
   // borders and padding.
   NGLogicalSize adjusted_size =
-      CalculateContentBoxSize(size, border_scrollbar_padding_);
+      CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
 
   child_available_size_ = adjusted_size;
 
@@ -391,7 +391,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       !ConstraintSpace().FixedSizeBlockIsDefinite())
     child_percentage_size_.block_size = NGSizeIndefinite;
 
-  container_builder_.SetInlineSize(size.inline_size);
+  container_builder_.SetInlineSize(border_box_size.inline_size);
 
   if (NGFloatTypes float_types = ConstraintSpace().AdjoiningFloatTypes()) {
     DCHECK(!ConstraintSpace().IsNewFormattingContext());
@@ -486,8 +486,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Before we descend into children (but after we have determined our inline
   // size), give the autosizer an opportunity to adjust the font size on the
   // children.
-  TextAutosizer::NGLayoutScope text_autosizer_layout_scope(Node(),
-                                                           size.inline_size);
+  TextAutosizer::NGLayoutScope text_autosizer_layout_scope(
+      Node(), border_box_size.inline_size);
 
   scoped_refptr<NGBreakToken> previous_inline_break_token;
 
@@ -601,18 +601,25 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         intrinsic_block_size_, previous_inflow_position.logical_block_offset);
   }
 
-  // Recompute the block-axis size now that we know our content size.
   intrinsic_block_size_ = std::max(intrinsic_block_size_,
                                    CalculateMinimumBlockSize(end_margin_strut));
-  size.block_size = ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
-                                                intrinsic_block_size_);
-  container_builder_.SetBlockSize(size.block_size);
+
+  // With contain:size we need to ignore all kinds of intrinsic sizing. If block
+  // height was specified as auto, it will always resolve to 0.
+  if (Node().ShouldApplySizeContainment())
+    intrinsic_block_size_ = LayoutUnit();
+
+  // Recompute the block-axis size now that we know our content size.
+  border_box_size.block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Style(), intrinsic_block_size_);
+  container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC offset is still unknown, there's one last thing to take into
   // consideration: Non-empty blocks always know their position in space. If we
   // have a break token, it means that we know the blocks' position even if
   // they're empty; it will be at the very start of the fragmentainer.
-  if (!container_builder_.BfcOffset() && (size.block_size || BreakToken())) {
+  if (!container_builder_.BfcOffset() &&
+      (border_box_size.block_size || BreakToken())) {
     if (!ResolveBfcOffset(&previous_inflow_position))
       return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
     DCHECK(container_builder_.BfcOffset());
