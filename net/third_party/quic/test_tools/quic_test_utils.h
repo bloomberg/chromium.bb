@@ -808,6 +808,9 @@ class MockPacketWriter : public QuicPacketWriter {
   MOCK_CONST_METHOD1(GetMaxPacketSize,
                      QuicByteCount(const QuicSocketAddress& peer_address));
   MOCK_CONST_METHOD0(SupportsReleaseTime, bool());
+  MOCK_CONST_METHOD0(IsBatchMode, bool());
+  MOCK_CONST_METHOD0(GetNextWriteLocation, char*());
+  MOCK_METHOD0(Flush, WriteResult());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPacketWriter);
@@ -996,6 +999,7 @@ class MockPacketCreatorDelegate : public QuicPacketCreator::DelegateInterface {
   MockPacketCreatorDelegate();
   ~MockPacketCreatorDelegate() override;
 
+  MOCK_METHOD0(GetPacketBuffer, char*());
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD3(OnUnrecoverableError,
                void(QuicErrorCode,

@@ -108,6 +108,9 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
     }
   }
 
+  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
+                                                      const WriteResult& s);
+
   WriteStatus status;
   union {
     int bytes_written;  // only valid when status is WRITE_STATUS_OK

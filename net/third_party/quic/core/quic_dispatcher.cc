@@ -66,6 +66,11 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
     serialized_packet->retransmittable_frames.clear();
   }
 
+  char* GetPacketBuffer() override {
+    // Let QuicPacketCreator to serialize packets on stack buffer.
+    return nullptr;
+  }
+
   void OnUnrecoverableError(QuicErrorCode error,
                             const QuicString& error_details,
                             ConnectionCloseSource source) override {}

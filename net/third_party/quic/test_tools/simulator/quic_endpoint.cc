@@ -316,12 +316,15 @@ WriteResult QuicEndpoint::Writer::WritePacket(
 bool QuicEndpoint::Writer::IsWriteBlockedDataBuffered() const {
   return false;
 }
+
 bool QuicEndpoint::Writer::IsWriteBlocked() const {
   return is_blocked_;
 }
+
 void QuicEndpoint::Writer::SetWritable() {
   is_blocked_ = false;
 }
+
 QuicByteCount QuicEndpoint::Writer::GetMaxPacketSize(
     const QuicSocketAddress& /*peer_address*/) const {
   return kMaxPacketSize;
@@ -329,6 +332,18 @@ QuicByteCount QuicEndpoint::Writer::GetMaxPacketSize(
 
 bool QuicEndpoint::Writer::SupportsReleaseTime() const {
   return false;
+}
+
+bool QuicEndpoint::Writer::IsBatchMode() const {
+  return false;
+}
+
+char* QuicEndpoint::Writer::GetNextWriteLocation() const {
+  return nullptr;
+}
+
+WriteResult QuicEndpoint::Writer::Flush() {
+  return WriteResult(WRITE_STATUS_OK, 0);
 }
 
 bool QuicEndpoint::DataProducer::WriteStreamData(QuicStreamId id,

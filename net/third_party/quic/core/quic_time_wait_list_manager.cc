@@ -244,6 +244,13 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
       queued_packet->packet()->data(), queued_packet->packet()->length(),
       queued_packet->server_address().host(), queued_packet->client_address(),
       nullptr);
+
+  // If using a batch writer and the packet is buffered, flush it.
+  if (writer_->IsBatchMode() && result.status == WRITE_STATUS_OK &&
+      result.bytes_written == 0) {
+    result = writer_->Flush();
+  }
+
   if (result.status == WRITE_STATUS_BLOCKED) {
     // If blocked and unbuffered, return false to retry sending.
     DCHECK(writer_->IsWriteBlocked());

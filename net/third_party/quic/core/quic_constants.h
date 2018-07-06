@@ -36,6 +36,8 @@ const QuicByteCount kDefaultServerMaxPacketSize = 1000;
 // additional 8 bytes.  This is a total overhead of 48 bytes.  Ethernet's
 // max packet size is 1500 bytes,  1500 - 48 = 1452.
 const QuicByteCount kMaxPacketSize = 1452;
+// ETH_MAX_MTU - MAX(sizeof(iphdr), sizeof(ip6_hdr)) - sizeof(udphdr).
+const QuicByteCount kMaxGsoPacketSize = 65535 - 40 - 8;
 // Default maximum packet size used in the Linux TCP implementation.
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;

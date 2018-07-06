@@ -51,6 +51,18 @@ bool QuicDefaultPacketWriter::SupportsReleaseTime() const {
   return false;
 }
 
+bool QuicDefaultPacketWriter::IsBatchMode() const {
+  return false;
+}
+
+char* QuicDefaultPacketWriter::GetNextWriteLocation() const {
+  return nullptr;
+}
+
+WriteResult QuicDefaultPacketWriter::Flush() {
+  return WriteResult(WRITE_STATUS_OK, 0);
+}
+
 void QuicDefaultPacketWriter::set_write_blocked(bool is_blocked) {
   write_blocked_ = is_blocked;
 }

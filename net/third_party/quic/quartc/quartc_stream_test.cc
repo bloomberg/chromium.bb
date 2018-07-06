@@ -124,6 +124,12 @@ class DummyPacketWriter : public QuicPacketWriter {
   }
 
   bool SupportsReleaseTime() const override { return false; }
+
+  bool IsBatchMode() const override { return false; }
+
+  char* GetNextWriteLocation() const override { return nullptr; }
+
+  WriteResult Flush() override { return WriteResult(WRITE_STATUS_OK, 0); }
 };
 
 class MockQuartcStreamDelegate : public QuartcStreamInterface::Delegate {

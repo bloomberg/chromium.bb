@@ -28,6 +28,7 @@
 using testing::_;
 using testing::DoAll;
 using testing::InSequence;
+using testing::Invoke;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -145,6 +146,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         data_("foo"),
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
+    EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
     creator_.SetEncrypter(ENCRYPTION_INITIAL, QuicMakeUnique<NullEncrypter>(
                                                   Perspective::IS_CLIENT));
     creator_.SetEncrypter(
@@ -1160,6 +1162,25 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
     creator_.Flush();
   }
   EXPECT_EQ(0u, creator_.pending_padding_bytes());
+}
+
+TEST_P(QuicPacketCreatorTest, FlushWithExternalBuffer) {
+  char external_buffer[kMaxPacketSize];
+  char* expected_buffer = external_buffer;
+  EXPECT_CALL(delegate_, GetPacketBuffer()).WillOnce(Return(expected_buffer));
+
+  QuicFrame frame;
+  MakeIOVector("test", &iov_);
+  ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
+                                   0u, false,
+                                   /*needs_full_padding=*/true, &frame));
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke([expected_buffer](SerializedPacket* serialized_packet) {
+        EXPECT_EQ(expected_buffer, serialized_packet->encrypted_buffer);
+        ClearSerializedPacket(serialized_packet);
+      }));
+  creator_.Flush();
 }
 
 }  // namespace

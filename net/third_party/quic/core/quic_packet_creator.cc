@@ -290,7 +290,12 @@ void QuicPacketCreator::Flush() {
     return;
   }
 
-  QUIC_CACHELINE_ALIGNED char serialized_packet_buffer[kMaxPacketSize];
+  QUIC_CACHELINE_ALIGNED char stack_buffer[kMaxPacketSize];
+  char* serialized_packet_buffer = delegate_->GetPacketBuffer();
+  if (serialized_packet_buffer == nullptr) {
+    serialized_packet_buffer = stack_buffer;
+  }
+
   SerializePacket(serialized_packet_buffer, kMaxPacketSize);
   OnSerializedPacket();
 }
@@ -337,8 +342,14 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   // Write out the packet header
   QuicPacketHeader header;
   FillPacketHeader(&header);
-  QUIC_CACHELINE_ALIGNED char encrypted_buffer[kMaxPacketSize];
-  QuicDataWriter writer(QUIC_ARRAYSIZE(encrypted_buffer), encrypted_buffer,
+
+  QUIC_CACHELINE_ALIGNED char stack_buffer[kMaxPacketSize];
+  char* encrypted_buffer = delegate_->GetPacketBuffer();
+  if (encrypted_buffer == nullptr) {
+    encrypted_buffer = stack_buffer;
+  }
+
+  QuicDataWriter writer(kMaxPacketSize, encrypted_buffer,
                         framer_->endianness());
   if (!framer_->AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";
@@ -379,7 +390,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header),
-      writer.length(), QUIC_ARRAYSIZE(encrypted_buffer), encrypted_buffer);
+      writer.length(), kMaxPacketSize, encrypted_buffer);
   if (encrypted_length == 0) {
     QUIC_BUG << "Failed to encrypt packet number " << header.packet_number;
     return;

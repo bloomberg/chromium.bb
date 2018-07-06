@@ -46,6 +46,12 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
 
   bool SupportsReleaseTime() const override;
 
+  bool IsBatchMode() const override;
+
+  char* GetNextWriteLocation() const override;
+
+  WriteResult Flush() override;
+
   // Sets the connection which sends packets using this writer.  Connection must
   // be set in order to attach packet info (eg. packet numbers) to writes.
   void set_connection(QuicConnection* connection) { connection_ = connection; }

@@ -505,6 +505,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
 
   // QuicPacketCreator::DelegateInterface
+  char* GetPacketBuffer() override;
   void OnSerializedPacket(SerializedPacket* packet) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
@@ -896,6 +897,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Saves the connection close packet for later transmission, even if the
   // writer is write blocked.
   bool WritePacket(SerializedPacket* packet);
+
+  // Flush packets buffered in the writer, if any.
+  void FlushPackets();
 
   // Make sure an ack we got from our peer is sane.
   // Returns nullptr for valid acks or an error string if it was invalid.

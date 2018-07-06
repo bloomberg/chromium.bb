@@ -91,6 +91,9 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   quic::QuicByteCount GetMaxPacketSize(
       const quic::QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
+  bool IsBatchMode() const override;
+  char* GetNextWriteLocation() const override;
+  quic::WriteResult Flush() override;
 
   void OnWriteComplete(int rv);
 

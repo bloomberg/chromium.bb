@@ -2178,6 +2178,22 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   return true;
 }
 
+void QuicConnection::FlushPackets() {
+  if (!writer_->IsBatchMode()) {
+    return;
+  }
+
+  if (HandleWriteBlocked()) {
+    QUIC_DLOG(INFO) << ENDPOINT << "FlushPackets called while blocked.";
+    return;
+  }
+
+  WriteResult result = writer_->Flush();
+  if (IsWriteError(result.status)) {
+    OnWriteError(result.error_code);
+  }
+}
+
 bool QuicConnection::IsMsgTooBig(const WriteResult& result) {
   return (result.status == WRITE_STATUS_MSG_TOO_BIG) ||
          (IsWriteError(result.status) &&
@@ -2226,6 +2242,10 @@ void QuicConnection::OnWriteError(int error_code) {
       TearDownLocalConnectionState(QUIC_PACKET_WRITE_ERROR, error_details,
                                    ConnectionCloseSource::FROM_SELF);
   }
+}
+
+char* QuicConnection::GetPacketBuffer() {
+  return writer_->GetNextWriteLocation();
 }
 
 void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
@@ -2772,6 +2792,7 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
 
   if (flush_on_delete_) {
     connection_->packet_generator_.Flush();
+    connection_->FlushPackets();
     if (connection_->session_decides_what_to_write()) {
       // Reset transmission type.
       connection_->SetTransmissionType(NOT_RETRANSMISSION);
@@ -2944,6 +2965,12 @@ bool QuicConnection::SendConnectivityProbingPacket(
   WriteResult result = probing_writer->WritePacket(
       probing_packet->encrypted_buffer, probing_packet->encrypted_length,
       self_address().host(), peer_address, per_packet_options_);
+
+  // If using a batch writer and the probing packet is buffered, flush it.
+  if (probing_writer->IsBatchMode() && result.status == WRITE_STATUS_OK &&
+      result.bytes_written == 0) {
+    result = probing_writer->Flush();
+  }
 
   if (IsWriteError(result.status)) {
     // Write error for any connectivity probe should not affect the connection

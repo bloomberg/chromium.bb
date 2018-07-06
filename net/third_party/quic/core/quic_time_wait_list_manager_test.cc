@@ -187,7 +187,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
 
   MockClock clock_;
   MockAlarmFactory alarm_factory_;
-  StrictMock<MockPacketWriter> writer_;
+  NiceMock<MockPacketWriter> writer_;
   StrictMock<MockQuicSessionVisitor> visitor_;
   QuicTimeWaitListManager time_wait_list_manager_;
   QuicConnectionId connection_id_;

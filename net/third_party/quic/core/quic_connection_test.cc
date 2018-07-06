@@ -372,6 +372,12 @@ class TestPacketWriter : public QuicPacketWriter {
 
   bool SupportsReleaseTime() const { return false; }
 
+  bool IsBatchMode() const override { return false; }
+
+  char* GetNextWriteLocation() const override { return nullptr; }
+
+  WriteResult Flush() override { return WriteResult(WRITE_STATUS_OK, 0); }
+
   void BlockOnNextWrite() { block_on_next_write_ = true; }
 
   void SimulateNextPacketTooLarge() { next_packet_too_large_ = true; }
