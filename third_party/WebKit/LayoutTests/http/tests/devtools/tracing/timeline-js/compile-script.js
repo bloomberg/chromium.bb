@@ -7,8 +7,8 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.evaluateInPagePromise(`
-      function performActions()
-      {
+      function performActions() {
+        return new Promise(resolve => {
           var script = document.createElement("script");
           script.textContent = "function noop1() {} \\n//# sourceURL=script-content.js";
           document.body.appendChild(script);
@@ -16,10 +16,13 @@
 
           script = document.createElement("script");
           script.src = "resources/timeline-script-tag-2.js";
+          script.onload = resolve;
           document.body.appendChild(script);
+        });
       }
   `);
 
-  PerformanceTestRunner.performActionsAndPrint(
-      'performActions()', TimelineModel.TimelineModel.RecordType.CompileScript);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
+  PerformanceTestRunner.printTimelineRecordsWithDetails(TimelineModel.TimelineModel.RecordType.CompileScript);
+  TestRunner.completeTest();
 })();
