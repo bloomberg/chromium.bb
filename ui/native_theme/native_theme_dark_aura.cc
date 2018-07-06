@@ -41,7 +41,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonEnabledColor:
       return kButtonEnabledColor;
     case kColorId_ProminentButtonColor:
-      return gfx::kGoogleBlue300;
+      return gfx::kGoogleBlue600;
 
     // Label
     case kColorId_LabelEnabledColor:
