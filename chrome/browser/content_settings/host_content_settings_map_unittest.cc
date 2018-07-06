@@ -1898,4 +1898,111 @@ TEST_F(HostContentSettingsMapTest, FlashEphemeralPermissionSwitch) {
 }
 #endif  // !defined(OS_ANDROID)
 
+// Tests if restarting only removes ephemeral permissions.
+// kEnableEphemeralFlashPermission is not available on Android.
+#if !defined(OS_ANDROID)
+TEST_F(HostContentSettingsMapTest, MixedEphemeralAndPersistentPermissions) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      content_settings::features::kEnableEphemeralFlashPermission);
+  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // The following two types are used as samples of ephemeral and persistent
+  // permission types. They can be replaced with any other type if required.
+  const ContentSettingsType ephemeral_type = CONTENT_SETTINGS_TYPE_PLUGINS;
+  const ContentSettingsType persistent_type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
+
+  EXPECT_EQ(content_settings::ContentSettingsInfo::EPHEMERAL,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(ephemeral_type)
+                ->storage_behavior());
+  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(persistent_type)
+                ->storage_behavior());
+
+  const GURL url("https://example.com");
+
+  // Set default permission of both to ASK and expect it for a website.
+  map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ASK);
+  map->SetDefaultContentSetting(persistent_type, CONTENT_SETTING_ASK);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url, url, ephemeral_type, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url, url, persistent_type, std::string()));
+
+  // Set permission for both types and expect receiving it correctly.
+  map->SetContentSettingDefaultScope(url, url, ephemeral_type, std::string(),
+                                     CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(url, url, persistent_type, std::string(),
+                                     CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url, url, ephemeral_type, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, url, persistent_type, std::string()));
+
+  // Restart and expect reset of ephemeral permission to ASK, while keeping
+  // the permission of persistent type.
+  ReloadProviders(profile.GetPrefs(), map);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url, url, ephemeral_type, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, url, persistent_type, std::string()));
+}
+#endif  // !defined(OS_ANDROID)
+
+// Tests if directly writing a value to PrefProvider doesn't affect ephmeral
+// types.
+// kEnableEphemeralFlashPermission is not available on Android.
+#if !defined(OS_ANDROID)
+TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      content_settings::features::kEnableEphemeralFlashPermission);
+  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // CONTENT_SETTINGS_TYPE_PLUGINS is used as a sample of ephemeral permission
+  // type. It can be replaced with any other type if required.
+  const ContentSettingsType ephemeral_type = CONTENT_SETTINGS_TYPE_PLUGINS;
+
+  EXPECT_EQ(content_settings::ContentSettingsInfo::EPHEMERAL,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(ephemeral_type)
+                ->storage_behavior());
+
+  const GURL url("https://example.com");
+  const ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
+
+  map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ASK);
+
+  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true);
+  pref_provider.SetWebsiteSetting(
+      pattern, pattern, ephemeral_type, std::string(),
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW).get());
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url, url, ephemeral_type, std::string()));
+
+  ReloadProviders(profile.GetPrefs(), map);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url, url, ephemeral_type, std::string()));
+
+  pref_provider.ShutdownOnUIThread();
+}
+#endif  // !defined(OS_ANDROID)
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
