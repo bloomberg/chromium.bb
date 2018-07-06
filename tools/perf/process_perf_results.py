@@ -122,18 +122,6 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
   return 0
 
 
-class LogExceptionWrapper(object):
-  def __init__(self, func):
-    self._func = func
-
-  def __call__(self, *args, **kwargs):
-    try:
-      return self._func(*args, **kwargs)
-    except Exception:
-      mp.get_logger().error(traceback.format_exc())
-      raise
-
-
 def _handle_perf_json_test_results(
     benchmark_directory_map, test_results_list):
   begin_time = time.time()
@@ -376,7 +364,13 @@ def _upload_individual(
 
 
 def _upload_individual_benchmark(params):
-  return _upload_individual(*params)
+  try:
+    return _upload_individual(*params)
+  except Exception:
+    benchmark_name = params[0]
+    print 'Error uploading perf result of %s' % benchmark_name
+    print traceback.format_exc()
+    return benchmark_name, False
 
 
 def _handle_perf_results(
@@ -415,7 +409,7 @@ def _handle_perf_results(
     pool = mp.Pool(cpus)
     try:
       async_result = pool.map_async(
-          LogExceptionWrapper(_upload_individual_benchmark), invocations)
+          _upload_individual_benchmark, invocations)
       results = async_result.get(timeout=2000)
     except mp.TimeoutError:
       logging.error('Failed uploading benchmarks to perf dashboard in parallel')
@@ -423,7 +417,6 @@ def _handle_perf_results(
       results = []
       for benchmark_name in benchmark_directory_map:
         results.append((benchmark_name, False))
-
 
     # Keep a mapping of benchmarks to their upload results
     benchmark_upload_result_map = {}
