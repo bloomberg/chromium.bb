@@ -5382,10 +5382,13 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
   LayoutRect rect = BorderBoxRect();
   // We want to include the margin, but only when it adds height. Quirky margins
   // don't contribute height nor do the margins of self-collapsing blocks.
-  if (!StyleRef().HasMarginAfterQuirk() && !IsSelfCollapsingBlock())
+  if (!StyleRef().HasMarginAfterQuirk() && !IsSelfCollapsingBlock()) {
+    const ComputedStyle* container_style =
+        container ? container->Style() : nullptr;
     rect.Expand(IsHorizontalWritingMode()
-                    ? LayoutSize(LayoutUnit(), MarginAfter())
-                    : LayoutSize(MarginAfter(), LayoutUnit()));
+                    ? LayoutSize(LayoutUnit(), MarginAfter(container_style))
+                    : LayoutSize(MarginAfter(container_style), LayoutUnit()));
+  }
 
   if (!HasOverflowClip() && !ShouldApplyLayoutContainment())
     rect.Unite(LayoutOverflowRect());
