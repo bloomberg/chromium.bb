@@ -61,10 +61,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 #pragma mark - public
 
-- (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                    textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor {
+- (instancetype)init {
   self = [super init];
   if (self) {
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];

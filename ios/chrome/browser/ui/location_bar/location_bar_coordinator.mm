@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
 #include "url/gurl.h"
@@ -101,16 +100,7 @@ const int kLocationAuthorizationStatusCount = 4;
 
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
-  UIColor* textColor =
-      isIncognito
-          ? [UIColor whiteColor]
-          : [UIColor colorWithWhite:0 alpha:[MDCTypography body1FontOpacity]];
-  UIColor* tintColor = isIncognito ? textColor : nil;
-  self.viewController = [[LocationBarViewController alloc]
-      initWithFrame:CGRectZero
-               font:[MDCTypography subheadFont]
-          textColor:textColor
-          tintColor:tintColor];
+  self.viewController = [[LocationBarViewController alloc] init];
   self.viewController.incognito = isIncognito;
   self.viewController.delegate = self;
   self.viewController.dispatcher = static_cast<

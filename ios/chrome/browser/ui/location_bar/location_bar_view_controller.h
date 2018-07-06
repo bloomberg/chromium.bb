@@ -28,11 +28,6 @@
 // location is displayed.
 @interface LocationBarViewController : UIViewController<FullscreenUIElement>
 
-- (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                    textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor;
-
 // Sets the edit view to use in the editing state. This must be set before the
 // view of this view controller is initialized. This must only be called once.
 - (void)setEditView:(UIView*)editView;
