@@ -62,7 +62,7 @@
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
@@ -968,10 +968,9 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
   data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
-void ProfileIOData::set_previews_decider_impl(
-    std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl)
-    const {
-  previews_decider_impl_ = std::move(previews_decider_impl);
+void ProfileIOData::set_previews_io_data(
+    std::unique_ptr<previews::PreviewsIOData> previews_io_data) const {
+  previews_io_data_ = std::move(previews_io_data);
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)

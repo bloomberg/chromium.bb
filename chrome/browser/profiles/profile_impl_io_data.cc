@@ -54,7 +54,7 @@
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -185,12 +185,11 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->lazy_params_->domain_reliability_monitor)
     io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
 
-  io_data_->set_previews_decider_impl(
-      std::make_unique<previews::PreviewsDeciderImpl>(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  io_data_->set_previews_io_data(std::make_unique<previews::PreviewsIOData>(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
-      io_data_->previews_decider_impl(),
+      io_data_->previews_io_data(),
       g_browser_process->optimization_guide_service(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
 
@@ -499,7 +498,7 @@ void ProfileImplIOData::InitializeInternal(
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   request_interceptors.push_back(
       std::make_unique<offline_pages::OfflinePageRequestInterceptor>(
-          previews_decider_impl()));
+          previews_io_data()));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network
@@ -509,7 +508,7 @@ void ProfileImplIOData::InitializeInternal(
       data_reduction_proxy_io_data()->CreateInterceptor());
   data_reduction_proxy_io_data()->SetDataUseAscriber(
       io_thread_globals->data_use_ascriber.get());
-  data_reduction_proxy_io_data()->SetPreviewsDecider(previews_decider_impl());
+  data_reduction_proxy_io_data()->SetPreviewsDecider(previews_io_data());
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor));

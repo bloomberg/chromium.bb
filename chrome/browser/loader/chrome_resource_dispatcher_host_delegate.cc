@@ -55,7 +55,7 @@
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/previews/content/previews_content_util.h"
-#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_user_data.h"
@@ -323,17 +323,16 @@ void LogCommittedPreviewsDecision(
     ProfileIOData* io_data,
     const GURL& url,
     previews::PreviewsUserData* previews_user_data) {
-  previews::PreviewsDeciderImpl* previews_decider_impl =
-      io_data->previews_decider_impl();
-  if (previews_decider_impl && previews_user_data) {
+  previews::PreviewsIOData* previews_io_data = io_data->previews_io_data();
+  if (previews_io_data && previews_user_data) {
     std::vector<previews::PreviewsEligibilityReason> passed_reasons;
     if (previews_user_data->cache_control_no_transform_directive()) {
-      previews_decider_impl->LogPreviewDecisionMade(
+      previews_io_data->LogPreviewDecisionMade(
           previews::PreviewsEligibilityReason::CACHE_CONTROL_NO_TRANSFORM, url,
           base::Time::Now(), previews::PreviewsType::UNSPECIFIED,
           std::move(passed_reasons), previews_user_data->page_id());
     } else {
-      previews_decider_impl->LogPreviewDecisionMade(
+      previews_io_data->LogPreviewDecisionMade(
           previews::PreviewsEligibilityReason::COMMITTED, url,
           base::Time::Now(), previews_user_data->committed_previews_type(),
           std::move(passed_reasons), previews_user_data->page_id());
@@ -633,7 +632,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
     // Determine effective PreviewsState for this committed main frame response.
     content::PreviewsState committed_state = DetermineCommittedPreviews(
-        request, io_data->previews_decider_impl(),
+        request, io_data->previews_io_data(),
         static_cast<content::PreviewsState>(response->head.previews_state));
 
     // Update previews state in response to renderer.
@@ -758,13 +757,12 @@ ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
 
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
-  previews::PreviewsDeciderImpl* previews_decider_impl =
-      io_data->previews_decider_impl();
-  if (data_reduction_proxy_io_data && previews_decider_impl) {
+  previews::PreviewsIOData* previews_io_data = io_data->previews_io_data();
+  if (data_reduction_proxy_io_data && previews_io_data) {
     previews::PreviewsUserData::Create(url_request,
-                                       previews_decider_impl->GeneratePageId());
+                                       previews_io_data->GeneratePageId());
     if (data_reduction_proxy_io_data->ShouldAcceptServerPreview(
-            *url_request, previews_decider_impl)) {
+            *url_request, previews_io_data)) {
       previews_state |= content::SERVER_LOFI_ON;
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }
@@ -772,7 +770,7 @@ ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
     // Check for enabled client-side previews if data saver is enabled.
     if (data_reduction_proxy_io_data->IsEnabled()) {
       previews_state |= previews::DetermineEnabledClientPreviewsState(
-          *url_request, previews_decider_impl);
+          *url_request, previews_io_data);
     }
   }
 
