@@ -127,13 +127,29 @@ test.util.sync.openFile = function(contentWindow, filename) {
  *     whether the target is found and mousedown and click events are sent.
  */
 test.util.async.selectVolume = function(contentWindow, iconName, callback) {
-  var query = '#directory-tree [volume-type-icon=' + iconName + ']';
-  var driveQuery = '#directory-tree [volume-type-icon=drive]';
-  var isDriveSubVolume = iconName == 'drive_recent' ||
-                         iconName == 'drive_shared_with_me' ||
-                         iconName == 'drive_offline';
-  var preSelection = false;
-  var steps = {
+  const query = '#directory-tree [volume-type-icon=' + iconName + ']';
+  const isDriveSubVolume = iconName == 'drive_recent' ||
+      iconName == 'drive_shared_with_me' || iconName == 'drive_offline';
+  return test.util.async.selectInDirectoryTree(
+      contentWindow, query, isDriveSubVolume, callback);
+
+};
+
+/**
+ * Selects element in directory tree specified by query selector.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} query to find the element to be selected on directory tree.
+ * @param {boolean} isDriveSubVolume set to true if query is targeted to a
+ *     sub-item of Drive.
+ * @param {function(boolean)} callback Callback function to notify the caller
+ *     whether the target is found and mousedown and click events are sent.
+ */
+test.util.async.selectInDirectoryTree = function(
+    contentWindow, query, isDriveSubVolume, callback) {
+  const driveQuery = '#directory-tree [volume-type-icon=drive]';
+  let preSelection = false;
+  const steps = {
     checkQuery: function() {
       if (contentWindow.document.querySelector(query)) {
         steps.sendEvents();
