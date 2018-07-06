@@ -61,7 +61,8 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
     } else {
       canvas->DrawStringRectWithFlags(
           base::FormatNumber(count_), GetNumberIconFontList(), kTrayIconColor,
-          gfx::Rect(size()), gfx::Canvas::TEXT_ALIGN_CENTER);
+          gfx::Rect(size()),
+          gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_SUBPIXEL_RENDERING);
     }
     cc::PaintFlags flags;
     flags.setBlendMode(SkBlendMode::kXor);
