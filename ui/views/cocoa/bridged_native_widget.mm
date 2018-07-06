@@ -323,6 +323,15 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
                                    NSWindowCollectionBehaviorTransient];
   }
 
+  // Include "regular" windows without the standard frame in the window cycle.
+  // These use NSBorderlessWindowMask so do not get it by default.
+  if (widget_type_ == Widget::InitParams::TYPE_WINDOW &&
+      params.remove_standard_frame) {
+    [window_
+        setCollectionBehavior:[window_ collectionBehavior] |
+                              NSWindowCollectionBehaviorParticipatesInCycle];
+  }
+
   // OSX likes to put shadows on most things. However, frameless windows (with
   // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
   // SHADOW_TYPE_DROP is used for Menus, which get the same shadow style on Mac.
