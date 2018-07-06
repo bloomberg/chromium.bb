@@ -15,6 +15,10 @@ bool GLSurfaceEglReadbackX11::Initialize(gl::GLSurfaceFormat format) {
   if (!GLSurfaceEglReadback::Initialize(format))
     return false;
 
+  // We don't need to reinitialize |window_graphics_context_|.
+  if (window_graphics_context_)
+    return true;
+
   window_graphics_context_ = XCreateGC(xdisplay_, window_, 0, nullptr);
   if (!window_graphics_context_) {
     DLOG(ERROR) << "XCreateGC failed";
@@ -42,6 +46,8 @@ void GLSurfaceEglReadbackX11::Destroy() {
   }
 
   XSync(xdisplay_, x11::False);
+
+  GLSurfaceEglReadback::Destroy();
 }
 
 bool GLSurfaceEglReadbackX11::Resize(const gfx::Size& size,
