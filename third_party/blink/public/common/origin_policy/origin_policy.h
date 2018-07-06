@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_POLICY_ORIGIN_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_POLICY_ORIGIN_POLICY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string_piece.h"
