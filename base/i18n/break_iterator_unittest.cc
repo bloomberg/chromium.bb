@@ -8,8 +8,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -66,7 +68,7 @@ TEST(BreakIteratorTest, BreakWord) {
   EXPECT_FALSE(iter.IsWord());
 }
 
-TEST(BreakIteratorTest, BreakWide16) {
+TEST(BreakIteratorTest, BreakWordWide16) {
   // Two greek words separated by space.
   const string16 str(WideToUTF16(
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9"
@@ -90,7 +92,7 @@ TEST(BreakIteratorTest, BreakWide16) {
   EXPECT_FALSE(iter.IsWord());
 }
 
-TEST(BreakIteratorTest, BreakWide32) {
+TEST(BreakIteratorTest, BreakWordWide32) {
   // U+1D49C MATHEMATICAL SCRIPT CAPITAL A
   const char very_wide_char[] = "\xF0\x9D\x92\x9C";
   const string16 str(
@@ -113,6 +115,127 @@ TEST(BreakIteratorTest, BreakWide32) {
   EXPECT_FALSE(iter.Advance());  // Test unexpected advance after end.
   EXPECT_FALSE(iter.IsWord());
 }
+
+TEST(BreakIteratorTest, BreakWordThai) {
+  // Terms in Thai, without spaces in between.
+  const char term1[] = "พิมพ์";
+  const char term2[] = "น้อย";
+  const char term3[] = "ลง";
+  const string16 str(UTF8ToUTF16(base::JoinString({term1, term2, term3}, "")));
+
+  BreakIterator iter(str, BreakIterator::BREAK_WORD);
+  ASSERT_TRUE(iter.Init());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term1), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term2), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term3), iter.GetString());
+  EXPECT_FALSE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+}
+
+// In some languages, the words are not broken by spaces. ICU provides a huge
+// dictionary to detect word boundaries in Thai, Chinese, Japanese, Burmese,
+// and Khmer. Due to the size of such a table, the part for Chinese and
+// Japanese is not shipped on mobile.
+#if !(defined(OS_IOS) || defined(OS_ANDROID))
+
+TEST(BreakIteratorTest, BreakWordChinese) {
+  // Terms in Traditional Chinese, without spaces in between.
+  const char term1[] = "瀏覽";
+  const char term2[] = "速度";
+  const char term3[] = "飛快";
+  const string16 str(UTF8ToUTF16(base::JoinString({term1, term2, term3}, "")));
+
+  BreakIterator iter(str, BreakIterator::BREAK_WORD);
+  ASSERT_TRUE(iter.Init());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term1), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term2), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term3), iter.GetString());
+  EXPECT_FALSE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+}
+
+TEST(BreakIteratorTest, BreakWordJapanese) {
+  // Terms in Japanese, without spaces in between.
+  const char term1[] = "モバイル";
+  const char term2[] = "でも";
+  const string16 str(UTF8ToUTF16(base::JoinString({term1, term2}, "")));
+
+  BreakIterator iter(str, BreakIterator::BREAK_WORD);
+  ASSERT_TRUE(iter.Init());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term1), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(term2), iter.GetString());
+  EXPECT_FALSE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+}
+
+TEST(BreakIteratorTest, BreakWordChineseEnglish) {
+  // Terms in Simplified Chinese mixed with English and wide punctuations.
+  string16 space(UTF8ToUTF16(" "));
+  const char token1[] = "下载";
+  const char token2[] = "Chrome";
+  const char token3[] = "（";
+  const char token4[] = "Mac";
+  const char token5[] = "版";
+  const char token6[] = "）";
+  const string16 str(UTF8ToUTF16(base::JoinString(
+      {token1, " ", token2, token3, token4, " ", token5, token6}, "")));
+
+  BreakIterator iter(str, BreakIterator::BREAK_WORD);
+  ASSERT_TRUE(iter.Init());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token1), iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(space, iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token2), iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token3), iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token4), iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(space, iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_TRUE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token5), iter.GetString());
+
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16(token6), iter.GetString());
+
+  EXPECT_FALSE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+}
+
+#endif  // !(defined(OS_IOS) || defined(OS_ANDROID))
 
 TEST(BreakIteratorTest, BreakSpaceEmpty) {
   string16 empty;
