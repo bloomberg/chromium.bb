@@ -4656,9 +4656,6 @@ crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-act
 # Sheriff 2018-06-21
 crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
-crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Failure Pass ]
-crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Failure Pass ]
-crbug.com/855222 [ Mac ] external/wpt/magnetometer/Magnetometer-iframe-access.https.html [ Failure Pass ]
 
 # Sheriff 2018-06-25
 crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
@@ -4673,13 +4670,9 @@ crbug.com/856601 [ Linux ] fast/css/visited-link-hang.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaDevices-IDL-enumerateDevices.html [ Pass Timeout ]
 
-# Sheriff 2018-06-28
-crbug.com/857520 [ Mac Win ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
-
 # Sheriff 2018-06-29
 crbug.com/859064 http/tests/devtools/console-resource-errors.js [ Pass Failure ]
 crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
-crbug.com/859270 [ Mac10.12 ] external/wpt/gyroscope/Gyroscope-iframe-access.https.html [ Timeout ]
 
 # Sheriff 2018-07-02
 crbug.com/859605 [ Mac10.10 ] external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-002.html [ Failure ]
