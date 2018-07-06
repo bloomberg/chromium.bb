@@ -114,6 +114,7 @@ class CreditCardSaveManagerTest : public testing::Test {
         std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
         payments_client_));
     autofill_manager_->SetExpectedObservedSubmission(true);
+    payments_client_->SetSaveDelegate(credit_card_save_manager_);
   }
 
   void TearDown() override {

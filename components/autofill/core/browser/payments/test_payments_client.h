@@ -37,7 +37,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
                       request_details) override;
 
-  void SetSaveDelegate(payments::PaymentsClientSaveDelegate* save_delegate);
+  void SetSaveDelegate(
+      payments::PaymentsClientSaveDelegate* save_delegate) override;
 
   void SetServerIdForCardUpload(std::string);
 
