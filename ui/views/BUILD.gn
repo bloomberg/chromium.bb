@@ -1001,6 +1001,7 @@ source_set("views_unittests_sources") {
     "window/custom_frame_view_unittest.cc",
     "window/dialog_client_view_unittest.cc",
     "window/dialog_delegate_unittest.cc",
+    "window/non_client_view_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

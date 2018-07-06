@@ -127,16 +127,14 @@ void NonClientView::SizeConstraintsChanged() {
 void NonClientView::LayoutFrameView() {
   // First layout the NonClientFrameView, which determines the size of the
   // ClientView...
-  frame_view_->SetBounds(0, 0, width(), height());
-
-  // We need to manually call Layout here because layout for the frame view can
-  // change independently of the bounds changing - e.g. after the initial
-  // display of the window the metrics of the native window controls can change,
-  // which does not change the bounds of the window but requires a re-layout to
-  // trigger a repaint. We override OnBoundsChanged() for the NonClientFrameView
-  // to do nothing so that SetBounds above doesn't cause Layout to be called
-  // twice.
-  frame_view_->Layout();
+  gfx::Rect new_frame_bounds = GetLocalBounds();
+  if (frame_view_->bounds() == new_frame_bounds) {
+    // SetBoundsRect does a |needs_layout_| check if the bounds aren't actually
+    // changing before triggering a layout. Ensure we do a layout either way.
+    frame_view_->Layout();
+  } else {
+    frame_view_->SetBoundsRect(new_frame_bounds);
+  }
 }
 
 void NonClientView::SetAccessibleName(const base::string16& name) {
@@ -173,15 +171,15 @@ void NonClientView::Layout() {
   if (base::i18n::IsRTL() && !mirror_client_in_rtl_)
     client_bounds.set_x(GetMirroredXForRect(client_bounds));
 
-  client_view_->SetBoundsRect(client_bounds);
+  if (client_bounds != client_view_->bounds()) {
+    client_view_->SetBoundsRect(client_bounds);
+  } else {
+    client_view_->Layout();
+  }
 
   gfx::Path client_clip;
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
     client_view_->set_clip_path(client_clip);
-
-  // We need to manually call Layout on the ClientView as well for the same
-  // reason as above.
-  client_view_->Layout();
 
   if (overlay_view_ && overlay_view_->visible())
     overlay_view_->SetBoundsRect(GetLocalBounds());
@@ -343,11 +341,6 @@ bool NonClientFrameView::DoesIntersectRect(const View* target,
   // For the default case, we assume the non-client frame view never overlaps
   // the client view.
   return !GetWidget()->client_view()->bounds().Intersects(rect);
-}
-
-void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Overridden to do nothing. The NonClientView manually calls Layout on the
-  // FrameView when it is itself laid out, see comment in NonClientView::Layout.
 }
 
 }  // namespace views
