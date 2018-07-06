@@ -3595,10 +3595,6 @@ void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
     GetLayoutObject()->UpdateFromElement();
 
   StopPeriodicTimers();
-
-  // Ensure that hasPendingActivity() is not preventing garbage collection,
-  // since otherwise this media element will simply leak.
-  DCHECK(!HasPendingActivity());
 }
 
 bool HTMLMediaElement::HasPendingActivity() const {
