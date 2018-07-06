@@ -30,17 +30,6 @@ class DocumentOrShadowRoot {
     return &shadow_root.StyleSheets();
   }
 
-  static StyleSheetList* moreStyleSheets(TreeScope& tree_scope) {
-    CHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
-    return &tree_scope.MoreStyleSheets();
-  }
-
-  static void setMoreStyleSheets(TreeScope& tree_scope,
-                                 StyleSheetList* more_style_sheets) {
-    CHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
-    tree_scope.SetMoreStyleSheets(more_style_sheets);
-  }
-
   static DOMSelection* getSelection(TreeScope& tree_scope) {
     return tree_scope.GetSelection();
   }
