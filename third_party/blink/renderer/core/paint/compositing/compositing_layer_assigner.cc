@@ -286,9 +286,9 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     SquashingState& squashing_state,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   if (layer->NeedsCompositingLayerAssignment()) {
-    CHECK(layer->GetCompositingReasons() ||
-          (layer->GetCompositingState() != kNotComposited) ||
-          layer->LostGroupedMapping());
+    DCHECK(layer->GetCompositingReasons() ||
+           (layer->GetCompositingState() != kNotComposited) ||
+           layer->LostGroupedMapping());
     if (RequiresSquashing(layer->GetCompositingReasons())) {
       SquashingDisallowedReasons reasons_preventing_squashing =
           GetReasonsPreventingSquashing(layer, squashing_state);
