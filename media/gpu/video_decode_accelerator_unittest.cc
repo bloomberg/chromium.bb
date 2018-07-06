@@ -613,9 +613,11 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
 }
 
 void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
+  // Remove TextureRef from pending_textures_ regardless whether decoder is
+  // deleted.
+  LOG_ASSERT(1U == pending_textures_.erase(picture_buffer_id));
   if (decoder_deleted())
     return;
-  LOG_ASSERT(1U == pending_textures_.erase(picture_buffer_id));
 
   if (active_textures_.find(picture_buffer_id) == active_textures_.end()) {
     // The picture associated with picture_buffer_id is dismissed.
