@@ -684,6 +684,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Set toolbar alphas to 0 prior to animation.
   self.topToolbar.alpha = 0;
   self.bottomToolbar.alpha = 0;
+  // Unless reduce motion is enabled, hide the scroll view during the
+  // animation.
+  if (!UIAccessibilityIsReduceMotionEnabled()) {
+    self.scrollView.hidden = YES;
+  }
 
   // Fade the toolbars in for the last 60% of the transition.
   auto keyframe = ^{
@@ -703,10 +708,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                               completion:nil];
   };
 
-  // Also hide the scroll view (and thus the tab grids) until the transition
-  // completes. Set the toolbar alpha to 1.0 as part of the completion handler
-  // as well, in case the animation didn't complete.
-  self.scrollView.hidden = YES;
+  // Restore the scroll view and toolbar opacities (in case the animation didn't
+  // complete) as part of the completion.
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
     self.topToolbar.alpha = 1.0;
