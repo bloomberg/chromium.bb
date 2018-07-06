@@ -3127,6 +3127,7 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
       break;
     }
   }
+  thread_data->error_info.setjmp = 0;
   return !td->xd.corrupted;
 }
 
