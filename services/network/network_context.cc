@@ -577,9 +577,10 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
 
   channel_id_store->DeleteForDomainsCreatedBetween(
       MakeDomainFilter(filter.get()), start_time, end_time,
-      base::BindOnce(&OnClearedChannelIds,
-                     url_request_context_->ssl_config_service(),
-                     std::move(callback)));
+      base::BindOnce(
+          &OnClearedChannelIds,
+          base::RetainedRef(url_request_context_->ssl_config_service()),
+          std::move(callback)));
 }
 
 void NetworkContext::ClearHostCache(mojom::ClearDataFilterPtr filter,
@@ -854,7 +855,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     builder->EnableHttpCache(cache_params);
   }
 
-  builder->set_ssl_config_service(std::make_unique<SSLConfigServiceMojo>(
+  builder->set_ssl_config_service(base::MakeRefCounted<SSLConfigServiceMojo>(
       std::move(params_->initial_ssl_config),
       std::move(params_->ssl_config_client_request)));
 

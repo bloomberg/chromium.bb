@@ -37,8 +37,7 @@ namespace {
 class HttpNetworkLayerTest : public PlatformTest,
                              public WithScopedTaskEnvironment {
  protected:
-  HttpNetworkLayerTest()
-      : ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()) {}
+  HttpNetworkLayerTest() : ssl_config_service_(new SSLConfigServiceDefaults) {}
 
   void SetUp() override {
     ConfigureTestDependencies(ProxyResolutionService::CreateDirect());
@@ -270,7 +269,7 @@ class HttpNetworkLayerTest : public PlatformTest,
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  std::unique_ptr<SSLConfigService> ssl_config_service_;
+  const scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpNetworkSession> network_session_;
   std::unique_ptr<HttpNetworkLayer> factory_;
 
