@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import shutil
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -93,45 +94,60 @@ class ChromeCommitter(object):
     """Uploads the change to gerrit."""
     logging.info('Uploading commit.')
 
-    try:
+    with osutils.TempDir() as temp_home:
       # TODO(crbug.com/860584): Remove after we fix the bug.
-      git.RunGit(self._checkout_dir,
-                 self._git_committer_args + ['cl', 'creds-check', '-v', '-v'],
-                 print_cmd=True, redirect_stderr=True, capture_output=False,
-                 extra_env={'SKIP_GCE_AUTH_FOR_GIT': '1'})
-    except cros_build_lib.RunCommandError as e:
-      # We just want to log the results, not block on success.
-      pass
+      try:
+        shutil.copyfile(os.path.expanduser('~/.netrc'),
+                        os.path.join(temp_home, '.netrc'))
+      except IOError:
+        # It's legal for .netrc to not exist, especially for normal users.
+        pass
 
-    try:
-      # Run 'git cl upload' with --bypass-hooks to skip running scripts that are
-      # not part of the shallow checkout, -f to skip editing the CL message,
-      upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
-                     '--bypass-hooks', '-f']
-      if not self._dryrun:
-        # Add the gardener(s) as TBR; fall-back to tbr-owners.
-        gardeners = tree_status.GetSheriffEmailAddresses('chrome')
-        if gardeners:
-          for tbr in gardeners:
-            upload_args += ['--tbrs', tbr]
-        else:
-          upload_args += ['--tbr-owners']
-        # Marks CL as ready.
-        upload_args += ['--send-mail']
-      git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
-                 print_cmd=True, redirect_stderr=True, capture_output=False)
+      try:
+        # TODO(crbug.com/860584): Remove after we fix the bug.
+        git.RunGit(self._checkout_dir,
+                   self._git_committer_args + ['cl', 'creds-check', '-v', '-v'],
+                   print_cmd=True, redirect_stderr=True, capture_output=False,
+                   extra_env={'SKIP_GCE_AUTH_FOR_GIT': '1',
+                              'HOME': temp_home})
+      except cros_build_lib.RunCommandError as e:
+        # We just want to log the results, not block on success.
+        pass
 
-      # Flip the CQ commit bit.
-      submit_args = ['cl', 'set-commit', '-v']
-      if self._dryrun:
-        submit_args += ['--dry-run']
-      git.RunGit(self._checkout_dir, submit_args,
-                 print_cmd=True, redirect_stderr=True, capture_output=False)
-    except cros_build_lib.RunCommandError as e:
-      # Log the change for debugging.
-      git.RunGit(self._checkout_dir, ['--no-pager', 'log', '--pretty=full'],
-                 capture_output=False)
-      raise CommitError('Could not submit: %r' % e)
+      try:
+        # Run 'git cl upload' with --bypass-hooks to skip running scripts that
+        # are not part of the shallow checkout, -f to skip editing the CL
+        # message,
+        upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
+                       '--bypass-hooks', '-f']
+        if not self._dryrun:
+          # Add the gardener(s) as TBR; fall-back to tbr-owners.
+          gardeners = tree_status.GetSheriffEmailAddresses('chrome')
+          if gardeners:
+            for tbr in gardeners:
+              upload_args += ['--tbrs', tbr]
+          else:
+            upload_args += ['--tbr-owners']
+          # Marks CL as ready.
+          upload_args += ['--send-mail']
+        git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
+                   print_cmd=True, redirect_stderr=True, capture_output=False,
+                   extra_env={'HOME': temp_home})
+
+        # Flip the CQ commit bit.
+        submit_args = ['cl', 'set-commit', '-v']
+        if self._dryrun:
+          submit_args += ['--dry-run']
+        git.RunGit(self._checkout_dir, submit_args,
+                   print_cmd=True, redirect_stderr=True, capture_output=False,
+                   extra_env={'HOME': temp_home})
+
+      except cros_build_lib.RunCommandError as e:
+        # Log the change for debugging.
+        git.RunGit(self._checkout_dir, ['--no-pager', 'log', '--pretty=full'],
+                   capture_output=False,
+                   extra_env={'HOME': temp_home})
+        raise CommitError('Could not submit: %r' % e)
 
     logging.info('Submitted to CQ.')
 
