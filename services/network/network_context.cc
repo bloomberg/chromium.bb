@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -536,11 +538,23 @@ void NetworkContext::ClearHttpCache(base::Time start_time,
                                     base::Time end_time,
                                     mojom::ClearDataFilterPtr filter,
                                     ClearHttpCacheCallback callback) {
-  // It's safe to use Unretained below as the HttpCacheDataRemover is owner by
+  // It's safe to use Unretained below as the HttpCacheDataRemover is owned by
   // |this| and guarantees it won't call its callback if deleted.
   http_cache_data_removers_.push_back(HttpCacheDataRemover::CreateAndStart(
       url_request_context_, std::move(filter), start_time, end_time,
       base::BindOnce(&NetworkContext::OnHttpCacheCleared,
+                     base::Unretained(this), std::move(callback))));
+}
+
+void NetworkContext::ComputeHttpCacheSize(
+    base::Time start_time,
+    base::Time end_time,
+    ComputeHttpCacheSizeCallback callback) {
+  // It's safe to use Unretained below as the HttpCacheDataCounter is owned by
+  // |this| and guarantees it won't call its callback if deleted.
+  http_cache_data_counters_.push_back(HttpCacheDataCounter::CreateAndStart(
+      url_request_context_, start_time, end_time,
+      base::BindOnce(&NetworkContext::OnHttpCacheSizeComputed,
                      base::Unretained(this), std::move(callback))));
 }
 
@@ -1070,6 +1084,15 @@ void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
   }
   DCHECK(removed);
   std::move(callback).Run();
+}
+
+void NetworkContext::OnHttpCacheSizeComputed(
+    ComputeHttpCacheSizeCallback callback,
+    HttpCacheDataCounter* counter,
+    bool is_upper_limit,
+    int64_t result_or_error) {
+  EraseIf(http_cache_data_counters_, base::MatchesUniquePtr(counter));
+  std::move(callback).Run(is_upper_limit, result_or_error);
 }
 
 void NetworkContext::OnConnectionError() {

@@ -22,6 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -1084,6 +1085,37 @@ TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
   }
   run_loop.Run();
   // If all the callbacks were invoked, we should terminate.
+}
+
+TEST_F(NetworkContextTest, CountHttpCache) {
+  // Just ensure that a couple of concurrent calls go through, and produce
+  // the expected "it's empty!" result. More detailed testing is left to
+  // HttpCacheDataCounter unit tests.
+
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = true;
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  int responses = 0;
+  base::RunLoop run_loop;
+
+  auto callback =
+      base::BindLambdaForTesting([&](bool upper_bound, int64_t size_or_error) {
+        // Don't expect approximation for full range.
+        EXPECT_EQ(false, upper_bound);
+        EXPECT_EQ(0, size_or_error);
+        ++responses;
+        if (responses == 2)
+          run_loop.Quit();
+      });
+
+  network_context->ComputeHttpCacheSize(base::Time(), base::Time::Max(),
+                                        callback);
+  network_context->ComputeHttpCacheSize(base::Time(), base::Time::Max(),
+                                        callback);
+  run_loop.Run();
 }
 
 TEST_F(NetworkContextTest, ClearChannelIds) {
