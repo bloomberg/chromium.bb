@@ -250,6 +250,12 @@ class FileSystem : public FileSystemInterface,
   void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
                                         google_apis::DriveApiErrorCode status,
                                         const GURL& share_url);
+
+  void OnGetMetadata(
+      const GetFilesystemMetadataCallback& callback,
+      drive::FileSystemMetadata* default_corpus_metadata,
+      std::map<std::string, drive::FileSystemMetadata>* team_drive_metadata);
+
   // Part of AddPermission.
   void AddPermissionAfterGetResourceEntry(
       const std::string& email,

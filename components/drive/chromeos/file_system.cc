@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/default_corpus_change_list_loader.h"
+#include "components/drive/chromeos/drive_file_util.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/copy_operation.h"
 #include "components/drive/chromeos/file_system/create_directory_operation.h"
@@ -179,16 +180,12 @@ void RunIsMountedCallback(const IsMountedCallback& callback,
   callback.Run(error, *result);
 }
 
-// Callback for ResourceMetadata::GetLargestChangestamp.
-// |callback| must not be null.
-void OnGetStartPageToken(FileSystemMetadata metadata,  // Will be modified.
-                         const GetFilesystemMetadataCallback& callback,
-                         const std::string* start_page_token,
+// Callback for internals::GetStartPageToken.
+// |closure| must not be null.
+void OnGetStartPageToken(const base::RepeatingClosure& closure,
                          FileError error) {
-  DCHECK(callback);
-
-  metadata.start_page_token = *start_page_token;
-  callback.Run(metadata);
+  DCHECK(closure);
+  closure.Run();
 }
 
 // Thin adapter to map GetFileCallback to FileOperationCallback.
@@ -946,20 +943,52 @@ void FileSystem::GetMetadata(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  FileSystemMetadata metadata;
-  metadata.refreshing = default_corpus_change_list_loader_->IsRefreshing();
+  FileSystemMetadata* metadata = new FileSystemMetadata();
+  std::map<std::string, FileSystemMetadata>* team_drive_metadata =
+      new std::map<std::string, FileSystemMetadata>();
 
-  // Metadata related to delta update.
-  metadata.last_update_check_time = last_update_check_time_;
-  metadata.last_update_check_error = last_update_check_error_;
+  size_t num_callbacks = team_drive_change_list_loaders_.size() + 1;
 
-  std::string* start_page_token = new std::string();
+  base::RepeatingClosure closure = base::BarrierClosure(
+      num_callbacks,
+      base::BindOnce(&FileSystem::OnGetMetadata, weak_ptr_factory_.GetWeakPtr(),
+                     callback, base::Owned(metadata),
+                     base::Owned(team_drive_metadata)));
+
+  metadata->refreshing = default_corpus_change_list_loader_->IsRefreshing();
+  metadata->last_update_check_time = last_update_check_time_;
+  metadata->last_update_check_error = last_update_check_error_;
+
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetStartPageToken,
-                 base::Unretained(resource_metadata_), start_page_token),
-      base::Bind(&OnGetStartPageToken, metadata, callback,
-                 base::Owned(start_page_token)));
+      base::Bind(&internal::GetStartPageToken,
+                 base::Unretained(resource_metadata_),
+                 util::kTeamDriveIdDefaultCorpus,
+                 base::Unretained(&(metadata->start_page_token))),
+      base::Bind(&OnGetStartPageToken, closure));
+
+  for (auto& team_drive : team_drive_change_list_loaders_) {
+    FileSystemMetadata& md = (*team_drive_metadata)[team_drive.first];
+    md.refreshing = team_drive.second->IsRefreshing();
+
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(), FROM_HERE,
+        base::Bind(&internal::GetStartPageToken,
+                   base::Unretained(resource_metadata_), team_drive.first,
+                   base::Unretained(&(md.start_page_token))),
+        base::Bind(&OnGetStartPageToken, closure));
+  }
+}
+
+void FileSystem::OnGetMetadata(
+    const GetFilesystemMetadataCallback& callback,
+    drive::FileSystemMetadata* default_corpus_metadata,
+    std::map<std::string, drive::FileSystemMetadata>* team_drive_metadata) {
+  DCHECK(callback);
+  DCHECK(default_corpus_metadata);
+  DCHECK(team_drive_metadata);
+
+  callback.Run(*default_corpus_metadata, *team_drive_metadata);
 }
 
 void FileSystem::MarkCacheFileAsMounted(

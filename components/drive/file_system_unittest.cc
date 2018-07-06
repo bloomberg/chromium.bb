@@ -1315,4 +1315,36 @@ TEST_F(FileSystemTest, FreeDiskSpaceIfNeededFor) {
   EXPECT_FALSE(entry->file_specific_info().cache_state().is_present());
 }
 
+TEST_F(FileSystemTest, DebugMetadata) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load will trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  base::Time now = base::Time::Now();
+
+  file_system_->CheckForUpdates();
+  base::RunLoop().RunUntilIdle();
+
+  FileSystemMetadata default_corpus_metadata;
+  std::map<std::string, FileSystemMetadata> team_drive_metadata;
+
+  file_system_->GetMetadata(google_apis::test_util::CreateCopyResultCallback(
+      &default_corpus_metadata, &team_drive_metadata));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_LE(now, default_corpus_metadata.last_update_check_time);
+  EXPECT_FALSE(default_corpus_metadata.refreshing);
+  EXPECT_EQ(FILE_ERROR_OK, default_corpus_metadata.last_update_check_error);
+  EXPECT_EQ("654339", default_corpus_metadata.start_page_token);
+
+  EXPECT_EQ(2UL, team_drive_metadata.size());
+  EXPECT_FALSE(team_drive_metadata["td_id_1"].refreshing);
+  EXPECT_EQ("654344", team_drive_metadata["td_id_1"].start_page_token);
+
+  EXPECT_FALSE(team_drive_metadata["td_id_2"].refreshing);
+  EXPECT_EQ("654345", team_drive_metadata["td_id_2"].start_page_token);
+}
+
 }   // namespace drive

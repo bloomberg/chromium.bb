@@ -290,7 +290,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Callback for DebugInfoCollector::GetMetadata for delta update.
   void OnGetFilesystemMetadataForDeltaUpdate(
-      const drive::FileSystemMetadata& metadata);
+      const drive::FileSystemMetadata& metadata,
+      const std::map<std::string, drive::FileSystemMetadata>&
+          team_drive_metadata);
 
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
@@ -595,7 +597,9 @@ void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection(
 }
 
 void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
-    const drive::FileSystemMetadata& metadata) {
+    const drive::FileSystemMetadata& metadata,
+    const std::map<std::string, drive::FileSystemMetadata>&
+        team_drive_metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -624,7 +628,21 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
 
   items->Append(std::move(app_data));
 
-  // TODO(slangley): Add data for each team drive.
+  for (const auto& team_drive : team_drive_metadata) {
+    app_data = std::make_unique<base::DictionaryValue>();
+    app_data->SetString("id", team_drive.first);
+    app_data->SetString("start_page_token", team_drive.second.start_page_token);
+    app_data->SetString("last_check_time",
+                        google_apis::util::FormatTimeAsStringLocaltime(
+                            team_drive.second.last_update_check_time));
+    app_data->SetString(
+        "last_check_result",
+        drive::FileErrorToString(team_drive.second.last_update_check_error));
+    app_data->SetString("refreshing",
+                        team_drive.second.refreshing ? "Yes" : "No");
+    items->Append(std::move(app_data));
+  }
+
   delta_update_status.Set("items", std::move(items));
 
   web_ui()->CallJavascriptFunctionUnsafe("updateDeltaUpdateStatus",
