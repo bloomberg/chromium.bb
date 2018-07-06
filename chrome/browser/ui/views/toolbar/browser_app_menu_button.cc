@@ -156,10 +156,9 @@ void BrowserAppMenuButton::Layout() {
     new_icon_->SetBoundsRect(GetContentsBounds());
     ink_drop_container()->SetBoundsRect(GetLocalBounds());
     image()->SetBoundsRect(GetContentsBounds());
-    return;
   }
 
-  views::MenuButton::Layout();
+  AppMenuButton::Layout();
 }
 
 void BrowserAppMenuButton::OnThemeChanged() {
