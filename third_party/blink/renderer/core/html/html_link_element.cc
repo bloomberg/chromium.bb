@@ -129,6 +129,10 @@ bool HTMLLinkElement::ShouldLoadLink() {
          !href.PotentiallyDanglingMarkup();
 }
 
+bool HTMLLinkElement::IsLinkCreatedByParser() {
+  return IsCreatedByParser();
+}
+
 bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
   return link_loader_->LoadLink(params, GetDocument(),
                                 NetworkHintsInterfaceImpl());

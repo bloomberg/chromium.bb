@@ -43,6 +43,7 @@ class MockLinkLoaderClient final
   }
 
   bool ShouldLoadLink() override { return should_load_; }
+  bool IsLinkCreatedByParser() override { return true; }
 
   void LinkLoaded() override {}
   void LinkLoadingErrored() override {}
