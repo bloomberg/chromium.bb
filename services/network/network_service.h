@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
@@ -132,6 +133,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
+#endif
 
   // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
   // one if needed.
@@ -154,6 +158,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 
   certificate_transparency::STHReporter* sth_reporter();
+
+  bool os_crypt_config_set() const { return os_crypt_config_set_; }
 
   static NetworkService* GetNetworkServiceForTesting();
 
@@ -220,6 +226,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::set<uint32_t> processes_with_raw_headers_access_;
 
   bool quic_disabled_ = false;
+
+  bool os_crypt_config_set_ = false;
 
   std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
 
