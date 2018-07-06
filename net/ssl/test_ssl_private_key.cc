@@ -84,9 +84,7 @@ scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(
 
 scoped_refptr<SSLPrivateKey> WrapRSAPrivateKey(
     crypto::RSAPrivateKey* rsa_private_key) {
-  EVP_PKEY_up_ref(rsa_private_key->key());
-  return net::WrapOpenSSLPrivateKey(
-      bssl::UniquePtr<EVP_PKEY>(rsa_private_key->key()));
+  return net::WrapOpenSSLPrivateKey(bssl::UpRef(rsa_private_key->key()));
 }
 
 }  // namespace net

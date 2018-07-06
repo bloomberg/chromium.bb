@@ -642,8 +642,7 @@ TEST_P(SocketBIOAdapterTest, Detached) {
       std::make_unique<SocketBIOAdapter>(socket.get(), 100, 100, this);
 
   // Retain an additional reference to the BIO.
-  bssl::UniquePtr<BIO> bio(adapter->bio());
-  BIO_up_ref(bio.get());
+  bssl::UniquePtr<BIO> bio = bssl::UpRef(adapter->bio());
 
   // Release the adapter.
   adapter.reset();

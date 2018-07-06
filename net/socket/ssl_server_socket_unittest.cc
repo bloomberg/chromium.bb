@@ -373,9 +373,7 @@ class SSLServerSocketTest : public PlatformTest,
     std::unique_ptr<crypto::RSAPrivateKey> key =
         ReadTestKey("unittest.key.bin");
     ASSERT_TRUE(key);
-    EVP_PKEY_up_ref(key->key());
-    server_ssl_private_key_ =
-        WrapOpenSSLPrivateKey(bssl::UniquePtr<EVP_PKEY>(key->key()));
+    server_ssl_private_key_ = WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
 
     client_ssl_config_.false_start_enabled = false;
     client_ssl_config_.channel_id_enabled = false;
@@ -448,9 +446,8 @@ class SSLServerSocketTest : public PlatformTest,
         ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
 
-    EVP_PKEY_up_ref(key->key());
     client_ssl_config_.client_private_key =
-        WrapOpenSSLPrivateKey(bssl::UniquePtr<EVP_PKEY>(key->key()));
+        WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
   }
 
   void ConfigureClientCertsForServer() {
