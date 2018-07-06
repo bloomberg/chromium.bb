@@ -32,9 +32,8 @@ class LocalSiteCharacteristicsDataReader
   SiteFeatureUsage UsesAudioInBackground() const override;
   SiteFeatureUsage UsesNotificationsInBackground() const override;
 
-  const scoped_refptr<internal::LocalSiteCharacteristicsDataImpl>
-  impl_for_testing() const {
-    return impl_;
+  const internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
+    return impl_.get();
   }
 
  private:

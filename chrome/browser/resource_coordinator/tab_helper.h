@@ -52,6 +52,13 @@ class ResourceCoordinatorTabHelper
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void SetUkmSourceIdForTest(ukm::SourceId id) { ukm_source_id_ = id; }
 
+#if !defined(OS_ANDROID)
+  LocalSiteCharacteristicsWebContentsObserver*
+  local_site_characteristics_wc_observer_for_testing() {
+    return local_site_characteristics_wc_observer_.get();
+  }
+#endif
+
  private:
   explicit ResourceCoordinatorTabHelper(content::WebContents* web_contents);
   // Favicon, title are set the first time a page is loaded, thus we want to

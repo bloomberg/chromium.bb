@@ -16,12 +16,14 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -146,6 +148,61 @@ StateChangeReason DiscardReasonToStateChangeReason(DiscardReason reason) {
     case DiscardReason::kUrgent:
       return StateChangeReason::SYSTEM_MEMORY_PRESSURE;
   }
+}
+
+void CheckFeatureUsage(SiteFeatureUsage feature_usage,
+                       DecisionDetails* details,
+                       DecisionFailureReason heuristic_failure_reason) {
+  DCHECK(details);
+
+  switch (feature_usage) {
+    case SiteFeatureUsage::kSiteFeatureInUse:
+      details->AddReason(heuristic_failure_reason);
+      return;
+    case SiteFeatureUsage::kSiteFeatureUsageUnknown:
+      details->AddReason(
+          DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION);
+      return;
+    case SiteFeatureUsage::kSiteFeatureNotInUse:
+      return;
+  }
+}
+
+void CheckIfTabCanCommunicateWithUserWhileInBackground(
+    const content::WebContents* web_contents,
+    DecisionDetails* details) {
+  DCHECK(details);
+
+  if (!web_contents->GetLastCommittedURL().is_valid() ||
+      web_contents->GetLastCommittedURL().is_empty()) {
+    return;
+  }
+
+  if (!URLShouldBeStoredInLocalDatabase(web_contents->GetLastCommittedURL()))
+    return;
+
+  SiteCharacteristicsDataStore* data_store =
+      LocalSiteCharacteristicsDataStoreFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!data_store)
+    return;
+
+  auto reader = data_store->GetReaderForOrigin(
+      url::Origin::Create(web_contents->GetLastCommittedURL()));
+
+  // TODO(sebmarchand): Add a failure reason for when the data isn't ready yet.
+
+  CheckFeatureUsage(reader->UsesAudioInBackground(), details,
+                    DecisionFailureReason::HEURISTIC_AUDIO);
+
+  CheckFeatureUsage(reader->UpdatesFaviconInBackground(), details,
+                    DecisionFailureReason::HEURISTIC_FAVICON);
+
+  CheckFeatureUsage(reader->UsesNotificationsInBackground(), details,
+                    DecisionFailureReason::HEURISTIC_NOTIFICATIONS);
+
+  CheckFeatureUsage(reader->UpdatesTitleInBackground(), details,
+                    DecisionFailureReason::HEURISTIC_TITLE);
 }
 
 }  // namespace
@@ -368,9 +425,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
-  // TODO(chrisha): Integrate local database observations into this policy
-  // decision.
-
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that the
   // transition can be denied.
@@ -381,14 +435,17 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
   // Do not freeze tabs that are casting/mirroring/playing audio.
   IsMediaTabImpl(decision_details);
 
-  // TODO(chrisha): Add integration of feature policy and global whitelist
-  // logic. In the meantime, the only success reason is because the heuristic
-  // deems the operation to be safe.
+  // Consult the local database to see if this tab could try to communicate with
+  // the user while in background (don't check for the visibility here as
+  // there's already a check for that above).
+  CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
+                                                    decision_details);
+
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
         DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);
-    DCHECK(decision_details->IsPositive());
   }
+
   return decision_details->IsPositive();
 }
 
@@ -444,9 +501,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 #endif  // defined(OS_CHROMEOS)
   }
 
-// TODO(chrisha): Integrate local database observations into this policy
-// decision.
-
 // We deliberately run through all of the logic without early termination.
 // This ensures that the decision details lists all possible reasons that the
 // transition can be denied.
@@ -480,9 +534,14 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
         DecisionFailureReason::LIVE_STATE_EXTENSION_DISALLOWED);
   }
 
-  // TODO(chrisha): Add integration of feature policy and global whitelist
-  // logic. In the meantime, the only success reason is because the heuristic
-  // deems the operation to be safe.
+  // Consult the local database to see if this tab could try to communicate with
+  // the user while in background (don't check for the visibility here as
+  // there's already a check for that above).
+  if (reason != DiscardReason::kUrgent) {
+    CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
+                                                      decision_details);
+  }
+
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
         DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);

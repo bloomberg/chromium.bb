@@ -130,6 +130,17 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
       site_characteristics_.mutable_uses_notifications_in_background());
 }
 
+void LocalSiteCharacteristicsDataImpl::ExpireAllObservationWindowsForTesting() {
+  auto params = GetSiteCharacteristicsDatabaseParams();
+  base::TimeDelta longest_observation_window =
+      std::max({params.favicon_update_observation_window,
+                params.title_update_observation_window,
+                params.audio_usage_observation_window,
+                params.notifications_usage_observation_window});
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    IncrementFeatureObservationDuration(iter, longest_observation_window);
+}
+
 LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     const url::Origin& origin,
     OnDestroyDelegate* delegate,

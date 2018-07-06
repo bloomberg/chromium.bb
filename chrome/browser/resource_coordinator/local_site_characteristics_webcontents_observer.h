@@ -61,6 +61,7 @@ class LocalSiteCharacteristicsWebContentsObserver
     return writer_.get();
   }
   url::Origin GetWriterOriginForTesting() const { return writer_origin_; }
+  void ResetWriterForTesting() { writer_.reset(); }
 
  private:
   // Indicates if the feature usage event just received should be ignored.

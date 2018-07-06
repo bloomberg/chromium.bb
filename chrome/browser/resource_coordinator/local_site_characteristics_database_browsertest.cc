@@ -121,10 +121,9 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     std::unique_ptr<SiteCharacteristicsDataReader> reader =
         data_store->GetReaderForOrigin(origin);
 
-    internal::LocalSiteCharacteristicsDataImpl* impl =
+    const internal::LocalSiteCharacteristicsDataImpl* impl =
         static_cast<LocalSiteCharacteristicsDataReader*>(reader.get())
-            ->impl_for_testing()
-            .get();
+            ->impl_for_testing();
     while (!impl->site_characteristics_for_testing().IsInitialized())
       base::RunLoop().RunUntilIdle();
     return reader;
@@ -441,10 +440,9 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
     contents->WasHidden();
   }
 
-  internal::LocalSiteCharacteristicsDataImpl* impl =
+  const internal::LocalSiteCharacteristicsDataImpl* impl =
       static_cast<LocalSiteCharacteristicsDataReader*>(test_reader.get())
-          ->impl_for_testing()
-          .get();
+          ->impl_for_testing();
   EXPECT_TRUE(impl);
   EXPECT_EQ(3U, impl->loaded_tabs_count_for_testing());
   EXPECT_EQ(3U, impl->loaded_tabs_in_background_count_for_testing());

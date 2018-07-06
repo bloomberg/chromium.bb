@@ -11,6 +11,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
@@ -19,7 +22,6 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -66,7 +68,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
 };
 
-class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
+class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
  protected:
   using TabLifecycleUnit = TabLifecycleUnitSource::TabLifecycleUnit;
 
@@ -75,14 +77,15 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
+    ChromeTestHarnessWithLocalDB::SetUp();
 
     std::unique_ptr<content::WebContents> test_web_contents =
         CreateTestWebContents();
     web_contents_ = test_web_contents.get();
+    ResourceCoordinatorTabHelper::CreateForWebContents(web_contents_);
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents_)
-        ->SetLastCommittedURL(GURL("https://www.example.com"));
+        ->NavigateAndCommit(GURL("https://www.example.com"));
 
     tab_strip_model_ =
         std::make_unique<TabStripModel>(&tab_strip_model_delegate_, profile());
@@ -95,16 +98,39 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
     tab_strip_model_->AppendWebContents(std::move(second_web_contents),
                                         /*foreground=*/true);
     raw_second_web_contents->WasHidden();
+
+    testing::WaitForLocalDBEntryToBeInitialized(
+        web_contents_,
+        base::BindRepeating([]() { base::RunLoop().RunUntilIdle(); }));
+
+    testing::ExpireLocalDBObservationWindows(web_contents_);
   }
 
   void TearDown() override {
     while (!tab_strip_model_->empty())
       tab_strip_model_->DetachWebContentsAt(0);
     tab_strip_model_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
+    ChromeTestHarnessWithLocalDB::TearDown();
   }
 
-  testing::StrictMock<MockTabLifecycleObserver> observer_;
+  void TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason failure_reason,
+      void (SiteCharacteristicsDataWriter::*notify_feature_usage_method)());
+
+  // Create a new test WebContents and append it to the tab strip to allow
+  // testing discarding and freezing operations on it. The returned WebContents
+  // is in the hidden state.
+  content::WebContents* AddNewHiddenWebContentsToTabStrip() {
+    std::unique_ptr<content::WebContents> test_web_contents =
+        CreateTestWebContents();
+    content::WebContents* web_contents = test_web_contents.get();
+    ResourceCoordinatorTabHelper::CreateForWebContents(web_contents);
+    tab_strip_model_->AppendWebContents(std::move(test_web_contents), false);
+    web_contents->WasHidden();
+    return web_contents;
+  }
+
+  ::testing::StrictMock<MockTabLifecycleObserver> observer_;
   base::ObserverList<TabLifecycleObserver> observers_;
   content::WebContents* web_contents_;  // Owned by tab_strip_model_.
   std::unique_ptr<TabStripModel> tab_strip_model_;
@@ -116,6 +142,50 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitTest);
 };
+
+void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
+    DecisionFailureReason failure_reason,
+    void (SiteCharacteristicsDataWriter::*notify_feature_usage_method)()) {
+  testing::GetLocalSiteCharacteristicsDataImplForWC(web_contents_)
+      ->ClearObservationsAndInvalidateReadOperationForTesting();
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+  auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents_)
+                       ->local_site_characteristics_wc_observer_for_testing();
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  testing::MarkWebContentsAsLoadedInBackground(web_contents_);
+  if (notify_feature_usage_method) {
+    // If |notify_feature_usage_method| is not null then all the observation
+    // windows should be expired to make sure that |CanDiscard| doesn't return
+    // false simply because of a lack of observations.
+    testing::ExpireLocalDBObservationWindows(web_contents_);
+    (observer->GetWriterForTesting()->*notify_feature_usage_method)();
+  }
+  {
+    DecisionDetails decision_details;
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
+                                               &decision_details));
+    EXPECT_FALSE(decision_details.IsPositive());
+    EXPECT_EQ(failure_reason, decision_details.FailureReason());
+  }
+  {
+    DecisionDetails decision_details;
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal,
+                                               &decision_details));
+    EXPECT_FALSE(decision_details.IsPositive());
+    EXPECT_EQ(failure_reason, decision_details.FailureReason());
+  }
+  // Heuristics shouldn't be considered for urgent tab discarding.
+  {
+    DecisionDetails decision_details;
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent,
+                                              &decision_details));
+    EXPECT_TRUE(decision_details.IsPositive());
+  }
+
+  testing::GetLocalSiteCharacteristicsDataImplForWC(web_contents_)
+      ->NotifySiteUnloaded(TabVisibility::kBackground);
+}
 
 TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
@@ -159,7 +229,7 @@ TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
 
   EXPECT_CALL(observer_, OnAutoDiscardableStateChange(web_contents_, false));
   tab_lifecycle_unit.SetAutoDiscardable(false);
-  testing::Mock::VerifyAndClear(&observer_);
+  ::testing::Mock::VerifyAndClear(&observer_);
   EXPECT_FALSE(tab_lifecycle_unit.IsAutoDiscardable());
   ExpectCanDiscardFalseAllReasons(
       &tab_lifecycle_unit,
@@ -167,7 +237,7 @@ TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
 
   EXPECT_CALL(observer_, OnAutoDiscardableStateChange(web_contents_, true));
   tab_lifecycle_unit.SetAutoDiscardable(true);
-  testing::Mock::VerifyAndClear(&observer_);
+  ::testing::Mock::VerifyAndClear(&observer_);
   EXPECT_TRUE(tab_lifecycle_unit.IsAutoDiscardable());
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
@@ -193,19 +263,23 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardInvalidURL) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+  content::WebContents* web_contents = AddNewHiddenWebContentsToTabStrip();
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents,
                                       tab_strip_model_.get());
-
-  content::WebContentsTester::For(web_contents_)
-      ->SetLastCommittedURL(GURL("invalid :)"));
+  // TODO(sebmarchand): Fix this test, this doesn't really test that it's not
+  // possible to discard an invalid URL, TestWebContents::GetLastCommittedURL()
+  // doesn't return the URL set with "SetLastCommittedURL" if this one is
+  // invalid.
+  content::WebContentsTester::For(web_contents)
+      ->SetLastCommittedURL(GURL("Invalid :)"));
   ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardEmptyURL) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+  content::WebContents* web_contents = AddNewHiddenWebContentsToTabStrip();
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents,
                                       tab_strip_model_.get());
 
-  content::WebContentsTester::For(web_contents_)->SetLastCommittedURL(GURL());
   ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
@@ -285,10 +359,40 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
                                   DecisionFailureReason::LIVE_STATE_IS_PDF);
 }
 
+TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabWithAudioHeuristic) {
+  TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason::HEURISTIC_AUDIO,
+      &SiteCharacteristicsDataWriter::NotifyUsesAudioInBackground);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabWithFaviconHeuristic) {
+  TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason::HEURISTIC_FAVICON,
+      &SiteCharacteristicsDataWriter::NotifyUpdatesFaviconInBackground);
+}
+
+TEST_F(TabLifecycleUnitTest,
+       CannotProactivelyDiscardTabWithNotificationsHeuristic) {
+  TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason::HEURISTIC_NOTIFICATIONS,
+      &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabWithTitleHeuristic) {
+  TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason::HEURISTIC_TITLE,
+      &SiteCharacteristicsDataWriter::NotifyUpdatesTitleInBackground);
+}
+
+TEST_F(TabLifecycleUnitTest,
+       CannotProactivelyDiscardTabIfInsufficientObservation) {
+  TestCannotDiscardBasedOnHeuristicUsage(
+      DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION, nullptr);
+}
+
 TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
                                       tab_strip_model_.get());
-  TabLoadTracker::Get()->StartTracking(web_contents_);
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
   {
@@ -300,36 +404,35 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
     DecisionDetails decision_details;
     EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
   }
-  TabLoadTracker::Get()->StopTracking(web_contents_);
 }
 
 TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
                                       tab_strip_model_.get());
 
-  testing::StrictMock<MockLifecycleUnitObserver> observer;
+  ::testing::StrictMock<MockLifecycleUnitObserver> observer;
   tab_lifecycle_unit.AddObserver(&observer);
 
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &tab_lifecycle_unit, content::Visibility::VISIBLE));
   web_contents_->WasShown();
-  testing::Mock::VerifyAndClear(&observer);
+  ::testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &tab_lifecycle_unit, content::Visibility::HIDDEN));
   web_contents_->WasHidden();
-  testing::Mock::VerifyAndClear(&observer);
+  ::testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &tab_lifecycle_unit, content::Visibility::VISIBLE));
   web_contents_->WasShown();
-  testing::Mock::VerifyAndClear(&observer);
+  ::testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_CALL(observer,
               OnLifecycleUnitVisibilityChanged(&tab_lifecycle_unit,
                                                content::Visibility::OCCLUDED));
   web_contents_->WasOccluded();
-  testing::Mock::VerifyAndClear(&observer);
+  ::testing::Mock::VerifyAndClear(&observer);
 
   tab_lifecycle_unit.RemoveObserver(&observer);
 }

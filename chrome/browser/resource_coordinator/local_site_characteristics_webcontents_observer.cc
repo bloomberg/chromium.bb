@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -97,8 +98,7 @@ void LocalSiteCharacteristicsWebContentsObserver::DidFinishNavigation(
   writer_.reset();
   writer_origin_ = url::Origin();
 
-  // Only store information for the HTTP(S) sites for now.
-  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
+  if (!URLShouldBeStoredInLocalDatabase(navigation_handle->GetURL()))
     return;
 
   Profile* profile =
