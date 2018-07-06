@@ -136,11 +136,11 @@ class LoginDisplayHost {
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) = 0;
 
-  // Hide any visible gaia dialog.
-  virtual void HideGaiaDialog() = 0;
+  // Hide any visible oobe dialog.
+  virtual void HideOobeDialog() = 0;
 
-  // Update the size of the gaia dialog.
-  virtual void UpdateGaiaDialogSize(int width, int height) = 0;
+  // Update the size of the oobe dialog.
+  virtual void UpdateOobeDialogSize(int width, int height) = 0;
 
   // Get users that are visible in the login screen UI.
   // This is mainly used by views login screen. WebUI login screen will

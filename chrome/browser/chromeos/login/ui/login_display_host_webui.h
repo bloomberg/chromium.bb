@@ -75,10 +75,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowGaiaDialog(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) override;
-  void HideGaiaDialog() override;
-  void UpdateGaiaDialogSize(int width, int height) override;
+  void HideOobeDialog() override;
+  void UpdateOobeDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
+  void OnCancelPasswordChangedFlow() override;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();

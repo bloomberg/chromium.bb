@@ -89,10 +89,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowGaiaDialog(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) override;
-  void HideGaiaDialog() override;
-  void UpdateGaiaDialogSize(int width, int height) override;
+  void HideOobeDialog() override;
+  void UpdateOobeDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
-  void CancelPasswordChangedFlow() override;
+  void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
 
   // LoginScreenClient::Delegate:
@@ -116,8 +116,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnAuthSuccess(const UserContext& user_context) override;
 
  private:
-  // Initialize the dialog widget for webui (for gaia and post login screens).
-  void InitWidgetAndView();
+  void LoadOobeDialog();
 
   // State associated with a pending authentication attempt.
   struct AuthState {

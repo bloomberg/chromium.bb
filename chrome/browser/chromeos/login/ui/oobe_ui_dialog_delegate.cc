@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -28,6 +29,7 @@ constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
 constexpr int kGaiaDialogHeight = 640;
 constexpr int kGaiaDialogWidth = 768;
 constexpr char kAppLaunchBailout[] = "app_launch_bailout";
+constexpr char kCancel[] = "cancel";
 
 }  // namespace
 
@@ -41,14 +43,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   tablet_mode_observer_.Add(TabletModeClient::Get());
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
-}
+  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, 0)] = kCancel;
 
-OobeUIDialogDelegate::~OobeUIDialogDelegate() {
-  if (controller_)
-    controller_->OnDialogDestroyed(this);
-}
-
-void OobeUIDialogDelegate::Init() {
   DCHECK(!dialog_view_ && !dialog_widget_);
   // Life cycle of |dialog_view_| is managed by the widget:
   // Widget owns a root view which has |dialog_view_| as its child view.
@@ -67,6 +63,11 @@ void OobeUIDialogDelegate::Init() {
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
+}
+
+OobeUIDialogDelegate::~OobeUIDialogDelegate() {
+  if (controller_)
+    controller_->OnDialogDestroyed(this);
 }
 
 content::WebContents* OobeUIDialogDelegate::GetWebContents() {
@@ -90,15 +91,17 @@ void OobeUIDialogDelegate::ShowFullScreen() {
 }
 
 void OobeUIDialogDelegate::Hide() {
-  if (dialog_widget_) {
-    LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
-    dialog_widget_->Hide();
-  }
+  if (!dialog_widget_)
+    return;
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
+  dialog_widget_->Hide();
 }
 
 void OobeUIDialogDelegate::Close() {
-  if (dialog_widget_)
-    dialog_widget_->Close();
+  if (!dialog_widget_)
+    return;
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
+  dialog_widget_->Close();
 }
 
 void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {
@@ -216,14 +219,6 @@ std::vector<ui::Accelerator> OobeUIDialogDelegate::GetAccelerators() {
 
 bool OobeUIDialogDelegate::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  if (ui::VKEY_ESCAPE == accelerator.key_code()) {
-    // The widget should not be closed until the login is done. Consume the
-    // escape key here so WebDialogView won't have a chance to close the widget.
-    if (closable_by_esc_ && controller_)
-      controller_->HideGaiaDialog();
-    return true;
-  }
-
   auto entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
