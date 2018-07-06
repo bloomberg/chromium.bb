@@ -2041,6 +2041,83 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
 }
 
+// For infinite scrolling page (load more content when scroll to bottom), user
+// press on scrollbar button should keep scrolling after content loaded.
+// Disable on Android since VirtualTime not work for Android.
+// http://crbug.com/633321
+#if defined(OS_ANDROID)
+TEST_F(ScrollbarsTestWithVirtualTimer,
+       DISABLED_PressScrollbarButtonOnInfiniteScrolling) {
+#else
+TEST_F(ScrollbarsTestWithVirtualTimer,
+       PressScrollbarButtonOnInfiniteScrolling) {
+#endif
+  TimeAdvance();
+  GetDocument().GetFrame()->GetSettings()->SetScrollAnimatorEnabled(false);
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  RunTasksForPeriod(1000);
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body{
+      margin: 0;
+    }
+    ::-webkit-scrollbar {
+      width: 30px;
+      height: 30px;
+    }
+    ::-webkit-scrollbar-button {
+      width: 30px;
+      height: 30px;
+      background: #00FF00;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #0000FF;
+    }
+    ::-webkit-scrollbar-track {
+      background: #aaaaaa;
+    }
+    #big {
+      height: 400px;
+    }
+    </style>
+    <div id='big'>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  ScrollableArea* scrollable_area =
+      WebView().MainFrameImpl()->GetFrameView()->LayoutViewport();
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+
+  // Scroll to bottom.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll,
+                                   kScrollBehaviorInstant);
+  EXPECT_EQ(scrollable_area->ScrollOffsetInt(), IntSize(0, 200));
+
+  HandleMouseMoveEvent(195, 195);
+  HandleMousePressEvent(195, 195);
+  ASSERT_EQ(scrollbar->PressedPart(), ScrollbarPart::kForwardButtonEndPart);
+
+  // Wait for 2 delay.
+  RunTasksForPeriod(1000);
+  RunTasksForPeriod(1000);
+  // Change #big size.
+  MainFrame().ExecuteScript(WebScriptSource(
+      "document.getElementById('big').style.height = '1000px';"));
+  Compositor().BeginFrame();
+
+  RunTasksForPeriod(1000);
+  RunTasksForPeriod(1000);
+
+  // Keep Scrolling.
+  EXPECT_GT(scrollable_area->ScrollOffsetInt().Height(), 200);
+}
+
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {
  public:
   void PrepareTest(const String& track_style) {
