@@ -95,30 +95,48 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   bool HistoryContainsURL(const GURL& url) {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
+    base::RunLoop run_loop;
     bool success = false;
     base::CancelableTaskTracker tracker;
     HistoryServiceFactory::GetForProfile(browser()->profile(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
         ->QueryURL(url, true,
-                   base::Bind(&HistoryBrowserTest::SaveResultAndQuit,
-                              base::Unretained(this), &success,
-                              message_loop_runner->QuitClosure()),
+                   base::BindOnce(&HistoryBrowserTest::SaveResultAndQuit,
+                                  base::Unretained(this), &success, nullptr,
+                                  run_loop.QuitClosure()),
                    &tracker);
-    message_loop_runner->Run();
+    run_loop.Run();
     return success;
+  }
+
+  history::URLRow LookUpURLInHistory(const GURL& url) {
+    base::RunLoop run_loop;
+    history::URLRow row;
+    base::CancelableTaskTracker tracker;
+    HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryURL(url, true,
+                   base::BindOnce(&HistoryBrowserTest::SaveResultAndQuit,
+                                  base::Unretained(this), nullptr, &row,
+                                  run_loop.QuitClosure()),
+                   &tracker);
+    run_loop.Run();
+    return row;
   }
 
  private:
   // Callback for HistoryService::QueryURL.
   void SaveResultAndQuit(bool* success_out,
-                         const base::Closure& closure,
+                         history::URLRow* url_row_out,
+                         base::OnceClosure closure,
                          bool success,
-                         const history::URLRow&,
-                         const history::VisitVector&) {
-    *success_out = success;
-    closure.Run();
+                         const history::URLRow& url_row,
+                         const history::VisitVector& visit_vector) {
+    if (success_out)
+      *success_out = success;
+    if (url_row_out)
+      *url_row_out = url_row;
+    std::move(closure).Run();
   }
 
   net::EmbeddedTestServer test_server_;
@@ -578,6 +596,34 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(url2, urls[0]);
   ASSERT_EQ(url1, urls[1]);
+}
+
+// Verify that pushState() correctly sets the title of the second history entry.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, PushStateSetsTitle) {
+  // Use the default embedded_test_server() for this test because pushState
+  // requires a real, non-file URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::string16 title = web_contents->GetTitle();
+
+  // Do a pushState to create a new navigation entry and a new history entry.
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     "history.pushState({},'','test.html')"));
+  content::WaitForLoadStop(web_contents);
+
+  // This should result in two history entries.
+  std::vector<GURL> urls(GetHistoryContents());
+  ASSERT_EQ(2u, urls.size());
+  EXPECT_NE(urls[0], urls[1]);
+
+  // History entry [0] is the newest one.
+  history::URLRow row0 = LookUpURLInHistory(urls[0]);
+  EXPECT_EQ(title, row0.title());
+  history::URLRow row1 = LookUpURLInHistory(urls[1]);
+  EXPECT_EQ(title, row1.title());
 }
 
 // Verify that submitting form adds target page to history list.

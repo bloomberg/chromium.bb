@@ -518,9 +518,9 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         ui::PAGE_TRANSITION_CHAIN_END);
 
     // No redirect case (one element means just the page itself).
-    last_ids =
-        AddPageVisit(request.url, request.time, last_ids.second, t,
-                     request.hidden, request.visit_source, IsTypedIncrement(t));
+    last_ids = AddPageVisit(request.url, request.time, last_ids.second, t,
+                            request.hidden, request.visit_source,
+                            IsTypedIncrement(t), request.title);
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
     // result in changing most visited, so we don't update segments (most
@@ -627,9 +627,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       // Record all redirect visits with the same timestamp. We don't display
       // them anyway, and if we ever decide to, we can reconstruct their order
       // from the redirect chain.
-      last_ids = AddPageVisit(
-          redirects[redirect_index], request.time, last_ids.second, t,
-          request.hidden, request.visit_source, should_increment_typed_count);
+      last_ids =
+          AddPageVisit(redirects[redirect_index], request.time, last_ids.second,
+                       t, request.hidden, request.visit_source,
+                       should_increment_typed_count, request.title);
 
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
         if (request.consider_for_ntp_most_visited) {
@@ -826,7 +827,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     ui::PageTransition transition,
     bool hidden,
     VisitSource visit_source,
-    bool should_increment_typed_count) {
+    bool should_increment_typed_count,
+    base::Optional<base::string16> title) {
   if (!host_ranks_.empty() && visit_source == SOURCE_BROWSED &&
       (transition & ui::PAGE_TRANSITION_CHAIN_END)) {
     RecordTopHostsMetrics(url);
@@ -843,6 +845,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
       url_info.set_typed_count(url_info.typed_count() + 1);
     if (url_info.last_visit() < time)
       url_info.set_last_visit(time);
+    if (title)
+      url_info.set_title(title.value());
 
     // Only allow un-hiding of pages, never hiding.
     if (!hidden)
@@ -854,6 +858,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     url_info.set_visit_count(1);
     url_info.set_typed_count(should_increment_typed_count ? 1 : 0);
     url_info.set_last_visit(time);
+    if (title)
+      url_info.set_title(title.value());
     url_info.set_hidden(hidden);
 
     url_id = db_->AddURL(url_info);

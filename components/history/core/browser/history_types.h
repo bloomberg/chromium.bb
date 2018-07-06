@@ -366,7 +366,11 @@ struct HistoryAddPageArgs {
   //   HistoryAddPageArgs(
   //       GURL(), base::Time(), NULL, 0, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
-  //       false, SOURCE_BROWSED, false, true)
+  //       false, SOURCE_BROWSED, false, true,
+  //       base::nullopt)
+  //
+  // TODO(avi): Is ContextID needed, now that we have a globally-unique
+  // nav_entry_id? https://crbug.com/859902
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
@@ -378,7 +382,8 @@ struct HistoryAddPageArgs {
                      bool hidden,
                      VisitSource source,
                      bool did_replace_entry,
-                     bool consider_for_ntp_most_visited);
+                     bool consider_for_ntp_most_visited,
+                     base::Optional<base::string16> title = base::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
   ~HistoryAddPageArgs();
 
@@ -397,6 +402,7 @@ struct HistoryAddPageArgs {
   // doesn't guarantee it's relevant for Most Visited, since other requirements
   // exist (e.g. certain page transition types).
   bool consider_for_ntp_most_visited;
+  base::Optional<base::string16> title;
 };
 
 // TopSites -------------------------------------------------------------------
