@@ -62,9 +62,16 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     aborted_jobs_.insert(job_unique_id);
   }
 
+  void UpdateUI(const std::string& job_unique_id,
+                const std::string& title) override {
+    ++title_update_count_;
+  }
+
   void set_complete_downloads(bool complete_downloads) {
     complete_downloads_ = complete_downloads;
   }
+
+  int title_update_count_ = 0;
 
  private:
   void CompleteDownload(const std::string& job_unique_id,
@@ -237,6 +244,31 @@ TEST_F(BackgroundFetchDelegateProxyTest, GetIconDisplaySize) {
   run_loop.Run();
   EXPECT_EQ(out_display_size.width(), kIconDisplaySize);
   EXPECT_EQ(out_display_size.height(), kIconDisplaySize);
+}
+
+TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
+  FakeController controller;
+  ServiceWorkerFetchRequest fetch_request;
+
+  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto fetch_description = std::make_unique<BackgroundFetchDescription>(
+      kExampleUniqueId, "Job 1 Started.", url::Origin(), SkBitmap(),
+      0 /* completed_parts */, 1 /* total_parts */,
+      0 /* completed_parts_size */, 0 /* total_parts_size */,
+      std::vector<std::string>());
+
+  delegate_proxy_.CreateDownloadJob(controller.weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(fetch_description));
+
+  delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(controller.request_started_);
+  EXPECT_TRUE(controller.request_completed_);
+
+  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(delegate_.title_update_count_, 1);
 }
 
 }  // namespace content

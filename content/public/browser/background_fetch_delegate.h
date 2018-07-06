@@ -117,6 +117,11 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   // Aborts any downloads associated with |job_unique_id|.
   virtual void Abort(const std::string& job_unique_id) = 0;
 
+  // Updates the UI shown for the fetch job associated with |job_unique_id| to
+  // display a new |title|.
+  virtual void UpdateUI(const std::string& job_unique_id,
+                        const std::string& title) = 0;
+
   // Set the client that the delegate should communicate changes to.
   void SetDelegateClient(base::WeakPtr<Client> client) { client_ = client; }
 

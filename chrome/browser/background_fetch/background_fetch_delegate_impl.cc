@@ -207,6 +207,23 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
   job_details_map_.erase(job_details_iter);
 }
 
+void BackgroundFetchDelegateImpl::UpdateUI(const std::string& job_unique_id,
+                                           const std::string& title) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+
+  // Update the title, if it's different.
+  if (job_details.fetch_description->title == title)
+    return;
+  job_details.fetch_description->title = title;
+  UpdateOfflineItemAndUpdateObservers(&job_details);
+}
+
 void BackgroundFetchDelegateImpl::OnDownloadStarted(
     const std::string& download_guid,
     std::unique_ptr<content::BackgroundFetchResponse> response) {
