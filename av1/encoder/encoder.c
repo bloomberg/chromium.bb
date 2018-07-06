@@ -4572,7 +4572,11 @@ static void set_ext_overrides(AV1_COMP *cpi) {
     cpi->ext_refresh_frame_flags_pending = 0;
   }
   cpi->common.allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;
-  cpi->common.error_resilient_mode = cpi->ext_use_error_resilient;
+  // A keyframe is already error resilient and keyframes with
+  // error_resilient_mode interferes with the use of show_existing_frame
+  // when forward reference keyframes are enabled.
+  cpi->common.error_resilient_mode =
+      cpi->ext_use_error_resilient && cpi->common.frame_type != KEY_FRAME;
 }
 
 static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
@@ -5660,7 +5664,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->reset_decoder_state = 0;
 
   // Don't allow a show_existing_frame to coincide with an error resilient or
-  // S-Frame
+  // S-Frame. An exception can be made in the case of a keyframe, since it
+  // does not depend on any previous frames. We must make this exception here
+  // because of the use of show_existing_frame with forward coded keyframes.
   struct lookahead_entry *lookahead_src = NULL;
   if (cm->current_video_frame > 0)
     lookahead_src = av1_lookahead_peek(cpi->lookahead, 0);
@@ -5668,7 +5674,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       ((cpi->oxcf.error_resilient_mode |
         ((lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT) != 0)) ||
        (cpi->oxcf.s_frame_mode |
-        ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0)))) {
+        ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0))) &&
+      !(rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY))) {
     cm->show_existing_frame = 0;
   }
 
