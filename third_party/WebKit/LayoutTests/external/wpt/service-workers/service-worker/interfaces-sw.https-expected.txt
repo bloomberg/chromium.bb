@@ -29,8 +29,6 @@ PASS ServiceWorkerRegistration interface: attribute waiting
 PASS Unscopable handled correctly for waiting property on ServiceWorkerRegistration
 PASS ServiceWorkerRegistration interface: attribute active
 PASS Unscopable handled correctly for active property on ServiceWorkerRegistration
-PASS ServiceWorkerRegistration interface: attribute navigationPreload
-PASS Unscopable handled correctly for navigationPreload property on ServiceWorkerRegistration
 PASS ServiceWorkerRegistration interface: attribute scope
 PASS Unscopable handled correctly for scope property on ServiceWorkerRegistration
 PASS ServiceWorkerRegistration interface: attribute updateViaCache
@@ -46,26 +44,11 @@ PASS Stringification of self.registration
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "installing" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "waiting" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "active" with the proper type
-PASS ServiceWorkerRegistration interface: self.registration must inherit property "navigationPreload" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "scope" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "updateViaCache" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "update()" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "unregister()" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "onupdatefound" with the proper type
-PASS NavigationPreloadManager interface: existence and properties of interface object
-PASS NavigationPreloadManager interface object length
-PASS NavigationPreloadManager interface object name
-PASS NavigationPreloadManager interface: existence and properties of interface prototype object
-PASS NavigationPreloadManager interface: existence and properties of interface prototype object's "constructor" property
-PASS NavigationPreloadManager interface: existence and properties of interface prototype object's @@unscopables property
-PASS NavigationPreloadManager interface: operation enable()
-PASS Unscopable handled correctly for enable() on NavigationPreloadManager
-PASS NavigationPreloadManager interface: operation disable()
-PASS Unscopable handled correctly for disable() on NavigationPreloadManager
-PASS NavigationPreloadManager interface: operation setHeaderValue(ByteString)
-PASS Unscopable handled correctly for setHeaderValue(ByteString) on NavigationPreloadManager
-PASS NavigationPreloadManager interface: operation getState()
-PASS Unscopable handled correctly for getState() on NavigationPreloadManager
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
 PASS ServiceWorkerGlobalScope interface object length
 PASS ServiceWorkerGlobalScope interface object name
