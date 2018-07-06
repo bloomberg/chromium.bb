@@ -24,14 +24,14 @@ namespace blink {
 SimCompositor::SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
 
-  // SimCompositor overrides the RenderWidgetCompositorDelegate to respond to
+  // SimCompositor overrides the LayerTreeViewDelegate to respond to
   // BeginMainFrame(), which will update and paint the WebViewImpl given to
   // SetWebView().
-  compositor_ = compositor_factory_.Initialize(this);
+  layer_tree_view_ = layer_tree_view_factory_.Initialize(this);
   // SimCompositor starts with defer commits enabled, but uses synchronous
   // compositing which does not use defer commits anyhow, it only uses it for
   // reading defered state in tests.
-  compositor_->SetDeferCommits(true);
+  layer_tree_view_->SetDeferCommits(true);
 }
 
 SimCompositor::~SimCompositor() {
@@ -44,8 +44,8 @@ void SimCompositor::SetWebView(WebViewImpl& web_view) {
 
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK(web_view_);
-  DCHECK(!compositor_->layer_tree_host()->defer_commits());
-  DCHECK(compositor_->layer_tree_host()->RequestedMainFramePending());
+  DCHECK(!layer_tree_view_->layer_tree_host()->defer_commits());
+  DCHECK(layer_tree_view_->layer_tree_host()->RequestedMainFramePending());
   DCHECK_GT(time_delta_in_seconds, 0);
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
@@ -53,7 +53,8 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   SimCanvas::Commands commands;
   paint_commands_ = &commands;
 
-  compositor_->layer_tree_host()->Composite(last_frame_time_, /*raster=*/false);
+  layer_tree_view_->layer_tree_host()->Composite(last_frame_time_,
+                                                 /*raster=*/false);
 
   paint_commands_ = nullptr;
   return commands;
@@ -76,10 +77,10 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
 }
 
 void SimCompositor::RequestNewLayerTreeFrameSink(
-    const content::LayerTreeFrameSinkCallback& callback) {
+    LayerTreeFrameSinkCallback callback) {
   // Make a valid LayerTreeFrameSink so the compositor will generate begin main
   // frames.
-  callback.Run(cc::FakeLayerTreeFrameSink::Create3d());
+  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
 }
 
 void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {

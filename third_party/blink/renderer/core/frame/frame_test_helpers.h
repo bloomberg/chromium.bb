@@ -38,8 +38,8 @@
 
 #include "base/macros.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/test/stub_render_widget_compositor_delegate.h"
+#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/test/stub_layer_tree_view_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -162,21 +162,20 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
-// A class that constructs and owns a content::RenderWidgetCompositor for blink
+// A class that constructs and owns a LayerTreeView for blink
 // unit tests.
-class RenderWidgetCompositorFactory {
+class LayerTreeViewFactory {
  public:
-  // Use this to make a RenderWidgetCompositor with a stub delegate.
-  content::RenderWidgetCompositor* Initialize();
+  // Use this to make a LayerTreeView with a stub delegate.
+  content::LayerTreeView* Initialize();
   // Use this to specify a delegate instead of using a stub.
-  content::RenderWidgetCompositor* Initialize(
-      content::RenderWidgetCompositorDelegate*);
+  content::LayerTreeView* Initialize(content::LayerTreeViewDelegate*);
 
  private:
-  content::StubRenderWidgetCompositorDelegate delegate_;
+  content::StubLayerTreeViewDelegate delegate_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
-  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
+  std::unique_ptr<content::LayerTreeView> layer_tree_view_;
 };
 
 class TestWebWidgetClient : public WebWidgetClient {
@@ -187,14 +186,14 @@ class TestWebWidgetClient : public WebWidgetClient {
   WebLayerTreeView* InitializeLayerTreeView() override;
 
  private:
-  RenderWidgetCompositorFactory compositor_factory_;
+  LayerTreeViewFactory layer_tree_view_factory_;
 };
 
 class TestWebViewClient : public WebViewClient {
  public:
   ~TestWebViewClient() override = default;
 
-  content::RenderWidgetCompositor* compositor() { return compositor_; }
+  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
   // WebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
@@ -205,8 +204,8 @@ class TestWebViewClient : public WebViewClient {
   bool CanUpdateLayout() override { return true; }
 
  private:
-  content::RenderWidgetCompositor* compositor_ = nullptr;
-  RenderWidgetCompositorFactory compositor_factory_;
+  content::LayerTreeView* layer_tree_view_ = nullptr;
+  LayerTreeViewFactory layer_tree_view_factory_;
   bool animation_scheduled_ = false;
 };
 

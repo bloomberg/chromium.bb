@@ -56,7 +56,7 @@ specific_include_rules = {
     ".*_test(_.*)?\.(cc|h)" : [
         # Test harness may use cc directly instead of going through WebViewImpl etc.
         "+cc",
-	# TODO(crbug.com/838693): Test harnesses use RenderWidgetCompositor
+	# TODO(crbug.com/838693): Test harnesses use LayerTreeView
 	# from content instead of a fake WebLayerTreeView implementation, so
 	# that the Web abstraction can go away.
         "+content/renderer/gpu",

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_STUB_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
-#define CONTENT_TEST_STUB_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
+#ifndef CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
+#define CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 
-#include "base/macros.h"
-#include "content/renderer/gpu/render_widget_compositor_delegate.h"
+#include "content/renderer/gpu/layer_tree_view_delegate.h"
 
 namespace content {
 
-class StubRenderWidgetCompositorDelegate
-    : public RenderWidgetCompositorDelegate {
+class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
  public:
-  // RenderWidgetCompositorDelegate implementation.
+  // LayerTreeViewDelegate implementation.
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
@@ -23,7 +21,7 @@ class StubRenderWidgetCompositorDelegate
                                          bool has_scrolled_by_touch) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
   void RequestNewLayerTreeFrameSink(
-      const LayerTreeFrameSinkCallback& callback) override;
+      LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
@@ -38,4 +36,4 @@ class StubRenderWidgetCompositorDelegate
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_STUB_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
+#endif  // CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_

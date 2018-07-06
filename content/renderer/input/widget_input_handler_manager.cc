@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/common/input_messages.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -161,7 +161,7 @@ void WidgetInputHandlerManager::Init() {
         FROM_HERE,
         base::BindOnce(
             &WidgetInputHandlerManager::InitOnCompositorThread, this,
-            render_widget_->compositor()->GetInputHandler(),
+            render_widget_->layer_tree_view()->GetInputHandler(),
             render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
             sync_compositing));
   }

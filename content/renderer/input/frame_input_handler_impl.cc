@@ -10,7 +10,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "content/common/input/ime_text_span_conversions.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"

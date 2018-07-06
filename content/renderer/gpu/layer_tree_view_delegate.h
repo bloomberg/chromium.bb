@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
-#define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
+#ifndef CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_
+#define CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_
 
 #include <memory>
 #include <vector>
@@ -11,12 +11,11 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_host_client.h"
-#include "content/common/content_export.h"
 
 namespace cc {
 class LayerTreeFrameSink;
 class SwapPromise;
-}
+}  // namespace cc
 
 namespace gfx {
 class Vector2dF;
@@ -28,13 +27,13 @@ class CopyOutputRequest;
 
 namespace content {
 
-using LayerTreeFrameSinkCallback =
-    base::Callback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
-
-// Consumers of RenderWidgetCompositor implement this delegate in order to
+// Consumers of LayerTreeView implement this delegate in order to
 // transport compositing information across processes.
-class CONTENT_EXPORT RenderWidgetCompositorDelegate {
+class LayerTreeViewDelegate {
  public:
+  using LayerTreeFrameSinkCallback =
+      base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+
   // Report viewport related properties during a commit from the compositor
   // thread.
   virtual void ApplyViewportDeltas(
@@ -55,7 +54,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Requests a LayerTreeFrameSink to submit CompositorFrames to.
   virtual void RequestNewLayerTreeFrameSink(
-      const LayerTreeFrameSinkCallback& callback) = 0;
+      LayerTreeFrameSinkCallback callback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
@@ -70,7 +69,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // will be displayed.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
-  // Indicates whether the RenderWidgetCompositor is about to close.
+  // Indicates whether the LayerTreeView is about to close.
   virtual bool IsClosing() const = 0;
 
   // Requests that the client schedule a composite now, and calculate
@@ -93,9 +92,9 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 
  protected:
-  virtual ~RenderWidgetCompositorDelegate() {}
+  virtual ~LayerTreeViewDelegate() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
+#endif  // CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_

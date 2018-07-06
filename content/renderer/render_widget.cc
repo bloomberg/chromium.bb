@@ -59,8 +59,8 @@
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/gpu/queue_message_swap_promise.h"
-#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -598,7 +598,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
 
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(),
-      compositor_thread_scheduler && compositor_
+      compositor_thread_scheduler && layer_tree_view_
           ? compositor_thread_scheduler->InputTaskRunner()
           : nullptr,
       render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
@@ -749,8 +749,8 @@ void RenderWidget::SetWindowRectSynchronously(
   visual_properties.local_surface_id = local_surface_id_from_parent_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (compositor_)
-    compositor_->RequestNewLocalSurfaceId();
+  if (layer_tree_view_)
+    layer_tree_view_->RequestNewLocalSurfaceId();
   SynchronizeVisualProperties(visual_properties);
 
   view_screen_rect_ = new_window_rect;
@@ -863,8 +863,8 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   if (!needs_repainting)
     return;
 
-  if (compositor_ && !show_request_timestamp.is_null()) {
-    compositor_->layer_tree_host()->RequestPresentationTimeForNextFrame(
+  if (layer_tree_view_ && !show_request_timestamp.is_null()) {
+    layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
         CreateTabSwitchingTimeRecorder(show_request_timestamp));
   }
 }
@@ -920,14 +920,14 @@ void RenderWidget::OnSetFocus(bool enable) {
 }
 
 void RenderWidget::SetNeedsMainFrame() {
-  RenderWidgetCompositor* rwc = compositor();
-  if (!rwc)
+  LayerTreeView* ltv = layer_tree_view();
+  if (!ltv)
     return;
-  rwc->SetNeedsBeginFrame();
+  ltv->SetNeedsBeginFrame();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetCompositorDelegate
+// LayerTreeViewDelegate
 
 void RenderWidget::ApplyViewportDeltas(
     const gfx::Vector2dF& inner_delta,
@@ -961,7 +961,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
 }
 
 void RenderWidget::RequestNewLayerTreeFrameSink(
-    const LayerTreeFrameSinkCallback& callback) {
+    LayerTreeFrameSinkCallback callback) {
   DCHECK(GetWebWidget());
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::LayerTreeFrameSink.
@@ -977,11 +977,11 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   auto render_frame_metadata_observer =
       std::make_unique<RenderFrameMetadataObserverImpl>(std::move(request),
                                                         std::move(client_info));
-  compositor_->SetRenderFrameObserver(
+  layer_tree_view_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
   RenderThreadImpl::current()->RequestNewLayerTreeFrameSink(
       routing_id_, frame_swap_message_queue_, GetURLForGraphicsContext3D(),
-      callback, std::move(client_request), std::move(ptr));
+      std::move(callback), std::move(client_request), std::move(ptr));
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
@@ -1251,8 +1251,8 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 // RenderWidgetScreenMetricsDelegate
 
 void RenderWidget::Redraw() {
-  if (compositor_)
-    compositor_->SetNeedsRedrawRect(gfx::Rect(size_));
+  if (layer_tree_view_)
+    layer_tree_view_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
 
 void RenderWidget::ResizeWebWidget() {
@@ -1313,11 +1313,11 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
       params.local_surface_id.value_or(viz::LocalSurfaceId()),
       new_compositor_viewport_pixel_size, params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
-  if (compositor_) {
-    compositor_->SetBrowserControlsHeight(
+  if (layer_tree_view_) {
+    layer_tree_view_->SetBrowserControlsHeight(
         params.top_controls_height, params.bottom_controls_height,
         params.browser_controls_shrink_blink_size);
-    compositor_->SetRasterColorSpace(
+    layer_tree_view_->SetRasterColorSpace(
         screen_info_.color_space.GetRasterColorSpace());
   }
 
@@ -1371,12 +1371,12 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ = std::make_unique<RenderWidgetCompositor>(
+  layer_tree_view_ = std::make_unique<LayerTreeView>(
       this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
       compositor_deps_->GetCompositorImplThreadTaskRunner(),
       compositor_deps_->GetTaskGraphRunner(),
       compositor_deps_->GetWebMainThreadScheduler());
-  compositor_->Initialize(
+  layer_tree_view_->Initialize(
       GenerateLayerTreeSettings(compositor_deps_, for_oopif_,
                                 screen_info_.rect.size(),
                                 screen_info_.device_scale_factor),
@@ -1384,19 +1384,19 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
-  compositor_->SetRasterColorSpace(
+  layer_tree_view_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
-  compositor_->SetContentSourceId(current_content_source_id_);
+  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   // For background pages and certain tests, we don't want to trigger
   // LayerTreeFrameSink creation.
   bool should_generate_frame_sink =
       !compositor_never_visible_ && RenderThreadImpl::current();
   if (!should_generate_frame_sink)
-    compositor_->SetNeverVisible();
+    layer_tree_view_->SetNeverVisible();
 
   StartCompositor();
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  compositor_->SetFrameSinkId(
+  layer_tree_view_->SetFrameSinkId(
       viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -1408,7 +1408,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateURLForCompositorUkm();
 
-  return compositor_.get();
+  return layer_tree_view_.get();
 }
 
 void RenderWidget::IntrinsicSizingInfoChanged(
@@ -1461,7 +1461,7 @@ std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
 void RenderWidget::QueueMessage(IPC::Message* msg,
                                 MessageDeliveryPolicy policy) {
   // RenderThreadImpl::current() is NULL in some tests.
-  if (!compositor_ || !RenderThreadImpl::current()) {
+  if (!layer_tree_view_ || !RenderThreadImpl::current()) {
     Send(msg);
     return;
   }
@@ -1469,10 +1469,10 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
   std::unique_ptr<cc::SwapPromise> swap_promise =
       QueueMessageImpl(msg, policy, frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
-                       compositor_->GetSourceFrameNumber());
+                       layer_tree_view_->GetSourceFrameNumber());
 
   if (swap_promise)
-    compositor_->QueueSwapPromise(std::move(swap_promise));
+    layer_tree_view_->QueueSwapPromise(std::move(swap_promise));
 }
 
 void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
@@ -1560,7 +1560,7 @@ void RenderWidget::CloseWidgetSoon() {
 void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
   CloseWebWidget();
-  compositor_.reset();
+  layer_tree_view_.reset();
 }
 
 void RenderWidget::CloseWebWidget() {
@@ -1804,11 +1804,11 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
   screen_info_ = new_screen_info;
 
-  if (compositor_) {
-    compositor_->SetViewportVisibleRect(ViewportVisibleRect());
+  if (layer_tree_view_) {
+    layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
     // Note carefully that the DSF specified in |new_screen_info| is not the
     // DSF used by the compositor during device emulation!
-    compositor_->SetViewportSizeAndScale(
+    layer_tree_view_->SetViewportSizeAndScale(
         compositor_viewport_pixel_size_,
         GetOriginalScreenInfo().device_scale_factor,
         local_surface_id_from_parent_);
@@ -1874,7 +1874,7 @@ void RenderWidget::OnSetViewportIntersection(
     DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection);
-    compositor_->SetViewportVisibleRect(ViewportVisibleRect());
+    layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
 
@@ -2227,8 +2227,8 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // |size_| from |compositor_viewport_pixel_size_|. Also note that the
     // calculation of |new_compositor_viewport_pixel_size| does not appear to
     // take into account device emulation.
-    if (compositor_)
-      compositor_->RequestNewLocalSurfaceId();
+    if (layer_tree_view_)
+      layer_tree_view_->RequestNewLocalSurfaceId();
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
@@ -2811,11 +2811,7 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
 
 void RenderWidget::StartCompositor() {
   if (!is_hidden())
-    compositor_->SetVisible(true);
-}
-
-RenderWidgetCompositor* RenderWidget::compositor() const {
-  return compositor_.get();
+    layer_tree_view_->SetVisible(true);
 }
 
 void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
@@ -2934,10 +2930,10 @@ uint32_t RenderWidget::GetContentSourceId() {
 
 void RenderWidget::DidNavigate() {
   ++current_content_source_id_;
-  if (!compositor_)
+  if (!layer_tree_view_)
     return;
-  compositor_->SetContentSourceId(current_content_source_id_);
-  compositor_->ClearCachesOnNextCommit();
+  layer_tree_view_->SetContentSourceId(current_content_source_id_);
+  layer_tree_view_->ClearCachesOnNextCommit();
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
@@ -2974,11 +2970,12 @@ void RenderWidget::SetMouseCapture(bool capture) {
 }
 
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
-  return compositor_ && compositor_->IsSurfaceSynchronizationEnabled();
+  return layer_tree_view_ &&
+         layer_tree_view_->IsSurfaceSynchronizationEnabled();
 }
 
 void RenderWidget::UpdateURLForCompositorUkm() {
-  DCHECK(compositor_);
+  DCHECK(layer_tree_view_);
   blink::WebFrameWidget* frame_widget = GetFrameWidget();
   if (!frame_widget)
     return;
@@ -2987,7 +2984,8 @@ void RenderWidget::UpdateURLForCompositorUkm() {
   if (!render_frame->IsMainFrame())
     return;
 
-  compositor_->SetURLForUkm(render_frame->GetWebFrame()->GetDocument().Url());
+  layer_tree_view_->SetURLForUkm(
+      render_frame->GetWebFrame()->GetDocument().Url());
 }
 
 blink::WebLocalFrame* RenderWidget::GetFocusedWebLocalFrameInWidget() const {
