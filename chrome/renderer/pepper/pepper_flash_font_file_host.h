@@ -14,12 +14,8 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/host/resource_host.h"
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "base/files/scoped_file.h"
-#elif defined(OS_WIN)
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#endif
 
 namespace content {
 class RendererPpapiHost;
@@ -50,11 +46,7 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
                          uint32_t table);
   bool GetFontData(uint32_t table, void* buffer, size_t* length);
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  base::ScopedFD fd_;
-#elif defined(OS_WIN)
   sk_sp<SkTypeface> typeface_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashFontFileHost);
 };

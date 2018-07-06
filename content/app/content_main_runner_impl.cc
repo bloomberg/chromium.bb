@@ -97,13 +97,11 @@
 #if defined(OS_LINUX)
 #include "base/native_library.h"
 #include "base/rand_util.h"
-#include "content/common/font_config_ipc_linux.h"
 #include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
-#include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 
@@ -388,9 +386,6 @@ void PreSandboxInit() {
   PreloadLibraryCdms();
 #endif
   InitializeWebRtcModule();
-
-  SkFontConfigInterface::SetGlobal(
-      sk_make_sp<FontConfigIPC>(service_manager::GetSandboxFD()));
 
   // Set the android SkFontMgr for blink. We need to ensure this is done
   // before the sandbox is initialized to allow the font manager to access

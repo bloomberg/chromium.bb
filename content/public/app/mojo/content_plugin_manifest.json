@@ -25,6 +25,7 @@
           "plugin"
         ],
         "device": [ "device:power_monitor" ],
+        "font_service": [ "font_service" ],
         "ui": [ "discardable_memory" ]
       }
     }

@@ -18,6 +18,10 @@ static_library("mus") {
 
   configs += [ "//content:content_implementation" ]
 
+  public_deps = [
+    "//content/public/common:common_sources",
+  ]
+
   deps = [
     "//base",
     "//cc",
@@ -25,7 +29,6 @@ static_library("mus") {
     "//components/viz/client",
     "//content/common",
     "//content/public/child:child_sources",
-    "//content/public/common:common_sources",
     "//media/mojo/interfaces:remoting",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",

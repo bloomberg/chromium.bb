@@ -197,6 +197,10 @@ service_manifest("packaged_services_manifest") {
     "//services/video_capture:manifest",
     "//services/viz:manifest",
   ]
+
+  if (is_linux && !is_android) {
+    packaged_services += [ "//components/services/font:manifest" ]
+  }
 }
 
 service_manifest("browser_manifest") {
