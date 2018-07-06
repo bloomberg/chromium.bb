@@ -73,10 +73,20 @@ SearchController.prototype = {
 
 /**
  * Clears the search state.
+ * @param {Event=} opt_event when called from "directory-changed" event.
  */
-SearchController.prototype.clear = function() {
+SearchController.prototype.clear = function(opt_event) {
   this.directoryModel_.clearLastSearchQuery();
   this.searchBox_.clear();
+  // Only update visibility if |clear| is called from "directory-changed" event.
+  if (opt_event) {
+    // My Files currently doesn't implement search so let's hide it.
+    const isMyFiles =
+        (opt_event.newDirEntry &&
+         opt_event.newDirEntry.rootType ===
+             VolumeManagerCommon.RootType.MY_FILES);
+    this.searchBox_.setHidden(isMyFiles);
+  }
 };
 
 /**
