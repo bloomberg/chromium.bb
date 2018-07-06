@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
@@ -144,13 +145,17 @@ std::vector<ServiceWorkerFetchRequest> CreateValidRequests(
 
 }  // namespace
 
-class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
+class BackgroundFetchDataManagerTest
+    : public BackgroundFetchTestBase,
+      public BackgroundFetchDataManagerObserver {
  public:
   BackgroundFetchDataManagerTest() {
     RestartDataManagerFromPersistentStorage();
   }
 
-  ~BackgroundFetchDataManagerTest() override = default;
+  ~BackgroundFetchDataManagerTest() override {
+    background_fetch_data_manager_->RemoveObserver(this);
+  }
 
   // Re-creates the data manager. Useful for testing that data was persisted.
   void RestartDataManagerFromPersistentStorage() {
@@ -159,6 +164,8 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
             browser_context(), storage_partition(),
             embedded_worker_test_helper()->context_wrapper(),
             true /* mock_fill_response */);
+
+    background_fetch_data_manager_->AddObserver(this);
     background_fetch_data_manager_->InitializeOnIOThread();
   }
 
@@ -446,6 +453,11 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
     }
     return stats;
   }
+
+  // BackgroundFetchDataManagerObserver mocks:
+  MOCK_METHOD2(OnUpdatedUI,
+               void(const BackgroundFetchRegistrationId& registration,
+                    const std::string& title));
 
  protected:
   void DidGetRegistration(
@@ -766,7 +778,12 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   ASSERT_EQ(title.front(), kInitialTitle);
 
   // Update the title.
-  UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
+  {
+    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle));
+
+    UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
 
   RestartDataManagerFromPersistentStorage();
 

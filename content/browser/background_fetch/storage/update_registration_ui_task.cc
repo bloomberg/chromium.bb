@@ -4,6 +4,8 @@
 
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -48,7 +50,11 @@ void UpdateRegistrationUITask::DidUpdateTitle(
       return;
   }
 
+  for (auto& observer : data_manager()->observers())
+    observer.OnUpdatedUI(registration_id_, updated_title_);
+
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE);
+
   Finished();  // Destroys |this|.
 }
 

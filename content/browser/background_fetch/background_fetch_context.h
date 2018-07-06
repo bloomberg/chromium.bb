@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
@@ -43,7 +44,8 @@ struct ServiceWorkerFetchRequest;
 // Background Fetch requests function similarly to normal fetches except that
 // they are persistent across Chromium or service worker shutdown.
 class CONTENT_EXPORT BackgroundFetchContext
-    : public ServiceWorkerContextCoreObserver,
+    : public BackgroundFetchDataManagerObserver,
+      public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<BackgroundFetchContext,
                                         BrowserThread::DeleteOnIOThread> {
  public:
@@ -111,6 +113,10 @@ class CONTENT_EXPORT BackgroundFetchContext
       const std::string& title,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
+  // BackgroundFetchDataManagerObserver implementation.
+  void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
+                   const std::string& title) override;
+
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
@@ -154,13 +160,6 @@ class CONTENT_EXPORT BackgroundFetchContext
       size_t num_requests,
       blink::mojom::BackgroundFetchError error,
       std::unique_ptr<BackgroundFetchRegistration> registration);
-
-  // Called when the new title has been updated in the data manager.
-  void DidUpdateStoredUI(
-      const std::string& unique_id,
-      const std::string& title,
-      blink::mojom::BackgroundFetchService::UpdateUICallback callback,
-      blink::mojom::BackgroundFetchError error);
 
   // Called by a JobController when it finishes processing. Also used to
   // implement |Abort|.

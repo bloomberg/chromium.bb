@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
@@ -33,6 +34,7 @@ class BlobDataHandle;
 
 namespace content {
 
+class BackgroundFetchDataManagerObserver;
 class BackgroundFetchRequestInfo;
 struct BackgroundFetchSettledFetch;
 class BrowserContext;
@@ -83,6 +85,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Grabs a reference to CacheStorageManager.
   virtual void InitializeOnIOThread();
+
+  // Adds or removes the given |observer| to this data manager instance.
+  void AddObserver(BackgroundFetchDataManagerObserver* observer);
+  void RemoveObserver(BackgroundFetchDataManagerObserver* observer);
 
   // Gets the required data to initialize BackgroundFetchContext with the
   // appropriate JobControllers. This will be called when BackgroundFetchContext
@@ -152,6 +158,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
+  const base::ObserverList<BackgroundFetchDataManagerObserver>& observers() {
+    return observers_;
+  }
+
   const base::RepeatingClosure& abandon_fetches_callback() {
     return abandon_fetches_callback_;
   }
@@ -218,6 +228,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.
   base::queue<std::unique_ptr<background_fetch::DatabaseTask>> database_tasks_;
+
+  base::ObserverList<BackgroundFetchDataManagerObserver> observers_;
 
   // The |unique_id|s of registrations that have been deactivated since the
   // browser was last started. They will be automatically deleted when the

@@ -10,6 +10,7 @@
 #include "base/containers/queue.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/cleanup_task.h"
 #include "content/browser/background_fetch/storage/create_metadata_task.h"
@@ -89,6 +90,18 @@ void BackgroundFetchDataManager::InitializeOnIOThread() {
   Cleanup();
 
   DCHECK(cache_manager_);
+}
+
+void BackgroundFetchDataManager::AddObserver(
+    BackgroundFetchDataManagerObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observers_.AddObserver(observer);
+}
+
+void BackgroundFetchDataManager::RemoveObserver(
+    BackgroundFetchDataManagerObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observers_.RemoveObserver(observer);
 }
 
 void BackgroundFetchDataManager::Cleanup() {
