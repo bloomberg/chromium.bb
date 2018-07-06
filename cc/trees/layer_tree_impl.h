@@ -501,6 +501,9 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       const gfx::PointF& screen_space_point);
 
+  LayerImpl* FindLayerThatIsHitByPointInWheelEventHandlerRegion(
+      const gfx::PointF& screen_space_point);
+
   void RegisterSelection(const LayerSelection& selection);
 
   bool HandleVisibilityChanged() const { return handle_visibility_changed_; }
@@ -602,6 +605,10 @@ class CC_EXPORT LayerTreeImpl {
 
   ElementListType GetElementTypeForAnimation() const;
   void UpdateTransformAnimation(ElementId element_id, int transform_node_index);
+  template <typename Functor>
+  LayerImpl* FindLayerThatIsHitByPointInEventHandlerRegion(
+      const gfx::PointF& screen_space_point,
+      const Functor& func);
 
   LayerTreeHostImpl* host_impl_;
   int source_frame_number_;

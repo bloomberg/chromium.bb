@@ -204,6 +204,11 @@ class CC_EXPORT InputHandler {
   virtual EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const = 0;
 
+  // Returns true if |viewport_point| hits a wheel event handler region that
+  // could block scrolling.
+  virtual bool HasWheelEventHandlerAt(
+      const gfx::Point& viewport_point) const = 0;
+
   // It returns the type of a touch start or move event listener at
   // |viewport_point|. Whether the page should be given the opportunity to
   // suppress scrolling by consuming touch events that started at

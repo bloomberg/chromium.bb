@@ -1193,6 +1193,18 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       inputs_.main_thread_scrolling_reasons);
   layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchActionRegion(inputs_.touch_action_region);
+  // TODO(sunxd): Pass the correct region for wheel event handlers, see
+  // https://crbug.com/841364.
+  if (layer_tree_host()->event_listener_properties(
+          EventListenerClass::kMouseWheel) ==
+          EventListenerProperties::kBlocking ||
+      layer_tree_host()->event_listener_properties(
+          EventListenerClass::kMouseWheel) ==
+          EventListenerProperties::kBlockingAndPassive) {
+    layer->SetWheelEventHandlerRegion(Region(gfx::Rect(bounds())));
+  } else {
+    layer->SetWheelEventHandlerRegion(Region());
+  }
   layer->SetContentsOpaque(inputs_.contents_opaque);
   layer->SetPosition(inputs_.position);
   layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
