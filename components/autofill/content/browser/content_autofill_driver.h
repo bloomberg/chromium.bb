@@ -92,7 +92,8 @@ class ContentAutofillDriver : public AutofillDriver,
   void QueryFormFieldAutofill(int32_t id,
                               const FormData& form,
                               const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override;
+                              const gfx::RectF& bounding_box,
+                              bool autoselect_first_suggestion) override;
   void HidePopup() override;
   void FocusNoLongerOnForm() override;
   void FocusOnFormField(const FormData& form,

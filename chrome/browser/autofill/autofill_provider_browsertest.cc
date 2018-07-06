@@ -46,18 +46,20 @@ class MockAutofillProvider : public TestAutofillProvider {
                     SubmissionSource,
                     base::TimeTicks));
 
-  MOCK_METHOD5(OnQueryFormFieldAutofill,
+  MOCK_METHOD6(OnQueryFormFieldAutofill,
                void(AutofillHandlerProxy* handler,
                     int32_t id,
                     const FormData& form,
                     const FormFieldData& field,
-                    const gfx::RectF& bounding_box));
+                    const gfx::RectF& bounding_box,
+                    bool autoselect_first_suggestion));
 
   void OnQueryFormFieldAutofillImpl(AutofillHandlerProxy* handler,
                                     int32_t id,
                                     const FormData& form,
                                     const FormFieldData& field,
-                                    const gfx::RectF& bounding_box) {
+                                    const gfx::RectF& bounding_box,
+                                    bool autoselect_first_suggestion) {
     queried_form_ = form;
     is_queried_ = true;
   }
@@ -163,7 +165,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
     ReplaceAutofillDriver();
 
     // If AutofillSingleClick is enabled, there may be multiple queries.
-    EXPECT_CALL(*autofill_provider_, OnQueryFormFieldAutofill(_, _, _, _, _))
+    EXPECT_CALL(*autofill_provider_, OnQueryFormFieldAutofill(_, _, _, _, _, _))
         .WillOnce(Invoke(autofill_provider_.get(),
                          &MockAutofillProvider::OnQueryFormFieldAutofillImpl));
 

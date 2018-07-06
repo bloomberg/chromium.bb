@@ -57,7 +57,8 @@ class AutofillHandler {
   void OnQueryFormFieldAutofill(int query_id,
                                 const FormData& form,
                                 const FormFieldData& field,
-                                const gfx::RectF& bounding_box);
+                                const gfx::RectF& bounding_box,
+                                bool autoselect_first_suggestion);
 
   // Invoked when |form|'s |field| has focus.
   void OnFocusOnFormField(const FormData& form,
@@ -133,10 +134,12 @@ class AutofillHandler {
                                         const FormFieldData& field,
                                         const gfx::RectF& bounding_box) = 0;
 
-  virtual void OnQueryFormFieldAutofillImpl(int query_id,
-                                            const FormData& form,
-                                            const FormFieldData& field,
-                                            const gfx::RectF& bounding_box) = 0;
+  virtual void OnQueryFormFieldAutofillImpl(
+      int query_id,
+      const FormData& form,
+      const FormFieldData& field,
+      const gfx::RectF& bounding_box,
+      bool autoselect_first_suggestion) = 0;
 
   virtual void OnFocusOnFormFieldImpl(const FormData& form,
                                       const FormFieldData& field,

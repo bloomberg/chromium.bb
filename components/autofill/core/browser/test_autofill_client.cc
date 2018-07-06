@@ -109,8 +109,8 @@ void TestAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
     const std::vector<Suggestion>& suggestions,
-    base::WeakPtr<AutofillPopupDelegate> delegate) {
-}
+    bool autoselect_first_suggestion,
+    base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
 void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,

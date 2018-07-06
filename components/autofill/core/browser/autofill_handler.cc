@@ -101,17 +101,20 @@ void AutofillHandler::OnSelectControlDidChange(const FormData& form,
   OnSelectControlDidChangeImpl(form, field, transformed_box);
 }
 
-void AutofillHandler::OnQueryFormFieldAutofill(int query_id,
-                                               const FormData& form,
-                                               const FormFieldData& field,
-                                               const gfx::RectF& bounding_box) {
+void AutofillHandler::OnQueryFormFieldAutofill(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box,
+    bool autoselect_first_suggestion) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
   gfx::RectF transformed_box =
       driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
 
-  OnQueryFormFieldAutofillImpl(query_id, form, field, transformed_box);
+  OnQueryFormFieldAutofillImpl(query_id, form, field, transformed_box,
+                               autoselect_first_suggestion);
 }
 
 void AutofillHandler::OnFocusOnFormField(const FormData& form,

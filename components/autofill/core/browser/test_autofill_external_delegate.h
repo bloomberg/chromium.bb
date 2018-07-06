@@ -28,6 +28,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                const gfx::RectF& bounds) override;
   void OnSuggestionsReturned(int query_id,
                              const std::vector<Suggestion>& suggestions,
+                             bool autoselect_first_suggestion,
                              bool is_all_server_suggestions) override;
   bool HasActiveScreenReader() const override;
   void OnAutofillAvailabilityEvent(bool has_suggestions) override;
@@ -53,6 +54,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   bool on_suggestions_returned_seen() const;
 
+  bool autoselect_first_suggestion() const;
+
   bool is_all_server_suggestions() const;
 
   bool popup_hidden() const;
@@ -72,6 +75,9 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   // Records if OnSuggestionsReturned has been called after the most recent
   // call to OnQuery.
   bool on_suggestions_returned_seen_ = false;
+
+  // Records if the first suggestion should be auto-selected.
+  bool autoselect_first_suggestion_ = false;
 
   // Records whether the Autofill suggestions all come from Google Payments.
   bool is_all_server_suggestions_ = false;

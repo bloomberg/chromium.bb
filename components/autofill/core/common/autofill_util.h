@@ -94,6 +94,10 @@ std::vector<std::string> LowercaseAndTokenizeAttributeString(
 // entered by the website and not a real value entered by the user.
 bool SanitizedFieldIsEmpty(const base::string16& value);
 
+// Returns true if the first suggestion should be autoselected when the autofill
+// dropdown is shown due to an arrow down event. Enabled on desktop only.
+bool ShouldAutoselectFirstSuggestionOnArrowDown();
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_

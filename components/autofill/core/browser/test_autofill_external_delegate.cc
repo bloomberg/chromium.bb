@@ -48,10 +48,12 @@ void TestAutofillExternalDelegate::OnQuery(int query_id,
 void TestAutofillExternalDelegate::OnSuggestionsReturned(
     int query_id,
     const std::vector<Suggestion>& suggestions,
+    bool autoselect_first_suggestion,
     bool is_all_server_suggestions) {
   on_suggestions_returned_seen_ = true;
   query_id_ = query_id;
   suggestions_ = suggestions;
+  autoselect_first_suggestion_ = autoselect_first_suggestion;
   is_all_server_suggestions_ = is_all_server_suggestions;
 
   // If necessary, call the superclass's OnSuggestionsReturned in order to
@@ -116,6 +118,10 @@ bool TestAutofillExternalDelegate::on_query_seen() const {
 
 bool TestAutofillExternalDelegate::on_suggestions_returned_seen() const {
   return on_suggestions_returned_seen_;
+}
+
+bool TestAutofillExternalDelegate::autoselect_first_suggestion() const {
+  return autoselect_first_suggestion_;
 }
 
 bool TestAutofillExternalDelegate::is_all_server_suggestions() const {

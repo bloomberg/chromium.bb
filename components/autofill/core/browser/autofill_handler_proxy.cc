@@ -42,9 +42,10 @@ void AutofillHandlerProxy::OnQueryFormFieldAutofillImpl(
     int query_id,
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
-  provider_->OnQueryFormFieldAutofill(this, query_id, form, field,
-                                      bounding_box);
+    const gfx::RectF& bounding_box,
+    bool autoselect_first_suggestion) {
+  provider_->OnQueryFormFieldAutofill(this, query_id, form, field, bounding_box,
+                                      autoselect_first_suggestion);
 }
 
 void AutofillHandlerProxy::OnFocusOnFormFieldImpl(

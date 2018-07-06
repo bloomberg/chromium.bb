@@ -528,7 +528,8 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     int query_id,
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& transformed_box) {
+    const gfx::RectF& transformed_box,
+    bool autoselect_first_suggestion) {
   external_delegate_->OnQuery(query_id, form, field, transformed_box);
 
   std::vector<Suggestion> suggestions;
@@ -543,7 +544,8 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
       case SuppressReason::kCreditCardsAblation:
         enable_ablation_logging_ = true;
         autocomplete_history_manager_->CancelPendingQuery();
-        external_delegate_->OnSuggestionsReturned(query_id, suggestions);
+        external_delegate_->OnSuggestionsReturned(query_id, suggestions,
+                                                  autoselect_first_suggestion);
         return;
 
       case SuppressReason::kAutocompleteOff:
@@ -593,6 +595,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   // Send Autofill suggestions (could be an empty list).
   autocomplete_history_manager_->CancelPendingQuery();
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
+                                            autoselect_first_suggestion,
                                             context.is_all_server_suggestions);
 }
 
