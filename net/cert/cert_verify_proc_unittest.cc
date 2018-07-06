@@ -2760,8 +2760,8 @@ INSTANTIATE_TEST_CASE_P(,
 // NOTE: This test is separate from IntermediateFromAia200 as a different URL
 // needs to be used to avoid having the result depend on globally cached success
 // or failure of the fetch.
-// Test flaky on Win and iOS crbug.com/859387
-#if defined(OS_WIN) || defined(OS_IOS)
+// Test is flaky on iOS crbug.com/860189
+#if defined(OS_IOS)
 #define MAYBE_IntermediateFromAia404 DISABLED_IntermediateFromAia404
 #else
 #define MAYBE_IntermediateFromAia404 IntermediateFromAia404
@@ -2803,11 +2803,20 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
   int error;
   CertVerifyResult verify_result;
 
-  // Verifying the chain should succeed as the intermediate is missing, and
+  // Verifying the chain should fail as the intermediate is missing, and
   // cannot be fetched via AIA.
   error = Verify(chain.get(), kHostname, flags, nullptr, CertificateList(),
                  &verify_result);
-  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+  EXPECT_NE(OK, error);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    // CertVerifyProcWin has a flaky result of ERR_CERT_AUTHORITY_INVALID or
+    // ERR_CERT_INVALID (https://crbug.com/859387) - accept either.
+    EXPECT_TRUE(error == ERR_CERT_AUTHORITY_INVALID || ERR_CERT_INVALID)
+        << "Unexpected error: " << error;
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+  }
 }
 #undef MAYBE_IntermediateFromAia404
 
