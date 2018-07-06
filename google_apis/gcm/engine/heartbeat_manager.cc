@@ -46,10 +46,8 @@ HeartbeatManager::HeartbeatManager()
       heartbeat_interval_ms_(0),
       server_interval_ms_(0),
       client_interval_ms_(0),
-      heartbeat_timer_(new base::Timer(true /* retain_user_task */,
-                                       false /* is_repeating */)),
-      weak_ptr_factory_(this) {
-}
+      heartbeat_timer_(new base::RetainingOneShotTimer()),
+      weak_ptr_factory_(this) {}
 
 HeartbeatManager::~HeartbeatManager() {
   // Stop listening for system suspend and resume events.
@@ -123,7 +121,7 @@ base::TimeTicks HeartbeatManager::GetNextHeartbeatTime() const {
 }
 
 void HeartbeatManager::UpdateHeartbeatTimer(
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::RetainingOneShotTimer> timer) {
   bool was_running = heartbeat_timer_->IsRunning();
   base::TimeDelta remaining_delay =
       heartbeat_timer_->desired_run_time() - base::TimeTicks::Now();

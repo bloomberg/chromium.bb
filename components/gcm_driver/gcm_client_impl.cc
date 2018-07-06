@@ -632,7 +632,8 @@ void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMClientImpl::UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) {
+void GCMClientImpl::UpdateHeartbeatTimer(
+    std::unique_ptr<base::RetainingOneShotTimer> timer) {
   DCHECK(mcs_client_);
   mcs_client_->UpdateHeartbeatTimer(std::move(timer));
 }

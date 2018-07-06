@@ -486,11 +486,11 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 #if defined(OS_CHROMEOS)
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<base::Timer> timer;
+  std::unique_ptr<base::RetainingOneShotTimer> timer;
   if (wake)
     timer = std::make_unique<timers::SimpleAlarmTimer>();
   else
-    timer = std::make_unique<base::Timer>(true, false);
+    timer = std::make_unique<base::RetainingOneShotTimer>();
 
   gcm_client_->UpdateHeartbeatTimer(std::move(timer));
 #endif

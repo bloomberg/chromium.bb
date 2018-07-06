@@ -34,7 +34,7 @@ namespace timers {
 // A SimpleAlarmTimer only fires once but remembers the task that it was given
 // even after it has fired.  Useful if you want to run the same task multiple
 // times but not at a regular interval.
-class SimpleAlarmTimer : public base::Timer {
+class SimpleAlarmTimer : public base::RetainingOneShotTimer {
  public:
   SimpleAlarmTimer();
   ~SimpleAlarmTimer() override;

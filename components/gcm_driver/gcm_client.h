@@ -21,8 +21,8 @@ template <class T> class scoped_refptr;
 
 namespace base {
 class FilePath;
+class RetainingOneShotTimer;
 class SequencedTaskRunner;
-class Timer;
 }
 
 namespace net {
@@ -318,7 +318,8 @@ class GCMClient {
   virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
 
   // Updates the timer used by the HeartbeatManager for sending heartbeats.
-  virtual void UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) = 0;
+  virtual void UpdateHeartbeatTimer(
+      std::unique_ptr<base::RetainingOneShotTimer> timer) = 0;
 
   // Adds the Instance ID data for a specific app to the persistent store.
   virtual void AddInstanceIDData(const std::string& app_id,
