@@ -126,7 +126,7 @@ class PaymentsClient {
   // Sets up the |save_delegate_|. Necessary because CreditCardSaveManager
   // requires PaymentsClient during initialization, so PaymentsClient can't
   // start with save_delegate_ initialized.
-  void SetSaveDelegate(PaymentsClientSaveDelegate* save_delegate);
+  virtual void SetSaveDelegate(PaymentsClientSaveDelegate* save_delegate);
 
   PrefService* GetPrefService() const;
 
