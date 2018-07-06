@@ -62,6 +62,7 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
   'DefaultPrinterSelection',
   'DeviceLoginScreenAutoSelectCertificateForUrls',
   'DeviceOpenNetworkConfiguration',
+  'NativePrinters',
   'OpenNetworkConfiguration',
   'RemoteAccessHostDebugOverridePolicies',
   # NOTE: Do not add any new policies to this list! Do not store policies with

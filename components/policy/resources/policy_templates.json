@@ -10202,6 +10202,10 @@
       'type': 'list',
       'schema': {
         'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'validation_schema': {
+        'type': 'array',
         'items': {
           'type': 'object',
           'id': 'PrinterType',
@@ -10227,17 +10231,20 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': [{
-        "display_name": "Color Laser",
-        "description": "The printer next to the water cooler.",
-        "manufacturer": "Printer Manufacturer",
-        "model": "Color Laser 2004",
-        "uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4",
-        "uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12",
-        "ppd_resource": {
-          "effective_model": "Printer Manufacturer ColorLaser2k4"
-        }
-      }],
+      # example_value is split onto multiple lines here for readability, but the
+      # 'type': 'list' above means that each element has to fit inside a single-
+      # line textbox in the GPO UI - so the example string is a single line.
+      'example_value': [
+        '{ '
+        '"display_name": "Color Laser", '
+        '"description": "The printer next to the water cooler.", '
+        '"manufacturer": "Printer Manufacturer", '
+        '"model": "Color Laser 2004", '
+        '"uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4", '
+        '"uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12", '
+        '"ppd_resource": { "effective_model": "Printer Manufacturer ColorLaser2k4" } '
+        '}'
+      ],
       'id': 350,
       'caption': '''Native Printing''',
       'tags': [],
