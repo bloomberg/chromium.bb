@@ -26,10 +26,10 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
-#include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/init/gl_factory.h"
@@ -66,7 +66,6 @@ GpuChannelManager::GpuChannelManager(
       watchdog_(watchdog),
       share_group_(new gl::GLShareGroup()),
       mailbox_manager_(gles2::CreateMailboxManager(gpu_preferences)),
-      gpu_memory_manager_(this),
       scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
       shader_translator_cache_(gpu_preferences_),
@@ -203,6 +202,30 @@ gl::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
         gl::init::CreateOffscreenGLSurface(gfx::Size());
   }
   return default_offscreen_surface_.get();
+}
+
+void GpuChannelManager::GetVideoMemoryUsageStats(
+    VideoMemoryUsageStats* video_memory_usage_stats) const {
+  // For each context group, assign its memory usage to its PID
+  video_memory_usage_stats->process_map.clear();
+  uint64_t total_size = 0;
+  for (const auto& entry : gpu_channels_) {
+    const GpuChannel* channel = entry.second.get();
+    if (!channel->IsConnected())
+      continue;
+    uint64_t size = channel->GetMemoryUsage();
+    total_size += size;
+    video_memory_usage_stats->process_map[channel->GetClientPID()]
+        .video_memory += size;
+  }
+
+  // Assign the total across all processes in the GPU process
+  video_memory_usage_stats->process_map[base::GetCurrentProcId()].video_memory =
+      total_size;
+  video_memory_usage_stats->process_map[base::GetCurrentProcId()]
+      .has_duplicates = true;
+
+  video_memory_usage_stats->bytes_allocated = total_size;
 }
 
 #if defined(OS_ANDROID)

@@ -713,10 +713,11 @@ class TextureMemoryTrackerTest : public TextureTestBase {
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)   \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                    \
-              TrackMemoryAllocatedChange(old_size, new_size)) \
-      .Times(1).RetiresOnSaturation()
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)    \
+  EXPECT_CALL(*mock_memory_tracker_.get(),                     \
+              TrackMemoryAllocatedChange(new_size - old_size)) \
+      .Times(1)                                                \
+      .RetiresOnSaturation()
 
 TEST_F(TextureTest, Basic) {
   Texture* texture = texture_ref_->texture();
@@ -822,7 +823,6 @@ TEST_F(TextureMemoryTrackerTest, EstimatedSize) {
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   // Add expectation for texture deletion.
   EXPECT_MEMORY_ALLOCATION_CHANGE(256, 0);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
 }
 
 TEST_F(TextureTest, POT2D) {
@@ -921,7 +921,6 @@ TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   manager_->MarkMipmapsGenerated(texture_ref_.get());
   EXPECT_MEMORY_ALLOCATION_CHANGE(84, 0);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
 }
 
 TEST_F(TextureTest, UnusedMips) {
@@ -2142,14 +2141,11 @@ class CountingMemoryTracker : public MemoryTracker {
     current_size_ = 0;
   }
 
-  void TrackMemoryAllocatedChange(size_t old_size,
-                                  size_t new_size) override {
-    current_size_ += new_size - old_size;
+  void TrackMemoryAllocatedChange(uint64_t delta) override {
+    current_size_ += delta;
   }
 
-  size_t GetSize() {
-    return current_size_;
-  }
+  uint64_t GetSize() const override { return current_size_; }
 
   uint64_t ClientTracingId() const override { return 0; }
 
@@ -2160,7 +2156,7 @@ class CountingMemoryTracker : public MemoryTracker {
  private:
   ~CountingMemoryTracker() override = default;
 
-  size_t current_size_;
+  uint64_t current_size_;
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);
 };
 

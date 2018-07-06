@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 
+#include "base/bind.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/in_process_command_buffer.h"
