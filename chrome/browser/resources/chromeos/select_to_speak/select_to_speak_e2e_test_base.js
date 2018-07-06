@@ -99,11 +99,15 @@ SelectToSpeakE2ETest.prototype = {
         chrome.automation.getTree(function(returnedRootNode) {
           rootNode = returnedRootNode;
           if (rootNode.docLoaded) {
-            callback(desktopRootNode);
+            callback && callback(desktopRootNode);
+            callback = null;
             return;
           }
-          rootNode.addEventListener('loadComplete', function() {
-            callback(desktopRootNode);
+          rootNode.addEventListener('loadComplete', function(evt) {
+            if (evt.target.root.url != url)
+              return;
+            callback && callback(desktopRootNode);
+            callback = null;
           });
         });
       });
