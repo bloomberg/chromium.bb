@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
-#include "components/previews/content/previews_io_data.h"
+#include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
@@ -27,14 +27,14 @@ class SingleThreadTaskRunner;
 }
 
 namespace previews {
-class PreviewsIOData;
+class PreviewsDeciderImpl;
 
 // A class to manage the UI portion of inter-thread communication between
 // previews/ objects. Created and used on the UI thread.
 class PreviewsUIService {
  public:
   PreviewsUIService(
-      PreviewsIOData* previews_io_data,
+      PreviewsDeciderImpl* previews_decider_impl,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
@@ -43,9 +43,10 @@ class PreviewsUIService {
       blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
   virtual ~PreviewsUIService();
 
-  // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO
-  // thread. Virtualized in testing.
-  virtual void SetIOData(base::WeakPtr<PreviewsIOData> io_data);
+  // Sets |previews_decider_impl_| to |previews_decider_impl| to allow calls
+  // from the UI thread to the IO thread. Virtualized in testing.
+  virtual void SetIOData(
+      base::WeakPtr<PreviewsDeciderImpl> previews_decider_impl);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url,
@@ -69,13 +70,14 @@ class PreviewsUIService {
   virtual void OnBlacklistCleared(base::Time time);
 
   // Change the status of whether to ignored or consider PreviewsBlackList
-  // decisions in |io_data_|. This method is called when users interact with the
-  // UI (i.e. click on the "Ignore Blacklist" button). Virtualized in testing.
+  // decisions in |previews_decider_impl_|. This method is called when users
+  // interact with the UI (i.e. click on the "Ignore Blacklist" button).
+  // Virtualized in testing.
   virtual void SetIgnorePreviewsBlacklistDecision(bool ignored);
 
   // Notifies |logger_| whether PreviewsBlackList decisions are ignored or not.
-  // This method is listening for notification from PreviewsIOData for when the
-  // blacklist ignore status is changed so that |logger_| can update all
+  // This method is listening for notification from PreviewsDeciderImpl for when
+  // the blacklist ignore status is changed so that |logger_| can update all
   // PreviewsLoggerObservers so that multiple instances of the page have the
   // same status. Virtualized in testing.
   virtual void OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
@@ -92,8 +94,8 @@ class PreviewsUIService {
   // correspond to eligibility checks that were satisfied prior to determining
   // |reason| and so the opposite of these |passed_reasons| codes was true.
   // The method takes ownership of |passed_reasons|. |page_id| is generated
-  // by PreviewsIOData, and used to group decisions into groups on the page,
-  // messages that don't need to be grouped can pass in 0 as page_id.
+  // by PreviewsDeciderImpl, and used to group decisions into groups on the
+  // page, messages that don't need to be grouped can pass in 0 as page_id.
   // Virtualized in testing.
   virtual void LogPreviewDecisionMade(
       PreviewsEligibilityReason reason,
@@ -110,11 +112,11 @@ class PreviewsUIService {
 
  private:
   // The IO thread portion of the inter-thread communication for previews/.
-  base::WeakPtr<previews::PreviewsIOData> io_data_;
+  base::WeakPtr<previews::PreviewsDeciderImpl> previews_decider_impl_;
 
   base::ThreadChecker thread_checker_;
 
-  // The IO thread task runner. Used to post tasks to |io_data_|.
+  // The IO thread task runner. Used to post tasks to |previews_decider_impl_|.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // A log object to keep track of events such as previews navigations,
