@@ -2068,6 +2068,23 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfLocalCard) {
   // |offering_upload_of_local_credit_card_| should be true because upload was
   // offered and the card is a local card already on the device.
   ASSERT_TRUE(form_data_importer_->offering_upload_of_local_credit_card_);
+
+  // Second form is filled with a new card so
+  // |offering_upload_of_local_credit_card_| should be reset.
+  // Simulate a form submission with a new card.
+  FormData form2;
+  AddFullCreditCardForm(&form2, "Biggie Smalls", "4012888888881881", "01",
+                        "2999");
+
+  FormStructure form_structure2(form2);
+  form_structure2.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                          0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card2;
+  EXPECT_TRUE(ImportCreditCard(form_structure2, true, &imported_credit_card2));
+  ASSERT_TRUE(imported_credit_card2);
+  // |offering_upload_of_local_credit_card_| should be false because user use a
+  // new card for upload.
+  ASSERT_FALSE(form_data_importer_->offering_upload_of_local_credit_card_);
 }
 
 // Ensures that |offering_upload_of_local_credit_card_| is set correctly.

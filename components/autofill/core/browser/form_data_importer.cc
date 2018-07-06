@@ -299,6 +299,9 @@ bool FormDataImporter::ImportCreditCard(
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card) {
   DCHECK(!*imported_credit_card);
+  // Reset |offering_upload_of_local_credit_card_| every time a new credit card
+  // is imported.
+  offering_upload_of_local_credit_card_ = false;
 
   // The candidate for credit card import. There are many ways for the candidate
   // to be rejected (see everywhere this function returns false, below).
