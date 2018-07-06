@@ -23,5 +23,4 @@
     // Fullscreen API
     // https://fullscreen.spec.whatwg.org/
     [LenientSetter, RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
-    [RuntimeEnabled=ConstructableStylesheets] attribute StyleSheetList moreStyleSheets;
 };

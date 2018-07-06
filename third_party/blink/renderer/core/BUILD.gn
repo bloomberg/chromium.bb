@@ -1714,7 +1714,6 @@ jumbo_source_set("unit_tests") {
     "css/style_engine_test.cc",
     "css/style_environment_variables_test.cc",
     "css/style_sheet_contents_test.cc",
-    "css/style_sheet_list_test.cc",
     "css/threaded/css_parser_threaded_test.cc",
     "css/threaded/css_to_length_conversion_data_threaded_test.cc",
     "css/threaded/filter_operation_resolver_threaded_test.cc",
