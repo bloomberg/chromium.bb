@@ -866,10 +866,6 @@ IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
       contents, "document.webkitExitFullscreen();", &is_fullscreen));
   EXPECT_FALSE(is_fullscreen);
 
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
-      contents, "document.body.webkitRequestFullscreen();", &is_fullscreen));
-  EXPECT_FALSE(is_fullscreen);
-
   // However, starting a navigation should consume the gesture. Fullscreen
   // should not work afterwards. Make sure the navigation is synchronously
   // started via click().
