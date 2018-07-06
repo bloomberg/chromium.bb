@@ -271,6 +271,10 @@ extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 extern const char kEnableAutofillNativeDropdownViewsName[];
 extern const char kEnableAutofillNativeDropdownViewsDescription[];
 
+extern const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateName[];
+extern const char
+    kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription[];
+
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 

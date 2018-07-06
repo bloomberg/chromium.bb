@@ -51,6 +51,9 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
+    "AutofillSaveCardDialogUnlabeledExpirationDate",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuggestInvalidProfileData{
     "AutofillSuggestInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedAddresses{
@@ -222,6 +225,11 @@ bool ShouldUseNativeViews() {
 #else
   return false;
 #endif
+}
+
+bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {
+  return base::FeatureList::IsEnabled(
+      kAutofillSaveCardDialogUnlabeledExpirationDate);
 }
 
 }  // namespace autofill

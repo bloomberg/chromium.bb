@@ -34,6 +34,7 @@ extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
+extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
 extern const base::Feature kAutofillSuggestInvalidProfileData;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
@@ -120,6 +121,10 @@ bool IsMacViewsAutofillPopupExperimentEnabled();
 // should be used. This will also be true if the kExperimentalUi flag is true,
 // which forces a bunch of forthcoming UI changes on.
 bool ShouldUseNativeViews();
+
+// Returns true if expiration dates on the save card dialog should be
+// unlabeled, i.e. not preceded by "Exp."
+bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled();
 
 }  // namespace autofill
 

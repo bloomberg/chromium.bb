@@ -806,8 +806,9 @@ base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
     return base::string16();
 
   return l10n_util::GetStringFUTF16(
-      ShouldUseNativeViews() ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2
-                             : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR,
+      IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()
+          ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2
+          : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR,
       month, year);
 }
 
