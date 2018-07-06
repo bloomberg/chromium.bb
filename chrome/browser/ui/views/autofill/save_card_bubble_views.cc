@@ -326,6 +326,13 @@ void SaveCardBubbleViews::AssignIdsToDialogClientView() {
 void SaveCardBubbleViews::Init() {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  // For server cards, there is an explanation between the title and the
+  // controls; use views::TEXT. For local cards, since there is no explanation,
+  // use views::CONTROL instead.
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      GetCurrentFlowStep() == UPLOAD_SAVE_ONLY_STEP ? views::TEXT
+                                                    : views::CONTROL,
+      views::CONTROL));
   AddChildView(CreateMainContentView().release());
 }
 
