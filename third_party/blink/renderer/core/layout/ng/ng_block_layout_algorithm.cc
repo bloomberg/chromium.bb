@@ -877,10 +877,12 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   const auto& physical_fragment = *layout_result->PhysicalFragment();
   NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
-  // Auto-margins are applied within the layout opportunity which fits.
+  // Auto-margins are applied within the layout opportunity which fits. We'll
+  // pretend that computed margins are 0 here, as they have already been
+  // excluded from the layout opportunity rectangle.
   NGBoxStrut auto_margins;
-  ApplyAutoMargins(child_style, Style(), opportunity.rect.InlineSize(),
-                   fragment.InlineSize(), &auto_margins);
+  ResolveInlineMargins(child_style, Style(), opportunity.rect.InlineSize(),
+                       fragment.InlineSize(), &auto_margins);
 
   NGBfcOffset child_bfc_offset(opportunity.rect.start_offset.line_offset +
                                    auto_margins.LineLeft(direction),
@@ -1750,9 +1752,10 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   if (ShouldIgnoreBlockStartMargin(ConstraintSpace(), child, child_break_token))
     margins.block_start = LayoutUnit();
 
-  // TODO(ikilpatrick): Move the auto margins calculation for different writing
-  // modes to post-layout.
-  if (!child.IsFloating() && !child.CreatesNewFormattingContext()) {
+  // As long as the child isn't establishing a new formatting context, we need
+  // to resolve auto margins before layout, to be able to position child floats
+  // correctly.
+  if (!child.CreatesNewFormattingContext()) {
     base::Optional<MinMaxSize> sizes;
     if (NeedMinMaxSize(*space, child_style)) {
       // We only want to guess the child's size here, so preceding floats are of
@@ -1764,10 +1767,9 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     LayoutUnit child_inline_size =
         ComputeInlineSizeForFragment(*space, child_style, sizes);
 
-    // TODO(ikilpatrick): ApplyAutoMargins looks wrong as its not respecting
-    // the parents writing mode?
-    ApplyAutoMargins(child_style, Style(), space->AvailableSize().inline_size,
-                     child_inline_size, &margins);
+    ResolveInlineMargins(child_style, Style(),
+                         space->AvailableSize().inline_size, child_inline_size,
+                         &margins);
   }
   return margins;
 }

@@ -666,11 +666,11 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   return padding;
 }
 
-void ApplyAutoMargins(const ComputedStyle& style,
-                      const ComputedStyle& containing_block_style,
-                      LayoutUnit available_inline_size,
-                      LayoutUnit inline_size,
-                      NGBoxStrut* margins) {
+void ResolveInlineMargins(const ComputedStyle& style,
+                          const ComputedStyle& containing_block_style,
+                          LayoutUnit available_inline_size,
+                          LayoutUnit inline_size,
+                          NGBoxStrut* margins) {
   DCHECK(margins) << "Margins cannot be NULL here";
   const LayoutUnit used_space = inline_size + margins->InlineSum();
   const LayoutUnit available_space = available_inline_size - used_space;

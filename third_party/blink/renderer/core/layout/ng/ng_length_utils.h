@@ -173,15 +173,16 @@ CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
-// Resolves margin: auto in the inline direction.
-// This uses the available size from the constraint space and inline size to
-// compute the margins that are auto, if any, and adjusts
-// the given NGBoxStrut accordingly.
-CORE_EXPORT void ApplyAutoMargins(const ComputedStyle& child_style,
-                                  const ComputedStyle& containing_block_style,
-                                  LayoutUnit available_inline_size,
-                                  LayoutUnit inline_size,
-                                  NGBoxStrut* margins);
+// Convert inline margins from computed to used values. This will resolve 'auto'
+// values and over-constrainedness. This uses the available size from the
+// constraint space and inline size to compute the margins that are auto, if
+// any, and adjusts the given NGBoxStrut accordingly.
+CORE_EXPORT void ResolveInlineMargins(
+    const ComputedStyle& child_style,
+    const ComputedStyle& containing_block_style,
+    LayoutUnit available_inline_size,
+    LayoutUnit inline_size,
+    NGBoxStrut* margins);
 
 // Calculate the adjustment needed for the line's left position, based on
 // text-align, direction and amount of unused space.
