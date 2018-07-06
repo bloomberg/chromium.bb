@@ -812,7 +812,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
 #if defined(OS_MACOSX)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kDisableHostedAppShimCreation)) {
+          ::switches::kDisableHostedAppShimCreation)) {
     web_app::RevealAppShimInFinderForApp(current_profile, extension);
   }
 #endif
