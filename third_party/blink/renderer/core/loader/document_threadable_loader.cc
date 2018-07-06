@@ -558,7 +558,13 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
 DocumentThreadableLoader::~DocumentThreadableLoader() {
   const auto module_id = module_id_;
   base::debug::Alias(&module_id);
-  CHECK(!client_);
+
+  // |client_| is a raw pointer and having a non-null |client_| here probably
+  // means UaF.
+  // In the detached case, |this| is held by DetachedClient defined above, but
+  // SelfKeepAlive in DetachedClient is forcibly cancelled on worker thread
+  // termination. We can safely ignore this case.
+  CHECK(!client_ || detached_);
   DCHECK(!GetResource());
 }
 
@@ -603,6 +609,7 @@ void DocumentThreadableLoader::Detach() {
   Resource* resource = GetResource();
   if (!resource)
     return;
+  detached_ = true;
   client_ = new DetachedClient(this);
 }
 
