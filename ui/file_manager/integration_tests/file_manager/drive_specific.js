@@ -303,3 +303,44 @@ testcase.drivePinFileMobileNetwork = function() {
         });
       }));
 };
+
+/**
+ * Tests that pressing Ctrl+A (select all files) from the search box doesn't put
+ * the Files App into check-select mode (crbug.com/849253).
+ */
+testcase.drivePressCtrlAFromSearch = function() {
+  var appId;
+  var steps = [
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+    },
+    // Focus the search box.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#search-button'], this.next);
+    },
+    // Wait for the search box to be visible.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, ['#search-box cr-input:not([hidden])'])
+          .then(this.next);
+    },
+    // Press Ctrl+A inside the search box.
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId,
+          ['#search-box cr-input', 'A', 'A', true, false, false], this.next);
+    },
+    // Check we didn't enter check-select mode.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, ['body:not(.check-select)'])
+          .then(this.next);
+    },
+    function(result) {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ];
+  StepsRunner.run(steps);
+};
