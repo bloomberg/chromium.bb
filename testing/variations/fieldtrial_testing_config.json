@@ -4132,7 +4132,7 @@
                     "params": {
                         "EffectiveConnectionType1": "3G",
                         "MaxDelayableRequests1": "14",
-                        "NonDelayableWeight1": "2.0"
+                        "NonDelayableWeight1": "3.0"
                     },
                     "enable_features": [
                         "ThrottleDelayable"
