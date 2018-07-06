@@ -332,11 +332,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
                       WebFeature::kAnchorClickDispatchForNonConnectedNode);
   }
 
-  auto anchor_metrics = AnchorElementMetrics::CreateFrom(this);
-  if (anchor_metrics.has_value()) {
-    anchor_metrics.value().SendMetricsToBrowser();
-    anchor_metrics.value().RecordMetrics();
-  }
+  AnchorElementMetrics::MaybeExtractMetricsClicked(this);
 
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(hrefAttr)));

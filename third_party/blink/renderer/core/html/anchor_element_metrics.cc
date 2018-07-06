@@ -20,6 +20,11 @@
 
 namespace blink {
 
+// If RecordAnchorMetricsClicked feature is enabled, then metrics of anchor
+// elements clicked by the user will be extracted and recorded.
+const base::Feature kRecordAnchorMetricsClicked{
+    "RecordAnchorMetricsClicked", base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 
 // Helper function that returns the root document the anchor element is in.
@@ -132,7 +137,8 @@ IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
 
 }  // anonymous namespace
 
-base::Optional<AnchorElementMetrics> AnchorElementMetrics::CreateFrom(
+// static
+base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
     const HTMLAnchorElement* anchor_element) {
   LocalFrame* local_frame = anchor_element->GetDocument().GetFrame();
   LayoutObject* layout_object = anchor_element->GetLayoutObject();
@@ -196,12 +202,26 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::CreateFrom(
       IsSameHost(*anchor_element), IsUrlIncrementedByOne(*anchor_element));
 }
 
+// static
+base::Optional<AnchorElementMetrics>
+AnchorElementMetrics::MaybeExtractMetricsClicked(
+    const HTMLAnchorElement* anchor_element) {
+  if (!base::FeatureList::IsEnabled(kRecordAnchorMetricsClicked) ||
+      !anchor_element->Href().ProtocolIsInHTTPFamily())
+    return base::nullopt;
+
+  auto anchor_metrics = Create(anchor_element);
+  if (anchor_metrics.has_value()) {
+    anchor_metrics.value().RecordMetrics();
+    anchor_metrics.value().SendMetricsToBrowser();
+  }
+
+  return anchor_metrics;
+}
+
 void AnchorElementMetrics::SendMetricsToBrowser() const {
   LocalFrame* frame = anchor_element_->GetDocument().GetFrame();
   DCHECK(frame);
-
-  if (!anchor_element_->Href().ProtocolIsInHTTPFamily())
-    return;
 
   mojom::blink::AnchorElementMetricsHostPtr service_;
   frame->LocalFrameRoot().GetInterfaceProvider().GetInterface(
