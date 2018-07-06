@@ -12,7 +12,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"

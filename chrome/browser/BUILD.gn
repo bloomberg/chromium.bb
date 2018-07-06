@@ -3772,11 +3772,11 @@ jumbo_split_static_library("browser") {
       "sync_file_system/task_logger.h",
     ]
     public_deps += [
-      "//chrome/browser/apps",
+      "//chrome/browser/apps/platform_apps",
       "//chrome/browser/extensions",
     ]
     allow_circular_includes_from += [
-      "//chrome/browser/apps",
+      "//chrome/browser/apps/platform_apps",
       "//chrome/browser/extensions",
     ]
     deps += [

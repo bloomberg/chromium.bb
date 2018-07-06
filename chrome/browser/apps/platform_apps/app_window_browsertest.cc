@@ -4,7 +4,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -61,8 +61,7 @@ class GeometryCacheChangeHelper : AppWindowGeometryCache::Observer {
     if (extension_id != extension_id_ || window_id != window_id_)
       return;
 
-    if (bounds_.x() != bounds.x() &&
-        bounds_.y() != bounds.y() &&
+    if (bounds_.x() != bounds.x() && bounds_.y() != bounds.y() &&
         bounds_.width() != bounds.width() &&
         bounds_.height() != bounds.height()) {
       satisfied_ = true;
@@ -251,18 +250,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   ASSERT_TRUE(geometry_listener.WaitUntilSatisfied());
 
   GeometryCacheChangeHelper geo_change_helper_1(
-      AppWindowGeometryCache::Get(browser()->profile()),
-      extension->id(),
+      AppWindowGeometryCache::Get(browser()->profile()), extension->id(),
       // The next line has information that has to stay in sync with the app.
-      "test-ra",
-      gfx::Rect(200, 200, 200, 200));
+      "test-ra", gfx::Rect(200, 200, 200, 200));
 
   GeometryCacheChangeHelper geo_change_helper_2(
-      AppWindowGeometryCache::Get(browser()->profile()),
-      extension->id(),
+      AppWindowGeometryCache::Get(browser()->profile()), extension->id(),
       // The next line has information that has to stay in sync with the app.
-      "test-rb",
-      gfx::Rect(200, 200, 200, 200));
+      "test-rb", gfx::Rect(200, 200, 200, 200));
 
   // These calls will block until the app window geometry cache will change.
   geo_change_helper_1.WaitForEntirelyChanged();

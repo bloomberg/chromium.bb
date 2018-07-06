@@ -25,7 +25,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"

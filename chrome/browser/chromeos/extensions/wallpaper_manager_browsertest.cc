@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

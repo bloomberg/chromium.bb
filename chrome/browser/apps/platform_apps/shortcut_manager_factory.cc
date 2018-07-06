@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/shortcut_manager_factory.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/apps/shortcut_manager.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -22,12 +22,10 @@ AppShortcutManagerFactory* AppShortcutManagerFactory::GetInstance() {
 
 AppShortcutManagerFactory::AppShortcutManagerFactory()
     : BrowserContextKeyedServiceFactory(
-        "AppShortcutManager",
-        BrowserContextDependencyManager::GetInstance()) {
-}
+          "AppShortcutManager",
+          BrowserContextDependencyManager::GetInstance()) {}
 
-AppShortcutManagerFactory::~AppShortcutManagerFactory() {
-}
+AppShortcutManagerFactory::~AppShortcutManagerFactory() {}
 
 KeyedService* AppShortcutManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {

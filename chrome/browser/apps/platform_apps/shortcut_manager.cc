@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/shortcut_manager.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -51,8 +51,8 @@ void CreateShortcutsForApp(Profile* profile, const Extension* app) {
   creation_locations.applications_menu_location =
       web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 
-  web_app::CreateShortcuts(
-      web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
+  web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_AUTOMATED,
+                           creation_locations, profile, app);
 }
 
 void SetCurrentAppShortcutsVersion(PrefService* prefs) {

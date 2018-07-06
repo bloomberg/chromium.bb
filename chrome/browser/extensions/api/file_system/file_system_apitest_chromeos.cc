@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"

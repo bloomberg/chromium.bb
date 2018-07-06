@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_window_interactive_uitest.h"
+#include "chrome/browser/apps/platform_apps/app_window_interactive_uitest.h"
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -41,8 +41,8 @@ void FullscreenChangeWaiter::Wait() {
     content::RunAllPendingInMessageLoop();
 }
 
-bool
-AppWindowInteractiveTest::RunAppWindowInteractiveTest(const char* testName) {
+bool AppWindowInteractiveTest::RunAppWindowInteractiveTest(
+    const char* testName) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("window_api_interactive", &launched_listener);
 
@@ -59,12 +59,7 @@ AppWindowInteractiveTest::RunAppWindowInteractiveTest(const char* testName) {
 
 bool AppWindowInteractiveTest::SimulateKeyPress(ui::KeyboardCode key) {
   return ui_test_utils::SendKeyPressToWindowSync(
-      GetFirstAppWindow()->GetNativeWindow(),
-      key,
-      false,
-      false,
-      false,
-      false);
+      GetFirstAppWindow()->GetNativeWindow(), key, false, false, false, false);
 }
 
 void AppWindowInteractiveTest::WaitUntilKeyFocus() {
@@ -199,8 +194,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
-                       ESCDoesNotLeaveFullscreenDOM) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCDoesNotLeaveFullscreenDOM) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen", &launched_listener);
 
@@ -323,8 +317,8 @@ void AppWindowInteractiveTest::TestOuterBoundsHelper(
   HWND hwnd = views::HWNDForNativeWindow(window->GetNativeWindow());
   RECT rect;
   ::GetWindowRect(hwnd, &rect);
-  window_bounds = gfx::Rect(
-      rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+  window_bounds = gfx::Rect(rect.left, rect.top, rect.right - rect.left,
+                            rect.bottom - rect.top);
 
   // HWNDMessageHandler calls this when responding to WM_GETMINMAXSIZE, so it's
   // the closest to what the window will see.

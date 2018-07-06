@@ -132,7 +132,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
-#include "chrome/browser/apps/shortcut_manager.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h"
@@ -289,7 +289,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"

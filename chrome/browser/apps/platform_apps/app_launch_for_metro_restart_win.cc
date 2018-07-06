@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
 
 #include "apps/launcher.h"
 #include "base/bind.h"
@@ -31,8 +31,7 @@ namespace app_metro_launch {
 
 namespace {
 
-void LaunchAppWithId(Profile* profile,
-                     const std::string& extension_id) {
+void LaunchAppWithId(Profile* profile, const std::string& extension_id) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)

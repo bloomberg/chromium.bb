@@ -403,7 +403,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
-#include "chrome/browser/apps/platform_app_navigation_redirector.h"
+#include "chrome/browser/apps/platform_apps/platform_app_navigation_redirector.h"
 #include "chrome/browser/extensions/bookmark_app_experimental_navigation_throttle.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
