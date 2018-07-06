@@ -81,7 +81,7 @@ FeedSchedulerHost::FeedSchedulerHost(PrefService* pref_service,
       clock_(clock),
       user_classifier_(pref_service, clock) {}
 
-FeedSchedulerHost::~FeedSchedulerHost() {}
+FeedSchedulerHost::~FeedSchedulerHost() = default;
 
 // static
 void FeedSchedulerHost::RegisterProfilePrefs(PrefRegistrySimple* registry) {

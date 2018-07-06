@@ -4,10 +4,7 @@
 
 #include "components/feed/core/feed_image_manager.h"
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "components/feed/core/time_serialization.h"
@@ -86,10 +83,11 @@ void FeedImageManager::FetchImagesFromDatabase(size_t url_index,
                                std::move(urls), std::move(callback)));
 }
 
-void FeedImageManager::OnImageFetchedFromDatabase(size_t url_index,
-                                                  std::vector<std::string> urls,
-                                                  ImageFetchedCallback callback,
-                                                  std::string image_data) {
+void FeedImageManager::OnImageFetchedFromDatabase(
+    size_t url_index,
+    std::vector<std::string> urls,
+    ImageFetchedCallback callback,
+    const std::string& image_data) {
   if (image_data.empty()) {
     // Fetching from the DB failed; start a network fetch.
     FetchImageFromNetwork(url_index, std::move(urls), std::move(callback));

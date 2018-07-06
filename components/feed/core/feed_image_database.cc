@@ -78,7 +78,7 @@ void FeedImageDatabase::SaveImage(const std::string& url,
   image_proto.set_data(image_data);
   image_proto.set_last_used_time(ToDatabaseTime(base::Time::Now()));
 
-  SaveImageImpl(url, std::move(image_proto));
+  SaveImageImpl(url, image_proto);
 }
 
 void FeedImageDatabase::LoadImage(const std::string& url,
@@ -142,10 +142,10 @@ void FeedImageDatabase::ProcessPendingImageLoads() {
   pending_image_callbacks_.clear();
 }
 
-void FeedImageDatabase::SaveImageImpl(const std::string& url,
-                                      CachedImageProto image_proto) {
+void FeedImageDatabase::SaveImageImpl(std::string url,
+                                      const CachedImageProto& image_proto) {
   auto entries_to_save = std::make_unique<ImageKeyEntryVector>();
-  entries_to_save->emplace_back(url, std::move(image_proto));
+  entries_to_save->emplace_back(std::move(url), image_proto);
 
   image_database_->UpdateEntries(
       std::move(entries_to_save), std::make_unique<std::vector<std::string>>(),
@@ -168,7 +168,7 @@ void FeedImageDatabase::OnImageLoaded(std::string url,
 
   // Update timestamp for image.
   entry->set_last_used_time(ToDatabaseTime(base::Time::Now()));
-  SaveImageImpl(url, std::move(*entry));
+  SaveImageImpl(std::move(url), *entry);
 }
 
 void FeedImageDatabase::LoadImageImpl(const std::string& url,

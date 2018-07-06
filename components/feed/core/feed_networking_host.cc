@@ -28,14 +28,12 @@ using IdentityManager = identity::IdentityManager;
 
 namespace {
 
-static constexpr char kApiKeyQueryParam[] = "key";
-// todo(pnoland, https://crbug.com/808131): Decide on the correct auth scope and
-// change the below constant to that value.
-static constexpr char kAuthenticationScope[] =
+constexpr char kApiKeyQueryParam[] = "key";
+constexpr char kAuthenticationScope[] =
     "https://www.googleapis.com/auth/googlenow";
-static constexpr char kContentEncoding[] = "Content-Encoding";
-static constexpr char kContentType[] = "application/octet-stream";
-static constexpr char kGzip[] = "gzip";
+constexpr char kContentEncoding[] = "Content-Encoding";
+constexpr char kContentType[] = "application/octet-stream";
+constexpr char kGzip[] = "gzip";
 
 }  // namespace
 
@@ -55,7 +53,7 @@ class NetworkFetch {
                network::SharedURLLoaderFactory* loader_factory,
                const std::string& api_key);
 
-  void Start(FeedNetworkingHost::ResponseCallback done);
+  void Start(FeedNetworkingHost::ResponseCallback done_callback);
 
  private:
   void StartAccessTokenFetch();
@@ -66,7 +64,7 @@ class NetworkFetch {
       const std::string& access_token);
   net::HttpRequestHeaders MakeHeaders(const std::string& auth_header) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
-  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
   const GURL url_;
   const std::string request_type_;
@@ -200,7 +198,7 @@ net::HttpRequestHeaders NetworkFetch::MakeHeaders(
 
 void NetworkFetch::PopulateRequestBody(network::SimpleURLLoader* loader) {
   std::string compressed_request_body;
-  if (request_body_.size() > 0) {
+  if (!request_body_.empty()) {
     std::string uncompressed_request_body(
         reinterpret_cast<const char*>(request_body_.data()),
         request_body_.size());
@@ -219,11 +217,9 @@ void NetworkFetch::PopulateRequestBody(network::SimpleURLLoader* loader) {
 void NetworkFetch::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response) {
   int32_t status_code = simple_loader_->NetError();
-  net::HttpResponseHeaders* headers = nullptr;
   std::vector<uint8_t> response_body;
 
   if (response) {
-    headers = simple_loader_->ResponseInfo()->headers.get();
     status_code = simple_loader_->ResponseInfo()->headers->response_code();
 
     const uint8_t* begin = reinterpret_cast<const uint8_t*>(response->data());
@@ -250,7 +246,7 @@ FeedNetworkingHost::FeedNetworkingHost(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : identity_manager_(identity_manager),
       api_key_(api_key),
-      loader_factory_(loader_factory) {}
+      loader_factory_(std::move(loader_factory)) {}
 
 FeedNetworkingHost::~FeedNetworkingHost() = default;
 
