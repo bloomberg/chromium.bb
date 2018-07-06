@@ -272,6 +272,56 @@ StreamMixer::StreamMixer(
   }
 }
 
+void StreamMixer::ResetPostProcessors() {
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::ResetPostProcessorsOnThread);
+}
+
+void StreamMixer::ResetPostProcessorsOnThread() {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+
+  // Detach inputs.
+  for (const auto& input : inputs_) {
+    input.second->SetFilterGroup(nullptr);
+  }
+
+  // Re-create post processors.
+  filter_groups_.clear();
+  default_filter_ = nullptr;
+
+  PostProcessingPipelineParser parser;
+  CreatePostProcessors(&parser);
+
+  if (state_ == kStateRunning) {
+    for (auto&& filter_group : filter_groups_) {
+      filter_group->Initialize(output_samples_per_second_);
+    }
+  }
+
+  // Re-attach inputs.
+  for (const auto& input : inputs_) {
+    MixerInput::Source* input_source = input.first;
+
+    FilterGroup* input_filter_group = default_filter_;
+    for (auto&& filter_group : filter_groups_) {
+      if (filter_group->CanProcessInput(input_source->device_id())) {
+        input_filter_group = filter_group.get();
+        break;
+      }
+    }
+
+    if (input_filter_group) {
+      LOG(INFO) << "Re-attach input of type " << input_source->device_id()
+                << " to " << input_filter_group->name();
+      input.second->SetFilterGroup(input_filter_group);
+    } else {
+      NOTREACHED() << "Could not find a filter group to re-attach "
+                   << input_source->device_id();
+    }
+  }
+
+  UpdatePlayoutChannel();
+}
+
 void StreamMixer::ResetPostProcessorsForTest(
     std::unique_ptr<PostProcessingPipelineFactory> pipeline_factory,
     const std::string& pipeline_json) {

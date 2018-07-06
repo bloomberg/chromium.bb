@@ -122,6 +122,9 @@ class CHROMECAST_EXPORT CastMediaShlib {
   static void RemoveLoopbackAudioObserver(LoopbackAudioObserver* observer)
       __attribute__((__weak__));
 
+  // Reset the post processing pipeline.
+  static void ResetPostProcessors() __attribute__((__weak__));
+
   // Updates all postprocessors with the given |name| to have new configuration
   // |config|.
   static void SetPostProcessorConfig(const std::string& name,

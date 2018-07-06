@@ -110,6 +110,8 @@ class StreamMixer {
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config);
 
+  void ResetPostProcessors();
+
   // Test-only methods.
   StreamMixer(std::unique_ptr<MixerOutputStream> output,
               std::unique_ptr<base::Thread> mixer_thread,
@@ -150,6 +152,7 @@ class StreamMixer {
   };
 
   void CreatePostProcessors(PostProcessingPipelineParser* pipeline_parser);
+  void ResetPostProcessorsOnThread();
   void ValidatePostProcessors();
   void FinalizeOnMixerThread();
   void Start();
