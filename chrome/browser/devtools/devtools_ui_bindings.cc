@@ -1338,9 +1338,9 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
       continue;
 
     // Each devtools extension will need to be able to run in the devtools
-    // process. Grant each specific extension's origin permission to load
-    // documents.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantOrigin(
+    // process. Grant the devtools process the ability to request URLs from the
+    // extension.
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestOrigin(
         web_contents_->GetMainFrame()->GetProcess()->GetID(),
         url::Origin::Create(extension->url()));
 

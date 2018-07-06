@@ -162,13 +162,20 @@ class ChildProcessSecurityPolicy {
   virtual void GrantDeleteFromFileSystem(int child_id,
                                          const std::string& filesystem_id) = 0;
 
-  // Grants the child process the capability to access URLs with the provided
+  // Grants the child process the capability to commit URLs with the provided
+  // origin. Usage should be extremely rare: the content framework already
+  // automatically grants this privilege as needed on successful navigation to a
+  // URL.
+  // If you think you need this, please reach out to site-isolation-dev@ first.
+  virtual void GrantCommitOrigin(int child_id, const url::Origin& origin) = 0;
+  //
+  // Grants the child process the capability to request URLs with the provided
   // origin.
-  virtual void GrantOrigin(int child_id, const url::Origin& origin) = 0;
+  virtual void GrantRequestOrigin(int child_id, const url::Origin& origin) = 0;
 
-  // Grants the child process the capability to access URLs of the provided
+  // Grants the child process the capability to request URLs of the provided
   // scheme.
-  virtual void GrantScheme(int child_id, const std::string& scheme) = 0;
+  virtual void GrantRequestScheme(int child_id, const std::string& scheme) = 0;
 
   // Returns true if read access has been granted to |filesystem_id|.
   virtual bool CanReadFileSystem(int child_id,
@@ -204,15 +211,6 @@ class ChildProcessSecurityPolicy {
   // or for isolated origins that require a dedicated process (see
   // AddIsolatedOrigin).
   virtual bool CanAccessDataForOrigin(int child_id, const GURL& url) = 0;
-
-  // Returns true if GrantOrigin was called earlier with the same parameters.
-  //
-  // TODO(alexmos): This currently exists to support checking whether a
-  // <webview> guest process has permission to request blob URLs in its
-  // embedder's origin on the IO thread.  This should be removed once that
-  // check is superseded by a UI thread check.  See https://crbug.com/656752.
-  virtual bool HasSpecificPermissionForOrigin(int child_id,
-                                              const url::Origin& origin) = 0;
 
   // This function will check whether |origin| requires process isolation, and
   // if so, it will return true and put the most specific matching isolated

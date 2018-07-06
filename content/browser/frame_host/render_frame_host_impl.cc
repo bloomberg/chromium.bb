@@ -4333,9 +4333,9 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
-  // so do not grant them the ability to request additional URLs.
+  // so do not grant them the ability to commit additional URLs.
   if (!GetProcess()->IsForGuestsOnly()) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
         GetProcess()->GetID(), common_params.url);
     if (common_params.url.SchemeIs(url::kDataScheme) &&
         !common_params.base_url_for_data_url.is_empty()) {
@@ -4343,7 +4343,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
       // grant access to the base URL. This allows file: and other unexpected
       // schemes to be accepted at commit time and during CORS checks (e.g., for
       // font requests).
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
           GetProcess()->GetID(), common_params.base_url_for_data_url);
     }
   }

@@ -151,8 +151,12 @@ void PrepareDropDataForChildProcess(
 #if defined(OS_CHROMEOS)
   // The externalfile:// scheme is used in Chrome OS to open external files in a
   // browser tab.
+  // TODO(https://crbug.com/858972): This seems like it could be forged by the
+  // renderer. This probably needs to check that this didn't originate from the
+  // renderer... Also, this probably can just be GrantRequestURL (which doesn't
+  // yet exist) instead of GrantCommitURL.
   if (drop_data->url.SchemeIs(content::kExternalFileScheme))
-    security_policy->GrantRequestURL(child_id, drop_data->url);
+    security_policy->GrantCommitURL(child_id, drop_data->url);
 #endif
 
   // The filenames vector represents a capability to access the given files.

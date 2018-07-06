@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -777,55 +778,55 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   // Navigate first subframe to an extension URL. This will go into a new
   // extension process.
-  const GURL extension_url(extension->url().Resolve("empty.html"));
-  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", extension_url));
+  const GURL extension_empty_resource(extension->url().Resolve("empty.html"));
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(tab, "frame1", extension_empty_resource));
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
   EXPECT_EQ(1u, pm->GetAllFrames().size());
 
   content::RenderFrameHost* main_frame = tab->GetMainFrame();
   content::RenderFrameHost* extension_frame = ChildFrameAt(main_frame, 0);
 
+  // Ideally, this would be a GURL, but it's easier to compose the rest of the
+  // URLs if this is a std::string. Meh.
+  const std::string extension_base_url =
+      base::StrCat({"chrome-extension://", extension->id()});
+  const GURL extension_blob_url =
+      GURL(base::StrCat({"blob:", extension_base_url, "/some-guid"}));
+  const GURL extension_file_system_url =
+      GURL(base::StrCat({"filesystem:", extension_base_url, "/some-path"}));
+  const GURL extension_url =
+      GURL(base::StrCat({extension_base_url, "/some-path"}));
+
   // Validate that permissions have been granted for the extension scheme
   // to the process of the extension iframe.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  EXPECT_TRUE(policy->CanRequestURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_TRUE(policy->CanRequestURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_TRUE(policy->CanRequestURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
-  EXPECT_TRUE(policy->CanRequestURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
-  EXPECT_TRUE(policy->CanRequestURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
-  EXPECT_TRUE(policy->CanRequestURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
+  EXPECT_TRUE(policy->CanRequestURL(extension_frame->GetProcess()->GetID(),
+                                    extension_blob_url));
+  EXPECT_TRUE(policy->CanRequestURL(main_frame->GetProcess()->GetID(),
+                                    extension_blob_url));
+  EXPECT_TRUE(policy->CanRequestURL(extension_frame->GetProcess()->GetID(),
+                                    extension_file_system_url));
+  EXPECT_TRUE(policy->CanRequestURL(main_frame->GetProcess()->GetID(),
+                                    extension_file_system_url));
+  EXPECT_TRUE(policy->CanRequestURL(extension_frame->GetProcess()->GetID(),
+                                    extension_url));
+  EXPECT_TRUE(
+      policy->CanRequestURL(main_frame->GetProcess()->GetID(), extension_url));
 
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  EXPECT_TRUE(policy->CanCommitURL(extension_frame->GetProcess()->GetID(),
+                                   extension_blob_url));
+  EXPECT_FALSE(policy->CanCommitURL(main_frame->GetProcess()->GetID(),
+                                    extension_blob_url));
+  EXPECT_TRUE(policy->CanCommitURL(extension_frame->GetProcess()->GetID(),
+                                   extension_file_system_url));
+  EXPECT_FALSE(policy->CanCommitURL(main_frame->GetProcess()->GetID(),
+                                    extension_file_system_url));
+  EXPECT_TRUE(policy->CanCommitURL(extension_frame->GetProcess()->GetID(),
+                                   extension_url));
+  EXPECT_FALSE(
+      policy->CanCommitURL(main_frame->GetProcess()->GetID(), extension_url));
 
   // Open a new about:blank popup from main frame.  This should stay in the web
   // process.
@@ -1212,10 +1213,10 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // origin, but the guest process should.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  EXPECT_FALSE(policy->HasSpecificPermissionForOrigin(
-      web_tab->GetMainFrame()->GetProcess()->GetID(), app_origin));
-  EXPECT_TRUE(policy->HasSpecificPermissionForOrigin(
-      guest->GetMainFrame()->GetProcess()->GetID(), app_origin));
+  EXPECT_FALSE(policy->CanRequestURL(
+      web_tab->GetMainFrame()->GetProcess()->GetID(), app_origin.GetURL()));
+  EXPECT_TRUE(policy->CanRequestURL(
+      guest->GetMainFrame()->GetProcess()->GetID(), app_origin.GetURL()));
 
   // Try navigating the web tab to each nested URL with the app's origin.  This
   // should be blocked.
