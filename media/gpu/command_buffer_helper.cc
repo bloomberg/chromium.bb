@@ -79,11 +79,11 @@ class CommandBufferHelperImpl
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(stub_->decoder_context()->GetGLContext()->IsCurrent(nullptr));
 
-    scoped_refptr<gpu::gles2::TextureRef> texture_ref =
+    std::unique_ptr<gpu::gles2::AbstractTexture> texture =
         decoder_helper_->CreateTexture(target, internal_format, width, height,
                                        format, type);
-    GLuint service_id = texture_ref->service_id();
-    texture_refs_[service_id] = std::move(texture_ref);
+    GLuint service_id = texture->service_id();
+    textures_[service_id] = std::move(texture);
     return service_id;
   }
 
@@ -91,34 +91,27 @@ class CommandBufferHelperImpl
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(stub_->decoder_context()->GetGLContext()->IsCurrent(nullptr));
-    DCHECK(texture_refs_.count(service_id));
+    DCHECK(textures_.count(service_id));
 
-    texture_refs_.erase(service_id);
+    textures_.erase(service_id);
   }
 
   void SetCleared(GLuint service_id) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    if (!decoder_helper_)
-      return;
-
-    DCHECK(texture_refs_.count(service_id));
-    decoder_helper_->SetCleared(texture_refs_[service_id].get());
+    DCHECK(textures_.count(service_id));
+    textures_[service_id]->SetCleared();
   }
 
   bool BindImage(GLuint service_id,
                  gl::GLImage* image,
-                 bool can_bind_to_sampler) override {
+                 bool client_managed) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    if (!decoder_helper_)
-      return false;
-
-    DCHECK(texture_refs_.count(service_id));
-    decoder_helper_->BindImage(texture_refs_[service_id].get(), image,
-                               can_bind_to_sampler);
+    DCHECK(textures_.count(service_id));
+    textures_[service_id]->BindImage(image, client_managed);
     return true;
   }
 
@@ -129,8 +122,8 @@ class CommandBufferHelperImpl
     if (!decoder_helper_)
       return gpu::Mailbox();
 
-    DCHECK(texture_refs_.count(service_id));
-    return decoder_helper_->CreateMailbox(texture_refs_[service_id].get());
+    DCHECK(textures_.count(service_id));
+    return decoder_helper_->CreateMailbox(textures_[service_id].get());
   }
 
   void WaitForSyncToken(gpu::SyncToken sync_token,
@@ -159,32 +152,13 @@ class CommandBufferHelperImpl
     DVLOG(1) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    if (!stub_)
-      return;
-
-    // Try to drop TextureRefs with the context current, so that the platform
-    // textures can be deleted.
-    //
-    // Note: Since we don't know what stack we are on, it might not be safe to
-    // change the context. In practice we can be reasonably sure that our last
-    // owner isn't doing work in a different context.
-    //
-    // TODO(sandersd): We should restore the previous context.
-    if (!texture_refs_.empty() && MakeContextCurrent())
-      texture_refs_.clear();
-
-    DestroyStub();
+    if (stub_)
+      DestroyStub();
   }
 
   void OnWillDestroyStub(bool have_context) override {
     DVLOG(1) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    // If we don't have a context, then tell the textures.
-    if (!have_context) {
-      for (auto iter : texture_refs_)
-        iter.second->ForceContextLost();
-    }
 
     // In case |will_destroy_stub_cb_| drops the last reference to |this|, make
     // sure that we're around a bit longer.
@@ -193,16 +167,16 @@ class CommandBufferHelperImpl
     if (will_destroy_stub_cb_)
       std::move(will_destroy_stub_cb_).Run(have_context);
 
-    // OnWillDestroyStub() is called with the context current if possible. Drop
-    // the TextureRefs now while the platform textures can still be deleted.
-    texture_refs_.clear();
-
     DestroyStub();
   }
 
   void DestroyStub() {
     DVLOG(3) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    // Drop all textures.  Note that it's okay if the context isn't current,
+    // since AbstractTexture handles that case.
+    textures_.clear();
 
     decoder_helper_ = nullptr;
 
@@ -222,7 +196,7 @@ class CommandBufferHelperImpl
   gpu::SequenceId wait_sequence_id_;
   // TODO(sandersd): Merge GLES2DecoderHelper implementation into this class.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
-  std::map<GLuint, scoped_refptr<gpu::gles2::TextureRef>> texture_refs_;
+  std::map<GLuint, std::unique_ptr<gpu::gles2::AbstractTexture>> textures_;
 
   WillDestroyStubCB will_destroy_stub_cb_;
 

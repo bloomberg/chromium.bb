@@ -38,6 +38,8 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   void BindStreamTextureImage(GLStreamTextureImage* image,
                               GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
+  void ReleaseImage() override;
+  void SetCleared() override;
 
   // Called when our decoder is going away, so that we can try to clean up.
   void OnDecoderWillDestroy(bool have_context);
@@ -50,7 +52,11 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   ContextGroup* GetContextGroup() const;
   ErrorState* GetErrorState() const;
 
+  // Reset our level (0) info to be what we were given during construction.
+  void SetLevelInfo();
+
   scoped_refptr<TextureRef> texture_ref_;
+
   DecoderContext* decoder_context_ = nullptr;
   DestructionCB destruction_cb_;
 };

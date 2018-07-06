@@ -57,6 +57,10 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // guarantee that CopyTexImage() is called before drawing, so that |image|
   // may update the stream texture.  This will do nothing if the texture has
   // been destroyed.
+  //
+  // It is not required to SetCleared() if one binds an image.
+  //
+  // The context must be current.
   virtual void BindStreamTextureImage(GLStreamTextureImage* image,
                                       GLuint service_id) = 0;
 
@@ -64,7 +68,22 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // the decoder does not call GLImage::Copy/Bind.  Further, the decoder
   // guarantees that ScheduleOverlayPlane will be called if the texture is ever
   // promoted to an overlay.
+  //
+  // It is not required to SetCleared() if one binds an image.
+  //
+  // The context must be current.
   virtual void BindImage(gl::GLImage* image, bool client_managed) = 0;
+
+  // Unbind and release any image bound to this texture, and return it to an
+  // uncleared state.
+  //
+  // The context must be current.
+  virtual void ReleaseImage() = 0;
+
+  // Marks the texture as cleared, to help prevent sending an uninitialized
+  // texture to the (untrusted) renderer.  One should call this only when one
+  // has actually initialized the texture.
+  virtual void SetCleared() = 0;
 
   unsigned int service_id() const { return GetTextureBase()->service_id(); }
 };

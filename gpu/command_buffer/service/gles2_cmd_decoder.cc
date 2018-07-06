@@ -20184,11 +20184,8 @@ std::unique_ptr<AbstractTexture> GLES2DecoderImpl::CreateAbstractTexture(
       TextureRef::Create(texture_manager(), 0, service_id);
   texture_manager()->SetTarget(texture_ref.get(), target);
   const GLint level = 0;
-  gfx::Rect cleared_rect;
-  // Mark OES textures as cleared, though maybe the client should do this via
-  // a call to AbstractTexture.
-  if (target == GL_TEXTURE_EXTERNAL_OES)
-    cleared_rect = gfx::Rect(width, height);
+  // Mark the texture as "not cleared".
+  gfx::Rect cleared_rect = gfx::Rect();
   texture_manager()->SetLevelInfo(texture_ref.get(), target, level,
                                   internal_format, width, height, depth, border,
                                   format, type, cleared_rect);
@@ -20209,8 +20206,15 @@ void GLES2DecoderImpl::OnAbstractTextureDestroyed(
     scoped_refptr<TextureRef> texture_ref) {
   DCHECK(texture_ref);
   abstract_textures_.erase(abstract_texture);
-  // Keep |texture_ref| until we have a current context to destroy it.
-  texture_refs_pending_destruction_.insert(std::move(texture_ref));
+  // Keep |texture_ref| until we have a current context to destroy it, unless
+  // the context is current.  In that case, clear everything that's pending
+  // destruction and let |texture_ref| go out of scope.
+  // TODO(liberato): Consider moving this to the context group, so that any
+  // context in our group can delete textures sooner.
+  if (context_->IsCurrent(nullptr))
+    texture_refs_pending_destruction_.clear();
+  else
+    texture_refs_pending_destruction_.insert(std::move(texture_ref));
 }
 
 void GLES2DecoderImpl::DoSetReadbackBufferShadowAllocationINTERNAL(

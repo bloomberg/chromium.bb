@@ -22,7 +22,6 @@
 #include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/texture_pool.h"
-#include "media/gpu/android/texture_wrapper.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/android/surface_texture.h"
@@ -36,6 +35,8 @@ bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
 }
 
 }  // namespace
+
+using gpu::gles2::AbstractTexture;
 
 VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -152,28 +153,26 @@ void GpuVideoFrameFactory::CreateVideoFrame(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
-  scoped_refptr<gpu::gles2::TextureRef> texture_ref;
+  std::unique_ptr<AbstractTexture> texture;
   CreateVideoFrameInternal(std::move(output_buffer), std::move(texture_owner_),
                            timestamp, natural_size,
-                           std::move(promotion_hint_cb), &frame, &texture_ref);
-  if (!frame || !texture_ref)
+                           std::move(promotion_hint_cb), &frame, &texture);
+  if (!frame || !texture)
     return;
 
   // Try to render this frame if possible.
   internal::MaybeRenderEarly(&images_);
 
-  std::unique_ptr<TextureWrapper> texture_wrapper =
-      std::make_unique<TextureWrapperImpl>(std::move(texture_ref));
   // Note that this keeps the pool around while any texture is.
   auto drop_texture_ref = base::BindOnce(
-      [](scoped_refptr<TexturePool> texture_pool,
-         TextureWrapper* texture_wrapper, const gpu::SyncToken& sync_token) {
-        texture_pool->ReleaseTexture(texture_wrapper, sync_token);
+      [](scoped_refptr<TexturePool> texture_pool, AbstractTexture* texture,
+         const gpu::SyncToken& sync_token) {
+        texture_pool->ReleaseTexture(texture, sync_token);
       },
-      texture_pool_, base::Unretained(texture_wrapper.get()));
-  texture_pool_->AddTexture(std::move(texture_wrapper));
+      texture_pool_, base::Unretained(texture.get()));
+  texture_pool_->AddTexture(std::move(texture));
 
-  // Guarantee that the TextureRef is released even if the VideoFrame is
+  // Guarantee that the AbstractTexture is released even if the VideoFrame is
   // dropped. Otherwise we could keep TextureRefs we don't need alive.
   auto release_cb = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       BindToCurrentLoop(std::move(drop_texture_ref)), gpu::SyncToken());
@@ -188,7 +187,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     scoped_refptr<VideoFrame>* video_frame_out,
-    scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out) {
+    std::unique_ptr<AbstractTexture>* texture_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!MakeContextCurrent(stub_))
     return;
@@ -214,10 +213,9 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   }
 
   // Create a Texture and a CodecImage to back it.
-  scoped_refptr<gpu::gles2::TextureRef> texture_ref =
-      decoder_helper_->CreateTexture(GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
-                                     size.width(), size.height(), GL_RGBA,
-                                     GL_UNSIGNED_BYTE);
+  std::unique_ptr<AbstractTexture> texture = decoder_helper_->CreateTexture(
+      GL_TEXTURE_EXTERNAL_OES, GL_RGBA, size.width(), size.height(), GL_RGBA,
+      GL_UNSIGNED_BYTE);
   auto image = base::MakeRefCounted<CodecImage>(
       std::move(output_buffer), texture_owner_, std::move(promotion_hint_cb));
   images_.push_back(image.get());
@@ -227,23 +225,20 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   image_group_->AddCodecImage(image.get());
 
   // Attach the image to the texture.
-  // If we're attaching a TextureOwner backed image, we set the state to
-  // UNBOUND. This ensures that the implementation will call CopyTexImage()
-  // which lets us update the texture owner at the right time.
-  // For overlays we set the state to BOUND because it's required for
-  // ScheduleOverlayPlane() to be called. If something tries to sample from an
-  // overlay texture it won't work, but there's no way to make that work.
-  auto image_state = texture_owner_ ? gpu::gles2::Texture::UNBOUND
-                                    : gpu::gles2::Texture::BOUND;
+  // Either way, we expect this to be UNBOUND (i.e., decoder-managed).  For
+  // overlays, BindTexImage will return true, causing it to transition to the
+  // BOUND state, and thus receive ScheduleOverlayPlane calls.  For TextureOwner
+  // backed images, BindTexImage will return false, and CopyTexImage will be
+  // tried next.
+  // TODO(liberato): consider not binding this as a StreamTextureImage if we're
+  // using an overlay.  There's no advantage.  We'd likely want to create (and
+  // initialize to a 1x1 texture) a 2D texture above in that case, in case
+  // somebody tries to sample from it.
   GLuint texture_owner_service_id =
       texture_owner_ ? texture_owner_->GetTextureId() : 0;
-  texture_manager->SetLevelStreamTextureImage(
-      texture_ref.get(), GL_TEXTURE_EXTERNAL_OES, 0, image.get(), image_state,
-      texture_owner_service_id);
-  texture_manager->SetLevelCleared(texture_ref.get(), GL_TEXTURE_EXTERNAL_OES,
-                                   0, true);
+  texture->BindStreamTextureImage(image.get(), texture_owner_service_id);
 
-  gpu::Mailbox mailbox = decoder_helper_->CreateMailbox(texture_ref.get());
+  gpu::Mailbox mailbox = decoder_helper_->CreateMailbox(texture.get());
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] =
       gpu::MailboxHolder(mailbox, gpu::SyncToken(), GL_TEXTURE_EXTERNAL_OES);
@@ -270,7 +265,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
                                 !!texture_owner_);
 
   *video_frame_out = std::move(frame);
-  *texture_ref_out = std::move(texture_ref);
+  *texture_out = std::move(texture);
 }
 
 void GpuVideoFrameFactory::OnWillDestroyStub(bool have_context) {
