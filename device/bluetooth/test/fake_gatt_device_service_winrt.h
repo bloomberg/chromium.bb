@@ -21,7 +21,9 @@ class FakeGattDeviceServiceWinrt
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-              IGattDeviceService> {
+              IGattDeviceService,
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattDeviceService3> {
  public:
   FakeGattDeviceServiceWinrt(uint16_t attribute_handle, base::StringPiece uuid);
   ~FakeGattDeviceServiceWinrt() override;
@@ -40,6 +42,67 @@ class FakeGattDeviceServiceWinrt
   IFACEMETHODIMP get_DeviceId(HSTRING* value) override;
   IFACEMETHODIMP get_Uuid(GUID* value) override;
   IFACEMETHODIMP get_AttributeHandle(uint16_t* value) override;
+
+  // IGattDeviceService3:
+  IFACEMETHODIMP get_DeviceAccessInformation(
+      ABI::Windows::Devices::Enumeration::IDeviceAccessInformation** value)
+      override;
+  IFACEMETHODIMP get_Session(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSession**
+          value) override;
+  IFACEMETHODIMP get_SharingMode(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattSharingMode* value) override;
+  IFACEMETHODIMP RequestAccessAsync(
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Enumeration::DeviceAccessStatus>** value)
+      override;
+  IFACEMETHODIMP OpenAsync(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSharingMode
+          sharing_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattOpenStatus>** operation) override;
+  IFACEMETHODIMP GetCharacteristicsAsync(
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattCharacteristicsResult*>** operation) override;
+  IFACEMETHODIMP GetCharacteristicsWithCacheModeAsync(
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattCharacteristicsResult*>** operation) override;
+  IFACEMETHODIMP GetCharacteristicsForUuidAsync(
+      GUID characteristic_uuid,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattCharacteristicsResult*>** operation) override;
+  IFACEMETHODIMP GetCharacteristicsForUuidWithCacheModeAsync(
+      GUID characteristic_uuid,
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattCharacteristicsResult*>** operation) override;
+  IFACEMETHODIMP GetIncludedServicesAsync(
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDeviceServicesResult*>** operation) override;
+  IFACEMETHODIMP GetIncludedServicesWithCacheModeAsync(
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDeviceServicesResult*>** operation) override;
+  IFACEMETHODIMP GetIncludedServicesForUuidAsync(
+      GUID service_uuid,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDeviceServicesResult*>** operation) override;
+  IFACEMETHODIMP GetIncludedServicesForUuidWithCacheModeAsync(
+      GUID service_uuid,
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDeviceServicesResult*>** operation) override;
 
  private:
   uint16_t attribute_handle_;
