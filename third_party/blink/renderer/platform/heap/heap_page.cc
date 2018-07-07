@@ -1771,31 +1771,39 @@ uint32_t ComputeRandomMagic() {
 #pragma warning(disable : 4319)
 #endif
 
-  const uintptr_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
+  // Get an ASLR'd address from one of our own DLLs/.sos, and then another from
+  // a system DLL/.so:
+
+  const uint32_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
       base::trace_event::MemoryAllocatorDump::kNameSize)));
 
 #if defined(OS_WIN)
-  const uintptr_t random2 =
-      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
+  uintptr_t random2 = reinterpret_cast<uintptr_t>(::ReadFile);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  const uintptr_t random2 =
-      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
+  uintptr_t random2 = reinterpret_cast<uintptr_t>(::read);
+#else
+#error platform not supported
 #endif
 
 #if defined(ARCH_CPU_64_BITS)
   static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
                 "uintptr_t is not uint64_t");
-  const uint32_t random = static_cast<uint32_t>(
-      (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
+  // Shift in some high-order bits.
+  random2 = random2 >> 16;
 #elif defined(ARCH_CPU_32_BITS)
   // Although we don't use heap metadata canaries on 32-bit due to memory
   // pressure, keep this code around just in case we do, someday.
   static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
                 "uintptr_t is not uint32_t");
-  const uint32_t random = (random1 & 0x0FFFFUL) | (random2 & 0xFFFF0000UL);
 #else
 #error architecture not supported
 #endif
+
+  random2 = ~(RotateLeft16(random2));
+
+  // Combine the 2 values:
+  const uint32_t random = (random1 & 0x0000FFFFUL) |
+                          (static_cast<uint32_t>(random2) & 0xFFFF0000UL);
 
 #if defined(COMPILER_MSVC)
 #pragma warning(pop)
