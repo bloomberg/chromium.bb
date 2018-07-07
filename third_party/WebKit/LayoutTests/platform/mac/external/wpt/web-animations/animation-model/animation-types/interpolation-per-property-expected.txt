@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 724 tests; 647 PASS, 77 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 716 tests; 642 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -244,10 +244,6 @@ PASS cursor (type: discrete) has testInterpolation function
 PASS cursor uses discrete animation when animating between "pointer" and "wait" with linear easing
 PASS cursor uses discrete animation when animating between "pointer" and "wait" with effect easing
 PASS cursor uses discrete animation when animating between "pointer" and "wait" with keyframe easing
-PASS direction (type: discrete) has testInterpolation function
-PASS direction uses discrete animation when animating between "ltr" and "rtl" with linear easing
-PASS direction uses discrete animation when animating between "ltr" and "rtl" with effect easing
-PASS direction uses discrete animation when animating between "ltr" and "rtl" with keyframe easing
 PASS dominant-baseline (type: discrete) has testInterpolation function
 PASS dominant-baseline uses discrete animation when animating between "ideographic" and "alphabetic" with linear easing
 PASS dominant-baseline uses discrete animation when animating between "ideographic" and "alphabetic" with effect easing
@@ -720,9 +716,5 @@ PASS will-change (type: discrete) has testInterpolation function
 PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with linear easing
 PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with effect easing
 PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with keyframe easing
-PASS writing-mode (type: discrete) has testInterpolation function
-FAIL writing-mode uses discrete animation when animating between "vertical-rl" and "sideways-rl" with linear easing assert_equals: The value should be sideways-rl at 500ms expected "sideways-rl" but got "horizontal-tb"
-FAIL writing-mode uses discrete animation when animating between "vertical-rl" and "sideways-rl" with effect easing assert_equals: The value should be sideways-rl at 960ms expected "sideways-rl" but got "horizontal-tb"
-FAIL writing-mode uses discrete animation when animating between "vertical-rl" and "sideways-rl" with keyframe easing assert_equals: The value should be sideways-rl at 960ms expected "sideways-rl" but got "horizontal-tb"
 Harness: the test ran to completion.
 
