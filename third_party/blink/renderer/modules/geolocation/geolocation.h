@@ -156,7 +156,7 @@ class MODULES_EXPORT Geolocation final
   explicit Geolocation(ExecutionContext*);
 
   bool HasListeners() const {
-    return !one_shots_.IsEmpty() || !watchers_.IsEmpty();
+    return !one_shots_.IsEmpty() || !watchers_->IsEmpty();
   }
 
   void StopTimers();
@@ -196,7 +196,7 @@ class MODULES_EXPORT Geolocation final
   void OnGeolocationConnectionError();
 
   GeoNotifierSet one_shots_;
-  GeolocationWatchers watchers_;
+  TraceWrapperMember<GeolocationWatchers> watchers_;
   // GeoNotifiers that are in the middle of invocation.
   //
   // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|

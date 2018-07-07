@@ -96,7 +96,8 @@ XRSession::XRSession(XRDevice* device,
     : device_(device),
       exclusive_(exclusive),
       output_context_(output_context),
-      callback_collection_(device->xr()->GetExecutionContext()) {
+      callback_collection_(new XRFrameRequestCallbackCollection(
+          device->xr()->GetExecutionContext())) {
   blurred_ = !HasAppropriateFocus();
 
   // When an output context is provided, monitor it for resize events.
@@ -229,7 +230,7 @@ int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
   if (!base_layer_)
     return 0;
 
-  int id = callback_collection_.RegisterCallback(callback);
+  int id = callback_collection_->RegisterCallback(callback);
   if (!pending_frame_) {
     // Kick off a request for a new XR frame.
     device_->frameProvider()->RequestFrame(this);
@@ -239,7 +240,7 @@ int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
 }
 
 void XRSession::cancelAnimationFrame(int id) {
-  callback_collection_.CancelCallback(id);
+  callback_collection_->CancelCallback(id);
 }
 
 HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
@@ -498,7 +499,7 @@ void XRSession::OnFrame(
     // happen within these calls. resolving_frame_ will be true for the duration
     // of the callbacks.
     base::AutoReset<bool> resolving(&resolving_frame_, true);
-    callback_collection_.ExecuteCallbacks(this, presentation_frame);
+    callback_collection_->ExecuteCallbacks(this, presentation_frame);
 
     // The session might have ended in the middle of the frame. Only call
     // OnFrameEnd if it's still valid.

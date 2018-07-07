@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class GC_PLUGIN_IGNORE("crbug.com/841830") PLATFORM_EXPORT TraceWrapperBase {
+class PLATFORM_EXPORT TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(TraceWrapperBase);
 
  public:

@@ -174,7 +174,7 @@ class XRSession final : public EventTargetWithInlineData {
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
 
-  XRFrameRequestCallbackCollection callback_collection_;
+  TraceWrapperMember<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   WTF::Vector<float> non_exclusive_projection_matrix_;
