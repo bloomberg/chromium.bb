@@ -271,23 +271,6 @@ class NET_EXPORT TransportSecurityState {
     std::map<std::string, ExpectCTState>::const_iterator end_;
   };
 
-  // An ExpectStapleState describes a site that expects valid OCSP information
-  // to be stapled to its certificate on every connection.
-  class NET_EXPORT ExpectStapleState {
-   public:
-    ExpectStapleState();
-    ~ExpectStapleState();
-
-    // The domain which matched during a search for this Expect-Staple entry
-    std::string domain;
-
-    // The URI reports are sent to if a valid OCSP response is not stapled
-    GURL report_uri;
-
-    // True if subdomains are subject to this policy
-    bool include_subdomains;
-  };
-
   // An interface for asynchronously sending HPKP violation reports.
   class NET_EXPORT ReportSenderInterface {
    public:
@@ -378,21 +361,6 @@ class NET_EXPORT TransportSecurityState {
       const PublicKeyPinReportStatus report_status,
       std::string* failure_log);
   bool HasPublicKeyPins(const std::string& host);
-
-  // Sends an Expect-Staple report containing the raw |ocsp_response| for
-  // |host_port_pair| if the following conditions are true:
-  // 1. Sending Expect-Staple reports is enabled (via
-  //    |enable_static_expect_staple_|)
-  // 2. A report sender was provided via SetReportSender().
-  // 3. The build is timely (i.e. the preload list is fresh).
-  // 4. The given host is present on the Expect-Staple preload list.
-  // 5. |ssl_info| indicates the connection did not provide an OCSP response
-  //    indicating a revocation status of GOOD.
-  // 6. The certificate chain in |ssl_info| chains to a known root. Reports
-  //    for OCSP responses behind MITM proxies are not useful to site owners.
-  void CheckExpectStaple(const HostPortPair& host_port_pair,
-                         const SSLInfo& ssl_info,
-                         base::StringPiece ocsp_response);
 
   // Returns CT_REQUIREMENTS_NOT_MET if a connection violates CT policy
   // requirements: that is, if a connection to |host|, using the validated
@@ -680,14 +648,6 @@ class NET_EXPORT TransportSecurityState {
   bool GetStaticExpectCTState(const std::string& host,
                               ExpectCTState* expect_ct_result) const;
 
-  // Returns true and updates |*expect_staple_result| iff there is a static
-  // (built-in) state for |host| with expect_staple=true, or if |host| is a
-  // subdomain of another domain with expect_staple=true and
-  // include_subdomains_for_expect_staple=true.
-  bool GetStaticExpectStapleState(
-      const std::string& host,
-      ExpectStapleState* expect_staple_result) const;
-
   void MaybeNotifyExpectCTFailed(
       const HostPortPair& host_port_pair,
       const GURL& report_uri,
@@ -715,9 +675,6 @@ class NET_EXPORT TransportSecurityState {
 
   // True if static expect-CT state should be used.
   bool enable_static_expect_ct_;
-
-  // True if static expect-staple state should be used.
-  bool enable_static_expect_staple_;
 
   // True if public key pinning bypass is enabled for local trust anchors.
   bool enable_pkp_bypass_for_local_trust_anchors_;

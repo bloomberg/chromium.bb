@@ -270,9 +270,6 @@ struct PreloadResult {
   bool has_pins = false;
   bool expect_ct = false;
   uint32_t expect_ct_report_uri_id = 0;
-  bool expect_staple = false;
-  bool expect_staple_include_subdomains = false;
-  uint32_t expect_staple_report_uri_id = 0;
 };
 
 using net::extras::PreloadDecoder;
@@ -325,24 +322,13 @@ class HSTSPreloadDecoder : public net::extras::PreloadDecoder {
         if (!reader->Read(4, &tmp.expect_ct_report_uri_id))
           return false;
       }
-
-      if (!reader->Next(&tmp.expect_staple))
-        return false;
-      tmp.expect_staple_include_subdomains = false;
-      if (tmp.expect_staple) {
-        if (!reader->Next(&tmp.expect_staple_include_subdomains))
-          return false;
-        if (!reader->Read(4, &tmp.expect_staple_report_uri_id))
-          return false;
-      }
     }
 
     tmp.hostname_offset = current_search_offset;
 
     if (current_search_offset == 0 ||
         search[current_search_offset - 1] == '.') {
-      *out_found = tmp.sts_include_subdomains || tmp.pkp_include_subdomains ||
-                   tmp.expect_staple_include_subdomains;
+      *out_found = tmp.sts_include_subdomains || tmp.pkp_include_subdomains;
 
       result_ = tmp;
 
@@ -405,85 +391,6 @@ bool DecodeHSTSPreload(const std::string& search_hostname, PreloadResult* out) {
   return found;
 }
 
-// Serializes an OCSPVerifyResult::ResponseStatus to a string enum, suitable for
-// the |response-status| field in an Expect-Staple report.
-std::string SerializeExpectStapleResponseStatus(
-    OCSPVerifyResult::ResponseStatus status) {
-  switch (status) {
-    case OCSPVerifyResult::NOT_CHECKED:
-      // Reports shouldn't be sent for this response status.
-      NOTREACHED();
-      return "NOT_CHECKED";
-    case OCSPVerifyResult::MISSING:
-      return "MISSING";
-    case OCSPVerifyResult::PROVIDED:
-      return "PROVIDED";
-    case OCSPVerifyResult::ERROR_RESPONSE:
-      return "ERROR_RESPONSE";
-    case OCSPVerifyResult::BAD_PRODUCED_AT:
-      return "BAD_PRODUCED_AT";
-    case OCSPVerifyResult::NO_MATCHING_RESPONSE:
-      return "NO_MATCHING_RESPONSE";
-    case OCSPVerifyResult::INVALID_DATE:
-      return "INVALID_DATE";
-    case OCSPVerifyResult::PARSE_RESPONSE_ERROR:
-      return "PARSE_RESPONSE_ERROR";
-    case OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR:
-      return "PARSE_RESPONSE_DATA_ERROR";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-// Serializes an OCSPRevocationStatus to a string enum, suitable for the
-// |cert-status| field in an Expect-Staple report.
-std::string SerializeExpectStapleRevocationStatus(
-    const OCSPRevocationStatus& status) {
-  switch (status) {
-    case OCSPRevocationStatus::GOOD:
-      return "GOOD";
-    case OCSPRevocationStatus::REVOKED:
-      return "REVOKED";
-    case OCSPRevocationStatus::UNKNOWN:
-      return "UNKNOWN";
-  }
-  return std::string();
-}
-
-bool SerializeExpectStapleReport(const HostPortPair& host_port_pair,
-                                 const SSLInfo& ssl_info,
-                                 base::StringPiece ocsp_response,
-                                 std::string* out_serialized_report) {
-  DCHECK(ssl_info.is_issued_by_known_root);
-  base::DictionaryValue report;
-  report.SetString("date-time", base::TimeToISO8601(base::Time::Now()));
-  report.SetString("hostname", host_port_pair.host());
-  report.SetInteger("port", host_port_pair.port());
-  report.SetString("response-status",
-                   SerializeExpectStapleResponseStatus(
-                       ssl_info.ocsp_result.response_status));
-
-  if (!ocsp_response.empty()) {
-    std::string encoded_ocsp_response;
-    base::Base64Encode(ocsp_response, &encoded_ocsp_response);
-    report.SetString("ocsp-response", encoded_ocsp_response);
-  }
-  if (ssl_info.ocsp_result.response_status == OCSPVerifyResult::PROVIDED) {
-    report.SetString("cert-status",
-                     SerializeExpectStapleRevocationStatus(
-                         ssl_info.ocsp_result.revocation_status));
-  }
-
-  report.Set("served-certificate-chain",
-             GetPEMEncodedChainAsList(ssl_info.unverified_cert.get()));
-  report.Set("validated-certificate-chain",
-             GetPEMEncodedChainAsList(ssl_info.cert.get()));
-
-  if (!base::JSONWriter::Write(report, out_serialized_report))
-    return false;
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -498,7 +405,6 @@ void SetTransportSecurityStateSourceForTesting(
 TransportSecurityState::TransportSecurityState()
     : enable_static_pins_(true),
       enable_static_expect_ct_(true),
-      enable_static_expect_staple_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
       sent_hpkp_reports_cache_(kMaxReportCacheEntries),
       sent_expect_ct_reports_cache_(kMaxReportCacheEntries) {
@@ -552,44 +458,6 @@ TransportSecurityState::PKPStatus TransportSecurityState::CheckPublicKeyPins(
   UMA_HISTOGRAM_BOOLEAN("Net.PublicKeyPinSuccess",
                         pin_validity == PKPStatus::OK);
   return pin_validity;
-}
-
-void TransportSecurityState::CheckExpectStaple(
-    const HostPortPair& host_port_pair,
-    const SSLInfo& ssl_info,
-    base::StringPiece ocsp_response) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!enable_static_expect_staple_ || !report_sender_ ||
-      !ssl_info.is_issued_by_known_root) {
-    return;
-  }
-
-  // Determine if the host is on the Expect-Staple preload list. If the build is
-  // not timely (i.e. the preload list is not fresh), this will fail and return
-  // false.
-  ExpectStapleState expect_staple_state;
-  if (!GetStaticExpectStapleState(host_port_pair.host(), &expect_staple_state))
-    return;
-
-  // No report needed if OCSP details were not checked on this connection.
-  if (ssl_info.ocsp_result.response_status == OCSPVerifyResult::NOT_CHECKED)
-    return;
-
-  // No report needed if a stapled OCSP response was provided and it was valid.
-  if (ssl_info.ocsp_result.response_status == OCSPVerifyResult::PROVIDED &&
-      ssl_info.ocsp_result.revocation_status == OCSPRevocationStatus::GOOD) {
-    return;
-  }
-
-  std::string serialized_report;
-  if (!SerializeExpectStapleReport(host_port_pair, ssl_info, ocsp_response,
-                                   &serialized_report)) {
-    return;
-  }
-  report_sender_->Send(expect_staple_state.report_uri,
-                       "application/json; charset=utf-8", serialized_report,
-                       base::Callback<void()>(),
-                       base::Bind(RecordUMAForHPKPReportFailure));
 }
 
 bool TransportSecurityState::HasPublicKeyPins(const std::string& host) {
@@ -988,30 +856,6 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
   expect_ct_reporter_->OnExpectCTFailed(
       host_port_pair, report_uri, expiration, validated_certificate_chain,
       served_certificate_chain, signed_certificate_timestamps);
-}
-
-bool TransportSecurityState::GetStaticExpectStapleState(
-    const std::string& host,
-    ExpectStapleState* expect_staple_state) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!IsBuildTimely())
-    return false;
-
-  PreloadResult result;
-  if (!DecodeHSTSPreload(host, &result))
-    return false;
-
-  if (!enable_static_expect_staple_ || !result.expect_staple)
-    return false;
-
-  expect_staple_state->domain = host.substr(result.hostname_offset);
-  expect_staple_state->include_subdomains =
-      result.expect_staple_include_subdomains;
-  expect_staple_state->report_uri =
-      GURL(g_hsts_source
-               ->expect_staple_report_uris[result.expect_staple_report_uri_id]);
-  return true;
 }
 
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
@@ -1570,11 +1414,6 @@ TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
 
 TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() =
     default;
-
-TransportSecurityState::ExpectStapleState::ExpectStapleState()
-    : include_subdomains(false) {}
-
-TransportSecurityState::ExpectStapleState::~ExpectStapleState() = default;
 
 bool TransportSecurityState::PKPState::CheckPublicKeyPins(
     const HashValueVector& hashes,

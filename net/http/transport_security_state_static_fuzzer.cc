@@ -24,13 +24,6 @@ class TransportSecurityStateStaticFuzzer {
     TransportSecurityState::ExpectCTState result;
     return state->GetStaticExpectCTState(input, &result);
   }
-
-  bool FuzzStaticExpectStapleState(TransportSecurityState* state,
-                                   const std::string& input) {
-    state->enable_static_expect_staple_ = true;
-    TransportSecurityState::ExpectStapleState result;
-    return state->GetStaticExpectStapleState(input, &result);
-  }
 };
 
 }  // namespace net
@@ -43,7 +36,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   helper.FuzzStaticDomainState(&state, input);
   helper.FuzzStaticExpectCTState(&state, input);
-  helper.FuzzStaticExpectStapleState(&state, input);
 
   return 0;
 }

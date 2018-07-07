@@ -51,18 +51,6 @@ TEST(InputFileParsersTest, ParseJSON) {
       "      \"policy\": \"test\","
       "      \"expect_ct\": true,"
       "      \"expect_ct_report_uri\": \"https://expect-ct-log.example.com\""
-      "    }, {"
-      "      \"name\": \"expect-staple.example.com\","
-      "      \"policy\": \"test\","
-      "      \"expect_staple\": true,"
-      "      \"expect_staple_report_uri\": "
-      "\"https://expect-staple-log.example.com\","
-      "      \"include_subdomains_for_expect_staple\": true"
-      "    }, {"
-      "      \"name\": \"expect-staple-no-subdomains.example.com\","
-      "      \"policy\": \"test\","
-      "      \"expect_staple\": true,"
-      "      \"include_subdomains_for_expect_staple\": false"
       "    }"
       "  ]"
       "}";
@@ -84,7 +72,7 @@ TEST(InputFileParsersTest, ParseJSON) {
   ASSERT_EQ(1U, pinset->second->bad_static_spki_hashes().size());
   EXPECT_EQ("BadTestSPKI", pinset->second->bad_static_spki_hashes()[0]);
 
-  ASSERT_EQ(7U, entries.size());
+  ASSERT_EQ(5U, entries.size());
   TransportSecurityStateEntry* entry = entries[0].get();
   EXPECT_EQ("hsts.example.com", entry->hostname);
   EXPECT_TRUE(entry->force_https);
@@ -93,9 +81,6 @@ TEST(InputFileParsersTest, ParseJSON) {
   EXPECT_EQ("", entry->pinset);
   EXPECT_FALSE(entry->expect_ct);
   EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_FALSE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
 
   entry = entries[1].get();
   EXPECT_EQ("hsts-no-subdomains.example.com", entry->hostname);
@@ -105,9 +90,6 @@ TEST(InputFileParsersTest, ParseJSON) {
   EXPECT_EQ("", entry->pinset);
   EXPECT_FALSE(entry->expect_ct);
   EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_FALSE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
 
   entry = entries[2].get();
   EXPECT_EQ("hpkp.example.com", entry->hostname);
@@ -117,9 +99,6 @@ TEST(InputFileParsersTest, ParseJSON) {
   EXPECT_EQ("thepinset", entry->pinset);
   EXPECT_FALSE(entry->expect_ct);
   EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_FALSE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
 
   entry = entries[3].get();
   EXPECT_EQ("hpkp-no-subdomains.example.com", entry->hostname);
@@ -129,9 +108,6 @@ TEST(InputFileParsersTest, ParseJSON) {
   EXPECT_EQ("thepinset2", entry->pinset);
   EXPECT_FALSE(entry->expect_ct);
   EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_FALSE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
 
   entry = entries[4].get();
   EXPECT_EQ("expect-ct.example.com", entry->hostname);
@@ -141,34 +117,6 @@ TEST(InputFileParsersTest, ParseJSON) {
   EXPECT_EQ("", entry->pinset);
   EXPECT_TRUE(entry->expect_ct);
   EXPECT_EQ("https://expect-ct-log.example.com", entry->expect_ct_report_uri);
-  EXPECT_FALSE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
-
-  entry = entries[5].get();
-  EXPECT_EQ("expect-staple.example.com", entry->hostname);
-  EXPECT_FALSE(entry->force_https);
-  EXPECT_FALSE(entry->include_subdomains);
-  EXPECT_FALSE(entry->hpkp_include_subdomains);
-  EXPECT_EQ("", entry->pinset);
-  EXPECT_FALSE(entry->expect_ct);
-  EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_TRUE(entry->expect_staple);
-  EXPECT_TRUE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("https://expect-staple-log.example.com",
-            entry->expect_staple_report_uri);
-
-  entry = entries[6].get();
-  EXPECT_EQ("expect-staple-no-subdomains.example.com", entry->hostname);
-  EXPECT_FALSE(entry->force_https);
-  EXPECT_FALSE(entry->include_subdomains);
-  EXPECT_FALSE(entry->hpkp_include_subdomains);
-  EXPECT_EQ("", entry->pinset);
-  EXPECT_FALSE(entry->expect_ct);
-  EXPECT_EQ("", entry->expect_ct_report_uri);
-  EXPECT_TRUE(entry->expect_staple);
-  EXPECT_FALSE(entry->expect_staple_include_subdomains);
-  EXPECT_EQ("", entry->expect_staple_report_uri);
 }
 
 // Test that parsing valid JSON with missing keys fails.

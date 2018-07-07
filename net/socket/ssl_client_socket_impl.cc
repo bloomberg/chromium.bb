@@ -1237,15 +1237,6 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
     bool ok = GetSSLInfo(&ssl_info);
     DCHECK(ok);
 
-    const uint8_t* ocsp_response_raw;
-    size_t ocsp_response_len;
-    SSL_get0_ocsp_response(ssl_.get(), &ocsp_response_raw, &ocsp_response_len);
-    base::StringPiece ocsp_response(
-        reinterpret_cast<const char*>(ocsp_response_raw), ocsp_response_len);
-
-    transport_security_state_->CheckExpectStaple(host_and_port_, ssl_info,
-                                                 ocsp_response);
-
     // See how feasible enforcing RSA key usage would be. See
     // https://crbug.com/795089.
     RSAKeyUsage rsa_key_usage = CheckRSAKeyUsage(

@@ -17,8 +17,6 @@
 
 static const char* const kExpectCTReportURIs[] = [[EXPECT_CT_REPORT_URIS]];
 
-static const char* const kExpectStapleReportURIs[] = [[EXPECT_STAPLE_REPORT_URIS]];
-
 // kNoRejectedPublicKeys is a placeholder for when no public keys are rejected.
 static const char* const kNoRejectedPublicKeys[] = {
     nullptr,
@@ -47,7 +45,6 @@ static const net::TransportSecurityStateSource kHSTSSource = {
   kPreloadedHSTSBits,
   kHSTSRootPosition,
   kExpectCTReportURIs,
-  kExpectStapleReportURIs,
   kPinsets,
   arraysize(kPinsets)
 };

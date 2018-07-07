@@ -38,9 +38,6 @@ class PreloadedStateGenerator {
   void ProcessExpectCTURIs(const TransportSecurityStateEntries& entries,
                            NameIDMap* expect_ct_report_uri_map,
                            std::string* tpl);
-  void ProcessExpectStapleURIs(const TransportSecurityStateEntries& entries,
-                               NameIDMap* expect_staple_report_uri_map,
-                               std::string* tpl);
   void ProcessPinsets(const Pinsets& pinset,
                       NameIDMap* pinset_map,
                       std::string* tpl);
