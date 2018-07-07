@@ -736,6 +736,10 @@ int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
   int value = -1;
   if (ReadPrefAsInteger(extension_id, kPrefDisableReasons, &value) &&
       value >= 0) {
+    // TODO(crbug.com/860198): After we've gotten rid of the migration code for
+    // DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC, we should maybe filter it out here
+    // just to be sure:
+    // value = value & ~disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC;
     return value;
   }
   return disable_reason::DISABLE_NONE;
