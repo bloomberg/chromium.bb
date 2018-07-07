@@ -17,7 +17,9 @@ class TestSyncService : public FakeSyncService {
   TestSyncService() = default;
   ~TestSyncService() override = default;
 
-  void SetSyncAllowed(bool allowed) { sync_allowed_ = allowed; }
+  void SetDisableReasons(int disable_reasons) {
+    disable_reasons_ = disable_reasons;
+  }
   void SetSyncActive(bool active) { sync_active_ = active; }
   void SetLocalSyncEnabled(bool local) { local_sync_enabled_ = local; }
   void SetPreferredDataTypes(const ModelTypeSet& types) {
@@ -33,8 +35,7 @@ class TestSyncService : public FakeSyncService {
   void SetSyncCycleComplete(bool complete) { sync_cycle_complete_ = complete; }
 
   // SyncService implementation.
-  bool IsSyncAllowed() const override { return sync_allowed_; }
-  bool CanSyncStart() const override { return sync_allowed_; }
+  int GetDisableReasons() const override { return disable_reasons_; }
   bool IsSyncActive() const override { return sync_active_; }
   bool IsLocalSyncEnabled() const override { return local_sync_enabled_; }
   ModelTypeSet GetPreferredDataTypes() const override {
@@ -75,7 +76,7 @@ class TestSyncService : public FakeSyncService {
   }
 
  private:
-  bool sync_allowed_ = false;
+  int disable_reasons_ = DISABLE_REASON_PLATFORM_OVERRIDE;
   bool sync_active_ = false;
   bool sync_cycle_complete_ = false;
   bool local_sync_enabled_ = false;
@@ -90,7 +91,8 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
 
   // If sync is not allowed, uploading should never be enabled, even if
   // configuration is done and all the data types are enabled.
-  service.SetSyncAllowed(false);
+  service.SetDisableReasons(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 
   service.SetConfigurationDone(true);
   service.SetPreferredDataTypes(ProtocolTypes());
@@ -101,7 +103,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
 
   // Once sync gets allowed (e.g. policy is updated), uploading should not be
   // disabled anymore (though not necessarily active yet).
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
 
   EXPECT_NE(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
@@ -110,7 +112,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
 TEST(SyncServiceUtilsTest,
      UploadToGoogleInitializingUntilConfiguredAndActiveAndSyncCycleComplete) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
 
@@ -135,7 +137,7 @@ TEST(SyncServiceUtilsTest,
 
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetConfigurationDone(true);
   service.SetSyncActive(true);
   service.SetSyncCycleComplete(true);
@@ -159,7 +161,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
 TEST(SyncServiceUtilsTest,
      UploadToGoogleDisabledForModelTypeThatFailedToStart) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetConfigurationDone(true);
   service.SetSyncActive(true);
   service.SetSyncCycleComplete(true);
@@ -181,7 +183,7 @@ TEST(SyncServiceUtilsTest,
 
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
@@ -202,7 +204,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
 
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
@@ -242,7 +244,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
 
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   TestSyncService service;
-  service.SetSyncAllowed(true);
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);

@@ -85,7 +85,7 @@ class MockSyncService : public syncer::FakeSyncService {
  public:
   MockSyncService() {}
   ~MockSyncService() override {}
-  MOCK_CONST_METHOD0(CanSyncStart, bool());
+  MOCK_CONST_METHOD0(GetDisableReasons, int());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
   MOCK_CONST_METHOD0(ConfigurationDone, bool());
   MOCK_CONST_METHOD0(IsLocalSyncEnabled, bool());
@@ -153,9 +153,9 @@ class SuggestionsServiceTest : public testing::Test {
   ~SuggestionsServiceTest() override {}
 
   void SetUp() override {
-    EXPECT_CALL(*sync_service(), CanSyncStart())
+    EXPECT_CALL(*sync_service(), GetDisableReasons())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
+        .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
     EXPECT_CALL(*sync_service(), IsSyncActive())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
@@ -408,7 +408,9 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
-  EXPECT_CALL(*sync_service(), CanSyncStart()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*sync_service(), GetDisableReasons())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
   auto subscription = suggestions_service()->AddCallback(callback.Get());

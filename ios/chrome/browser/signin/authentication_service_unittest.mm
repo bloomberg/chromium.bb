@@ -314,8 +314,8 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
       .WillOnce(Invoke(
           sync_setup_service_mock_,
           &SyncSetupServiceMock::SyncSetupServiceHasFinishedInitialSetup));
-  EXPECT_CALL(*profile_sync_service_mock_, CanSyncStart())
-      .WillOnce(Return(false));
+  EXPECT_CALL(*profile_sync_service_mock_, GetDisableReasons())
+      .WillOnce(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
   CreateAuthenticationService();
 

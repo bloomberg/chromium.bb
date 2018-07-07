@@ -16,7 +16,7 @@ class TestSyncService : public syncer::FakeSyncService {
   ~TestSyncService() override;
 
   // FakeSyncService:
-  bool CanSyncStart() const override;
+  int GetDisableReasons() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   bool IsEngineInitialized() const override;
@@ -27,8 +27,8 @@ class TestSyncService : public syncer::FakeSyncService {
   const GoogleServiceAuthError& GetAuthError() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
 
-  void SetCanSyncStart(bool can_sync_start) {
-    can_sync_start_ = can_sync_start;
+  void SetDisableReasons(int disable_reasons) {
+    disable_reasons_ = disable_reasons;
   }
 
   void SetDataTypes(syncer::ModelTypeSet data_types) {
@@ -56,7 +56,7 @@ class TestSyncService : public syncer::FakeSyncService {
   void SetInAuthError(bool is_in_auth_error);
 
  private:
-  bool can_sync_start_ = true;
+  int disable_reasons_ = DISABLE_REASON_NONE;
   // Used as both "preferred" and "active" data types.
   syncer::ModelTypeSet data_types_;
   bool is_engine_initialized_ = true;

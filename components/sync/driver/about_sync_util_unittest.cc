@@ -16,9 +16,7 @@ namespace {
 class SyncServiceMock : public FakeSyncService {
  public:
   bool IsFirstSetupComplete() const override { return true; }
-  bool CanSyncStart() const override { return true; }
 
-  bool HasUnrecoverableError() const override { return true; }
   int GetDisableReasons() const override {
     return DISABLE_REASON_UNRECOVERABLE_ERROR;
   }

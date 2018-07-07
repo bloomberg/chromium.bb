@@ -236,12 +236,10 @@ class ProfileSyncService : public syncer::SyncService,
   int GetDisableReasons() const override;
   State GetState() const override;
   bool IsFirstSetupComplete() const override;
-  bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
-  bool CanSyncStart() const override;
   void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
@@ -259,7 +257,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-  bool HasUnrecoverableError() const override;
   bool IsEngineInitialized() const override;
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;

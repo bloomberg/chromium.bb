@@ -20,7 +20,7 @@ namespace {
 
 class TestSyncService : public syncer::FakeSyncService {
  public:
-  bool IsSyncAllowed() const override { return true; }
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
 };
 
 class UnifiedConsentServiceTest : public testing::Test,

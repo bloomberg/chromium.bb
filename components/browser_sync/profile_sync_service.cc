@@ -247,17 +247,6 @@ ProfileSyncService::~ProfileSyncService() {
   DCHECK(!engine_initialized_);
 }
 
-bool ProfileSyncService::CanSyncStart() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  int disable_reasons = GetDisableReasons();
-  // An unrecoverable error is currently *not* considered a start-preventing
-  // disable reason, because it occurs after Sync has already started.
-  // TODO(crbug.com/839834): Consider changing this, since Sync shuts down and
-  // won't start up again after an unrecoverable error.
-  disable_reasons = disable_reasons & ~DISABLE_REASON_UNRECOVERABLE_ERROR;
-  return disable_reasons == DISABLE_REASON_NONE;
-}
-
 void ProfileSyncService::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_client_->Initialize();
@@ -1337,12 +1326,6 @@ ProfileSyncService::GetSetupInProgressHandle() {
                           weak_factory_.GetWeakPtr()));
 }
 
-bool ProfileSyncService::IsSyncAllowed() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return !HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
-         !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY);
-}
-
 bool ProfileSyncService::IsSyncActive() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return engine_initialized_ && data_type_manager_ &&
@@ -1374,11 +1357,6 @@ bool ProfileSyncService::ConfigurationDone() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_type_manager_ &&
          data_type_manager_->state() == DataTypeManager::CONFIGURED;
-}
-
-bool ProfileSyncService::HasUnrecoverableError() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR);
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {

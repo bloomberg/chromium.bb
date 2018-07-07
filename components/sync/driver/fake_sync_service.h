@@ -38,7 +38,6 @@ class FakeSyncService : public SyncService {
   int GetDisableReasons() const override;
   State GetState() const override;
   bool IsFirstSetupComplete() const override;
-  bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
@@ -48,7 +47,6 @@ class FakeSyncService : public SyncService {
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
-  bool CanSyncStart() const override;
   void RequestStop(SyncService::SyncStopDataFate data_fate) override;
   void RequestStart() override;
   ModelTypeSet GetPreferredDataTypes() const override;
@@ -61,7 +59,6 @@ class FakeSyncService : public SyncService {
   bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-  bool HasUnrecoverableError() const override;
   bool IsEngineInitialized() const override;
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
