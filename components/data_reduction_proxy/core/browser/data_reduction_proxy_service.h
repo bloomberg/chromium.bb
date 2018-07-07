@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 
 class PrefService;
 
@@ -84,11 +85,15 @@ class DataReductionProxyService
 
   // Records daily data savings statistics in |compression_stats_|.
   // Virtual for testing.
-  virtual void UpdateContentLengths(int64_t data_used,
-                                    int64_t original_size,
-                                    bool data_reduction_proxy_enabled,
-                                    DataReductionProxyRequestType request_type,
-                                    const std::string& mime_type);
+  virtual void UpdateContentLengths(
+      int64_t data_used,
+      int64_t original_size,
+      bool data_reduction_proxy_enabled,
+      DataReductionProxyRequestType request_type,
+      const std::string& mime_type,
+      bool is_user_traffic,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code);
 
   // Overrides of DataReductionProxyEventStorageDelegate.
   void AddEvent(std::unique_ptr<base::Value> event) override;

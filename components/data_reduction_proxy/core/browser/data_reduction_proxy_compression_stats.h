@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_member.h"
 
 class PrefService;
@@ -81,11 +82,15 @@ class DataReductionProxyCompressionStats {
   // Records detailed data usage broken down by |mime_type|. Also records daily
   // data savings statistics to prefs and reports data savings UMA. |data_used|
   // and |original_size| are measured in bytes.
-  void RecordDataUseWithMimeType(int64_t compressed_size,
-                                 int64_t original_size,
-                                 bool data_reduction_proxy_enabled,
-                                 DataReductionProxyRequestType request_type,
-                                 const std::string& mime_type);
+  void RecordDataUseWithMimeType(
+      int64_t compressed_size,
+      int64_t original_size,
+      bool data_reduction_proxy_enabled,
+      DataReductionProxyRequestType request_type,
+      const std::string& mime_type,
+      bool is_user_traffic,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code);
 
   // Record data usage and original size of request broken down by host.
   // |original_request_size| and |data_used| are in bytes. |time| is the time at
@@ -253,6 +258,20 @@ class DataReductionProxyCompressionStats {
   // Initializes data usage statistics in memory when pref is enabled and
   // persists data usage to memory when pref is disabled.
   void OnDataUsageReportingPrefChanged();
+
+  // Initialize the weekly data use prefs for the current week, and records the
+  // weekly aggregate data use histograms.
+  void InitializeWeeklyAggregateDataUse(const base::Time& now);
+
+  // Records |data_used_kb| to the current week data use pref. |is_user_request|
+  // indicates if this is user-initiated traffic or chrome services traffic, and
+  // |service_hash_code| uniquely identifies the corresponding chrome service.
+  void RecordWeeklyAggregateDataUse(
+      const base::Time& now,
+      int32_t data_used_kb,
+      bool is_user_request,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code);
 
   // Normalizes the hostname for data usage attribution. Returns a substring
   // without the protocol.

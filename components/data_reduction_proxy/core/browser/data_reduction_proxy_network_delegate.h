@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/completion_callback.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
@@ -122,10 +123,14 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Posts to the UI thread to UpdateContentLengthPrefs in the data reduction
   // proxy metrics and updates |received_content_length_| and
   // |original_content_length_|.
-  void AccumulateDataUsage(int64_t data_used,
-                           int64_t original_size,
-                           DataReductionProxyRequestType request_type,
-                           const std::string& mime_type);
+  void AccumulateDataUsage(
+      int64_t data_used,
+      int64_t original_size,
+      DataReductionProxyRequestType request_type,
+      const std::string& mime_type,
+      bool is_user_traffic,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code);
 
   // Record information such as histograms related to the Content-Length of
   // |request|. |original_content_length| is the length of the resource if

@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -13,9 +14,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
@@ -26,6 +29,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "net/base/mime_util.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 
 namespace data_reduction_proxy {
 
@@ -42,6 +49,9 @@ namespace {
   if (UNIQUE_VARNAME > 0) {                          \
     UMA_HISTOGRAM_COUNTS(uma, UNIQUE_VARNAME >> 10); \
   }
+
+const double kSecondsPerWeek =
+    base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
 
 // Returns the value at |index| of |list_value| as an int64_t.
 int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
@@ -207,6 +217,89 @@ void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
   UMA_HISTOGRAM_ENUMERATION(
       "DataReductionProxy.SavingsCleared.Reason", reason,
       DataReductionProxySavingsClearedReason::REASON_COUNT);
+}
+
+// Returns the week number for the current time. The epoch time is treated as
+// week=0.
+int32_t GetCurrentWeekNumber(const base::Time& now) {
+  double now_in_seconds = now.ToDoubleT();
+  return now_in_seconds / kSecondsPerWeek;
+}
+
+// Adds |value| to the item at |key| in the preference dictionary found at
+// |pref|. If |key| is not found it will be inserted.
+void AddToDictionaryPref(PrefService* pref_service,
+                         const std::string& pref,
+                         int key,
+                         int value) {
+  DictionaryPrefUpdate pref_update(pref_service, pref);
+  base::DictionaryValue* pref_dict = pref_update.Get();
+  const std::string key_str = base::IntToString(key);
+  base::Value* dict_value = pref_dict->FindKey(key_str);
+  if (dict_value)
+    value += dict_value->GetInt();
+  pref_dict->SetKey(key_str, base::Value(value));
+}
+
+// Moves the dictionary stored in preference |pref_src| to |pref_dst|, and
+// clears the preference |pref_src|.
+void MoveAndClearDictionaryPrefs(PrefService* pref_service,
+                                 const std::string& pref_dst,
+                                 const std::string& pref_src) {
+  DictionaryPrefUpdate pref_update_dst(pref_service, pref_dst);
+  DictionaryPrefUpdate pref_update_src(pref_service, pref_src);
+  pref_update_dst->Clear();
+  pref_update_dst->Swap(pref_update_src.Get());
+  DCHECK(pref_update_src->empty());
+}
+
+void MaybeInitWeeklyAggregateDataUsePrefs(const base::Time& now,
+                                          PrefService* pref_service) {
+  int saved_week = pref_service->GetInteger(prefs::kThisWeekNumber);
+  int current_week = GetCurrentWeekNumber(now);
+
+  if (saved_week == current_week)
+    return;
+
+  pref_service->SetInteger(prefs::kThisWeekNumber, current_week);
+  if (current_week == saved_week + 1) {
+    // The next week has just started. Move the data use aggregate prefs for
+    // this week to last week, and clear the prefs for this week.
+    MoveAndClearDictionaryPrefs(pref_service,
+                                prefs::kLastWeekServicesDownstreamBackgroundKB,
+                                prefs::kThisWeekServicesDownstreamBackgroundKB);
+    MoveAndClearDictionaryPrefs(pref_service,
+                                prefs::kLastWeekServicesDownstreamForegroundKB,
+                                prefs::kThisWeekServicesDownstreamForegroundKB);
+    MoveAndClearDictionaryPrefs(
+        pref_service, prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+        prefs::kThisWeekUserTrafficContentTypeDownstreamKB);
+  } else {
+    // Current week is too different than the last time data use aggregate prefs
+    // were updated. This may happen if Chrome was opened after a long time, or
+    // due to system clock being changed backward or forward. Clear all prefs in
+    // this case.
+    pref_service->ClearPref(prefs::kLastWeekServicesDownstreamBackgroundKB);
+    pref_service->ClearPref(prefs::kLastWeekServicesDownstreamForegroundKB);
+    pref_service->ClearPref(prefs::kLastWeekUserTrafficContentTypeDownstreamKB);
+    pref_service->ClearPref(prefs::kThisWeekServicesDownstreamBackgroundKB);
+    pref_service->ClearPref(prefs::kThisWeekServicesDownstreamForegroundKB);
+    pref_service->ClearPref(prefs::kThisWeekUserTrafficContentTypeDownstreamKB);
+  }
+}
+
+// Records the key-value pairs in the dictionary in a sparse histogram.
+void RecordDictionaryToHistogram(const std::string& histogram_name,
+                                 const base::DictionaryValue* dictionary) {
+  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+      histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
+  for (const auto& entry : *dictionary) {
+    int key;
+    int value = entry.second->GetInt();
+    if (value > 0 && base::StringToInt(entry.first, &key)) {
+      histogram->AddCount(key, value);
+    }
+  }
 }
 
 }  // namespace
@@ -424,6 +517,8 @@ void DataReductionProxyCompressionStats::Init() {
   InitListPref(prefs::kDailyHttpReceivedContentLength);
   InitListPref(prefs::kDailyOriginalContentLengthViaDataReductionProxy);
   InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
+
+  InitializeWeeklyAggregateDataUse(base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
@@ -431,7 +526,10 @@ void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
     int64_t original_size,
     bool data_saver_enabled,
     DataReductionProxyRequestType request_type,
-    const std::string& mime_type) {
+    const std::string& mime_type,
+    bool is_user_traffic,
+    data_use_measurement::DataUseUserData::DataUseContentType content_type,
+    int32_t service_hash_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("loader",
                "DataReductionProxyCompressionStats::RecordDataUseWithMimeType")
@@ -445,6 +543,9 @@ void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
 
   RecordRequestSizePrefs(data_used, original_size, data_saver_enabled,
                          request_type, mime_type, base::Time::Now());
+  RecordWeeklyAggregateDataUse(
+      base::Time::Now(), std::round(static_cast<double>(data_used) / 1024),
+      is_user_traffic, content_type, service_hash_code);
 }
 
 void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
@@ -1295,6 +1396,69 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
     DeleteHistoricalDataUsage();
 #endif
     current_data_usage_load_status_ = NOT_LOADED;
+  }
+}
+
+void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
+    const base::Time& now) {
+  MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
+  // Record the histograms that will show up in the user feedback.
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.ThisWeekAggregateKB.Services.Downstream.Background",
+      pref_service_->GetDictionary(
+          prefs::kThisWeekServicesDownstreamBackgroundKB));
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.ThisWeekAggregateKB.Services.Downstream.Foreground",
+      pref_service_->GetDictionary(
+          prefs::kThisWeekServicesDownstreamForegroundKB));
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      pref_service_->GetDictionary(
+          prefs::kThisWeekUserTrafficContentTypeDownstreamKB));
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.LastWeekAggregateKB.Services.Downstream.Background",
+      pref_service_->GetDictionary(
+          prefs::kLastWeekServicesDownstreamBackgroundKB));
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.LastWeekAggregateKB.Services.Downstream.Foreground",
+      pref_service_->GetDictionary(
+          prefs::kLastWeekServicesDownstreamForegroundKB));
+  RecordDictionaryToHistogram(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      pref_service_->GetDictionary(
+          prefs::kLastWeekUserTrafficContentTypeDownstreamKB));
+}
+
+void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
+    const base::Time& now,
+    int32_t data_used_kb,
+    bool is_user_request,
+    data_use_measurement::DataUseUserData::DataUseContentType content_type,
+    int32_t service_hash_code) {
+  // Update the prefs if this is a new week. This can happen when chrome is open
+  // for weeks without being closed.
+  MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
+  if (is_user_request) {
+    AddToDictionaryPref(pref_service_,
+                        prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+                        content_type, data_used_kb);
+  } else {
+    bool is_app_foreground = true;
+#if defined(OS_ANDROID)
+    is_app_foreground = base::android::ApplicationStatusListener::GetState() ==
+                        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+#endif
+    if (is_app_foreground) {
+      AddToDictionaryPref(pref_service_,
+                          prefs::kThisWeekServicesDownstreamForegroundKB,
+                          service_hash_code, data_used_kb);
+    } else {
+      AddToDictionaryPref(pref_service_,
+                          prefs::kThisWeekServicesDownstreamBackgroundKB,
+                          service_hash_code, data_used_kb);
+    }
   }
 }
 

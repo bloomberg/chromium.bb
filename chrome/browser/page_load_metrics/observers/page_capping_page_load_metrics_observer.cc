@@ -252,7 +252,8 @@ void PageCappingPageLoadMetricsObserver::WriteToSavings(int64_t bytes_saved) {
 
   data_reduction_proxy_settings->data_reduction_proxy_service()
       ->UpdateContentLengths(0, bytes_saved, data_saver_enabled,
-                             data_reduction_proxy::HTTPS, "text/html");
+                             data_reduction_proxy::HTTPS, "text/html", true,
+                             data_use_measurement::DataUseUserData::OTHER, 0);
 }
 
 int64_t PageCappingPageLoadMetricsObserver::GetFuzzingOffset() const {

@@ -170,7 +170,8 @@ void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
       DCHECK(data_use->url().SchemeIs(url::kHttpsScheme));
       data_reduction_proxy_io_data_->UpdateContentLengths(
           0, total_inflated_bytes, data_reduction_proxy_io_data_->IsEnabled(),
-          HTTPS, std::string());
+          HTTPS, std::string(), true,
+          data_use_measurement::DataUseUserData::OTHER, 0);
       // Report for host usage.
       data_reduction_proxy_io_data_->UpdateDataUseForHost(
           0, total_inflated_bytes, data_use->url().HostNoBrackets());
