@@ -47,7 +47,9 @@ def main():
 
   args = ['python',
           os.path.join(tools_clang_scripts_directory, 'run_tool.py'),
+          '--tool',
           'translation_unit',
+          '-p',
           test_directory_for_tool]
   args.extend(source_files)
   run_tool = subprocess.Popen(args, stdout=subprocess.PIPE)
