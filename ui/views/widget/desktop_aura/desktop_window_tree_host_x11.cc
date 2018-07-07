@@ -1070,7 +1070,7 @@ void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   }
 }
 
-void DesktopWindowTreeHostX11::SetAspectRatio(const gfx::Size& aspect_ratio) {
+void DesktopWindowTreeHostX11::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   XSizeHints size_hints;
   size_hints.flags = 0;
   long supplied_return;

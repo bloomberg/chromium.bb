@@ -563,6 +563,11 @@ void NativeWidgetMac::SetOpacity(float opacity) {
   [GetNativeWindow() setAlphaValue:opacity];
 }
 
+void NativeWidgetMac::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  [GetNativeWindow() setContentAspectRatio:NSMakeSize(aspect_ratio.width(),
+                                                      aspect_ratio.height())];
+}
+
 void NativeWidgetMac::FlashFrame(bool flash_frame) {
   NOTIMPLEMENTED();
 }
