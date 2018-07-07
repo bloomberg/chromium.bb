@@ -95,6 +95,8 @@ void MultiLogCTVerifier::Verify(
   DCHECK(cert);
   DCHECK(output_scts);
 
+  base::TimeTicks start = base::TimeTicks::Now();
+
   output_scts->clear();
 
   std::string embedded_scts;
@@ -138,6 +140,15 @@ void MultiLogCTVerifier::Verify(
                output_scts);
   }
 
+  // Only log the verification time if SCTs were provided.
+  if (!output_scts->empty()) {
+    base::TimeDelta verify_time = base::TimeTicks::Now() - start;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Net.CertificateTransparency.SCT.VerificationTime", verify_time,
+        base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(100), 50);
+  }
+
   NetLogParametersCallback net_log_checked_callback =
       base::Bind(&NetLogSignedCertificateTimestampCallback, output_scts);
 
@@ -174,7 +185,13 @@ void MultiLogCTVerifier::VerifySCTs(
     }
     decoded_sct->origin = origin;
 
+    base::TimeTicks start = base::TimeTicks::Now();
     VerifySingleSCT(hostname, decoded_sct, expected_entry, cert, output_scts);
+    base::TimeDelta verify_time = base::TimeTicks::Now() - start;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Net.CertificateTransparency.SCT.SingleVerificationTime", verify_time,
+        base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(100), 50);
   }
 }
 
