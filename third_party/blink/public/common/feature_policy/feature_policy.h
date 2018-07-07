@@ -174,10 +174,6 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
       const ParsedFeaturePolicy& container_policy,
       const url::Origin& origin);
 
-  static std::unique_ptr<FeaturePolicy> CreateFromPolicyWithOrigin(
-      const FeaturePolicy& policy,
-      const url::Origin& origin);
-
   bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
 
   // Returns whether or not the given feature is enabled by this policy for a

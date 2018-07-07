@@ -105,20 +105,6 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
                                 GetDefaultFeatureList());
 }
 
-// static
-std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromPolicyWithOrigin(
-    const FeaturePolicy& policy,
-    const url::Origin& origin) {
-  std::unique_ptr<FeaturePolicy> new_policy =
-      base::WrapUnique(new FeaturePolicy(origin, policy.feature_list_));
-  new_policy->inherited_policies_ = policy.inherited_policies_;
-  for (const auto& feature : policy.allowlists_) {
-    new_policy->allowlists_[feature.first] =
-        base::WrapUnique(new Allowlist(*feature.second));
-  }
-  return new_policy;
-}
-
 bool FeaturePolicy::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature) const {
   return IsFeatureEnabledForOrigin(feature, origin_);

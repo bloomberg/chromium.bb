@@ -122,7 +122,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void InitializeFeaturePolicy(const ParsedFeaturePolicy& parsed_header,
                                const ParsedFeaturePolicy& container_policy,
                                const FeaturePolicy* parent_feature_policy);
-  void UpdateFeaturePolicyOrigin();
 
   // Apply the sandbox flag. In addition, if the origin is not already opaque,
   // the origin is updated to a newly created unique opaque origin, setting the
