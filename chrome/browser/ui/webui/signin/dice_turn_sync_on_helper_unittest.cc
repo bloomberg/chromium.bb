@@ -250,7 +250,8 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     browser_sync::ProfileSyncServiceMock* sync_service_mock =
         GetProfileSyncServiceMock();
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
-    ON_CALL(*sync_service_mock, CanSyncStart()).WillByDefault(Return(true));
+    ON_CALL(*sync_service_mock, GetDisableReasons())
+        .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
     ON_CALL(*sync_service_mock, IsEngineInitialized())
         .WillByDefault(Return(true));
   }
@@ -259,7 +260,8 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     browser_sync::ProfileSyncServiceMock* sync_service_mock =
         GetProfileSyncServiceMock();
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
-    ON_CALL(*sync_service_mock, CanSyncStart()).WillByDefault(Return(true));
+    ON_CALL(*sync_service_mock, GetDisableReasons())
+        .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
     ON_CALL(*sync_service_mock, IsEngineInitialized())
         .WillByDefault(Return(false));
     ON_CALL(*sync_service_mock, GetAuthError())

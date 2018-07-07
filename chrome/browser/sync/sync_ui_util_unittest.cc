@@ -123,8 +123,9 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
           .WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsFirstSetupInProgress())
           .WillRepeatedly(Return(false));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(true));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(
+              Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
@@ -139,8 +140,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
       signin->set_auth_in_progress();
       return;
     }
@@ -160,8 +161,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       token_service->GetDelegate()->UpdateAuthError(
           account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
       return;
     }
     case STATUS_CASE_PROTOCOL_ERROR: {
@@ -176,8 +177,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       status.sync_protocol_error = protocolError;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
       return;
     }
     case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
@@ -197,8 +198,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequiredForDecryption())
@@ -214,14 +215,16 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       return;
     }
     case STATUS_CASE_SYNC_DISABLED_BY_POLICY: {
-      EXPECT_CALL(*service, IsManaged()).WillRepeatedly(Return(true));
+      EXPECT_CALL(*service, GetDisableReasons())
+          .WillRepeatedly(
+              Return(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY));
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(false));
@@ -230,8 +233,6 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
-      EXPECT_CALL(*service, HasUnrecoverableError())
-          .WillRepeatedly(Return(false));
       return;
     }
     default:
@@ -353,7 +354,9 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
   EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
-  EXPECT_CALL(service, HasUnrecoverableError()).WillRepeatedly(Return(true));
+  EXPECT_CALL(service, GetDisableReasons())
+      .WillRepeatedly(
+          Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
 
   // First time action is not set. We should get unrecoverable error.
   syncer::SyncStatus status;
@@ -395,7 +398,9 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
   EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
-  EXPECT_CALL(service, HasUnrecoverableError()).WillRepeatedly(Return(true));
+  EXPECT_CALL(service, GetDisableReasons())
+      .WillRepeatedly(
+          Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
 
   // Set action to UPGRADE_CLIENT.
   syncer::SyncStatus status;

@@ -18,8 +18,8 @@ TestSyncService::TestSyncService() : data_types_(syncer::ModelTypeSet::All()) {}
 
 TestSyncService::~TestSyncService() {}
 
-bool TestSyncService::CanSyncStart() const {
-  return can_sync_start_;
+int TestSyncService::GetDisableReasons() const {
+  return disable_reasons_;
 }
 
 syncer::ModelTypeSet TestSyncService::GetPreferredDataTypes() const {

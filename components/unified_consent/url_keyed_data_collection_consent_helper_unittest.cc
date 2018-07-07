@@ -30,8 +30,7 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
   // syncer::FakeSyncService:
-  bool IsSyncAllowed() const override { return true; }
-  bool CanSyncStart() const override { return true; }
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return syncer::ModelTypeSet(syncer::ModelType::HISTORY_DELETE_DIRECTIVES,
                                 syncer::ModelType::USER_EVENTS);

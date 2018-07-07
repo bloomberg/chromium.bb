@@ -37,12 +37,14 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
       : browser_sync::TestProfileSyncService(
             CreateProfileSyncServiceParamsForTest(profile)) {}
 
-  bool IsSyncAllowed() const override { return is_sync_allowed_; }
+  int GetDisableReasons() const override { return disable_reasons_; }
 
-  void set_sync_allowed(bool sync_allowed) { is_sync_allowed_ = sync_allowed; }
+  void SetDisableReasons(int disable_reasons) {
+    disable_reasons_ = disable_reasons;
+  }
 
  private:
-  bool is_sync_allowed_ = true;
+  int disable_reasons_ = DISABLE_REASON_NONE;
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
 
@@ -176,7 +178,10 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
 
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
-    sync_service()->set_sync_allowed(test_case.is_sync_allowed);
+    sync_service()->SetDisableReasons(
+        test_case.is_sync_allowed
+            ? syncer::SyncService::DISABLE_REASON_NONE
+            : syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
     const GoogleServiceAuthError error(
         test_case.signin_error
             ? GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS

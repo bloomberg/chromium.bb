@@ -180,11 +180,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // use GetState instead.
   virtual bool IsFirstSetupComplete() const = 0;
 
-  // Whether sync is allowed to start. Command line flags, platform-level
-  // overrides, and account-level overrides are examples of reasons this
-  // might be false.
-  // DEPRECATED! Use GetDisableReasons instead.
-  virtual bool IsSyncAllowed() const = 0;
+  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
+  // Equivalent to "!HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
+  // !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)".
+  bool IsSyncAllowed() const;
 
   // Returns true if sync is fully initialized and active. This implies that
   // an initial configuration has successfully completed, although there may
@@ -231,12 +230,11 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // told to MergeDataAndStartSyncing yet.
   virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
 
-  // Returns true if sync is allowed, requested, and the user is logged in.
-  // (being logged in does not mean that tokens are available - tokens may
-  // be missing because they have not loaded yet, or because they were deleted
-  // due to http://crbug.com/121755).
-  // DEPRECATED! Use GetState instead.
-  virtual bool CanSyncStart() const = 0;
+  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
+  // Equivalent to having no disable reasons except UNRECOVERABLE_ERROR, i.e.
+  // "(GetDisableReasons() & ~DISABLE_REASON_UNRECOVERABLE_ERROR) ==
+  // DISABLE_REASON_NONE".
+  bool CanSyncStart() const;
 
   // Stops sync at the user's request. |data_fate| controls whether the sync
   // engine should clear its data directory when it shuts down. Generally
@@ -292,8 +290,9 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
 
-  // DEPRECATED! Use GetDisableReasons instead.
-  virtual bool HasUnrecoverableError() const = 0;
+  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
+  // Equivalent to "HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)".
+  bool HasUnrecoverableError() const;
 
   // Returns true if the SyncEngine has told us it's ready to accept changes.
   // DEPRECATED! Use GetState instead.

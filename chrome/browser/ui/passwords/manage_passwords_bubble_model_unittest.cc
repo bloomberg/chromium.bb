@@ -82,8 +82,8 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
   ~TestSyncService() override {}
 
   // FakeSyncService:
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
   bool IsFirstSetupComplete() const override { return true; }
-  bool IsSyncAllowed() const override { return true; }
   bool IsSyncActive() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     switch (synced_types_) {
@@ -95,7 +95,6 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
     NOTREACHED();
     return syncer::ModelTypeSet();
   }
-  bool CanSyncStart() const override { return true; }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return GetActiveDataTypes();
   }

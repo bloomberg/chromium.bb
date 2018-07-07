@@ -31,7 +31,8 @@ FakeSyncService::FakeSyncService()
 FakeSyncService::~FakeSyncService() {}
 
 int FakeSyncService::GetDisableReasons() const {
-  return DISABLE_REASON_NONE;
+  // Note: Most subclasses will want to override this.
+  return DISABLE_REASON_PLATFORM_OVERRIDE;
 }
 
 syncer::SyncService::State FakeSyncService::GetState() const {
@@ -68,10 +69,6 @@ bool FakeSyncService::IsFirstSetupComplete() const {
   return false;
 }
 
-bool FakeSyncService::IsSyncAllowed() const {
-  return false;
-}
-
 bool FakeSyncService::IsSyncActive() const {
   return false;
 }
@@ -95,10 +92,6 @@ void FakeSyncService::AddObserver(SyncServiceObserver* observer) {}
 void FakeSyncService::RemoveObserver(SyncServiceObserver* observer) {}
 
 bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
-  return false;
-}
-
-bool FakeSyncService::CanSyncStart() const {
   return false;
 }
 
@@ -136,10 +129,6 @@ bool FakeSyncService::ConfigurationDone() const {
 
 const GoogleServiceAuthError& FakeSyncService::GetAuthError() const {
   return error_;
-}
-
-bool FakeSyncService::HasUnrecoverableError() const {
-  return false;
 }
 
 bool FakeSyncService::IsEngineInitialized() const {
