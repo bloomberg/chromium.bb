@@ -472,6 +472,32 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     return drp_test_context_->IsDataReductionProxyEnabled();
   }
 
+  void InitializeWeeklyAggregateDataUse(const base::Time& now) {
+    compression_stats_->InitializeWeeklyAggregateDataUse(now);
+  }
+
+  void RecordWeeklyAggregateDataUse(
+      const base::Time& now,
+      int32_t received_kb,
+      bool is_user_request,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code) {
+    compression_stats_->RecordWeeklyAggregateDataUse(
+        now, received_kb, is_user_request, content_type, service_hash_code);
+  }
+
+  void VerifyDictionaryPref(const std::string& pref,
+                            int key,
+                            int expected_value) const {
+    const base::DictionaryValue* dict =
+        compression_stats_->pref_service_->GetDictionary(pref);
+    EXPECT_EQ(expected_value != 0, dict->HasKey(base::IntToString(key)));
+    if (expected_value) {
+      EXPECT_EQ(expected_value,
+                dict->FindKey(base::IntToString(key))->GetInt());
+    }
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
@@ -569,7 +595,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
 
   compression_stats()->RecordDataUseWithMimeType(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, std::string());
+      UNKNOWN_TYPE, std::string(), true,
+      data_use_measurement::DataUseUserData::OTHER, 0);
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -580,7 +607,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
   // Record the same numbers again, and total lengths should be doubled.
   compression_stats()->RecordDataUseWithMimeType(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, std::string());
+      UNKNOWN_TYPE, std::string(), true,
+      data_use_measurement::DataUseUserData::OTHER, 0);
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -1292,6 +1320,136 @@ TEST_F(DataReductionProxyCompressionStatsTest, ClearDataSavingStatistics) {
   VerifyDailyDataSavingContentLengthPrefLists(nullptr, 0, nullptr, 0, nullptr,
                                               0, nullptr, 0, nullptr, 0,
                                               nullptr, 0, 0);
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, WeeklyAggregateDataUse) {
+  const int32_t kDataUseKB = 100;
+  base::HistogramTester histogram_tester;
+
+  InitializeWeeklyAggregateDataUse(base::Time::Now());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.Services.Downstream.Background",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.Services.Downstream.Foreground",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.LastWeekAggregateKB.Services.Downstream.Background",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.LastWeekAggregateKB.Services.Downstream.Foreground",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+
+  RecordWeeklyAggregateDataUse(
+      base::Time::Now(), kDataUseKB, true,
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, 0);
+  VerifyDictionaryPref(prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       kDataUseKB);
+
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+
+  InitializeWeeklyAggregateDataUse(base::Time::Now());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, kDataUseKB);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, 0);
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, AggregateDataUseForwardWeeks) {
+  const int32_t kMainFrameKB = 100;
+  const int32_t kNonMainFrameKB = 101;
+  base::HistogramTester histogram_tester;
+
+  base::Time fake_time_now = base::Time::Now();
+
+  InitializeWeeklyAggregateDataUse(fake_time_now);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+
+  RecordWeeklyAggregateDataUse(
+      fake_time_now, kMainFrameKB, true,
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, 0);
+  VerifyDictionaryPref(prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       kMainFrameKB);
+  RecordWeeklyAggregateDataUse(
+      fake_time_now, kNonMainFrameKB, true,
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML, 0);
+  VerifyDictionaryPref(
+      prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML,
+      kNonMainFrameKB);
+
+  // Fast forward 7 days, and verify that the last week histograms are recorded.
+  fake_time_now += base::TimeDelta::FromDays(7);
+  InitializeWeeklyAggregateDataUse(fake_time_now);
+  VerifyDictionaryPref(prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       kMainFrameKB);
+  VerifyDictionaryPref(
+      prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML,
+      kNonMainFrameKB);
+
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, kMainFrameKB);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.LastWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML,
+      kNonMainFrameKB);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ThisWeekAggregateKB.UserTraffic.Downstream."
+      "ContentType",
+      0);
+
+  // Subsequent data use should be recorded to the current week prefs.
+  RecordWeeklyAggregateDataUse(
+      fake_time_now, kMainFrameKB, true,
+      data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, 0);
+  VerifyDictionaryPref(prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       kMainFrameKB);
+
+  // Fast forward by more than two weeks, and the prefs will be cleared.
+  fake_time_now += base::TimeDelta::FromDays(15);
+  InitializeWeeklyAggregateDataUse(fake_time_now);
+  VerifyDictionaryPref(prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       0);
+  VerifyDictionaryPref(
+      prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML, 0);
+  VerifyDictionaryPref(prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+                       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML,
+                       0);
+  VerifyDictionaryPref(
+      prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+      data_use_measurement::DataUseUserData::NON_MAIN_FRAME_HTML, 0);
 }
 
 }  // namespace data_reduction_proxy

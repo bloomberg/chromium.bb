@@ -41,6 +41,14 @@ class URLRequestClassifier;
 // http://crbug.com/527460
 class DataUseMeasurement {
  public:
+  // Returns true if the |request| is initiated by user traffic.
+  static bool IsUserRequest(const net::URLRequest& request);
+
+  // Returns the content-type saved in the request userdata when the response
+  // headers were received.
+  static DataUseUserData::DataUseContentType GetContentTypeForRequest(
+      const net::URLRequest& request);
+
   DataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
       const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder,
@@ -159,9 +167,6 @@ class DataUseMeasurement {
       DataUseUserData::AppState app_state,
       bool is_tab_visible,
       int64_t bytes);
-
-  // Returns true if the |request| is initiated by user traffic.
-  bool IsUserRequest(const net::URLRequest& request) const;
 
   // Classifier for identifying if an URL request is user initiated.
   std::unique_ptr<URLRequestClassifier> url_request_classifier_;

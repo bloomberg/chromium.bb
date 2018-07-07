@@ -104,7 +104,7 @@ TEST_F(DataReductionProxyDataUseObserverTest,
   // Verify with no committed preview.
   previews::PreviewsUserData previews_user_data(3 /* page_id */);
   SetPreviewsUserData(data_use.get(), &previews_user_data);
-  EXPECT_CALL(*mock_drp_service(), UpdateContentLengths(_, _, _, _, _))
+  EXPECT_CALL(*mock_drp_service(), UpdateContentLengths(_, _, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*mock_drp_service(), UpdateDataUseForHost(_, _, _)).Times(0);
   DidFinishLoad(data_use.get());
@@ -114,7 +114,7 @@ TEST_F(DataReductionProxyDataUseObserverTest,
   // Now verify with LOFI as committed preview.
   previews_user_data.SetCommittedPreviewsType(previews::PreviewsType::LOFI);
   SetPreviewsUserData(data_use.get(), &previews_user_data);
-  EXPECT_CALL(*mock_drp_service(), UpdateContentLengths(_, _, _, _, _))
+  EXPECT_CALL(*mock_drp_service(), UpdateContentLengths(_, _, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*mock_drp_service(), UpdateDataUseForHost(_, _, _)).Times(0);
   DidFinishLoad(data_use.get());
@@ -134,7 +134,7 @@ TEST_F(DataReductionProxyDataUseObserverTest,
   int inflation_value = 500000 * kInflationPercent / 100 + kInflationBytes;
   EXPECT_EQ(251000, inflation_value);
   EXPECT_CALL(*mock_drp_service(),
-              UpdateContentLengths(0, inflation_value, true, _, _))
+              UpdateContentLengths(0, inflation_value, true, _, _, _, _, _))
       .Times(1);
   EXPECT_CALL(*mock_drp_service(),
               UpdateDataUseForHost(0, inflation_value, "testsite.com"))
@@ -157,7 +157,7 @@ TEST_F(DataReductionProxyDataUseObserverTest,
   int inflation_value = 500000 * 80 / 100;
   EXPECT_EQ(400000, inflation_value);
   EXPECT_CALL(*mock_drp_service(),
-              UpdateContentLengths(0, inflation_value, true, _, _))
+              UpdateContentLengths(0, inflation_value, true, _, _, _, _, _))
       .Times(1);
   EXPECT_CALL(*mock_drp_service(),
               UpdateDataUseForHost(0, inflation_value, "testsite.com"))

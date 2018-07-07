@@ -91,6 +91,22 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
   registry->RegisterDictionaryPref(prefs::kNetworkProperties);
+
+  registry->RegisterIntegerPref(prefs::kThisWeekNumber, false);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekServicesDownstreamForegroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekServicesDownstreamForegroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+      PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+      PrefRegistry::LOSSY_PREF);
 }
 
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
@@ -172,6 +188,22 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
   registry->RegisterDictionaryPref(prefs::kNetworkProperties);
+
+  registry->RegisterIntegerPref(prefs::kThisWeekNumber, false);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekServicesDownstreamForegroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekServicesDownstreamForegroundKB, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
+      PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
+      PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace data_reduction_proxy

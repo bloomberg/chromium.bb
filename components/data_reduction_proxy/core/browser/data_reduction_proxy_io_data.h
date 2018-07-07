@@ -25,6 +25,7 @@
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 
 namespace base {
 class Value;
@@ -119,7 +120,10 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       int64_t original_size,
       bool data_reduction_proxy_enabled,
       DataReductionProxyRequestType request_type,
-      const std::string& mime_type);
+      const std::string& mime_type,
+      bool is_user_traffic,
+      data_use_measurement::DataUseUserData::DataUseContentType content_type,
+      int32_t service_hash_code);
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
   // thread objects.
