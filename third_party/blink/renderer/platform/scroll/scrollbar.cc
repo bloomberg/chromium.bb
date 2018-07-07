@@ -644,6 +644,11 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
     scrollable_area_->SetScrollbarNeedsPaintInvalidation(Orientation());
 }
 
+CompositorElementId Scrollbar::GetElementId() {
+  DCHECK(scrollable_area_);
+  return scrollable_area_->GetScrollbarElementId(orientation_);
+}
+
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
                    kScrollbarOverlayColorThemeDark);
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,

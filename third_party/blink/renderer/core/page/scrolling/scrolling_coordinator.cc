@@ -365,15 +365,13 @@ CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
   if (theme.UsesOverlayScrollbars() && theme.UsesNinePatchThumbResource()) {
     auto scrollbar_layer = cc::PaintedOverlayScrollbarLayer::Create(
         std::move(scrollbar_delegate), /*scroll_element_id=*/cc::ElementId());
-    scrollbar_layer->SetElementId(
-        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId()));
+    scrollbar_layer->SetElementId(scrollbar.GetElementId());
     layer_group->scrollbar_layer = scrollbar_layer.get();
     layer_group->layer = std::move(scrollbar_layer);
   } else {
     auto scrollbar_layer = cc::PaintedScrollbarLayer::Create(
         std::move(scrollbar_delegate), /*scroll_element_id=*/cc::ElementId());
-    scrollbar_layer->SetElementId(
-        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId()));
+    scrollbar_layer->SetElementId(scrollbar.GetElementId());
     layer_group->scrollbar_layer = scrollbar_layer.get();
     layer_group->layer = std::move(scrollbar_layer);
   }
@@ -388,14 +386,14 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
     ScrollbarOrientation orientation,
     int thumb_thickness,
     int track_start,
-    bool is_left_side_vertical_scrollbar) {
+    bool is_left_side_vertical_scrollbar,
+    cc::ElementId element_id) {
   cc::ScrollbarOrientation cc_orientation =
       orientation == kHorizontalScrollbar ? cc::HORIZONTAL : cc::VERTICAL;
   auto scrollbar_layer = cc::SolidColorScrollbarLayer::Create(
       cc_orientation, thumb_thickness, track_start,
       is_left_side_vertical_scrollbar, cc::ElementId());
-  scrollbar_layer->SetElementId(
-      CompositorElementIdFromUniqueObjectId(NewUniqueObjectId()));
+  scrollbar_layer->SetElementId(element_id);
 
   auto layer_group = std::make_unique<ScrollbarLayerGroup>();
   layer_group->scrollbar_layer = scrollbar_layer.get();
@@ -486,7 +484,8 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
         group = CreateSolidColorScrollbarLayer(
             orientation, scrollbar.GetTheme().ThumbThickness(scrollbar),
             scrollbar.GetTheme().TrackPosition(scrollbar),
-            scrollable_area->ShouldPlaceVerticalScrollbarOnLeft());
+            scrollable_area->ShouldPlaceVerticalScrollbarOnLeft(),
+            scrollable_area->GetScrollbarElementId(orientation));
       } else {
         group = CreateScrollbarLayer(scrollbar,
                                      page_->DeviceScaleFactorDeprecated());

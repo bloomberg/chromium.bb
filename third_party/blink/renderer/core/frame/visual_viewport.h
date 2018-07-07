@@ -250,6 +250,7 @@ class CORE_EXPORT VisualViewport final
   bool ShouldDisableDesktopWorkarounds() const;
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
+  bool VisualViewportSuppliesScrollbars() const override;
 
   TransformPaintPropertyNode* GetPageScaleNode() const;
   TransformPaintPropertyNode* GetScrollTranslationNode() const;
@@ -268,7 +269,6 @@ class CORE_EXPORT VisualViewport final
 
   bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
 
-  bool VisualViewportSuppliesScrollbars() const;
 
   void UpdateStyleAndLayoutIgnorePendingStylesheets() const;
 

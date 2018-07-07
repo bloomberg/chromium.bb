@@ -81,6 +81,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // |   backdrop-dependent children are present.
   // +-[ filter ]
   // |     Isolated group for CSS filter.
+  // +-[ vertical/horizontal scrollbar effect ]
+  // |     Overlay Scrollbars on Aura and Android need effect node for fade
+  // |     animation.
   // +-[ mask ]
   // |     Isolated group for painting the CSS mask. This node will have
   // |     SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
@@ -90,6 +93,12 @@ class CORE_EXPORT ObjectPaintProperties {
   //       contents.
   const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
   const EffectPaintPropertyNode* Filter() const { return filter_.get(); }
+  const EffectPaintPropertyNode* VerticalScrollbarEffect() const {
+    return vertical_scrollbar_effect_.get();
+  }
+  const EffectPaintPropertyNode* HorizontalScrollbarEffect() const {
+    return horizontal_scrollbar_effect_.get();
+  }
   const EffectPaintPropertyNode* Mask() const { return mask_.get(); }
   const EffectPaintPropertyNode* ClipPath() const { return clip_path_.get(); }
 
@@ -157,6 +166,12 @@ class CORE_EXPORT ObjectPaintProperties {
   bool ClearTransform() { return Clear(transform_); }
   bool ClearEffect() { return Clear(effect_); }
   bool ClearFilter() { return Clear(filter_); }
+  bool ClearVerticalScrollbarEffect() {
+    return Clear(vertical_scrollbar_effect_);
+  }
+  bool ClearHorizontalScrollbarEffect() {
+    return Clear(horizontal_scrollbar_effect_);
+  }
   bool ClearMask() { return Clear(mask_); }
   bool ClearClipPath() { return Clear(clip_path_); }
   bool ClearFragmentClip() { return Clear(fragment_clip_); }
@@ -227,6 +242,16 @@ class CORE_EXPORT ObjectPaintProperties {
                             EffectPaintPropertyNode::State&& state) {
     return Update(filter_, parent, std::move(state));
   }
+  UpdateResult UpdateVerticalScrollbarEffect(
+      const EffectPaintPropertyNode& parent,
+      EffectPaintPropertyNode::State&& state) {
+    return Update(vertical_scrollbar_effect_, parent, std::move(state));
+  }
+  UpdateResult UpdateHorizontalScrollbarEffect(
+      const EffectPaintPropertyNode& parent,
+      EffectPaintPropertyNode::State&& state) {
+    return Update(horizontal_scrollbar_effect_, parent, std::move(state));
+  }
   UpdateResult UpdateMask(const EffectPaintPropertyNode& parent,
                           EffectPaintPropertyNode::State&& state) {
     return Update(mask_, parent, std::move(state));
@@ -283,6 +308,12 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->effect_ = effect_->Clone();
     if (filter_)
       cloned->filter_ = filter_->Clone();
+    if (vertical_scrollbar_effect_)
+      cloned->vertical_scrollbar_effect_ = vertical_scrollbar_effect_->Clone();
+    if (horizontal_scrollbar_effect_) {
+      cloned->horizontal_scrollbar_effect_ =
+          horizontal_scrollbar_effect_->Clone();
+    }
     if (mask_)
       cloned->mask_ = mask_->Clone();
     if (clip_path_)
@@ -354,6 +385,8 @@ class CORE_EXPORT ObjectPaintProperties {
   scoped_refptr<TransformPaintPropertyNode> transform_;
   scoped_refptr<EffectPaintPropertyNode> effect_;
   scoped_refptr<EffectPaintPropertyNode> filter_;
+  scoped_refptr<EffectPaintPropertyNode> vertical_scrollbar_effect_;
+  scoped_refptr<EffectPaintPropertyNode> horizontal_scrollbar_effect_;
   scoped_refptr<EffectPaintPropertyNode> mask_;
   scoped_refptr<EffectPaintPropertyNode> clip_path_;
   scoped_refptr<ClipPaintPropertyNode> fragment_clip_;

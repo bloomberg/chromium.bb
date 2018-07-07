@@ -710,6 +710,18 @@ void ScrollableArea::DidScroll(const FloatPoint& position) {
   SetScrollOffset(new_offset, kCompositorScroll);
 }
 
+CompositorElementId ScrollableArea::GetScrollbarElementId(
+    ScrollbarOrientation orientation) {
+  CompositorElementId scrollable_element_id = GetCompositorElementId();
+  DCHECK(scrollable_element_id);
+  CompositorElementIdNamespace element_id_namespace =
+      orientation == kHorizontalScrollbar
+          ? CompositorElementIdNamespace::kHorizontalScrollbar
+          : CompositorElementIdNamespace::kVerticalScrollbar;
+  return CompositorElementIdFromUniqueObjectId(
+      scrollable_element_id.ToInternalValue(), element_id_namespace);
+}
+
 void ScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(scroll_animator_);
   visitor->Trace(programmatic_scroll_animator_);

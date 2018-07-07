@@ -525,6 +525,13 @@ CompositorElementId RootFrameViewport::GetCompositorElementId() const {
   return LayoutViewport().GetCompositorElementId();
 }
 
+CompositorElementId RootFrameViewport::GetScrollbarElementId(
+    ScrollbarOrientation orientation) {
+  return VisualViewport().VisualViewportSuppliesScrollbars()
+             ? VisualViewport().GetScrollbarElementId(orientation)
+             : LayoutViewport().GetScrollbarElementId(orientation);
+}
+
 PlatformChromeClient* RootFrameViewport::GetChromeClient() const {
   return LayoutViewport().GetChromeClient();
 }

@@ -572,8 +572,10 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
   if (!scrollbar_layer_group) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
     DCHECK(coordinator);
+
     scrollbar_layer_group = coordinator->CreateSolidColorScrollbarLayer(
-        orientation, thumb_thickness, scrollbar_margin, false);
+        orientation, thumb_thickness, scrollbar_margin, false,
+        GetScrollbarElementId(orientation));
 
     // The compositor will control the scrollbar's visibility. Set to invisible
     // by default so scrollbars don't show up in layout tests.

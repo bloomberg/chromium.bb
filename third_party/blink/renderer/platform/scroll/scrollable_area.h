@@ -271,6 +271,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual IntRect ScrollableAreaBoundingBox() const = 0;
 
   virtual CompositorElementId GetCompositorElementId() const = 0;
+
+  virtual CompositorElementId GetScrollbarElementId(
+      ScrollbarOrientation orientation);
+
   virtual bool ScrollAnimatorEnabled() const { return false; }
 
   // NOTE: Only called from Internals for testing.
@@ -365,6 +369,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
+
+  virtual bool VisualViewportSuppliesScrollbars() const { return false; }
 
   // Returns true if the scroller adjusts the scroll offset to compensate
   // for layout movements (bit.ly/scroll-anchoring).

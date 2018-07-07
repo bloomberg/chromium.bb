@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
+
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
 
 namespace blink {
 
@@ -39,6 +43,70 @@ TEST_F(CompositingLayerPropertyUpdaterTest, MaskLayerState) {
   EXPECT_TRUE(paint_properties->MaskClip());
   EXPECT_EQ(paint_properties->MaskClip(),
             mask_layer->layer_state_->state.Clip());
+}
+
+TEST_F(CompositingLayerPropertyUpdaterTest,
+       EnsureOverlayScrollbarLayerHasEffectNode) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  UseMockScrollbarSettings mock_scrollbar(false, true);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+      }
+      #big {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='big'></div>
+    </div>
+  )HTML");
+
+  ASSERT_TRUE(
+      GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
+
+  PaintLayer* scroller_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
+  PaintLayerScrollableArea* scrollable_area =
+      scroller_layer->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+
+  auto* horizontal_scrollbar_layer =
+      scrollable_area->LayerForHorizontalScrollbar();
+  auto* vertical_scrollbar_layer = scrollable_area->LayerForVerticalScrollbar();
+  ASSERT_TRUE(horizontal_scrollbar_layer);
+  ASSERT_TRUE(vertical_scrollbar_layer);
+
+  auto* paint_properties =
+      scroller_layer->GetLayoutObject().FirstFragment().PaintProperties();
+
+  // Ensure each overlay scrollbar has its own effect node and effect node has
+  // correct element_id.
+  EXPECT_EQ(paint_properties->HorizontalScrollbarEffect(),
+            horizontal_scrollbar_layer->GetPropertyTreeState().Effect());
+  EXPECT_EQ(paint_properties->VerticalScrollbarEffect(),
+            vertical_scrollbar_layer->GetPropertyTreeState().Effect());
+  EXPECT_NE(horizontal_scrollbar_layer->GetPropertyTreeState().Effect(),
+            vertical_scrollbar_layer->GetPropertyTreeState().Effect());
+  EXPECT_NE(horizontal_scrollbar_layer->GetPropertyTreeState()
+                .Effect()
+                ->GetCompositorElementId(),
+            vertical_scrollbar_layer->GetPropertyTreeState()
+                .Effect()
+                ->GetCompositorElementId());
+  EXPECT_EQ(horizontal_scrollbar_layer->GetPropertyTreeState()
+                .Effect()
+                ->GetCompositorElementId(),
+            horizontal_scrollbar_layer->ContentsLayer()->element_id());
+  EXPECT_EQ(vertical_scrollbar_layer->GetPropertyTreeState()
+                .Effect()
+                ->GetCompositorElementId(),
+            vertical_scrollbar_layer->ContentsLayer()->element_id());
 }
 
 }  // namespace blink
