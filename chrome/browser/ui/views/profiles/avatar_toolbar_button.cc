@@ -35,7 +35,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
-    : ToolbarButton(nullptr, nullptr),
+    : ToolbarButton(nullptr),
       browser_(browser),
       profile_(browser_->profile()),
 #if !defined(OS_CHROMEOS)

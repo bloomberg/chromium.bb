@@ -13,6 +13,8 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 
+class TabStripModel;
+
 namespace test {
 class ToolbarButtonTestApi;
 }
@@ -33,10 +35,19 @@ class MenuRunner;
 class ToolbarButton : public views::ImageButton,
                       public views::ContextMenuController {
  public:
-  // The listener pointers must outlive this class. The model can be null if no
-  // menu is to be shown.
+  // More convenient form of the ctor below, when |model| and |tab_strip_model|
+  // are both nullptr.
+  explicit ToolbarButton(views::ButtonListener* listener);
+
+  // |listener| and |tab_strip_model| must outlive this class.
+  // |model| can be null if no menu is to be shown.
+  // |tab_strip_model| is only needed if showing the menu with |model| requires
+  // an active tab. There may be no active tab in |tab_strip_model| during
+  // shutdown.
   ToolbarButton(views::ButtonListener* listener,
-                std::unique_ptr<ui::MenuModel> model);
+                std::unique_ptr<ui::MenuModel> model,
+                TabStripModel* tab_strip_model);
+
   ~ToolbarButton() override;
 
   // Set up basic mouseover border behavior.
@@ -91,6 +102,8 @@ class ToolbarButton : public views::ImageButton,
 
   // The model that populates the attached menu.
   std::unique_ptr<ui::MenuModel> model_;
+
+  TabStripModel* const tab_strip_model_;
 
   // Indicates if menu is currently showing.
   bool menu_showing_ = false;

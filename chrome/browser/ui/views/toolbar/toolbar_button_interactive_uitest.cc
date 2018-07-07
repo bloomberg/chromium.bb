@@ -37,7 +37,7 @@ class ToolbarButtonUITest : public ViewEventTestBase {
     // ToolbarButton takes ownership of the |model|.
     auto model = std::make_unique<ui::SimpleMenuModel>(nullptr);
     model->AddItem(0, base::string16());
-    button_ = new ToolbarButton(nullptr, std::move(model));
+    button_ = new ToolbarButton(nullptr, std::move(model), nullptr);
     return button_;
   }
   void DoTestOnMessageLoop() override {}

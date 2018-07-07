@@ -148,7 +148,7 @@ void HomePageUndoBubble::WindowClosing() {
 // HomeButton -----------------------------------------------------------
 
 HomeButton::HomeButton(views::ButtonListener* listener, Browser* browser)
-    : ToolbarButton(listener, nullptr), browser_(browser) {}
+    : ToolbarButton(listener), browser_(browser) {}
 
 HomeButton::~HomeButton() {
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -26,10 +27,15 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
+ToolbarButton::ToolbarButton(views::ButtonListener* listener)
+    : ToolbarButton(listener, nullptr, nullptr) {}
+
 ToolbarButton::ToolbarButton(views::ButtonListener* listener,
-                             std::unique_ptr<ui::MenuModel> model)
+                             std::unique_ptr<ui::MenuModel> model,
+                             TabStripModel* tab_strip_model)
     : views::ImageButton(listener),
       model_(std::move(model)),
+      tab_strip_model_(tab_strip_model),
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
@@ -233,6 +239,9 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Exit if the model is null. Although ToolbarButton::ShouldShowMenu()
   // performs the same check, its overrides may not.
   if (!model_)
+    return;
+
+  if (tab_strip_model_ && !tab_strip_model_->GetActiveWebContents())
     return;
 
   // Create and run menu.

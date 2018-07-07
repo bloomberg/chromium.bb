@@ -151,8 +151,10 @@ void ToolbarView::Init() {
   }
 
   back_ = new ToolbarButton(
-      this, std::make_unique<BackForwardMenuModel>(
-                browser_, BackForwardMenuModel::ModelType::kBackward));
+      this,
+      std::make_unique<BackForwardMenuModel>(
+          browser_, BackForwardMenuModel::ModelType::kBackward),
+      browser_->tab_strip_model());
   back_->set_hide_ink_drop_when_showing_context_menu(false);
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -165,8 +167,10 @@ void ToolbarView::Init() {
   back_->Init();
 
   forward_ = new ToolbarButton(
-      this, std::make_unique<BackForwardMenuModel>(
-                browser_, BackForwardMenuModel::ModelType::kForward));
+      this,
+      std::make_unique<BackForwardMenuModel>(
+          browser_, BackForwardMenuModel::ModelType::kForward),
+      browser_->tab_strip_model());
   forward_->set_hide_ink_drop_when_showing_context_menu(false);
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
