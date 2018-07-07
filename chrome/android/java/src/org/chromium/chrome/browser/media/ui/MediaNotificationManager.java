@@ -286,7 +286,7 @@ public class MediaNotificationManager {
     // responsible for hiding it afterwards.
     private static void finishStartingForegroundService(ListenerService s) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
+        Log.i(TAG, "finish starting foreground service, calling startForeground!");
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
                         true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_MEDIA);
@@ -340,6 +340,7 @@ public class MediaNotificationManager {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
+            Log.i(TAG, "onStartCommand, intent: " + intent);
             if (!processIntent(intent)) stopListenerService();
 
             return START_NOT_STICKY;
@@ -354,6 +355,7 @@ public class MediaNotificationManager {
 
         @VisibleForTesting
         void stopListenerService() {
+            Log.i(TAG, "stop listener service!");
             // Call stopForeground to guarantee  Android unset the foreground bit.
             stopForeground(true /* removeNotification */);
             stopSelf();
@@ -373,7 +375,7 @@ public class MediaNotificationManager {
                 }
                 return false;
             }
-
+            Log.i(TAG, "process intent, intent Action:" + intent.getAction());
             if (intent.getAction() == null) {
                 // The intent comes from  {@link AppHooks#startForegroundService}.
                 manager.onServiceStarted(this);
@@ -393,9 +395,10 @@ public class MediaNotificationManager {
             // ACTION_MEDIA_BUTTON intents which stores the information about the key event.
             if (Intent.ACTION_MEDIA_BUTTON.equals(action)) {
                 KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                Log.i(TAG, "process action, has key event:" + event);
                 if (event == null) return;
                 if (event.getAction() != KeyEvent.ACTION_DOWN) return;
-
+                Log.i(TAG, "process key code, key code:" + event.getKeyCode());
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
                         manager.onPlay(
@@ -843,6 +846,7 @@ public class MediaNotificationManager {
         if (mService == null) {
             updateMediaSession();
             updateNotificationBuilder();
+            Log.i(TAG, "about to show notification, startForegroundService called!");
             AppHooks.get().startForegroundService(createIntent());
         } else {
             updateNotification(false);
@@ -857,6 +861,10 @@ public class MediaNotificationManager {
 
     @VisibleForTesting
     void clearNotification() {
+        Log.i(TAG,
+                "clear notification! has mMediaNotificationInfo: "
+                        + (mMediaNotificationInfo != null) + ", has mMediaSession"
+                        + (mMediaSession != null) + ", has mService:" + (mService != null));
         mThrottler.clearPendingNotifications();
         if (mMediaNotificationInfo == null) return;
 
@@ -913,6 +921,7 @@ public class MediaNotificationManager {
 
     @VisibleForTesting
     void updateNotification(boolean serviceStarting) {
+        Log.i(TAG, "update notification! serviceStarting = " + serviceStarting);
         if (mService == null) return;
 
         if (mMediaNotificationInfo == null) {
