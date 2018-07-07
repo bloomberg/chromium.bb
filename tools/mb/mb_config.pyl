@@ -187,9 +187,9 @@
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
 
       'EarlGreyiOS': 'ios',
-      'Fuchsia (dbg)': 'debug_bot_fuchsia',
-      'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
-      'Fuchsia x64': 'release_bot_fuchsia',
+      'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
+      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
+      'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'Fuchsia': 'release_bot_fuchsia',
 
       'ios-device-goma-canary-clobber': 'ios',
