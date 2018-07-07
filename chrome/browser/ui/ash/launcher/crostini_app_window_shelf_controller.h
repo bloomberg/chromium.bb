@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -45,15 +46,12 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // A Crostini app with |startup_id| is requested to launch on display with
+  // A Crostini app with |app_id| is requested to launch on display with
   // |display_id|.
-  void OnAppLaunchRequested(const std::string& startup_id,
+  void OnAppLaunchRequested(const std::string& app_id,
                             int64_t display_id) override;
 
  private:
@@ -71,7 +69,7 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
   AuraWindowToAppWindow aura_window_to_app_window_;
-  std::map<aura::Window*, std::string> observed_window_to_startup_id_;
+  std::set<aura::Window*> observed_windows_;
   CrostiniAppDisplay crostini_app_display_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppWindowShelfController);
