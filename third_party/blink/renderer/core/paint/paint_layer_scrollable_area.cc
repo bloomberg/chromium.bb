@@ -1351,9 +1351,10 @@ static inline const LayoutObject& ScrollbarStyleSource(
         return layout_box;
     }
 
-    // Try the <body> element first as a scrollbar source.
+    // Try the <body> element first as a scrollbar source, but only if the body
+    // can scroll.
     Element* body = doc.body();
-    if (body && body->GetLayoutObject() &&
+    if (body && body->GetLayoutObject() && body->GetLayoutObject()->IsBox() &&
         body->GetLayoutObject()->Style()->HasPseudoStyle(kPseudoIdScrollbar))
       return *body->GetLayoutObject();
 
@@ -1378,7 +1379,6 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
 
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   bool has_custom_scrollbar_style =
-      style_source.IsBox() &&
       style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     return LayoutScrollbar::HypotheticalScrollbarThickness(
@@ -1423,8 +1423,10 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
     if (needs_custom) {
       DCHECK(scrollbar->IsCustomScrollbar());
       // We have a custom scrollbar with a stale m_owner.
-      if (ToLayoutScrollbar(scrollbar)->StyleSource() != style_source)
+      if (ToLayoutScrollbar(scrollbar)->StyleSource()->GetLayoutObject() !=
+          style_source) {
         return true;
+      }
 
       // Should use custom scrollbar and nothing should change.
       continue;
@@ -2400,7 +2402,6 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
   const LayoutObject& style_source =
       ScrollbarStyleSource(*ScrollableArea()->GetLayoutBox());
   bool has_custom_scrollbar_style =
-      style_source.IsBox() &&
       style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     DCHECK(style_source.GetNode() && style_source.GetNode()->IsElementNode());

@@ -158,15 +158,15 @@ int LayoutScrollbarPart::ComputeScrollbarHeight(int visible_size,
 }
 
 void LayoutScrollbarPart::UpdateScrollbarWidth() {
-  if (!scrollbar_->StyleSource())
+  LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
+  if (!box)
     return;
   // FIXME: We are querying layout information but nothing guarantees that it's
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = scrollbar_->StyleSource()->Size().Width() -
-                     scrollbar_->StyleSource()->Style()->BorderLeftWidth() -
-                     scrollbar_->StyleSource()->Style()->BorderRightWidth();
+  int visible_size = box->Size().Width() - box->Style()->BorderLeftWidth() -
+                     box->Style()->BorderRightWidth();
   SetWidth(LayoutUnit(ComputeScrollbarWidth(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
@@ -181,15 +181,15 @@ void LayoutScrollbarPart::UpdateScrollbarWidth() {
 }
 
 void LayoutScrollbarPart::UpdateScrollbarHeight() {
-  if (!scrollbar_->StyleSource())
+  LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
+  if (!box)
     return;
   // FIXME: We are querying layout information but nothing guarantees that it's
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = scrollbar_->StyleSource()->Size().Height() -
-                     scrollbar_->StyleSource()->Style()->BorderTopWidth() -
-                     scrollbar_->StyleSource()->Style()->BorderBottomWidth();
+  int visible_size = box->Size().Height() - box->Style()->BorderTopWidth() -
+                     box->Style()->BorderBottomWidth();
   SetHeight(LayoutUnit(ComputeScrollbarHeight(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
@@ -235,10 +235,6 @@ void LayoutScrollbarPart::ImageChanged(WrappedImagePtr image,
                                        const IntRect* rect) {
   SetNeedsPaintInvalidation();
   LayoutBlock::ImageChanged(image, defer, rect);
-}
-
-LayoutObject* LayoutScrollbarPart::ScrollbarStyleSource() const {
-  return (!scrollbar_) ? nullptr : scrollbar_->StyleSource();
 }
 
 void LayoutScrollbarPart::SetNeedsPaintInvalidation() {

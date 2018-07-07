@@ -72,7 +72,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
     return type == kLayoutObjectLayoutScrollbarPart ||
            LayoutBlock::IsOfType(type);
   }
-  LayoutObject* ScrollbarStyleSource() const;
+  ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
 
   // Must call setStyleWithWritingModeOfParent() instead.
   void SetStyle(scoped_refptr<ComputedStyle>) = delete;
