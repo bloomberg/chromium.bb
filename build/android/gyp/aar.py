@@ -7,11 +7,13 @@
 """Processes an Android AAR file."""
 
 import argparse
+import filecmp
 import os
 import posixpath
 import re
 import shutil
 import sys
+import tempfile
 from xml.etree import ElementTree
 import zipfile
 
@@ -122,9 +124,28 @@ def main():
         raise Exception('android_aar_prebuilt() cached .info file is '
                         'out-of-date. Run gn gen with '
                         'update_android_aar_prebuilts=true to update it.')
-    # Clear previously extracted versions of the AAR.
-    shutil.rmtree(args.output_dir, True)
-    build_utils.ExtractAll(args.aar_file, path=args.output_dir)
+
+    # Clear previously extracted versions of the AAR if it is obsolete.
+    with build_utils.TempDir() as tmp_root:
+      build_utils.ExtractAll(args.aar_file, path=tmp_root)
+
+      # Compare files and copy/delete if necessary.
+      dcmp = filecmp.dircmp(args.output_dir, tmp_root, ignore=[])
+      for f in dcmp.left_only:
+        shutil.rmtree(os.path.join(args.output_dir, f), ignore_errors=True)
+
+      for f in dcmp.right_list:
+        tmp_path = os.path.join(tmp_root, f)
+        dst = os.path.join(args.output_dir, f)
+        if os.path.isdir(tmp_path):
+          build_utils.MakeDirectory(dst)
+          continue
+
+        if os.path.isdir(dst):
+          shutil.rmtree(dst, ignore_errors=True)
+        elif os.path.isfile(dst) and filecmp.cmp(dst, tmp_path, shallow=False):
+          continue
+        shutil.copy(tmp_path, dst)
 
   elif args.command == 'list':
     aar_info = _CreateInfo(args.aar_file)
