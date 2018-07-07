@@ -1239,8 +1239,38 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
       OnUpdate(properties_->UpdateScroll(*context_.current.scroll,
                                          std::move(state)));
+
+      if (scrollable_area->VerticalScrollbar() ||
+          scrollable_area->HasLayerForVerticalScrollbar()) {
+        EffectPaintPropertyNode::State state;
+        state.local_transform_space = context_.current.transform;
+        state.direct_compositing_reasons =
+            CompositingReason::kActiveOpacityAnimation;
+        state.compositor_element_id = scrollable_area->GetScrollbarElementId(
+            ScrollbarOrientation::kVerticalScrollbar);
+        OnUpdate(properties_->UpdateVerticalScrollbarEffect(
+            *context_.current_effect, std::move(state)));
+      } else {
+        OnClear(properties_->ClearVerticalScrollbarEffect());
+      }
+
+      if (scrollable_area->HorizontalScrollbar() ||
+          scrollable_area->HasLayerForHorizontalScrollbar()) {
+        EffectPaintPropertyNode::State state;
+        state.local_transform_space = context_.current.transform;
+        state.direct_compositing_reasons =
+            CompositingReason::kActiveOpacityAnimation;
+        state.compositor_element_id = scrollable_area->GetScrollbarElementId(
+            ScrollbarOrientation::kHorizontalScrollbar);
+        OnUpdate(properties_->UpdateHorizontalScrollbarEffect(
+            *context_.current_effect, std::move(state)));
+      } else {
+        OnClear(properties_->ClearHorizontalScrollbarEffect());
+      }
     } else {
       OnClear(properties_->ClearScroll());
+      OnClear(properties_->ClearVerticalScrollbarEffect());
+      OnClear(properties_->ClearHorizontalScrollbarEffect());
     }
 
     // A scroll translation node is created for static offset (e.g., overflow

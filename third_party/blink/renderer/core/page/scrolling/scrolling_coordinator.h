@@ -123,7 +123,8 @@ class CORE_EXPORT ScrollingCoordinator final
       ScrollbarOrientation,
       int thumb_thickness,
       int track_start,
-      bool is_left_side_vertical_scrollbar);
+      bool is_left_side_vertical_scrollbar,
+      cc::ElementId);
 
   void WillDestroyScrollableArea(ScrollableArea*);
 

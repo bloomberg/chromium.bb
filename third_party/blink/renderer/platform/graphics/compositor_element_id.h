@@ -13,7 +13,7 @@
 
 namespace blink {
 
-const int kCompositorNamespaceBitCount = 3;
+const int kCompositorNamespaceBitCount = 4;
 
 enum class CompositorElementIdNamespace {
   kPrimary,
@@ -23,6 +23,8 @@ enum class CompositorElementIdNamespace {
   kEffectFilter,
   kEffectMask,
   kEffectClipPath,
+  kVerticalScrollbar,
+  kHorizontalScrollbar,
   // A sentinel to indicate the maximum representable namespace id
   // (the maximum is one less than this value).
   kMaxRepresentableNamespaceId = 1 << kCompositorNamespaceBitCount

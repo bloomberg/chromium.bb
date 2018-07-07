@@ -9,6 +9,14 @@
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
+namespace {
+enum class ScrollbarOrCorner {
+  kHorizontalScrollbar,
+  kVerticalScrollbar,
+  kScrollbarCorner,
+};
+}
+
 namespace blink {
 
 void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
@@ -68,38 +76,48 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   SetContainerLayerState(mapping->DecorationOutlineLayer());
   SetContainerLayerState(mapping->ChildClippingMaskLayer());
 
-  base::Optional<PropertyTreeState> scrollbar_layer_state;
-
   auto SetContainerLayerStateForScrollbars =
-      [&fragment_data, &snapped_paint_offset, &container_layer_state,
-       &scrollbar_layer_state](GraphicsLayer* graphics_layer) {
-        if (graphics_layer) {
-          if (!scrollbar_layer_state) {
-            // OverflowControlsClip should be applied within the scrollbar
-            // layers.
-            if (container_layer_state) {
-              scrollbar_layer_state = container_layer_state;
-            } else {
-              scrollbar_layer_state = fragment_data.LocalBorderBoxProperties();
-            }
+      [&fragment_data, &snapped_paint_offset, &container_layer_state](
+          GraphicsLayer* graphics_layer,
+          ScrollbarOrCorner scrollbar_or_corner) {
+        if (!graphics_layer)
+          return;
+        PropertyTreeState scrollbar_layer_state =
+            container_layer_state.value_or(
+                fragment_data.LocalBorderBoxProperties());
+        // OverflowControlsClip should be applied within the scrollbar
+        // layers.
+        if (const auto* properties = fragment_data.PaintProperties()) {
+          if (const auto* clip = properties->OverflowControlsClip()) {
+            scrollbar_layer_state.SetClip(clip);
+          } else if (const auto* css_clip = properties->CssClip()) {
+            scrollbar_layer_state.SetClip(css_clip->Parent());
+          }
+        }
 
-            if (const auto* properties = fragment_data.PaintProperties()) {
-              if (const auto* clip = properties->OverflowControlsClip()) {
-                scrollbar_layer_state->SetClip(clip);
-              } else if (const auto* css_clip = properties->CssClip()) {
-                scrollbar_layer_state->SetClip(css_clip->Parent());
-              }
+        if (const auto* properties = fragment_data.PaintProperties()) {
+          if (scrollbar_or_corner == ScrollbarOrCorner::kHorizontalScrollbar) {
+            if (const auto* effect = properties->HorizontalScrollbarEffect()) {
+              scrollbar_layer_state.SetEffect(effect);
             }
           }
-          graphics_layer->SetLayerState(
-              *scrollbar_layer_state,
-              snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
+
+          if (scrollbar_or_corner == ScrollbarOrCorner::kVerticalScrollbar) {
+            if (const auto* effect = properties->VerticalScrollbarEffect())
+              scrollbar_layer_state.SetEffect(effect);
+          }
         }
+        graphics_layer->SetLayerState(
+            scrollbar_layer_state,
+            snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
       };
 
-  SetContainerLayerStateForScrollbars(mapping->LayerForHorizontalScrollbar());
-  SetContainerLayerStateForScrollbars(mapping->LayerForVerticalScrollbar());
-  SetContainerLayerStateForScrollbars(mapping->LayerForScrollCorner());
+  SetContainerLayerStateForScrollbars(mapping->LayerForHorizontalScrollbar(),
+                                      ScrollbarOrCorner::kHorizontalScrollbar);
+  SetContainerLayerStateForScrollbars(mapping->LayerForVerticalScrollbar(),
+                                      ScrollbarOrCorner::kVerticalScrollbar);
+  SetContainerLayerStateForScrollbars(mapping->LayerForScrollCorner(),
+                                      ScrollbarOrCorner::kScrollbarCorner);
 
   if (mapping->ScrollingContentsLayer()) {
     auto paint_offset = snapped_paint_offset;
