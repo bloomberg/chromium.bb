@@ -18,6 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -322,8 +323,8 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 
 // static
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
-  return GURL(std::string(extensions::kExtensionScheme) +
-              url::kStandardSchemeSeparator + extension_id + "/");
+  return GURL(base::StrCat({extensions::kExtensionScheme,
+                            url::kStandardSchemeSeparator, extension_id}));
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
