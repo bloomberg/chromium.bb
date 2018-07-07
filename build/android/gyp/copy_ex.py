@@ -6,7 +6,6 @@
 
 """Copies files to a directory."""
 
-import filecmp
 import itertools
 import optparse
 import os
@@ -31,14 +30,16 @@ def CopyFile(f, dest, deps):
     shutil.copytree(f, os.path.join(dest, os.path.basename(f)))
     deps.extend(_get_all_files(f))
   else:
-    if os.path.isfile(os.path.join(dest, os.path.basename(f))):
-      dest = os.path.join(dest, os.path.basename(f))
-
-    deps.append(f)
-    if os.path.isfile(dest) and filecmp.cmp(dest, f, shallow=False):
-      return
-
+    if os.path.exists(dest):
+      # We remove the destination here if it already exists because,
+      # if the destination is a symlink, shutil.copy() will copy to
+      # the link target rather than replacing the link.
+      if os.path.isfile(dest):
+        os.remove(dest)
+      elif os.path.isfile(os.path.join(dest, os.path.basename(f))):
+        os.remove(os.path.join(dest, os.path.basename(f)))
     shutil.copy(f, dest)
+    deps.append(f)
 
 def DoCopy(options, deps):
   """Copy files or directories given in options.files and update deps."""
@@ -120,3 +121,4 @@ def main(args):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
+
