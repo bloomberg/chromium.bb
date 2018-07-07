@@ -429,32 +429,19 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   }
 
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
-    DCHECK(!connector_);
-    mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
-    fake_container_host_.CloneForWorker(mojo::MakeRequest(&host_ptr_info));
-    task_runner_ = blink::scheduler::GetSequencedTaskRunnerForTesting();
-
-    auto connector = std::make_unique<ControllerServiceWorkerConnector>(
-        std::move(host_ptr_info), nullptr /*controller_ptr*/, "" /*client_id*/,
-        task_runner_);
-    connector_ = connector->GetWeakPtr();
-
+    if (!connector_) {
+      mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+      fake_container_host_.CloneForWorker(mojo::MakeRequest(&host_ptr_info));
+      connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
+          std::move(host_ptr_info), nullptr /*controller_ptr*/,
+          "" /*client_id*/);
+    }
     network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
     ServiceWorkerSubresourceLoaderFactory::Create(
-        std::move(connector), loader_factory_,
-        mojo::MakeRequest(&service_worker_url_loader_factory), task_runner_);
-
+        connector_, loader_factory_,
+        mojo::MakeRequest(&service_worker_url_loader_factory),
+        blink::scheduler::GetSequencedTaskRunnerForTesting());
     return service_worker_url_loader_factory;
-  }
-
-  void UpdateController(mojom::ControllerServiceWorkerPtrInfo controller) {
-    base::RunLoop run_loop;
-    task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(&ControllerServiceWorkerConnector::UpdateController,
-                       connector_, std::move(controller)),
-        run_loop.QuitClosure());
-    run_loop.Run();
   }
 
   // Starts |request| using |loader_factory| and sets |out_loader| and
@@ -543,8 +530,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
-  base::WeakPtr<ControllerServiceWorkerConnector> connector_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<ControllerServiceWorkerConnector> connector_;
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;
   base::test::ScopedFeatureList feature_list_;
@@ -667,7 +653,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   }
 
   // Make the connector have no controller.
-  UpdateController({});
+  connector_->UpdateController(nullptr);
+  base::RunLoop().RunUntilIdle();
 
   base::HistogramTester histogram_tester;
   {
