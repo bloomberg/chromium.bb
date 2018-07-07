@@ -1,4 +1,4 @@
-./binomial.h
-./test.h
 //bits/wchar.h
+binomial.h
 test.cc
+test.h
