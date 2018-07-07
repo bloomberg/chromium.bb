@@ -6,24 +6,21 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
     mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    mojom::ControllerServiceWorkerPtrInfo controller_info,
-    const std::string& client_id,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : client_id_(client_id), weak_factory_(this) {
-  DCHECK(task_runner);
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ControllerServiceWorkerConnector::InitializeOnTaskRunner,
-                     base::Unretained(this), std::move(container_host_info),
-                     std::move(controller_info)));
+    mojom::ControllerServiceWorkerPtr controller_ptr,
+    const std::string& client_id)
+    : client_id_(client_id) {
+  container_host_ptr_.Bind(std::move(container_host_info));
+  container_host_ptr_.set_connection_error_handler(base::BindOnce(
+      &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
+      base::Unretained(this)));
+  SetControllerServiceWorkerPtr(std::move(controller_ptr));
 }
-
-ControllerServiceWorkerConnector::~ControllerServiceWorkerConnector() = default;
 
 mojom::ControllerServiceWorker*
 ControllerServiceWorkerConnector::GetControllerServiceWorker(
@@ -75,26 +72,18 @@ void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
     observer.OnConnectionClosed();
 }
 
-void ControllerServiceWorkerConnector::UpdateController(
-    mojom::ControllerServiceWorkerPtrInfo controller_info) {
-  if (state_ == State::kNoContainerHost)
-    return;
-  SetControllerServiceWorkerPtr(
-      mojom::ControllerServiceWorkerPtr(std::move(controller_info)));
-  if (!controller_service_worker_)
-    state_ = State::kNoController;
+void ControllerServiceWorkerConnector::AddBinding(
+    mojom::ControllerServiceWorkerConnectorRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
-void ControllerServiceWorkerConnector::InitializeOnTaskRunner(
-    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    mojom::ControllerServiceWorkerPtrInfo controller_info) {
-  DCHECK(!container_host_ptr_);
-  container_host_ptr_.Bind(std::move(container_host_info));
-  container_host_ptr_.set_connection_error_handler(base::BindOnce(
-      &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
-      base::Unretained(this)));
-  SetControllerServiceWorkerPtr(
-      mojom::ControllerServiceWorkerPtr(std::move(controller_info)));
+void ControllerServiceWorkerConnector::UpdateController(
+    mojom::ControllerServiceWorkerPtr controller_ptr) {
+  if (state_ == State::kNoContainerHost)
+    return;
+  SetControllerServiceWorkerPtr(std::move(controller_ptr));
+  if (!controller_service_worker_)
+    state_ = State::kNoController;
 }
 
 void ControllerServiceWorkerConnector::SetControllerServiceWorkerPtr(
@@ -107,5 +96,7 @@ void ControllerServiceWorkerConnector::SetControllerServiceWorkerPtr(
     state_ = State::kConnected;
   }
 }
+
+ControllerServiceWorkerConnector::~ControllerServiceWorkerConnector() = default;
 
 }  // namespace content
