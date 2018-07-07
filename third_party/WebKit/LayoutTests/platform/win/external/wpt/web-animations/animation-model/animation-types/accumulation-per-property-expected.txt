@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 584 tests; 405 PASS, 179 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 578 tests; 400 PASS, 178 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -200,9 +200,6 @@ PASS counter-reset: "ident-1 1" onto "ident-2 2"
 PASS cursor (type: discrete) has testAccumulation function
 PASS cursor: "wait" onto "pointer"
 PASS cursor: "pointer" onto "wait"
-PASS direction (type: discrete) has testAccumulation function
-PASS direction: "rtl" onto "ltr"
-PASS direction: "ltr" onto "rtl"
 PASS dominant-baseline (type: discrete) has testAccumulation function
 PASS dominant-baseline: "alphabetic" onto "ideographic"
 PASS dominant-baseline: "ideographic" onto "alphabetic"
@@ -581,8 +578,5 @@ FAIL word-spacing: calc assert_equals: The value should be calc(30px + 30%) at 0
 PASS will-change (type: discrete) has testAccumulation function
 PASS will-change: "contents" onto "scroll-position"
 PASS will-change: "scroll-position" onto "contents"
-PASS writing-mode (type: discrete) has testAccumulation function
-FAIL writing-mode: "sideways-rl" onto "vertical-rl" assert_equals: The value should be sideways-rl at 0ms expected "sideways-rl" but got "vertical-rl"
-PASS writing-mode: "vertical-rl" onto "sideways-rl"
 Harness: the test ran to completion.
 
