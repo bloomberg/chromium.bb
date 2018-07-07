@@ -108,7 +108,7 @@ void LaunchContainerApplication(
   CrostiniAppLaunchObserver* observer =
       chrome_launcher_controller->crostini_app_window_shelf_controller();
   DCHECK_NE(observer, nullptr);
-  observer->OnAppLaunchRequested(registration.DesktopFileId(), display_id);
+  observer->OnAppLaunchRequested(app_id, display_id);
   crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
       profile, registration.VmName(), registration.ContainerName(),
       registration.DesktopFileId(), files,

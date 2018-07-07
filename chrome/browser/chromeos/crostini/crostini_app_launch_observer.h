@@ -10,7 +10,7 @@
 class CrostiniAppLaunchObserver {
  public:
   // Invoked when a Crostini app launch has been requested.
-  virtual void OnAppLaunchRequested(const std::string& startup_id,
+  virtual void OnAppLaunchRequested(const std::string& app_id,
                                     int64_t display_id) = 0;
 
  protected:
