@@ -924,8 +924,7 @@
   'content_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Fuchsia (dbg)',
-      'Fuchsia ARM64',
+      'fuchsia-fyi-arm64-rel',
     ],
     'modifications': {
       # TODO(dpranke) - on chromium.swarm, remove this exception.
@@ -1397,7 +1396,7 @@
       # chromium.linux
       'Fuchsia x64',
       # chromium.fyi
-      'Fuchsia ARM64',
+      'fuchsia-fyi-arm64-rel',
     ],
   },
   'mojo_test_apk': {
@@ -1435,8 +1434,8 @@
   'net_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Fuchsia (dbg)',
-      'Fuchsia ARM64',
+      'fuchsia-fyi-arm64-rel',
+      'fuchsia-fyi-x64-dbg',
       # chromium.linux
       'Fuchsia x64',
     ],
@@ -1785,7 +1784,7 @@
   'sql_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Fuchsia ARM64',
+      'fuchsia-fyi-arm64-rel',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
