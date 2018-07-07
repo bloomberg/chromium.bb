@@ -13,6 +13,10 @@ import json
 import os.path
 import sys
 
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir,
+    "build", "android", "gyp"))
+from util import build_utils
 
 _H_FILE_TEMPLATE = "catalog.h.tmpl"
 _CC_FILE_TEMPLATE = "catalog.cc.tmpl"
@@ -46,7 +50,7 @@ def ApplyTemplate(path_to_template, output_path, global_vars, **kwargs):
     assert type(maybe_unicode) is unicode
     return maybe_unicode.encode("ascii", "ignore")
 
-  with open(output_path, "w") as output_file:
+  with build_utils.AtomicOutput(output_path) as output_file:
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
         keep_trailing_newline=True, **kwargs)

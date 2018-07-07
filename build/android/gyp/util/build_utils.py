@@ -144,15 +144,19 @@ def AtomicOutput(path, only_if_changed=True):
   """
   # Create in same directory to ensure same filesystem when moving.
   with tempfile.NamedTemporaryFile(suffix=os.path.basename(path),
-                                   dir=os.path.dirname(path)) as f:
-    yield f
+                                   dir=os.path.dirname(path),
+                                   delete=False) as f:
+    try:
+      yield f
 
-    # Written content should be flushed before comparison.
-    f.file.flush()
-    if not (
-        only_if_changed and os.path.exists(path) and filecmp.cmp(f.name, path)):
-      shutil.move(f.name, path)
-      f.delete = False
+      # file should be closed before comparison/move.
+      f.close()
+      if not (only_if_changed and os.path.exists(path) and
+              filecmp.cmp(f.name, path)):
+        shutil.move(f.name, path)
+    finally:
+      if os.path.exists(f.name):
+        os.unlink(f.name)
 
 
 class CalledProcessError(Exception):
