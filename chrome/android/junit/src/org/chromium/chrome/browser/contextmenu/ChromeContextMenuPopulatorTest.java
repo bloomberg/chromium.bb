@@ -67,7 +67,7 @@ public class ChromeContextMenuPopulatorTest {
 
         doReturn(PAGE_URL).when(mItemDelegate).getPageUrl();
 
-        initializePopulator(ChromeContextMenuPopulator.NORMAL_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
@@ -86,13 +86,13 @@ public class ChromeContextMenuPopulatorTest {
                 Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
                         ChromeContextMenuItem.COPY_LINK_TEXT));
 
-        initializePopulator(ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(enabledItems,
                 Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
                         ChromeContextMenuItem.COPY_LINK_TEXT));
 
-        initializePopulator(ChromeContextMenuPopulator.WEB_APP_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(enabledItems,
                 Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
@@ -108,11 +108,11 @@ public class ChromeContextMenuPopulatorTest {
         List<ContextMenuItem> enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(enabledItems, Matchers.empty());
 
-        initializePopulator(ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(enabledItems, Matchers.empty());
 
-        initializePopulator(ChromeContextMenuPopulator.WEB_APP_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(enabledItems, Matchers.empty());
     }
@@ -127,12 +127,12 @@ public class ChromeContextMenuPopulatorTest {
         Assert.assertThat(
                 enabledItems, Matchers.containsInAnyOrder(ChromeContextMenuItem.COPY_LINK_ADDRESS));
 
-        initializePopulator(ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(
                 enabledItems, Matchers.containsInAnyOrder(ChromeContextMenuItem.COPY_LINK_ADDRESS));
 
-        initializePopulator(ChromeContextMenuPopulator.WEB_APP_MODE);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
         enabledItems = getEnabledItems(contextMenuParams);
         Assert.assertThat(
                 enabledItems, Matchers.containsInAnyOrder(ChromeContextMenuItem.COPY_LINK_ADDRESS));

@@ -38,7 +38,7 @@ public class TabDelegateFactory {
      */
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
-                ChromeContextMenuPopulator.NORMAL_MODE);
+                ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
     }
 
     /**
