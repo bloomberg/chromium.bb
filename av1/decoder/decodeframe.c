@@ -1329,6 +1329,261 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   }
 }
 
+#if LOOP_FILTER_BITMASK
+static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
+                               BLOCK_SIZE bsize, MB_MODE_INFO *mbmi, int type) {
+  if (type == 0) {
+    // TODO(chengchen): optimize step
+    LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
+    // vertical direction
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
+      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        // Y plane
+        const int blk_row = r & (mi_size_high[bsize] - 1);
+        const int blk_col = c & (mi_size_wide[bsize] - 1);
+        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
+            bsize, blk_row, blk_col)];
+        const TX_SIZE tx_size = txsize_horz_map[mb_tx_size];
+        lfm->tx_size_ver[0][tx_size].bits[index] |= mask;
+        // U/V plane
+        const TX_SIZE tx_size_uv = txsize_horz_map[av1_get_max_uv_txsize(
+            mbmi->sb_type, cm->seq_params.subsampling_x,
+            cm->seq_params.subsampling_y)];
+        lfm->tx_size_ver[1][tx_size_uv].bits[index] |= mask;
+
+        c += tx_size_wide_unit[tx_size];
+      }
+    }
+    // horizontal direction
+    for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
+      for (int r = mi_row; r < mi_row + mi_size_high[bsize];) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        // Y plane
+        const int blk_row = r & (mi_size_high[bsize] - 1);
+        const int blk_col = c & (mi_size_wide[bsize] - 1);
+        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
+            bsize, blk_row, blk_col)];
+        const TX_SIZE tx_size = txsize_vert_map[mb_tx_size];
+        lfm->tx_size_hor[0][tx_size].bits[index] |= mask;
+        // U/V plane
+        const TX_SIZE tx_size_uv = txsize_vert_map[av1_get_max_uv_txsize(
+            mbmi->sb_type, cm->seq_params.subsampling_x,
+            cm->seq_params.subsampling_y)];
+        lfm->tx_size_hor[1][tx_size_uv].bits[index] |= mask;
+
+        r += tx_size_high_unit[tx_size];
+      }
+    }
+    // store other info
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
+      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
+        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
+        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
+        const int blk_row = r & (mi_size_high[bsize] - 1);
+        const int blk_col = c & (mi_size_wide[bsize] - 1);
+        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
+            bsize, blk_row, blk_col)];
+        c += tx_size_wide_unit[mb_tx_size];
+      }
+    }
+    for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
+      for (int r = mi_row; r < mi_row + mi_size_high[bsize];) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
+        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
+        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
+        const int blk_row = r & (mi_size_high[bsize] - 1);
+        const int blk_col = c & (mi_size_wide[bsize] - 1);
+        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
+            bsize, blk_row, blk_col)];
+        r += tx_size_high_unit[mb_tx_size];
+      }
+    }
+    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
+    const uint8_t level_vert_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
+    const uint8_t level_vert_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
+    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
+    const uint8_t level_horz_u = get_filter_level(cm, &cm->lf_info, 1, 1, mbmi);
+    const uint8_t level_horz_v = get_filter_level(cm, &cm->lf_info, 1, 2, mbmi);
+    const int col_start = mi_col % MI_SIZE_64X64;
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
+      const int row = r % MI_SIZE_64X64;
+      memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_u_ver[row][col_start], level_vert_u,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_v_ver[row][col_start], level_vert_v,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_u_hor[row][col_start], level_horz_u,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_v_hor[row][col_start], level_horz_v,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+    }
+  } else {
+    // TODO(chengchen): optimize step
+    LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
+    // vertical direction
+    const TX_SIZE tx_size_y_vert = txsize_vert_map[mbmi->tx_size];
+    const TX_SIZE tx_size_y_horz = txsize_horz_map[mbmi->tx_size];
+    const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
+        mbmi->sb_type, cm->seq_params.subsampling_x,
+        cm->seq_params.subsampling_y)];
+    const TX_SIZE tx_size_uv_horz = txsize_horz_map[av1_get_max_uv_txsize(
+        mbmi->sb_type, cm->seq_params.subsampling_x,
+        cm->seq_params.subsampling_y)];
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize];
+         r += tx_size_high_unit[mbmi->tx_size]) {
+      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
+           c += tx_size_wide_unit[mbmi->tx_size]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        if (tx_size_y_vert <= TX_8X8) {
+          lfm->tx_size_ver[0][tx_size_y_horz].bits[index] |=
+              (left_txform_mask[tx_size_y_vert].bits[0] << shift);
+        } else if (tx_size_y_vert == TX_16X16) {
+          lfm->tx_size_ver[0][tx_size_y_horz].bits[index] |=
+              (left_txform_mask[tx_size_y_vert].bits[0] << col);
+        } else if (tx_size_y_vert == TX_32X32) {
+          for (int i = 0; i < 2; ++i) {
+            lfm->tx_size_ver[0][tx_size_y_horz].bits[i + index] |=
+                (left_txform_mask[tx_size_y_vert].bits[i] << col);
+          }
+        } else {
+          for (int i = 0; i < 4; ++i) {
+            lfm->tx_size_ver[0][tx_size_y_horz].bits[i + index] |=
+                (left_txform_mask[tx_size_y_vert].bits[i] << col);
+          }
+        }
+      }
+    }
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize];
+         r += tx_size_high_unit[tx_size_uv_vert]) {
+      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
+           c += tx_size_wide_unit[tx_size_uv_horz]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        if (tx_size_uv_vert <= TX_8X8) {
+          lfm->tx_size_ver[1][tx_size_uv_horz].bits[index] |=
+              (left_txform_mask[tx_size_uv_vert].bits[0] << shift);
+        } else if (tx_size_uv_vert == TX_16X16) {
+          lfm->tx_size_ver[1][tx_size_uv_horz].bits[index] |=
+              (left_txform_mask[tx_size_uv_vert].bits[0] << col);
+        } else if (tx_size_uv_vert == TX_32X32) {
+          for (int i = 0; i < 2; ++i) {
+            lfm->tx_size_ver[1][tx_size_uv_horz].bits[i + index] |=
+                (left_txform_mask[tx_size_uv_vert].bits[i] << col);
+          }
+        } else {
+          for (int i = 0; i < 4; ++i) {
+            lfm->tx_size_ver[1][tx_size_uv_horz].bits[i + index] |=
+                (left_txform_mask[tx_size_uv_vert].bits[i] << col);
+          }
+        }
+      }
+    }
+    // horizontal direction
+    for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
+         c += tx_size_wide_unit[mbmi->tx_size]) {
+      for (int r = mi_row; r < mi_row + mi_size_high[bsize];
+           r += tx_size_high_unit[mbmi->tx_size]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        lfm->tx_size_hor[0][tx_size_y_vert].bits[index] |=
+            (above_txform_mask[0][tx_size_y_horz] << shift);
+      }
+    }
+    for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
+         c += tx_size_wide_unit[tx_size_uv_horz]) {
+      for (int r = mi_row; r < mi_row + mi_size_high[bsize];
+           r += tx_size_high_unit[tx_size_uv_vert]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        lfm->tx_size_hor[1][tx_size_uv_vert].bits[index] |=
+            (above_txform_mask[0][tx_size_uv_horz] << shift);
+      }
+    }
+    // store other info
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
+      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
+           c += tx_size_wide_unit[mbmi->tx_size]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
+        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
+        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
+      }
+    }
+    for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
+      for (int r = mi_row; r < mi_row + mi_size_high[bsize];
+           r += tx_size_high_unit[mbmi->tx_size]) {
+        int index = 0;
+        const int row = r % MI_SIZE_64X64;
+        const int col = c % MI_SIZE_64X64;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
+        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
+        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
+      }
+    }
+    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
+    const uint8_t level_vert_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
+    const uint8_t level_vert_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
+    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
+    const uint8_t level_horz_u = get_filter_level(cm, &cm->lf_info, 1, 1, mbmi);
+    const uint8_t level_horz_v = get_filter_level(cm, &cm->lf_info, 1, 2, mbmi);
+    const int col_start = mi_col % MI_SIZE_64X64;
+    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
+      const int row = r % MI_SIZE_64X64;
+      memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_u_ver[row][col_start], level_vert_u,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_v_ver[row][col_start], level_vert_v,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_u_hor[row][col_start], level_horz_u,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+      memset(&lfm->lfl_v_hor[row][col_start], level_horz_v,
+             sizeof(uint8_t) * mi_size_wide[bsize]);
+    }
+  }
+}
+#endif
+
 static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
                                int mi_row, int mi_col, aom_reader *r,
                                PARTITION_TYPE partition, BLOCK_SIZE bsize) {
@@ -1353,12 +1608,18 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
+#if LOOP_FILTER_BITMASK
+    store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 0);
+#endif
   } else {
     mbmi->tx_size = read_tx_size(cm, xd, inter_block_tx, !mbmi->skip, r);
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
+#if LOOP_FILTER_BITMASK
+    store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 1);
+#endif
   }
 
   if (cm->delta_q_present_flag) {
@@ -5199,6 +5460,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   const int tile_count_tg = end_tile - start_tile + 1;
 
   if (initialize_flag) setup_frame_info(pbi);
+  const int num_planes = av1_num_planes(cm);
+#if LOOP_FILTER_BITMASK
+  av1_loop_filter_frame_init(cm, 0, num_planes);
+  av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
+#endif
 
   if (pbi->max_threads > 1 && !(cm->large_scale_tile && !pbi->ext_tile_debug) &&
       pbi->row_mt)
@@ -5210,7 +5476,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   else
     *p_data_end = decode_tiles(pbi, data, data_end, start_tile, end_tile);
 
-  const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
   if (num_planes < 3) {
     set_planes_to_neutral_grey(&cm->seq_params, xd->cur_buf, 1);

@@ -67,6 +67,14 @@ typedef struct {
   // V plane vertical edge and horizontal edge filter level
   uint8_t lfl_v_hor[MI_SIZE_64X64][MI_SIZE_64X64];
   uint8_t lfl_v_ver[MI_SIZE_64X64][MI_SIZE_64X64];
+
+  // other info
+  FilterMask skip;
+  FilterMask is_vert_border;
+  FilterMask is_horz_border;
+  // Y or UV planes, 5 tx sizes: 4x4, 8x8, 16x16, 32x32, 64x64
+  FilterMask tx_size_ver[2][5];
+  FilterMask tx_size_hor[2][5];
 } LoopFilterMask;
 #endif  // LOOP_FILTER_BITMASK
 
@@ -119,9 +127,15 @@ void av1_loop_filter_init(struct AV1Common *cm);
 void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
                                 int plane_end);
 
+#if LOOP_FILTER_BITMASK
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int plane_start,
                            int plane_end, int partial_frame);
+#else
+void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
+                           struct macroblockd *mbd, int plane_start,
+                           int plane_end, int partial_frame);
+#endif
 
 void av1_filter_block_plane_vert(const struct AV1Common *const cm,
                                  const MACROBLOCKD *const xd, const int plane,
@@ -142,6 +156,9 @@ typedef struct LoopFilterWorkerData {
   MACROBLOCKD *xd;
 } LFWorkerData;
 
+uint8_t get_filter_level(const struct AV1Common *cm,
+                         const loop_filter_info_n *lfi_n, const int dir_idx,
+                         int plane, const MB_MODE_INFO *mbmi);
 #if LOOP_FILTER_BITMASK
 void av1_setup_bitmask(struct AV1Common *const cm, int mi_row, int mi_col,
                        int plane, int subsampling_x, int subsampling_y,
@@ -154,6 +171,43 @@ void av1_filter_block_plane_ver(struct AV1Common *const cm,
 void av1_filter_block_plane_hor(struct AV1Common *const cm,
                                 struct macroblockd_plane *const plane, int pl,
                                 int mi_row, int mi_col);
+LoopFilterMask *get_loop_filter_mask(const struct AV1Common *const cm,
+                                     int mi_row, int mi_col);
+int get_index_shift(int mi_col, int mi_row, int *index);
+
+static const FilterMask left_txform_mask[TX_SIZES] = {
+  { { 0x0000000000000001ULL,  // TX_4X4,
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0000000000010001ULL,  // TX_8X8,
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0001000100010001ULL,  // TX_16X16,
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0001000100010001ULL,  // TX_32X32,
+      0x0001000100010001ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0001000100010001ULL,  // TX_64X64,
+      0x0001000100010001ULL, 0x0001000100010001ULL, 0x0001000100010001ULL } },
+};
+
+static const uint64_t above_txform_mask[2][TX_SIZES] = {
+  {
+      0x0000000000000001ULL,  // TX_4X4
+      0x0000000000000003ULL,  // TX_8X8
+      0x000000000000000fULL,  // TX_16X16
+      0x00000000000000ffULL,  // TX_32X32
+      0x000000000000ffffULL,  // TX_64X64
+  },
+  {
+      0x0000000000000001ULL,  // TX_4X4
+      0x0000000000000005ULL,  // TX_8X8
+      0x0000000000000055ULL,  // TX_16X16
+      0x0000000000005555ULL,  // TX_32X32
+      0x0000000055555555ULL,  // TX_64X64
+  },
+};
 #endif
 
 #ifdef __cplusplus
