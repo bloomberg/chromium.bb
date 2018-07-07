@@ -211,6 +211,7 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
   security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
       is_potentially_trustworthy_opaque_origin);
   GetFrame()->GetSecurityContext()->SetReplicatedOrigin(security_origin);
+  ApplyReplicatedFeaturePolicyHeader();
 
   // If the origin of a remote frame changed, the accessibility object for the
   // owner element now points to a different child.
@@ -241,6 +242,11 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
     const ParsedFeaturePolicy& parsed_header) {
+  feature_policy_header_ = parsed_header;
+  ApplyReplicatedFeaturePolicyHeader();
+}
+
+void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
   FeaturePolicy* parent_feature_policy = nullptr;
   if (Parent()) {
     Frame* parent_frame = GetFrame()->Client()->Parent();
@@ -251,7 +257,7 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
   if (GetFrame()->Owner())
     container_policy = GetFrame()->Owner()->ContainerPolicy();
   GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
-      parsed_header, container_policy, parent_feature_policy);
+      feature_policy_header_, container_policy, parent_feature_policy);
 }
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(

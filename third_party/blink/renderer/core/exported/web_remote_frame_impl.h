@@ -107,6 +107,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
 
   void SetCoreFrame(RemoteFrame*);
+  void ApplyReplicatedFeaturePolicyHeader();
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrameImpl.
@@ -119,6 +120,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
+
+  ParsedFeaturePolicy feature_policy_header_;
 
   // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is
