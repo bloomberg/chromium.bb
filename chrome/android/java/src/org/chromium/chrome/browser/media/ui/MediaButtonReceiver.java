@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.AppHooks;
 
 /**
@@ -19,9 +20,12 @@ import org.chromium.chrome.browser.AppHooks;
 public abstract class MediaButtonReceiver extends BroadcastReceiver {
     public abstract Class<?> getServiceClass();
 
+    private static final String TAG = "MediaButtonReceiver";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         intent.setClass(context, getServiceClass());
+        Log.i(TAG, "Receive broadcast message, starting foreground service");
         AppHooks.get().startForegroundService(intent);
     }
 }
