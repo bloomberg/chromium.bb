@@ -215,6 +215,10 @@ def _ExecuteTool(toolname, tool_args, build_directory, compdb_entry):
       # passed to the tool twice - once directly and once via
       # the compile args.
       if a != compdb_entry.filename
+        # /showIncludes is used by Ninja to track header file dependencies on
+        # Windows. We don't need to do this here, and it results in lots of spam
+        # and a massive log file, so we strip it.
+        and a != '/showIncludes'
   ])
 
   # shlex.split escapes double qoutes in non-Posix mode, so we need to strip
