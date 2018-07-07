@@ -109,19 +109,23 @@ void ResourceLoader::Start() {
   loader_ = Context().CreateURLLoader(request, Context().GetLoadingTaskRunner(),
                                       resource_->Options());
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
-  auto throttle_option = ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
+  auto throttle_option = ResourceLoadScheduler::ThrottleOption::kThrottleable;
 
-  // Synchronous requests should not work with a throttling. Also, disables
-  // throttling for the case that can be used for aka long-polling requests.
-  // Allow top level frame main resource loads in paused frames as well.
-  // We also disable throttling for non-http[s] requests.
+  // Synchronous requests should not work with throttling or stopping. Also,
+  // disables throttling for the case that can be used for aka long-polling
+  // requests, but allows stopping for long-polling requests.
+  // Top level frame main resource loads are also not throttleable or
+  // stoppable. We also disable throttling and stopping for non-http[s]
+  // requests.
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
-      !IsThrottlableRequestContext(request.GetRequestContext()) ||
       (request.GetFrameType() ==
            network::mojom::RequestContextFrameType::kTopLevel &&
        resource_->GetType() == Resource::kMainResource) ||
       !request.Url().ProtocolIsInHTTPFamily()) {
-    throttle_option = ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
+    throttle_option =
+        ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
+  } else if (!IsThrottlableRequestContext(request.GetRequestContext())) {
+    throttle_option = ResourceLoadScheduler::ThrottleOption::kStoppable;
   }
 
   scheduler_->Request(this, throttle_option, request.Priority(),

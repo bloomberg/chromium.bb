@@ -457,15 +457,18 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   if (is_shutdown_)
     return;
 
-  if (option == ThrottleOption::kCanNotBeThrottled ||
-      !IsThrottablePriority(priority)) {
-    Run(*id, client, false);
+  // Check if the request can be throttled.
+  ClientIdWithPriority request_info(*id, priority, intra_priority);
+  if (!IsClientDelayable(request_info, option)) {
+    Run(*id, client, option == ThrottleOption::kThrottleable);
     return;
   }
 
-  pending_requests_.emplace(*id, priority, intra_priority);
+  DCHECK(ThrottleOption::kStoppable == option ||
+         ThrottleOption::kThrottleable == option);
+  pending_requests_[option].insert(request_info);
   pending_request_map_.insert(
-      *id, new ClientWithPriority(client, priority, intra_priority));
+      *id, new ClientInfo(client, option, priority, intra_priority));
   MaybeRun();
 }
 
@@ -476,16 +479,18 @@ void ResourceLoadScheduler::SetPriority(ClientId client_id,
   if (client_it == pending_request_map_.end())
     return;
 
-  auto it = pending_requests_.find(ClientIdWithPriority(
+  auto& throttle_option_queue = pending_requests_[client_it->value->option];
+
+  auto it = throttle_option_queue.find(ClientIdWithPriority(
       client_id, client_it->value->priority, client_it->value->intra_priority));
 
-  DCHECK(it != pending_requests_.end());
-  pending_requests_.erase(it);
+  DCHECK(it != throttle_option_queue.end());
+  throttle_option_queue.erase(it);
 
   client_it->value->priority = priority;
   client_it->value->intra_priority = intra_priority;
 
-  pending_requests_.emplace(client_id, priority, intra_priority);
+  throttle_option_queue.emplace(client_id, priority, intra_priority);
   MaybeRun();
 }
 
@@ -499,7 +504,7 @@ bool ResourceLoadScheduler::Release(
 
   if (running_requests_.find(id) != running_requests_.end()) {
     running_requests_.erase(id);
-    running_throttlable_requests_.erase(id);
+    running_throttleable_requests_.erase(id);
 
     if (traffic_monitor_)
       traffic_monitor_->Report(hints);
@@ -576,27 +581,29 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
   }
 }
 
-bool ResourceLoadScheduler::IsThrottablePriority(
-    ResourceLoadPriority priority) const {
-  const bool throttable = priority < ResourceLoadPriority::kHigh;
+bool ResourceLoadScheduler::IsClientDelayable(const ClientIdWithPriority& info,
+                                              ThrottleOption option) const {
+  const bool throttleable = option == ThrottleOption::kThrottleable &&
+                            info.priority < ResourceLoadPriority::kHigh;
+  const bool stoppable = option != ThrottleOption::kCanNotBeStoppedOrThrottled;
 
   // Also takes the lifecycle state of the associated FrameScheduler
   // into account to determine if the request should be throttled
   // regardless of the priority.
   switch (frame_scheduler_lifecycle_state_) {
     case scheduler::SchedulingLifecycleState::kNotThrottled:
-      return throttable;
+      return throttleable;
     case scheduler::SchedulingLifecycleState::kHidden:
     case scheduler::SchedulingLifecycleState::kThrottled:
       if (IsResourceLoadThrottlingEnabled())
-        return true;
-      return throttable;
+        return option == ThrottleOption::kThrottleable;
+      return throttleable;
     case scheduler::SchedulingLifecycleState::kStopped:
-      return true;
+      return stoppable;
   }
 
   NOTREACHED() << static_cast<int>(frame_scheduler_lifecycle_state_);
-  return throttable;
+  return throttleable;
 }
 
 void ResourceLoadScheduler::OnLifecycleStateChanged(
@@ -636,35 +643,71 @@ ResourceLoadScheduler::ClientId ResourceLoadScheduler::GenerateClientId() {
   return id;
 }
 
+bool ResourceLoadScheduler::GetNextPendingRequest(ClientId* id) {
+  bool needs_throttling =
+      running_throttleable_requests_.size() >= GetOutstandingLimit();
+
+  auto& stoppable_queue = pending_requests_[ThrottleOption::kStoppable];
+  auto& throttleable_queue = pending_requests_[ThrottleOption::kThrottleable];
+
+  // Check if stoppable or throttleable requests are allowed to be run.
+  auto stoppable_it = stoppable_queue.begin();
+  bool has_runnable_stoppable_request =
+      stoppable_it != stoppable_queue.end() &&
+      (!IsClientDelayable(*stoppable_it, ThrottleOption::kStoppable) ||
+       !needs_throttling);
+
+  auto throttleable_it = throttleable_queue.begin();
+  bool has_runnable_throttleable_request =
+      throttleable_it != throttleable_queue.end() &&
+      (!IsClientDelayable(*throttleable_it, ThrottleOption::kThrottleable) ||
+       !needs_throttling);
+
+  if (!has_runnable_throttleable_request && !has_runnable_stoppable_request)
+    return false;
+
+  // If both requests are allowed to be run, run the high priority requests
+  // first.
+  ClientIdWithPriority::Compare compare;
+  bool use_stoppable = has_runnable_stoppable_request &&
+                       (!has_runnable_throttleable_request ||
+                        compare(*stoppable_it, *throttleable_it));
+
+  // Remove the iterator from the correct set of pending_requests_.
+  if (use_stoppable) {
+    *id = stoppable_it->client_id;
+    stoppable_queue.erase(stoppable_it);
+    return true;
+  }
+  *id = throttleable_it->client_id;
+  throttleable_queue.erase(throttleable_it);
+  return true;
+}
+
 void ResourceLoadScheduler::MaybeRun() {
   // Requests for keep-alive loaders could be remained in the pending queue,
   // but ignore them once Shutdown() is called.
   if (is_shutdown_)
     return;
 
-  while (!pending_requests_.empty()) {
-    if (IsThrottablePriority(pending_requests_.begin()->priority) &&
-        running_throttlable_requests_.size() >= GetOutstandingLimit()) {
-      break;
-    }
-
-    ClientId id = pending_requests_.begin()->client_id;
-    pending_requests_.erase(pending_requests_.begin());
+  ClientId id = kInvalidClientId;
+  while (GetNextPendingRequest(&id)) {
     auto found = pending_request_map_.find(id);
     if (found == pending_request_map_.end())
       continue;  // Already released.
     ResourceLoadSchedulerClient* client = found->value->client;
+    ThrottleOption option = found->value->option;
     pending_request_map_.erase(found);
-    Run(id, client, true);
+    Run(id, client, option == ThrottleOption::kThrottleable);
   }
 }
 
 void ResourceLoadScheduler::Run(ResourceLoadScheduler::ClientId id,
                                 ResourceLoadSchedulerClient* client,
-                                bool throttlable) {
+                                bool throttleable) {
   running_requests_.insert(id);
-  if (throttlable)
-    running_throttlable_requests_.insert(id);
+  if (throttleable)
+    running_throttleable_requests_.insert(id);
   if (running_requests_.size() > maximum_running_requests_seen_) {
     maximum_running_requests_seen_ = running_requests_.size();
   }
