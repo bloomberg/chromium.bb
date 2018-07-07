@@ -1,0 +1,22 @@
+This is a testharness.js-based test.
+PASS appmanifest interfaces
+PASS Partial interface Window: original interface defined
+PASS BeforeInstallPromptEvent interface: existence and properties of interface object
+FAIL BeforeInstallPromptEvent interface object length assert_equals: wrong value for BeforeInstallPromptEvent.length expected 0 but got 1
+PASS BeforeInstallPromptEvent interface object name
+PASS BeforeInstallPromptEvent interface: existence and properties of interface prototype object
+PASS BeforeInstallPromptEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS BeforeInstallPromptEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS BeforeInstallPromptEvent interface: operation prompt()
+PASS Unscopable handled correctly for prompt() on BeforeInstallPromptEvent
+PASS BeforeInstallPromptEvent must be primary interface of new BeforeInstallPromptEvent("type")
+PASS Stringification of new BeforeInstallPromptEvent("type")
+PASS BeforeInstallPromptEvent interface: new BeforeInstallPromptEvent("type") must inherit property "prompt()" with the proper type
+PASS Window interface: attribute onappinstalled
+PASS Unscopable handled correctly for onappinstalled property on Window
+PASS Window interface: attribute onbeforeinstallprompt
+PASS Unscopable handled correctly for onbeforeinstallprompt property on Window
+PASS Window interface: window must inherit property "onappinstalled" with the proper type
+PASS Window interface: window must inherit property "onbeforeinstallprompt" with the proper type
+Harness: the test ran to completion.
+
