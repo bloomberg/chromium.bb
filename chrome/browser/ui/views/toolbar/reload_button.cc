@@ -47,7 +47,7 @@ const gfx::VectorIcon& GetIconForMode(bool is_reload) {
 const char ReloadButton::kViewClassName[] = "ReloadButton";
 
 ReloadButton::ReloadButton(CommandUpdater* command_updater)
-    : ToolbarButton(this, CreateMenuModel()),
+    : ToolbarButton(this, CreateMenuModel(), nullptr),
       command_updater_(command_updater),
       double_click_timer_delay_(
           base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval())),
