@@ -15,9 +15,9 @@ class V8XRFrameRequestCallback;
 class XRFrame;
 class XRSession;
 
-class XRFrameRequestCallbackCollection final : public TraceWrapperBase {
-  DISALLOW_NEW();
-
+class XRFrameRequestCallbackCollection final
+    : public GarbageCollectedFinalized<XRFrameRequestCallbackCollection>,
+      public TraceWrapperBase {
  public:
   explicit XRFrameRequestCallbackCollection(ExecutionContext*);
 

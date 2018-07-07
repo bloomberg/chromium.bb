@@ -12,9 +12,8 @@ namespace blink {
 
 class GeoNotifier;
 
-class GeolocationWatchers : public TraceWrapperBase {
-  DISALLOW_NEW();
-
+class GeolocationWatchers : public GarbageCollected<GeolocationWatchers>,
+                            public TraceWrapperBase {
  public:
   GeolocationWatchers() = default;
   void Trace(blink::Visitor*);
