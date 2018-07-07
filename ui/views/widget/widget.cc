@@ -718,7 +718,7 @@ void Widget::SetOpacity(float opacity) {
   native_widget_->SetOpacity(opacity);
 }
 
-void Widget::SetAspectRatio(const gfx::Size& aspect_ratio) {
+void Widget::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   native_widget_->SetAspectRatio(aspect_ratio);
 }
 

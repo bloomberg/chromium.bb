@@ -447,7 +447,7 @@ void DesktopWindowTreeHostWin::SetOpacity(float opacity) {
   content_window()->layer()->SetOpacity(opacity);
 }
 
-void DesktopWindowTreeHostWin::SetAspectRatio(const gfx::Size& aspect_ratio) {
+void DesktopWindowTreeHostWin::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   // TODO(apacible): Implement for Windows. https://crbug.com/853276.
 }
 
