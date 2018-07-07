@@ -32,7 +32,7 @@ The sheriff should *not* feel like responsible for investigating hard problems. 
 
 Incoming failures are shown in [Sheriff-o-matic](https://sheriff-o-matic.appspot.com/chromium.perf), which acts as a task management system for bot health sheriffs. Failures are divided into three groups on the dashboard:
 
-* **Infra failures** show general infrastructure problems that are affecting benchmarks.
+* **Infra failures** show general infrastructure problems that are affecting benchmarks.  Besides surfacing in Sheriff-o-matic, we also need to check for down bots in the lame duck pool.  Please file a ticket for any bots you see in [this list](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) or [this list for webview](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf-webview&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) as they will not show up in Sheriff-o-matic.
 
 * **Consistent failures** show benchmarks that have been failing for a while.
 
