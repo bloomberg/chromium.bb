@@ -4665,3 +4665,5 @@ crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-
 crbug.com/831796 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
+
+crbug.com/861544 [ Win ] fast/text/selection/khmer-selection.html [ Failure Pass ]
