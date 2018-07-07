@@ -12,6 +12,11 @@ import json
 import os.path
 import sys
 
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir,
+    "build", "android", "gyp"))
+from util import build_utils
+
 eater_relative = "../../../../../tools/json_comment_eater"
 eater_relative = os.path.join(os.path.abspath(__file__), eater_relative)
 sys.path.insert(0, os.path.normpath(eater_relative))
@@ -106,8 +111,9 @@ def main():
     AddServiceEntryToCatalog(services, service_name, entry)
 
   catalog = { "services": services }
-  with open(args.output, 'w') as output_file:
-    json.dump(catalog, output_file, indent=2 if args.pretty else -1)
+
+  with build_utils.AtomicOutput(args.output) as f:
+    json.dump(catalog, f, indent=2 if args.pretty else -1)
 
   # NOTE: We do the sanity check and possible failure *after* outputting the
   # catalog manifest so it's easier to inspect erroneous output.
