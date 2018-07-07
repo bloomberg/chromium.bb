@@ -236,7 +236,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
-                ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
+                ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
     }
 
     /**
