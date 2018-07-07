@@ -175,10 +175,6 @@ static const char kModeJSONKey[] = "mode";
 static const char kPinsJSONKey[] = "pins";
 static const char kExpectCTJSONKey[] = "expect_ct";
 static const char kExpectCTReportURIJSONKey[] = "expect_ct_report_uri";
-static const char kExpectStapleJSONKey[] = "expect_staple";
-static const char kExpectStapleReportURIJSONKey[] = "expect_staple_report_uri";
-static const char kIncludeSubdomainsForExpectStapleJSONKey[] =
-    "include_subdomains_for_expect_staple";
 
 // Additional valid keys for entries in the input JSON that will not be included
 // in the output and contain metadata (e.g., for list maintenance).
@@ -306,10 +302,7 @@ bool ParseJSON(base::StringPiece json,
                                       kModeJSONKey,
                                       kPinsJSONKey,
                                       kExpectCTJSONKey,
-                                      kExpectCTReportURIJSONKey,
-                                      kExpectStapleJSONKey,
-                                      kExpectStapleReportURIJSONKey,
-                                      kIncludeSubdomainsForExpectStapleJSONKey};
+                                      kExpectCTReportURIJSONKey};
 
   // See the comments in net/http/transport_security_state_static.json for more
   // info on these policies.
@@ -385,11 +378,6 @@ bool ParseJSON(base::StringPiece json,
     parsed->GetString(kPinsJSONKey, &entry->pinset);
     parsed->GetBoolean(kExpectCTJSONKey, &entry->expect_ct);
     parsed->GetString(kExpectCTReportURIJSONKey, &entry->expect_ct_report_uri);
-    parsed->GetBoolean(kExpectStapleJSONKey, &entry->expect_staple);
-    parsed->GetBoolean(kIncludeSubdomainsForExpectStapleJSONKey,
-                       &entry->expect_staple_include_subdomains);
-    parsed->GetString(kExpectStapleReportURIJSONKey,
-                      &entry->expect_staple_report_uri);
 
     entries->push_back(std::move(entry));
   }

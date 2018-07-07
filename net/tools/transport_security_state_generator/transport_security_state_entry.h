@@ -36,10 +36,6 @@ struct TransportSecurityStateEntry {
 
   bool expect_ct = false;
   std::string expect_ct_report_uri;
-
-  bool expect_staple = false;
-  bool expect_staple_include_subdomains = false;
-  std::string expect_staple_report_uri;
 };
 
 using TransportSecurityStateEntries =
@@ -48,7 +44,6 @@ using TransportSecurityStateEntries =
 class TransportSecurityStateTrieEntry : public huffman_trie::TrieEntry {
  public:
   TransportSecurityStateTrieEntry(const NameIDMap& expect_ct_report_uri_map,
-                                  const NameIDMap& expect_staple_report_uri_map,
                                   const NameIDMap& pinsets_map,
                                   TransportSecurityStateEntry* entry);
   ~TransportSecurityStateTrieEntry() override;
@@ -59,7 +54,6 @@ class TransportSecurityStateTrieEntry : public huffman_trie::TrieEntry {
 
  private:
   const NameIDMap& expect_ct_report_uri_map_;
-  const NameIDMap& expect_staple_report_uri_map_;
   const NameIDMap& pinsets_map_;
   TransportSecurityStateEntry* entry_;
 };

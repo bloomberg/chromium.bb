@@ -16,7 +16,7 @@ namespace {
 // reduce the overall size of the trie.
 bool IsSimpleEntry(const TransportSecurityStateEntry* entry) {
   return entry->force_https && entry->include_subdomains &&
-         entry->pinset.empty() && !entry->expect_ct && !entry->expect_staple;
+         entry->pinset.empty() && !entry->expect_ct;
 }
 
 }  // namespace
@@ -26,11 +26,9 @@ TransportSecurityStateEntry::~TransportSecurityStateEntry() = default;
 
 TransportSecurityStateTrieEntry::TransportSecurityStateTrieEntry(
     const NameIDMap& expect_ct_report_uri_map,
-    const NameIDMap& expect_staple_report_uri_map,
     const NameIDMap& pinsets_map,
     TransportSecurityStateEntry* entry)
     : expect_ct_report_uri_map_(expect_ct_report_uri_map),
-      expect_staple_report_uri_map_(expect_staple_report_uri_map),
       pinsets_map_(pinsets_map),
       entry_(entry) {}
 
@@ -105,31 +103,6 @@ bool TransportSecurityStateTrieEntry::WriteEntry(
     writer->WriteBit(0);
   }
 
-  if (entry_->expect_staple) {
-    writer->WriteBit(1);
-
-    if (entry_->expect_staple_include_subdomains) {
-      writer->WriteBit(1);
-    } else {
-      writer->WriteBit(0);
-    }
-
-    NameIDMap::const_iterator expect_staple_report_uri_it =
-        expect_staple_report_uri_map_.find(entry_->expect_staple_report_uri);
-    if (expect_staple_report_uri_it == expect_staple_report_uri_map_.cend()) {
-      return false;
-    }
-
-    const uint8_t& expect_staple_report_id =
-        expect_staple_report_uri_it->second;
-    if (expect_staple_report_id > 15) {
-      return false;
-    }
-
-    writer->WriteBits(expect_staple_report_id, 4);
-  } else {
-    writer->WriteBit(0);
-  }
   return true;
 }
 

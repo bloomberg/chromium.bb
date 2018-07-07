@@ -139,9 +139,6 @@ std::string PreloadedStateGenerator::Generate(
   NameIDMap expect_ct_report_uri_map;
   ProcessExpectCTURIs(entries, &expect_ct_report_uri_map, &output);
 
-  NameIDMap expect_staple_report_uri_map;
-  ProcessExpectStapleURIs(entries, &expect_staple_report_uri_map, &output);
-
   NameIDMap pinsets_map;
   ProcessPinsets(pinsets, &pinsets_map, &output);
 
@@ -150,7 +147,6 @@ std::string PreloadedStateGenerator::Generate(
   for (const auto& entry : entries) {
     std::unique_ptr<TransportSecurityStateTrieEntry> trie_entry(
         new TransportSecurityStateTrieEntry(expect_ct_report_uri_map,
-                                            expect_staple_report_uri_map,
                                             pinsets_map, entry.get()));
     raw_trie_entries.push_back(trie_entry.get());
     trie_entries.push_back(std::move(trie_entry));
@@ -255,38 +251,6 @@ void PreloadedStateGenerator::ProcessExpectCTURIs(
 
   output.append("}");
   ReplaceTag("EXPECT_CT_REPORT_URIS", output, tpl);
-}
-
-void PreloadedStateGenerator::ProcessExpectStapleURIs(
-    const TransportSecurityStateEntries& entries,
-    NameIDMap* expect_staple_report_uri_map,
-    std::string* tpl) {
-  std::string output = "{";
-  output.append(kNewLine);
-
-  for (const auto& entry : entries) {
-    const std::string& url = entry->expect_staple_report_uri;
-    if (entry->expect_staple && url.size() &&
-        expect_staple_report_uri_map->find(url) ==
-            expect_staple_report_uri_map->cend()) {
-      output.append(kIndent);
-      output.append(kIndent);
-      output.append("\"" + entry->expect_staple_report_uri + "\",");
-      output.append(kNewLine);
-
-      expect_staple_report_uri_map->insert(NameIDPair(
-          entry->expect_staple_report_uri,
-          static_cast<uint32_t>(expect_staple_report_uri_map->size())));
-    }
-  }
-
-  output.append(kIndent);
-  output.append(kIndent);
-  output.append("nullptr,");
-  output.append(kNewLine);
-
-  output.append("}");
-  ReplaceTag("EXPECT_STAPLE_REPORT_URIS", output, tpl);
 }
 
 void PreloadedStateGenerator::ProcessPinsets(const Pinsets& pinset,
