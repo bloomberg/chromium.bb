@@ -1,11 +1,11 @@
 Name: icu
 URL: http://site.icu-project.org/
-Version: 60.1
+Version: 62.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 60.1 for C/C++.
+This directory contains the source code of ICU 62.1 for C/C++.
 
 A. How to update ICU
 
@@ -84,32 +84,9 @@ Pre-built data files are generated and checked in with the following steps
      non-Android and Android platforms.
 
   e. Whenever data is updated (e.g timezone update), take step d as long
-  as the ICU build directory used in a ~ c is kept. Besides, icudt.dll for
-  Windows has to be udpated following the procedure described below.
+  as the ICU build directory used in a ~ c is kept.
 
-
-2. icu data dll for Windows (non-default build option)
-
-  Follow these steps to build windows/icudt.dll. By default, we set
-  icu_use_icu_data_flag to 1 and don't use this file.
-
-  a. check out a clean copy of icu 60.1 from the upstream on Windows
-     outside the Chrome tree.
-
-    $ svn export --native-eol LF http://source.icu-project.org/repos/icu/tags/release-60-1/icu4c ${SEPARATE_ICU_ROOT}/icu60
-
-  b. copy ${CHROME_ICU_ROOT}/common/icudtl.dat to
-     ${SEPARATE_ICU_ROOT}/source/data/in/icudt60l.dat
-  c. copy ${CHROME_ICU_ROOT}/source/data/makedata.mak to
-     ${SEPARATE_ICU_ROOT}/source/data/makedata.mak
-  c. In Visual Studio, open source/allinone/allinone.sln solution
-     in ${SEPARATE_ICU_ROOT}
-  d. Build 'makedata' target
-  e. icudt60.dll will be generated in ${SEPARATE_ICU_ROOT}/bin
-  f. Copy that icudt60.dll to ${CHROME_ICU_ROOT}/windows/icudt.dll
-     and check that in.
-
-3. Note on the locale data customization
+2. Note on the locale data customization
 
   - scripts/trim_data.sh
       a. Trim the locale data for Chrome's UI langauges :
@@ -198,6 +175,7 @@ D. Local Modifications
     * Currency signs in ru and uk locales (do not include 'tr' locale changes)
     * AM/PM, midnight, noon formatting for a few Indian locales
     * Timezone name changes in Korean and Chinese locales
+    * Default digit for Arabic locale is European digits.
 
   - patches/locale1.patch: Minor fixes for Korean
 
@@ -252,22 +230,7 @@ D. Local Modifications
   - patches/isvalidenum.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/13509
 
-6. Reduce size of SmallIntFormatter implementation
-
-  - patches/simplify_smallintformatter.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/12390
-
-  Reduce the size of the binary by about 16 kiB on Android,
-  without noticeable performance change.
-
-7. Apply a rule fix for a perf issue with a long sequence of letters/digits
-
-  - patches/word_long.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/13692
-    (62-to-be does not have this issue)
-  - bug: crbug.com/829144
-
-8. Update IANA language tag/subtag mapping and add missing canonicalization for
+7. Update IANA language tag/subtag mapping and add missing canonicalization for
     deprecated regions
 
   - patches/locid_map.patch
@@ -278,23 +241,22 @@ D. Local Modifications
     https://ssl.icu-project.org/trac/ticket/13720
     https://ssl.icu-project.org/trac/ticket/13719
 
-9. Double conversion library build failure
+8. Double conversion library build failure
 
   - patches/double_conversion.patch
   - upstream bugs:
     https://ssl.icu-project.org/trac/ticket/13750
     https://github.com/google/double-conversion/issues/66
 
-10. MSVC C4715 warning (treated as error)
+9. Cherry-pick Greek lowercase fix from the upstream
 
-  - patches/msvc_numgroup.patch  (fixed in 62-to-be)
+  - patches/greek_lowercase.patch
+  - upstream bug (fixed in 62.2-to-be)
+    https://ssl.icu-project.org/trac/ticket/13851
+
+10. Max significant digit is always 6
+
+  - patches/nf_maxsig.patch
   - upstream bug:
-    https://ssl.icu-project.org/trac/ticket/13752
-
-11. Fix the Windows timezone detection on Japanese/Korean Windows
-
-  - patches/wintz.patch
-  - upstream bug:
-    https://ssl.icu-project.org/trac/ticket/13826
-
+    https://ssl.icu-project.org/trac/ticket/13852
 

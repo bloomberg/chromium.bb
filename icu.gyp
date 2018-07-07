@@ -571,6 +571,7 @@
               'unicode/ulocdata.h',
               'unicode/umsg.h',
               'unicode/unirepl.h',
+              'unicode/unumberformatter.h',
               'unicode/unum.h',
               'unicode/unumsys.h',
               'unicode/upluralrules.h',

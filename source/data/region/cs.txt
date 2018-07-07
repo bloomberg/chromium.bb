@@ -306,5 +306,5 @@ cs{
         CI{"Côte d’Ivoire"}
         CZ{"Česká republika"}
     }
-    Version{"2.1.39.15"}
+    Version{"2.1.41.97"}
 }

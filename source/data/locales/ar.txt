@@ -41,8 +41,7 @@ ar{
                 timeSeparator{":"}
             }
         }
-        default{"arab"}
-        default_latn{"latn"}
+        default{"latn"}
         latn{
             miscPatterns{
                 atLeast{"+{0}"}
@@ -384,7 +383,7 @@ ar{
         minimumGroupingDigits{"1"}
         native{"arab"}
     }
-    Version{"2.1.39.20"}
+    Version{"2.1.41.97"}
     calendar{
         buddhist{
             eras{

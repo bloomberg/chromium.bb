@@ -306,5 +306,5 @@ is{
         CI{"Fílabeinsströndin"}
         TL{"Austur-Tímor"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.41.97"}
 }
