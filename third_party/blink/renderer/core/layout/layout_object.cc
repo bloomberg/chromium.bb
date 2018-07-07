@@ -1030,7 +1030,7 @@ const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
 LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   LayoutObject* object = Parent();
   if (!object && IsLayoutScrollbarPart())
-    object = ToLayoutScrollbarPart(this)->ScrollbarStyleSource();
+    object = ToLayoutScrollbarPart(this)->GetScrollableArea()->GetLayoutBox();
   if (!IsTextOrSVGChild()) {
     if (style_->GetPosition() == EPosition::kFixed)
       return ContainingBlockForFixedPosition(skip_info);
