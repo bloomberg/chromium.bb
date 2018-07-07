@@ -12,6 +12,7 @@ SHA-512: 572d3b45568b10f58e48f1188c2d6bcbdd16429c8afaccc8c6d37859b45635e1
 
 With these patches applied:
 * deterministic.diff: make yasm deterministic.
+* deterministic-2.diff: remove timestamps from generated files.
 * genmodule.diff: add an optional output argument to genmodule.
 * genperf.diff: make genperf silent on non-fatal errors.
 
