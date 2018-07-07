@@ -26,10 +26,6 @@ constexpr float kLaserStartDisplacement = 0.045;
 constexpr float kFadeDistanceFromFace = 0.34f;
 constexpr float kDeltaAlpha = 3.0f;
 
-// Very small deadzone that should be undetectable to users, but prevents the
-// head offset from being updated every frame on 3DOF devices.
-constexpr float kHeadOffsetDeadzone = 0.0005f;
-
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
   position->set_x(base::ClampToRange(position->x(), 0.0f, 1.0f));
   position->set_y(base::ClampToRange(position->y(), 0.0f, 1.0f));
@@ -303,13 +299,7 @@ void VrController::UpdateState(const gfx::Transform& head_pose) {
   if (head_pose.GetInverse(&inv_pose)) {
     auto current_head_offset = gfx::Point3F();
     inv_pose.TransformPoint(&current_head_offset);
-    // The head offset drifts by a very tiny amount even in 3DOF devices, so
-    // apply a small deadzone to only update the head offset when the head
-    // actually moves.
-    if (head_offset_.SquaredDistanceTo(current_head_offset) >
-        kHeadOffsetDeadzone) {
-      head_offset_ = current_head_offset;
-    }
+    head_offset_ = current_head_offset;
   }
 
   gvr::Mat4f gvr_head_pose;
