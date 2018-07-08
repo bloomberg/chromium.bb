@@ -416,7 +416,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Called when an error occurs while attempting to write a packet to the
   // network.
-  virtual void OnWriteError(int error_code);
+  void OnWriteError(int error_code);
 
   // Whether |result| represents a MSG TOO BIG write error.
   bool IsMsgTooBig(const WriteResult& result);
@@ -1005,6 +1005,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |acked_new_packet| is true if a previously-unacked packet was acked.
   void PostProcessAfterAckFrame(bool send_stop_waiting, bool acked_new_packet);
 
+  // Updates the release time into the future.
+  void UpdateReleaseTimeIntoFuture();
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -1309,9 +1312,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // True if the writer supports release timestamp.
   const bool supports_release_time_;
 
-  // Latched value of FLAGS_quic_pace_time_into_future_ms. Only used when
-  // supports_release_time_ is true.
-  const QuicTime::Delta pace_time_into_future_;
+  // Time this connection can release packets into the future.
+  QuicTime::Delta release_time_into_future_;
 
   // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
   // TODO(fayang): Remove ScopedRetransmissionScheduler when deprecating

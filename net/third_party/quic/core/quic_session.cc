@@ -1164,8 +1164,8 @@ bool QuicSession::RetransmitLostData() {
       break;
     }
     // Retransmit lost data on headers and data streams.
-    QuicStream* stream =
-        GetStream(streams_with_pending_retransmission_.begin()->first);
+    const QuicStreamId id = streams_with_pending_retransmission_.begin()->first;
+    QuicStream* stream = GetStream(id);
     if (stream != nullptr) {
       SetTransmissionType(LOSS_RETRANSMISSION);
       stream->OnCanWrite();
@@ -1174,7 +1174,18 @@ bool QuicSession::RetransmitLostData() {
         // Connection is write blocked.
         break;
       } else {
-        streams_with_pending_retransmission_.pop_front();
+        if (GetQuicReloadableFlag(quic_fix_retransmit_lost_data)) {
+          QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_retransmit_lost_data);
+          if (!streams_with_pending_retransmission_.empty() &&
+              streams_with_pending_retransmission_.begin()->first == id) {
+            // Retransmit lost data may cause connection close. If this stream
+            // has not yet sent fin, a RST_STREAM will be sent and it will be
+            // removed from streams_with_pending_retransmission_.
+            streams_with_pending_retransmission_.pop_front();
+          }
+        } else {
+          streams_with_pending_retransmission_.pop_front();
+        }
       }
     } else {
       QUIC_BUG << "Try to retransmit data of a closed stream";

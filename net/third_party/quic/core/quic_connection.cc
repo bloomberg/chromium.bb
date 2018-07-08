@@ -72,6 +72,9 @@ const float kShortAckDecimationDelay = 0.125;
 // the message as being too big.
 const int kMessageTooBigErrorCode = net::ERR_MSG_TOO_BIG;
 
+// The minimum release time into future in ms.
+const int kMinReleaseTimeIntoFutureMs = 1;
+
 bool Near(QuicPacketNumber a, QuicPacketNumber b) {
   QuicPacketNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
@@ -315,8 +318,7 @@ QuicConnection::QuicConnection(
       is_path_degrading_(false),
       processing_ack_frame_(false),
       supports_release_time_(writer->SupportsReleaseTime()),
-      pace_time_into_future_(QuicTime::Delta::FromMilliseconds(
-          GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
+      release_time_into_future_(QuicTime::Delta::Zero()),
       deprecate_scheduler_(
           GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)),
       add_to_blocked_list_if_writer_blocked_(
@@ -339,10 +341,13 @@ QuicConnection::QuicConnection(
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
   sent_packet_manager_.SetNetworkChangeVisitor(this);
-  if (supports_release_time_) {
-    // When offloading pacing, set alarm granularity to 0 to achieve more
-    // accurate pacing.
+  if (GetQuicRestartFlag(quic_offload_pacing_to_usps2)) {
     sent_packet_manager_.SetPacingAlarmGranularity(QuicTime::Delta::Zero());
+    release_time_into_future_ =
+        QuicTime::Delta::FromMilliseconds(kMinReleaseTimeIntoFutureMs);
+  }
+  if (supports_release_time_) {
+    UpdateReleaseTimeIntoFuture();
   }
   // Allow the packet writer to potentially reduce the packet size to a value
   // even smaller than kDefaultMaxPacketSize.
@@ -943,6 +948,10 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
   // causes CanWrite to recalculate the next send time.
   if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
+  }
+  if (supports_release_time_) {
+    // Update pace time into future because smoothed RTT is likely updated.
+    UpdateReleaseTimeIntoFuture();
   }
   largest_seen_packet_with_ack_ = last_header_.packet_number;
   // If the incoming ack's packets set expresses missing packets: peer is still
@@ -1987,12 +1996,11 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 
   // Scheduler requires a delay.
   if (!delay.IsZero()) {
-    if (supports_release_time_ && delay <= pace_time_into_future_) {
-      // Offload pacing to the writer, send packet now.
+    if (delay <= release_time_into_future_) {
+      // Required delay is within pace time into future, send now.
       return true;
     }
-    // Cannot send packet now because either the pacing cannot be offloaded or
-    // the delay is too far in the future.
+    // Cannot send packet now because delay is too far in the future.
     send_alarm_->Update(now + delay, QuicTime::Delta::FromMilliseconds(1));
     QUIC_DVLOG(1) << ENDPOINT << "Delaying sending " << delay.ToMilliseconds()
                   << "ms";
@@ -2947,13 +2955,6 @@ bool QuicConnection::SendConnectivityProbingPacket(
     return true;
   }
 
-  if (GetQuicReloadableFlag(
-          quic_clear_queued_packets_before_sending_connectivity_probing)) {
-    QUIC_FLAG_COUNT(
-        quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing);  // NOLINT
-    ClearQueuedPackets();
-  }
-
   QUIC_DLOG(INFO) << ENDPOINT << "Sending connectivity probing packet for "
                   << "connection_id = " << connection_id_;
 
@@ -3276,6 +3277,18 @@ void QuicConnection::SetRetransmittableOnWireAlarm() {
   retransmittable_on_wire_alarm_->Update(
       clock_->ApproximateNow() + retransmittable_on_wire_timeout_,
       QuicTime::Delta::Zero());
+}
+
+void QuicConnection::UpdateReleaseTimeIntoFuture() {
+  DCHECK(supports_release_time_);
+
+  release_time_into_future_ = std::max(
+      QuicTime::Delta::FromMilliseconds(kMinReleaseTimeIntoFutureMs),
+      std::min(
+          QuicTime::Delta::FromMilliseconds(
+              GetQuicFlag(FLAGS_quic_max_pace_time_into_future_ms)),
+          sent_packet_manager_.GetRttStats()->SmoothedOrInitialRtt() *
+              GetQuicFlag(FLAGS_quic_pace_time_into_future_srtt_fraction)));
 }
 
 #undef ENDPOINT  // undef for jumbo builds

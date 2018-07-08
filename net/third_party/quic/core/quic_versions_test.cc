@@ -343,6 +343,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsAllVersions) {
 TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo99) {
   QuicTransportVersionVector all_versions = AllSupportedTransportVersions();
   SetQuicReloadableFlag(quic_disable_version_41_2, false);
+  SetQuicReloadableFlag(quic_disable_version_42, false);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
@@ -366,6 +367,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo99) {
 TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo44) {
   QuicTransportVersionVector all_versions = AllSupportedTransportVersions();
   SetQuicReloadableFlag(quic_disable_version_41_2, false);
+  SetQuicReloadableFlag(quic_disable_version_42, false);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicReloadableFlag(quic_enable_version_44, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
@@ -376,6 +378,29 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo44) {
   QuicTransportVersionVector expected_versions = {
       QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
       QUIC_VERSION_35};
+  ParsedQuicVersionVector expected_parsed_versions;
+  for (QuicTransportVersion version : expected_versions) {
+    expected_parsed_versions.push_back(
+        ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
+  }
+
+  ASSERT_EQ(expected_versions, FilterSupportedTransportVersions(all_versions));
+  ASSERT_EQ(expected_parsed_versions, FilterSupportedVersions(parsed_versions));
+}
+
+TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo43) {
+  QuicTransportVersionVector all_versions = AllSupportedTransportVersions();
+  SetQuicReloadableFlag(quic_disable_version_41_2, false);
+  SetQuicReloadableFlag(quic_disable_version_42, false);
+  SetQuicReloadableFlag(quic_enable_version_43, false);
+  SetQuicReloadableFlag(quic_enable_version_44, false);
+  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  ParsedQuicVersionVector parsed_versions;
+  for (QuicTransportVersion version : all_versions) {
+    parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
+  }
+  QuicTransportVersionVector expected_versions = {
+      QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39, QUIC_VERSION_35};
   ParsedQuicVersionVector expected_parsed_versions;
   for (QuicTransportVersion version : expected_versions) {
     expected_parsed_versions.push_back(
