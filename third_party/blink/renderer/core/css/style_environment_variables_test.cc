@@ -31,6 +31,8 @@ static const char kVariableAltTestColor[] = "blue";
 // no set
 static const Color kNoColor = Color(0, 0, 0, 0);
 
+static const char kSafeAreaInsetExpectedDefault[] = "0px";
+
 }  // namespace
 
 class StyleEnvironmentVariablesTest : public PageTestBase {
@@ -71,6 +73,12 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
                            "</div>");
   }
 
+  void InitializeTestPageWithVariableNamed(LocalFrame& frame,
+                                           const UADefinedVariable name) {
+    InitializeTestPageWithVariableNamed(
+        frame, StyleEnvironmentVariables::GetVariableName(name));
+  }
+
   void SimulateNavigation() {
     const KURL& url = KURL(NullURL(), "https://www.example.com");
     FrameLoadRequest request(nullptr, ResourceRequest(url),
@@ -78,6 +86,14 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
     GetDocument().GetFrame()->Loader().CommitNavigation(request);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+  }
+
+  const String& GetRootVariableValue(UADefinedVariable name) {
+    CSSVariableData* data =
+        StyleEnvironmentVariables::GetRootInstance().ResolveVariable(
+            StyleEnvironmentVariables::GetVariableName(name));
+    EXPECT_NE(nullptr, data);
+    return data->BackingStrings()[0];
   }
 };
 
@@ -296,6 +312,21 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
                                GetCSSPropertyBackgroundColor()));
 }
 
+TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_DefaultsPresent) {
+  EXPECT_EQ(kSafeAreaInsetExpectedDefault,
+            GetRootVariableValue(UADefinedVariable::kSafeAreaInsetTop));
+  EXPECT_EQ(kSafeAreaInsetExpectedDefault,
+            GetRootVariableValue(UADefinedVariable::kSafeAreaInsetLeft));
+  EXPECT_EQ(kSafeAreaInsetExpectedDefault,
+            GetRootVariableValue(UADefinedVariable::kSafeAreaInsetBottom));
+  EXPECT_EQ(kSafeAreaInsetExpectedDefault,
+            GetRootVariableValue(UADefinedVariable::kSafeAreaInsetRight));
+
+  EXPECT_EQ(
+      nullptr,
+      StyleEnvironmentVariables::GetRootInstance().ResolveVariable("test"));
+}
+
 TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Preset) {
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
                                                            kVariableTestColor);
@@ -331,10 +362,14 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
 
 TEST_F(StyleEnvironmentVariablesTest,
        DISABLED_PrintExpectedVariableNameHashes) {
-  const AtomicString kVariableNames[] = {
-      "safe-area-inset-top", "safe-area-inset-left", "safe-area-inset-bottom",
-      "safe-area-inset-right"};
-  for (const auto& name : kVariableNames) {
+  const UADefinedVariable variables[] = {
+      UADefinedVariable::kSafeAreaInsetTop,
+      UADefinedVariable::kSafeAreaInsetLeft,
+      UADefinedVariable::kSafeAreaInsetRight,
+      UADefinedVariable::kSafeAreaInsetBottom};
+  for (const auto& variable : variables) {
+    const AtomicString name =
+        StyleEnvironmentVariables::GetVariableName(variable);
     printf("0x%x\n",
            DocumentStyleEnvironmentVariables::GenerateHashFromName(name));
   }
@@ -368,7 +403,8 @@ TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_NoVariable) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetBottom) {
-  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-bottom");
+  InitializeTestPageWithVariableNamed(GetFrame(),
+                                      UADefinedVariable::kSafeAreaInsetBottom);
 
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
                                     WebFeature::kCSSEnvironmentVariable));
@@ -377,7 +413,8 @@ TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetBottom) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetLeft) {
-  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-left");
+  InitializeTestPageWithVariableNamed(GetFrame(),
+                                      UADefinedVariable::kSafeAreaInsetLeft);
 
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
                                     WebFeature::kCSSEnvironmentVariable));
@@ -386,7 +423,8 @@ TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetLeft) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetRight) {
-  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-right");
+  InitializeTestPageWithVariableNamed(GetFrame(),
+                                      UADefinedVariable::kSafeAreaInsetRight);
 
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
                                     WebFeature::kCSSEnvironmentVariable));
@@ -395,7 +433,8 @@ TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetRight) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetTop) {
-  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-top");
+  InitializeTestPageWithVariableNamed(GetFrame(),
+                                      UADefinedVariable::kSafeAreaInsetTop);
 
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
                                     WebFeature::kCSSEnvironmentVariable));
