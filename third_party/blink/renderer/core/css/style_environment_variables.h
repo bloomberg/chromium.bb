@@ -14,6 +14,19 @@
 
 namespace blink {
 
+// UADefinedVariable contains all the user agent defined environment variables.
+// When adding a new variable the string equivalent needs to be added to
+// |GetVariableName|.
+enum class UADefinedVariable {
+  // The safe area insets are four environment variables that define a
+  // rectangle by its top, right, bottom, and left insets from the edge of
+  // the viewport.
+  kSafeAreaInsetTop,
+  kSafeAreaInsetLeft,
+  kSafeAreaInsetBottom,
+  kSafeAreaInsetRight,
+};
+
 // StyleEnvironmentVariables stores user agent and user defined CSS environment
 // variables. It has a static root instance that stores global values and
 // each document has a child that stores document level values.
@@ -21,6 +34,9 @@ class CORE_EXPORT StyleEnvironmentVariables
     : public RefCounted<StyleEnvironmentVariables> {
  public:
   static StyleEnvironmentVariables& GetRootInstance();
+
+  // Gets the name of a |UADefinedVariable| as a string.
+  static const AtomicString GetVariableName(UADefinedVariable);
 
   // Create a new instance bound to |parent|.
   static scoped_refptr<StyleEnvironmentVariables> Create(
@@ -34,6 +50,7 @@ class CORE_EXPORT StyleEnvironmentVariables
 
   // Tokenize |value| and set it.
   void SetVariable(const AtomicString& name, const String& value);
+  void SetVariable(const UADefinedVariable name, const String& value);
 
   // Remove the variable |name| and invalidate any dependents.
   void RemoveVariable(const AtomicString& name);
@@ -48,7 +65,7 @@ class CORE_EXPORT StyleEnvironmentVariables
  protected:
   friend class StyleEnvironmentVariablesTest;
 
-  void ClearForTesting() { data_.clear(); }
+  void ClearForTesting();
 
   // Bind this instance to a |parent|. This should only be called once.
   void BindToParent(StyleEnvironmentVariables& parent);

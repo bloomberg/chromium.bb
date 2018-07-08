@@ -8,12 +8,35 @@
 
 namespace blink {
 
+namespace {
+
+// This is the default value for all safe-area-inset-* variables.
+static const char kSafeAreaInsetDefault[] = "0px";
+
+// Use this to set default values for environment variables when the root
+// instance is created.
+void SetDefaultEnvironmentVariables(StyleEnvironmentVariables* instance) {
+  instance->SetVariable(UADefinedVariable::kSafeAreaInsetTop,
+                        kSafeAreaInsetDefault);
+  instance->SetVariable(UADefinedVariable::kSafeAreaInsetLeft,
+                        kSafeAreaInsetDefault);
+  instance->SetVariable(UADefinedVariable::kSafeAreaInsetBottom,
+                        kSafeAreaInsetDefault);
+  instance->SetVariable(UADefinedVariable::kSafeAreaInsetRight,
+                        kSafeAreaInsetDefault);
+}
+
+}  // namespace.
+
 // This owns the static root instance.
 class StyleEnvironmentVariables::RootOwner {
  public:
   StyleEnvironmentVariables& GetRoot() {
-    if (!instance_)
+    if (!instance_) {
       instance_ = base::AdoptRef(new StyleEnvironmentVariables());
+      SetDefaultEnvironmentVariables(instance_.get());
+    }
+
     return *instance_.get();
   };
 
@@ -25,6 +48,25 @@ class StyleEnvironmentVariables::RootOwner {
 StyleEnvironmentVariables& StyleEnvironmentVariables::GetRootInstance() {
   static auto* instance = new StyleEnvironmentVariables::RootOwner();
   return instance->GetRoot();
+}
+
+// static
+const AtomicString StyleEnvironmentVariables::GetVariableName(
+    UADefinedVariable variable) {
+  switch (variable) {
+    case UADefinedVariable::kSafeAreaInsetTop:
+      return "safe-area-inset-top";
+    case UADefinedVariable::kSafeAreaInsetLeft:
+      return "safe-area-inset-left";
+    case UADefinedVariable::kSafeAreaInsetBottom:
+      return "safe-area-inset-bottom";
+    case UADefinedVariable::kSafeAreaInsetRight:
+      return "safe-area-inset-right";
+    default:
+      break;
+  }
+
+  NOTREACHED();
 }
 
 // static
@@ -61,11 +103,16 @@ void StyleEnvironmentVariables::SetVariable(const AtomicString& name,
   Vector<CSSParserToken> tokens;
   tokens.AppendVector(tokenizer.TokenizeToEOF());
 
-  Vector<String> backing_strings(1);
+  Vector<String> backing_strings;
   backing_strings.push_back(value);
 
   SetVariable(name,
               CSSVariableData::CreateResolved(tokens, backing_strings, false));
+}
+
+void StyleEnvironmentVariables::SetVariable(const UADefinedVariable name,
+                                            const String& value) {
+  SetVariable(GetVariableName(name), value);
 }
 
 void StyleEnvironmentVariables::RemoveVariable(const AtomicString& name) {
@@ -92,6 +139,14 @@ void StyleEnvironmentVariables::DetachFromParent() {
     parent_->children_.EraseAt(it);
 
   parent_ = nullptr;
+}
+
+void StyleEnvironmentVariables::ClearForTesting() {
+  data_.clear();
+
+  // If we are the root then we should re-apply the default variables.
+  if (!parent_)
+    SetDefaultEnvironmentVariables(this);
 }
 
 void StyleEnvironmentVariables::BindToParent(
