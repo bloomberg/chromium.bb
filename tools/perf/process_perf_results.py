@@ -368,9 +368,10 @@ def _upload_individual_benchmark(params):
     return _upload_individual(*params)
   except Exception:
     benchmark_name = params[0]
+    upload_fail = True
     print 'Error uploading perf result of %s' % benchmark_name
     print traceback.format_exc()
-    return benchmark_name, False
+    return benchmark_name, upload_fail
 
 
 def _handle_perf_results(
@@ -456,18 +457,24 @@ def _handle_perf_results(
 def _write_perf_data_to_logfile(benchmark_name, output_file,
     configuration_name, build_properties,
     logdog_dict, is_ref, upload_failure):
+  viewer_url = None
   # logdog file to write perf results to
-  output_json_file = logdog_helper.open_text(benchmark_name)
-  with open(output_file) as f:
-    try:
-      results = json.load(f)
-      json.dump(results, output_json_file,
-              indent=4, separators=(',', ': '))
-    except ValueError:
-      print(
-        ('Error parsing perf results JSON for benchmark  %s' % benchmark_name))
+  if os.path.exists(output_file):
+    output_json_file = logdog_helper.open_text(benchmark_name)
+    with open(output_file) as f:
+      try:
+        results = json.load(f)
+        json.dump(results, output_json_file,
+                indent=4, separators=(',', ': '))
+      except ValueError:
+        print ('Error parsing perf results JSON for benchmark  %s' %
+               benchmark_name)
 
-  output_json_file.close()
+    output_json_file.close()
+    viewer_url = output_json_file.get_viewer_url()
+  else:
+    print ("Perf results JSON file doesn't exist for benchmark %s" %
+           benchmark_name)
 
   base_benchmark_name = benchmark_name.replace('.reference', '')
 
@@ -477,8 +484,7 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
   # add links for the perf results and the dashboard url to
   # the logs section of buildbot
   if is_ref:
-    logdog_dict[base_benchmark_name]['perf_results_ref'] = (
-        output_json_file.get_viewer_url())
+    logdog_dict[base_benchmark_name]['perf_results_ref'] = viewer_url
     if upload_failure:
       logdog_dict[base_benchmark_name]['ref_upload_failed'] = 'True'
   else:
