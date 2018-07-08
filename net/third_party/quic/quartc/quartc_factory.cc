@@ -125,6 +125,10 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
   // This flag must be set before quic connection is created.
   SetQuicReloadableFlag(quic_deprecate_scoped_scheduler2, true);
 
+  // ACK less aggressively when reordered packets are present.
+  // Must be set before the connection is created.
+  SetQuicReloadableFlag(quic_ack_reordered_packets, true);
+
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 
