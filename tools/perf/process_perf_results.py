@@ -11,7 +11,6 @@ import os
 import shutil
 import sys
 import tempfile
-import traceback
 import time
 import uuid
 
@@ -273,9 +272,14 @@ def _process_perf_results(output_json, configuration_name,
       benchmark_directory_map, test_results_list)
 
   if not smoke_test_mode:
-    return_code = _handle_perf_results(
-        benchmark_enabled_map, benchmark_directory_map,
-        configuration_name, build_properties, service_account_file, extra_links)
+    try:
+      return_code = _handle_perf_results(
+          benchmark_enabled_map, benchmark_directory_map,
+          configuration_name, build_properties, service_account_file,
+          extra_links)
+    except Exception:
+      logging.exception('Error handling perf results jsons')
+      return_code = 1
 
   # Finally, merge all test results json, add the extra links and write out to
   # output location
@@ -369,8 +373,7 @@ def _upload_individual_benchmark(params):
   except Exception:
     benchmark_name = params[0]
     upload_fail = True
-    print 'Error uploading perf result of %s' % benchmark_name
-    print traceback.format_exc()
+    logging.exception('Error uploading perf result of %s' % benchmark_name)
     return benchmark_name, upload_fail
 
 
@@ -488,14 +491,13 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
     if upload_failure:
       logdog_dict[base_benchmark_name]['ref_upload_failed'] = 'True'
   else:
-    logdog_dict[base_benchmark_name]['dashboard_url'] = \
+    logdog_dict[base_benchmark_name]['dashboard_url'] = (
         upload_results_to_perf_dashboard.GetDashboardUrl(
             benchmark_name,
             configuration_name, RESULTS_URL,
             build_properties['got_revision_cp'],
-            _GetMachineGroup(build_properties))
-    logdog_dict[base_benchmark_name]['perf_results'] = \
-        output_json_file.get_viewer_url()
+            _GetMachineGroup(build_properties)))
+    logdog_dict[base_benchmark_name]['perf_results'] = viewer_url
     if upload_failure:
       logdog_dict[base_benchmark_name]['upload_failed'] = 'True'
 
