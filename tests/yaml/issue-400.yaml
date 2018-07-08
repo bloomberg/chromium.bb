@@ -11,6 +11,57 @@ table: |
   nocontractsign 56
   numericnocontchars abcdefghij
 
+# First check if forward translation reflects expected backward translation
+# possibly to be removed or compressed when issue has been fixed.
+tests:
+  # Characters is in numericnocontchars require nocontractsign to cancel numeric mode
+  - - "123abc"
+    - "#abc;abc"
+  # "k" is not in numericnocontchars so does not require contractsign to cancel numeric mode
+  - - "123kabc"
+    - "#abckabc"
+  # whitespace cancels numeric mode
+  - - "123 abc"
+    - "#abc abc"
+  # capsletter cancels numeric mode
+  - - "123Abc"
+    - "#abc,abc"
+  - - "123Kabc"
+    - "#abc,kabc"
+
+  # FIXME: the following tests are only relevant if capsletter fails to cancel numeric mode
+  # once stuck, numeric mode may not be canceled even by nocontractsign
+  - - "123Abckabc" # FIXME: undefined behavior?
+    - "#abc,abck;abc"
+    - {xfail: true}
+    # Actual: '#abc,abckabc'
+    # buevest:
+    # Actual result is correct.
+    # both capsletter and "k" in the output  cancel numeric mode for good.
+    # No need for nocontractsign AFAICS.
+# If any Braille code should need this behaviour, we must make an opcode to deal with it.
+
+  - - "123Abcabc" # FIXME: undefined behavior?
+    - "#abc,abc#;abc"
+    - {xfail: true}
+# Actual: '#abc,abcabc'
+    # Buevest: Same as above.
+
+  # ... but it may be canceled by a numcontractsign if it directly follows a numericnocontchar
+  - - "123Abc1abc"
+    - "#abc,abc#a;abc"
+  - - "123Abcabc" # FIXME: undefined behavior?
+    - "#abc,abc;abc"
+    - {xfail: true} # capsletter fails, numcontractsign works
+    # Actual: '#abc,abcabc'
+    # buevest:
+    # Same as above: Capsletter should be enough.
+    
+  # ... it may also be canceled by whitespace
+  - - "123Abc abc"
+    - "#abc,abc abc"
+
+# Original tests - the actual issue
 flags: {testmode: backward}
 tests:
   # Characters is in numericnocontchars require nocontractsign to cancel numeric mode
@@ -67,6 +118,23 @@ table: |
   begcapsword 456
   endcapsword 5
 
+# First check if forward translation reflects expected backward translation
+# possibly to be removed or compressed when issue has been fixed.
+tests:
+  # endcapsword cancels a word in capitals
+  - - "ABCabc"
+    - ",abc.abc"
+  # Whitespace cancels a word in capitals
+  - - "ABC abc"
+    - ",abc abc"
+  # Non-letter cancels a word in capitals
+  - - "ABC%abc"
+    - ",abc%abc"
+  # Number cancels a word in capitals
+  - - "ABC123abc"
+    - ",abc#abc;abc"
+
+# Original tests
 flags: {testmode: backward}
 tests:
   # endcapsword cancels a word in capitals
@@ -100,13 +168,41 @@ table: |
   begcaps 456
   endcaps 5
 
+# Forward tests (see above)
+tests:
+  # endcaps cancels a block in capitals
+  - - "ABCabc"
+    - ",abc.abc"
+  # Whitespace does not cancel a block in capitals
+  - - "ABC ABC"
+    - ",abc abc."
+  # Non-letter cancels a block in capitals
+  - - "ABC%abc"
+    - ",abc%abc"
+    - {xfail: true} # FIXME: undefined behavior?
+    # Actual: ',abc%.abc'
+    # Buevest:
+    # The actual result seems more logical to me.
+    # Capsphrase should be able to handle phrases like:
+    # HE, THE MAN, SAID IT ACTUALLY WORKED.
+    # Perhaps, endcapsphrase should be placed before %,
+    # but that is not the topic of this issue.
+
+  # Number cancels a block in capitals
+  - - "ABC123abc"
+    - ",abc#abc;abc"
+    - {xfail: true}  # FIXME: undefined behavior?
+    # Actual: ',abc#abc.;abc'
+    # Buevest: See above.
+
+# Original tests
 flags: {testmode: backward}
 tests:
   # endcaps cancels a block in capitals
   - - ",abc.abc"
     - "ABCabc"
   # Whitespace does not cancel a block in capitals
-  - - ",abc abc"
+  - - ",abc abc."
     - "ABC ABC"
   # Non-letter cancels a block in capitals
   - - ",abc%abc"
