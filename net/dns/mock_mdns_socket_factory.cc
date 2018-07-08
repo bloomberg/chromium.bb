@@ -25,11 +25,20 @@ MockMDnsDatagramServerSocket::MockMDnsDatagramServerSocket(
 
 MockMDnsDatagramServerSocket::~MockMDnsDatagramServerSocket() = default;
 
-int MockMDnsDatagramServerSocket::SendTo(IOBuffer* buf, int buf_len,
+int MockMDnsDatagramServerSocket::SendTo(IOBuffer* buf,
+                                         int buf_len,
                                          const IPEndPoint& address,
-                                         const CompletionCallback& callback) {
+                                         CompletionOnceCallback callback) {
   return SendToInternal(std::string(buf->data(), buf_len), address.ToString(),
-                        callback);
+                        base::AdaptCallbackForRepeating(std::move(callback)));
+}
+
+int MockMDnsDatagramServerSocket::RecvFrom(IOBuffer* buffer,
+                                           int size,
+                                           IPEndPoint* address,
+                                           CompletionOnceCallback callback) {
+  return RecvFromInternal(buffer, size, address,
+                          base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 int MockMDnsDatagramServerSocket::GetLocalAddress(IPEndPoint* address) const {
@@ -43,8 +52,10 @@ void MockMDnsDatagramServerSocket::SetResponsePacket(
 }
 
 int MockMDnsDatagramServerSocket::HandleRecvNow(
-    IOBuffer* buffer, int size, IPEndPoint* address,
-    const CompletionCallback& callback) {
+    IOBuffer* buffer,
+    int size,
+    IPEndPoint* address,
+    CompletionRepeatingCallback callback) {
   int size_returned =
       std::min(response_packet_.size(), static_cast<size_t>(size));
   memcpy(buffer->data(), response_packet_.data(), size_returned);
@@ -52,11 +63,13 @@ int MockMDnsDatagramServerSocket::HandleRecvNow(
 }
 
 int MockMDnsDatagramServerSocket::HandleRecvLater(
-    IOBuffer* buffer, int size, IPEndPoint* address,
-    const CompletionCallback& callback) {
+    IOBuffer* buffer,
+    int size,
+    IPEndPoint* address,
+    CompletionRepeatingCallback callback) {
   int rv = HandleRecvNow(buffer, size, address, callback);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, rv));
+                                                base::BindOnce(callback, rv));
   return ERR_IO_PENDING;
 }
 
@@ -81,10 +94,8 @@ void MockMDnsSocketFactory::CreateSocket(
           this,
           &MockMDnsSocketFactory::SendToInternal));
 
-  ON_CALL(*new_socket, RecvFrom(_, _, _, _))
-      .WillByDefault(Invoke(
-          this,
-          &MockMDnsSocketFactory::RecvFromInternal));
+  ON_CALL(*new_socket, RecvFromInternal(_, _, _, _))
+      .WillByDefault(Invoke(this, &MockMDnsSocketFactory::RecvFromInternal));
 
   sockets->push_back(std::move(new_socket));
 }
@@ -99,18 +110,19 @@ void MockMDnsSocketFactory::SimulateReceive(const uint8_t* packet, int size) {
 }
 
 int MockMDnsSocketFactory::RecvFromInternal(
-    IOBuffer* buffer, int size,
+    IOBuffer* buffer,
+    int size,
     IPEndPoint* address,
-    const CompletionCallback& callback) {
-    recv_buffer_ = buffer;
-    recv_buffer_size_ = size;
-    recv_callback_ = callback;
-    return ERR_IO_PENDING;
+    CompletionRepeatingCallback callback) {
+  recv_buffer_ = buffer;
+  recv_buffer_size_ = size;
+  recv_callback_ = callback;
+  return ERR_IO_PENDING;
 }
 
-int MockMDnsSocketFactory::SendToInternal(
-    const std::string& packet, const std::string& address,
-    const CompletionCallback& callback) {
+int MockMDnsSocketFactory::SendToInternal(const std::string& packet,
+                                          const std::string& address,
+                                          CompletionOnceCallback callback) {
   OnSendTo(packet);
   return packet.size();
 }

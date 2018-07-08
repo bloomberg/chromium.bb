@@ -13,6 +13,7 @@
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -90,7 +91,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   int RecvFrom(net::IOBuffer* buf,
                int buf_len,
                net::IPEndPoint* address,
-               const net::CompletionCallback& callback) override {
+               net::CompletionOnceCallback callback) override {
     CHECK(recv_callback_.is_null());
     if (incoming_packets_.size() > 0) {
       scoped_refptr<net::IOBuffer> buffer(buf);
@@ -101,7 +102,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       incoming_packets_.pop_front();
       return size;
     } else {
-      recv_callback_ = callback;
+      recv_callback_ = std::move(callback);
       recv_buffer_ = buf;
       recv_size_ = buf_len;
       recv_address_ = address;
@@ -112,7 +113,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   int SendTo(net::IOBuffer* buf,
              int buf_len,
              const net::IPEndPoint& address,
-             const net::CompletionCallback& callback) override {
+             net::CompletionOnceCallback callback) override {
     scoped_refptr<net::IOBuffer> buffer(buf);
     std::vector<char> data_vector(buffer->data(), buffer->data() + buf_len);
     sent_packets_->push_back(UDPPacket(address, data_vector));
@@ -132,10 +133,8 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       int size = std::min(recv_size_, static_cast<int>(data.size()));
       memcpy(recv_buffer_->data(), &*data.begin(), size);
       *recv_address_ = address;
-      net::CompletionCallback cb = recv_callback_;
-      recv_callback_.Reset();
       recv_buffer_ = nullptr;
-      std::move(cb).Run(size);
+      std::move(recv_callback_).Run(size);
     } else {
       incoming_packets_.push_back(UDPPacket(address, data));
     }
@@ -188,7 +187,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint* recv_address_;
   int recv_size_;
-  net::CompletionCallback recv_callback_;
+  net::CompletionOnceCallback recv_callback_;
   std::vector<uint16_t>* used_ports_;
 };
 

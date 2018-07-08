@@ -15,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/mock_timer.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/rand_callback.h"
 #include "net/base/test_completion_callback.h"
@@ -1158,9 +1159,9 @@ class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
 
 TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
   socket_ipv6_->SetResponsePacket(sample_packet_);
-  EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv4_, RecvFromInternal(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
-  EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
       .WillOnce(
           Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvNow))
       .WillOnce(Return(ERR_IO_PENDING));
@@ -1172,12 +1173,12 @@ TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
 TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
   socket_ipv6_->SetResponsePacket(sample_packet_);
 
-  EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv4_, RecvFromInternal(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
-  EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
       .Times(2)
       .WillOnce(
-           Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
+          Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
       .WillOnce(Return(ERR_IO_PENDING));
 
   ASSERT_TRUE(InitConnection());
@@ -1188,11 +1189,11 @@ TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
 }
 
 TEST_F(MDnsConnectionTest, Error) {
-  CompletionCallback callback;
+  CompletionRepeatingCallback callback;
 
-  EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv4_, RecvFromInternal(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
-  EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+  EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
       .WillOnce(DoAll(SaveArg<3>(&callback), Return(ERR_IO_PENDING)));
 
   ASSERT_TRUE(InitConnection());
@@ -1206,9 +1207,9 @@ class MDnsConnectionSendTest : public MDnsConnectionTest {
  protected:
   void SetUp() override {
     MDnsConnectionTest::SetUp();
-    EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
+    EXPECT_CALL(*socket_ipv4_, RecvFromInternal(_, _, _, _))
         .WillOnce(Return(ERR_IO_PENDING));
-    EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+    EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
         .WillOnce(Return(ERR_IO_PENDING));
     EXPECT_TRUE(InitConnection());
   }
@@ -1224,13 +1225,11 @@ TEST_F(MDnsConnectionSendTest, Send) {
 }
 
 TEST_F(MDnsConnectionSendTest, SendError) {
-  CompletionCallback callback;
-
   EXPECT_CALL(*socket_ipv4_,
               SendToInternal(sample_packet_, "224.0.0.251:5353", _));
   EXPECT_CALL(*socket_ipv6_,
               SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
-      .WillOnce(DoAll(SaveArg<2>(&callback), Return(ERR_SOCKET_NOT_CONNECTED)));
+      .WillOnce(Return(ERR_SOCKET_NOT_CONNECTED));
 
   connection_.Send(sample_buffer_, sample_packet_.size());
   EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
@@ -1244,7 +1243,7 @@ TEST_F(MDnsConnectionSendTest, SendQueued) {
       .Times(2)
       .WillRepeatedly(Return(OK));
 
-  CompletionCallback callback;
+  CompletionRepeatingCallback callback;
   // Delay sending data. Only the first call should be made.
   EXPECT_CALL(*socket_ipv6_,
               SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
@@ -1253,11 +1252,11 @@ TEST_F(MDnsConnectionSendTest, SendQueued) {
   connection_.Send(sample_buffer_, sample_packet_.size());
   connection_.Send(sample_buffer_, sample_packet_.size());
 
-  // The second IPv6 packed is not sent yet.
+  // The second IPv6 packet is not sent yet.
   EXPECT_CALL(*socket_ipv4_,
               SendToInternal(sample_packet_, "224.0.0.251:5353", _))
       .Times(0);
-  // Expect call for the second IPv6 packed.
+  // Expect call for the second IPv6 packet.
   EXPECT_CALL(*socket_ipv6_,
               SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
       .WillOnce(Return(OK));
