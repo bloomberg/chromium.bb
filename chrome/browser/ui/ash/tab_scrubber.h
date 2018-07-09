@@ -33,8 +33,8 @@ class TabScrubber : public ui::EventHandler,
   // Returns a the single instance of a TabScrubber.
   static TabScrubber* GetInstance();
 
-  // Returns the virtual position of a swipe starting in the tab at |index|,
-  // base on the |direction|.
+  // Returns the starting position (in tabstrip coordinates) of a swipe starting
+  // in the tab at |index| and traveling in |direction|.
   static gfx::Point GetStartPoint(TabStrip* tab_strip,
                                   int index,
                                   TabScrubber::Direction direction);

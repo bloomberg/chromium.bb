@@ -130,6 +130,9 @@ class Tab : public gfx::AnimationDelegate,
   // Called when the alert indicator has changed states.
   void AlertStateChanged();
 
+  // Called when the frame state color changes.
+  void FrameColorsChanged();
+
   // Returns true if the tab is selected.
   bool IsSelected() const;
 
@@ -171,9 +174,6 @@ class Tab : public gfx::AnimationDelegate,
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
 
-  // Called when the frame state color changes.
-  void FrameColorsChanged();
-
   // Returns the minimum possible width of a single unselected Tab.
   static int GetMinimumInactiveWidth();
 
@@ -210,6 +210,11 @@ class Tab : public gfx::AnimationDelegate,
 
   // Returns the insets to use for laying out tab contents.
   static gfx::Insets GetContentsInsets();
+
+  // Returns an offset into the leading edge of the tab which delineates the
+  // "main body" of the tab from the user's perspective; dragging based on this
+  // point feels better than dragging based on the tab's actual leading edge.
+  static int GetDragInset();
 
   // Returns the overlap between adjacent tabs.
   static int GetOverlap();

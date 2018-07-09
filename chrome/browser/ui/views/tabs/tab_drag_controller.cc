@@ -78,19 +78,6 @@ const int kMoveAttachedSubsequentDelay = 300;
 
 const int kHorizontalMoveThreshold = 16;  // DIPs.
 
-// The inset within the first dragged tab to use when calculating the "drag
-// insertion point".  If we simply used the x-coordinate of the tab, we'd be
-// calculating based on a point well before where the user considers the tab to
-// "be".  The value here is chosen to "feel good" based on the widths of the tab
-// images and the tab overlap.
-//
-// Note that this must return a value smaller than the midpoint of any tab's
-// width, or else the user won't be able to drag a tab to the left of the first
-// tab in the strip.
-//
-// TODO(pkasting): Maybe this should use Tab::GetOverlap() instead?
-const int kLeadingWidthForDrag = 16;
-
 // Distance from the next/previous stacked before before we consider the tab
 // close enough to trigger moving.
 const int kStackedDistance = 36;
@@ -100,6 +87,12 @@ const int kStackedDistance = 36;
 // creation and makes it easier to drag tabs out of a restored window that had
 // maximized size.
 const int kMaximizedWindowInset = 10;  // DIPs.
+
+// Given the bounds of a dragged tab, return the X coordinate to use for
+// computing where in the strip to insert/move the tab.
+int GetDraggedX(const gfx::Rect& dragged_bounds) {
+  return dragged_bounds.x() + Tab::GetDragInset();
+}
 
 #if defined(OS_CHROMEOS)
 // Returns true if |tab_strip| browser window is snapped.
@@ -1222,10 +1215,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 int TabDragController::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
                                              int start) const {
   const int last_tab = attached_tabstrip_->tab_count() - 1;
-  // Make the actual "drag insertion point" be just after the leading edge of
-  // the first dragged tab.  This is closer to where the user thinks of the tab
-  // as "starting" than just dragged_bounds.x(), especially with narrow tabs.
-  const int dragged_x = dragged_bounds.x() + kLeadingWidthForDrag;
+  const int dragged_x = GetDraggedX(dragged_bounds);
   if (start < 0 || start > last_tab ||
       dragged_x < attached_tabstrip_->ideal_bounds(start).x())
     return -1;
@@ -1242,10 +1232,7 @@ int TabDragController::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
 int TabDragController::GetInsertionIndexFromReversed(
     const gfx::Rect& dragged_bounds,
     int start) const {
-  // Make the actual "drag insertion point" be just after the leading edge of
-  // the first dragged tab.  This is closer to where the user thinks of the tab
-  // as "starting" than just dragged_bounds.x(), especially with narrow tabs.
-  const int dragged_x = dragged_bounds.x() + kLeadingWidthForDrag;
+  const int dragged_x = GetDraggedX(dragged_bounds);
   if (start < 0 || start >= attached_tabstrip_->tab_count() ||
       dragged_x >= attached_tabstrip_->ideal_bounds(start).right())
     return -1;
@@ -1315,9 +1302,7 @@ bool TabDragController::ShouldDragToNextStackedTab(
   int next_x = attached_tabstrip_->ideal_bounds(index + 1).x();
   int mid_x = std::min(next_x - kStackedDistance,
                        active_x + (next_x - active_x) / 4);
-  // TODO(pkasting): Should this add kLeadingWidthForDrag as
-  // GetInsertionIndexFrom() does?
-  return dragged_bounds.x() >= mid_x;
+  return GetDraggedX(dragged_bounds) >= mid_x;
 }
 
 bool TabDragController::ShouldDragToPreviousStackedTab(
@@ -1332,9 +1317,7 @@ bool TabDragController::ShouldDragToPreviousStackedTab(
   int previous_x = attached_tabstrip_->ideal_bounds(index - 1).x();
   int mid_x = std::max(previous_x + kStackedDistance,
                        active_x - (active_x - previous_x) / 4);
-  // TODO(pkasting): Should this add kLeadingWidthForDrag as
-  // GetInsertionIndexFrom() does?
-  return dragged_bounds.x() <= mid_x;
+  return GetDraggedX(dragged_bounds) <= mid_x;
 }
 
 int TabDragController::GetInsertionIndexForDraggedBoundsStacked(
@@ -1816,7 +1799,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
       views::View::ConvertPointToWidget(source, &right_edge);
       new_bounds.set_x(point_in_screen.x() - right_edge.x());
       new_bounds.Offset(drag_bounds->back().right() - mouse_offset_.x(), 0);
-      OffsetX(-(*drag_bounds)[0].x(), drag_bounds);
+      OffsetX(-drag_bounds->front().x(), drag_bounds);
       break;
     }
     default:

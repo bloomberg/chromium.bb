@@ -78,6 +78,7 @@ using MD = ui::MaterialDesignController;
 namespace {
 
 constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
+constexpr int kRefreshExtraLeftPaddingToBalanceCloseButtonPadding = 4;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
@@ -100,13 +101,6 @@ constexpr int kTabSeparatorTouchHeight = 24;
 // The amount of padding inside the interior path to clip children against when
 // tabs are very narrow.
 constexpr int kChildClipPadding = 1;
-
-// Under material refresh, the spec for the favicon or title text is 12dips from
-// the left vertical edge of the tab. This edge is in the middle of the tab end
-// cap. The end cap is 16dips, the middle of which is 8dips. This value is the
-// additional spacing that is added from that distance to come up with the
-// spec's 12dips.
-constexpr int kRefreshExtraLeftFavIconPadding = 4;
 
 // Helper functions ------------------------------------------------------------
 
@@ -607,7 +601,7 @@ void Tab::Layout() {
   int extra_padding = 0;
   if (extra_padding_before_content_) {
     extra_padding = MD::IsRefreshUi()
-                        ? kRefreshExtraLeftFavIconPadding
+                        ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
                         : kExtraLeftPaddingToBalanceCloseButtonPadding;
   }
 
@@ -803,7 +797,9 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
       // we don't contain the mouse anymore. We assume the user is clicking
       // quicker than the animation and we should close the tab that falls under
       // the mouse.
-      Tab* closest_tab = controller_->GetTabAt(this, event.location());
+      gfx::Point location_in_parent = event.location();
+      ConvertPointToTarget(this, parent(), &location_in_parent);
+      Tab* closest_tab = controller_->GetTabAt(location_in_parent);
       if (closest_tab)
         controller_->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
     }
@@ -1022,6 +1018,11 @@ void Tab::AlertStateChanged() {
   Layout();
 }
 
+void Tab::FrameColorsChanged() {
+  OnButtonColorMaybeChanged();
+  SchedulePaint();
+}
+
 bool Tab::IsSelected() const {
   return controller_->IsTabSelected(this);
 }
@@ -1104,16 +1105,12 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   // Assume the entire region to the left of the alert indicator and/or close
   // buttons is available for click-to-select.  If neither are visible, the
   // entire tab region is available.
-  const int indicator_left =
-      showing_alert_indicator_ ? alert_indicator_button_->x() : width();
+  const int indicator_left = alert_indicator_button_->visible()
+                                 ? alert_indicator_button_->x()
+                                 : width();
   const int close_button_left =
-      showing_close_button_ ? close_button_->x() : width();
+      close_button_->visible() ? close_button_->x() : width();
   return std::min(indicator_left, close_button_left);
-}
-
-void Tab::FrameColorsChanged() {
-  OnButtonColorMaybeChanged();
-  SchedulePaint();
 }
 
 // static
@@ -1181,6 +1178,11 @@ gfx::Insets Tab::GetContentsInsets() {
   const int endcap_width = MD::IsRefreshUi() ? (GetCornerRadius() * 2)
                                              : GetTabEndcapWidthForLayout();
   return gfx::Insets(GetStrokeHeight(), endcap_width);
+}
+
+// static
+int Tab::GetDragInset() {
+  return MD::IsRefreshUi() ? GetCornerRadius() : GetTabEndcapWidthForLayout();
 }
 
 // static
@@ -1466,7 +1468,7 @@ void Tab::UpdateIconVisibility() {
                           : close_button_->GetInsets().width());
 
   int extra_padding = MD::IsRefreshUi()
-                          ? kRefreshExtraLeftFavIconPadding
+                          ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
                           : kExtraLeftPaddingToBalanceCloseButtonPadding;
 
   const bool is_pinned = data().pinned;

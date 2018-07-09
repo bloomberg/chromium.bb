@@ -1068,11 +1068,8 @@ bool TabStrip::EndDrag(EndDragReason reason) {
   return started_drag;
 }
 
-Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
-  gfx::Point local_point = tab_in_tab_coordinates;
-  ConvertPointToTarget(tab, this, &local_point);
-
-  views::View* view = GetEventHandlerForPoint(local_point);
+Tab* TabStrip::GetTabAt(const gfx::Point& point) {
+  views::View* view = GetEventHandlerForPoint(point);
   if (!view)
     return nullptr;  // No tab contains the point.
 

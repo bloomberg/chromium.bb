@@ -28,7 +28,7 @@ struct TabSizeInfo {
   // The overlap between adjacent tabs. When positioning tabs the x-coordinate
   // of a tab is calculated as the x-coordinate of the previous tab plus the
   // previous tab's width minus the |tab_overlap|, e.g.
-  // next_tab_x = previous_tab.max_x() - tab_overlap.
+  // next_tab_x = previous_tab.bounds().right() - tab_overlap.
   int tab_overlap;
 
   // Additional offset between the last pinned tab and the first normal tab.

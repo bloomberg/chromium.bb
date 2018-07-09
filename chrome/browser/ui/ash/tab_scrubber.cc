@@ -47,14 +47,29 @@ TabScrubber* TabScrubber::GetInstance() {
 gfx::Point TabScrubber::GetStartPoint(TabStrip* tab_strip,
                                       int index,
                                       TabScrubber::Direction direction) {
-  int initial_tab_offset = Tab::GetPinnedWidth() / 2;
-  // In RTL layouts the tabs are mirrored. We hence use GetMirroredBounds()
-  // which will give us the correct bounds of tabs in RTL layouts as well as
-  // non-RTL layouts (in non-RTL layouts GetMirroredBounds() is the same as
-  // bounds()).
-  gfx::Rect tab_bounds = tab_strip->tab_at(index)->GetMirroredBounds();
-  float x = direction == LEFT ? tab_bounds.x() + initial_tab_offset
-                              : tab_bounds.right() - initial_tab_offset;
+  const Tab* tab = tab_strip->tab_at(index);
+  gfx::Rect tab_bounds = tab->GetMirroredBounds();
+
+  // Start the swipe where the tab contents start/end.  This provides a small
+  // amount of slop inside the tab before a swipe will change tabs.
+  auto contents_insets = Tab::GetContentsInsets();
+  int left = contents_insets.left();
+  int right = contents_insets.right();
+
+  // The contents insets are logical rather than physical, so reverse them for
+  // RTL.
+  if (base::i18n::IsRTL())
+    std::swap(left, right);
+
+  // For very narrow tabs, the contents insets may be too large.  Clamp to the
+  // opposite edges of the tab, which should be at (overlap / 2).
+  gfx::Rect tab_edges = tab_bounds;
+  // For odd overlap values, be conservative and inset both edges rounding up.
+  tab_edges.Inset((Tab::GetOverlap() + 1) / 2, 0);
+  const int x = (direction == LEFT)
+                    ? std::min(tab_bounds.x() + left, tab_edges.right())
+                    : std::max(tab_bounds.right() - right, tab_edges.x());
+
   return gfx::Point(x, tab_bounds.CenterPoint().y());
 }
 
@@ -122,9 +137,6 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   // The event's x_offset doesn't change in an RTL layout. Negative value means
   // left, positive means right.
   float x_offset = event->x_offset();
-  int initial_tab_index = highlighted_tab_ == -1
-                              ? browser->tab_strip_model()->active_index()
-                              : highlighted_tab_;
   if (!scrubbing_) {
     BeginScrub(browser, browser_view, x_offset);
   } else if (highlighted_tab_ == -1) {
@@ -136,10 +148,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
 
   UpdateSwipeX(x_offset);
 
-  Tab* initial_tab = tab_strip_->tab_at(initial_tab_index);
-  gfx::Point tab_point(swipe_x_, swipe_y_);
-  views::View::ConvertPointToTarget(tab_strip_, initial_tab, &tab_point);
-  Tab* new_tab = tab_strip_->GetTabAt(initial_tab, tab_point);
+  Tab* new_tab = tab_strip_->GetTabAt(gfx::Point(swipe_x_, swipe_y_));
   if (!new_tab)
     return;
 
