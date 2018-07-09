@@ -244,7 +244,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void PointerLockPermissionResponse(bool allow);
 
   // The next function is virtual for test purposes.
-  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info);
+  virtual void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 

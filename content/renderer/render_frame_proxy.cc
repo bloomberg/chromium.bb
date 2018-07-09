@@ -256,7 +256,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 #endif
 }
 
-void RenderFrameProxy::ResendResizeParams() {
+void RenderFrameProxy::ResendVisualProperties() {
   // Reset |sent_visual_properties_| in order to allocate a new
   // viz::LocalSurfaceId.
   sent_visual_properties_ = base::nullopt;
@@ -376,24 +376,6 @@ void RenderFrameProxy::OnDidSetFramePolicyHeaders(
   web_frame_->SetReplicatedFeaturePolicyHeader(feature_policy_header);
 }
 
-void RenderFrameProxy::SetChildFrameSurface(
-    const viz::SurfaceInfo& surface_info) {
-  // If this WebFrame has already been detached, its parent will be null. This
-  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
-  // message may arrive after the frame was removed from the frame tree, but
-  // before the frame has been destroyed. http://crbug.com/446575.
-  if (!web_frame()->Parent())
-    return;
-
-  if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(
-        surface_info.id(), local_frame_size(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            local_frame_size());
-}
-
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   // Forward Page IPCs to the RenderView.
   if ((IPC_MESSAGE_CLASS(msg) == PageMsgStart)) {
@@ -407,7 +389,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetChildFrameSurface, OnSetChildFrameSurface)
+    IPC_MESSAGE_HANDLER(FrameMsg_FirstSurfaceActivation,
+                        OnFirstSurfaceActivation)
     IPC_MESSAGE_HANDLER(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                         OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
@@ -468,9 +451,22 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
                                       screen_info().device_scale_factor);
 }
 
-void RenderFrameProxy::OnSetChildFrameSurface(
+void RenderFrameProxy::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  SetChildFrameSurface(surface_info);
+  // If this WebFrame has already been detached, its parent will be null. This
+  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
+  // message may arrive after the frame was removed from the frame tree, but
+  // before the frame has been destroyed. http://crbug.com/446575.
+  if (!web_frame()->Parent())
+    return;
+
+  if (!enable_surface_synchronization_) {
+    compositing_helper_->SetPrimarySurfaceId(
+        surface_info.id(), local_frame_size(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
+  }
+  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
+                                            local_frame_size());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
@@ -496,7 +492,7 @@ void RenderFrameProxy::OnViewChanged(
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
-  ResendResizeParams();
+  ResendVisualProperties();
 }
 
 void RenderFrameProxy::OnDidStopLoading() {
@@ -874,7 +870,7 @@ base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
 #if defined(USE_AURA)
 void RenderFrameProxy::OnMusEmbeddedFrameSurfaceChanged(
     const viz::SurfaceInfo& surface_info) {
-  SetChildFrameSurface(surface_info);
+  OnFirstSurfaceActivation(surface_info);
 }
 
 void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
@@ -884,7 +880,7 @@ void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
   frame_sink_id_ = frame_sink_id;
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
-  ResendResizeParams();
+  ResendVisualProperties();
 }
 #endif
 

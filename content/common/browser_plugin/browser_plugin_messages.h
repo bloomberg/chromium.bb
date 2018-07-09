@@ -215,7 +215,7 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,
                      content::WebCursor /* cursor */)
 
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetChildFrameSurface,
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_FirstSurfaceActivation,
                      int /* browser_plugin_instance_id */,
                      viz::SurfaceInfo /* surface_info */)
 

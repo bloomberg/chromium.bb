@@ -807,7 +807,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                     blink::WebIntrinsicSizingInfo)
 
-IPC_MESSAGE_ROUTED1(FrameMsg_SetChildFrameSurface,
+IPC_MESSAGE_ROUTED1(FrameMsg_FirstSurfaceActivation,
                     viz::SurfaceInfo /* surface_info */)
 
 // Notifies the embedding frame that the process rendering the child frame's

@@ -219,16 +219,13 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
             RenderViewImpl* render_view,
             RenderWidget* render_widget);
 
-  void ResendResizeParams();
-
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info);
+  void ResendVisualProperties();
 
   // IPC handlers
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  // TODO(fsamuel): Rename OnFirstSurfaceActivation().
-  void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info);
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
   void OnIntrinsicSizingInfoOfChildChanged(
       blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
