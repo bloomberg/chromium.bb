@@ -4231,7 +4231,7 @@
     Unlock
   </message>
   <message name="IDS_AD_UNLOCK_CONFIG_PASSWORD" desc="Admin-facing. Label for unlocking password input field on the Active Directory domain join screen.">
-    Unlocking password
+    Password to unlock
   </message>
   <message name="IDS_AD_UNLOCK_INCORRECT_PASSWORD" desc="Admin-facing. Error that is shown when incorrect unlocking password was entered.">
     Incorrect password
