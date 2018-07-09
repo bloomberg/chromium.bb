@@ -11,8 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_cell.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
@@ -50,8 +49,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* _toEmail;
   BOOL _isSignedIn;
   ShouldClearData _shouldClearData;
-  SettingsDetailItem* _importDataItem;
-  SettingsDetailItem* _keepDataSeparateItem;
+  ImportDataMultilineDetailItem* _importDataItem;
+  ImportDataMultilineDetailItem* _keepDataSeparateItem;
 }
 
 #pragma mark Initialization
@@ -126,10 +125,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (SettingsDetailItem*)importDataItem {
-  SettingsDetailItem* item =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeOptionImportData];
-  item.cellClass = [ImportDataMultilineDetailCell class];
+- (ImportDataMultilineDetailItem*)importDataItem {
+  ImportDataMultilineDetailItem* item = [[ImportDataMultilineDetailItem alloc]
+      initWithType:ItemTypeOptionImportData];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE);
   item.detailText =
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
@@ -140,10 +138,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (SettingsDetailItem*)keepDataSeparateItem {
-  SettingsDetailItem* item =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeOptionKeepDataSeparate];
-  item.cellClass = [ImportDataMultilineDetailCell class];
+- (ImportDataMultilineDetailItem*)keepDataSeparateItem {
+  ImportDataMultilineDetailItem* item = [[ImportDataMultilineDetailItem alloc]
+      initWithType:ItemTypeOptionKeepDataSeparate];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE);
   if (_isSignedIn) {
     item.detailText = l10n_util::GetNSStringF(
