@@ -15,9 +15,13 @@
 #include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace ui {
+class LayerOwner;
+}  // namespace ui
+
 namespace views {
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -52,6 +56,12 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // Ensure the bubble is expanded.
   void EnsureExpanded();
 
+  // Update layer transform during expand / collapse animation. During
+  // animation, the height of the view changes, but resizing of the bubble is
+  // performance bottleneck. This method makes use of layer transform to avoid
+  // resizing of the bubble during animation.
+  void UpdateTransform();
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   views::TrayBubbleView* GetBubbleView() const override;
@@ -71,6 +81,14 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   friend class UnifiedSystemTrayTestApi;
 
   void UpdateBubbleBounds();
+
+  // Create / destroy background blur layer that is used during animation.
+  void CreateBlurLayerForAnimation();
+  void DestroyBlurLayerForAnimation();
+
+  // Set visibility of bubble frame border. Used for disabling the border during
+  // animation.
+  void SetFrameVisible(bool visible);
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.
@@ -92,6 +110,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // The time the bubble is created. If the bubble is not created by button
   // click (|show_by_click| in ctor is false), it is not set.
   base::Optional<base::TimeTicks> time_shown_by_click_;
+
+  // Background blur layer that is used during animation.
+  std::unique_ptr<ui::LayerOwner> blur_layer_;
 
   views::TrayBubbleView* bubble_view_ = nullptr;
   UnifiedSystemTrayView* unified_view_ = nullptr;

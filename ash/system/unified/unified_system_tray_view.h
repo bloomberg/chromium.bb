@@ -29,6 +29,9 @@ class UnifiedSlidersContainerView : public views::View {
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
 
+  // Get height of the view when |expanded_amount| is set to 1.0.
+  int GetExpandedHeight() const;
+
   // Update opacity of each child slider views based on |expanded_amount_|.
   void UpdateOpacity();
 
@@ -77,6 +80,18 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
 
+  // Get height of the view when |expanded_amount| is set to 1.0.
+  int GetExpandedHeight() const;
+
+  // Get current height of the view.
+  int GetCurrentHeight() const;
+
+  // Return true if layer transform can be used against the view. During
+  // animation, the height of the view changes, but resizing of the bubble
+  // is performance bottleneck. If this method returns true, the embedder can
+  // call SetTransform() to move this view in order to avoid resizing.
+  bool IsTransformEnabled() const;
+
   void ShowClearAllAnimation();
 
   // views::View:
@@ -84,6 +99,8 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
+  double expanded_amount_;
+
   // Unowned.
   UnifiedSystemTrayController* controller_;
 

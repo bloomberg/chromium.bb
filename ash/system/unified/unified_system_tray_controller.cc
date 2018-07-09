@@ -33,6 +33,7 @@
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_notifier_settings_controller.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_view.h"
@@ -58,8 +59,11 @@ const int kDragThreshold = 200;
 }  // namespace
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
-    UnifiedSystemTrayModel* model)
-    : model_(model), animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+    UnifiedSystemTrayModel* model,
+    UnifiedSystemTrayBubble* bubble)
+    : model_(model),
+      bubble_(bubble),
+      animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   animation_->Reset(model->expanded_on_open() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
@@ -364,6 +368,9 @@ void UnifiedSystemTrayController::ShowDetailedView(
 void UnifiedSystemTrayController::UpdateExpandedAmount() {
   double expanded_amount = animation_->GetCurrentValue();
   unified_view_->SetExpandedAmount(expanded_amount);
+  // Can be null in unit tests.
+  if (bubble_)
+    bubble_->UpdateTransform();
   if (expanded_amount == 0.0 || expanded_amount == 1.0)
     model_->set_expanded_on_open(expanded_amount == 1.0);
 }
