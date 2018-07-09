@@ -42,15 +42,14 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadSaveInfo {
   // If valid, contains the source data stream for the file contents.
   base::File file;
 
-  // The file offset at which to start the download.  May be 0.
-  int64_t offset;
+  // The file offset at which to start the download.
+  int64_t offset = 0;
 
-  // The number of the bytes to download from |offset|. Set to
-  // |kLengthFullContent| by default.
+  // The number of the bytes to download from |offset|.
   // Ask to retrieve segment of the download file when length is greater than 0.
   // Request the rest of the file starting from |offset|, when length is
   // |kLengthFullContent|.
-  int64_t length;
+  int64_t length = kLengthFullContent;
 
   // The state of the hash. If specified, this hash state must indicate the
   // state of the partial file for the first |offset| bytes.
@@ -66,8 +65,7 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadSaveInfo {
   // the user will be prompted for a location to save the download. Otherwise,
   // the location will be determined automatically using |file_path| as a
   // basis if |file_path| is not empty.
-  // |prompt_for_save_location| defaults to false.
-  bool prompt_for_save_location;
+  bool prompt_for_save_location = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadSaveInfo);
