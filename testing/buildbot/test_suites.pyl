@@ -2494,9 +2494,7 @@
 
   'gpu_angle_deqp_linux_nvidia_gtests': [
     'gpu_angle_deqp_egl_gl_tests',
-    'gpu_angle_deqp_egl_vulkan_tests',
     'gpu_angle_deqp_gles2_gl_tests',
-    'gpu_angle_deqp_gles2_vulkan_tests',
     'gpu_angle_deqp_gles3_gl_tests',
     'gpu_angle_deqp_gles31_gl_tests',
   ],
