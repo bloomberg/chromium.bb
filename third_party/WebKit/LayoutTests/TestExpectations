@@ -4597,7 +4597,7 @@ crbug.com/850170 virtual/reporting-api/external/wpt/content-security-policy/repo
 crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
 
 # Sheriff 2018-06-11
-crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass Failure ]
+crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/851746 fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
 crbug.com/851746 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
 
@@ -4675,3 +4675,13 @@ crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pa
 crbug.com/861544 [ Win ] fast/text/selection/khmer-selection.html [ Failure Pass ]
 
 crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.html [ Failure Pass ]
+
+# Sheriff 2018-07-09
+# MSAN
+crbug.com/856601 [ Linux ] external/wpt/FileAPI/idlharness.worker.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/bluetooth/idl/idlharness.tentative.window.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/mediacapture-streams/MediaDevices-IDL-enumerateDevices.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/page-visibility/idlharness.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Timeout Pass ]
+crbug.com/856601 [ Linux ] external/wpt/web-animations/interfaces/Animation/idlharness.html [ Timeout Pass ]
