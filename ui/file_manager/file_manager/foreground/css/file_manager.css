@@ -454,12 +454,6 @@ body:not(.check-select) #selection-menu-button {
   display: none;
 }
 
-.cloud-import-combo-button {
-  height: 32px;
-  margin: 8px;
-  position: relative;
-}
-
 .cloud-import-combo-button > .buttons {
   display: flex;
 }
