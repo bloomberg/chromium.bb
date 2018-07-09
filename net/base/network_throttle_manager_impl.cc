@@ -153,9 +153,7 @@ void NetworkThrottleManagerImpl::ThrottleImpl::NotifyUnblocked() {
 NetworkThrottleManagerImpl::NetworkThrottleManagerImpl()
     : lifetime_median_estimate_(PercentileEstimator::kMedianPercentile,
                                 kInitialMedianInMs),
-      outstanding_recomputation_timer_(
-          std::make_unique<base::Timer>(false /* retain_user_task */,
-                                        false /* is_repeating */)),
+      outstanding_recomputation_timer_(std::make_unique<base::OneShotTimer>()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {}
 
@@ -191,8 +189,8 @@ void NetworkThrottleManagerImpl::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   DCHECK(!outstanding_recomputation_timer_->IsRunning());
-  outstanding_recomputation_timer_ = std::make_unique<base::Timer>(
-      false /* retain_user_task */, false /* is_repeating */, tick_clock_);
+  outstanding_recomputation_timer_ =
+      std::make_unique<base::OneShotTimer>(tick_clock_);
 }
 
 bool NetworkThrottleManagerImpl::ConditionallyTriggerTimerForTesting() {

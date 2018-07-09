@@ -184,7 +184,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     failure_message_ = message;
   }
 
-  void Start(std::unique_ptr<base::Timer> timer) {
+  void Start(std::unique_ptr<base::OneShotTimer> timer) {
     DCHECK(timer);
     base::TimeDelta timeout(base::TimeDelta::FromSeconds(
         kHandshakeTimeoutIntervalInSeconds));
@@ -309,7 +309,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   std::string failure_message_;
 
   // A timer for handshake timeout.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   // A delegate for On*HandshakeCreated and OnFailure calls.
   std::unique_ptr<WebSocketStreamRequestAPI> api_delegate_;
@@ -489,7 +489,7 @@ std::unique_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
       socket_url, url_request_context, origin, site_for_cookies,
       additional_headers, std::move(connect_delegate), std::move(create_helper),
       nullptr);
-  request->Start(std::make_unique<base::Timer>(false, false));
+  request->Start(std::make_unique<base::OneShotTimer>());
   return std::move(request);
 }
 
@@ -503,7 +503,7 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
     std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
-    std::unique_ptr<base::Timer> timer,
+    std::unique_ptr<base::OneShotTimer> timer,
     std::unique_ptr<WebSocketStreamRequestAPI> api_delegate) {
   auto request = std::make_unique<WebSocketStreamRequestImpl>(
       socket_url, url_request_context, origin, site_for_cookies,

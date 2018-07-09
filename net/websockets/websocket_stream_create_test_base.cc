@@ -98,7 +98,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const url::Origin& origin,
     const GURL& site_for_cookies,
     const HttpRequestHeaders& additional_headers,
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::OneShotTimer> timer) {
   auto connect_delegate = std::make_unique<TestConnectDelegate>(
       this, connect_run_loop_.QuitClosure());
   auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
@@ -108,7 +108,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
       socket_url, std::move(create_helper), origin, site_for_cookies,
       additional_headers, url_request_context_host_.GetURLRequestContext(),
       NetLogWithSource(), std::move(connect_delegate),
-      timer ? std::move(timer) : std::make_unique<base::Timer>(false, false),
+      timer ? std::move(timer) : std::make_unique<base::OneShotTimer>(),
       std::move(api_delegate));
 }
 

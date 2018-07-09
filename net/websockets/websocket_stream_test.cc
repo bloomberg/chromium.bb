@@ -120,7 +120,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     url_request_context_host_.AddSSLSocketDataProvider(std::move(ssl_data));
   }
 
-  void SetTimer(std::unique_ptr<base::Timer> timer) {
+  void SetTimer(std::unique_ptr<base::OneShotTimer> timer) {
     timer_ = std::move(timer);
   }
 
@@ -372,7 +372,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   const HandshakeStreamType stream_type_;
 
  private:
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   std::string additional_data_;
   const char* http2_response_status_;
   bool reset_websocket_http2_stream_;

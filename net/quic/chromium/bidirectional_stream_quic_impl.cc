@@ -69,7 +69,7 @@ void BidirectionalStreamQuicImpl::Start(
     const NetLogWithSource& net_log,
     bool send_request_headers_automatically,
     BidirectionalStreamImpl::Delegate* delegate,
-    std::unique_ptr<base::Timer> timer,
+    std::unique_ptr<base::OneShotTimer> timer,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   DCHECK(!stream_);

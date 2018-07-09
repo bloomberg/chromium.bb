@@ -138,7 +138,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
              const NetLogWithSource& net_log) {
     stream_->Start(request, net_log,
                    /*send_request_headers_automatically=*/false, this,
-                   std::make_unique<base::Timer>(false, false),
+                   std::make_unique<base::OneShotTimer>(),
                    TRAFFIC_ANNOTATION_FOR_TESTS);
     not_expect_callback_ = false;
   }
