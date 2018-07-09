@@ -779,7 +779,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (IsWebArea() || layout_object_->IsListMarkerIncludingNG())
     return false;
 
-  // Using the help text, title or accessibility description (so we
+  // Using the title or accessibility description (so we
   // check if there's some kind of accessible name for the element)
   // to decide an element's visibility is not as definitive as
   // previous checks, so this should remain as one of the last.

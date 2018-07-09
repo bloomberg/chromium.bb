@@ -1,35 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/multiple-fields-ax-aria-attributes.js"></script>
 </head>
 <body>
-<input id="test" type="month" value="2012-10">
+<input id="test" type="month" value="2012-10" aria-label="TestLabel" title="TestTitle">
 <script>
-description('This test checks aria-help attribute of fields in multiple fields week input UI.');
 
-var testInput = document.getElementById('test');
-
-if (!window.accessibilityController || !window.eventSender)
-    debug('Please run inside DRT or WTR.');
-else {
-    debug('Non-empty value');
+test(function(t) {
+    var testInput = document.getElementById('test');
     testInput.focus();
-    checkFocusedElementAXAttributes('Month, AXValueDescription: October, intValue:10, range:1-12');
+    assert_equals(focusedElementDescription(),
+                  'Month TestLabel, ---------, "October", TestTitle, intValue:10, range:1-12');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: 2012, intValue:2012, range:1-275760');
+    assert_equals(focusedElementDescription(),
+                  'Year TestLabel, ----, "2012", TestTitle, intValue:2012, range:1-275760');
+}, 'Non-empty value');
 
-    debug('Empty value');
+test(function(t) {
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: ----, intValue:0, range:1-275760');
+    assert_equals(focusedElementDescription(),
+                  'Year TestLabel, ----, "", TestTitle, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: ---------, intValue:0, range:1-12');
+    assert_equals(focusedElementDescription(),
+                  'Month TestLabel, ---------, "", TestTitle, intValue:0, range:1-12');
+}, 'Empty value');
 
-    debug('');
-    testInput.remove();
-}
 </script>
 </body>
 </html>

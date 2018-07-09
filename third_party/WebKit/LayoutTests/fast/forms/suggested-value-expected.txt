@@ -29,7 +29,8 @@ instead of "initial value".
 |         pseudo="-webkit-datetime-edit-fields-wrapper"
 |         shadow:pseudoId="-webkit-datetime-edit-fields-wrapper"
 |         <span>
-|           aria-help="Month"
+|           aria-label="Month"
+|           aria-placeholder="---------"
 |           aria-valuemax="12"
 |           aria-valuemin="1"
 |           aria-valuenow="1"
@@ -43,7 +44,8 @@ instead of "initial value".
 |           shadow:pseudoId="-webkit-datetime-edit-text"
 |           " "
 |         <span>
-|           aria-help="Year"
+|           aria-label="Year"
+|           aria-placeholder="----"
 |           aria-valuemax="275760"
 |           aria-valuemin="1"
 |           aria-valuenow="2014"

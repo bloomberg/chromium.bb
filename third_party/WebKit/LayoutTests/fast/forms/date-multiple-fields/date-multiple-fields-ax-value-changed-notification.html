@@ -15,7 +15,7 @@ if (!window.accessibilityController || !window.eventSender)
 else {
     accessibilityController.addNotificationListener(function (element, notification) {
         if (notification == 'Focus' || notification == 'ValueChanged') {
-            debug(notification + ' ' + element.description + '=' + element.valueDescription);
+            debug(notification + ' ' + element.name.trim() + '=' + element.valueDescription.substr(20));
         }
     });
 

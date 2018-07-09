@@ -155,11 +155,11 @@ void DateTimeFieldElement::Initialize(const AtomicString& pseudo,
                                       int ax_maximum) {
   // On accessibility, DateTimeFieldElement acts like spin button.
   setAttribute(roleAttr, AtomicString("spinbutton"));
-  setAttribute(aria_valuetextAttr, AtomicString(VisibleValue()));
+  setAttribute(aria_placeholderAttr, AtomicString(Placeholder()));
   setAttribute(aria_valueminAttr, AtomicString::Number(ax_minimum));
   setAttribute(aria_valuemaxAttr, AtomicString::Number(ax_maximum));
 
-  setAttribute(aria_helpAttr, AtomicString(ax_help_text));
+  setAttribute(aria_labelAttr, AtomicString(ax_help_text));
   SetShadowPseudoId(pseudo);
   AppendChild(Text::Create(GetDocument(), VisibleValue()));
 }
@@ -218,10 +218,11 @@ void DateTimeFieldElement::UpdateVisibleValue(EventBehavior event_behavior) {
   if (HasValue()) {
     setAttribute(aria_valuenowAttr,
                  AtomicString::Number(ValueForARIAValueNow()));
+    setAttribute(aria_valuetextAttr, AtomicString(new_visible_value));
   } else {
     removeAttribute(aria_valuenowAttr);
+    removeAttribute(aria_valuetextAttr);
   }
-  setAttribute(aria_valuetextAttr, AtomicString(new_visible_value));
 
   if (event_behavior == kDispatchEvent && field_owner_)
     field_owner_->FieldValueChanged();
