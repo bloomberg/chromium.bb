@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/process/process_metrics.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -425,21 +426,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
-  // We deliberately run through all of the logic without early termination.
-  // This ensures that the decision details lists all possible reasons that the
-  // transition can be denied.
-
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
     decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
 
-  // Do not freeze tabs that are casting/mirroring/playing audio.
-  IsMediaTabImpl(decision_details);
-
-  // Consult the local database to see if this tab could try to communicate with
-  // the user while in background (don't check for the visibility here as
-  // there's already a check for that above).
-  CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
-                                                    decision_details);
+  CheckIfTabIsUsedInBackground(decision_details,
+                               false /* urgent_intervention */);
 
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
@@ -518,9 +509,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   if (GetWebContents()->GetPageImportanceSignals().had_form_interaction)
     decision_details->AddReason(DecisionFailureReason::LIVE_STATE_FORM_ENTRY);
 
-  // Do not discard tabs that are casting/mirroring/playing audio.
-  IsMediaTabImpl(decision_details);
-
   // Do not discard PDFs as they might contain entry that is not saved and they
   // don't remember their scrolling positions. See crbug.com/547286 and
   // crbug.com/65244.
@@ -534,13 +522,8 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
         DecisionFailureReason::LIVE_STATE_EXTENSION_DISALLOWED);
   }
 
-  // Consult the local database to see if this tab could try to communicate with
-  // the user while in background (don't check for the visibility here as
-  // there's already a check for that above).
-  if (reason != DiscardReason::kUrgent) {
-    CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
-                                                      decision_details);
-  }
+  CheckIfTabIsUsedInBackground(decision_details,
+                               reason == DiscardReason::kUrgent);
 
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
@@ -815,6 +798,34 @@ void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
 void TabLifecycleUnitSource::TabLifecycleUnit::OnVisibilityChanged(
     content::Visibility visibility) {
   OnLifecycleUnitVisibilityChanged(visibility);
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
+    DecisionDetails* decision_details,
+    bool urgent_intervention) const {
+  DCHECK(decision_details);
+
+  // We deliberately run through all of the logic without early termination.
+  // This ensures that the decision details lists all possible reasons that the
+  // transition can be denied.
+
+  // Do not freeze tabs that are casting/mirroring/playing audio.
+  IsMediaTabImpl(decision_details);
+
+  // Consult the local database to see if this tab could try to communicate with
+  // the user while in background (don't check for the visibility here as
+  // there's already a check for that above). Skip this test if this is an
+  // urgent intervention.
+  if (!urgent_intervention) {
+    CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
+                                                      decision_details);
+  }
+
+  // Do not freeze tabs that are currently using DevTools.
+  if (DevToolsWindow::GetInstanceForInspectedWebContents(GetWebContents())) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIVE_STATE_DEVTOOLS_OPEN);
+  }
 }
 
 }  // namespace resource_coordinator

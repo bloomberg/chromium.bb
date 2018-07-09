@@ -144,7 +144,13 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   void DidStartLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  bool CanReloadBloatedTab();
+  // Indicates if freezing or discarding this tab would be noticeable by the
+  // user even if it isn't brought back to the foreground. Populates
+  // |decision_details| with full details. |urgent_intervention| indicates if
+  // this is for an urgent intervention, in which case some heuristics will be
+  // skipped.
+  void CheckIfTabIsUsedInBackground(DecisionDetails* decision_details,
+                                    bool urgent_intervention) const;
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.

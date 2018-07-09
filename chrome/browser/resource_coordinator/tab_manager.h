@@ -217,6 +217,7 @@ class TabManager : public LifecycleUnitObserver,
                            ProactiveFastShutdownWithBeforeunloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownWithUnloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectDevToolsTabsFromDiscarding);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectPDFPages);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
