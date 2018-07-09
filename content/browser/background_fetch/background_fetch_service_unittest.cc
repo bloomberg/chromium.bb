@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
@@ -1077,7 +1078,14 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   EXPECT_TRUE(registration.developer_id.empty());
 }
 
-TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
+// Flaky on Android: http://crbug.com/861639.
+#if defined(OS_ANDROID)
+#define MAYBE_JobsInitializedOnBrowserRestart \
+  DISABLED_JobsInitializedOnBrowserRestart
+#else
+#define MAYBE_JobsInitializedOnBrowserRestart JobsInitializedOnBrowserRestart
+#endif
+TEST_F(BackgroundFetchServiceTest, MAYBE_JobsInitializedOnBrowserRestart) {
   // Initially there are no jobs in the JobController map.
   EXPECT_TRUE(GetJobIDs().empty());
 
