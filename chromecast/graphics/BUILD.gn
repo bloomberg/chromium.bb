@@ -46,10 +46,13 @@ cast_source_set("graphics") {
       "cast_system_gesture_event_handler.h",
       "cast_window_manager_aura.cc",
       "cast_window_manager_aura.h",
+      "triple_tap_detector.cc",
+      "triple_tap_detector.h",
     ]
 
     deps += [
       "//ui/base/ime",
+      "//ui/events:gesture_detection",
       "//ui/views",
       "//ui/wm",
       "//ui/wm/public",
@@ -109,11 +112,13 @@ if (use_aura && !is_cast_audio_only) {
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",
       "run_all_unittests.cc",
+      "triple_tap_detector_test.cc",
     ]
     deps = [
       ":graphics",
       "//base/test:test_support",
       "//mojo/core/embedder",
+      "//testing/gmock",
       "//testing/gtest",
       "//ui/aura",
       "//ui/aura:test_support",
