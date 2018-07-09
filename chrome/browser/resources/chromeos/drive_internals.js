@@ -199,6 +199,7 @@ function updateDeltaUpdateStatus(deltaUpdateStatus) {
     var tr = document.createElement('tr');
     tr.className = 'delta-update';
     tr.appendChild(createElementFromText('td', update.id));
+    tr.appendChild(createElementFromText('td', update.root_entry_path));
     var startPageToken = update.start_page_token;
     tr.appendChild(createElementFromText(
         'td',

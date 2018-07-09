@@ -1341,12 +1341,16 @@ TEST_F(FileSystemTest, DebugMetadata) {
 
   EXPECT_EQ(2UL, team_drive_metadata.size());
   EXPECT_FALSE(team_drive_metadata["td_id_1"].refreshing);
+  EXPECT_EQ(util::GetDriveTeamDrivesRootPath().Append("team_drive_1").value(),
+            team_drive_metadata["td_id_1"].path);
   EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
   EXPECT_EQ("654344", team_drive_metadata["td_id_1"].start_page_token);
   EXPECT_EQ(FILE_ERROR_OK,
             team_drive_metadata["td_id_1"].last_update_check_error);
 
   EXPECT_FALSE(team_drive_metadata["td_id_2"].refreshing);
+  EXPECT_EQ(util::GetDriveTeamDrivesRootPath().Append("team_drive_2").value(),
+            team_drive_metadata["td_id_2"].path);
   EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
   EXPECT_EQ("654345", team_drive_metadata["td_id_2"].start_page_token);
   EXPECT_EQ(FILE_ERROR_OK,

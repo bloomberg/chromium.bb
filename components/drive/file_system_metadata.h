@@ -30,6 +30,10 @@ struct FileSystemMetadata {
 
   // Error code of the last update check.
   FileError last_update_check_error;
+
+  // For team drives, this is the virtual path that the team drive is mounted
+  // at.
+  std::string path;
 };
 
 }  // namespace drive

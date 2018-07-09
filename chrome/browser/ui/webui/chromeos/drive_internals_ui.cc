@@ -617,6 +617,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
   // Users default corpus first.
   auto app_data = std::make_unique<base::DictionaryValue>();
   app_data->SetString("id", "default corpus");
+  app_data->SetString("root_entry_path", metadata.path);
   app_data->SetString("start_page_token", metadata.start_page_token);
   app_data->SetString("last_check_time",
                       google_apis::util::FormatTimeAsStringLocaltime(
@@ -631,6 +632,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
   for (const auto& team_drive : team_drive_metadata) {
     app_data = std::make_unique<base::DictionaryValue>();
     app_data->SetString("id", team_drive.first);
+    app_data->SetString("root_entry_path", team_drive.second.path);
     app_data->SetString("start_page_token", team_drive.second.start_page_token);
     app_data->SetString("last_check_time",
                         google_apis::util::FormatTimeAsStringLocaltime(

@@ -5,6 +5,9 @@
 #include "components/drive/chromeos/file_system.h"
 
 #include <stddef.h>
+#include <limits>
+#include <map>
+#include <set>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -886,8 +889,8 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
         // If we were tracking the update status we can remove that as well.
         last_update_metadata_.erase(change.team_drive_id());
       } else if (change.IsAddOrUpdate()) {
-        DCHECK(team_drive_change_list_loaders_.count(change.team_drive_id()) ==
-               0);
+        DCHECK_EQ(
+            0UL, team_drive_change_list_loaders_.count(change.team_drive_id()));
         auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
             change.team_drive_id(), entry.first, logger_,
             blocking_task_runner_.get(), resource_metadata_, scheduler_,
@@ -956,6 +959,7 @@ void FileSystem::GetMetadata(
                      base::Owned(team_drive_metadata)));
 
   metadata->refreshing = default_corpus_change_list_loader_->IsRefreshing();
+  metadata->path = util::GetDriveGrandRootPath().value();
   metadata->last_update_check_time =
       last_update_metadata_[util::kTeamDriveIdDefaultCorpus]
           .last_update_check_time;
@@ -977,6 +981,7 @@ void FileSystem::GetMetadata(
     FileSystemMetadata& md = (*team_drive_metadata)[team_drive.first];
 
     md.refreshing = team_drive.second->IsRefreshing();
+    md.path = team_drive.second->root_entry_path().value();
     md.last_update_check_time = last_update_metadata.last_update_check_time;
     md.last_update_check_error = last_update_metadata.last_update_check_error;
 
