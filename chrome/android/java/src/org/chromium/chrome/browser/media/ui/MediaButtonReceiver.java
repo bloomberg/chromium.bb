@@ -24,6 +24,11 @@ public abstract class MediaButtonReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (intent == null || !Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())
+                || !intent.hasExtra(Intent.EXTRA_KEY_EVENT)) {
+            Log.i(TAG, "Received unsupported intent: " + intent);
+        }
+
         intent.setClass(context, getServiceClass());
         Log.i(TAG, "Receive broadcast message, starting foreground service");
         AppHooks.get().startForegroundService(intent);
