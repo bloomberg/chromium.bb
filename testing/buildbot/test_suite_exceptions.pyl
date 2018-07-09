@@ -922,10 +922,6 @@
     },
   },
   'content_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'fuchsia-fyi-arm64-rel',
-    ],
     'modifications': {
       # TODO(dpranke) - on chromium.swarm, remove this exception.
       'Android N5X Swarm': {
@@ -1301,10 +1297,6 @@
     },
   },
   'ipc_tests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
     'modifications': {
       # chromium.android
       'KitKat Tablet Tester': {
@@ -1391,14 +1383,6 @@
       },
     },
   },
-  'media_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-      # chromium.fyi
-      'fuchsia-fyi-arm64-rel',
-    ],
-  },
   'mojo_test_apk': {
     'modifications': {
       # chromium.clang
@@ -1434,10 +1418,10 @@
   'net_unittests': {
     'remove_from': [
       # chromium.fyi
-      'fuchsia-fyi-arm64-rel',
-      'fuchsia-fyi-x64-dbg',
+      'fuchsia-fyi-arm64-rel',  # https://crbug.com/847915
+      'fuchsia-fyi-x64-dbg',  # https://crbug.com/844416 (and 847915)
       # chromium.linux
-      'Fuchsia x64',
+      'Fuchsia x64',  # https://crbug.com/847915
     ],
     'modifications': {
       # chromium.clang
@@ -1782,10 +1766,6 @@
     },
   },
   'sql_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'fuchsia-fyi-arm64-rel',
-    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
