@@ -52,22 +52,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                   net::URLRequestContextGetter* getter);
   ~GaiaAuthFetcher() override;
 
-  // Start a request to obtain |service| token for the the account identified by
-  // |uber_token|.
-  //
-  // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
-  // called on the consumer on the original thread.
-  void StartTokenAuth(const std::string& uber_token,
-                      const char* const service);
-
-  // Start a request to obtain service token for the the account identified by
-  // |oauth2_access_token| and the |service|.
-  //
-  // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
-  // called on the consumer on the original thread.
-  void StartIssueAuthTokenForOAuth2(const std::string& oauth2_access_token,
-                                    const char* const service);
-
   // Start a request to revoke |auth_token|.
   //
   // OnOAuth2RevokeTokenCompleted will be called on the consumer on the original
@@ -284,10 +268,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
   static const int kClientLoginToOAuth2CookiePartCodePrefixLength;
 
-  void OnIssueAuthTokenFetched(const std::string& data,
-                               const net::URLRequestStatus& status,
-                               int response_code);
-
   void OnClientLoginToOAuth2Fetched(const std::string& data,
                                     const net::ResponseCookies& cookies,
                                     const net::URLRequestStatus& status,
@@ -393,7 +373,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   GaiaAuthConsumer* const consumer_;
   net::URLRequestContextGetter* const getter_;
   std::string source_;
-  const GURL issue_auth_token_gurl_;
   const GURL oauth2_token_gurl_;
   const GURL oauth2_revoke_gurl_;
   const GURL get_user_info_gurl_;

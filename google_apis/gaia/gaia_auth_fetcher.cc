@@ -210,7 +210,6 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
     : consumer_(consumer),
       getter_(getter),
       source_(source),
-      issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
@@ -942,20 +941,6 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
-void GaiaAuthFetcher::OnIssueAuthTokenFetched(
-    const std::string& data,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
-    // Only the bare token is returned in the body of this Gaia call
-    // without any padding.
-    consumer_->OnIssueAuthTokenSuccess(requested_service_, data);
-  } else {
-    consumer_->OnIssueAuthTokenFailure(requested_service_,
-        GenerateAuthError(data, status));
-  }
-}
-
 void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
     const std::string& data,
     const net::ResponseCookies& cookies,
@@ -1145,11 +1130,9 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     const net::ResponseCookies& cookies,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (url == issue_auth_token_gurl_) {
-    OnIssueAuthTokenFetched(data, status, response_code);
-  } else if (base::StartsWith(url.spec(),
-                              deprecated_client_login_to_oauth2_gurl_.spec(),
-                              base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(url.spec(),
+                       deprecated_client_login_to_oauth2_gurl_.spec(),
+                       base::CompareCase::SENSITIVE)) {
     OnClientLoginToOAuth2Fetched(data, cookies, status, response_code);
   } else if (url == oauth2_token_gurl_) {
     OnOAuth2TokenPairFetched(data, status, response_code);
