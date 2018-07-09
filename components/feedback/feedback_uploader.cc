@@ -164,13 +164,11 @@ void FeedbackUploader::DispatchReport() {
   resource_request->method = "POST";
 
   // Tell feedback server about the variation state of this install.
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(
+  variations::AppendVariationHeadersUnknownSignedIn(
       feedback_post_url_,
       context_->IsOffTheRecord() ? variations::InIncognito::kYes
                                  : variations::InIncognito::kNo,
-      variations::SignedIn::kNo, &resource_request->headers);
+      &resource_request->headers);
 
   AppendExtraHeadersToUploadRequest(resource_request.get());
 

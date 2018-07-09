@@ -135,6 +135,14 @@ bool AppendVariationHeaders(const GURL& url,
   return false;
 }
 
+bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
+                                           InIncognito incognito,
+                                           net::HttpRequestHeaders* headers) {
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  return AppendVariationHeaders(url, incognito, SignedIn::kNo, headers);
+}
+
 std::set<std::string> GetVariationHeaderNames() {
   std::set<std::string> headers;
   headers.insert(kClientData);
@@ -164,6 +172,15 @@ CreateSimpleURLLoaderWithVariationsHeaders(
         base::BindRepeating(&RemoveVariationsHeader));
   }
   return simple_url_loader;
+}
+
+std::unique_ptr<network::SimpleURLLoader>
+CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+    std::unique_ptr<network::ResourceRequest> request,
+    InIncognito incognito,
+    const net::NetworkTrafficAnnotationTag& annotation_tag) {
+  return CreateSimpleURLLoaderWithVariationsHeaders(
+      std::move(request), incognito, SignedIn::kNo, annotation_tag);
 }
 
 namespace internal {

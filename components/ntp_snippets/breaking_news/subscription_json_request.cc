@@ -167,11 +167,10 @@ SubscriptionJsonRequest::Builder::BuildURLLoader(
                                         auth_header_);
   }
   // Add X-Client-Data header with experiment IDs from field trials.
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo,
-                                     &resource_request->headers);
+  // TODO: We should call AppendVariationHeaders with explicit
+  // variations::SignedIn::kNo If the auth_header_ is empty
+  variations::AppendVariationHeadersUnknownSignedIn(
+      url_, variations::InIncognito::kNo, &resource_request->headers);
 
   // Log the request for debugging network issues.
   DVLOG(1) << "Building a subscription request to " << url_ << ":\n"
