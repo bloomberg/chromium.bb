@@ -30,15 +30,10 @@ const char kResponderPurpose[] = "responder";
 SessionKeys::SessionKeys(const std::string& master_symmetric_key) {
   std::string salt(reinterpret_cast<const char*>(&kSalt[0]), sizeof(kSalt));
 
-  // We set the key_length to the length of the expected output and then take
-  // the result from the first key, which is the client write key.
-  crypto::HKDF initiator_encode(master_symmetric_key, salt, kInitiatorPurpose,
-                                kKeySize, 0, 0);
-  initiator_encode_key_ = initiator_encode.client_write_key().as_string();
-
-  crypto::HKDF responder_encode(master_symmetric_key, salt, kResponderPurpose,
-                                kKeySize, 0, 0);
-  responder_encode_key_ = responder_encode.client_write_key().as_string();
+  initiator_encode_key_ = crypto::HkdfSha256(master_symmetric_key, salt,
+                                             kInitiatorPurpose, kKeySize);
+  responder_encode_key_ = crypto::HkdfSha256(master_symmetric_key, salt,
+                                             kResponderPurpose, kKeySize);
 }
 
 SessionKeys::SessionKeys() {}

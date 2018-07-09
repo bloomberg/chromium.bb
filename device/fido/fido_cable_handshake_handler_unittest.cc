@@ -120,14 +120,12 @@ std::string GetExpectedEncryptionKey(
       fido_parsing_utils::Materialize(kTestNonce);
   fido_parsing_utils::Append(&nonce_message, client_random_nonce);
   fido_parsing_utils::Append(&nonce_message, kAuthenticatorSessionRandom);
-  crypto::HKDF key_generator(
+  return crypto::HkdfSha256(
       fido_parsing_utils::ConvertToStringPiece(kTestSessionPreKey),
       fido_parsing_utils::ConvertToStringPiece(
           fido_parsing_utils::CreateSHA256Hash(
               fido_parsing_utils::ConvertToStringPiece(nonce_message))),
-      kCableDeviceEncryptionKeyInfo, 32, 0, 0);
-  return std::string(key_generator.client_write_key().begin(),
-                     key_generator.client_write_key().end());
+      kCableDeviceEncryptionKeyInfo, 32);
 }
 
 // Given a hello message and handshake key from the authenticator, construct
@@ -177,12 +175,10 @@ std::vector<uint8_t> ConstructSerializedOutgoingFragment(
 class FakeCableAuthenticator {
  public:
   FakeCableAuthenticator() {
-    crypto::HKDF key_generator(
+    handshake_key_ = crypto::HkdfSha256(
         fido_parsing_utils::ConvertToStringPiece(kTestSessionPreKey),
         fido_parsing_utils::ConvertToStringPiece(kTestNonce),
-        kCableHandshakeKeyInfo, 32, 0, 0);
-    handshake_key_ = std::string(key_generator.client_write_key().begin(),
-                                 key_generator.client_write_key().end());
+        kCableHandshakeKeyInfo, 32);
   }
 
   // Receives handshake message from the client, check its validity and if the

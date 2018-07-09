@@ -37,8 +37,7 @@ constexpr size_t kCableHandshakeMacMessageSize = 16;
 std::string GenerateKey(base::StringPiece secret,
                         base::StringPiece salt,
                         base::StringPiece info) {
-  crypto::HKDF key_generator(secret, salt, info, 32, 0, 0);
-  return std::string(key_generator.client_write_key());
+  return crypto::HkdfSha256(secret, salt, info, 32);
 }
 
 base::Optional<std::array<uint8_t, kClientHelloMessageSize>>

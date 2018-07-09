@@ -59,12 +59,7 @@ class WebPushEncryptionDraft03
     // This deliberately copies over the NUL terminus.
     base::StringPiece info(kInfo, sizeof(kInfo));
 
-    crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info,
-                      32, /* key_bytes_to_generate */
-                      0,  /* iv_bytes_to_generate */
-                      0 /* subkey_secret_bytes_to_generate */);
-
-    return hkdf.client_write_key().as_string();
+    return crypto::HkdfSha256(ecdh_shared_secret, auth_secret, info, 32);
   }
 
   // Creates the info parameter for an HKDF value for the given
@@ -202,12 +197,7 @@ class WebPushEncryptionDraft08
     recipient_public_key.AppendToString(&info);
     sender_public_key.AppendToString(&info);
 
-    crypto::HKDF hkdf(ecdh_shared_secret, auth_secret, info,
-                      32, /* key_bytes_to_generate */
-                      0,  /* iv_bytes_to_generate */
-                      0 /* subkey_secret_bytes_to_generate */);
-
-    return hkdf.client_write_key().as_string();
+    return crypto::HkdfSha256(ecdh_shared_secret, auth_secret, info, 32);
   }
 
   // The info string used for generating the content encryption key and the
@@ -459,11 +449,9 @@ std::string GCMMessageCryptographer::DeriveContentEncryptionKey(
           EncryptionScheme::EncodingType::CONTENT_ENCRYPTION_KEY,
           recipient_public_key, sender_public_key);
 
-  crypto::HKDF hkdf(ecdh_shared_secret, salt, content_encryption_key_info,
-                    kContentEncryptionKeySize, 0, /* iv_bytes_to_generate */
-                    0 /* subkey_secret_bytes_to_generate */);
-
-  return hkdf.client_write_key().as_string();
+  return crypto::HkdfSha256(ecdh_shared_secret, salt,
+                            content_encryption_key_info,
+                            kContentEncryptionKeySize);
 }
 
 std::string GCMMessageCryptographer::DeriveNonce(
@@ -475,16 +463,12 @@ std::string GCMMessageCryptographer::DeriveNonce(
       EncryptionScheme::EncodingType::NONCE, recipient_public_key,
       sender_public_key);
 
-  crypto::HKDF hkdf(ecdh_shared_secret, salt, nonce_info, kNonceSize,
-                    0, /* iv_bytes_to_generate */
-                    0 /* subkey_secret_bytes_to_generate */);
-
   // https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-02
   // defines that the result should be XOR'ed with the record's sequence number,
   // however, Web Push encryption is limited to a single record per
   // https://tools.ietf.org/html/draft-ietf-webpush-encryption-03.
 
-  return hkdf.client_write_key().as_string();
+  return crypto::HkdfSha256(ecdh_shared_secret, salt, nonce_info, kNonceSize);
 }
 
 }  // namespace gcm
