@@ -482,12 +482,14 @@ source_set("browser_tests") {
     sources += [
       "api/cec_private/cec_private_apitest.cc",
       "api/media_perception_private/media_perception_private_apitest.cc",
+      "api/system_power_source/system_power_source_apitest.cc",
       "api/virtual_keyboard/virtual_keyboard_apitest.cc",
     ]
 
     deps += [
       "//chromeos",
       "//chromeos:media_perception_proto",
+      "//chromeos:power_manager_proto",
     ]
   }
 }
