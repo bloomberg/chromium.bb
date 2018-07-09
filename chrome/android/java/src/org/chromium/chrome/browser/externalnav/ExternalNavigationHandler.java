@@ -392,8 +392,8 @@ public class ExternalNavigationHandler {
 
         boolean canResolveActivity = resolvingInfos.size() > 0;
         String packageName = ContextUtils.getApplicationContext().getPackageName();
-        // check whether the intent can be resolved. If not, we will see
-        // whether we can download it from the Market.
+        // Check whether the intent can be resolved. If not, we will see whether we can download it
+        // from the Market.
         if (!canResolveActivity) {
             if (hasBrowserFallbackUrl) {
                 return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
@@ -529,10 +529,19 @@ public class ExternalNavigationHandler {
             intent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
         }
 
-        try {
-            if (params.isIncognito() && !mDelegate.willChromeHandleIntent(intent)) {
-                // This intent may leave Chrome.  Warn the user that incognito does not carry over
-                // to apps out side of Chrome.
+        boolean deviceCanHandleIntent = deviceCanHandleIntent(intent);
+        if (params.isIncognito() && !mDelegate.willChromeHandleIntent(intent)) {
+            // Assume the browser can handle it if there's no activity for this intent.
+            if (!deviceCanHandleIntent) {
+                if (DEBUG) {
+                    Log.i(TAG, "NO_OVERRIDE: Not showing alert dialog with no handler for intent");
+                }
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+
+            // This intent may leave Chrome.  Warn the user that incognito does not carry over
+            // to apps out side of Chrome.
+            try {
                 if (!mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(),
                             hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
                             params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
@@ -540,67 +549,73 @@ public class ExternalNavigationHandler {
                     if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Failed to show incognito alert dialog.");
                     return OverrideUrlLoadingResult.NO_OVERRIDE;
                 }
-                if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Incognito navigation out");
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
-            }
-
-            // Some third-party app launched Chrome with an intent, and the URL got redirected. The
-            // user has explicitly chosen Chrome over other intent handlers, so stay in Chrome
-            // unless there was a new intent handler after redirection or Chrome cannot handle it
-            // any more.
-            // Custom tabs are an exception to this rule, since at no point, the user sees an intent
-            // picker and "picking Chrome" is handled inside the support library.
-            if (params.getRedirectHandler() != null && incomingIntentRedirect) {
-                if (!isExternalProtocol && !params.getRedirectHandler().isFromCustomTabIntent()
-                        && !params.getRedirectHandler().hasNewResolver(intent)) {
-                    if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Custom tab redirect no handled");
-                    return OverrideUrlLoadingResult.NO_OVERRIDE;
-                }
-            }
-
-            // The intent can be used to launch Chrome itself, record the user
-            // gesture here so that it can be used later.
-            if (params.hasUserGesture()) {
-                IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
-            }
-
-            // If the only specialized intent handler is a WebAPK, set the intent's package to
-            // launch the WebAPK without showing the intent picker.
-            String targetWebApkPackageName = mDelegate.findWebApkPackageName(resolvingInfos);
-
-            // We can't rely on this falling through to startActivityIfNeeded and behaving
-            // correctly for WebAPKs. This is because the target of the intent is the WebApk's main
-            // activity but that's just a bouncer which will redirect to WebApkActivity in chrome.
-            // To avoid bouncing indefinitely, don't override the navigation if we are currently
-            // showing the WebApk |params.webApkPackageName()| that we will redirect to.
-            if (targetWebApkPackageName != null
-                    && targetWebApkPackageName.equals(params.nativeClientPackageName())) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in WebApk");
+            } catch (ActivityNotFoundException e) {
+                // The activity that we thought was going to handle the intent no longer exists,
+                // so catch the exception and assume Chrome can handle it.
+                Log.i(TAG, "NO_OVERRIDE: Not showing alert dialog with no handler for intent");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
+            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Incognito navigation out");
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+        }
 
-            if (targetWebApkPackageName != null
-                    && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
-                intent.setPackage(targetWebApkPackageName);
-            }
-
-            // http://crbug.com/831806 : Stay in the CCT if the CCT is opened by WebAPK and the url
-            // is within the WebAPK scope.
-            if (shouldStayInWebappCCT(params, resolvingInfos)) {
-                if (DEBUG)
-                    Log.i(TAG, "NO_OVERRIDE: Navigation in CCT within scope of parent webapp.");
+        // Some third-party app launched Chrome with an intent, and the URL got redirected. The
+        // user has explicitly chosen Chrome over other intent handlers, so stay in Chrome
+        // unless there was a new intent handler after redirection or Chrome cannot handle it
+        // any more.
+        // Custom tabs are an exception to this rule, since at no point, the user sees an intent
+        // picker and "picking Chrome" is handled inside the support library.
+        if (params.getRedirectHandler() != null && incomingIntentRedirect) {
+            if (!isExternalProtocol && !params.getRedirectHandler().isFromCustomTabIntent()
+                    && !params.getRedirectHandler().hasNewResolver(intent)) {
+                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Custom tab redirect no handled");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
+        }
 
-            if (mDelegate.startActivityIfNeeded(intent, shouldProxyForInstantApps)) {
+        // The intent can be used to launch Chrome itself, record the user
+        // gesture here so that it can be used later.
+        if (params.hasUserGesture()) {
+            IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+        }
+
+        // If the only specialized intent handler is a WebAPK, set the intent's package to
+        // launch the WebAPK without showing the intent picker.
+        String targetWebApkPackageName = mDelegate.findWebApkPackageName(resolvingInfos);
+
+        // We can't rely on this falling through to startActivityIfNeeded and behaving
+        // correctly for WebAPKs. This is because the target of the intent is the WebApk's main
+        // activity but that's just a bouncer which will redirect to WebApkActivity in chrome.
+        // To avoid bouncing indefinitely, don't override the navigation if we are currently
+        // showing the WebApk |params.webApkPackageName()| that we will redirect to.
+        if (targetWebApkPackageName != null
+                && targetWebApkPackageName.equals(params.nativeClientPackageName())) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in WebApk");
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        if (targetWebApkPackageName != null
+                && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
+            intent.setPackage(targetWebApkPackageName);
+        }
+
+        // http://crbug.com/831806 : Stay in the CCT if the CCT is opened by WebAPK and the url
+        // is within the WebAPK scope.
+        if (shouldStayInWebappCCT(params, resolvingInfos)) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in CCT within scope of parent webapp.");
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        try {
+            if (deviceCanHandleIntent
+                    && mDelegate.startActivityIfNeeded(intent, shouldProxyForInstantApps)) {
+                // Assume the browser can handle it if there's no activity for this intent.
                 if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: startActivityIfNeeded");
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
             }
-
+        } catch (ActivityNotFoundException e) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Activity not found.");
             return OverrideUrlLoadingResult.NO_OVERRIDE;
-        } catch (ActivityNotFoundException ex) {
-            // Ignore the error. If no application can handle the URL,
-            // assume the browser can handle it.
         }
 
         return OverrideUrlLoadingResult.NO_OVERRIDE;
@@ -612,39 +627,40 @@ public class ExternalNavigationHandler {
      */
     private @OverrideUrlLoadingResult int sendIntentToMarket(
             String packageName, String marketReferrer, ExternalNavigationParams params) {
-        try {
-            Uri marketUri = new Uri.Builder()
-                    .scheme("market")
-                    .authority("details")
-                    .appendQueryParameter(PLAY_PACKAGE_PARAM, packageName)
-                    .appendQueryParameter(PLAY_REFERRER_PARAM, Uri.decode(marketReferrer))
-                    .build();
-            Intent intent = new Intent(Intent.ACTION_VIEW, marketUri);
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            intent.setPackage("com.android.vending");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (params.getReferrerUrl() != null) {
-                intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
-            }
-            if (params.isIncognito()) {
-                if (!mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(), null,
-                            params.getTab(),
-                            params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
-                            false)) {
-                    if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Failed to show incognito alert dialog.");
-                    return OverrideUrlLoadingResult.NO_OVERRIDE;
-                }
-                if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Incognito intent to Play Store");
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
-            } else {
-                mDelegate.startActivity(intent, false);
-                if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Intent to Play Store");
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-            }
-        } catch (ActivityNotFoundException ex) {
-            // ignore the error on devices that does not have Play Store installed.
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Play Store not installed");
+        Uri marketUri =
+                new Uri.Builder()
+                        .scheme("market")
+                        .authority("details")
+                        .appendQueryParameter(PLAY_PACKAGE_PARAM, packageName)
+                        .appendQueryParameter(PLAY_REFERRER_PARAM, Uri.decode(marketReferrer))
+                        .build();
+        Intent intent = new Intent(Intent.ACTION_VIEW, marketUri);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setPackage("com.android.vending");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (params.getReferrerUrl() != null) {
+            intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
+        }
+
+        if (!deviceCanHandleIntent(intent)) {
+            // Exit early if the Play Store isn't available. (https://crbug.com/820709)
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Play Store not installed.");
             return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        if (params.isIncognito()) {
+            if (!mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(), null,
+                        params.getTab(),
+                        params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(), false)) {
+                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Failed to show incognito alert dialog.");
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Incognito intent to Play Store.");
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+        } else {
+            mDelegate.startActivity(intent, false);
+            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Intent to Play Store.");
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
     }
 
@@ -763,5 +779,13 @@ public class ExternalNavigationHandler {
         return ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
                        .size()
                 > 0;
+    }
+
+    /**
+     * Returns whether or not there's an activity available to handle the intent.
+     */
+    private boolean deviceCanHandleIntent(Intent intent) {
+        List<ResolveInfo> resolveInfos = mDelegate.queryIntentActivities(intent);
+        return resolveInfos != null && resolveInfos.size() > 0;
     }
 }
