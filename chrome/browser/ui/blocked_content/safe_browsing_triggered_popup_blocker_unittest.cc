@@ -431,7 +431,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
 
       {{"https://normal.test/", "https://enforce.test/",
         "https://normal.test/"},
-       ActivationPosition::kMiddle},
+       base::nullopt},
   };
 
   for (const auto& test_case : kTestCases) {

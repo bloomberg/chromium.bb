@@ -911,27 +911,34 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
       "SubresourceFilter.PageLoad.Activation.RedirectPosition";
 
   // Set up the urls for enforcement.
-  GURL enforce_url("https://example.enforce");
-  GURL warn_url("https://example.warning");
   GURL normal_url("https://example.regular");
-  safe_browsing::SubresourceFilterType type =
-      safe_browsing::SubresourceFilterType::ABUSIVE;
-  safe_browsing::ThreatMetadata metadata;
-  metadata.subresource_filter_match[type] =
-      safe_browsing::SubresourceFilterLevel::WARN;
-  ConfigureForMatch(enforce_url,
-                    safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
-  ConfigureForMatch(warn_url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-                    metadata);
+  GURL bad_url("https://example.bad");
+  GURL worse_url("https://example.worse");
+
+  // Set up the configurations, make phishing worse than subresource_filter.
+  Configuration config_p1(ActivationLevel::ENABLED,
+                          ActivationScope::ACTIVATION_LIST,
+                          ActivationList::SUBRESOURCE_FILTER);
+  config_p1.activation_conditions.priority = 1;
+  Configuration config_p2(ActivationLevel::ENABLED,
+                          ActivationScope::ACTIVATION_LIST,
+                          ActivationList::PHISHING_INTERSTITIAL);
+  config_p2.activation_conditions.priority = 2;
+  scoped_configuration()->ResetConfiguration({config_p1, config_p2});
+
+  // Configure the URLs to match on different lists, phishing is worse.
+  ConfigureForMatch(bad_url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
+  ConfigureForMatch(worse_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
 
   // Check cases where there are multiple redirection.
   const RedirectSamplesAndResults kTestCases[] = {
-      {{enforce_url, normal_url, normal_url}, true, ActivationPosition::kFirst},
-      {{warn_url, normal_url, enforce_url}, true, ActivationPosition::kLast},
-      {{enforce_url, normal_url, warn_url}, true, ActivationPosition::kFirst},
-      {{normal_url, enforce_url, warn_url}, true, ActivationPosition::kMiddle},
+      {{worse_url, normal_url, normal_url}, true, ActivationPosition::kFirst},
+      {{bad_url, normal_url, worse_url}, true, ActivationPosition::kLast},
+      {{worse_url, normal_url, bad_url}, true, ActivationPosition::kFirst},
+      {{normal_url, worse_url, bad_url}, true, ActivationPosition::kLast},
       {{normal_url, normal_url}, false, ActivationPosition::kMaxValue},
-      {{enforce_url}, true, ActivationPosition::kOnly},
+      {{normal_url, bad_url, normal_url}, false, ActivationPosition::kMaxValue},
+      {{worse_url}, true, ActivationPosition::kOnly},
   };
   for (const auto& test_case : kTestCases) {
     const base::HistogramTester histograms;

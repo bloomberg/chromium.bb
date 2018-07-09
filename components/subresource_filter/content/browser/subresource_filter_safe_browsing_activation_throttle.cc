@@ -134,12 +134,15 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   DCHECK(!check_results_.empty());
-  const std::vector<SubresourceFilterSafeBrowsingClient::CheckResult>
-      last_result_array = {check_results_.back()};
-  const bool consider_redirects = base::FeatureList::IsEnabled(
-      kSafeBrowsingSubresourceFilterConsiderRedirects);
-  const auto& check_results_to_consider =
-      consider_redirects ? check_results_ : last_result_array;
+
+  // Determine which results to consider for safebrowsing/abusive.
+  std::vector<SubresourceFilterSafeBrowsingClient::CheckResult>
+      check_results_to_consider = {check_results_.back()};
+  if (check_results_.size() >= 2 &&
+      base::FeatureList::IsEnabled(
+          kSafeBrowsingSubresourceFilterConsiderRedirects)) {
+    check_results_to_consider = {check_results_[0], check_results_.back()};
+  }
 
   // Find the ConfigResult for each safe browsing check.
   std::vector<ConfigResult> matched_configurations;
