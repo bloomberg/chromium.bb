@@ -14,9 +14,11 @@
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
-  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   // Material Design classes.
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   MD_EMPTY_TILE: 'md-empty-tile',
+  MD_FALLBACK_BACKGROUND: 'md-fallback-background',
+  MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_FAVICON: 'md-favicon',
   MD_LINK: 'md-link',
   MD_ICON: 'md-icon',
@@ -596,8 +598,6 @@ function renderMaterialDesignTile(data) {
 
   let mdIcon = document.createElement('div');
   mdIcon.className = CLASSES.MD_ICON;
-  let mdIconBackground = document.createElement('div');
-  mdIconBackground.className = CLASSES.MD_ICON_BACKGROUND;
 
   let mdFavicon = document.createElement('div');
   mdFavicon.className = CLASSES.MD_FAVICON;
@@ -621,8 +621,17 @@ function renderMaterialDesignTile(data) {
     countLoad();
   });
   fi.addEventListener('error', function(ev) {
+    let fallbackBackground = document.createElement('div');
+    fallbackBackground.className = CLASSES.MD_FALLBACK_BACKGROUND;
+    let fallbackLetter = document.createElement('div');
+    fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
+    fallbackLetter.innerText = data.title.charAt(0).toUpperCase();
     mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
+
+    fallbackBackground.appendChild(fallbackLetter);
     mdFavicon.removeChild(fi);
+    mdFavicon.appendChild(fallbackBackground);
+
     // Store the type for a potential later navigation.
     tileType = TileVisualType.ICON_DEFAULT;
     logMostVisitedImpression(
@@ -634,8 +643,7 @@ function renderMaterialDesignTile(data) {
   });
   mdFavicon.appendChild(fi);
 
-  mdIconBackground.appendChild(mdFavicon);
-  mdIcon.appendChild(mdIconBackground);
+  mdIcon.appendChild(mdFavicon);
   mdTileInner.appendChild(mdIcon);
 
   let mdTitleContainer = document.createElement('div');

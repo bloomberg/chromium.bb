@@ -4,6 +4,7 @@
 
 html {
   /* Material Design constants */
+  --md-fallback-letter-size: 17px;
   --md-favicon-size: 16px;
   --md-icon-margin-bottom: 16px;
   --md-icon-size: 40px;
@@ -452,16 +453,6 @@ body.dark-theme .md-tile:active .md-menu::after {
   margin-bottom: var(--md-icon-margin-bottom);
 }
 
-.md-icon-background {
-  align-items: center;
-  background-color: rgb(241, 243, 244);
-  border-radius: 50%;
-  display: flex;
-  height: var(--md-icon-size);
-  justify-content: center;
-  width: var(--md-icon-size);
-}
-
 .md-favicon {
   pointer-events: none;
 }
@@ -471,16 +462,24 @@ body.dark-theme .md-tile:active .md-menu::after {
   width: 100%;
 }
 
-.md-favicon.failed-favicon {
-  background-image: -webkit-image-set(
-      url(chrome-search://local-ntp/images/ntp_default_favicon.png) 1x,
-      url(chrome-search://local-ntp/images/ntp_default_favicon.png@2x) 2x);
-  background-repeat: no-repeat;
-  background-size: var(--md-favicon-size) var(--md-favicon-size);
+.md-fallback-background {
+  align-items: center;
+  background-color: rgb(136, 136, 136);
+  border-radius: 50%;
+  display: flex;
+  height: var(--md-icon-size);
+  justify-content: center;
+  width: var(--md-icon-size);
 }
 
-.md-favicon.failed-favicon img {
-  display: none;
+.md-fallback-letter {
+  color: white;
+  font-family: sans-serif;
+  font-size: var(--md-fallback-letter-size);
+  height: var(--md-fallback-letter-size);
+  line-height: var(--md-fallback-letter-size);
+  text-align: center;
+  width: var(--md-fallback-letter-size);
 }
 
 .md-title-container {
