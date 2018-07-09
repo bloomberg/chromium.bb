@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -16,6 +17,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -38,8 +40,14 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
     : appcache_service_(appcache_service),
       appcache_host_id_(appcache_host_id),
       ui_handle_(ui_handle) {
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
     debug_log_ = base::make_optional<std::vector<std::string>>();
+    debug_log_->push_back(base::StringPrintf(
+        "Ctor:host=%d,ns=%s", appcache_host_id,
+        base::FeatureList::IsEnabled(network::features::kNetworkService)
+            ? "T"
+            : "F"));
+  }
 
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
@@ -66,7 +74,7 @@ void AppCacheNavigationHandleCore::Initialize() {
   g_appcache_handle_map.Get()[appcache_host_id_] = this;
 
   if (debug_log_)
-    debug_log_->emplace_back("Init:" + std::to_string(appcache_host_id_));
+    debug_log_->push_back("Init:" + std::to_string(appcache_host_id_));
 }
 
 // static
@@ -80,7 +88,7 @@ std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
     DCHECK(instance);
     auto host = std::move(instance->precreated_host_);
     if (instance->debug_log_) {
-      instance->debug_log_->emplace_back(
+      instance->debug_log_->push_back(
           host ? base::StringPrintf("Get:id=%d,host=%d", host_id,
                                     host->host_id())
                : base::StringPrintf("Get:id=%d,host=null", host_id));
@@ -97,8 +105,8 @@ AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
 void AppCacheNavigationHandleCore::AddRequestToDebugLog(const GURL& url) {
   if (debug_log_) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    debug_log_->emplace_back("Req:host=" + HostToString() +
-                             ",url=" + url.spec().substr(0, 64));
+    debug_log_->push_back("Req:host=" + HostToString() +
+                          ",url=" + url.spec().substr(0, 64));
   }
 }
 
@@ -106,7 +114,8 @@ void AppCacheNavigationHandleCore::AddDefaultFactoryRunToDebugLog(
     bool was_request_intercepted) {
   if (debug_log_) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    debug_log_->emplace_back(
+    CHECK(!debug_log_->empty());
+    debug_log_->push_back(
         base::StringPrintf("Fac:host=%s,int=%s", HostToString().c_str(),
                            was_request_intercepted ? "T" : "F"));
   }
@@ -115,14 +124,18 @@ void AppCacheNavigationHandleCore::AddDefaultFactoryRunToDebugLog(
 void AppCacheNavigationHandleCore::AddCreateURLLoaderToDebugLog() {
   if (debug_log_) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    debug_log_->emplace_back("Load:host=" + HostToString());
+    CHECK(!debug_log_->empty());
+    debug_log_->push_back("Load:host=" + HostToString());
   }
 }
 
-void AppCacheNavigationHandleCore::AddNavigationStartToDebugLog() {
+void AppCacheNavigationHandleCore::AddNavigationStartToDebugLog(
+    bool network_service) {
   if (debug_log_) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    debug_log_->emplace_back("Start:host=" + HostToString());
+    debug_log_->push_back(base::StringPrintf("Start:host=%s,ns=%s",
+                                             HostToString().c_str(),
+                                             network_service ? "T" : "F"));
   }
 }
 
