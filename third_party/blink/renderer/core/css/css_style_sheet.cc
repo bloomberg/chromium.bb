@@ -92,14 +92,11 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     const String& text,
                                      ExceptionState& exception_state) {
-  return CSSStyleSheet::Create(document, text, CSSStyleSheetInit(),
-                               exception_state);
+  return CSSStyleSheet::Create(document, CSSStyleSheetInit(), exception_state);
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     const String& text,
                                      const CSSStyleSheetInit& options,
                                      ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
@@ -114,19 +111,18 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   sheet->SetTitle(options.title());
   sheet->ClearOwnerNode();
   sheet->ClearOwnerRule();
-  if (options.media().IsString()) {
-    MediaList* media_list = MediaList::Create(
-        MediaQuerySet::Create(), const_cast<CSSStyleSheet*>(sheet));
-    media_list->setMediaText(options.media().GetAsString());
-    sheet->SetMedia(media_list);
-  } else {
-    sheet->SetMedia(options.media().GetAsMediaList());
-  }
+  scoped_refptr<MediaQuerySet> media_query_set;
+  if (options.media().IsString())
+    media_query_set = MediaQuerySet::Create(options.media().GetAsString());
+  else
+    media_query_set = options.media().GetAsMediaList()->Queries()->Copy();
+  MediaList* media_list =
+      MediaList::Create(media_query_set, const_cast<CSSStyleSheet*>(sheet));
+  sheet->SetMedia(media_list);
   if (options.alternate())
     sheet->SetAlternateFromConstructor(true);
   if (options.disabled())
     sheet->setDisabled(true);
-  sheet->SetText(text);
   return sheet;
 }
 

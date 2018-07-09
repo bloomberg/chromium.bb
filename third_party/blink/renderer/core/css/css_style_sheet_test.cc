@@ -23,17 +23,13 @@ class CSSStyleSheetTest : public PageTestBase {
 TEST_F(CSSStyleSheetTest, ConstructorWithoutRuntimeFlagThrowsException) {
   DummyExceptionStateForTesting exception_state;
   RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(false);
-  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), "", CSSStyleSheetInit(),
-                                  exception_state),
-            nullptr);
+  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), exception_state), nullptr);
   ASSERT_TRUE(exception_state.HadException());
 }
 
-TEST_F(CSSStyleSheetTest,
-       CSSStyleSheetConstructionWithEmptyCSSStyleSheetInitAndText) {
+TEST_F(CSSStyleSheetTest, CSSStyleSheetConstructionWithEmptyCSSStyleSheetInit) {
   DummyExceptionStateForTesting exception_state;
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(
-      GetDocument(), "", CSSStyleSheetInit(), exception_state);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(GetDocument(), exception_state);
   ASSERT_FALSE(exception_state.HadException());
   EXPECT_TRUE(sheet->href().IsNull());
   EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
@@ -48,17 +44,15 @@ TEST_F(CSSStyleSheetTest,
 }
 
 TEST_F(CSSStyleSheetTest,
-       CSSStyleSheetConstructionWithoutEmptyCSSStyleSheetInitAndText) {
+       CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit) {
   DummyExceptionStateForTesting exception_state;
-  String styleText[2] = {".red { color: red; }",
-                         ".red + span + span { color: red; }"};
   CSSStyleSheetInit init;
   init.setMedia(MediaListOrString::FromString("screen, print"));
   init.setTitle("test");
   init.setAlternate(true);
   init.setDisabled(true);
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(
-      GetDocument(), styleText[0] + styleText[1], init, exception_state);
+  CSSStyleSheet* sheet =
+      CSSStyleSheet::Create(GetDocument(), init, exception_state);
   ASSERT_FALSE(exception_state.HadException());
   EXPECT_TRUE(sheet->href().IsNull());
   EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
@@ -69,9 +63,7 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->title(), init.title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
-  EXPECT_EQ(sheet->cssRules(exception_state)->length(), 2U);
-  EXPECT_EQ(sheet->cssRules(exception_state)->item(0)->cssText(), styleText[0]);
-  EXPECT_EQ(sheet->cssRules(exception_state)->item(1)->cssText(), styleText[1]);
+  EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
   ASSERT_FALSE(exception_state.HadException());
 }
 

@@ -437,9 +437,7 @@ TEST_F(CustomElementRegistryTest, defineCustomElementWithStyle) {
   RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(true);
   NonThrowableExceptionState should_not_throw;
   ElementDefinitionOptions options;
-  CSSStyleSheet* sheet =
-      CSSStyleSheet::Create(GetDocument(), ":host { color: red; }",
-                            CSSStyleSheetInit(), should_not_throw);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(GetDocument(), should_not_throw);
   options.setStyle(sheet);
   TestCustomElementDefinitionBuilder builder(sheet);
   CustomElementDefinition* definition_a =
