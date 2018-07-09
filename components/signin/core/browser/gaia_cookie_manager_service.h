@@ -180,11 +180,11 @@ class GaiaCookieManagerService : public KeyedService,
                                    const std::string& access_token,
                                    const std::string& source);
 
-  // Returns if the listed accounts are up to date or not (ignore the out
-  // parameter if return is false). The parameter will be assigned the current
-  // cached accounts. If the accounts are not up to date, a ListAccounts fetch
-  // is sent GAIA and Observer::OnGaiaAccountsInCookieUpdated will be called.
-  // If either of |accounts| or |signed_out_accounts| is null, the corresponding
+  // Returns if the listed accounts are up to date or not. The out parameter
+  // will be assigned the current cached accounts (whether they are not up to
+  // date or not). If the accounts are not up to date, a ListAccounts fetch is
+  // sent GAIA and Observer::OnGaiaAccountsInCookieUpdated will be called.  If
+  // either of |accounts| or |signed_out_accounts| is null, the corresponding
   // accounts returned from /ListAccounts are ignored.
   bool ListAccounts(std::vector<gaia::ListedAccount>* accounts,
                     std::vector<gaia::ListedAccount>* signed_out_accounts,

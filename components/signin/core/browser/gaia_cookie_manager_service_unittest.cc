@@ -716,14 +716,13 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
 
   // OnCookieChange should invalidate the cached data.
 
-  // Clear the list before calling |ListAccounts()| as GaiaCookieManagerService
-  // simply leaves the input unaffected in the case where the accounts are
-  // stale.
+  // Clear the list before calling |ListAccounts()| to make sure that
+  // GaiaCookieManagerService repopulates it with the stale cached information.
   list_accounts.clear();
 
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
-  ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(AreAccountListsEqual(nonempty_list_accounts, list_accounts));
   ASSERT_TRUE(signed_out_accounts.empty());
   SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
 }
