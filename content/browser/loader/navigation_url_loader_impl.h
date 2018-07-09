@@ -53,6 +53,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void OnReceiveResponse(
       scoped_refptr<network::ResourceResponse> response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,

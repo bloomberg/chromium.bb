@@ -18,6 +18,7 @@ void NavigationClient::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
@@ -30,8 +31,8 @@ void NavigationClient::CommitNavigation(
   ResetDisconnectionHandler();
   render_frame_->CommitNavigation(
       head, common_params, request_params,
-      std::move(url_loader_client_endpoints), std::move(subresource_loaders),
-      std::move(subresource_overrides),
+      std::move(url_loader_client_endpoints), std::move(response_body),
+      std::move(subresource_loaders), std::move(subresource_overrides),
       std::move(controller_service_worker_info), devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback());
 }

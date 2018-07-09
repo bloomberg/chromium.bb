@@ -22,6 +22,7 @@
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace network {
 class ResourceRequestBody;
@@ -233,6 +234,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnResponseStarted(
       const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
@@ -411,6 +413,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // checks are performed by the NavigationHandle. Once the checks have been
   // completed, these objects will be used to continue the navigation.
   scoped_refptr<network::ResourceResponse> response_;
+  mojo::ScopedDataPipeConsumerHandle response_body_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   net::SSLInfo ssl_info_;
   bool is_download_;
