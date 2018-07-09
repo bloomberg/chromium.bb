@@ -517,21 +517,28 @@ void BoxBorderPainter::DrawDoubleBorder(GraphicsContext& context,
 
   const Color color = FirstEdge().color;
 
+  // When painting outlines, we ignore outer/inner radii.
+  const auto force_rectangular = !outer_.IsRounded() && !inner_.IsRounded();
+
   // outer stripe
   const LayoutRectOutsets outer_third_insets =
       DoubleStripeInsets(edges_, BorderEdge::kDoubleBorderStripeOuter);
-  const FloatRoundedRect outer_third_rect = style_.GetRoundedInnerBorderFor(
+  FloatRoundedRect outer_third_rect = style_.GetRoundedInnerBorderFor(
       border_rect, outer_third_insets, include_logical_left_edge_,
       include_logical_right_edge_);
+  if (force_rectangular)
+    outer_third_rect.SetRadii(FloatRoundedRect::Radii());
   DrawBleedAdjustedDRRect(context, bleed_avoidance_, outer_, outer_third_rect,
                           color);
 
   // inner stripe
   const LayoutRectOutsets inner_third_insets =
       DoubleStripeInsets(edges_, BorderEdge::kDoubleBorderStripeInner);
-  const FloatRoundedRect inner_third_rect = style_.GetRoundedInnerBorderFor(
+  FloatRoundedRect inner_third_rect = style_.GetRoundedInnerBorderFor(
       border_rect, inner_third_insets, include_logical_left_edge_,
       include_logical_right_edge_);
+  if (force_rectangular)
+    inner_third_rect.SetRadii(FloatRoundedRect::Radii());
   context.FillDRRect(inner_third_rect, inner_, color);
 }
 
