@@ -491,13 +491,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // creation of multiple shadow roots is prohibited in any combination and
   // throws an exception.  Multiple shadow roots are allowed only when
   // createShadowRoot() is used without any parameters from JavaScript.
-  //
-  // TODO(esprehn): These take a ScriptState only for calling
-  // HostsUsingFeatures::countMainWorldOnly, which should be handled in the
-  // bindings instead so adding a ShadowRoot from C++ doesn't need one.
-  ShadowRoot* createShadowRoot(const ScriptState*, ExceptionState&);
-  ShadowRoot* attachShadow(const ScriptState*,
-                           const ShadowRootInit&,
+  ShadowRoot* createShadowRoot(ExceptionState&);
+  ShadowRoot* attachShadow(const ShadowRootInit&,
                            ExceptionState&);
 
   ShadowRoot& CreateV0ShadowRootForTesting() {

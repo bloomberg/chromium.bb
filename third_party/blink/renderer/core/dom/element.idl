@@ -66,7 +66,7 @@ interface Element : Node {
     [RaisesException] boolean matches(DOMString selectors);
     [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors); // historical alias of .matches
 
-    [RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
+    [RaisesException, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     [Affects=Nothing, PerWorldBindings, ImplementedAs=OpenShadowRoot] readonly attribute ShadowRoot? shadowRoot;
 
     [Affects=Nothing] HTMLCollection getElementsByTagName(DOMString localName);
@@ -125,7 +125,7 @@ interface Element : Node {
 
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
-    [RuntimeEnabled=ShadowDOMV0, RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
+    [RuntimeEnabled=ShadowDOMV0, RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     [RuntimeEnabled=ShadowDOMV0] NodeList getDestinationInsertionPoints();
 
     // Experimental accessibility API
