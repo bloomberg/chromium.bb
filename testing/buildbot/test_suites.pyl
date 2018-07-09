@@ -511,6 +511,7 @@
       },
     },
     'crypto_unittests': {},
+    'events_unittests': {},
     'gcm_unit_tests': {},
     'gin_unittests': {},
     'google_apis_unittests': {},
@@ -1956,7 +1957,6 @@
 
   'non_mac_chromium_gtests': {
     # It's unclear why at least some of these aren't run on macOS.
-    'events_unittests': {},
     'latency_unittests': {},
     'ui_touch_selection_unittests': {},
   },
