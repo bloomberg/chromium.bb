@@ -2079,12 +2079,6 @@ extern const char kWebVrVsyncAlignDescription[];
 
 #if defined(OS_ANDROID)
 
-extern const char kVrWebInputEditingName[];
-extern const char kVrWebInputEditingDescription[];
-
-extern const char kVrBrowsingExperimentalFeaturesName[];
-extern const char kVrBrowsingExperimentalFeaturesDescription[];
-
 extern const char kVrBrowsingExperimentalRenderingName[];
 extern const char kVrBrowsingExperimentalRenderingDescription[];
 

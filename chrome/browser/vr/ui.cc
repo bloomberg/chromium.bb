@@ -31,7 +31,6 @@
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/browser/vr/ui_test_input.h"
-#include "chrome/common/chrome_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr {
@@ -504,8 +503,6 @@ void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
-  model_->experimental_features_enabled =
-      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
   model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
   model_->ui_modes.clear();

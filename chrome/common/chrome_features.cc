@@ -255,10 +255,6 @@ const base::Feature kExternalExtensionDefaultButtonControl{
     "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_VR)
-// Controls features related to VR browsing that are under development.
-const base::Feature kVrBrowsingExperimentalFeatures{
-    "VrBrowsingExperimentalFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls experimental rendering features for VR browsing.
 const base::Feature kVrBrowsingExperimentalRendering{
     "VrBrowsingExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -3375,15 +3375,6 @@ const char kWebVrVsyncAlignDescription[] =
 
 #if defined(OS_ANDROID)
 
-const char kVrWebInputEditingName[] = "VR browsing web input editing";
-const char kVrWebInputEditingDescription[] =
-    "Allow editing web input fields while in VR mode.";
-
-const char kVrBrowsingExperimentalFeaturesName[] =
-    "VR browsing experimental features";
-const char kVrBrowsingExperimentalFeaturesDescription[] =
-    "Experimental VR browsing features that are under development.";
-
 const char kVrBrowsingExperimentalRenderingName[] =
     "VR browsing experimental rendering features";
 const char kVrBrowsingExperimentalRenderingDescription[] =
