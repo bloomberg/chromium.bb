@@ -83,7 +83,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
     DISALLOW_COPY_AND_ASSIGN(DOMStorageNamespace);
   };
 
-  base::flat_map<std::string, DOMStorageNamespace> cached_namespaces_;
+  std::map<std::string, DOMStorageNamespace> cached_namespaces_;
   size_t total_cache_limit_;
 
   // Not owned.
