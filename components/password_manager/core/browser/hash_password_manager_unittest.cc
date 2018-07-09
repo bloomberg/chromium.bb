@@ -75,7 +75,7 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashData) {
   // Verify |SavePasswordHash(const std::string,const base::string16&)|
   // behavior.
   hash_password_manager.SavePasswordHash(username, password,
-                                         /*force_update=*/true);
+                                         /*is_gaia_password=*/true);
   EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordHashDataList));
 
   // Saves the same password again won't change password hash, length or salt.
@@ -83,7 +83,7 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashData) {
       hash_password_manager.RetrievePasswordHash(username,
                                                  /*is_gaia_password=*/true);
   hash_password_manager.SavePasswordHash(username, password,
-                                         /*force_update=*/true);
+                                         /*is_gaia_password=*/true);
   base::Optional<PasswordHashData> existing_password_data =
       hash_password_manager.RetrievePasswordHash(username,
                                                  /*is_gaia_password=*/true);
@@ -95,12 +95,50 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashData) {
   // Verify |SavePasswordHash(const PasswordHashData&)| behavior.
   base::string16 new_password(base::UTF8ToUTF16("new_password"));
   PasswordHashData new_password_data(username, new_password,
-                                     /*force_update=*/true);
+                                     /*is_gaia_password=*/true);
   EXPECT_TRUE(hash_password_manager.SavePasswordHash(new_password_data));
   EXPECT_NE(current_password_hash_data->hash,
             hash_password_manager
                 .RetrievePasswordHash(username, /*is_gaia_password=*/true)
                 ->hash);
+}
+
+TEST_F(HashPasswordManagerTest, SavingPasswordHashDataNotCanonicalized) {
+  ASSERT_FALSE(prefs_.HasPrefPath(prefs::kPasswordHashDataList));
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(&prefs_);
+  base::string16 password(base::UTF8ToUTF16("password"));
+  std::string canonical_username("user@gmail.com");
+  std::string username("US.ER@gmail.com");
+
+  // Verify |SavePasswordHash(const std::string,const base::string16&)|
+  // behavior.
+  hash_password_manager.SavePasswordHash(canonical_username, password,
+                                         /*is_gaia_password=*/true);
+  ASSERT_TRUE(prefs_.HasPrefPath(prefs::kPasswordHashDataList));
+  EXPECT_EQ(1u, prefs_.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_EQ(
+      canonical_username,
+      hash_password_manager
+          .RetrievePasswordHash(canonical_username, /*is_gaia_password=*/true)
+          ->username);
+
+  // Saves the same password with not canonicalized username should not change
+  // password hash.
+  base::Optional<PasswordHashData> current_password_hash_data =
+      hash_password_manager.RetrievePasswordHash(username,
+                                                 /*is_gaia_password=*/true);
+  hash_password_manager.SavePasswordHash(username, password,
+                                         /*force_update=*/true);
+  base::Optional<PasswordHashData> existing_password_data =
+      hash_password_manager.RetrievePasswordHash(username,
+                                                 /*is_gaia_password=*/true);
+  EXPECT_EQ(current_password_hash_data->hash, existing_password_data->hash);
+  EXPECT_EQ(1u, prefs_.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_EQ(canonical_username,
+            hash_password_manager
+                .RetrievePasswordHash(username, /*is_gaia_password=*/true)
+                ->username);
 }
 
 TEST_F(HashPasswordManagerTest, SavingGaiaPasswordAndNonGaiaPassword) {
@@ -239,23 +277,32 @@ TEST_F(HashPasswordManagerTest, RetrievingPasswordHashData) {
   ASSERT_FALSE(prefs_.HasPrefPath(prefs::kPasswordHashDataList));
   HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(&prefs_);
-  hash_password_manager.SavePasswordHash("username",
+  hash_password_manager.SavePasswordHash("username@gmail.com",
                                          base::UTF8ToUTF16("password"),
                                          /*is_gaia_password=*/true);
   EXPECT_EQ(1u, hash_password_manager.RetrieveAllPasswordHashes().size());
 
   base::Optional<PasswordHashData> password_hash_data =
-      hash_password_manager.RetrievePasswordHash("username",
+      hash_password_manager.RetrievePasswordHash("username@gmail.com",
                                                  /*is_gaia_password=*/false);
   ASSERT_FALSE(password_hash_data);
   password_hash_data = hash_password_manager.RetrievePasswordHash(
-      "username", /*is_gaia_password=*/true);
+      "username@gmail.com", /*is_gaia_password=*/true);
   ASSERT_TRUE(password_hash_data);
   EXPECT_EQ(8u, password_hash_data->length);
   EXPECT_EQ(16u, password_hash_data->salt.size());
   uint64_t expected_hash = CalculatePasswordHash(base::UTF8ToUTF16("password"),
                                                  password_hash_data->salt);
   EXPECT_EQ(expected_hash, password_hash_data->hash);
+
+  // Retrieve not canonicalized version of "username@gmail.com" should return
+  // the same result.
+  EXPECT_TRUE(
+      hash_password_manager.RetrievePasswordHash("user.name@gmail.com",
+                                                 /*is_gaia_password=*/true));
+  EXPECT_TRUE(
+      hash_password_manager.RetrievePasswordHash("USER.NAME@gmail.com",
+                                                 /*is_gaia_password=*/true));
 
   base::Optional<PasswordHashData> non_existing_data =
       hash_password_manager.RetrievePasswordHash("non_existing_user", true);
