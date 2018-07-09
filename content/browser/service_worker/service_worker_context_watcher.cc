@@ -297,8 +297,6 @@ void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
 }
 
 void ServiceWorkerContextWatcher::OnErrorReported(int64_t version_id,
-                                                  int process_id,
-                                                  int thread_id,
                                                   const ErrorInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
@@ -314,8 +312,6 @@ void ServiceWorkerContextWatcher::OnErrorReported(int64_t version_id,
 
 void ServiceWorkerContextWatcher::OnReportConsoleMessage(
     int64_t version_id,
-    int process_id,
-    int thread_id,
     const ConsoleMessage& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (message.message_level != CONSOLE_MESSAGE_LEVEL_ERROR)

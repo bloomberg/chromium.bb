@@ -525,8 +525,6 @@ class ConsoleMessageContextObserver
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnReportConsoleMessage(int64_t version_id,
-                              int process_id,
-                              int thread_id,
                               const ConsoleMessage& console_message) override {
     messages_.push_back(console_message.message);
     if (messages_.size() == expected_message_count_) {

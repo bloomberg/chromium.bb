@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -96,12 +98,8 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
       base::Time script_response_time,
       base::Time script_last_modified) override;
   void OnErrorReported(int64_t version_id,
-                       int process_id,
-                       int thread_id,
                        const ErrorInfo& info) override;
   void OnReportConsoleMessage(int64_t version_id,
-                              int process_id,
-                              int thread_id,
                               const ConsoleMessage& message) override;
   void OnControlleeAdded(
       int64_t version_id,
