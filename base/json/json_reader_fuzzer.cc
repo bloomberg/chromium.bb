@@ -5,9 +5,6 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 
-int error_code, error_line, error_column;
-std::string error_message;
-
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 2)
@@ -21,6 +18,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece input_string(input.get(), size - 1);
 
   const int options = data[size - 1];
+
+  int error_code, error_line, error_column;
+  std::string error_message;
   base::JSONReader::ReadAndReturnError(input_string, options, &error_code,
                                        &error_message, &error_line,
                                        &error_column);
