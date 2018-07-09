@@ -415,15 +415,6 @@ void WebMediaPlayerImpl::UnregisterContentsLayer(cc::Layer* layer) {
 }
 
 void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
-  pip_surface_id_ = surface_id;
-
-  // If there was a request to enter Picture-in-Picture while the pipeline was
-  // suspended, this call should trigger Picture-in-Picture.
-  if (enter_pip_callback_) {
-    EnterPictureInPicture(std::move(*enter_pip_callback_));
-    enter_pip_callback_.reset();
-  }
-
   // TODO(726619): Handle the behavior when Picture-in-Picture mode is
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
@@ -810,29 +801,20 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
-  // When the pipeline is not stable, there will be no valid surface. In this
-  // case, resuming the pipeline will auto-trigger Picture-in-Picture.
-  if (!pip_surface_id_.is_valid()) {
-    DCHECK(!pipeline_controller_.IsStable());
-    enter_pip_callback_ = std::move(callback);
+  DCHECK(bridge_);
 
-    // This will trigger the pipeline to resume now that the player is pending
-    // to enter in Picture-in-Picture.
-    UpdatePlayState();
-    return;
-  }
+  const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
+  DCHECK(surface_id.is_valid());
 
   // Notifies the browser process that the player should now be in
   // Picture-in-Picture mode.
-  delegate_->DidPictureInPictureModeStart(delegate_id_, pip_surface_id_,
+  delegate_->DidPictureInPictureModeStart(delegate_id_, surface_id,
                                           pipeline_metadata_.natural_size,
                                           std::move(callback));
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture(
     blink::WebMediaPlayer::PipWindowClosedCallback callback) {
-  DCHECK(pip_surface_id_.is_valid());
-
   // Notifies the browser process that Picture-in-Picture has ended. It will
   // clear out the states and close the window.
   delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
@@ -843,7 +825,6 @@ void WebMediaPlayerImpl::ExitPictureInPicture(
 
 void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
     blink::WebMediaPlayer::PipWindowResizedCallback callback) {
-  DCHECK(pip_surface_id_.is_valid());
   DCHECK(client_->DisplayType() ==
              WebMediaPlayer::DisplayType::kPictureInPicture &&
          !client_->IsInAutoPIP());
@@ -2122,18 +2103,14 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
 }
 
 void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
-  // This should never be called if |pip_surface_id_| is invalid. This is either
-  // called from the Picture-in-Picture window side by a user gesture to end
-  // Picture-in-Picture mode, or in ExitPictureInPicture(), which already checks
-  // for validity.
-  DCHECK(pip_surface_id_.is_valid());
-
-  // It is possible for |pip_surface_id_| to be valid when |client_| is not in
-  // Picture-in-Picture mode. In this case, do nothing.
-  if (client_ && client_->DisplayType() ==
-                     WebMediaPlayer::DisplayType::kPictureInPicture) {
-    client_->PictureInPictureStopped();
+  // It is possible for this method to be called when the player is no longer in
+  // Picture-in-Picture mode.
+  if (!client_ || client_->DisplayType() !=
+                      WebMediaPlayer::DisplayType::kPictureInPicture) {
+    return;
   }
+
+  client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerImpl::OnPictureInPictureControlClicked() {
@@ -2722,11 +2699,6 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // Combined suspend state.
   result.is_suspended = is_remote || must_suspend || idle_suspended ||
                         background_suspended || can_stay_suspended;
-
-  // When Picture-in-Picture has been triggered, the pipeline needs to be
-  // resumed.
-  if (enter_pip_callback_ && !must_suspend && !is_remote)
-    result.is_suspended = false;
 
   DVLOG(3) << __func__ << ": is_remote=" << is_remote
            << ", must_suspend=" << must_suspend
