@@ -161,6 +161,47 @@ class CookiesTreeObserver : public CookiesTreeModel::Observer {
   base::OnceClosure quit_closure_;
 };
 
+// Returns the sum of the number of datatypes per host.
+int GetCookiesTreeModelCount(const CookieTreeNode* root) {
+  int count = 0;
+  for (int i = 0; i < root->child_count(); i++) {
+    const CookieTreeNode* node = root->GetChild(i);
+    EXPECT_GE(node->child_count(), 1);
+    for (int j = 0; j < node->child_count(); j++) {
+      const CookieTreeNode* child = node->GetChild(j);
+      // Quota nodes are not included in the UI due to crbug.com/642955.
+      if (child->GetDetailedInfo().node_type ==
+          CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
+        continue;
+      }
+      count++;
+    }
+  }
+  return count;
+}
+
+// Returns a string with information about the content of the
+// cookie tree model.
+std::string GetCookiesTreeModelInfo(const CookieTreeNode* root) {
+  std::stringstream info;
+  info << "CookieTreeModel: " << std::endl;
+  for (int i = 0; i < root->child_count(); i++) {
+    const CookieTreeNode* node = root->GetChild(i);
+    info << node->GetTitle() << std::endl;
+    for (int j = 0; j < node->child_count(); j++) {
+      const CookieTreeNode* child = node->GetChild(j);
+      // Quota nodes are not included in the UI due to crbug.com/642955.
+      if (child->GetDetailedInfo().node_type ==
+          CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
+        continue;
+      }
+      info << "  " << child->GetTitle() << " "
+           << child->GetDetailedInfo().node_type << std::endl;
+    }
+  }
+  return info.str();
+}
+
 }  // namespace
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
@@ -255,18 +296,18 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(0, GetSiteDataCount());
-    EXPECT_EQ(0, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(0);
     EXPECT_FALSE(HasDataForType(type));
 
     SetDataForType(type);
     EXPECT_EQ(1, GetSiteDataCount());
-    EXPECT_EQ(1, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(1);
     EXPECT_TRUE(HasDataForType(type));
 
     RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
                   delete_begin);
     EXPECT_EQ(0, GetSiteDataCount());
-    EXPECT_EQ(0, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(0);
     EXPECT_FALSE(HasDataForType(type));
   }
 
@@ -274,20 +315,20 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   // creates an empty store, are counted and deleted correctly.
   void TestEmptySiteData(const std::string& type, base::Time delete_begin) {
     EXPECT_EQ(0, GetSiteDataCount());
-    EXPECT_EQ(0, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(0);
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(0, GetSiteDataCount());
-    EXPECT_EQ(0, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(0);
     // Opening a store of this type creates a site data entry.
     EXPECT_FALSE(HasDataForType(type));
     EXPECT_EQ(1, GetSiteDataCount());
-    EXPECT_EQ(1, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(1);
     RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
                   delete_begin);
 
     EXPECT_EQ(0, GetSiteDataCount());
-    EXPECT_EQ(0, GetCookieTreeModelCount());
+    ExpectCookieTreeModelCount(0);
   }
 
   bool HasDataForType(const std::string& type) {
@@ -312,41 +353,10 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     return count;
   }
 
-  int GetCookieTreeModelCount() {
-    Profile* profile = browser()->profile();
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile);
-    content::IndexedDBContext* indexed_db_context =
-        storage_partition->GetIndexedDBContext();
-    content::ServiceWorkerContext* service_worker_context =
-        storage_partition->GetServiceWorkerContext();
-    content::CacheStorageContext* cache_storage_context =
-        storage_partition->GetCacheStorageContext();
-    storage::FileSystemContext* file_system_context =
-        storage_partition->GetFileSystemContext();
-    auto container = std::make_unique<LocalDataContainer>(
-        new BrowsingDataCookieHelper(storage_partition),
-        new BrowsingDataDatabaseHelper(profile),
-        new BrowsingDataLocalStorageHelper(profile),
-        /*session_storage_helper=*/nullptr,
-        new BrowsingDataAppCacheHelper(profile),
-        new BrowsingDataIndexedDBHelper(indexed_db_context),
-        BrowsingDataFileSystemHelper::Create(file_system_context),
-        BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
-        new BrowsingDataServiceWorkerHelper(service_worker_context),
-        new BrowsingDataSharedWorkerHelper(storage_partition,
-                                           profile->GetResourceContext()),
-        new BrowsingDataCacheStorageHelper(cache_storage_context),
-        BrowsingDataFlashLSOHelper::Create(profile),
-        BrowsingDataMediaLicenseHelper::Create(file_system_context));
-    base::RunLoop run_loop;
-    CookiesTreeObserver observer(run_loop.QuitClosure());
-    CookiesTreeModel model(std::move(container),
-                           profile->GetExtensionSpecialStoragePolicy());
-    model.AddCookiesTreeObserver(&observer);
-    run_loop.Run();
-    return model.GetRoot()->child_count();
+  inline void ExpectCookieTreeModelCount(int expected) {
+    std::unique_ptr<CookiesTreeModel> model = GetCookiesTreeModel();
+    EXPECT_EQ(expected, GetCookiesTreeModelCount(model->GetRoot()))
+        << GetCookiesTreeModelInfo(model->GetRoot());
   }
 
   void OnVideoDecodePerfInfo(base::RunLoop* run_loop,
@@ -378,6 +388,43 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
             result.get())
             ->Value();
     run_loop->Quit();
+  }
+
+  std::unique_ptr<CookiesTreeModel> GetCookiesTreeModel() {
+    Profile* profile = browser()->profile();
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    content::IndexedDBContext* indexed_db_context =
+        storage_partition->GetIndexedDBContext();
+    content::ServiceWorkerContext* service_worker_context =
+        storage_partition->GetServiceWorkerContext();
+    content::CacheStorageContext* cache_storage_context =
+        storage_partition->GetCacheStorageContext();
+    storage::FileSystemContext* file_system_context =
+        storage_partition->GetFileSystemContext();
+    auto container = std::make_unique<LocalDataContainer>(
+        new BrowsingDataCookieHelper(storage_partition),
+        new BrowsingDataDatabaseHelper(profile),
+        new BrowsingDataLocalStorageHelper(profile),
+        /*session_storage_helper=*/nullptr,
+        new BrowsingDataAppCacheHelper(profile),
+        new BrowsingDataIndexedDBHelper(indexed_db_context),
+        BrowsingDataFileSystemHelper::Create(file_system_context),
+        BrowsingDataQuotaHelper::Create(profile),
+        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
+        new BrowsingDataServiceWorkerHelper(service_worker_context),
+        new BrowsingDataSharedWorkerHelper(storage_partition,
+                                           profile->GetResourceContext()),
+        new BrowsingDataCacheStorageHelper(cache_storage_context),
+        BrowsingDataFlashLSOHelper::Create(profile),
+        BrowsingDataMediaLicenseHelper::Create(file_system_context));
+    base::RunLoop run_loop;
+    CookiesTreeObserver observer(run_loop.QuitClosure());
+    auto model = std::make_unique<CookiesTreeModel>(
+        std::move(container), profile->GetExtensionSpecialStoragePolicy());
+    model->AddCookiesTreeObserver(&observer);
+    run_loop.Run();
+    return model;
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -660,14 +707,14 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
 // Test that session storage is not counted until crbug.com/772337 is fixed.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetCookieTreeModelCount());
+  ExpectCookieTreeModelCount(0);
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetCookieTreeModelCount());
+  ExpectCookieTreeModelCount(0);
   SetDataForType("SessionStorage");
   EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetCookieTreeModelCount());
+  ExpectCookieTreeModelCount(0);
   EXPECT_TRUE(HasDataForType("SessionStorage"));
 }
 
@@ -707,11 +754,16 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyIndexedDb) {
   TestEmptySiteData("IndexedDb", GetParam());
 }
 
+const std::vector<std::string> kStorageTypes{
+    "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
+    "IndexedDb", "WebSql",       "ServiceWorker", "CacheStorage",
+};
+
 // Test that storage doesn't leave any traces on disk.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_PRE_StorageRemovedFromDisk) {
   ASSERT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetCookieTreeModelCount());
+  ExpectCookieTreeModelCount(0);
   ASSERT_EQ(0, CheckUserDirectoryForString(kLocalHost, {}));
   // To use secure-only features on a host name, we need an https server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -725,11 +777,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   GURL url = https_server.GetURL(kLocalHost, "/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  const std::vector<std::string> types{
-      "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
-      "IndexedDb", "WebSql",       "ServiceWorker", "CacheStorage",
-  };
-  for (const std::string& type : types) {
+  for (const std::string& type : kStorageTypes) {
     SetDataForType(type);
     EXPECT_TRUE(HasDataForType(type));
   }
@@ -742,13 +790,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());
-  EXPECT_EQ(1, GetCookieTreeModelCount());
+  // Expect all datatypes from above except SessionStorage. SessionStorage is
+  // not supported by the CookieTreeModel yet.
+  ExpectCookieTreeModelCount(kStorageTypes.size() - 1);
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
                 content::BrowsingDataRemover::DATA_TYPE_CACHE |
                 ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
                 ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS);
   EXPECT_EQ(0, GetSiteDataCount());
-  EXPECT_EQ(0, GetCookieTreeModelCount());
+  ExpectCookieTreeModelCount(0);
 }
 
 // Check if any data remains after a deletion and a Chrome restart to force
@@ -773,6 +823,48 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   };
   int found = CheckUserDirectoryForString(kLocalHost, whitelist);
   EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
+}
+
+// TODO(crbug.com/840080, crbug.com/824533): Filesystem, IndexedDb and
+// CacheStorage can't be deleted on exit correctly at the moment.
+const std::vector<std::string> kSessionOnlyStorageTestTypes{
+    "Cookie", "LocalStorage",
+    // "FileSystem",
+    "SessionStorage",
+    // "IndexedDb",
+    "WebSql", "ServiceWorker",
+    // "CacheStorage",
+};
+
+// Test that storage gets deleted if marked as SessionOnly.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       PRE_SessionOnlyStorageRemoved) {
+  ExpectCookieTreeModelCount(0);
+  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  for (const std::string& type : kSessionOnlyStorageTestTypes) {
+    SetDataForType(type);
+    EXPECT_TRUE(HasDataForType(type));
+  }
+  // Expect the datatypes from above except SessionStorage. SessionStorage is
+  // not supported by the CookieTreeModel yet.
+  ExpectCookieTreeModelCount(kSessionOnlyStorageTestTypes.size() - 1);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+                                 CONTENT_SETTING_SESSION_ONLY);
+}
+
+// Restart to delete session only storage.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       SessionOnlyStorageRemoved) {
+  // All cookies should have been deleted.
+  ExpectCookieTreeModelCount(0);
+  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  for (const std::string& type : kSessionOnlyStorageTestTypes) {
+    EXPECT_FALSE(HasDataForType(type));
+  }
 }
 
 // Some storage backend use a different code path for full deletions and
