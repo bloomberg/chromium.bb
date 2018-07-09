@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -12,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -22,6 +24,9 @@ class BrowserContext;
 }  // namespace content
 
 namespace extensions {
+class InfoMap;
+class ExtensionPrefs;
+
 namespace declarative_net_request {
 
 // Observes loading and unloading of extensions to load and unload their
@@ -64,12 +69,21 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
       registry_observer_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  std::set<const Extension*> extensions_with_rulesets_;
+  std::set<ExtensionId> extensions_with_rulesets_;
+
+  // Guaranteed to be valid through-out the lifetime of this instance.
+  InfoMap* const info_map_;
+  const ExtensionPrefs* const prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesMonitorService);
 };
 
 }  // namespace declarative_net_request
+
+template <>
+void BrowserContextKeyedAPIFactory<
+    declarative_net_request::RulesMonitorService>::DeclareFactoryDependencies();
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
