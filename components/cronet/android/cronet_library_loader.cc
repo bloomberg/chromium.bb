@@ -101,7 +101,6 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
   DCHECK(!g_init_message_loop);
   g_init_message_loop =
       new base::MessageLoop(base::MessageLoop::Type::TYPE_JAVA);
-  static_cast<base::MessageLoopForUI*>(g_init_message_loop)->Start();
   DCHECK(!g_network_change_notifier);
 
   if (!net::NetworkChangeNotifier::GetFactory()) {

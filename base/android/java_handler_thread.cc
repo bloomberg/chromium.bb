@@ -64,7 +64,7 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env,
                                          jlong event) {
   // TYPE_JAVA to get the Android java style message loop.
   message_loop_ = new base::MessageLoop(base::MessageLoop::TYPE_JAVA);
-  StartMessageLoop();
+  Init();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 
@@ -77,11 +77,6 @@ void JavaHandlerThread::OnLooperStopped(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
   delete message_loop_;
   CleanUp();
-}
-
-void JavaHandlerThread::StartMessageLoop() {
-  static_cast<MessageLoopForUI*>(message_loop_)->Start();
-  Init();
 }
 
 void JavaHandlerThread::StopMessageLoop() {

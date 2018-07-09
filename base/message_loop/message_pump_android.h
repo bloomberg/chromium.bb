@@ -36,7 +36,9 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
-  virtual void Start(Delegate* delegate);
+  // Attaches |delegate| to this native MessagePump. |delegate| will from then
+  // on be invoked by the native loop to process application tasks.
+  virtual void Attach(Delegate* delegate);
 
   // We call Abort when there is a pending JNI exception, meaning that the
   // current thread will crash when we return to Java.

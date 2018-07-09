@@ -80,7 +80,6 @@ int AwBrowserMainParts::PreEarlyInitialization() {
   DCHECK(!main_message_loop_.get());
   if (!base::MessageLoopCurrent::IsSet())
     main_message_loop_.reset(new base::MessageLoopForUI);
-  base::MessageLoopCurrentForUI::Get()->Start();
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 

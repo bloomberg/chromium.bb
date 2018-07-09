@@ -168,10 +168,6 @@ void MessageLoopCurrentForUI::Attach() {
 #endif  // defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-void MessageLoopCurrentForUI::Start() {
-  static_cast<MessageLoopForUI*>(current_)->Start();
-}
-
 void MessageLoopCurrentForUI::Abort() {
   static_cast<MessageLoopForUI*>(current_)->Abort();
 }

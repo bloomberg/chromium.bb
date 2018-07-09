@@ -117,7 +117,7 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
   state_ = previous_state;
 }
 
-void NestedMessagePumpAndroid::Start(
+void NestedMessagePumpAndroid::Attach(
     base::MessagePump::Delegate* delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);

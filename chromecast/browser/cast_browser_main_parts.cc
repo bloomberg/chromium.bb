@@ -396,10 +396,6 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 void CastBrowserMainParts::PostMainMessageLoopStart() {
   // Ensure CastMetricsHelper initialized on UI thread.
   metrics::CastMetricsHelper::GetInstance();
-
-#if defined(OS_ANDROID)
-  base::MessageLoopCurrentForUI::Get()->Start();
-#endif  // defined(OS_ANDROID)
 }
 
 void CastBrowserMainParts::ToolkitInitialized() {

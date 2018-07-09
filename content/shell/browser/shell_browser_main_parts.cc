@@ -114,10 +114,6 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #endif
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-#if defined(OS_ANDROID)
-  base::MessageLoopCurrentForUI::Get()->Start();
-#endif
-
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize(

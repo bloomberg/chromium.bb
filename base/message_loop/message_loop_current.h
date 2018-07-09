@@ -225,12 +225,6 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
 #if defined(OS_ANDROID)
-  // Forwards to MessageLoopForUI::Start().
-  // TODO(https://crbug.com/825327): Plumb the actual MessageLoopForUI* to
-  // callers and remove ability to access this method from
-  // MessageLoopCurrentForUI.
-  void Start();
-
   // Forwards to MessageLoopForUI::Abort().
   // TODO(https://crbug.com/825327): Plumb the actual MessageLoopForUI* to
   // callers and remove ability to access this method from

@@ -54,7 +54,6 @@ class BASE_EXPORT JavaHandlerThread {
   void StopThread(JNIEnv* env, const JavaParamRef<jobject>& obj);
   void OnLooperStopped(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
-  virtual void StartMessageLoop();
   virtual void StopMessageLoop();
 
   void StopMessageLoopForTesting();

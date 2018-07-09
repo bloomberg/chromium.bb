@@ -104,19 +104,13 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   // Android specific MessageLoop.
   DCHECK(!main_message_loop_.get());
 
-  // Create and start the MessageLoop if doesn't yet exist.
-  // This is a critical point in the startup process.
+  // Create the MessageLoop if doesn't yet exist (and bind it to the native Java
+  // loop). This is a critical point in the startup process.
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:CreateUiMsgLoop");
     if (!base::MessageLoopCurrent::IsSet())
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
-  }
-
-  {
-    TRACE_EVENT0("startup",
-      "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:StartUiMsgLoop");
-    base::MessageLoopCurrentForUI::Get()->Start();
   }
 
   // In order for SetLoadSecondaryLocalePaks() to work ResourceBundle must

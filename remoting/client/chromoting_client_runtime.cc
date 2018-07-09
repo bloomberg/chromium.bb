@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "build/build_config.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -36,13 +37,10 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
 
   VLOG(1) << "Starting main message loop";
   ui_loop_.reset(new base::MessageLoopForUI());
-#if defined(OS_ANDROID)
-  // On Android, the UI thread is managed by Java, so we need to attach and
-  // start a special type of message loop to allow Chromium code to run tasks.
-  ui_loop_->Start();
-#elif defined(OS_IOS)
+#if defined(OS_IOS)
+  // TODO(ranj): Attach on BindToCurrentThread().
   ui_loop_->Attach();
-#endif  // OS_ANDROID, OS_IOS
+#endif
 
 #if defined(DEBUG)
   net::URLFetcher::SetIgnoreCertificateRequests(true);
