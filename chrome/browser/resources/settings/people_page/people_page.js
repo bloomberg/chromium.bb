@@ -136,8 +136,10 @@ Polymer({
       type: Object,
       value: function() {
         const map = new Map();
-        if (settings.routes.SYNC)
-          map.set(settings.routes.SYNC.path, '#sync-status .subpage-arrow');
+        if (settings.routes.SYNC) {
+          map.set(
+              settings.routes.SYNC.path, '#sync-status .subpage-arrow button');
+        }
         if (settings.routes.MANAGE_PASSWORDS) {
           map.set(
               settings.routes.MANAGE_PASSWORDS.path, '#passwordManagerButton');
@@ -149,24 +151,24 @@ Polymer({
         if (settings.routes.MANAGE_PROFILE) {
           map.set(
               settings.routes.MANAGE_PROFILE.path,
-              '#picture-subpage-trigger .subpage-arrow');
+              '#picture-subpage-trigger .subpage-arrow button');
         }
         // </if>
         // <if expr="chromeos">
         if (settings.routes.CHANGE_PICTURE) {
           map.set(
               settings.routes.CHANGE_PICTURE.path,
-              '#picture-subpage-trigger .subpage-arrow');
+              '#picture-subpage-trigger .subpage-arrow button');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
               settings.routes.LOCK_SCREEN.path,
-              '#lock-screen-subpage-trigger .subpage-arrow');
+              '#lock-screen-subpage-trigger .subpage-arrow button');
         }
         if (settings.routes.ACCOUNTS) {
           map.set(
               settings.routes.ACCOUNTS.path,
-              '#manage-other-people-subpage-trigger .subpage-arrow');
+              '#manage-other-people-subpage-trigger .subpage-arrow button');
         }
         // </if>
         return map;

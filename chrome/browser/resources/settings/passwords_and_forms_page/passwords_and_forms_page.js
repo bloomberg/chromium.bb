@@ -25,7 +25,7 @@ Polymer({
     if (settings.routes.MANAGE_PASSWORDS) {
       this.focusConfig_.set(
           settings.routes.MANAGE_PASSWORDS.path,
-          '#passwordManagerButton .subpage-arrow');
+          '#passwordManagerButton .subpage-arrow button');
     }
   },
 

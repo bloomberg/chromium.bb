@@ -62,7 +62,9 @@ Polymer({
         const map = new Map();
         // <if expr="chromeos">
         if (settings.routes.SMB_SHARES) {
-          map.set(settings.routes.SMB_SHARES.path, '#smbShares .subpage-arrow');
+          map.set(
+              settings.routes.SMB_SHARES.path,
+              '#smbShares .subpage-arrow button');
         }
         // </if>
         return map;
