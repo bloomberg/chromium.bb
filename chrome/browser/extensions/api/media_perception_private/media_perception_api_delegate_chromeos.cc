@@ -55,6 +55,7 @@ void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
   g_browser_process->platform_part()->cros_component_manager()->Load(
       GetComponentNameForComponentType(type),
       component_updater::CrOSComponentManager::MountPolicy::kMount,
+      component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
       base::BindOnce(OnLoadComponent, std::move(load_callback)));
 }
 

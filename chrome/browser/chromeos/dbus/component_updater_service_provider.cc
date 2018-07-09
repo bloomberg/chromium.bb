@@ -112,6 +112,7 @@ void ComponentUpdaterServiceProvider::LoadComponent(
         mount
             ? component_updater::CrOSComponentManager::MountPolicy::kMount
             : component_updater::CrOSComponentManager::MountPolicy::kDontMount,
+        component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
         base::Bind(&ComponentUpdaterServiceProvider::OnLoadComponent,
                    weak_ptr_factory_.GetWeakPtr(), method_call,
                    response_sender));

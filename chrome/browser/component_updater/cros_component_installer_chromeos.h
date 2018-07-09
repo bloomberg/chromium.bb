@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "components/component_updater/component_installer.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
 
 namespace component_updater {
@@ -84,9 +85,19 @@ class CrOSComponentManager {
   // |path|, or an empty |path| otherwise.
   using LoadCallback =
       base::OnceCallback<void(Error error, const base::FilePath& path)>;
+  // Policy on mount operation.
   enum class MountPolicy {
+    // Mount the component if installed.
     kMount,
+    // Skip the mount operation.
     kDontMount,
+  };
+  // Policy on update operation.
+  enum class UpdatePolicy {
+    // Force component update.
+    kForce,
+    // Do not update if a compatible component is installed.
+    kDontForce,
   };
 
   class Delegate {
@@ -104,6 +115,7 @@ class CrOSComponentManager {
   // Installs a component and keeps it up-to-date.
   void Load(const std::string& name,
             MountPolicy mount_policy,
+            UpdatePolicy update_policy,
             LoadCallback load_callback);
 
   // Stops updating and removes a component.
@@ -147,6 +159,7 @@ class CrOSComponentManager {
   // Installs a component with a dedicated ComponentUpdateService instance.
   void Install(ComponentUpdateService* cus,
                const std::string& name,
+               OnDemandUpdater::Priority priority,
                MountPolicy mount_policy,
                LoadCallback load_callback);
 
@@ -154,6 +167,7 @@ class CrOSComponentManager {
   // |id| is the component id generated from its sha2 hash.
   void StartInstall(ComponentUpdateService* cus,
                     const std::string& id,
+                    OnDemandUpdater::Priority priority,
                     update_client::Callback install_callback);
 
   // Calls LoadInternal to load the installed component.
