@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "url/gurl.h"
@@ -36,6 +37,9 @@
 
 // The image to show.
 @property(nonatomic, strong) UIImage* image;
+
+// The style to use for the cell.
+@property(nonatomic, assign) CollectionViewCellStyle cellStyle;
 
 @end
 

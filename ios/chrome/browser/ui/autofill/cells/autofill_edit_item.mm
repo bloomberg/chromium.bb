@@ -4,8 +4,12 @@
 
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 
+#import "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -24,8 +28,14 @@ const CGFloat kVerticalPadding = 16;
 const CGFloat kLabelAndFieldGap = 5;
 }  // namespace
 
+@interface AutofillEditCell ()
+// Updates the cell's fonts and colors for the given |cellStyle|.
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle;
+@end
+
 @implementation AutofillEditItem
 
+@synthesize cellStyle = _cellStyle;
 @synthesize textFieldName = _textFieldName;
 @synthesize textFieldValue = _textFieldValue;
 @synthesize identifyingIcon = _identifyingIcon;
@@ -41,6 +51,7 @@ const CGFloat kLabelAndFieldGap = 5;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [AutofillEditCell class];
+    _cellStyle = CollectionViewCellStyle::kMaterial;
     _returnKeyType = UIReturnKeyNext;
     _keyboardType = UIKeyboardTypeDefault;
     _autoCapitalizationType = UITextAutocapitalizationTypeWords;
@@ -52,6 +63,10 @@ const CGFloat kLabelAndFieldGap = 5;
 
 - (void)configureCell:(AutofillEditCell*)cell {
   [super configureCell:cell];
+
+  // Update fonts and colors before changing anything else.
+  [cell updateForStyle:self.cellStyle];
+
   NSString* textLabelFormat = self.required ? @"%@*" : @"%@";
   cell.textLabel.text =
       [NSString stringWithFormat:textLabelFormat, self.textFieldName];
@@ -101,8 +116,6 @@ const CGFloat kLabelAndFieldGap = 5;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
     [_textLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                   forAxis:UILayoutConstraintAxisHorizontal];
     [contentView addSubview:_textLabel];
@@ -111,8 +124,6 @@ const CGFloat kLabelAndFieldGap = 5;
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_textField];
 
-    _textField.font = [[MDCTypography fontLoader] lightFontOfSize:16];
-    _textField.textColor = [[MDCPalette greyPalette] tint500];
     _textField.autocorrectionType = UITextAutocorrectionTypeNo;
     _textField.clearButtonMode = UITextFieldViewModeWhileEditing;
     _textField.contentVerticalAlignment =
@@ -140,10 +151,6 @@ const CGFloat kLabelAndFieldGap = 5;
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor
                          constant:kHorizontalPadding],
-      [_textLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                           constant:kVerticalPadding],
-      [_textLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                              constant:-kVerticalPadding],
       _textFieldTrailingConstraint,
       [_textField.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
@@ -158,8 +165,24 @@ const CGFloat kLabelAndFieldGap = 5;
       _iconHeightConstraint,
       _iconWidthConstraint,
     ]];
+    AddOptionalVerticalPadding(contentView, _textLabel, kVerticalPadding);
   }
   return self;
+}
+
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
+  if (cellStyle == CollectionViewCellStyle::kUIKit &&
+      experimental_flags::IsSettingsUIRebootEnabled()) {
+    self.textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    self.textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+    self.textField.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    self.textField.textColor = [UIColor grayColor];
+  } else {
+    self.textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    self.textField.font = [[MDCTypography fontLoader] lightFontOfSize:16];
+    self.textField.textColor = [[MDCPalette greyPalette] tint500];
+  }
 }
 
 #pragma mark - UIView

@@ -149,3 +149,26 @@ void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
 
   [NSLayoutConstraint activateConstraints:constraints];
 }
+
+void AddOptionalVerticalPadding(UIView* outerView,
+                                UIView* innerView,
+                                CGFloat padding) {
+  AddOptionalVerticalPadding(outerView, innerView, innerView, padding);
+}
+
+void AddOptionalVerticalPadding(UIView* outerView,
+                                UIView* topInnerView,
+                                UIView* bottomInnerView,
+                                CGFloat padding) {
+  NSLayoutConstraint* topPaddingConstraint = [topInnerView.topAnchor
+      constraintGreaterThanOrEqualToAnchor:outerView.topAnchor
+                                  constant:padding];
+  topPaddingConstraint.priority = UILayoutPriorityDefaultLow;
+  NSLayoutConstraint* bottomPaddingConstraint = [bottomInnerView.bottomAnchor
+      constraintLessThanOrEqualToAnchor:outerView.bottomAnchor
+                               constant:-padding];
+  bottomPaddingConstraint.priority = UILayoutPriorityDefaultLow;
+
+  [NSLayoutConstraint
+      activateConstraints:@[ topPaddingConstraint, bottomPaddingConstraint ]];
+}

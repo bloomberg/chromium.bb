@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 
+#import "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -31,7 +34,11 @@ const CGFloat kVerticalPadding = 16;
 @property(nonatomic, weak) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
 // Sets the URL to load when the link in |textLabel| is tapped.
-- (void)setLabelLinkURL:(const GURL&)URL;
+- (void)setLabelLinkURL:(const GURL&)URL
+          withCellStyle:(CollectionViewCellStyle)cellStyle;
+
+// Updates the cell's fonts and colors for the given |cellStyle|.
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle;
 
 @end
 
@@ -41,11 +48,14 @@ const CGFloat kVerticalPadding = 16;
 @synthesize linkURL = _linkURL;
 @synthesize linkDelegate = _linkDelegate;
 @synthesize image = _image;
+@synthesize cellStyle = _cellStyle;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [CollectionViewFooterCell class];
+    _cellStyle = CollectionViewCellStyle::kMaterial;
+    _linkURL = GURL();
   }
   return self;
 }
@@ -54,8 +64,11 @@ const CGFloat kVerticalPadding = 16;
 
 - (void)configureCell:(CollectionViewFooterCell*)cell {
   [super configureCell:cell];
+
+  // Update fonts and colors before setting the link label URL.
+  [cell updateForStyle:_cellStyle];
   cell.textLabel.text = _text;
-  [cell setLabelLinkURL:_linkURL];
+  [cell setLabelLinkURL:_linkURL withCellStyle:_cellStyle];
   cell.linkDelegate = _linkDelegate;
   cell.imageView.image = _image;
 }
@@ -85,18 +98,13 @@ const CGFloat kVerticalPadding = 16;
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.backgroundColor = [UIColor clearColor];
+    _textLabel.numberOfLines = 0;
+    _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.contentView addSubview:_textLabel];
 
     _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_imageView];
-
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    _textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
-    _textLabel.shadowColor = [UIColor whiteColor];
-    _textLabel.numberOfLines = 0;
-    _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
 
     _horizontalPadding = kDefaultHorizontalPadding;
     _textLeadingAnchorConstraint = [_textLabel.leadingAnchor
@@ -119,7 +127,8 @@ const CGFloat kVerticalPadding = 16;
   return self;
 }
 
-- (void)setLabelLinkURL:(const GURL&)URL {
+- (void)setLabelLinkURL:(const GURL&)URL
+          withCellStyle:(CollectionViewCellStyle)cellStyle {
   _linkController = nil;
   if (!URL.is_valid()) {
     return;
@@ -135,8 +144,26 @@ const CGFloat kVerticalPadding = 16;
                action:^(const GURL& URL) {
                  [weakSelf.linkDelegate cell:weakSelf didTapLinkURL:URL];
                }];
-    [_linkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+    if (cellStyle == CollectionViewCellStyle::kUIKit &&
+        experimental_flags::IsSettingsUIRebootEnabled()) {
+      [_linkController setLinkColor:UIColorFromRGB(kUIKitFooterLinkColor)];
+    } else {
+      [_linkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+    }
     [_linkController addLinkWithRange:range url:URL];
+  }
+}
+
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
+  if (cellStyle == CollectionViewCellStyle::kUIKit &&
+      experimental_flags::IsSettingsUIRebootEnabled()) {
+    self.textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
+    self.textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
+  } else {
+    self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
+    self.textLabel.shadowColor = [UIColor whiteColor];
+    self.textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
   }
 }
 
@@ -168,7 +195,8 @@ const CGFloat kVerticalPadding = 16;
   [super prepareForReuse];
   self.textLabel.text = nil;
   self.imageView.image = nil;
-  [self setLabelLinkURL:GURL()];
+  [self setLabelLinkURL:GURL()
+          withCellStyle:CollectionViewCellStyle::kMaterial];
   self.horizontalPadding = kDefaultHorizontalPadding;
   _linkController = nil;
   _linkDelegate = nil;
