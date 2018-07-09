@@ -332,6 +332,18 @@ public class UrlUtilities {
         return true;
     }
 
+    /**
+     * @param url An HTTP or HTTPS URL.
+     * @return The URL without path and query.
+     */
+    public static String stripPath(String url) {
+        assert isHttpOrHttps(url);
+        Uri parsed = Uri.parse(url);
+
+        return parsed.getScheme() + "://" + ((parsed.getHost() != null) ? parsed.getHost() : "")
+                + ((parsed.getPort() != -1) ? (":" + parsed.getPort()) : "");
+    }
+
     private static native boolean nativeIsDownloadable(String url);
     private static native boolean nativeIsValidForIntentFallbackNavigation(String url);
     private static native boolean nativeIsAcceptedScheme(String url);
