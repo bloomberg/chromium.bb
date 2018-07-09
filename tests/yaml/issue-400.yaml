@@ -32,31 +32,18 @@ tests:
   # FIXME: the following tests are only relevant if capsletter fails to cancel numeric mode
   # once stuck, numeric mode may not be canceled even by nocontractsign
   - - "123Abckabc" # FIXME: undefined behavior?
-    - "#abc,abck;abc"
-    - {xfail: true}
-    # Actual: '#abc,abckabc'
-    # buevest:
-    # Actual result is correct.
-    # both capsletter and "k" in the output  cancel numeric mode for good.
-    # No need for nocontractsign AFAICS.
-# If any Braille code should need this behaviour, we must make an opcode to deal with it.
+    - "#abc,abckabc"
+    # Reasonable forward translation
 
   - - "123Abcabc" # FIXME: undefined behavior?
-    - "#abc,abc#;abc"
-    - {xfail: true}
-# Actual: '#abc,abcabc'
-    # Buevest: Same as above.
+    - "#abc,abcabc"
 
   # ... but it may be canceled by a numcontractsign if it directly follows a numericnocontchar
   - - "123Abc1abc"
     - "#abc,abc#a;abc"
   - - "123Abcabc" # FIXME: undefined behavior?
-    - "#abc,abc;abc"
-    - {xfail: true} # capsletter fails, numcontractsign works
-    # Actual: '#abc,abcabc'
-    # buevest:
-    # Same as above: Capsletter should be enough.
-    
+    - "#abc,abcabc"
+
   # ... it may also be canceled by whitespace
   - - "123Abc abc"
     - "#abc,abc abc"
@@ -87,9 +74,14 @@ tests:
   - - "#abc,abck;abc"
     - "123Abckabc" # FIXME: undefined behavior?
     - {xfail: true}
+    # Buevest: should work, even if capsletter should be enough.
+
   - - "#abc,abc#;abc"
     - "123Abcabc" # FIXME: undefined behavior?
     - {xfail: true}
+    # Buevest: Should also work.
+    # nocontractsign or letsign should cancel numeric mode no matter what.
+
   # ... but it may be canceled by a numcontractsign if it directly follows a numericnocontchar
   - - "#abc,abc#a;abc"
     - "123Abc1abc"
@@ -176,25 +168,15 @@ tests:
   # Whitespace does not cancel a block in capitals
   - - "ABC ABC"
     - ",abc abc."
-  # Non-letter cancels a block in capitals
-  - - "ABC%abc"
-    - ",abc%abc"
-    - {xfail: true} # FIXME: undefined behavior?
-    # Actual: ',abc%.abc'
-    # Buevest:
-    # The actual result seems more logical to me.
-    # Capsphrase should be able to handle phrases like:
-    # HE, THE MAN, SAID IT ACTUALLY WORKED.
-    # Perhaps, endcapsphrase should be placed before %,
-    # but that is not the topic of this issue.
+  # Non-letter does not cancel a block in capitals
+  - - "ABC%ABC"
+    - ",abc%abc."
 
-  # Number cancels a block in capitals
-  - - "ABC123abc"
-    - ",abc#abc;abc"
-    - {xfail: true}  # FIXME: undefined behavior?
-    # Actual: ',abc#abc.;abc'
-    # Buevest: See above.
-
+  # Number does not cancel a block in capitals
+  - - "ABC123ABC"
+    - ",abc#abc;abc."
+    - {xfail: true} # Missing nocontract sign after number
+    
 # Original tests
 flags: {testmode: backward}
 tests:
@@ -204,11 +186,9 @@ tests:
   # Whitespace does not cancel a block in capitals
   - - ",abc abc."
     - "ABC ABC"
-  # Non-letter cancels a block in capitals
-  - - ",abc%abc"
-    - "ABC%abc"
-    - {xfail: true} # FIXME: undefined behavior?
-  # Number cancels a block in capitals
-  - - ",abc#abc;abc"
-    - "ABC123abc"
-    - {xfail: true}  # FIXME: undefined behavior?
+  # Non-letter does not cancel a block in capitals
+  - - ",abc%abc."
+    - "ABC%ABC"
+  # Number does not cancel a block in capitals
+  - - ",abc#abc;abc."
+    - "ABC123ABC"
