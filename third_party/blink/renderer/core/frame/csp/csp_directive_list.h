@@ -231,21 +231,21 @@ class CORE_EXPORT CSPDirectiveList
                        Member<CSPDirectiveType>&,
                        bool should_parse_wasm_eval = false);
 
-  SourceListDirective* OperativeDirective(SourceListDirective*) const;
-  SourceListDirective* OperativeDirective(SourceListDirective*,
-                                          SourceListDirective* override) const;
+  ContentSecurityPolicy::DirectiveType FallbackDirective(
+      const ContentSecurityPolicy::DirectiveType current_directive,
+      const ContentSecurityPolicy::DirectiveType original_directive) const;
   void ReportViolation(const String& directive_text,
-                       const ContentSecurityPolicy::DirectiveType&,
+                       const ContentSecurityPolicy::DirectiveType,
                        const String& console_message,
                        const KURL& blocked_url,
                        ResourceRequest::RedirectStatus) const;
   void ReportViolationWithFrame(const String& directive_text,
-                                const ContentSecurityPolicy::DirectiveType&,
+                                const ContentSecurityPolicy::DirectiveType,
                                 const String& console_message,
                                 const KURL& blocked_url,
                                 LocalFrame*) const;
   void ReportViolationWithLocation(const String& directive_text,
-                                   const ContentSecurityPolicy::DirectiveType&,
+                                   const ContentSecurityPolicy::DirectiveType,
                                    const String& console_message,
                                    const KURL& blocked_url,
                                    const String& context_url,
@@ -253,7 +253,7 @@ class CORE_EXPORT CSPDirectiveList
                                    Element*,
                                    const String& source) const;
   void ReportEvalViolation(const String& directive_text,
-                           const ContentSecurityPolicy::DirectiveType&,
+                           const ContentSecurityPolicy::DirectiveType,
                            const String& message,
                            const KURL& blocked_url,
                            ScriptState*,
@@ -300,11 +300,10 @@ class CORE_EXPORT CSPDirectiveList
                                      bool is_script,
                                      const String& hash_value) const;
 
-  bool CheckSourceAndReportViolation(
-      SourceListDirective*,
-      const KURL&,
-      const ContentSecurityPolicy::DirectiveType&,
-      ResourceRequest::RedirectStatus) const;
+  bool CheckSourceAndReportViolation(SourceListDirective*,
+                                     const KURL&,
+                                     const ContentSecurityPolicy::DirectiveType,
+                                     ResourceRequest::RedirectStatus) const;
   bool CheckMediaTypeAndReportViolation(MediaListDirective*,
                                         const String& type,
                                         const String& type_attribute,
@@ -320,19 +319,22 @@ class CORE_EXPORT CSPDirectiveList
   bool DenyIfEnforcingPolicy() const { return IsReportOnly(); }
 
   // This function returns a SourceListDirective of a given type
-  // or if it is not defined, the default SourceListDirective for that type.
+  // or if it is not defined, the fallback SourceListDirective for that type.
   SourceListDirective* OperativeDirective(
-      const ContentSecurityPolicy::DirectiveType&) const;
+      const ContentSecurityPolicy::DirectiveType type,
+      ContentSecurityPolicy::DirectiveType original_type =
+          ContentSecurityPolicy::DirectiveType::kUndefined) const;
 
   // This function aggregates from a vector of policies all operative
   // SourceListDirectives of a given type into a vector.
   static SourceListDirectiveVector GetSourceVector(
-      const ContentSecurityPolicy::DirectiveType&,
+      const ContentSecurityPolicy::DirectiveType,
       const CSPDirectiveListVector& policies);
 
-  bool AllowHash(const CSPHashValue&,
-                 ContentSecurityPolicy::InlineType,
-                 SourceListDirective* directive) const;
+  bool AllowHash(
+      const CSPHashValue& hash_value,
+      const ContentSecurityPolicy::InlineType type,
+      const ContentSecurityPolicy::DirectiveType directive_type) const;
 
   Member<ContentSecurityPolicy> policy_;
 
