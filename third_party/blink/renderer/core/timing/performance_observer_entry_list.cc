@@ -27,7 +27,7 @@ PerformanceEntryVector PerformanceObserverEntryList::getEntries() const {
 }
 
 PerformanceEntryVector PerformanceObserverEntryList::getEntriesByType(
-    const String& entry_type) {
+    const AtomicString& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
@@ -48,7 +48,7 @@ PerformanceEntryVector PerformanceObserverEntryList::getEntriesByType(
 
 PerformanceEntryVector PerformanceObserverEntryList::getEntriesByName(
     const String& name,
-    const String& entry_type) {
+    const AtomicString& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);

@@ -11,11 +11,18 @@ namespace blink {
 PerformancePaintTiming::PerformancePaintTiming(PaintType type,
                                                double start_time)
     : PerformanceEntry(FromPaintTypeToString(type),
-                       "paint",
                        start_time,
                        start_time) {}
 
 PerformancePaintTiming::~PerformancePaintTiming() = default;
+
+AtomicString PerformancePaintTiming::entryType() const {
+  return PerformanceEntry::PaintKeyword();
+}
+
+PerformanceEntryType PerformancePaintTiming::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kPaint;
+}
 
 String PerformancePaintTiming::FromPaintTypeToString(PaintType type) {
   switch (type) {

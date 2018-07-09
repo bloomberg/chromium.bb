@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -23,9 +24,9 @@ class PerformanceObserverEntryList : public ScriptWrappable {
   ~PerformanceObserverEntryList() override;
 
   PerformanceEntryVector getEntries() const;
-  PerformanceEntryVector getEntriesByType(const String& entry_type);
+  PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByName(const String& name,
-                                          const String& entry_type);
+                                          const AtomicString& entry_type);
 
   void Trace(blink::Visitor*) override;
 

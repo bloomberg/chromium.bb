@@ -34,7 +34,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
     String culprit_frame_id,
     String culprit_frame_name,
     const SubTaskAttribution::EntriesVector& sub_task_attributions)
-    : PerformanceEntry(name, "longtask", start_time, end_time) {
+    : PerformanceEntry(name, start_time, end_time) {
   // Only one possible container type exists currently: "iframe".
   if (RuntimeEnabledFeatures::LongTaskV2Enabled()) {
     for (auto&& it : sub_task_attributions) {
@@ -54,6 +54,14 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
 }
 
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() = default;
+
+AtomicString PerformanceLongTaskTiming::entryType() const {
+  return PerformanceEntry::LongtaskKeyword();
+}
+
+PerformanceEntryType PerformanceLongTaskTiming::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kLongTask;
+}
 
 TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
   return attribution_;

@@ -23,7 +23,6 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(
           info ? info->FinalResponse().Url().GetString() : "",
-          "navigation",
           time_origin,
           server_timing),
       ContextClient(frame),
@@ -33,6 +32,14 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
 }
 
 PerformanceNavigationTiming::~PerformanceNavigationTiming() = default;
+
+AtomicString PerformanceNavigationTiming::entryType() const {
+  return PerformanceEntry::NavigationKeyword();
+}
+
+PerformanceEntryType PerformanceNavigationTiming::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kNavigation;
+}
 
 void PerformanceNavigationTiming::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
@@ -110,7 +117,7 @@ AtomicString PerformanceNavigationTiming::GetNavigationType(
 }
 
 AtomicString PerformanceNavigationTiming::initiatorType() const {
-  return "navigation";
+  return PerformanceEntry::NavigationKeyword();
 }
 
 bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {

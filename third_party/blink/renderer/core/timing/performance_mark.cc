@@ -13,12 +13,20 @@ PerformanceMark::PerformanceMark(ScriptState* script_state,
                                  const String& name,
                                  double start_time,
                                  const ScriptValue& detail)
-    : PerformanceEntry(name, "mark", start_time, start_time) {
+    : PerformanceEntry(name, start_time, start_time) {
   world_ = WrapRefCounted(&script_state->World());
   if (detail.IsEmpty() || detail.IsNull() || detail.IsUndefined()) {
     return;
   }
   detail_.Set(detail.GetIsolate(), detail.V8Value());
+}
+
+AtomicString PerformanceMark::entryType() const {
+  return PerformanceEntry::MarkKeyword();
+}
+
+PerformanceEntryType PerformanceMark::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kMark;
 }
 
 ScriptValue PerformanceMark::detail(ScriptState* script_state) const {

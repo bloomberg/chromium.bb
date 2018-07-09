@@ -17,7 +17,7 @@ TaskAttributionTiming::TaskAttributionTiming(String name,
                                              double start_time,
                                              double finish_time,
                                              String script_url)
-    : PerformanceEntry(name, "taskattribution", start_time, finish_time),
+    : PerformanceEntry(name, start_time, finish_time),
       container_type_(container_type),
       container_src_(container_src),
       container_id_(container_id),
@@ -25,6 +25,14 @@ TaskAttributionTiming::TaskAttributionTiming(String name,
       script_url_(script_url) {}
 
 TaskAttributionTiming::~TaskAttributionTiming() = default;
+
+AtomicString TaskAttributionTiming::entryType() const {
+  return PerformanceEntry::TaskattributionKeyword();
+}
+
+PerformanceEntryType TaskAttributionTiming::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kTaskAttribution;
+}
 
 String TaskAttributionTiming::scriptURL() const {
   return script_url_;

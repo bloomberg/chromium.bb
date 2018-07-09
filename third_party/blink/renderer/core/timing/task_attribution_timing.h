@@ -40,6 +40,10 @@ class TaskAttributionTiming final : public PerformanceEntry {
                                      container_id, container_name, 0.0, 0.0,
                                      g_empty_string);
   }
+
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
+
   String containerType() const;
   String containerSrc() const;
   String containerId() const;

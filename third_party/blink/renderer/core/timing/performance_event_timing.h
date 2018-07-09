@@ -27,6 +27,9 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
 
   ~PerformanceEventTiming() override;
 
+  AtomicString entryType() const override { return entry_type_; }
+  PerformanceEntryType EntryTypeEnum() const override;
+
   bool cancelable() const { return cancelable_; }
 
   DOMHighResTimeStamp processingStart() const;
@@ -40,11 +43,12 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
 
  private:
   PerformanceEventTiming(const String& event_type,
-                         const String& entry_type,
+                         const AtomicString& entry_type,
                          DOMHighResTimeStamp start_time,
                          DOMHighResTimeStamp processing_start,
                          DOMHighResTimeStamp processing_end,
                          bool cancelable);
+  AtomicString entry_type_;
   DOMHighResTimeStamp processing_start_;
   DOMHighResTimeStamp processing_end_;
   bool cancelable_;
