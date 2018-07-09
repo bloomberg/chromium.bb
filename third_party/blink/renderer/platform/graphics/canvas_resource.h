@@ -240,6 +240,10 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   GLuint texture_id_ = 0;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
   bool is_accelerated_;
+
+  // GL_TEXTURE_2D view of |gpu_memory_buffer_| for CopyFromTexture(); only used
+  // if TextureTarget() is GL_TEXTURE_EXTERNAL_OES.
+  GLuint texture_2d_id_for_copy_ = 0;
 };
 
 // Resource type for SharedBitmaps

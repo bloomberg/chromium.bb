@@ -8,6 +8,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,8 +136,15 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
 
   constexpr GLuint image_id = 1;
+  const GLuint texture_target = gpu::GetPlatformSpecificTextureTarget();
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
-  EXPECT_CALL(gl_, BindTexture(gpu::GetPlatformSpecificTextureTarget(), _));
+  EXPECT_CALL(gl_, BindTexture(texture_target, _));
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id = 2;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id));
+    EXPECT_CALL(gl_, BindTexture(GL_TEXTURE_2D, _));
+  }
   scoped_refptr<CanvasResource> resource =
       CanvasResourceGpuMemoryBuffer::Create(
           IntSize(10, 10), CanvasColorParams(),
@@ -294,6 +302,7 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
 }
 
 TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
+  testing::InSequence s;
   ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
 
   SkImageInfo image_info =
