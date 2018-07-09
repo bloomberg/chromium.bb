@@ -5,9 +5,6 @@
 #ifndef ASH_CONTENT_CONTENT_GPU_INTERFACE_PROVIDER_H_
 #define ASH_CONTENT_CONTENT_GPU_INTERFACE_PROVIDER_H_
 
-#include <memory>
-#include <vector>
-
 #include "ash/content/ash_with_content_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -26,6 +23,9 @@ class ASH_WITH_CONTENT_EXPORT ContentGpuInterfaceProvider
   // ui::ws2::GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
+  void RegisterOzoneGpuInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) override;
 
  private:
   class InterfaceBinderImpl;

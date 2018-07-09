@@ -92,10 +92,6 @@ include_rules = [
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"
 
-  # Ozone does not run in process in mus/mash.
-  "-ui/events/ozone",
-  "-ui/ozone",
-
   # ui/events/devices is tied with ozone, which is controlled by mus, and
   # shouldn't be used by ash.
   "-ui/events/devices",

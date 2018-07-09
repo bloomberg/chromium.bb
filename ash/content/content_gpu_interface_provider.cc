@@ -79,4 +79,12 @@ void ContentGpuInterfaceProvider::RegisterGpuInterfaces(
       gpu_task_runner);
 }
 
+void ContentGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry) {
+  // Registers the gpu-related interfaces needed by Ozone.
+  // TODO(rjkroege): Adjust when Ozone/DRM/Mojo is complete.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace ash

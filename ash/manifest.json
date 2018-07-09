@@ -71,7 +71,12 @@
         "multidevice_setup": [ "multidevice_setup" ],
         "quick_launch_app": [ "mash:launchable" ],
         "service_manager": [ "service_manager:singleton" ],
-        "ui": [ "display_dev", "window_manager", "video_detector" ],
+        "ui": [
+          "display_dev",
+          "ozone",
+          "video_detector",
+          "window_manager"
+        ],
         "data_decoder": [ "image_decoder" ]
       }
     }

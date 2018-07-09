@@ -9,6 +9,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/gpu_host/gpu_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace ash {
 
@@ -33,6 +34,12 @@ void AshGpuInterfaceProvider::RegisterGpuInterfaces(
       base::Unretained(this)));
   registry->AddInterface(base::BindRepeating(
       &AshGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
+}
+
+void AshGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry) {
+  ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
 }
 
 void AshGpuInterfaceProvider::BindArcRequest(ui::mojom::ArcRequest request) {
