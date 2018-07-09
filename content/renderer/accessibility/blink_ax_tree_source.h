@@ -115,6 +115,11 @@ class BlinkAXTreeSource
 
   blink::WebAXObject ComputeRoot() const;
 
+  uint32_t kMaxStringAttributeLength = 10000;
+  void TruncateAndAddStringAttribute(AXContentNodeData* dst,
+                                     ax::mojom::StringAttribute attribute,
+                                     const std::string& value) const;
+
   RenderFrameImpl* render_frame_;
 
   ui::AXMode accessibility_mode_;
