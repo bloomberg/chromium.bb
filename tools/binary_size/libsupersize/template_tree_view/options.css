@@ -13,6 +13,7 @@
 
 /** Black overlay shown on smaller screens when options is visible. */
 .scrim {
+  z-index: 5; /* Side panel layer */
   position: fixed;
   top: 0;
   left: 0;
@@ -23,6 +24,7 @@
 
 /** Options side panel */
 .options {
+  z-index: 5; /* Side panel layer */
   display: none;
   grid-area: options;
   padding: 0 16px;

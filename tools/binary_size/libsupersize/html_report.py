@@ -341,6 +341,7 @@ def _CopyTreeViewTemplateFiles(template_src, dest_dir, **kwargs):
   """
   _MakeDirIfDoesNotExist(dest_dir)
   shutil.copy(os.path.join(template_src, 'options.css'), dest_dir)
+  shutil.copy(os.path.join(template_src, 'infocard.css'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
 
   with open(os.path.join(dest_dir, 'index.html'), 'w') as out_html, \
