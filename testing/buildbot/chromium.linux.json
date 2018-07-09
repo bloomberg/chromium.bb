@@ -741,16 +741,23 @@
     "isolated_scripts": [
       {
         "args": [
-          "memory.leak_detection",
+          "--benchmarks=memory.leak_detection",
+          "--smoke-test-mode",
           "--upload-results",
           "--output-format=histograms",
           "--browser=release",
           "--xvfb"
         ],
-        "isolate_name": "telemetry_perf_tests",
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "memory.leak_detection",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "performance_test_suite"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

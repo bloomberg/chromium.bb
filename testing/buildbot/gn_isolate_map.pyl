@@ -1088,14 +1088,9 @@
       "-v",
     ],
   },
-  "telemetry_perf_tests": {
-    "label": "//chrome/test:telemetry_perf_tests",
-    "type": "script",
-    "script": "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-    "args": [
-      "../../tools/perf/run_benchmark",
-    ],
-  },
+  # This isolate is solely used to run the One Builbot Step Tester
+  # trybot so that we don't use the full chrome build each time.  Instead
+  # this uses the reference build to run telemetry.
   "telemetry_perf_tests_without_chrome": {
     "label": "//chrome/test:telemetry_perf_tests_without_chrome",
     "type": "script",
@@ -1104,9 +1099,6 @@
       "../../tools/perf/run_benchmark",
     ],
   },
-  # Perf is in the middle of refactoring their recipe.  crbug.com/757933
-  # These isolates are the new targets for the refactor and will replace
-  # the old ones when migration is complete.
   "performance_test_suite": {
     "label": "//chrome/test:performance_test_suite",
     "type": "script",

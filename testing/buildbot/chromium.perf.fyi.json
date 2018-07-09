@@ -53,16 +53,23 @@
     "isolated_scripts": [
       {
         "args": [
-          "experimental.startup.android.coldish",
+          "--benchmarks=experimental.startup.android.coldish",
           "-v",
           "--upload-results",
           "--output-format=histograms",
           "--browser=android-chromium"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "experimental.startup.android.coldish",
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "performance_test_suite"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -80,88 +87,23 @@
       },
       {
         "args": [
-          "heap_profiling.mobile.disabled",
+          "--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo,smoothness.oop_rasterization.top_25_smooth,thread_times.oop_rasterization.key_mobile,rendering.oopd.mobile",
           "-v",
           "--upload-results",
           "--output-format=histograms",
           "--browser=android-chromium"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.disabled",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
           ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "heap_profiling.mobile.native",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.native",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "heap_profiling.mobile.pseudo",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.pseudo",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "smoothness.oop_rasterization.top_25_smooth",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "smoothness.oop_rasterization.top_25_smooth",
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "performance_test_suite"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -175,304 +117,6 @@
           "hard_timeout": 1080,
           "ignore_task_failure": false,
           "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "thread_times.oop_rasterization.key_mobile",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "thread_times.oop_rasterization.key_mobile",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "rendering.oopd.mobile",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "rendering.oopd.mobile",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
-        }
-      }
-    ]
-  },
-  "Histogram Pipeline Linux Perf": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "dummy_benchmark.histogram_benchmark_1",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=release",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "dummy_benchmark.histogram_benchmark_1",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "dummy_benchmark.histogram_benchmark_1",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=reference",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "dummy_benchmark.histogram_benchmark_1.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "loading.desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=release",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "loading.desktop",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "loading.desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=reference",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "loading.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "system_health.common_desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=release",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "system_health.common_desktop",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "system_health.common_desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=reference",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "system_health.common_desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "system_health.memory_desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=release",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "system_health.memory_desktop",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "system_health.memory_desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=reference",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "system_health.memory_desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "speedometer2",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=release",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "speedometer2",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "speedometer2",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--browser=reference",
-          "--xvfb",
-          "--also-run-disabled-tests"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "speedometer2.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
         }
       }
     ]
@@ -481,44 +125,23 @@
     "isolated_scripts": [
       {
         "args": [
-          "loading.desktop.network_service",
+          "--benchmarks=loading.desktop.network_service,rendering.oopd.desktop",
           "-v",
           "--upload-results",
           "--output-format=chartjson",
           "--browser=release"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "loading.desktop.network_service",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build186-b7",
-              "pool": "chrome.tests.perf-fyi"
-            }
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
           ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "rendering.oopd.desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "rendering.oopd.desktop",
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "performance_test_suite"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
