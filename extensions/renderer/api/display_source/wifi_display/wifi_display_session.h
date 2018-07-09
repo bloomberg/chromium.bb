@@ -14,7 +14,7 @@
 #include "third_party/wds/src/libwds/public/source.h"
 
 namespace base {
-class Timer;
+class RepeatingTimer;
 }  // namespace base
 
 namespace extensions {
@@ -77,7 +77,7 @@ class WiFiDisplaySession : public DisplaySourceSession,
   mojom::WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
   std::string local_ip_address_;
-  std::map<int, std::unique_ptr<base::Timer>> timers_;
+  std::map<int, std::unique_ptr<base::RepeatingTimer>> timers_;
 
   DisplaySourceSessionParams params_;
   CompletionCallback start_completion_callback_;
