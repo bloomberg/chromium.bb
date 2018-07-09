@@ -60,7 +60,7 @@ const CGFloat kSelectionSize = 64.0;
 const CGFloat kSelectionDownScale = 0.1875;
 
 // The final scale of the selection bubble when the threshold is met.
-const CGFloat kSelectionAnimationScale = 23;
+const CGFloat kSelectionAnimationScale = 26;
 
 // The duration of the animations played when the threshold is met.
 const CGFloat kSelectionAnimationDuration = 0.5;
