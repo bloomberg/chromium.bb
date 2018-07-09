@@ -6,8 +6,6 @@
 
 #include <memory>
 
-std::string escaped_string;
-
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 2)
@@ -22,6 +20,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   memcpy(input.get(), data, actual_size_char8);
 
   base::StringPiece input_string(input.get(), actual_size_char8);
+  std::string escaped_string;
   base::EscapeJSONString(input_string, put_in_quotes, &escaped_string);
 
   // Test for wide-strings if available size is even.
@@ -31,6 +30,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   size_t actual_size_char16 = actual_size_char8 / 2;
   base::StringPiece16 input_string16(
       reinterpret_cast<base::char16*>(input.get()), actual_size_char16);
+  escaped_string.clear();
   base::EscapeJSONString(input_string16, put_in_quotes, &escaped_string);
 
   return 0;
