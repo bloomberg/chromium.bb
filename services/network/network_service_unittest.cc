@@ -224,8 +224,8 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryDisabled) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-// |gssapi_library_name| is only supported certain POSIX platforms.
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS) && \
+// |gssapi_library_name| is only supported on certain POSIX platforms.
+#if BUILDFLAG(USE_KERBEROS) && defined(OS_POSIX) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
 TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   const std::string kGssapiLibraryName = "Jim";

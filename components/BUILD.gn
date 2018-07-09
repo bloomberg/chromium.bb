@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//media/media_options.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//testing/test.gni")
@@ -500,7 +501,7 @@ if (!is_ios) {
       data += [ "$root_out_dir/Content Shell.app/" ]
     }
 
-    if (!is_android) {
+    if (enable_plugins) {
       sources += [ "pdf/renderer/pdf_accessibility_tree_browsertest.cc" ]
       deps += [ "//components/pdf/renderer" ]
     }

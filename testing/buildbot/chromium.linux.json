@@ -104,6 +104,24 @@
         "test": "cast_shell_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cast_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter"
         ],
@@ -207,6 +225,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -367,6 +391,24 @@
         "test": "cast_shell_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cast_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter"
         ],
@@ -470,6 +512,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "services_unittests"
       },
       {
         "swarming": {
