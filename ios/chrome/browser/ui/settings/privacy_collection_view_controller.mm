@@ -15,7 +15,6 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
