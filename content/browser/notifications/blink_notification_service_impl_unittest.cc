@@ -141,10 +141,10 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
       base::RunLoop run_loop;
       embedded_worker_helper_->context()->RegisterServiceWorker(
           GURL(kTestServiceWorkerUrl), options,
-          base::AdaptCallbackForRepeating(base::BindOnce(
+          base::BindOnce(
               &BlinkNotificationServiceImplTest::DidRegisterServiceWorker,
               base::Unretained(this), &service_worker_registration_id,
-              run_loop.QuitClosure())));
+              run_loop.QuitClosure()));
       run_loop.Run();
     }
 

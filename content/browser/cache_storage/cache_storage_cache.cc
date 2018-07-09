@@ -522,10 +522,9 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
   quota_manager_proxy_->GetUsageAndQuota(
       base::ThreadTaskRunnerHandle::Get().get(), origin_,
       blink::mojom::StorageType::kTemporary,
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         url, expected_response_time, buffer, buf_len)));
+      base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback), url,
+                     expected_response_time, buffer, buf_len));
 }
 
 void CacheStorageCache::BatchOperation(
@@ -568,11 +567,10 @@ void CacheStorageCache::BatchOperation(
     quota_manager_proxy_->GetUsageAndQuota(
         base::ThreadTaskRunnerHandle::Get().get(), origin_,
         blink::mojom::StorageType::kTemporary,
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            &CacheStorageCache::BatchDidGetUsageAndQuota,
-            weak_ptr_factory_.GetWeakPtr(), std::move(operations),
-            std::move(callback), std::move(bad_message_callback),
-            space_required, side_data_size)));
+        base::BindOnce(&CacheStorageCache::BatchDidGetUsageAndQuota,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(operations),
+                       std::move(callback), std::move(bad_message_callback),
+                       space_required, side_data_size));
     return;
   }
 

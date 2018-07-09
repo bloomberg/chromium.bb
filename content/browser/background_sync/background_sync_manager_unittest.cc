@@ -141,15 +141,13 @@ class BackgroundSyncManagerTest : public testing::Test {
     options2.scope = GURL(kPattern2);
     helper_->context()->RegisterServiceWorker(
         GURL(kScript1), options1,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
-                           &sw_registration_id_1_)));
+        base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
+                       &sw_registration_id_1_));
 
     helper_->context()->RegisterServiceWorker(
         GURL(kScript2), options2,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
-                           &sw_registration_id_2_)));
+        base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
+                       &sw_registration_id_2_));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called_1);
     EXPECT_TRUE(called_2);
@@ -158,13 +156,13 @@ class BackgroundSyncManagerTest : public testing::Test {
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_1_, GURL(kPattern1).GetOrigin(),
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            FindServiceWorkerRegistrationCallback, &sw_registration_1_)));
+        base::BindOnce(FindServiceWorkerRegistrationCallback,
+                       &sw_registration_1_));
 
     helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_2_, GURL(kPattern1).GetOrigin(),
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            FindServiceWorkerRegistrationCallback, &sw_registration_2_)));
+        base::BindOnce(FindServiceWorkerRegistrationCallback,
+                       &sw_registration_2_));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_1_);
     EXPECT_TRUE(sw_registration_2_);
@@ -334,8 +332,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
         PatternForSWId(sw_registration_id),
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&UnregisterServiceWorkerCallback, &called)));
+        base::BindOnce(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
   }
@@ -654,14 +651,12 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool get_registrations_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_1_,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-          base::Unretained(this), &register_called)));
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &register_called));
   test_background_sync_manager_->GetRegistrations(
       sw_registration_id_1_,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
-          base::Unretained(this), &get_registrations_called)));
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+                     base::Unretained(this), &get_registrations_called));
 
   base::RunLoop().RunUntilIdle();
   // Init should be blocked while loading from the backend.
@@ -696,9 +691,8 @@ TEST_F(BackgroundSyncManagerTest,
   bool callback_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_2_,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-          base::Unretained(this), &callback_called)));
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &callback_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_called);
