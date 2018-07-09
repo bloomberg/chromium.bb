@@ -97,8 +97,7 @@ class ChromeCommitter(object):
       # TODO(crbug.com/860584): Remove after we fix the bug.
       git.RunGit(self._checkout_dir,
                  self._git_committer_args + ['cl', 'creds-check', '-v', '-v'],
-                 print_cmd=True, redirect_stderr=True, capture_output=False,
-                 extra_env={'SKIP_GCE_AUTH_FOR_GIT': '1'})
+                 print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # We just want to log the results, not block on success.
       pass
