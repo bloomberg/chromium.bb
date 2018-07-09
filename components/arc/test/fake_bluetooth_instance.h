@@ -124,7 +124,13 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
                         int32_t offset,
                         const std::vector<uint8_t>& value,
                         mojom::BluetoothGattDBAttributeType attribute_type,
+                        bool is_prepare,
                         RequestGattWriteCallback callback) override;
+
+  void RequestGattExecuteWrite(
+      mojom::BluetoothAddressPtr address,
+      bool execute,
+      RequestGattExecuteWriteCallback callback) override;
 
   void OnGetSdpRecords(
       mojom::BluetoothStatus status,

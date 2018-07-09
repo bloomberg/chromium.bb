@@ -53,6 +53,29 @@ void TestBluetoothLocalGattServiceDelegate::OnCharacteristicWriteRequest(
   callback.Run();
 }
 
+void TestBluetoothLocalGattServiceDelegate::OnCharacteristicPrepareWriteRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value,
+    int offset,
+    bool has_subsequent_request,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  EXPECT_EQ(expected_characteristic_->GetIdentifier(),
+            characteristic->GetIdentifier());
+  if (should_fail_) {
+    error_callback.Run();
+    return;
+  }
+  // For testing purpose, we don't maintain a queue for all the pending prepare
+  // write requests. Instead, we just write the last value, that is, we assume
+  // |offset| is always 0.
+  if (!has_subsequent_request)
+    last_written_value_ = BluetoothGattServerTest::GetInteger(value);
+  last_seen_device_ = device->GetIdentifier();
+  callback.Run();
+}
+
 void TestBluetoothLocalGattServiceDelegate::OnDescriptorReadRequest(
     const BluetoothDevice* device,
     const BluetoothLocalGattDescriptor* descriptor,
