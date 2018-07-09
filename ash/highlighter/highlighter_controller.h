@@ -31,8 +31,11 @@ enum class HighlighterEnabledState {
   // Highlighter is disabled by user directly, for example disabling palette
   // tool by user actions on palette menu.
   kDisabledByUser,
-  // Highlighter is disabled on metalayer session aborted or complete.
-  kDisabledBySessionEnd,
+  // Highlighter is disabled on metalayer session complete.
+  kDisabledBySessionComplete,
+  // Highlighter is disabled on metalayer session abort. An abort may occur due
+  // to dismissal of Assistant UI or due to interruption by user via hotword.
+  kDisabledBySessionAbort,
 };
 
 // Controller for the highlighter functionality.
@@ -71,6 +74,10 @@ class ASH_EXPORT HighlighterController
 
   // Update highlighter enabled |state| and notify observers.
   void UpdateEnabledState(HighlighterEnabledState enabled_state);
+
+  // Aborts the current metalayer session. If no metalayer session exists,
+  // calling this method is a no-op.
+  void AbortSession();
 
   void BindRequest(mojom::HighlighterControllerRequest request);
 

@@ -61,6 +61,7 @@ class AssistantInteractionController
   void OnSuggestionChipPressed(int id);
 
   // AssistantInteractionModelObserver:
+  void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
 

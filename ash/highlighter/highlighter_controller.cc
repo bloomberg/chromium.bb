@@ -91,6 +91,11 @@ void HighlighterController::UpdateEnabledState(
     observer.OnHighlighterEnabledChanged(enabled_state);
 }
 
+void HighlighterController::AbortSession() {
+  if (enabled_state_ == HighlighterEnabledState::kEnabled)
+    UpdateEnabledState(HighlighterEnabledState::kDisabledBySessionAbort);
+}
+
 void HighlighterController::BindRequest(
     mojom::HighlighterControllerRequest request) {
   binding_.Bind(std::move(request));

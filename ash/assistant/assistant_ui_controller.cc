@@ -41,6 +41,7 @@ void ShowToast(const std::string& id, int message_id) {
 AssistantUiController::AssistantUiController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
+  AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
@@ -48,6 +49,7 @@ AssistantUiController::AssistantUiController(
 AssistantUiController::~AssistantUiController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   assistant_controller_->RemoveObserver(this);
+  RemoveModelObserver(this);
 
   if (container_view_)
     container_view_->GetWidget()->RemoveObserver(this);
@@ -158,7 +160,8 @@ void AssistantUiController::OnHighlighterEnabledChanged(
       if (assistant_ui_model_.visible())
         HideUi(AssistantSource::kStylus);
       break;
-    case HighlighterEnabledState::kDisabledBySessionEnd:
+    case HighlighterEnabledState::kDisabledBySessionComplete:
+    case HighlighterEnabledState::kDisabledBySessionAbort:
       // No action necessary.
       break;
   }
@@ -175,6 +178,15 @@ void AssistantUiController::OnDeepLinkReceived(const GURL& url) {
 void AssistantUiController::OnUrlOpened(const GURL& url) {
   // We close Assistant UI when opening a URL in a new tab.
   HideUi(AssistantSource::kUnspecified);
+}
+
+void AssistantUiController::OnUiVisibilityChanged(bool visible,
+                                                  AssistantSource source) {
+  if (visible)
+    return;
+
+  // Metalayer mode should not be sticky. Disable it when hiding UI.
+  Shell::Get()->highlighter_controller()->AbortSession();
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {

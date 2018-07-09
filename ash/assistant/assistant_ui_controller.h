@@ -9,6 +9,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -41,6 +42,7 @@ class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver,
       public CaptionBarDelegate,
       public DialogPlateObserver,
       public HighlighterController::Observer {
@@ -88,6 +90,9 @@ class ASH_EXPORT AssistantUiController
   // AssistantControllerObserver:
   void OnDeepLinkReceived(const GURL& deep_link) override;
   void OnUrlOpened(const GURL& url) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
   void ShowUi(AssistantSource source);
   void HideUi(AssistantSource source);
