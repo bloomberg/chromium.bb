@@ -96,23 +96,6 @@ const size_t kWaitTimeForDynamicFormsMs = 200;
 // The time limit, in ms, between a fill and when a refill can happen.
 const int kLimitBeforeRefillMs = 1000;
 
-// Precondition: |form_structure| and |form| should correspond to the same
-// logical form.  Returns true if any field in the given |section| within |form|
-// is auto-filled.
-bool SectionHasAutofilledField(const FormStructure& form_structure,
-                               const FormData& form,
-                               const std::string& section) {
-  DCHECK_EQ(form_structure.field_count(), form.fields.size());
-  for (size_t i = 0; i < form_structure.field_count(); ++i) {
-    if (form_structure.field(i)->section == section &&
-        form.fields[i].is_autofilled) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 // Returns the credit card field |value| trimmed from whitespace and with stop
 // characters removed.
 base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
@@ -562,8 +545,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
       // suggestions available.
       // TODO(mathp): Differentiate between number of suggestions available
       // (current metric) and number shown to the user.
-      if (!has_logged_address_suggestions_count_ &&
-          !context.section_has_autofilled_field) {
+      if (!has_logged_address_suggestions_count_) {
         AutofillMetrics::LogAddressSuggestionsCount(suggestions.size());
         has_logged_address_suggestions_count_ = true;
       }
@@ -2079,27 +2061,6 @@ void AutofillManager::GetAvailableSuggestions(
     warning_suggestion.frontend_id =
         POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
     suggestions->assign(1, warning_suggestion);
-  } else {
-    context->section_has_autofilled_field = SectionHasAutofilledField(
-        *context->form_structure, form, context->focused_field->section);
-    if (context->section_has_autofilled_field) {
-      // If the relevant section has auto-filled  fields and the renderer is
-      // querying for suggestions, then for some fields, the user is editing
-      // the value of a field. In this case, mimic autocomplete: don't
-      // display labels or icons, as that information is redundant.
-      // Moreover, filter out duplicate suggestions.
-      std::set<base::string16> seen_values;
-      for (auto iter = suggestions->begin(); iter != suggestions->end();) {
-        if (!seen_values.insert(iter->value).second) {
-          // If we've seen this suggestion value before, remove it.
-          iter = suggestions->erase(iter);
-        } else {
-          iter->label.clear();
-          iter->icon.clear();
-          ++iter;
-        }
-      }
-    }
   }
 }
 

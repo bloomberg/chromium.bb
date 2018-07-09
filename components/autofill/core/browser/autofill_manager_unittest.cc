@@ -997,9 +997,10 @@ TEST_F(AutofillManagerTest,
 
   // Test that we sent the right values to the external delegate. No labels,
   // with duplicate values "Grimes" merged.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Googler", "" /* no label */, "", 1),
-                   Suggestion("Grimes", "" /* no label */, "", 2));
+  CheckSuggestions(
+      kDefaultPageID, Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
+      Suggestion("Grimes", "1234 Smith Blvd., Carl Grimes", "", 2),
+      Suggestion("Grimes", "1234 Smith Blvd., Robin Grimes", "", 3));
 }
 
 // Tests that we return address profile suggestions values when the section
@@ -1021,7 +1022,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
 
   // Test that we sent the right values to the external delegate. No labels.
   CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "" /* no label */, "", 1));
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -1547,7 +1548,7 @@ TEST_F(AutofillManagerTest,
       AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE, 1);
 }
 
-// Test that we return autocomplete-like suggestions when trying to autofill
+// Test that we return normal autofill suggestions when trying to autofill
 // already filled forms.
 TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   // Set up our form data.
@@ -1562,8 +1563,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID, Suggestion("Charles", "", "", 1),
-                   Suggestion("Elvis", "", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1614,7 +1616,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", "", "", 1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
