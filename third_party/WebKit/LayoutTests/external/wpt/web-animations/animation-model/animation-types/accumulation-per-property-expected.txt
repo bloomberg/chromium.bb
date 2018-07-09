@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 578 tests; 400 PASS, 178 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 578 tests; 401 PASS, 177 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -317,8 +317,8 @@ PASS grid-template-rows (type: discrete) has testAccumulation function
 PASS grid-template-rows: "5px" onto "1px"
 PASS grid-template-rows: "1px" onto "5px"
 PASS hyphens (type: discrete) has testAccumulation function
-FAIL hyphens: "auto" onto "manual" assert_equals: The value should be auto at 0ms expected "auto" but got "manual"
-PASS hyphens: "manual" onto "auto"
+PASS hyphens: "none" onto "manual"
+PASS hyphens: "manual" onto "none"
 PASS image-orientation (type: discrete) has testAccumulation function
 FAIL image-orientation: "90deg" onto "0deg" assert_equals: The value should be 90deg at 0ms expected "90deg" but got "0deg"
 PASS image-orientation: "0deg" onto "90deg"
