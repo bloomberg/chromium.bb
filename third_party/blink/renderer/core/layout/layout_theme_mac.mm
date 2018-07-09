@@ -697,11 +697,13 @@ const int* LayoutThemeMac::ProgressBarHeights() const {
   return kSizes;
 }
 
-double LayoutThemeMac::AnimationRepeatIntervalForProgressBar() const {
+constexpr TimeDelta LayoutThemeMac::kProgressAnimationFrameRate;
+
+TimeDelta LayoutThemeMac::AnimationRepeatIntervalForProgressBar() const {
   return kProgressAnimationFrameRate;
 }
 
-double LayoutThemeMac::AnimationDurationForProgressBar() const {
+TimeDelta LayoutThemeMac::AnimationDurationForProgressBar() const {
   return kProgressAnimationNumFrames * kProgressAnimationFrameRate;
 }
 

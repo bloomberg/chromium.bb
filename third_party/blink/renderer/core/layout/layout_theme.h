@@ -206,9 +206,9 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual void AdjustProgressBarBounds(ComputedStyle& style) const {}
 
   // Returns the repeat interval of the animation for the progress bar.
-  virtual double AnimationRepeatIntervalForProgressBar() const;
+  virtual TimeDelta AnimationRepeatIntervalForProgressBar() const;
   // Returns the duration of the animation for the progress bar.
-  virtual double AnimationDurationForProgressBar() const;
+  virtual TimeDelta AnimationDurationForProgressBar() const;
 
   // Returns size of one slider tick mark for a horizontal track.
   // For vertical tracks we rotate it and use it. i.e. Width is always length

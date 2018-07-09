@@ -381,16 +381,17 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
 }
 
 //
-// Following values are come from default of GTK+
+// The following values come from the defaults of GTK+.
 //
 static const int kProgressAnimationFrames = 10;
-static const double kProgressAnimationInterval = 0.125;
+static constexpr TimeDelta kProgressAnimationInterval =
+    TimeDelta::FromMilliseconds(125);
 
-double LayoutThemeDefault::AnimationRepeatIntervalForProgressBar() const {
+TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar() const {
   return kProgressAnimationInterval;
 }
 
-double LayoutThemeDefault::AnimationDurationForProgressBar() const {
+TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
   return kProgressAnimationInterval * kProgressAnimationFrames *
          2;  // "2" for back and forth
 }
