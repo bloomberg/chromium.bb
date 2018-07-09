@@ -1114,14 +1114,9 @@ bool IsSimpleDRRect(const FloatRoundedRect& outer,
 
   const auto& is_simple_corner = [&stroke_size](const FloatSize& outer,
                                                 const FloatSize& inner) {
-    DCHECK(outer.Width() >= inner.Width());
-    DCHECK(outer.Height() >= inner.Height());
-
     // trivial/zero-radius corner
-    if (outer.IsZero()) {
-      DCHECK(inner.IsZero());
+    if (outer.IsZero() && inner.IsZero())
       return true;
-    }
 
     // and
     //   2) all corners are isotropic
