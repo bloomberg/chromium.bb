@@ -28,10 +28,6 @@ import tempfile
 import time
 import traceback
 import types
-try:
-  import psutil
-except ImportError:
-  psutil = None
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -1013,7 +1009,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
          ['--sparse', '-I', comp, '-cf', target] +
          list(inputs))
   rc_func = SudoRunCommand if sudo else RunCommand
-  inputs_abs_paths = [os.path.abspath(x) for x in inputs]
+  input_abs_paths = [os.path.abspath(x) for x in inputs]
 
   # If tar fails with status 1, retry, but only once.  We think this is
   # acceptable because we see directories being modified, but not files.  Our
@@ -1026,22 +1022,29 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     if result.returncode != 1 or try_count > 0:
       # Debug logic to find the competing program that is modifying the
       # directory being compressed.
-      if psutil is not None:
-        for process in psutil.process_iter():
-          try:
-            for file_link in process.open_files():
-              for input_path in inputs_abs_paths:
-                # Match for input or its subdirectories.
-                if file_link.path.startswith(input_path):
-                  logging.info('Competing process that '
-                               'could be responsible - %s,%s,%s',
-                               process.pid, process.name, file_link.path)
-          except psutil.AccessDenied:
-            # Some process have higher access requirements.
-            logging.info('This process needs higher access'
-                         ' level than current process. Skipping...')
-          except Exception:
-            logging.info('CreateTarball: psutil exception', exc_info=True)
+      try:
+        lsof_result = RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
+                                 cwd=cwd, mute_output=True)
+      except Exception:
+        lsof_result = 0
+        logging.info('Exception running lsof.', exc_info=True)
+
+      if lsof_result:
+        logging.info('Potential competing programs:')
+        current_pid = 0
+        for line in lsof_result.output.splitlines():
+          if line.startswith('p'):
+            current_pid = line[1:]
+          elif line.startswith('n') and current_pid:
+            current_path = line[1:]
+            for input_path in input_abs_paths:
+              if input_path in current_path:
+                try:
+                  ps_result = RunCommand(['ps', '-f', current_pid],
+                                         mute_output=True)
+                  logging.info('%s', ps_result.output)
+                except Exception:
+                  logging.info('Exception running ps.', exc_info=True)
 
       raise CreateTarballError('CreateTarball', result)
     assert result.returncode == 1 and try_count == 0

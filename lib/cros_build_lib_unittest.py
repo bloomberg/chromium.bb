@@ -1804,7 +1804,7 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
       cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 1)
+    self.assertEqual(self.mockRun.call_count, 2)
     self.assertEqual(cm.exception.args[1].returncode, 2)
 
   def testFailedTwiceSoft(self):
@@ -1813,5 +1813,5 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
       cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(self.mockRun.call_count, 3)
     self.assertEqual(cm.exception.args[1].returncode, 1)
