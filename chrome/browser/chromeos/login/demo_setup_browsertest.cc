@@ -138,6 +138,7 @@ class DemoSetupTest : public LoginManagerTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
+    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
   }
 
   void SetUpOnMainThread() override {
@@ -161,6 +162,17 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string query =
         base::StrCat({"!", ScreenToContentQuery(screen), ".$.",
                       DialogToStringId(dialog), ".hidden"});
+    return js_checker().GetBool(query);
+  }
+
+  bool IsScreenDialogElementShown(OobeScreen screen,
+                                  DemoSetupDialog dialog,
+                                  const std::string& element) {
+    const std::string element_selector = base::StrCat(
+        {ScreenToContentQuery(screen), ".$.", DialogToStringId(dialog),
+         ".querySelector('", element, "')"});
+    const std::string query = base::StrCat(
+        {"!!", element_selector, " && !", element_selector, ".hidden"});
     return js_checker().GetBool(query);
   }
 
@@ -390,6 +402,45 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
                             DemoSetupDialog::kProgress));
 
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOnlineAndOfflineButton) {
+  SkipToDialog(DemoSetupDialog::kSettings);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+
+  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                                         DemoSetupDialog::kSettings,
+                                         "[name=onlineSetup]"));
+  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                                         DemoSetupDialog::kSettings,
+                                         "[name=offlineSetup]"));
+}
+
+class DemoSetupOfflineDisabledTest : public DemoSetupTest {
+ public:
+  DemoSetupOfflineDisabledTest() = default;
+  ~DemoSetupOfflineDisabledTest() override = default;
+
+  // DemoSetupTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    LoginManagerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupOfflineDisabledTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest, DoNotShowOfflineButton) {
+  SkipToDialog(DemoSetupDialog::kSettings);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+
+  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                                         DemoSetupDialog::kSettings,
+                                         "[name=onlineSetup]"));
+  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                                          DemoSetupDialog::kSettings,
+                                          "[name=offlineSetup]"));
 }
 
 }  // namespace chromeos

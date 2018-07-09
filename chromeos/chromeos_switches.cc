@@ -346,6 +346,10 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
+// Enables offline demo mode. Offline demo mode is a part of demo mode feature
+// and it requires |kEnableDemoMode| flag to be enabled to take effect.
+const char kEnableOfflineDemoMode[] = "enable-offline-demo-mode";
+
 // Enables suggestions while typing on a physical keyboard.
 const char kEnablePhysicalKeyboardAutocorrect[] =
     "enable-physical-keyboard-autocorrect";
