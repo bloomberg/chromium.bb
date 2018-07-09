@@ -16,6 +16,22 @@
 
 namespace viz {
 
+// A FrameSinkId uniquely identifies a CompositorFrameSink and the client that
+// uses it within the Viz compositing system. FrameSinkIds are used the first
+// component of a SurfaceId, which is a FrameSinkId + LocalSurfaceId, to ensure
+// SurfaceIds are unique across all CompositorFrameSinks.
+//
+// FrameSinkId consists of:
+//
+// - client_id: This part uniquely identifies a client namespace, typically one
+//              per process.
+//
+// - sink_id: This part uniquely identifies a FrameSink within the client
+//            namespace. This component may be allocated by the client specified
+//            by the client_id.
+//
+// The FrameSinkId for a given client_id may be allocated using a
+// FrameSinkIdAllocator.
 class VIZ_COMMON_EXPORT FrameSinkId {
  public:
   constexpr FrameSinkId() : client_id_(0), sink_id_(0) {}
