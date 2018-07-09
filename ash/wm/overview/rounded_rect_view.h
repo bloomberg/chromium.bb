@@ -20,16 +20,28 @@ namespace ash {
 class RoundedRectView : public views::View {
  public:
   RoundedRectView(int corner_radius, SkColor background_color);
+  RoundedRectView(int top_left_radius,
+                  int top_right_radius,
+                  int bottom_right_radius,
+                  int bottom_left_radius,
+                  SkColor background_color);
   ~RoundedRectView() override;
 
   void SetBackgroundColor(SkColor background_color);
+  void SetCornerRadius(int top_left_radius,
+                       int top_right_radius,
+                       int bottom_right_radius,
+                       int bottom_left_radius);
   void SetCornerRadius(int radius);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  int corner_radius_;
+  int top_left_radius_;
+  int top_right_radius_;
+  int bottom_right_radius_;
+  int bottom_left_radius_;
   SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedRectView);
