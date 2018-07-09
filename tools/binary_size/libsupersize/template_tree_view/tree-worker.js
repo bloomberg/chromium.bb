@@ -36,14 +36,17 @@
  */
 
 /**
- * @typedef {object} TreeNode Node object used to represent the file tree
+ * @typedef {object} TreeNode Node object used to represent the file tree. Can
+ * represent either a folder, file, component, or symbol.
  * @prop {TreeNode[]} children Child tree nodes
  * @prop {TreeNode | null} parent Parent tree node. null if this is a root node.
- * @prop {string} idPath
- * @prop {string} shortName
- * @prop {number} size
- * @prop {string} type
- * @prop {{ [type: string]: number }} childSizes
+ * @prop {string} idPath Full path to this node.
+ * @prop {string} shortName Name of this node, included in idPath.
+ * @prop {number} size Byte size of this node and its children.
+ * @prop {string} type Type of this node. If this node has children, the string
+ * may have a second character to denote the most common child.
+ * @prop {{[type: string]: number}} childSizes The sizes of the children
+ * of this node, split by the types of the children.
  */
 
 /**

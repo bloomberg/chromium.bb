@@ -65,6 +65,14 @@
         .subhead-2 {
             font-size: 14px;
         }
+        .body-2 {
+            font-weight: 400;
+            font-size: 14px;
+        }
+        .caption {
+            font-size: 12px;
+            color: #5f6368;
+        }
 
         ul {
             list-style-type: none;
@@ -91,6 +99,7 @@
         }
 
         .icon {
+            display: block;
             margin-right: 6px;
         }
 
@@ -134,7 +143,7 @@
             flex: 1;
         }
 
-        .size {
+        .size, .percent {
             margin-left: 16px;
             text-align: right;
             color: #5f6368;
@@ -144,7 +153,6 @@
             color: #ea4335;
         }
     </style>
-    <link href="options.css" rel="stylesheet">
     <script defer src="state.js"></script>
     <script defer src="tree.js"></script>
     <script defer async onload="loadTree(tree_data);" src="data.js"></script>
@@ -179,6 +187,7 @@
             </svg>
         </button>
     </header>
+    <link href="options.css" rel="stylesheet">
     <form id="options" class="options" method="GET">
         <header class="form-bar">
             <button type="button" class="icon-button toggle-options" title="Close">
@@ -385,6 +394,88 @@
             <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
         </main>
     </div>
+    <link href="infocard.css" rel="stylesheet">
+    <footer class="infocard infocard-container open" id="infocardcontainer" hidden>
+        <canvas class="type-pie-info" height="80" width="80"></canvas>
+        <header class="header-info">
+            <h4 class="subhead size-info">N bytes</h4>
+            <p class="body-2 path-info">path/to/<span class="symbol-name-info">symbol</span></p>
+        </header>
+        <table class="type-breakdown-info">
+            <thead>
+                <tr>
+                    <th class="subhead-2">Type</th>
+                    <th class="subhead-2 size">Total size</th>
+                    <th class="subhead-2 percent">Percent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="bss-info">
+                    <th scope="row">.bss</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="data-info">
+                    <th scope="row">.data and .data.*</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="rodata-info">
+                    <th scope="row">.rodata</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="text-info">
+                    <th scope="row">.text</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="vtable-info">
+                    <th scope="row">Vtable entry</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="gen-info">
+                    <th scope="row">Generated symbols</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="dexnon-info">
+                    <th scope="row">Dex non-method entries</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="dex-info">
+                    <th scope="row">Dex methods</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="pak-info">
+                    <th scope="row">Locale pak entries</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="paknon-info">
+                    <th scope="row">Non-locale pak entries</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+                <tr class="other-info">
+                    <th scope="row">Other entries</th>
+                    <td class="size">0</td>
+                    <td class="percent">0%</td>
+                </tr>
+            </tbody>
+        </table>
+    </footer>
+    <footer class="infocard infocard-symbol" id="infocardsymbol" hidden>
+        <div class="icon-info"></div>
+        <header class="header-info">
+            <h4 class="subhead size-info">N bytes</h4>
+            <p class="body-2 path-info">path/to/<span class="symbol-name-info">symbol</span></p>
+        </header>
+        <p class="caption type-info">Initialized data (.data)</p>
+    </footer>
 </body>
 
 </html>

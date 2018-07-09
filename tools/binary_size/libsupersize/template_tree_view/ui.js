@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-check
 'use strict';
 
 /**
@@ -26,9 +27,10 @@
 
   const _icons = document.getElementById('icons');
   /**
-   * @enum {SVGSVGElement} Icon elements that correspond to each symbol type.
+   * @type {{[type:string]: SVGSVGElement}} Icon elements
+   * that correspond to each symbol type.
    */
-  const _SYMBOL_ICONS = {
+  const SYMBOL_ICONS = {
     D: _icons.querySelector('.foldericon'),
     C: _icons.querySelector('.componenticon'),
     F: _icons.querySelector('.fileicon'),
@@ -47,13 +49,33 @@
   const _CONTAINER_TYPES = new Set('DCF');
 
   // Templates for tree nodes in the UI.
+  /** @type {HTMLTemplateElement} Template for leaves in the tree */
   const _leafTemplate = document.getElementById('treeitem');
+  /** @type {HTMLTemplateElement} Template for trees */
   const _treeTemplate = document.getElementById('treefolder');
+
+  // Infocard elements
+  const _containerInfocard = document.getElementById('infocardcontainer');
+  const _symbolInfocard = document.getElementById('infocardsymbol');
 
   const _symbolTree = document.getElementById('symboltree');
 
-  /** HTMLCollection of all nodes. Updates itself automatically. */
+  /**
+   * @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>}
+   * HTMLCollection of all nodes. Updates itself automatically.
+   */
   const _liveNodeList = document.getElementsByClassName('node');
+  /**
+   * @type {HTMLCollectionOf<HTMLSpanElement>}
+   * HTMLCollection of all size elements. Updates itself automatically.
+   */
+  const _liveSizeSpanList = document.getElementsByClassName('size');
+
+  /** @type {CanvasRenderingContext2D} Pie chart canvas from infocard */
+  const _ctx = _containerInfocard
+    .querySelector('.type-pie-info')
+    .getContext('2d');
+  const _tableBody = _containerInfocard.querySelector('tbody');
 
   /**
    * @type {WeakMap<HTMLElement, Readonly<TreeNode>>}
@@ -64,31 +86,207 @@
   const _uiNodeData = new WeakMap();
 
   /**
-   * Replace the contexts of the size element for a tree node.
+   * @type {{[type:string]: HTMLTableRowElement}} Rows in the container infocard
+   * that represent a particular symbol type.
+   */
+  const _INFO_ROWS = {
+    b: _containerInfocard.querySelector('.bss-info'),
+    d: _containerInfocard.querySelector('.data-info'),
+    r: _containerInfocard.querySelector('.rodata-info'),
+    t: _containerInfocard.querySelector('.text-info'),
+    v: _containerInfocard.querySelector('.vtable-info'),
+    '*': _containerInfocard.querySelector('.gen-info'),
+    x: _containerInfocard.querySelector('.dexnon-info'),
+    m: _containerInfocard.querySelector('.dex-info'),
+    p: _containerInfocard.querySelector('.pak-info'),
+    P: _containerInfocard.querySelector('.paknon-info'),
+    o: _containerInfocard.querySelector('.other-info'),
+  };
+
+  /**
+   * Draw a slice of a pie chart.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {number} angleStart Starting angle, in radians.
+   * @param {number} percentage Percentage of circle to draw.
+   * @param {string} color Color of the pie slice.
+   * @returns {number} Ending angle, in radians.
+   */
+  function _drawSlice(ctx, angleStart, percentage, color) {
+    const arcLength = percentage * 2 * Math.PI;
+    const angleEnd = angleStart + arcLength;
+    if (arcLength === 0) return angleEnd;
+
+    ctx.fillStyle = color;
+    // Move cursor to center, where line will start
+    ctx.beginPath();
+    ctx.moveTo(40, 40);
+    // Move cursor to start of arc then draw arc
+    ctx.arc(40, 40, 40, angleStart, angleEnd);
+    // Move cursor back to center
+    ctx.closePath();
+    ctx.fill();
+
+    return angleEnd;
+  }
+
+  /**
+   * Update a row in the breakdown table with the given values.
+   * @param {HTMLTableRowElement} row
+   * @param {number} size Total size of the symbols of a given type in a
+   * container.
+   * @param {number} percentage How much the size represents in relation to the
+   * total size of the symbols in the container.
+   */
+  function _updateBreakdownRow(row, size, percentage) {
+    if (size === 0) {
+      if (row.parentElement != null) {
+        _tableBody.removeChild(row);
+      }
+    } else {
+      _tableBody.appendChild(row);
+    }
+
+    const sizeColumn = row.querySelector('.size');
+    const percentColumn = row.querySelector('.percent');
+
+    sizeColumn.textContent = size.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      useGrouping: true,
+    });
+    percentColumn.textContent = percentage.toLocaleString(undefined, {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function _updateHeader(infocard, symbol) {
+    infocard.removeAttribute('hidden');
+    const _getSizeLabels = state.has('method_count')
+      ? _getMethodCountContents
+      : _getSizeContents;
+    const {title, element} = _getSizeLabels(symbol.size);
+
+    const sizeInfo = infocard.querySelector('.size-info');
+    dom.replace(
+      sizeInfo,
+      dom.createFragment([
+        document.createTextNode(title),
+        document.createTextNode(' ('),
+        element,
+        document.createTextNode(')'),
+      ])
+    );
+
+    if (symbol.size < 0) {
+      sizeInfo.classList.add('negative');
+    } else {
+      sizeInfo.classList.remove('negative');
+    }
+
+    const [path] = symbol.idPath.split(symbol.shortName, 1);
+    const boldShortName = document.createElement('span');
+    boldShortName.className = 'symbol-name-info';
+    boldShortName.textContent = symbol.shortName;
+    dom.replace(
+      infocard.querySelector('.path-info'),
+      dom.createFragment([document.createTextNode(path), boldShortName])
+    );
+  }
+
+  function _updateInfocard(symbol) {
+    if (_CONTAINER_TYPES.has(symbol.type[0])) {
+      _updateHeader(_containerInfocard, symbol);
+      _symbolInfocard.setAttribute('hidden', '');
+
+      let angleStart = 0;
+      let otherSize = 0;
+      const extraRows = {..._INFO_ROWS};
+      const sizeEntries = Object.entries(symbol.childSizes).sort(
+        (a, b) => b[1] - a[1]
+      );
+      for (const [type, size] of sizeEntries) {
+        const icon = _getIconTemplate(type, false);
+        if (type === 'o') {
+          otherSize += size;
+        } else {
+          const color = icon.getAttribute('fill');
+          const percentage = size / symbol.size;
+
+          angleStart = _drawSlice(_ctx, angleStart, percentage, color);
+
+          _updateBreakdownRow(_INFO_ROWS[type], size, percentage);
+          delete extraRows[type];
+        }
+      }
+
+      for (const row of Object.values(extraRows)) {
+        _updateBreakdownRow(row, 0, 0);
+      }
+      const otherPercentage = otherSize / symbol.size;
+      _updateBreakdownRow(_INFO_ROWS.o, otherSize, otherPercentage);
+      _drawSlice(
+        _ctx,
+        angleStart,
+        otherPercentage,
+        SYMBOL_ICONS.o.getAttribute('fill')
+      );
+    } else {
+      _updateHeader(_symbolInfocard, symbol);
+      _containerInfocard.setAttribute('hidden', '');
+
+      const icon = _getIconTemplate(symbol.type[0]);
+      const iconInfo = _symbolInfocard.querySelector('.icon-info');
+      iconInfo.style.backgroundColor = icon.getAttribute('fill');
+      icon.setAttribute('fill', '#fff');
+      dom.replace(iconInfo, icon);
+
+      const title = icon.querySelector('title').textContent;
+      _symbolInfocard.querySelector('.type-info').textContent = title;
+    }
+  }
+
+  let _pendingFrame;
+  function _showInfocardOnHover(event) {
+    const symbol = _uiNodeData.get(event.currentTarget);
+    cancelAnimationFrame(_pendingFrame);
+    _pendingFrame = requestAnimationFrame(() => _updateInfocard(symbol));
+  }
+  function _showInfocardOnFocus(event) {
+    const symbol = _uiNodeData.get(event.target);
+    cancelAnimationFrame(_pendingFrame);
+    _pendingFrame = requestAnimationFrame(() => _updateInfocard(symbol));
+  }
+
+  /**
+   * Create the contents for the size element of a tree node..
    * If in method count mode, size instead represents the amount of methods in
    * the node. In this case, don't append a unit at the end.
-   * @param {HTMLElement} sizeElement Element that should display the count
    * @param {number} methodCount Number of methods to use for the count text
+   * @returns {{title:string,element:Node}} Object with hover text title and
+   * size element body. Can be consumed by `_applySizeFunc()`
    */
-  function _setMethodCountContents(sizeElement, methodCount) {
+  function _getMethodCountContents(methodCount) {
     const methodStr = methodCount.toLocaleString(undefined, {
       useGrouping: true,
     });
 
-    const textNode = document.createTextNode(methodStr);
-    dom.replace(sizeElement, textNode);
-    sizeElement.title = `${methodStr} methods`;
+    return {
+      element: document.createTextNode(methodStr),
+      title: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
+    };
   }
 
   /**
-   * Replace the contexts of the size element for a tree node.
-   * The unit to use is selected from the current state,
-   * and the original number of bytes will be displayed as
-   * hover text over the element.
-   * @param {HTMLElement} sizeElement Element that should display the size
+   * Create the contents for the size element of a tree node.
+   * The unit to use is selected from the current state, and the original number
+   * of bytes will be displayed as hover text over the element.
    * @param {number} bytes Number of bytes to use for the size text
+   * @returns {{title:string,element:Node}} Object with hover text title and
+   * size element body. Can be consumed by `_applySizeFunc()`
    */
-  function _setSizeContents(sizeElement, bytes) {
+  function _getSizeContents(bytes) {
     // Get unit from query string, will fallback for invalid query
     const suffix = state.get('byteunit', {
       default: 'MiB',
@@ -107,10 +305,37 @@
     const suffixElement = document.createElement('small');
     suffixElement.textContent = suffix;
 
+    return {
+      element: dom.createFragment([textNode, suffixElement]),
+      title: bytes.toLocaleString(undefined, {useGrouping: true}) + ' bytes',
+    };
+  }
+
+  /**
+   * Returns the SVG icon template element corresponding to the given type.
+   * @param {string} type Symbol type character.
+   * @param {boolean} clone Set to false if you don't want a copy of the
+   * SVG template.
+   * @returns {SVGSVGElement}
+   */
+  function _getIconTemplate(type, clone = true) {
+    const iconTemplate = SYMBOL_ICONS[type] || SYMBOL_ICONS.o;
+    return clone ? iconTemplate.cloneNode(true) : iconTemplate;
+  }
+
+  /**
+   * Replace the contexts of the size element for a tree node, using a
+   * predefined function which returns a title string and DOM element.
+   * @param {(size: number) => ({title:string,element:Node})} sizeFunc
+   * @param {HTMLElement} sizeElement Element that should display the size
+   * @param {number} bytes Number of bytes to use for the size text
+   */
+  function _applySizeFunc(sizeFunc, sizeElement, bytes) {
+    const {title, element} = sizeFunc(bytes);
+
     // Replace the contents of '.size' and change its title
-    dom.replace(sizeElement, dom.createFragment([textNode, suffixElement]));
-    sizeElement.title =
-      bytes.toLocaleString(undefined, {useGrouping: true}) + ' bytes';
+    dom.replace(sizeElement, element);
+    sizeElement.title = title;
 
     if (bytes < 0) {
       sizeElement.classList.add('negative');
@@ -144,6 +369,7 @@
   function _toggleTreeElement(event) {
     event.preventDefault();
 
+    /** @type {HTMLAnchorElement | HTMLSpanElement} */
     const link = event.currentTarget;
     const element = link.parentElement;
     const group = link.nextElementSibling;
@@ -171,6 +397,7 @@
    * @param {KeyboardEvent} event
    */
   function _handleKeyNavigation(event) {
+    /** @type {HTMLAnchorElement | HTMLSpanElement} */
     const link = event.target;
     const focusIndex = Array.prototype.indexOf.call(_liveNodeList, link);
 
@@ -286,7 +513,7 @@
    * node object has any children. Trees use a slightly different template
    * and have click event listeners attached.
    * @param {TreeNode} data Data to use for the UI.
-   * @returns {HTMLElement}
+   * @returns {DocumentFragment}
    */
   function newTreeElement(data) {
     const isLeaf = data.children.length === 0;
@@ -294,15 +521,15 @@
     const element = document.importNode(template.content, true);
 
     // Associate clickable node & tree data
+    /** @type {HTMLAnchorElement | HTMLSpanElement} */
     const link = element.querySelector('.node');
     _uiNodeData.set(link, Object.freeze(data));
 
     // Icons are predefined in the HTML through hidden SVG elements
     const type = data.type[0];
-    const iconTemplate = _SYMBOL_ICONS[type] || _SYMBOL_ICONS.o;
-    const icon = iconTemplate.cloneNode(true);
+    const icon = _getIconTemplate(type);
     if (_CONTAINER_TYPES.has(type)) {
-      const symbolIcon = _SYMBOL_ICONS[data.type[1]] || _SYMBOL_ICONS.o;
+      const symbolIcon = _getIconTemplate(data.type[1], false);
       const symbolColor = symbolIcon.getAttribute('fill');
       const symbolName = symbolIcon.querySelector('title').textContent;
 
@@ -313,16 +540,18 @@
     link.insertBefore(icon, link.firstElementChild);
 
     // Set the symbol name and hover text
+    /** @type {HTMLSpanElement} */
     const symbolName = element.querySelector('.symbol-name');
     symbolName.textContent = data.shortName;
     symbolName.title = data.idPath;
 
     // Set the byte size and hover text
-    const _setSize = state.has('method_count')
-      ? _setMethodCountContents
-      : _setSizeContents;
-    _setSize(element.querySelector('.size'), data.size);
+    const _getSizeLabels = state.has('method_count')
+      ? _getMethodCountContents
+      : _getSizeContents;
+    _applySizeFunc(_getSizeLabels, element.querySelector('.size'), data.size);
 
+    link.addEventListener('mouseover', _showInfocardOnHover);
     if (!isLeaf) {
       link.addEventListener('click', _toggleTreeElement);
     }
@@ -333,13 +562,14 @@
   // When the `byteunit` state changes, update all .size elements in the page
   form.byteunit.addEventListener('change', event => {
     // Update existing size elements with the new unit
-    for (const sizeElement of document.getElementsByClassName('size')) {
+    for (const sizeElement of _liveSizeSpanList) {
       const data = _uiNodeData.get(sizeElement.parentElement);
-      _setSizeContents(sizeElement, data.size);
+      _applySizeFunc(_getSizeContents, sizeElement, data.size);
     }
   });
 
   _symbolTree.addEventListener('keydown', _handleKeyNavigation);
+  _symbolTree.addEventListener('focusin', _showInfocardOnFocus);
 
   self.newTreeElement = newTreeElement;
   self._symbolTree = _symbolTree;
@@ -359,7 +589,9 @@
    * @param {{data:{root:TreeNode,meta:object}}} param0
    */
   worker.onmessage = ({data}) => {
+    /** @type {DocumentFragment} */
     const root = newTreeElement(data);
+    /** @type {HTMLAnchorElement} */
     const node = root.querySelector('.node');
     // Expand the root UI node
     node.click();

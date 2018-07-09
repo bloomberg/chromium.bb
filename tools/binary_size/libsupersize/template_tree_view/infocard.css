@@ -1,0 +1,86 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.infocard {
+  display: grid;
+  position: fixed;
+  padding: 16px;
+  margin: 0 auto;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  max-width: 512px;
+  max-height: 50vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px #3c40434d, 0 1px 3px 1px #3c404326;
+}
+.infocard-container {
+  grid-template-areas: 'header icon' 'type type';
+  grid-template-columns: auto 80px;
+  grid-column-gap: 16px;
+  grid-row-gap: 8px;
+}
+.infocard-symbol {
+  grid-template-areas: 'icon header' 'type type';
+  grid-template-columns: 40px auto;
+  grid-column-gap: 16px;
+}
+
+.infocard[hidden] {
+  display: none;
+}
+@media (min-width: 700px) {
+  .show-options .infocard {
+    right: 256px;
+  }
+}
+
+.icon-info {
+  grid-area: icon;
+  align-self: center;
+  padding: 8px 2px 8px 8px;
+  border-radius: 50%;
+}
+.header-info {
+  grid-area: header;
+}
+.size-info {
+  margin: 0 0 2px;
+  color: #202124;
+}
+.path-info {
+  margin: 0 0 8px;
+  word-break: break-word;
+}
+.symbol-name-info {
+  font-weight: 500;
+}
+.type-info {
+  grid-area: type;
+  margin-bottom: 0;
+}
+
+.type-pie-info {
+  grid-area: icon;
+  align-self: center;
+  background: #5f6368;
+  border-radius: 50%;
+}
+.type-breakdown-info {
+  grid-area: type;
+  border-top: 1px solid #dadce0;
+  padding-top: 8px;
+  clear: right;
+}
+
+th {
+  text-align: left;
+}
+th[scope='row'],
+td {
+  font-weight: normal;
+  font-size: 14px;
+}
