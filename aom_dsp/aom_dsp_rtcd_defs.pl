@@ -750,7 +750,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     ($w, $h) = @$_;
     add_proto qw/unsigned int/, "aom_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
     if (! (($w == 128 && $h == 32) || ($w == 32 && $h == 128))) {
-       specialize "aom_obmc_sad${w}x${h}", qw/sse4_1/;
+       specialize "aom_obmc_sad${w}x${h}", qw/sse4_1 avx2/;
     }
   }
 
@@ -759,7 +759,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
       ($w, $h) = @$_;
       add_proto qw/unsigned int/, "aom_highbd_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
       if (! (($w == 128 && $h == 32) || ($w == 32 && $h == 128))) {
-        specialize "aom_highbd_obmc_sad${w}x${h}", qw/sse4_1/;
+        specialize "aom_highbd_obmc_sad${w}x${h}", qw/sse4_1 avx2/;
       }
     }
 
