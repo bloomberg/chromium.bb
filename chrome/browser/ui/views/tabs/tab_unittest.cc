@@ -59,6 +59,7 @@ class FakeTabController : public TabController {
   bool IsTabPinned(const Tab* tab) const override { return false; }
   bool IsFirstVisibleTab(const Tab* tab) const override { return false; }
   bool IsLastVisibleTab(const Tab* tab) const override { return false; }
+  bool SingleTabMode() const override { return false; }
   bool IsIncognito() const override { return false; }
   void MaybeStartDrag(
       Tab* tab,
