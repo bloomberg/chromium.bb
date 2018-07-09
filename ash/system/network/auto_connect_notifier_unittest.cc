@@ -46,8 +46,7 @@ class AutoConnectNotifierTest : public AshTestBase {
     CHECK(chromeos::NetworkHandler::Get()->auto_connect_handler());
     AshTestBase::SetUp();
 
-    mock_notification_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                                   false /* is_repeating */);
+    mock_notification_timer_ = new base::MockOneShotTimer();
     Shell::Get()
         ->system_notification_controller()
         ->auto_connect_->set_timer_for_testing(
@@ -88,7 +87,7 @@ class AutoConnectNotifierTest : public AshTestBase {
   }
 
   // Ownership passed to Shell owned AutoConnectNotifier instance.
-  base::MockTimer* mock_notification_timer_;
+  base::MockOneShotTimer* mock_notification_timer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoConnectNotifierTest);
