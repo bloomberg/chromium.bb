@@ -198,7 +198,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
 
 bool ExceptionHandler::InstallHandlers() {
   // If a handler is already installed, something is really wrong.
-  if (gProtectedData.handler != NULL) {
+  if (gProtectedData.handler != NULL)
     return false;
   for (int i = 0; i < kNumHandledSignals; ++i) {
     struct sigaction sa;
