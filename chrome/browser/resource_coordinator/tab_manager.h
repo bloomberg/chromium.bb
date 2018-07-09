@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
+#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
@@ -178,6 +179,10 @@ class TabManager : public LifecycleUnitObserver,
   // Returns the number of restored tabs during session restore. This is
   // non-zero only during session restore.
   int restored_tab_count() const;
+
+  InterventionPolicyDatabase* intervention_policy_database() {
+    return intervention_policy_database_.get();
+  }
 
  private:
   friend class TabManagerStatsCollectorTest;
@@ -497,6 +502,10 @@ class TabManager : public LifecycleUnitObserver,
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;
+
+  // The intervention policy database, should be initialized by
+  // InterventionPolicyDatabaseComponentInstallerPolicy.
+  std::unique_ptr<InterventionPolicyDatabase> intervention_policy_database_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

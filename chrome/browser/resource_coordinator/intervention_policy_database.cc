@@ -6,6 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/values.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 
 namespace resource_coordinator {
@@ -37,9 +39,14 @@ InterventionPolicyDatabase::GetFreezingPolicy(const url::Origin& origin) const {
 }
 
 void InterventionPolicyDatabase::InitializeDatabaseWithProtoFile(
-    const base::FilePath& proto_location) {
-  base::PostTaskAndReplyWithResult(
-      background_task_runner_.get(), FROM_HERE,
+    const base::FilePath& proto_location,
+    const base::Version& version,
+    std::unique_ptr<base::DictionaryValue> manifest) {
+  // TODO(sebmarchand): Validate the version and the manifest?
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(
           &InterventionPolicyDatabase::ReadDatabaseFromProtoFileOnSequence,
           proto_location),

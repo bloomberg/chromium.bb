@@ -5,9 +5,13 @@
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
+
+#if !defined(OS_ANDROID)
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#endif
 
 namespace memory {
 

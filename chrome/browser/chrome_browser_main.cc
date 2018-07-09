@@ -95,7 +95,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
@@ -306,6 +305,11 @@
 #include "ui/aura/env.h"
 #endif
 #include "services/service_manager/public/cpp/connector.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
+#endif
 
 using content::BrowserThread;
 
@@ -594,6 +598,11 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   RegisterThirdPartyModuleListComponent(cus);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
+
+#if !defined(OS_ANDROID)
+  RegisterInterventionPolicyDatabaseComponent(
+      cus, g_browser_process->GetTabManager()->intervention_policy_database());
+#endif
 }
 
 #if !defined(OS_ANDROID)
@@ -1434,9 +1443,9 @@ void ChromeBrowserMainParts::PreBrowserStart() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
 
-// Start the tab manager here so that we give the most amount of time for the
-// other services to start up before we start adjusting the oom priority.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if !defined(OS_ANDROID)
+  // Start the tab manager here so that we give the most amount of time for the
+  // other services to start up before we start adjusting the oom priority.
   g_browser_process->GetTabManager()->Start();
 #endif
 

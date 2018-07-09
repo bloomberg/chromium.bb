@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/values.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.pb.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +89,8 @@ TEST_F(InterventionPolicyDatabaseTest, EndToEnd) {
                                                 OriginInterventions::DEFAULT));
   WriteProtoToFile(proto_path, policy_map);
 
-  GetDatabase()->InitializeDatabaseWithProtoFile(proto_path);
+  GetDatabase()->InitializeDatabaseWithProtoFile(proto_path, base::Version(),
+                                                 nullptr);
 
   WaitForDatabaseToBeInitialized();
 

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
@@ -36,6 +37,13 @@ const base::FilePath::CharType kInterventionPolicyDatabaseBinaryPbFileName[] =
 }  // namespace
 
 namespace component_updater {
+
+InterventionPolicyDatabaseComponentInstallerPolicy::
+    InterventionPolicyDatabaseComponentInstallerPolicy(
+        resource_coordinator::InterventionPolicyDatabase* database)
+    : database_(database) {
+  DCHECK(database_);
+}
 
 bool InterventionPolicyDatabaseComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -72,7 +80,10 @@ void InterventionPolicyDatabaseComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  // TODO(sebmarchand): Implement this.
+  DCHECK(database_);
+  database_->InitializeDatabaseWithProtoFile(
+      install_dir.Append(kInterventionPolicyDatabaseBinaryPbFileName), version,
+      std::move(manifest));
 }
 
 base::FilePath
@@ -104,9 +115,11 @@ InterventionPolicyDatabaseComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
-void RegisterInterventionPolicyDatabaseComponent(ComponentUpdateService* cus) {
+void RegisterInterventionPolicyDatabaseComponent(
+    ComponentUpdateService* cus,
+    resource_coordinator::InterventionPolicyDatabase* database) {
   std::unique_ptr<ComponentInstallerPolicy> policy(
-      new InterventionPolicyDatabaseComponentInstallerPolicy());
+      new InterventionPolicyDatabaseComponentInstallerPolicy(database));
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::OnceClosure());
 }
