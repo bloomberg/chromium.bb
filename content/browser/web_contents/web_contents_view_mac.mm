@@ -198,6 +198,9 @@ void WebContentsViewMac::Focus() {
   gfx::NativeView native_view = GetNativeViewForFocus();
   NSWindow* window = [native_view window];
   [window makeFirstResponder:native_view];
+  if (![window isVisible])
+    return;
+  [window makeKeyAndOrderFront:nil];
 }
 
 void WebContentsViewMac::SetInitialFocus() {
