@@ -31,7 +31,7 @@ class UnifiedKeyboardBrightnessView : public UnifiedSliderView,
 
   // UnifiedSystemTrayModel::Observer:
   void OnKeyboardBrightnessChanged(bool by_user) override {
-    slider()->SetValue(model_->keyboard_brightness());
+    SetSliderValue(model_->keyboard_brightness(), by_user);
   }
 
  private:
