@@ -3189,19 +3189,11 @@ TEST_F(FileUtilTest, ReadFileToStringWithProcFileSystem) {
 
   data = "temp";
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 2));
-#if defined(OS_ANDROID)
-  EXPECT_EQ("Pr", data);
-#else
-  EXPECT_EQ("pr", data);
-#endif
+  EXPECT_TRUE(EqualsCaseInsensitiveASCII("pr", data));
 
   data = "temp";
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 4));
-#if defined(OS_ANDROID)
-  EXPECT_EQ("Proc", data);
-#else
-  EXPECT_EQ("proc", data);
-#endif
+  EXPECT_TRUE(EqualsCaseInsensitiveASCII("proc", data));
 
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, nullptr, 4));
 }
