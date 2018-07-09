@@ -9,12 +9,12 @@
 namespace chromecast {
 namespace media {
 
-#if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+#if BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
 const int kAlsaTstampTypeMonotonicRaw =
     static_cast<int>(SND_PCM_TSTAMP_TYPE_MONOTONIC_RAW);
 #else
 const int kAlsaTstampTypeMonotonicRaw = 0;
-#endif  // BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+#endif  // BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
 
 AlsaWrapper::AlsaWrapper() {
 }
@@ -176,12 +176,12 @@ int AlsaWrapper::PcmSwParamsSetTstampMode(snd_pcm_t* handle,
 int AlsaWrapper::PcmSwParamsSetTstampType(snd_pcm_t* handle,
                                           snd_pcm_sw_params_t* obj,
                                           int val) {
-#if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+#if BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
   return snd_pcm_sw_params_set_tstamp_type(
       handle, obj, static_cast<snd_pcm_tstamp_type_t>(val));
 #else
   return 0;
-#endif  // BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+#endif  // BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
 }
 
 int AlsaWrapper::PcmSwParams(snd_pcm_t* handle, snd_pcm_sw_params_t* params) {
