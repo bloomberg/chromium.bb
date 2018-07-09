@@ -34,6 +34,7 @@ source_set("translate") {
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/language/core/browser",
     "//components/metrics",
     "//components/prefs",
     "//components/strings",

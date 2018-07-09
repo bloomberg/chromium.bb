@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
-#define IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_MANAGER_FACTORY_H_
+#define IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_MANAGER_FACTORY_H_
 
 #include <memory>
 
@@ -16,7 +16,7 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace language {
-class LanguageModel;
+class LanguageModelManager;
 }  // namespace language
 
 namespace user_prefs {
@@ -27,17 +27,19 @@ namespace ios_web_view {
 
 class WebViewBrowserState;
 
-class WebViewLanguageModelFactory : public BrowserStateKeyedServiceFactory {
+class WebViewLanguageModelManagerFactory
+    : public BrowserStateKeyedServiceFactory {
  public:
-  static language::LanguageModel* GetForBrowserState(
+  static language::LanguageModelManager* GetForBrowserState(
       WebViewBrowserState* browser_state);
-  static WebViewLanguageModelFactory* GetInstance();
+  static WebViewLanguageModelManagerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebViewLanguageModelFactory>;
+  friend struct base::DefaultSingletonTraits<
+      WebViewLanguageModelManagerFactory>;
 
-  WebViewLanguageModelFactory();
-  ~WebViewLanguageModelFactory() override = default;
+  WebViewLanguageModelManagerFactory();
+  ~WebViewLanguageModelManagerFactory() override = default;
 
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
@@ -47,9 +49,9 @@ class WebViewLanguageModelFactory : public BrowserStateKeyedServiceFactory {
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* state) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewLanguageModelFactory);
+  DISALLOW_COPY_AND_ASSIGN(WebViewLanguageModelManagerFactory);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_MANAGER_FACTORY_H_

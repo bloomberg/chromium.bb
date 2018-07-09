@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/language/language_model_factory.h"
+#include "chrome/browser/language/language_model_manager_factory.h"
 
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
@@ -15,59 +15,73 @@
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/core/browser/baseline_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
+#include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
-// static
-LanguageModelFactory* LanguageModelFactory::GetInstance() {
-  return base::Singleton<LanguageModelFactory>::get();
-}
+namespace {
 
-// static
-language::LanguageModel* LanguageModelFactory::GetForBrowserContext(
-    content::BrowserContext* const browser_context) {
-  return static_cast<language::LanguageModel*>(
-      GetInstance()->GetServiceForBrowserContext(browser_context, true));
-}
-
-LanguageModelFactory::LanguageModelFactory()
-    : BrowserContextKeyedServiceFactory(
-          "LanguageModel",
-          BrowserContextDependencyManager::GetInstance()) {}
-
-LanguageModelFactory::~LanguageModelFactory() {}
-
-KeyedService* LanguageModelFactory::BuildServiceInstanceFor(
-    content::BrowserContext* const browser_context) const {
+std::unique_ptr<language::LanguageModel> BuildDefaultLanguageModelFor(
+    Profile* const profile) {
   language::OverrideLanguageModel override_model_mode =
       language::GetOverrideLanguageModel();
-  Profile* const profile = Profile::FromBrowserContext(browser_context);
 
   if (override_model_mode == language::OverrideLanguageModel::HEURISTIC) {
-    return new language::HeuristicLanguageModel(
+    return std::make_unique<language::HeuristicLanguageModel>(
         profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
         prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
 
   if (override_model_mode == language::OverrideLanguageModel::GEO) {
-    return new language::GeoLanguageModel(
+    return std::make_unique<language::GeoLanguageModel>(
         language::GeoLanguageProvider::GetInstance());
   }
 
-  return new language::BaselineLanguageModel(
+  return std::make_unique<language::BaselineLanguageModel>(
       profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
       prefs::kAcceptLanguages);
 }
 
-content::BrowserContext* LanguageModelFactory::GetBrowserContextToUse(
+}  // namespace
+
+// static
+LanguageModelManagerFactory* LanguageModelManagerFactory::GetInstance() {
+  return base::Singleton<LanguageModelManagerFactory>::get();
+}
+
+// static
+language::LanguageModelManager*
+LanguageModelManagerFactory::GetForBrowserContext(
+    content::BrowserContext* const browser_context) {
+  return static_cast<language::LanguageModelManager*>(
+      GetInstance()->GetServiceForBrowserContext(browser_context, true));
+}
+
+LanguageModelManagerFactory::LanguageModelManagerFactory()
+    : BrowserContextKeyedServiceFactory(
+          "LanguageModelManager",
+          BrowserContextDependencyManager::GetInstance()) {}
+
+LanguageModelManagerFactory::~LanguageModelManagerFactory() {}
+
+KeyedService* LanguageModelManagerFactory::BuildServiceInstanceFor(
+    content::BrowserContext* const browser_context) const {
+  Profile* const profile = Profile::FromBrowserContext(browser_context);
+  language::LanguageModelManager* manager = new language::LanguageModelManager(
+      profile->GetPrefs(), g_browser_process->GetApplicationLocale());
+  manager->SetDefaultModel(BuildDefaultLanguageModelFor(profile));
+  return manager;
+}
+
+content::BrowserContext* LanguageModelManagerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Use the original profile's language model even in Incognito mode.
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-void LanguageModelFactory::RegisterProfilePrefs(
+void LanguageModelManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* const registry) {
   if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
     registry->RegisterDictionaryPref(

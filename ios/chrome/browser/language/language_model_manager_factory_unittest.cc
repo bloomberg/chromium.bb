@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/language/language_model_factory.h"
+#include "ios/chrome/browser/language/language_model_manager_factory.h"
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -13,20 +13,21 @@ using testing::Eq;
 using testing::IsNull;
 using testing::Not;
 
-using LanguageModelFactoryTest = PlatformTest;
+using LanguageModelManagerFactoryTest = PlatformTest;
 
 // Check that Incognito language modeling is inherited from the user's profile.
-TEST_F(LanguageModelFactoryTest, SharedWithIncognito) {
+TEST_F(LanguageModelManagerFactoryTest, SharedWithIncognito) {
   web::TestWebThreadBundle thread_bundle;
 
   std::unique_ptr<TestChromeBrowserState> state(
       TestChromeBrowserState::Builder().Build());
-  const language::LanguageModel* const model =
-      LanguageModelFactory::GetForBrowserState(state.get());
-  EXPECT_THAT(model, Not(IsNull()));
+  const language::LanguageModelManager* const manager =
+      LanguageModelManagerFactory::GetForBrowserState(state.get());
+  EXPECT_THAT(manager, Not(IsNull()));
 
   ios::ChromeBrowserState* const incognito =
       state->GetOffTheRecordChromeBrowserState();
   ASSERT_THAT(incognito, Not(IsNull()));
-  EXPECT_THAT(LanguageModelFactory::GetForBrowserState(incognito), Eq(model));
+  EXPECT_THAT(LanguageModelManagerFactory::GetForBrowserState(incognito),
+              Eq(manager));
 }

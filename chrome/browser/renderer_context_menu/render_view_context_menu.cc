@@ -32,7 +32,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/language/language_model_factory.h"
+#include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -81,6 +81,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "components/language/core/browser/language_model_manager.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -946,7 +947,8 @@ std::string RenderViewContextMenu::GetTargetLanguage() const {
   std::unique_ptr<translate::TranslatePrefs> prefs(
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(browser_context_)));
   language::LanguageModel* language_model =
-      LanguageModelFactory::GetForBrowserContext(browser_context_);
+      LanguageModelManagerFactory::GetForBrowserContext(browser_context_)
+          ->GetDefaultModel();
   return translate::TranslateManager::GetTargetLanguage(prefs.get(),
                                                         language_model);
 }
@@ -1291,7 +1293,8 @@ void RenderViewContextMenu::AppendPageItems() {
             GetPrefs(browser_context_)));
     if (prefs->IsTranslateAllowedByPolicy()) {
       language::LanguageModel* language_model =
-          LanguageModelFactory::GetForBrowserContext(browser_context_);
+          LanguageModelManagerFactory::GetForBrowserContext(browser_context_)
+              ->GetDefaultModel();
       std::string locale = translate::TranslateManager::GetTargetLanguage(
           prefs.get(), language_model);
       base::string16 language =

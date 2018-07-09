@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
-#include "chrome/browser/language/language_model_factory.h"
+#include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -32,7 +32,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/pref_names.h"
-#include "components/language/core/browser/language_model.h"
+#include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -531,7 +531,8 @@ ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
   Profile* profile = chrome_details_.GetProfile();
   language::LanguageModel* language_model =
-      LanguageModelFactory::GetForBrowserContext(profile);
+      LanguageModelManagerFactory::GetForBrowserContext(profile)
+          ->GetDefaultModel();
   return RespondNow(OneArgument(
       std::make_unique<base::Value>(TranslateService::GetTargetLanguage(
           profile->GetPrefs(), language_model))));

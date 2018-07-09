@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H
-#define IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H
+#ifndef IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_
+#define IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_
 
 #include <memory>
 
@@ -16,7 +16,7 @@ class ChromeBrowserState;
 }
 
 namespace language {
-class LanguageModel;
+class LanguageModelManager;
 }
 
 namespace user_prefs {
@@ -25,17 +25,17 @@ class PrefRegistrySyncable;
 
 // Manages the language model for each profile. The particular language model
 // provided depends on feature flags.
-class LanguageModelFactory : public BrowserStateKeyedServiceFactory {
+class LanguageModelManagerFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static LanguageModelFactory* GetInstance();
-  static language::LanguageModel* GetForBrowserState(
+  static LanguageModelManagerFactory* GetInstance();
+  static language::LanguageModelManager* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct base::DefaultSingletonTraits<LanguageModelFactory>;
+  friend struct base::DefaultSingletonTraits<LanguageModelManagerFactory>;
 
-  LanguageModelFactory();
-  ~LanguageModelFactory() override;
+  LanguageModelManagerFactory();
+  ~LanguageModelManagerFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
@@ -45,7 +45,7 @@ class LanguageModelFactory : public BrowserStateKeyedServiceFactory {
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageModelFactory);
+  DISALLOW_COPY_AND_ASSIGN(LanguageModelManagerFactory);
 };
 
-#endif  // IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H
+#endif  // IOS_CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web_view/internal/language/web_view_language_model_factory.h"
+#include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
@@ -11,6 +11,7 @@
 #include "components/language/core/browser/baseline_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -21,30 +22,12 @@
 
 namespace ios_web_view {
 
-// static
-WebViewLanguageModelFactory* WebViewLanguageModelFactory::GetInstance() {
-  return base::Singleton<WebViewLanguageModelFactory>::get();
-}
+namespace {
 
-// static
-language::LanguageModel* WebViewLanguageModelFactory::GetForBrowserState(
-    WebViewBrowserState* const state) {
-  return static_cast<language::LanguageModel*>(
-      GetInstance()->GetServiceForBrowserState(state, true));
-}
-
-WebViewLanguageModelFactory::WebViewLanguageModelFactory()
-    : BrowserStateKeyedServiceFactory(
-          "LanguageModel",
-          BrowserStateDependencyManager::GetInstance()) {}
-
-std::unique_ptr<KeyedService>
-WebViewLanguageModelFactory::BuildServiceInstanceFor(
-    web::BrowserState* const context) const {
+std::unique_ptr<language::LanguageModel> BuildDefaultLanguageModelFor(
+    WebViewBrowserState* const web_view_browser_state) {
   language::OverrideLanguageModel override_model_mode =
       language::GetOverrideLanguageModel();
-  WebViewBrowserState* const web_view_browser_state =
-      WebViewBrowserState::FromBrowserState(context);
 
   if (override_model_mode == language::OverrideLanguageModel::HEURISTIC) {
     return std::make_unique<language::HeuristicLanguageModel>(
@@ -61,7 +44,42 @@ WebViewLanguageModelFactory::BuildServiceInstanceFor(
       prefs::kAcceptLanguages);
 }
 
-void WebViewLanguageModelFactory::RegisterBrowserStatePrefs(
+}  // namespace
+
+// static
+WebViewLanguageModelManagerFactory*
+WebViewLanguageModelManagerFactory::GetInstance() {
+  return base::Singleton<WebViewLanguageModelManagerFactory>::get();
+}
+
+// static
+language::LanguageModelManager*
+WebViewLanguageModelManagerFactory::GetForBrowserState(
+    WebViewBrowserState* const state) {
+  return static_cast<language::LanguageModelManager*>(
+      GetInstance()->GetServiceForBrowserState(state, true));
+}
+
+WebViewLanguageModelManagerFactory::WebViewLanguageModelManagerFactory()
+    : BrowserStateKeyedServiceFactory(
+          "LanguageModelManager",
+          BrowserStateDependencyManager::GetInstance()) {}
+
+std::unique_ptr<KeyedService>
+WebViewLanguageModelManagerFactory::BuildServiceInstanceFor(
+    web::BrowserState* const context) const {
+  WebViewBrowserState* const web_view_browser_state =
+      WebViewBrowserState::FromBrowserState(context);
+  std::unique_ptr<language::LanguageModelManager> manager =
+      std::make_unique<language::LanguageModelManager>(
+          web_view_browser_state->GetPrefs(),
+          ApplicationContext::GetInstance()->GetApplicationLocale());
+  manager->SetDefaultModel(
+      BuildDefaultLanguageModelFor(web_view_browser_state));
+  return manager;
+}
+
+void WebViewLanguageModelManagerFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* const registry) {
   if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
     registry->RegisterDictionaryPref(
@@ -70,7 +88,7 @@ void WebViewLanguageModelFactory::RegisterBrowserStatePrefs(
   }
 }
 
-web::BrowserState* WebViewLanguageModelFactory::GetBrowserStateToUse(
+web::BrowserState* WebViewLanguageModelManagerFactory::GetBrowserStateToUse(
     web::BrowserState* state) const {
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(state);

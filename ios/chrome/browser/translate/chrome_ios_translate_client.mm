@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
+#include "components/language/core/browser/language_model_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -28,7 +29,7 @@
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/language/language_model_factory.h"
+#include "ios/chrome/browser/language/language_model_manager_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
@@ -73,9 +74,10 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(
           translate::TranslateRankerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState())),
-          LanguageModelFactory::GetForBrowserState(
+          LanguageModelManagerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
-                  web_state->GetBrowserState())))),
+                  web_state->GetBrowserState()))
+              ->GetDefaultModel())),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()),

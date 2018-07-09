@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/language/language_model_factory.h"
+#include "chrome/browser/language/language_model_manager_factory.h"
 
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -13,15 +13,16 @@ using testing::IsNull;
 using testing::Not;
 
 // Check that Incognito language modeling is inherited from the user's profile.
-TEST(LanguageModelFactoryTest, SharedWithIncognito) {
+TEST(LanguageModelManagerFactoryTest, SharedWithIncognito) {
   content::TestBrowserThreadBundle thread_bundle;
 
   TestingProfile profile;
-  const language::LanguageModel* const model =
-      LanguageModelFactory::GetForBrowserContext(&profile);
-  EXPECT_THAT(model, Not(IsNull()));
+  const language::LanguageModelManager* const manager =
+      LanguageModelManagerFactory::GetForBrowserContext(&profile);
+  EXPECT_THAT(manager, Not(IsNull()));
 
   Profile* const incognito = profile.GetOffTheRecordProfile();
   ASSERT_THAT(incognito, Not(IsNull()));
-  EXPECT_THAT(LanguageModelFactory::GetForBrowserContext(incognito), Eq(model));
+  EXPECT_THAT(LanguageModelManagerFactory::GetForBrowserContext(incognito),
+              Eq(manager));
 }
