@@ -987,9 +987,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     // On Mac OS X, the accessible name of an object is exposed as its
     // title if it comes from visible text, and as its description
     // otherwise, but never both.
-    if (nameFrom == ax::mojom::NameFrom::kContents ||
-        nameFrom == ax::mojom::NameFrom::kRelatedElement ||
-        nameFrom == ax::mojom::NameFrom::kValue) {
+
+    // Group, radiogroup etc.
+    if ([self shouldExposeNameInDescription]) {
+      return base::SysUTF8ToNSString(name);
+    } else if (nameFrom == ax::mojom::NameFrom::kContents ||
+               nameFrom == ax::mojom::NameFrom::kRelatedElement ||
+               nameFrom == ax::mojom::NameFrom::kValue) {
       return @"";
     } else {
       return base::SysUTF8ToNSString(name);
@@ -1558,6 +1562,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // internal
 - (ax::mojom::Role)internalRole {
   return static_cast<ax::mojom::Role>(browserAccessibility_->GetRole());
+}
+
+- (BOOL)shouldExposeNameInDescription {
+  // VoiceOver will not read the label of a fieldset or radiogroup unless it is
+  // exposed in the description instead of the title.
+  switch (browserAccessibility_->GetRole()) {
+    case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kRadioGroup:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Returns true if this object should expose its accessible name using
@@ -2173,6 +2189,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   // Mac OS X wants static text exposed in AXValue.
   if (ui::IsNameExposedInAXValueForRole([self internalRole]))
+    return @"";
+
+  if ([self shouldExposeNameInDescription])
     return @"";
 
   // If we're exposing the title in TitleUIElement, don't also redundantly
