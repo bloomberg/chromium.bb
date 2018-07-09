@@ -47,10 +47,8 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   cc::Layer* GetCcLayer() const override;
   void ClearSurfaceId() override;
   void SetContentsOpaque(bool) override;
-
-  const viz::FrameSinkId& GetFrameSinkId() const override {
-    return frame_sink_id_;
-  }
+  const viz::FrameSinkId& GetFrameSinkId() const override;
+  const viz::SurfaceId& GetSurfaceId() const override;
 
  private:
   scoped_refptr<cc::SurfaceLayer> surface_layer_;

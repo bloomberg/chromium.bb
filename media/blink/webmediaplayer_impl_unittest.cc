@@ -297,6 +297,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
+  MOCK_CONST_METHOD0(GetSurfaceId, const viz::SurfaceId&());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -1389,6 +1390,18 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 // Picture-in-Picture.
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+      .WillOnce(ReturnRef(frame_sink_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+      .WillOnce(ReturnRef(surface_id_));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  OnMetadata(metadata);
 
   EXPECT_CALL(client_, DisplayType())
       .WillRepeatedly(

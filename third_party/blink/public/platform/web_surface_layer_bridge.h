@@ -37,6 +37,7 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
   virtual void ClearSurfaceId() = 0;
   virtual void SetContentsOpaque(bool) = 0;
   virtual void CreateSurfaceLayer() = 0;
+  virtual const viz::SurfaceId& GetSurfaceId() const = 0;
 };
 
 }  // namespace blink

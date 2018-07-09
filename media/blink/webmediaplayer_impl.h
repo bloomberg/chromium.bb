@@ -925,17 +925,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // True if a frame has ever been rendered.
   bool has_first_frame_ = false;
 
-  // Keeps track of the SurfaceId for Picture-in-Picture. This is used to
-  // route the video to be shown in the Picture-in-Picture window.
-  viz::SurfaceId pip_surface_id_;
-
-  // Sets when entering Picture-in-Picture was delayed because no
-  // |pip_surface_id_| was available. This happens when the
-  // PreloadMetadataSuspend optimization is enabled and the player wouldn't
-  // create the surface until playback.
-  base::Optional<blink::WebMediaPlayer::PipWindowOpenedCallback>
-      enter_pip_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

@@ -54,9 +54,9 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   // get in OnFirstSurfaceActivation. We need it so that we properly get a
   // WillDraw, which then pushes the first compositor frame.
   current_surface_id_ = viz::SurfaceId(
-      frame_sink_id_, parent_local_surface_id_allocator_.GenerateId());
-  surface_layer_->SetPrimarySurfaceId(current_surface_id_,
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
+      frame_sink_id_,
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetIsDrawable(true);
 
@@ -123,9 +123,6 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     observer_->OnSurfaceIdUpdated(surface_info.id());
   }
 
-  // TODO(lethalantidote): Discuss and remove for both Canvas and Video uses.
-  surface_layer_->SetBounds(surface_info.size_in_pixels());
-
   surface_layer_->SetContentsOpaque(opaque_);
 }
 
@@ -135,6 +132,14 @@ void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
   if (surface_layer_ && surface_activated_)
     surface_layer_->SetContentsOpaque(opaque);
   opaque_ = opaque;
+}
+
+const viz::FrameSinkId& SurfaceLayerBridge::GetFrameSinkId() const {
+  return frame_sink_id_;
+}
+
+const viz::SurfaceId& SurfaceLayerBridge::GetSurfaceId() const {
+  return current_surface_id_;
 }
 
 }  // namespace blink
