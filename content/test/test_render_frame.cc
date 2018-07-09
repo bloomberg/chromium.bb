@@ -154,7 +154,6 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
   CommitNavigation(
       network::ResourceResponseHead(), common_params, request_params,
       network::mojom::URLLoaderClientEndpointsPtr(),
-      mojo::ScopedDataPipeConsumerHandle(),
       std::make_unique<URLLoaderFactoryBundleInfo>(), base::nullopt,
       mojom::ControllerServiceWorkerInfoPtr(), base::UnguessableToken::Create(),
       CommitNavigationCallback());

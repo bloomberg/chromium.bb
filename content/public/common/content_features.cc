@@ -245,11 +245,6 @@ const base::Feature kMojoVideoCapture {
 #endif
 };
 
-// Transmit the response body datapipe to the renderer process in
-// CommitNavigation() so that it can start reading earlier.
-const base::Feature kNavigationImmediateResponseBody{
-    "NavigationImmediateResponseBody", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

@@ -85,7 +85,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"

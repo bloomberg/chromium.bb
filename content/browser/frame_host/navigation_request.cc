@@ -56,7 +56,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -920,7 +919,6 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -1029,7 +1027,6 @@ void NavigationRequest::OnResponseStarted(
   // Store the response and the URLLoaderClient endpoints until checks have been
   // processed.
   response_ = response;
-  response_body_ = std::move(response_body);
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
   ssl_info_ = response->head.ssl_info.has_value() ? *response->head.ssl_info
                                                   : net::SSLInfo();
@@ -1642,9 +1639,8 @@ void NavigationRequest::CommitNavigation() {
     associated_site_instance_id_.reset();
   }
   render_frame_host->CommitNavigation(
-      response_.get(), std::move(url_loader_client_endpoints_),
-      std::move(response_body_), common_params_, request_params_,
-      is_view_source_, std::move(subresource_loader_params_),
+      response_.get(), std::move(url_loader_client_endpoints_), common_params_,
+      request_params_, is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_), devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used

@@ -234,15 +234,7 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
     network::ResourceResponseHead resource_response;
     resource_response.mime_type = "text/html";
     resource_response.ssl_info = ssl_info;
-
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              mojo::CreateDataPipe(nullptr, &producer, &consumer));
-
     params->client->OnReceiveResponse(resource_response);
-    params->client->OnStartLoadingResponseBody(std::move(consumer));
-
     network::URLLoaderCompletionStatus completion_status;
     completion_status.ssl_info = ssl_info;
     params->client->OnComplete(completion_status);
