@@ -44,6 +44,7 @@ def __lldb_init_module(debugger, dict):
     debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutUnit_SummaryProvider blink::LayoutUnit')
     debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutSize_SummaryProvider blink::LayoutSize')
     debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutPoint_SummaryProvider blink::LayoutPoint')
+    debugger.HandleCommand('type summary add -F lldb_blink.BlinkLength_SummaryProvider blink::Length')
 
 
 def WTFString_SummaryProvider(valobj, dict):
@@ -83,6 +84,11 @@ def BlinkLayoutSize_SummaryProvider(valobj, dict):
 def BlinkLayoutPoint_SummaryProvider(valobj, dict):
     provider = BlinkLayoutPointProvider(valobj, dict)
     return "{ x = %s, y = %s }" % (provider.get_x(), provider.get_y())
+
+
+def BlinkLength_SummaryProvider(valobj, dict):
+    provider = BlinkLengthProvider(valobj, dict)
+    return "{ %s }" % (provider.to_string())
 
 # FIXME: Provide support for the following types:
 # def WTFCString_SummaryProvider(valobj, dict):
@@ -206,6 +212,54 @@ class BlinkLayoutPointProvider:
 
     def get_y(self):
         return BlinkLayoutUnitProvider(self.valobj.GetChildMemberWithName('y_'), dict).to_string()
+
+
+class BlinkLengthProvider:
+    "Print a blink::Length"
+    def __init__(self, valobj, dict):
+        self.valobj = valobj
+
+    def to_string(self):
+        ltype = self.valobj.GetChildMemberWithName('type_').GetValueAsSigned()
+        if self.valobj.GetChildMemberWithName('is_float_').GetValueAsSigned():
+            val = self.valobj.GetChildMemberWithName('float_value_').GetValue()
+        else:
+            val = self.valobj.GetChildMemberWithName('int_value_').GetValue()
+
+        quirk = ''
+        if self.valobj.GetChildMemberWithName('quirk_').GetValueAsSigned():
+            quirk = ', quirk=true'
+
+        if ltype == 0:
+            return 'Length(Auto)'
+        if ltype == 1:
+            return 'Length(%s%%, Percent%s)' % (val, quirk)
+        if ltype == 2:
+            return 'Length(%s, Fixed%s)' % (val, quirk)
+        if ltype == 3:
+            return 'Length(Intrinsic)'
+        if ltype == 4:
+            return 'Length(MinIntrinsic)'
+        if ltype == 5:
+            return 'Length(MinContent)'
+        if ltype == 6:
+            return 'Length(MaxContent)'
+        if ltype == 7:
+            return 'Length(FillAvailable)'
+        if ltype == 8:
+            return 'Length(FitContent)'
+        if ltype == 9:
+            # FIXME: If we can call member functions, we can improve this.
+            return 'Length(Calculated)'
+        if ltype == 10:
+            return 'Length(ExtendToZoom)'
+        if ltype == 11:
+            return 'Length(DeviceWidth)'
+        if ltype == 12:
+            return 'Length(DeviceHeight)'
+        if ltype == 13:
+            return 'Length(MaxSizeNone)'
+        return 'Length(unknown type %s)' % ltype
 
 
 class WTFVectorProvider:
