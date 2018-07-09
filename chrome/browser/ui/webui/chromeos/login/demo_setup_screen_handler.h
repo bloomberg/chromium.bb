@@ -30,6 +30,7 @@ class DemoSetupScreenHandler : public BaseScreenHandler,
   void Initialize() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
 
  private:
   DemoSetupScreen* screen_ = nullptr;

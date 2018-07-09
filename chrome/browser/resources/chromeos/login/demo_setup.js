@@ -14,10 +14,19 @@ Polymer({
 
   properties: {
     /**
+     * Whether offline demo mode is enabled. If it is disabled offline setup
+     * option will not be shown in UI.
+     */
+    offlineDemoModeEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether offline demo setup was selected. Available setup types: online
      * and offline.
      */
-    is_offline_setup_: {
+    isOfflineSetup_: {
       type: Boolean,
       value: false,
     },
@@ -71,7 +80,7 @@ Polymer({
    */
   startSetup_: function() {
     this.showScreen_('demoSetupProgressDialog');
-    if (this.is_offline_setup_) {
+    if (this.isOfflineSetup_) {
       chrome.send('login.DemoSetupScreen.userActed', ['offline-setup']);
     } else {
       chrome.send('login.DemoSetupScreen.userActed', ['online-setup']);
@@ -110,7 +119,7 @@ Polymer({
    */
   onNextClicked_: function() {
     const selected = this.$.setupGroup.selected;
-    this.is_offline_setup_ = (selected == 'offlineSetup');
+    this.isOfflineSetup_ = (selected == 'offlineSetup');
     this.startSetup_();
   },
 
