@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
@@ -18,10 +18,10 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -92,8 +92,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
-    GURL account_picture_url(SigninManagerFactory::GetForProfile(profile)
-                                 ->GetAuthenticatedAccountInfo()
+    GURL account_picture_url(IdentityManagerFactory::GetForProfile(profile)
+                                 ->GetPrimaryAccountInfo()
                                  .picture_url);
     if (account_picture_url.is_valid()) {
       custom_picture_url = signin::GetAvatarImageURLWithOptions(
