@@ -243,20 +243,18 @@ void RecentTabHelper::DidFinishNavigation(
   // Always reset so that posted tasks get canceled.
   snapshot_controller_->Reset();
 
-  // Check for conditions that should stop last_n from creating snapshots of
+  // Check for conditions that should stop us from creating snapshots of
   // this page:
   // - It is an error page.
-  // - The navigation is a POST as offline pages are never loaded for them.
   // - The navigated URL is not supported.
   // - The page being loaded is already an offline page.
   bool can_save =
-      !navigation_handle->IsErrorPage() && !navigation_handle->IsPost() &&
+      !navigation_handle->IsErrorPage() &&
       OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
       current_offline_page == nullptr;
   DVLOG_IF(1, !can_save)
       << " - Page can not be saved for offline usage (reasons: "
       << !navigation_handle->IsErrorPage() << ", "
-      << !navigation_handle->IsPost() << ", "
       << OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL())
       << ", " << (current_offline_page == nullptr) << ")";
 
@@ -264,7 +262,12 @@ void RecentTabHelper::DidFinishNavigation(
 
   if (!can_save)
     snapshot_controller_->Stop();
+  // Last N should be disabled when:
+  // - Running on low end devices.
+  // - Viewing POST content for privacy considerations.
+  // - Disabled by flag.
   last_n_listen_to_tab_hidden_ = can_save && !delegate_->IsLowEndDevice() &&
+                                 !navigation_handle->IsPost() &&
                                  IsOffliningRecentPagesEnabled();
   DVLOG_IF(1, can_save && !last_n_listen_to_tab_hidden_)
       << " - Page can not be saved by last_n";
