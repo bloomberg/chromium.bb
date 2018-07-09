@@ -225,7 +225,6 @@ class KEYBOARD_EXPORT KeyboardController
       ui::InputMethodKeyboardControllerObserver* observer) override;
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
-  // Returns true if keyboard is in a SHOWN state.
   bool IsKeyboardVisible() override;
 
  private:
