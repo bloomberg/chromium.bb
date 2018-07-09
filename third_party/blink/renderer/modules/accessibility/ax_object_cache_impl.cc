@@ -869,6 +869,14 @@ void AXObjectCacheImpl::HandleClicked(Node* node) {
     PostNotification(obj, kAXClicked);
 }
 
+void AXObjectCacheImpl::HandleAttributeChanged(
+    const QualifiedName& attr_name,
+    AccessibleNode* accessible_node) {
+  modification_count_++;
+  if (AXObject* obj = Get(accessible_node))
+    PostNotification(obj, kAXAriaAttributeChanged);
+}
+
 void AXObjectCacheImpl::HandleAriaExpandedChange(Node* node) {
   if (AXObject* obj = GetOrCreate(node))
     obj->HandleAriaExpandedChanged();

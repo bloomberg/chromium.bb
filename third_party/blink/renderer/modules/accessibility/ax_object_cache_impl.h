@@ -150,6 +150,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleLoadComplete(Document*) override;
   void HandleLayoutComplete(Document*) override;
   void HandleClicked(Node*) override;
+  void HandleAttributeChanged(const QualifiedName& attr_name,
+                              AccessibleNode*) override;
 
   void SetCanvasObjectBounds(HTMLCanvasElement*,
                              Element*,

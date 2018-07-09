@@ -103,6 +103,10 @@ class CORE_EXPORT AXObjectCache
   virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;
 
+  // Changes to virtual Accessibility Object Model nodes.
+  virtual void HandleAttributeChanged(const QualifiedName& attr_name,
+                                      AccessibleNode*) = 0;
+
   virtual void SetCanvasObjectBounds(HTMLCanvasElement*,
                                      Element*,
                                      const LayoutRect&) = 0;
