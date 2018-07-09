@@ -346,8 +346,6 @@ crbug.com/591099 fast/block/float/overlapping-floats-paint-hittest-order-1.html 
 crbug.com/591099 fast/block/line-layout/floats-do-not-fit-on-line.html [ Failure ]
 crbug.com/591099 fast/block/over-constrained-auto-margin.html [ Failure ]
 crbug.com/591099 fast/block/positioning/positioned-child-inside-relative-positioned-anonymous-block.html [ Failure ]
-crbug.com/591099 fast/block/positioning/rtl-static-positioning.html [ Failure ]
-crbug.com/591099 fast/block/positioning/table-cell-static-position.html [ Failure ]
 crbug.com/591099 fast/borders/bidi-002.html [ Failure ]
 crbug.com/859497 fast/borders/bidi-009a.html [ Failure ]
 crbug.com/591099 fast/borders/bidi-012.html [ Failure ]
