@@ -137,6 +137,13 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
   DCHECK(!db_) << "Database already open";
   base::AssertBlockingAllowed();
 
+  // Report the on disk size of the database if it already exists.
+  if (base::DirectoryExists(db_path_)) {
+    int64_t db_ondisk_size_in_bytes = base::ComputeDirectorySize(db_path_);
+    UMA_HISTOGRAM_MEMORY_KB("ResourceCoordinator.LocalDB.OnDiskSize",
+                            db_ondisk_size_in_bytes / 1024);
+  }
+
   leveldb_env::Options options;
   options.create_if_missing = true;
   leveldb::Status status =
