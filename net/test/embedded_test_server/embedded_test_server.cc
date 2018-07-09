@@ -83,7 +83,8 @@ void EmbeddedTestServer::RegisterTestCerts() {
 
 void EmbeddedTestServer::SetConnectionListener(
     EmbeddedTestServerConnectionListener* listener) {
-  DCHECK(!io_thread_.get());
+  DCHECK(!io_thread_.get())
+      << "ConnectionListener must be set before starting the server.";
   connection_listener_ = listener;
 }
 
@@ -170,7 +171,8 @@ void EmbeddedTestServer::InitializeSSLServerContext() {
 }
 
 void EmbeddedTestServer::StartAcceptingConnections() {
-  DCHECK(!io_thread_.get());
+  DCHECK(!io_thread_.get())
+      << "Server must not be started while server is running";
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.reset(new base::Thread("EmbeddedTestServer IO Thread"));
