@@ -138,12 +138,15 @@ class AutofillPopupItemView : public AutofillPopupRowView {
         views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
     // TODO(crbug.com/831603): Remove elision responsibilities from controller.
-    text_label_ = new views::Label(
+    views::Label* text_label = new views::Label(
         controller_->GetElidedValueAt(line_number_),
         {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                               views::style::TextStyle::STYLE_PRIMARY)});
+                               GetPrimaryTextStyle())});
+    text_label->SetEnabledColor(views::style::GetColor(
+        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        GetPrimaryTextStyle()));
 
-    AddChildView(text_label_);
+    AddChildView(text_label);
 
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/true, layout);
@@ -151,12 +154,15 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     const base::string16& description_text =
         controller_->GetElidedLabelAt(line_number_);
     if (!description_text.empty()) {
-      subtext_label_ = new views::Label(
+      views::Label* subtext_label = new views::Label(
           description_text,
           {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                                 ChromeTextStyle::STYLE_HINT)});
+                                 ChromeTextStyle::STYLE_SECONDARY)});
+      subtext_label->SetEnabledColor(views::style::GetColor(
+          *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+          ChromeTextStyle::STYLE_SECONDARY));
 
-      AddChildView(subtext_label_);
+      AddChildView(subtext_label);
     }
 
     const gfx::ImageSkia icon =
@@ -174,24 +180,11 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
   void RefreshStyle() override {
     SetBackground(CreateBackground());
-
-    if (text_label_) {
-      int text_style = is_warning_ ? ChromeTextStyle::STYLE_RED
-                                   : views::style::TextStyle::STYLE_PRIMARY;
-
-      text_label_->SetEnabledColor(views::style::GetColor(
-          *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, text_style));
-    }
-
-    if (subtext_label_) {
-      SkColor secondary = views::style::GetColor(
-          *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-          ChromeTextStyle::STYLE_HINT);
-      subtext_label_->SetEnabledColor(secondary);
-    }
-
     SchedulePaint();
   }
+
+ protected:
+  virtual int GetPrimaryTextStyle() = 0;
 
  private:
   void AddSpacerWithSize(int spacer_width,
@@ -204,8 +197,6 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   }
 
   const int extra_height_;
-  views::Label* text_label_ = nullptr;
-  views::Label* subtext_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupItemView);
 };
@@ -224,11 +215,16 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   }
 
  protected:
-  // AutofillPopupRowView:
+  // AutofillPopupItemView:
   std::unique_ptr<views::Background> CreateBackground() override {
     return views::CreateSolidBackground(
         is_selected_ ? kAutofillPopupSelectedBackgroundColor
                      : kAutofillPopupBackgroundColor);
+  }
+
+  int GetPrimaryTextStyle() override {
+    return is_warning_ ? ChromeTextStyle::STYLE_RED
+                       : views::style::TextStyle::STYLE_PRIMARY;
   }
 
  private:
@@ -254,7 +250,7 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   }
 
  protected:
-  // AutofillPopupRowView:
+  // AutofillPopupItemView:
   void CreateContent() override {
     SetBorder(views::CreateSolidSidedBorder(
         /*top=*/views::MenuConfig::instance().separator_thickness,
@@ -269,6 +265,10 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
     return views::CreateSolidBackground(
         is_selected_ ? kAutofillPopupSelectedBackgroundColor
                      : kAutofillPopupFooterBackgroundColor);
+  }
+
+  int GetPrimaryTextStyle() override {
+    return ChromeTextStyle::STYLE_SECONDARY;
   }
 
  private:
