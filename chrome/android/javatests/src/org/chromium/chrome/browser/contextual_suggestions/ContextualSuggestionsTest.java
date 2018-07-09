@@ -73,6 +73,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -796,6 +797,47 @@ public class ContextualSuggestionsTest {
 
         CriteriaHelper.pollUiThread(
                 () -> { return toolbarButton.getVisibility() == View.VISIBLE; });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
+    public void testToolbarButton_ResponseInTabSwitcher() throws Exception {
+        View toolbarButton = getToolbarButton();
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        // Simulate suggestions being cleared.
+        ThreadUtils.runOnUiThreadBlocking(() -> mMediator.clearState());
+        assertEquals("Toolbar button should be gone", View.GONE, toolbarButton.getVisibility());
+        assertEquals("Suggestions should be cleared", 0, mModel.getClusterList().getItemCount());
+
+        // Enter tab switcher.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
+
+        // Simulate a new suggestions request.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.requestSuggestions("https://www.google.com"));
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mModel.getClusterList().getItemCount()
+                        == FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT;
+            }
+        });
+
+        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
+                toolbarButton.getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
     }
 
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {
