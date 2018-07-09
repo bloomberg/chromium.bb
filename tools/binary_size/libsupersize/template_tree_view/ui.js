@@ -380,9 +380,9 @@
     );
   }
 
+  form.addEventListener('change', () => loadTree(tree_data));
   form.addEventListener('submit', event => {
     event.preventDefault();
-    state.setAll(new FormData(event.currentTarget));
     loadTree(tree_data);
   });
 

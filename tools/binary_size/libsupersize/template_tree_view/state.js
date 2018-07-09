@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-check
 'use strict';
 
 /**
@@ -36,6 +37,7 @@ const dom = {
   },
 };
 
+/** Build utilities for working with the state. */
 function _initState() {
   /**
    * State is represented in the query string and
@@ -44,7 +46,7 @@ function _initState() {
    */
   let _filterParams = new URLSearchParams(location.search.slice(1));
 
-  const state = {
+  const state = Object.freeze({
     /**
      * Returns a string from the current query string state.
      * Can optionally restrict valid values for the query.
@@ -61,7 +63,7 @@ function _initState() {
     get(key, options = {}) {
       const [val = null] = state.getAll(key, {
         default: options.default ? [options.default] : null,
-        valid: options.value,
+        valid: options.valid,
       });
       return val;
     },
@@ -94,34 +96,19 @@ function _initState() {
     has(key) {
       return _filterParams.has(key);
     },
-    /**
-     * Set the value in the state, overriding any existing value. Afterwards
-     * display the new state in the URL by replacing the current history entry.
-     * @param {string} name
-     * @param {string} value
-     */
-    set(name, value) {
-      _filterParams.set(name, value);
-      state.setAll(_filterParams);
-    },
-    /**
-     * Replaces the current state with a new list of values. Afterwards
-     * display the new state in the URL by replacing the current history entry.
-     * @param {Iterable<[string, string]>} entries Iterator of key-value pairs
-     */
-    setAll(entries) {
-      _filterParams = new URLSearchParams(entries);
-      history.replaceState(null, null, '?' + _filterParams.toString());
-    },
-  };
+  });
 
   // Update form inputs to reflect the state from URL.
-  for (const input of form.elements) {
-    if (input.name) {
-      const value = _filterParams.get(input.name);
+  for (const element of form.elements) {
+    if (element.name) {
+      const input = /** @type {HTMLInputElement} */ (element);
+      const values = _filterParams.getAll(input.name);
+      const [value] = values;
       if (value) {
         switch (input.type) {
           case 'checkbox':
+            input.checked = values.includes(input.value);
+            break;
           case 'radio':
             input.checked = value === input.value;
             break;
@@ -133,23 +120,17 @@ function _initState() {
     }
   }
 
+  // Update the state when the form changes.
+  form.addEventListener('change', event => {
+    _filterParams = new URLSearchParams(new FormData(event.currentTarget));
+    history.replaceState(null, null, '?' + _filterParams.toString());
+  });
+
   return state;
 }
 
-function _startListeners(state) {
-  /**
-   * Some form inputs can be changed without needing to refresh the tree.
-   * When these inputs change, update the state and the change event can
-   * be subscribed to elsewhere in the code.
-   * @param {Event} event Change event fired when a dynamic value is updated
-   */
-  function _onDynamicValueChange(event) {
-    const {name, value} = event.currentTarget;
-    state.set(name, value);
-  }
-  for (const dynamicInput of document.querySelectorAll('form [data-dynamic]')) {
-    dynamicInput.addEventListener('change', _onDynamicValueChange);
-  }
+function _startListeners() {
+  const _SHOW_OPTIONS_STORAGE_KEY = 'show-options';
 
   /**
    * The settings dialog on the side can be toggled on and off by elements with
@@ -157,12 +138,12 @@ function _startListeners(state) {
    */
   function _toggleOptions() {
     const openedOptions = document.body.classList.toggle('show-options');
-    localStorage.setItem('show-options', openedOptions);
+    localStorage.setItem(_SHOW_OPTIONS_STORAGE_KEY, openedOptions.toString());
   }
   for (const button of document.getElementsByClassName('toggle-options')) {
     button.addEventListener('click', _toggleOptions);
   }
-  if (localStorage.getItem('show-options') === 'true') {
+  if (localStorage.getItem(_SHOW_OPTIONS_STORAGE_KEY) === 'true') {
     document.body.classList.add('show-options');
   }
 
@@ -171,12 +152,15 @@ function _startListeners(state) {
    */
   function setMethodCountModeUI() {
     const sizeHeader = document.getElementById('size-header');
+    const typesFilterContainer = document.getElementById('types-filter');
     if (form.method_count.checked) {
       sizeHeader.textContent = 'Methods';
       form.byteunit.setAttribute('disabled', '');
+      typesFilterContainer.setAttribute('disabled', '');
     } else {
       sizeHeader.textContent = sizeHeader.dataset.value;
       form.byteunit.removeAttribute('disabled', '');
+      typesFilterContainer.removeAttribute('disabled');
     }
   }
   setMethodCountModeUI();
@@ -185,4 +169,4 @@ function _startListeners(state) {
 
 /** Utilities for working with the state */
 const state = _initState();
-_startListeners(state);
+_startListeners();

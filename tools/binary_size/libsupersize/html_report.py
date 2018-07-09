@@ -57,6 +57,8 @@ _SYMBOL_TYPE_DESCRIPTIONS = {
 _SPECIAL_CHAR_REGEX = re.compile(r'(::|(?:\.*\/)+|#)')
 # Insert zero-width space after capture group
 _ZERO_WIDTH_SPACE = r'\1\u200b'
+# Capture mustache variables (ie: "{{name}}")
+_MUSTACHE_VAR_REGEX = re.compile(r'{{(\w+)}}')
 
 # The display name of the bucket where we put symbols without path.
 _NAME_SMALL_SYMBOL_BUCKET = '(Other)'
@@ -322,14 +324,30 @@ def _CopyTemplateFiles(template_src, dest_dir):
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), dest_dir)
 
 
-def _CopyTreeViewTemplateFiles(template_src, dest_dir, size_header):
+def _CopyTreeViewTemplateFiles(template_src, dest_dir, **kwargs):
+  """Copy and format template files for the tree view UI.
+
+  The index.html file uses basic mustache syntax to denote where strings
+  should be replaced. Only variable tags are supported.
+
+  Args:
+    template_src: Path to the directory containing the template files.
+    dest_dir: Path to the directory where the outputted files will be saved.
+    kwags: Dict of key-value pairs which will be used to replace {{<key>}}
+      strings in the index.html template.
+
+  Throws:
+    KeyError: thrown if a variable tag does not have a corresponding kwarg.
+  """
   _MakeDirIfDoesNotExist(dest_dir)
   shutil.copy(os.path.join(template_src, 'options.css'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
 
   with open(os.path.join(dest_dir, 'index.html'), 'w') as out_html, \
         open(os.path.join(template_src, 'index.html'), 'r') as in_html:
-    out_html.write(in_html.read().replace('{{size_header}}', size_header))
+    html_text = _MUSTACHE_VAR_REGEX.sub(lambda m: kwargs[m.group(1)],
+                                        in_html.read())
+    out_html.write(html_text)
 
   with open(os.path.join(dest_dir, 'tree.js'), 'w') as out_js, \
         open(os.path.join(template_src, 'ui.js'), 'r') as ui, \
@@ -384,7 +402,8 @@ def Run(args, parser):
     size_header = 'Delta size' if args.diff_with else 'Size'
 
     template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
-    _CopyTreeViewTemplateFiles(template_src, args.report_dir,size_header)
+    _CopyTreeViewTemplateFiles(template_src, args.report_dir,
+                               size_header=size_header)
     logging.info('Creating JSON objects')
     tree_root = _MakeTreeViewList(symbols, args.min_symbol_size)
 
