@@ -1063,7 +1063,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	fb->handles[0] = gbm_bo_get_handle(bo).u32;
 	fb->format = pixel_format_get_info(gbm_bo_get_format(bo));
 	fb->modifier = DRM_FORMAT_MOD_INVALID;
-	fb->size = fb->strides[0] * fb->height;
+	fb->size = 0;
 	fb->fd = backend->drm.fd;
 
 	if (!fb->format) {
