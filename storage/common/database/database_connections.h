@@ -11,15 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "storage/common/storage_common_export.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace storage {
 
@@ -65,32 +58,6 @@ class STORAGE_COMMON_EXPORT DatabaseConnections {
   bool RemoveConnectionsHelper(const std::string& origin_identifier,
                                const base::string16& database_name,
                                int num_connections);
-};
-
-// A wrapper class that provides thread-safety and the
-// ability to wait until all connections have closed.
-// Intended for use in renderer processes.
-class STORAGE_COMMON_EXPORT DatabaseConnectionsWrapper
-    : public base::RefCountedThreadSafe<DatabaseConnectionsWrapper> {
- public:
-  DatabaseConnectionsWrapper();
-
-  bool HasOpenConnections();
-  void AddOpenConnection(const std::string& origin_identifier,
-                         const base::string16& database_name);
-  void RemoveOpenConnection(const std::string& origin_identifier,
-                            const base::string16& database_name);
-
-  // Returns true if all databases are closed.
-  bool WaitForAllDatabasesToClose(base::TimeDelta timeout);
-
- private:
-  ~DatabaseConnectionsWrapper();
-  friend class base::RefCountedThreadSafe<DatabaseConnectionsWrapper>;
-
-  base::Lock open_connections_lock_;
-  DatabaseConnections open_connections_;
-  base::WaitableEvent* waiting_to_close_event_ = nullptr;
 };
 
 }  // namespace storage
