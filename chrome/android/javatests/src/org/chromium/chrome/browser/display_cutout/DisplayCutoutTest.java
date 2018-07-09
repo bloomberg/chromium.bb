@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -62,6 +63,28 @@ public class DisplayCutoutTest {
     public void testViewportFitCover() throws InterruptedException, TimeoutException {
         mTestRule.enterFullscreen();
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
+
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
+        mTestRule.waitForLayoutInDisplayCutoutMode(
+                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+
+        mTestRule.exitFullscreen();
+
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
+        mTestRule.waitForLayoutInDisplayCutoutMode(
+                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+    }
+
+    /**
+     * Test that the safe area is applied when we have viewport fit cover forced by the user agent.
+     */
+    @Test
+    @LargeTest
+    public void testViewportFitCoverForced() throws InterruptedException, TimeoutException {
+        mTestRule.enterFullscreen();
+
+        // Set the viewport fit internally as this value is internal only.
+        mTestRule.setViewportFitInternal(ViewportFit.COVER_FORCED_BY_USER_AGENT);
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(

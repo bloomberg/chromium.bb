@@ -177,7 +177,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, CombinedGesture) {
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 
   // Finish the gesture by contracting.
   list = CreateTouchListWithTwoPoints(0, 0, 0, 0);
@@ -197,7 +197,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 
   // Simulate a contracting gesture and check the value has been restored.
   SimulateContractingGesture();
@@ -223,7 +223,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 
   // Exit fullscreen and check the value has been restored.
   SimulateExitFullscreen();
@@ -240,11 +240,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture_DoubleNoop) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 
   // Simulate another expanding gesture and make sure nothing changed.
   SimulateExpandingGesture();
-  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, IncompleteGestureClearsState) {

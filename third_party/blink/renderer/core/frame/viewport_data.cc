@@ -82,7 +82,7 @@ void ViewportData::UpdateViewportDescription() {
   // If we are forcing to expand into the display cutout then we should override
   // the viewport fit value.
   if (force_expand_display_cutout_)
-    current_viewport_fit = mojom::ViewportFit::kCover;
+    current_viewport_fit = mojom::ViewportFit::kCoverForcedByUserAgent;
 
   if (viewport_fit_ != current_viewport_fit) {
     if (AssociatedInterfaceProvider* provider =

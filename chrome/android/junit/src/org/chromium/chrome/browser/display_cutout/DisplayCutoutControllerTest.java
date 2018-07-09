@@ -100,6 +100,16 @@ public class DisplayCutoutControllerTest {
 
     @Test
     @SmallTest
+    public void testCutoutModeWhenCoverForcedAndInteractable() throws Throwable {
+        when(mTab.isUserInteractable()).thenReturn(true);
+
+        mDisplayCutoutController.setViewportFit(ViewportFit.COVER_FORCED_BY_USER_AGENT);
+        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES",
+                mDisplayCutoutController.getDisplayCutoutMode());
+    }
+
+    @Test
+    @SmallTest
     public void testCutoutModeWhenContainAndInteractable() throws Throwable {
         when(mTab.isUserInteractable()).thenReturn(true);
 
@@ -120,6 +130,14 @@ public class DisplayCutoutControllerTest {
     @SmallTest
     public void testCutoutModeWhenCoverAndNotInteractable() throws Throwable {
         mDisplayCutoutController.setViewportFit(ViewportFit.COVER);
+        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+                mDisplayCutoutController.getDisplayCutoutMode());
+    }
+
+    @Test
+    @SmallTest
+    public void testCutoutModeWhenCoverForcedAndNotInteractable() throws Throwable {
+        mDisplayCutoutController.setViewportFit(ViewportFit.COVER_FORCED_BY_USER_AGENT);
         Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
