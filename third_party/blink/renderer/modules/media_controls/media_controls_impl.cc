@@ -30,7 +30,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
-#include "third_party/blink/renderer/core/dom/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
