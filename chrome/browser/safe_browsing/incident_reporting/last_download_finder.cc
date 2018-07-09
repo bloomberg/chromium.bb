@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/base/pref_names.h"
 
 namespace safe_browsing {
 

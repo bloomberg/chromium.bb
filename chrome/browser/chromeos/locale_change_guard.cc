@@ -28,6 +28,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/pref_names.h"
 
 using base::UserMetricsAction;
 using content::WebContents;

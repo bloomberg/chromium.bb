@@ -33,6 +33,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/chromeos/input_method_whitelist.h"
+#include "ui/base/pref_names.h"
 
 namespace base {
 class TaskRunner;

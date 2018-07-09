@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/base/pref_names.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/lifetime/termination_notification.h"

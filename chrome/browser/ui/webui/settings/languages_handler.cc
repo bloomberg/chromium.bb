@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/pref_names.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/base/locale_util.h"
