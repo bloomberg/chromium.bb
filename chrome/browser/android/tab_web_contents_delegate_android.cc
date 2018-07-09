@@ -528,7 +528,7 @@ jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingScreen(
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
-  return indicator->IsBeingMirrored(web_contents);
+  return indicator->IsCapturingDesktop(web_contents);
 }
 
 void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
