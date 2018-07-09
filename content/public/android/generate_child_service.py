@@ -42,11 +42,12 @@ def DoMain(argv):
   number = int(number)
 
   path_template = "org/chromium/content/app/SandboxedProcessService{0}.java"
-  with zipfile.ZipFile(output, 'w', zipfile.ZIP_STORED) as srcjar:
-    for i in xrange(number):
-      build_utils.AddToZipHermetic(srcjar,
-              path_template.format(i),
-              data=GenerateService(i))
+  with build_utils.AtomicOutput(output) as f:
+    with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
+      for i in xrange(number):
+        build_utils.AddToZipHermetic(srcjar,
+                                     path_template.format(i),
+                                     data=GenerateService(i))
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, output)
