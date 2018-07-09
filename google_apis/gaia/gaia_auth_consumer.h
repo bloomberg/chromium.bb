@@ -93,11 +93,6 @@ class GaiaAuthConsumer {
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) {}
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error) {}
 
-  virtual void OnIssueAuthTokenSuccess(const std::string& service,
-                                       const std::string& auth_token) {}
-  virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GoogleServiceAuthError& error) {}
-
   virtual void OnClientOAuthCode(const std::string& auth_code) {}
   virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) {}
   virtual void OnClientOAuthFailure(const GoogleServiceAuthError& error) {}

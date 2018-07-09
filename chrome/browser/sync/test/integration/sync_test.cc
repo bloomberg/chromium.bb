@@ -865,8 +865,6 @@ void SyncTest::SetupMockGaiaResponses() {
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->get_user_info_url().spec(),
       "email=user@gmail.com\ndisplayEmail=user@gmail.com");
-  test_url_loader_factory_.AddResponse(
-      GaiaUrls::GetInstance()->issue_auth_token_url().spec(), "auth");
   test_url_loader_factory_.AddResponse(GoogleURLTracker::kSearchDomainCheckURL,
                                        ".google.com");
   test_url_loader_factory_.AddResponse(
