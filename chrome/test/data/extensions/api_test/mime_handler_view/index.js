@@ -236,6 +236,16 @@ var tests = [
       }, 100);
     });
   },
+
+  function testTargetBlankAnchor() {
+    checkStreamDetails('testTargetBlankAnchor.csv', false);
+    var anchor = document.createElement('a');
+    anchor.href = 'about:blank';
+    anchor.target = '_blank';
+    document.body.appendChild(anchor);
+    anchor.click();
+    chrome.test.succeed();
+  },
 ];
 
 var testsByName = {};

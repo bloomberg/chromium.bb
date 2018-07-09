@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -217,4 +218,15 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BackgroundPage) {
   extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   RunTest("testBackgroundPage.csv");
+}
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+  RunTest("testTargetBlankAnchor.csv");
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_EQ(
+      GURL("about:blank"),
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
 }
