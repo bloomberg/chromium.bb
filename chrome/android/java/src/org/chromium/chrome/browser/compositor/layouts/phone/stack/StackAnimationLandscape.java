@@ -5,18 +5,6 @@
 package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.addAnimation;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.MAX_CONTENT_HEIGHT;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.SATURATION;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.SIDE_BORDER_SCALE;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.TILTY;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.TOOLBAR_ALPHA;
-import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.TOOLBAR_Y_OFFSET;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.DISCARD_AMOUNT;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCALE;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCROLL_OFFSET;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.X_IN_STACK_INFLUENCE;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.X_IN_STACK_OFFSET;
-import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.Y_IN_STACK_INFLUENCE;
 
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
@@ -38,7 +26,7 @@ class StackAnimationLandscape extends StackAnimation {
     @Override
     protected ChromeAnimation<?> createEnterStackAnimatorSet(
             StackTab[] tabs, int focusIndex, int spacing) {
-        ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
+        ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
         final float initialScrollOffset = mStack.screenToScroll(0);
 
         for (int i = 0; i < tabs.length; ++i) {
@@ -52,30 +40,30 @@ class StackAnimationLandscape extends StackAnimation {
 
             final float scrollOffset = mStack.screenToScroll(i * spacing);
 
-            addAnimation(set, tab.getLayoutTab(), MAX_CONTENT_HEIGHT,
+            addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.MAX_CONTENT_HEIGHT,
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                     mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION, 0);
             if (i < focusIndex) {
-                addAnimation(set, tab, SCROLL_OFFSET, initialScrollOffset, scrollOffset,
-                        ENTER_STACK_ANIMATION_DURATION, 0);
+                addAnimation(set, tab, StackTab.Property.SCROLL_OFFSET, initialScrollOffset,
+                        scrollOffset, ENTER_STACK_ANIMATION_DURATION, 0);
             } else if (i > focusIndex) {
                 tab.setScrollOffset(scrollOffset);
-                addAnimation(set, tab, X_IN_STACK_OFFSET,
+                addAnimation(set, tab, StackTab.Property.X_IN_STACK_OFFSET,
                         (mWidth > mHeight && LocalizationUtils.isLayoutRtl()) ? -mWidth : mWidth,
                         0.0f, ENTER_STACK_ANIMATION_DURATION, 0);
             } else {
                 tab.setScrollOffset(scrollOffset);
-                addAnimation(set, tab, X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
+                addAnimation(set, tab, StackTab.Property.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
                         ENTER_STACK_BORDER_ALPHA_DURATION, 0);
-                addAnimation(set, tab, SCALE, 1.0f, mStack.getScaleAmount(),
+                addAnimation(set, tab, StackTab.Property.SCALE, 1.0f, mStack.getScaleAmount(),
                         ENTER_STACK_BORDER_ALPHA_DURATION, 0);
-                addAnimation(set, tab.getLayoutTab(), TOOLBAR_ALPHA, 1.f, 0.f,
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_ALPHA, 1.f, 0.f,
                         ENTER_STACK_TOOLBAR_ALPHA_DURATION, ENTER_STACK_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), TOOLBAR_Y_OFFSET, 0.f,
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_Y_OFFSET, 0.f,
                         getToolbarOffsetToLineUpWithBorder(), ENTER_STACK_BORDER_ALPHA_DURATION,
                         TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), SIDE_BORDER_SCALE, 0.f, 1.f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.SIDE_BORDER_SCALE, 0.f,
+                        1.f, ENTER_STACK_BORDER_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
             }
         }
 
@@ -85,18 +73,18 @@ class StackAnimationLandscape extends StackAnimation {
     @Override
     protected ChromeAnimation<?> createTabFocusedAnimatorSet(
             StackTab[] tabs, int focusIndex, int spacing) {
-        ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
+        ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];
             LayoutTab layoutTab = tab.getLayoutTab();
 
             addTiltScrollAnimation(set, layoutTab, 0.0f, TAB_FOCUSED_ANIMATION_DURATION, 0);
-            addAnimation(set, tab, DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
+            addAnimation(set, tab, StackTab.Property.DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
                     TAB_FOCUSED_ANIMATION_DURATION, 0);
 
             if (i < focusIndex) {
                 // For tabs left of the focused tab move them left to 0.
-                addAnimation(set, tab, SCROLL_OFFSET, tab.getScrollOffset(),
+                addAnimation(set, tab, StackTab.Property.SCROLL_OFFSET, tab.getScrollOffset(),
                         Math.max(0.0f, tab.getScrollOffset() - mWidth - spacing),
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
             } else if (i > focusIndex) {
@@ -108,7 +96,7 @@ class StackAnimationLandscape extends StackAnimation {
                         : mWidth - coveringTabPosition;
                 float clampedDistanceToBorder = MathUtils.clamp(distanceToBorder, 0, mWidth);
                 float delay = TAB_FOCUSED_MAX_DELAY * clampedDistanceToBorder / mWidth;
-                addAnimation(set, tab, X_IN_STACK_OFFSET, tab.getXInStackOffset(),
+                addAnimation(set, tab, StackTab.Property.X_IN_STACK_OFFSET, tab.getXInStackOffset(),
                         tab.getXInStackOffset()
                                 + (LocalizationUtils.isLayoutRtl() ? -mWidth : mWidth),
                         (TAB_FOCUSED_ANIMATION_DURATION - (long) delay), (long) delay);
@@ -123,34 +111,35 @@ class StackAnimationLandscape extends StackAnimation {
                 layoutTab.setBorderScale(1.f);
 
                 if (!isHorizontalTabSwitcherFlagEnabled()) {
-                    addAnimation(set, tab, SCROLL_OFFSET, tab.getScrollOffset(),
+                    addAnimation(set, tab, StackTab.Property.SCROLL_OFFSET, tab.getScrollOffset(),
                             mStack.screenToScroll(0), TAB_FOCUSED_ANIMATION_DURATION, 0);
                 }
 
-                addAnimation(
-                        set, tab, SCALE, tab.getScale(), 1.0f, TAB_FOCUSED_ANIMATION_DURATION, 0);
-                addAnimation(set, tab, X_IN_STACK_INFLUENCE, tab.getXInStackInfluence(), 0.0f,
+                addAnimation(set, tab, StackTab.Property.SCALE, tab.getScale(), 1.0f,
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
-                addAnimation(set, tab, Y_IN_STACK_INFLUENCE, tab.getYInStackInfluence(), 0.0f,
-                        TAB_FOCUSED_Y_STACK_DURATION, 0);
+                addAnimation(set, tab, StackTab.Property.X_IN_STACK_INFLUENCE,
+                        tab.getXInStackInfluence(), 0.0f, TAB_FOCUSED_ANIMATION_DURATION, 0);
+                addAnimation(set, tab, StackTab.Property.Y_IN_STACK_INFLUENCE,
+                        tab.getYInStackInfluence(), 0.0f, TAB_FOCUSED_Y_STACK_DURATION, 0);
 
-                addAnimation(set, tab.getLayoutTab(), MAX_CONTENT_HEIGHT,
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.MAX_CONTENT_HEIGHT,
                         tab.getLayoutTab().getMaxContentHeight(),
                         tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
                 tab.setYOutOfStack(getStaticTabPosition());
 
                 if (layoutTab.shouldStall()) {
-                    addAnimation(set, layoutTab, SATURATION, 1.0f, 0.0f,
+                    addAnimation(set, layoutTab, LayoutTab.Property.SATURATION, 1.0f, 0.0f,
                             TAB_FOCUSED_BORDER_ALPHA_DURATION, TAB_FOCUSED_BORDER_ALPHA_DELAY);
                 }
-                addAnimation(set, tab.getLayoutTab(), TOOLBAR_ALPHA, layoutTab.getToolbarAlpha(),
-                        1.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), TOOLBAR_Y_OFFSET,
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_ALPHA,
+                        layoutTab.getToolbarAlpha(), 1.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION,
+                        TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_Y_OFFSET,
                         getToolbarOffsetToLineUpWithBorder(), 0.f,
                         TAB_FOCUSED_TOOLBAR_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), SIDE_BORDER_SCALE, 1.f, 0.f,
-                        TAB_FOCUSED_TOOLBAR_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
+                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.SIDE_BORDER_SCALE, 1.f,
+                        0.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
             }
         }
 
@@ -159,7 +148,7 @@ class StackAnimationLandscape extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createViewMoreAnimatorSet(StackTab[] tabs, int selectedIndex) {
-        ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
+        ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
 
         if (selectedIndex + 1 >= tabs.length) return set;
 
@@ -169,7 +158,7 @@ class StackAnimationLandscape extends StackAnimation {
                                * VIEW_MORE_SIZE_RATIO);
         offset = Math.max(VIEW_MORE_MIN_SIZE, offset);
         for (int i = selectedIndex + 1; i < tabs.length; ++i) {
-            addAnimation(set, tabs[i], SCROLL_OFFSET, tabs[i].getScrollOffset(),
+            addAnimation(set, tabs[i], StackTab.Property.SCROLL_OFFSET, tabs[i].getScrollOffset(),
                     tabs[i].getScrollOffset() + offset, VIEW_MORE_ANIMATION_DURATION, 0);
         }
 
@@ -178,14 +167,14 @@ class StackAnimationLandscape extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createReachTopAnimatorSet(StackTab[] tabs) {
-        ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
+        ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
 
         float screenTarget = 0.0f;
         for (int i = 0; i < tabs.length; ++i) {
             if (screenTarget >= tabs[i].getLayoutTab().getX()) {
                 break;
             }
-            addAnimation(set, tabs[i], SCROLL_OFFSET, tabs[i].getScrollOffset(),
+            addAnimation(set, tabs[i], StackTab.Property.SCROLL_OFFSET, tabs[i].getScrollOffset(),
                     mStack.screenToScroll(screenTarget), REACH_TOP_ANIMATION_DURATION, 0);
             screenTarget += tabs[i].getLayoutTab().getScaledContentWidth();
         }
@@ -210,9 +199,9 @@ class StackAnimationLandscape extends StackAnimation {
     }
 
     @Override
-    protected void addTiltScrollAnimation(ChromeAnimation<Animatable<?>> set, LayoutTab tab,
-            float end, int duration, int startTime) {
-        addAnimation(set, tab, TILTY, tab.getTiltY(), end, duration, startTime);
+    protected void addTiltScrollAnimation(ChromeAnimation<Animatable> set, LayoutTab tab, float end,
+            int duration, int startTime) {
+        addAnimation(set, tab, LayoutTab.Property.TILTY, tab.getTiltY(), end, duration, startTime);
     }
 
     @Override

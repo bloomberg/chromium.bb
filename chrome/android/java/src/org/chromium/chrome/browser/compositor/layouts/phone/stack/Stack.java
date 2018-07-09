@@ -37,8 +37,12 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @VisibleForTesting
  */
-public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property> {
-    enum Property { SCROLL_OFFSET }
+public abstract class Stack implements ChromeAnimation.Animatable {
+    @IntDef({Property.SCROLL_OFFSET})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Property {
+        int SCROLL_OFFSET = 0;
+    }
 
     public static final int MAX_NUMBER_OF_STACKED_TABS_TOP = 3;
     public static final int MAX_NUMBER_OF_STACKED_TABS_BOTTOM = 3;
@@ -2137,10 +2141,10 @@ public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property
     }
 
     @Override
-    public void setProperty(Property prop, float val) {
+    public void setProperty(@Property int prop, float val) {
         if (prop == Property.SCROLL_OFFSET) setScrollTarget(val, true);
     }
 
     @Override
-    public void onPropertyAnimationFinished(Property prop) {}
+    public void onPropertyAnimationFinished(@Property int prop) {}
 }
