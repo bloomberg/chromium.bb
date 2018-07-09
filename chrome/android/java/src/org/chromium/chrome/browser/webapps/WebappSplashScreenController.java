@@ -90,11 +90,11 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
         notifySplashscreenVisible();
         mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
-                        ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
-                        : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
+                        ? WebappUma.SplashScreenColorStatus.CUSTOM
+                        : WebappUma.SplashScreenColorStatus.DEFAULT);
         mWebappUma.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
-                        ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
-                        : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
+                        ? WebappUma.SplashScreenColorStatus.CUSTOM
+                        : WebappUma.SplashScreenColorStatus.DEFAULT);
 
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
@@ -125,9 +125,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         mNativeLoaded = true;
         mCompositorViewHolder = compositorViewHolder;
         tab.addObserver(this);
-        if (mInitializedLayout) {
-            mWebappUma.commitMetrics();
-        }
+        if (mInitializedLayout) mWebappUma.commitMetrics();
     }
 
     @VisibleForTesting
@@ -138,28 +136,27 @@ class WebappSplashScreenController extends EmptyTabObserver {
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_PAINT);
+            hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.PAINT);
         }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(
-                    tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
+            hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.LOAD_FINISHED);
         }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         if (canHideSplashScreen()) {
-            animateHidingSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FAILED);
+            animateHidingSplashScreen(tab, WebappUma.SplashScreenHidesReason.LOAD_FAILED);
         }
     }
 
     @Override
     public void onCrash(Tab tab, boolean sadTabShown) {
-        animateHidingSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_CRASH);
+        animateHidingSplashScreen(tab, WebappUma.SplashScreenHidesReason.CRASH);
     }
 
     @Override
@@ -242,7 +239,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         int layoutId;
         if (displayIcon == null || displayIcon.getWidth() < minimiumSizeThreshold
                 || (displayIcon == webappInfo.icon() && webappInfo.isIconGenerated())) {
-            mWebappUma.recordSplashscreenIconType(WebappUma.SPLASHSCREEN_ICON_TYPE_NONE);
+            mWebappUma.recordSplashscreenIconType(WebappUma.SplashScreenIconType.NONE);
             layoutId = R.layout.webapp_splash_screen_no_icon;
         } else {
             // The size of the splash screen image determines which layout to use.
@@ -255,13 +252,14 @@ class WebappSplashScreenController extends EmptyTabObserver {
             }
 
             // Record stats about the splash screen.
+            @WebappUma.SplashScreenIconType
             int splashScreenIconType;
             if (splashImage == null) {
-                splashScreenIconType = WebappUma.SPLASHSCREEN_ICON_TYPE_FALLBACK;
+                splashScreenIconType = WebappUma.SplashScreenIconType.FALLBACK;
             } else if (isUsingSmallSplashImage) {
-                splashScreenIconType = WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM_SMALL;
+                splashScreenIconType = WebappUma.SplashScreenIconType.CUSTOM_SMALL;
             } else {
-                splashScreenIconType = WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM;
+                splashScreenIconType = WebappUma.SplashScreenIconType.CUSTOM;
             }
             mWebappUma.recordSplashscreenIconType(splashScreenIconType);
             mWebappUma.recordSplashscreenIconSize(
@@ -283,9 +281,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
                     ApiCompatibilityUtils.getColor(resources, R.color.webapp_splash_title_light));
         }
 
-        if (mNativeLoaded) {
-            mWebappUma.commitMetrics();
-        }
+        if (mNativeLoaded) mWebappUma.commitMetrics();
     }
 
     /**

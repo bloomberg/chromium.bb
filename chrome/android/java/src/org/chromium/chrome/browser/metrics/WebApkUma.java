@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
 import org.chromium.base.AsyncTask;
@@ -22,6 +23,8 @@ import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,20 +36,28 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebApkUma {
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-    // Deprecated: UPDATE_REQUEST_SENT_FIRST_TRY = 0;
-    // Deprecated: UPDATE_REQUEST_SENT_ONSTOP = 1;
-    // Deprecated: UPDATE_REQUEST_SENT_WHILE_WEBAPK_IN_FOREGROUND = 2;
-    public static final int UPDATE_REQUEST_SENT_WHILE_WEBAPK_CLOSED = 3;
-    public static final int UPDATE_REQUEST_SENT_MAX = 4;
+    @IntDef({UpdateRequestSent.WHILE_WEBAPK_CLOSED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UpdateRequestSent {
+        // Deprecated: FIRST_TRY = 0;
+        // Deprecated: ONSTOP = 1;
+        // Deprecated: WHILE_WEBAPK_IN_FOREGROUND = 2;
+        int WHILE_WEBAPK_CLOSED = 3;
+        int NUM_ENTRIES = 4;
+    }
 
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
     // The queued request times shouldn't exceed three.
-    public static final int UPDATE_REQUEST_QUEUED_ONCE = 0;
-    public static final int UPDATE_REQUEST_QUEUED_TWICE = 1;
-    public static final int UPDATE_REQUEST_QUEUED_THREE_TIMES = 2;
-    public static final int UPDATE_REQUEST_QUEUED_MAX = 3;
+    @IntDef({UpdateRequestQueued.ONCE, UpdateRequestQueued.TWICE, UpdateRequestQueued.THREE_TIMES})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UpdateRequestQueued {
+        int ONCE = 0;
+        int TWICE = 1;
+        int THREE_TIMES = 2;
+        int NUM_ENTRIES = 3;
+    }
 
-    // This enum is used to back UMA histograms, and should therefore be treated as append-only.
+    // TODO(yfriedman): Remove once internal repo is updated.
     public static final int GOOGLE_PLAY_INSTALL_SUCCESS = 0;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_NO_DELEGATE = 1;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_TO_CONNECT_TO_SERVICE = 2;
@@ -58,8 +69,6 @@ public class WebApkUma {
     public static final int GOOGLE_PLAY_INSTALL_FAILED_DOWNLOAD_ERROR = 8;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_ERROR = 9;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_TIMEOUT = 10;
-    // GOOGLE_PLAY_INSTALL_REQUEST_FAILED_* errors are the error codes shown in the "reason" of
-    // the returned Bundle when calling installPackage() API returns false.
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_POLICY_DISABLED = 11;
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_UNKNOWN_ACCOUNT = 12;
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NETWORK_ERROR = 13;
@@ -68,12 +77,56 @@ public class WebApkUma {
     public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 16;
 
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-    private static final int PERMISSION_OTHER = 0;
-    private static final int PERMISSION_LOCATION = 1;
-    private static final int PERMISSION_MICROPHONE = 2;
-    private static final int PERMISSION_CAMERA = 3;
-    private static final int PERMISSION_STORAGE = 4;
-    private static final int PERMISSION_COUNT = 5;
+    @IntDef({GooglePlayInstallResult.SUCCESS, GooglePlayInstallResult.FAILED_NO_DELEGATE,
+            GooglePlayInstallResult.FAILED_TO_CONNECT_TO_SERVICE,
+            GooglePlayInstallResult.FAILED_CALLER_VERIFICATION_FAILURE,
+            GooglePlayInstallResult.FAILED_POLICY_VIOLATION,
+            GooglePlayInstallResult.FAILED_API_DISABLED,
+            GooglePlayInstallResult.FAILED_REQUEST_FAILED,
+            GooglePlayInstallResult.FAILED_DOWNLOAD_CANCELLED,
+            GooglePlayInstallResult.FAILED_DOWNLOAD_ERROR,
+            GooglePlayInstallResult.FAILED_INSTALL_ERROR,
+            GooglePlayInstallResult.FAILED_INSTALL_TIMEOUT,
+            GooglePlayInstallResult.REQUEST_FAILED_POLICY_DISABLED,
+            GooglePlayInstallResult.REQUEST_FAILED_UNKNOWN_ACCOUNT,
+            GooglePlayInstallResult.REQUEST_FAILED_NETWORK_ERROR,
+            GooglePlayInstallResult.REQUSET_FAILED_RESOLVE_ERROR,
+            GooglePlayInstallResult.REQUEST_FAILED_NOT_GOOGLE_SIGNED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface GooglePlayInstallResult {
+        int SUCCESS = 0;
+        int FAILED_NO_DELEGATE = 1;
+        int FAILED_TO_CONNECT_TO_SERVICE = 2;
+        int FAILED_CALLER_VERIFICATION_FAILURE = 3;
+        int FAILED_POLICY_VIOLATION = 4;
+        int FAILED_API_DISABLED = 5;
+        int FAILED_REQUEST_FAILED = 6;
+        int FAILED_DOWNLOAD_CANCELLED = 7;
+        int FAILED_DOWNLOAD_ERROR = 8;
+        int FAILED_INSTALL_ERROR = 9;
+        int FAILED_INSTALL_TIMEOUT = 10;
+        // REQUEST_FAILED_* errors are the error codes shown in the "reason" of
+        // the returned Bundle when calling installPackage() API returns false.
+        int REQUEST_FAILED_POLICY_DISABLED = 11;
+        int REQUEST_FAILED_UNKNOWN_ACCOUNT = 12;
+        int REQUEST_FAILED_NETWORK_ERROR = 13;
+        int REQUSET_FAILED_RESOLVE_ERROR = 14;
+        int REQUEST_FAILED_NOT_GOOGLE_SIGNED = 15;
+        int NUM_ENTRIES = 16;
+    }
+
+    // This enum is used to back UMA histograms, and should therefore be treated as append-only.
+    @IntDef({Permission.OTHER, Permission.LOCATION, Permission.MICROPHONE, Permission.CAMERA,
+            Permission.STORAGE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Permission {
+        int OTHER = 0;
+        int LOCATION = 1;
+        int MICROPHONE = 2;
+        int CAMERA = 3;
+        int STORAGE = 4;
+        int NUM_ENTRIES = 5;
+    }
 
     public static final String HISTOGRAM_UPDATE_REQUEST_SENT =
             "WebApk.Update.RequestSent";
@@ -97,10 +150,9 @@ public class WebApkUma {
      * Records the time point when a request to update a WebAPK is sent to the WebAPK Server.
      * @param type representing when the update request is sent to the WebAPK server.
      */
-    public static void recordUpdateRequestSent(int type) {
-        assert type >= 0 && type < UPDATE_REQUEST_SENT_MAX;
-        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_UPDATE_REQUEST_SENT,
-                type, UPDATE_REQUEST_SENT_MAX);
+    public static void recordUpdateRequestSent(@UpdateRequestSent int type) {
+        RecordHistogram.recordEnumeratedHistogram(
+                HISTOGRAM_UPDATE_REQUEST_SENT, type, UpdateRequestSent.NUM_ENTRIES);
     }
 
     /**
@@ -108,9 +160,9 @@ public class WebApkUma {
      * sending to WebAPK server.
      * @param times representing the times that an update has been queued.
      */
-    public static void recordUpdateRequestQueued(int times) {
-        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_UPDATE_REQUEST_QUEUED, times,
-                UPDATE_REQUEST_QUEUED_MAX);
+    public static void recordUpdateRequestQueued(@UpdateRequestQueued int times) {
+        RecordHistogram.recordEnumeratedHistogram(
+                HISTOGRAM_UPDATE_REQUEST_QUEUED, times, UpdateRequestQueued.NUM_ENTRIES);
     }
 
     /**
@@ -151,10 +203,9 @@ public class WebApkUma {
      * Records whether installing a WebAPK from Google Play succeeded. If not, records the reason
      * that the install failed.
      */
-    public static void recordGooglePlayInstallResult(int result) {
-        assert result >= 0 && result < GOOGLE_PLAY_INSTALL_RESULT_MAX;
-        RecordHistogram.recordEnumeratedHistogram(
-                "WebApk.Install.GooglePlayInstallResult", result, GOOGLE_PLAY_INSTALL_RESULT_MAX);
+    public static void recordGooglePlayInstallResult(@GooglePlayInstallResult int result) {
+        RecordHistogram.recordEnumeratedHistogram("WebApk.Install.GooglePlayInstallResult", result,
+                GooglePlayInstallResult.NUM_ENTRIES);
     }
 
     /** Records the error code if installing a WebAPK via Google Play fails. */
@@ -169,10 +220,9 @@ public class WebApkUma {
      * Records whether updating a WebAPK from Google Play succeeded. If not, records the reason
      * that the update failed.
      */
-    public static void recordGooglePlayUpdateResult(int result) {
-        assert result >= 0 && result < GOOGLE_PLAY_INSTALL_RESULT_MAX;
-        RecordHistogram.recordEnumeratedHistogram(
-                "WebApk.Update.GooglePlayUpdateResult", result, GOOGLE_PLAY_INSTALL_RESULT_MAX);
+    public static void recordGooglePlayUpdateResult(@GooglePlayInstallResult int result) {
+        RecordHistogram.recordEnumeratedHistogram("WebApk.Update.GooglePlayUpdateResult", result,
+                GooglePlayInstallResult.NUM_ENTRIES);
     }
 
     /** Records the duration of a WebAPK session (from launch/foreground to background). */
@@ -216,28 +266,28 @@ public class WebApkUma {
         for (String permission : permissions) {
             permissionGroups.add(getPermissionGroup(permission));
         }
-        for (Integer permission : permissionGroups) {
+        for (@Permission Integer permission : permissionGroups) {
             RecordHistogram.recordEnumeratedHistogram(
-                    permissionUmaName, permission, PERMISSION_COUNT);
+                    permissionUmaName, permission, Permission.NUM_ENTRIES);
         }
     }
 
-    private static int getPermissionGroup(String permission) {
+    private static @Permission int getPermissionGroup(String permission) {
         if (TextUtils.equals(permission, Manifest.permission.ACCESS_COARSE_LOCATION)
                 || TextUtils.equals(permission, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            return PERMISSION_LOCATION;
+            return Permission.LOCATION;
         }
         if (TextUtils.equals(permission, Manifest.permission.RECORD_AUDIO)) {
-            return PERMISSION_MICROPHONE;
+            return Permission.MICROPHONE;
         }
         if (TextUtils.equals(permission, Manifest.permission.CAMERA)) {
-            return PERMISSION_CAMERA;
+            return Permission.CAMERA;
         }
         if (TextUtils.equals(permission, Manifest.permission.READ_EXTERNAL_STORAGE)
                 || TextUtils.equals(permission, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            return PERMISSION_STORAGE;
+            return Permission.STORAGE;
         }
-        return PERMISSION_OTHER;
+        return Permission.OTHER;
     }
 
     /**
@@ -330,10 +380,7 @@ public class WebApkUma {
         try {
             File[] files = dir.listFiles();
             if (files == null) return 0;
-
-            for (File file : files) {
-                sizeInByte += getDirectorySizeInByte(file);
-            }
+            for (File file : files) sizeInByte += getDirectorySizeInByte(file);
         } catch (SecurityException e) {
             return 0;
         }

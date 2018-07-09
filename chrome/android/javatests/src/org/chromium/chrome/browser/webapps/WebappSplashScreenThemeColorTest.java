@@ -91,6 +91,6 @@ public class WebappSplashScreenThemeColorTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM));
+                        WebappUma.SplashScreenColorStatus.CUSTOM));
     }
 }

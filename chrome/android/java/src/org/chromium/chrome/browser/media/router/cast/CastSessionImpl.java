@@ -133,7 +133,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         Intent contentIntent = Tab.createBringTabToFrontIntent(tabId);
         if (contentIntent != null) {
             contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
-                    MediaNotificationUma.SOURCE_PRESENTATION);
+                    MediaNotificationUma.Source.PRESENTATION);
         }
         mNotificationBuilder =
                 new MediaNotificationInfo.Builder()
