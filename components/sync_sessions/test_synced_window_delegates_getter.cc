@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/tab_node_pool.h"
 
 namespace sync_sessions {
@@ -36,7 +37,7 @@ void TestSyncedTabDelegate::Navigate(const std::string& url,
   tab_navigation.set_http_status_code(200);
 
   auto entry = std::make_unique<sessions::SerializedNavigationEntry>(
-      sessions::SerializedNavigationEntry::FromSyncData(0, tab_navigation));
+      SessionNavigationFromSyncData(0, tab_navigation));
   sessions::SerializedNavigationEntryTestHelper::SetTimestamp(time,
                                                               entry.get());
   sessions::SerializedNavigationEntryTestHelper::SetTransitionType(transition,

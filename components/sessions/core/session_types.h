@@ -16,7 +16,6 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
-#include "components/sync/protocol/session_specifics.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -39,20 +38,6 @@ struct SESSIONS_EXPORT SessionTab {
     return std::max(0, std::min(current_navigation_index,
                                 static_cast<int>(navigations.size() - 1)));
   }
-
-  // Set all the fields of this object from the given sync data and
-  // timestamp.  Uses SerializedNavigationEntry::FromSyncData to fill
-  // |navigations|.  Note that the sync protocol buffer doesn't
-  // contain all SerializedNavigationEntry fields.
-  void SetFromSyncData(const sync_pb::SessionTab& sync_data,
-                       base::Time timestamp);
-
-  // Convert this object into its sync protocol buffer equivalent.
-  // Uses SerializedNavigationEntry::ToSyncData to convert |navigations|.  Note
-  // that the protocol buffer doesn't contain all SerializedNavigationEntry
-  // fields, and that the returned protocol buffer doesn't have any
-  // favicon data.
-  sync_pb::SessionTab ToSyncData() const;
 
   // Unique id of the window.
   SessionID window_id;

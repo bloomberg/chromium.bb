@@ -10,8 +10,6 @@
 
 namespace sessions {
 
-//using class SerializedNavigationEntry;
-
 // SessionTab -----------------------------------------------------------------
 
 SessionTab::SessionTab()
@@ -22,38 +20,6 @@ SessionTab::SessionTab()
       pinned(false) {}
 
 SessionTab::~SessionTab() {
-}
-
-void SessionTab::SetFromSyncData(const sync_pb::SessionTab& sync_data,
-                                 base::Time timestamp) {
-  window_id = SessionID::FromSerializedValue(sync_data.window_id());
-  tab_id = SessionID::FromSerializedValue(sync_data.tab_id());
-  tab_visual_index = sync_data.tab_visual_index();
-  current_navigation_index = sync_data.current_navigation_index();
-  pinned = sync_data.pinned();
-  extension_app_id = sync_data.extension_app_id();
-  user_agent_override.clear();
-  this->timestamp = timestamp;
-  navigations.clear();
-  for (int i = 0; i < sync_data.navigation_size(); ++i) {
-    navigations.push_back(
-        SerializedNavigationEntry::FromSyncData(i, sync_data.navigation(i)));
-  }
-  session_storage_persistent_id.clear();
-}
-
-sync_pb::SessionTab SessionTab::ToSyncData() const {
-  sync_pb::SessionTab sync_data;
-  sync_data.set_tab_id(tab_id.id());
-  sync_data.set_window_id(window_id.id());
-  sync_data.set_tab_visual_index(tab_visual_index);
-  sync_data.set_current_navigation_index(current_navigation_index);
-  sync_data.set_pinned(pinned);
-  sync_data.set_extension_app_id(extension_app_id);
-  for (const SerializedNavigationEntry& navigation : navigations) {
-    *sync_data.add_navigation() = navigation.ToSyncData();
-  }
-  return sync_data;
 }
 
 // SessionWindow ---------------------------------------------------------------

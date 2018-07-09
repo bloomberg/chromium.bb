@@ -696,7 +696,7 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
     }
 
     // Update SessionTab based on protobuf.
-    tab->SetFromSyncData(tab_s, modification_time);
+    SetSessionTabFromSyncData(tab_s, modification_time, tab);
 
     // Update the last modified time.
     if (session->modified_time < modification_time)
@@ -778,7 +778,7 @@ void SerializePartialTrackerToSpecifics(
         sync_pb::SessionSpecifics tab_pb;
         tab_pb.set_session_tag(session_tag);
         tab_pb.set_tab_node_id(tab_node_id);
-        tab->ToSyncData().Swap(tab_pb.mutable_tab());
+        SessionTabToSyncData(*tab).Swap(tab_pb.mutable_tab());
         output_cb.Run(session->session_name, &tab_pb);
         continue;
       }

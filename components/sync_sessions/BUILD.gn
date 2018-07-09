@@ -103,6 +103,7 @@ source_set("unit_tests") {
     "sessions_global_id_mapper_unittest.cc",
     "sessions_sync_manager_unittest.cc",
     "synced_session_tracker_unittest.cc",
+    "synced_session_unittest.cc",
     "tab_node_pool_unittest.cc",
     "task_tracker_unittest.cc",
   ]

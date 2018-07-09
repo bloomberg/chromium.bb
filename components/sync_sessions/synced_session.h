@@ -12,12 +12,41 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 
 namespace sync_sessions {
+
+// Construct a SerializedNavigationEntry for a particular index from a sync
+// protocol buffer.  Note that the sync protocol buffer doesn't contain all
+// SerializedNavigationEntry fields.  Also, the timestamp of the returned
+// SerializedNavigationEntry is nulled out, as we assume that the protocol
+// buffer is from a foreign session.
+sessions::SerializedNavigationEntry SessionNavigationFromSyncData(
+    int index,
+    const sync_pb::TabNavigation& sync_data);
+
+// Convert |navigation| into its sync protocol buffer equivalent. Note that the
+// protocol buffer doesn't contain all SerializedNavigationEntry fields.
+sync_pb::TabNavigation SessionNavigationToSyncData(
+    const sessions::SerializedNavigationEntry& navigation);
+
+// Set all the fields of |*tab| object from the given sync data and timestamp.
+// Uses SerializedNavigationEntry::FromSyncData() to fill |navigations|. Note
+// that the sync protocol buffer doesn't contain all SerializedNavigationEntry
+// fields. |tab| must not be null.
+void SetSessionTabFromSyncData(const sync_pb::SessionTab& sync_data,
+                               base::Time timestamp,
+                               sessions::SessionTab* tab);
+
+// Convert |tab| into its sync protocol buffer equivalent. Uses
+// SerializedNavigationEntry::ToSyncData to convert |navigations|. Note that the
+// protocol buffer doesn't contain all SerializedNavigationEntry fields, and
+// that the returned protocol buffer doesn't have any favicon data.
+sync_pb::SessionTab SessionTabToSyncData(const sessions::SessionTab& tab);
 
 // A Sync wrapper for a SessionWindow.
 struct SyncedSessionWindow {

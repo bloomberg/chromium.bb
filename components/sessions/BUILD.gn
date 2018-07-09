@@ -108,14 +108,12 @@ source_set("shared") {
 
   public_deps = [
     "//components/keyed_service/core",
-    "//components/sync/protocol",
   ]
 
   deps = [
     "//base",
     "//components/keyed_service/core",
     "//components/prefs",
-    "//components/sync",
     "//components/variations",
     "//skia",
     "//ui/base",
@@ -136,7 +134,6 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
-    "//components/sync",
     "//skia",
     "//testing/gtest",
     "//ui/base",  # For page_transition_types.h.
@@ -160,7 +157,6 @@ source_set("unit_tests") {
     "core/serialized_navigation_entry_unittest.cc",
     "core/session_backend_unittest.cc",
     "core/session_id_generator_unittest.cc",
-    "core/session_types_unittest.cc",
     "ios/ios_serialized_navigation_builder_unittest.mm",
     "ios/ios_serialized_navigation_driver_unittest.cc",
   ]
@@ -180,7 +176,6 @@ source_set("unit_tests") {
     ":test_support",
     "//base/test:test_support",
     "//components/prefs:test_support",
-    "//components/sync",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",  # For page transition types.

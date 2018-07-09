@@ -420,7 +420,7 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
   // Rewrite the specifics based on the reassociated SessionTab to preserve
   // the new window id.
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
-  local_tab->ToSyncData().Swap(specifics->mutable_tab());
+  SessionTabToSyncData(*local_tab).Swap(specifics->mutable_tab());
   specifics->set_session_tag(current_session_tag_);
   specifics->set_tab_node_id(tab_node_id);
   batch->Put(std::move(specifics));
@@ -458,7 +458,7 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
       specifics.set_current_navigation_index(specifics.navigation_size());
 
     sync_pb::TabNavigation* navigation = specifics.add_navigation();
-    serialized_entry.ToSyncData().Swap(navigation);
+    SessionNavigationToSyncData(serialized_entry).Swap(navigation);
 
     if (is_supervised) {
       navigation->set_blocked_state(
@@ -477,7 +477,7 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
         blocked_navigations = *tab_delegate.GetBlockedNavigations();
     for (size_t i = 0; i < blocked_navigations.size(); ++i) {
       sync_pb::TabNavigation* navigation = specifics.add_navigation();
-      blocked_navigations[i]->ToSyncData().Swap(navigation);
+      SessionNavigationToSyncData(*blocked_navigations[i]).Swap(navigation);
       navigation->set_blocked_state(
           sync_pb::TabNavigation_BlockedState_STATE_BLOCKED);
       // TODO(bauerb): Add categories
