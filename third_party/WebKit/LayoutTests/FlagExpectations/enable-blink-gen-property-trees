@@ -160,6 +160,8 @@ crbug.com/855702 virtual/threaded/animations/composited-filter-webkit-filter.htm
 crbug.com/855702 virtual/threaded/animations/img-element-transform.html [ Timeout Failure Pass ]
 crbug.com/855702 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
 
+crbug.com/861824 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
+
 # These scrollbar tests should pass.
 Bug(none) virtual/prefer_compositing_to_lcd_text/scrollbars/ [ Pass ]
 crbug.com/836912 compositing/rtl/rtl-absolute-overflow.html [ Failure ]
