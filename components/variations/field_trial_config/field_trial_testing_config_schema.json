@@ -4,6 +4,7 @@
 
 {
   "type_name": "FieldTrialTestingConfig",
+  "headers": ["components/variations/proto/study.pb.h"],
   "schema": [{
     "field": "studies",
     "type": "array",
@@ -20,6 +21,11 @@
             "type": "struct",
             "fields": [
               {"field": "name", "type": "string"},
+              {
+                "field": "platforms",
+                "type": "array",
+                "contents": {"type": "enum", "ctype": "Study::Platform"}
+              },
               {
                 "field": "params",
                 "type": "array",

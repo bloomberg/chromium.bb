@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import itertools
 import json
 import os.path
 import sys
@@ -22,6 +21,26 @@ try:
 finally:
   sys.path.pop(0)
 
+_platforms = [
+  'android',
+  'android_webview',
+  'chromeos',
+  'fuchsia',
+  'ios',
+  'linux',
+  'mac',
+  'win',
+]
+
+# Convert a platform argument to the matching Platform enum value in
+# components/variations/proto/study.proto.
+def _PlatformEnumValue(platform):
+  assert platform in _platforms
+  # TODO(crbug/707911): Remove the 'win' special case.
+  if platform == 'win':
+    return 'Study::PLATFORM_WINDOWS'
+  return 'Study::PLATFORM_' + platform.upper()
+
 def _Load(filename):
   """Loads a JSON file into a Python object and return this object.
   """
@@ -29,14 +48,17 @@ def _Load(filename):
     result = json.loads(json_comment_eater.Nom(handle.read()))
   return result
 
-def _LoadFieldTrialConfig(filename, platform):
+def _LoadFieldTrialConfig(filename, platforms):
   """Loads a field trial config JSON and converts it into a format that can be
   used by json_to_struct.
   """
-  return _FieldTrialConfigToDescription(_Load(filename), platform)
+  return _FieldTrialConfigToDescription(_Load(filename), platforms)
 
-def _CreateExperiment(experiment_data):
-  experiment = {'name': experiment_data['name']}
+def _CreateExperiment(experiment_data, platforms):
+  experiment = {
+    'name': experiment_data['name'],
+    'platforms': [_PlatformEnumValue(p) for p in platforms],
+  }
   forcing_flags_data = experiment_data.get('forcing_flag')
   if forcing_flags_data:
     experiment['forcing_flag'] = forcing_flags_data
@@ -52,40 +74,40 @@ def _CreateExperiment(experiment_data):
     experiment['disable_features'] = disable_features_data
   return experiment
 
-def _CreateTrial(study_name, experiment_configs, platform):
-  """Returns the applicable experiments for |study_name| and |platform|. This
+def _CreateTrial(study_name, experiment_configs, platforms):
+  """Returns the applicable experiments for |study_name| and |platforms|. This
   iterates through all of the experiment_configs for |study_name| and picks out
   the applicable experiments based off of the valid platforms.
   """
-  platform_experiment_lists = [
-      config['experiments'] for config in experiment_configs
-      if platform in config['platforms']]
-  platform_experiments = list(itertools.chain.from_iterable(
-      platform_experiment_lists))
+  experiments = []
+  for config in experiment_configs:
+    platform_intersection = [p for p in platforms if p in config['platforms']]
+    if platform_intersection:
+      experiments += [_CreateExperiment(e, platform_intersection)
+                      for e in config['experiments']]
   return {
     'name': study_name,
-    'experiments': [_CreateExperiment(experiment)
-                    for experiment in platform_experiments],
+    'experiments': experiments,
   }
 
-def _GenerateTrials(config, platform):
+def _GenerateTrials(config, platforms):
   for study_name in sorted(config.keys()):
-    study = _CreateTrial(study_name, config[study_name], platform)
+    study = _CreateTrial(study_name, config[study_name], platforms)
     # To avoid converting studies with empty experiments (e.g. the study doesn't
-    # apply to the target platform), this generator only yields studies that
+    # apply to the target platforms), this generator only yields studies that
     # have non-empty experiments.
     if study['experiments']:
       yield study
 
-def ConfigToStudies(config, platform):
-  """Returns the applicable studies from config for the platform."""
-  return [study for study in _GenerateTrials(config, platform)]
+def ConfigToStudies(config, platforms):
+  """Returns the applicable studies from config for the platforms."""
+  return [study for study in _GenerateTrials(config, platforms)]
 
-def _FieldTrialConfigToDescription(config, platform):
+def _FieldTrialConfigToDescription(config, platforms):
   return {
     'elements': {
       'kFieldTrialConfig': {
-        'studies': ConfigToStudies(config, platform)
+        'studies': ConfigToStudies(config, platforms)
       }
     }
   }
@@ -100,7 +122,7 @@ def main(arguments):
       help='directory to output generated files, relative to destbase.')
   parser.add_option('-n', '--namespace',
       help='C++ namespace for generated files. e.g search_providers.')
-  parser.add_option('-p', '--platform',
+  parser.add_option('-p', '--platform', action='append', choices=_platforms,
       help='target platform for the field trial, mandatory.')
   parser.add_option('-s', '--schema', help='path to the schema file, '
       'mandatory.')
@@ -114,13 +136,7 @@ def main(arguments):
     parser.error('You must specify a --schema.')
 
   if not opts.platform:
-    parser.error('You must specify a --platform.')
-
-  supported_platforms = ['android', 'chromeos', 'fuchsia', 'ios', 'linux',
-                         'mac', 'win']
-  if opts.platform not in supported_platforms:
-    parser.error('\'%s\' is an unknown platform. Supported platforms: %s' %
-        (opts.platform, supported_platforms))
+    parser.error('You must specify at least 1 --platform.')
 
   description_filename = os.path.normpath(args[0])
   shortroot = opts.output

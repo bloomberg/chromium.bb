@@ -28,7 +28,6 @@
 #include "components/variations/seed_response.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
-#include "components/variations/variations_switches.h"
 
 namespace android_webview {
 namespace {
@@ -64,14 +63,6 @@ AwFieldTrialCreator::AwFieldTrialCreator()
 AwFieldTrialCreator::~AwFieldTrialCreator() {}
 
 void AwFieldTrialCreator::SetUpFieldTrials() {
-  // Workaround for https://crbug.com/853832: In testing, Chrome's experiments
-  // are applied to WebView. Some of these break WebView. So disable the testing
-  // config. TODO(paulmiller): Remove after 853832 is fixed.
-  auto* cmd = base::CommandLine::ForCurrentProcess();
-  if (!cmd->HasSwitch(variations::switches::kDisableFieldTrialTestingConfig)) {
-    cmd->AppendSwitch(variations::switches::kDisableFieldTrialTestingConfig);
-  }
-
   DoSetUpFieldTrials();
 
   // If DoSetUpFieldTrials failed, it might have skipped creating

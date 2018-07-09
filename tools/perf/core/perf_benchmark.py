@@ -118,7 +118,7 @@ class PerfBenchmark(benchmark.Benchmark):
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
-        self._FixupTargetOS(possible_browser.target_os))
+        [self._FixupTargetOS(possible_browser.target_os)])
 
   def _GetOutDirectoryEstimate(self, options):
     finder_options = options.finder_options
