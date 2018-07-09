@@ -160,6 +160,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     cros_component_manager->Load(
         "cros-termina",
         component_updater::CrOSComponentManager::MountPolicy::kMount,
+        component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
         base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
                        base::WrapRefCounted(this)));
   }
