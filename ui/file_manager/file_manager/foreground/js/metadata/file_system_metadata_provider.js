@@ -38,8 +38,7 @@ FileSystemMetadataProvider.prototype.get = function(requests) {
       item.present = true;
       item.availableOffline = true;
       return item;
-    }, function(error) {
-      console.error(error);
+    }, function() {
       return new MetadataItem();
     });
   }));
