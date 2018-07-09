@@ -512,7 +512,7 @@ void NavigationSimulator::Commit() {
   params.gesture =
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params.contents_mime_type = contents_mime_type_;
-  params.method = "GET";
+  params.method = handle_->IsPost() ? "POST" : "GET";
   params.http_status_code = 200;
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;

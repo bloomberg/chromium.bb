@@ -105,6 +105,9 @@ class RecentTabHelperTest
   // navigation.
   void NavigateAndCommitTyped(const GURL& url);
 
+  // Navigates to the URL and commit as if a form had been submitted.
+  void NavigateAndCommitPost(const GURL& url);
+
   ClientId NewDownloadClientId();
 
   RecentTabHelper* recent_tab_helper() const { return recent_tab_helper_; }
@@ -269,6 +272,15 @@ void RecentTabHelperTest::NavigateAndCommitTyped(const GURL& url) {
   auto simulator =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
   simulator->SetTransition(ui::PAGE_TRANSITION_TYPED);
+  simulator->Commit();
+}
+
+void RecentTabHelperTest::NavigateAndCommitPost(const GURL& url) {
+  auto simulator =
+      content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  simulator->SetMethod("POST");
+  simulator->SetTransition(ui::PAGE_TRANSITION_FORM_SUBMIT);
+  simulator->Start();
   simulator->Commit();
 }
 
@@ -1087,6 +1099,35 @@ TEST_F(RecentTabHelperTest, NoSaveIfTabIsClosing) {
   ASSERT_EQ(1U, GetAllPages().size());
   histogram_tester()->ExpectUniqueSample("OfflinePages.LastN.IsSavingSamePage",
                                          IsSavingSamePageEnum::kNewPage, 1);
+}
+
+TEST_F(RecentTabHelperTest, NoSaveOfflinePageCacheForPost) {
+  // Navigate and finish loading. Nothing should be saved, but we should record
+  // that it is possible to save the page.
+  NavigateAndCommitPost(kTestPageUrl);
+  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
+                                         1);
+
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  ASSERT_EQ(0U, GetAllPages().size());
+
+  // Tab is hidden with a fully loaded page. A snapshot save should not happen
+  // due to the POST method - OfflinePageCache is disabled.
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
+  RunUntilIdle();
+  EXPECT_EQ(0U, page_added_count());
+  ASSERT_EQ(0U, GetAllPages().size());
+  histogram_tester()->ExpectTotalCount("OfflinePages.LastN.IsSavingSamePage",
+                                       0);
+
+  // A manual download should succeed despite being ineligible for OPC.
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
+                                                     123L, "");
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  ASSERT_EQ(1U, GetAllPages().size());
 }
 
 }  // namespace offline_pages
