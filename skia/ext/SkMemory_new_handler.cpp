@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "base/debug/alias.h"
 #include "base/process/memory.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -30,6 +31,13 @@ static inline void* throw_on_failure(size_t size, void* p) {
 }
 
 void sk_abort_no_print() {
+    // Linker's ICF feature may merge this function with other functions with
+    // the same definition (e.g. any function whose sole job is to call abort())
+    // and it may confuse the crash report processing system.
+    // http://crbug.com/860850
+    static int static_variable_to_make_this_function_unique = 0x736b;  // "sk"
+    base::debug::Alias(&static_variable_to_make_this_function_unique);
+
     abort();
 }
 
