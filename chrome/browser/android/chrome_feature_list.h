@@ -83,7 +83,6 @@ extern const base::Feature kVrBrowsingInCustomTab;
 extern const base::Feature kVrBrowsingNativeAndroidUi;
 extern const base::Feature kVrBrowsingTabsView;
 extern const base::Feature kWebVrAutopresentFromIntent;
-extern const base::Feature kWebVrCardboardSupport;
 
 }  // namespace android
 }  // namespace chrome
