@@ -45,16 +45,18 @@
 #if defined(OS_POSIX)
 #include <sys/resource.h>
 #endif
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 #include <dlfcn.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <sched.h>
 #include <signal.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 #if defined(OS_WIN)
 #include <windows.h>
@@ -74,6 +76,7 @@
 #include "base/base_paths_fuchsia.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #endif
 
 namespace base {
@@ -84,7 +87,7 @@ const char kSignalFileSlow[] = "SlowChildProcess.die";
 const char kSignalFileKill[] = "KilledChildProcess.die";
 const char kTestHelper[] = "test_child_process";
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 const char kSignalFileTerm[] = "TerminatedChildProcess.die";
 #endif
 
@@ -538,7 +541,7 @@ const char kSignalFileCrash[] = "CrashingChildProcess.die";
 
 MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileCrash).c_str());
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   // Have to disable to signal handler for segv so we can get a crash
   // instead of an abnormal termination through the crash dump handler.
   ::signal(SIGSEGV, SIG_DFL);
@@ -578,7 +581,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
 
 #if defined(OS_WIN)
   EXPECT_EQ(static_cast<int>(0xc0000005), exit_code);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   int signaled = WIFSIGNALED(exit_code);
   EXPECT_NE(0, signaled);
   int signal = WTERMSIG(exit_code);
@@ -597,14 +600,16 @@ MULTIPROCESS_TEST_MAIN(KilledChildProcess) {
   // Kill ourselves.
   HANDLE handle = ::OpenProcess(PROCESS_ALL_ACCESS, 0, ::GetCurrentProcessId());
   ::TerminateProcess(handle, kExpectedKilledExitCode);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   // Send a SIGKILL to this process, just like the OOM killer would.
   ::kill(getpid(), SIGKILL);
+#elif defined(OS_FUCHSIA)
+  zx_task_kill(zx_process_self());
 #endif
   return 1;
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 MULTIPROCESS_TEST_MAIN(TerminatedChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileTerm).c_str());
   // Send a SIGTERM to this process.
@@ -644,7 +649,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusSigKill) {
 
 #if defined(OS_WIN)
   EXPECT_EQ(kExpectedKilledExitCode, exit_code);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   int signaled = WIFSIGNALED(exit_code);
   EXPECT_NE(0, signaled);
   int signal = WTERMSIG(exit_code);
