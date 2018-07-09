@@ -78,7 +78,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                           base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
-  bool CreateGrContextIfNecessary(gl::GLSurface* surface);
+  // Get a GrContext and a GLContext for a given GL surface.
+  bool GetGrContextForGLSurface(gl::GLSurface* surface,
+                                GrContext** gr_context,
+                                gl::GLContext** gl_context);
 
   // Notifies the GpuHost to stop using GPU compositing. This should be called
   // in response to an error in the GPU process that occurred after
@@ -130,8 +133,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::SequenceId skia_output_surface_sequence_id() const {
     return skia_output_surface_sequence_id_;
   }
-  gl::GLContext* context_for_skia() { return context_for_skia_.get(); }
-  GrContext* gr_context() { return gr_context_.get(); }
 
   void set_oopd_enabled() { oopd_enabled_ = true; }
 
@@ -264,11 +265,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // sequence id for running tasks from SkiaOutputSurface;
   gpu::SequenceId skia_output_surface_sequence_id_;
 
-  // A GLContext for |gr_context_|. It can only be accessed by Skia.
-  scoped_refptr<gl::GLContext> context_for_skia_;
-
-  // A GrContext for SkiaOutputSurface (maybe raster as well).
-  sk_sp<GrContext> gr_context_;
+  // GL and Gr contexts used by Skia only.
+  struct GrContextAndGLContext;
+  base::flat_map<unsigned long, GrContextAndGLContext> contexts_for_gl_;
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

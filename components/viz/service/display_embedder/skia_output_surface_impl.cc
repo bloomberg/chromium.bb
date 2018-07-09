@@ -316,7 +316,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   DCHECK(recorder_);
 
   // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  const auto* version_info = impl_on_gpu_->gl_version_info();
   metadata.backend_format = GrBackendFormat::MakeGL(
       gl::GetInternalFormat(version_info,
                             *metadata.backend_format.getGLFormat()),
@@ -344,7 +344,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   YUVResourceMetadata yuv_metadata(std::move(metadatas), yuv_color_space);
 
   // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  const auto* version_info = impl_on_gpu_->gl_version_info();
   auto backend_format = GrBackendFormat::MakeGL(
       gl::GetInternalFormat(version_info, GL_BGRA8_EXT), GL_TEXTURE_2D);
 
@@ -374,14 +374,13 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     ResourceFormat format,
     bool mipmap) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(gpu_service_->gr_context());
   DCHECK(!current_render_pass_id_);
   DCHECK(!offscreen_surface_recorder_);
   DCHECK(resource_sync_tokens_.empty());
 
   current_render_pass_id_ = id;
 
-  auto gr_context_thread_safe = gpu_service_->gr_context()->threadSafeProxy();
+  auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
   constexpr uint32_t flags = 0;
   // LegacyFontHost will get LCD text and skia figures out what type to use.
   SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
@@ -394,7 +393,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 
   // TODO(penghuang): Figure out how to choose the right size.
   constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  const auto* version_info = impl_on_gpu_->gl_version_info();
   unsigned int texture_storage_format = TextureStorageFormat(format);
   auto backend_format = GrBackendFormat::MakeGL(
       gl::GetInternalFormat(version_info, texture_storage_format),
@@ -409,7 +408,6 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 
 gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintRenderPass() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(gpu_service_->gr_context());
   DCHECK(current_render_pass_id_);
   DCHECK(offscreen_surface_recorder_);
 
@@ -444,7 +442,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   DCHECK(recorder_);
 
   // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  const auto* version_info = impl_on_gpu_->gl_version_info();
   unsigned int texture_storage_format = TextureStorageFormat(format);
   auto backend_format = GrBackendFormat::MakeGL(
       gl::GetInternalFormat(version_info, texture_storage_format),

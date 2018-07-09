@@ -117,6 +117,16 @@ void DestroyBinding(mojo::BindingSet<mojom::GpuService>* binding,
 
 }  // namespace
 
+struct GpuServiceImpl::GrContextAndGLContext {
+  GrContextAndGLContext() = default;
+  GrContextAndGLContext(GrContextAndGLContext&& other) = default;
+  ~GrContextAndGLContext() = default;
+  GrContextAndGLContext& operator=(GrContextAndGLContext&& other) = default;
+
+  scoped_refptr<gl::GLContext> gl_context;
+  sk_sp<GrContext> gr_context;
+};
+
 GpuServiceImpl::GpuServiceImpl(
     const gpu::GPUInfo& gpu_info,
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
@@ -165,17 +175,20 @@ GpuServiceImpl::~GpuServiceImpl() {
     scheduler_->DestroySequence(skia_output_surface_sequence_id_);
   }
 
-  if (context_for_skia_ && !context_for_skia_->IsCurrent(nullptr)) {
-    if (!context_for_skia_->MakeCurrent(
-        gpu_channel_manager_->GetDefaultOffscreenSurface())) {
+  for (auto& key_and_data : contexts_for_gl_) {
+    auto& data = key_and_data.second;
+    if (!data.gr_context)
+      continue;
+    if (!data.gl_context ||
+        !data.gl_context->MakeCurrent(
+            gpu_channel_manager_->GetDefaultOffscreenSurface())) {
       LOG(ERROR) << "Failed to make current.";
-      gr_context_->abandonContext();
+      data.gr_context->abandonContext();
     }
+    data.gr_context = nullptr;
   }
-  gr_context_ = nullptr;
-  context_for_skia_ = nullptr;
+  contexts_for_gl_.clear();
 
-  DCHECK(!gr_context_);
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -277,34 +290,43 @@ void GpuServiceImpl::DisableGpuCompositing() {
   (*gpu_host_)->DisableGpuCompositing();
 }
 
-bool GpuServiceImpl::CreateGrContextIfNecessary(gl::GLSurface* surface) {
+bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
+                                              GrContext** gr_context,
+                                              gl::GLContext** gl_context) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(surface);
+  DCHECK(gr_context && !*gr_context);
+  DCHECK(gl_context && !*gl_context);
 
-  if (!gr_context_) {
-    DCHECK(!context_for_skia_);
+  auto& data = contexts_for_gl_[surface->GetCompatibilityKey()];
+  if (!data.gr_context) {
+    DCHECK(!data.gl_context);
+
     gl::GLContextAttribs attribs;
     // TODO(penghuang) set attribs.
-    context_for_skia_ = gl::init::CreateGLContext(
+    data.gl_context = gl::init::CreateGLContext(
         gpu_channel_manager_->share_group(), surface, attribs);
-    DCHECK(context_for_skia_);
-    gpu_feature_info_.ApplyToGLContext(context_for_skia_.get());
-    if (!context_for_skia_->MakeCurrent(surface)) {
+    DCHECK(data.gl_context);
+    gpu_feature_info_.ApplyToGLContext(data.gl_context.get());
+    if (!data.gl_context->MakeCurrent(surface)) {
       LOG(FATAL) << "Failed to make current.";
       // TODO(penghuang): handle the failure.
     }
 
-    const auto* gl_version_info = context_for_skia_->GetVersionInfo();
+    const auto* gl_version_info = data.gl_context->GetVersionInfo();
     auto native_interface = gl::init::CreateGrGLInterface(*gl_version_info);
     DCHECK(native_interface);
 
     GrContextOptions options;
     options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
     options.fUseGLBufferDataNullHint = GrContextOptions::Enable::kYes;
-    gr_context_ = GrContext::MakeGL(std::move(native_interface), options);
-    DCHECK(gr_context_);
+    data.gr_context = GrContext::MakeGL(std::move(native_interface), options);
+    DCHECK(data.gr_context);
   }
-  return !!gr_context_;
+
+  *gr_context = data.gr_context.get();
+  *gl_context = data.gl_context.get();
+  return !!gr_context;
 }
 
 gpu::ImageFactory* GpuServiceImpl::gpu_image_factory() {
