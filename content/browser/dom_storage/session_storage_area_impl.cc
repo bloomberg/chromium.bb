@@ -94,8 +94,8 @@ void SessionStorageAreaImpl::Delete(
 
 void SessionStorageAreaImpl::DeleteAll(const std::string& source,
                                        DeleteAllCallback callback) {
-  DCHECK(IsBound());
-  DCHECK_NE(0, shared_data_map_->map_data()->ReferenceCount());
+  // Note: This can be called by the Clear Browsing Data flow, and thus doesn't
+  // have to be bound.
   if (shared_data_map_->map_data()->ReferenceCount() > 1) {
     CreateNewMap(NewMapType::EMPTY_FROM_DELETE_ALL, source);
     std::move(callback).Run(true);
