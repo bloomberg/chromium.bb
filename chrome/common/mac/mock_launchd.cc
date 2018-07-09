@@ -94,11 +94,13 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
 MockLaunchd::MockLaunchd(
     const base::FilePath& file,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    base::OnceClosure quit_closure,
     bool create_socket,
     bool as_service)
     : file_(file),
       pipe_name_(GetServiceProcessServerName()),
       main_task_runner_(std::move(main_task_runner)),
+      quit_closure_(std::move(quit_closure)),
       create_socket_(create_socket),
       as_service_(as_service),
       restart_called_(false),
@@ -227,8 +229,7 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
 
 bool MockLaunchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
   remove_called_ = true;
-  main_task_runner_->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(quit_closure_).Run();
   return true;
 }
 
@@ -237,8 +238,7 @@ bool MockLaunchd::RestartJob(Domain domain,
                              CFStringRef name,
                              CFStringRef session_type) {
   restart_called_ = true;
-  main_task_runner_->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(quit_closure_).Run();
   return true;
 }
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_refptr.h"
@@ -31,6 +32,7 @@ class MockLaunchd : public Launchd {
 
   MockLaunchd(const base::FilePath& file,
               scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+              base::OnceClosure quit_closure,
               bool create_socket,
               bool as_service);
   ~MockLaunchd() override;
@@ -63,6 +65,7 @@ class MockLaunchd : public Launchd {
   base::FilePath file_;
   std::string pipe_name_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  base::OnceClosure quit_closure_;
   std::unique_ptr<MultiProcessLock> running_lock_;
   bool create_socket_;
   bool as_service_;

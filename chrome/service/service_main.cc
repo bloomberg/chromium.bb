@@ -32,11 +32,11 @@ int CloudPrintServiceProcessMain(
   if (!state->Initialize())
     return 0;
 
+  base::RunLoop run_loop;
   ServiceProcess service_process;
-  if (service_process.Initialize(&main_message_loop,
-                                 parameters.command_line,
-                                 state.release())) {
-    base::RunLoop().Run();
+  if (service_process.Initialize(run_loop.QuitClosure(),
+                                 parameters.command_line, std::move(state))) {
+    run_loop.Run();
   } else {
     LOG(ERROR) << "Service process failed to initialize";
   }
