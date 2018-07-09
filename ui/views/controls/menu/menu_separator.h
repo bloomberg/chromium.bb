@@ -9,10 +9,11 @@
 #include "base/macros.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/views/view.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
-class MenuSeparator : public View {
+class VIEWS_EXPORT MenuSeparator : public View {
  public:
   explicit MenuSeparator(ui::MenuSeparatorType type) : type_(type) {}
 
