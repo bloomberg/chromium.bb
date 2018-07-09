@@ -880,7 +880,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        // Will be redirected market since package is given.
+        // Will be redirected to market since package is given.
         checkUrl(INTENT_URL_WITH_JAVASCRIPT_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .withIsIncognito(true)
@@ -1408,6 +1408,48 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
+    @SmallTest
+    public void testMarketIntent_MarketInstalled() {
+        checkUrl("market://1234")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("market"));
+    }
+
+    @Test
+    @SmallTest
+    public void testMarketIntent_MarketNotInstalled() {
+        mDelegate.setCanResolveActivityForMarket(false);
+        checkUrl("market://1234").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        Assert.assertNull(mDelegate.startActivityIntent);
+    }
+
+    @Test
+    @SmallTest
+    public void testMarketIntent_ShowDialogIncognitoMarketInstalled() {
+        checkUrl("market://1234")
+                .withIsIncognito(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+                        START_INCOGNITO | START_OTHER_ACTIVITY);
+
+        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+    }
+
+    @Test
+    @SmallTest
+    public void testMarketIntent_DontShowDialogIncognitoMarketNotInstalled() {
+        mDelegate.setCanResolveActivityForMarket(false);
+        checkUrl("market://1234")
+                .withIsIncognito(true)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+    }
+
     private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo ai = new ActivityInfo();
         ai.packageName = packageName;
@@ -1480,7 +1522,15 @@ public class ExternalNavigationHandlerTest {
                     list.add(newResolveInfo(intentActivity.packageName()));
                 }
             }
-            if (list.isEmpty() && mCanResolveActivityForExternalSchemes) {
+            if (!list.isEmpty()) return list;
+
+            String schemeString = intent.getData().getScheme();
+            boolean isMarketScheme = schemeString != null && schemeString.startsWith("market");
+            if (mCanResolveActivityForMarket && isMarketScheme) {
+                list.add(newResolveInfo("market"));
+                return list;
+            }
+            if (mCanResolveActivityForExternalSchemes && !isMarketScheme) {
                 list.add(newResolveInfo(intent.getData().getScheme()));
             }
             return list;
@@ -1643,6 +1693,10 @@ public class ExternalNavigationHandlerTest {
             mCanResolveActivityForExternalSchemes = value;
         }
 
+        public void setCanResolveActivityForMarket(boolean value) {
+            mCanResolveActivityForMarket = value;
+        }
+
         public String getNewUrlAfterClobbering() {
             return mNewUrlAfterClobbering;
         }
@@ -1685,6 +1739,7 @@ public class ExternalNavigationHandlerTest {
 
         private ArrayList<IntentActivity> mIntentActivities = new ArrayList<IntentActivity>();
         private boolean mCanResolveActivityForExternalSchemes = true;
+        private boolean mCanResolveActivityForMarket = true;
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         private boolean mCanHandleWithInstantApp;
