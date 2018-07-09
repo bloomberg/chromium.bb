@@ -4,38 +4,48 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import android.support.annotation.IntDef;
+
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Record statistics on interesting cast events and actions.
  */
 @JNINamespace("remote_media")
 public class RecordCastAction {
-
     // UMA histogram values for the device types the user could select.
     // Keep in sync with the enum in uma_record_action.cc
-    public static final int DEVICE_TYPE_CAST_GENERIC = 0;
-    public static final int DEVICE_TYPE_CAST_YOUTUBE = 1;
-    public static final int DEVICE_TYPE_NON_CAST_YOUTUBE = 2;
-    public static final int DEVICE_TYPE_COUNT = 3;
+    @IntDef({DeviceType.CAST_GENERIC, DeviceType.CAST_YOUTUBE, DeviceType.NON_CAST_YOUTUBE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DeviceType {
+        int CAST_GENERIC = 0;
+        int CAST_YOUTUBE = 1;
+        int NON_CAST_YOUTUBE = 2;
+        int NUM_ENTRIES = 3;
+    }
 
     // UMA histogram values for the fullscreen controls the user could tap.
     // Keep in sync with the MediaCommand enum in histograms.xml
-    public static final int FULLSCREEN_CONTROLS_RESUME = 0;
-    public static final int FULLSCREEN_CONTROLS_PAUSE = 1;
-    public static final int FULLSCREEN_CONTROLS_SEEK = 2;
-    public static final int FULLSCREEN_CONTROLS_COUNT = 3;
+    @IntDef({FullScreenControls.RESUME, FullScreenControls.PAUSE, FullScreenControls.SEEK})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FullScreenControls {
+        int RESUME = 0;
+        int PAUSE = 1;
+        int SEEK = 2;
+        int NUM_ENTRIES = 3;
+    }
 
     /**
      * Record the type of cast receiver we to which we are casting.
      * @param playerType the type of cast receiver.
      */
-    public static void remotePlaybackDeviceSelected(int playerType) {
-        assert playerType >= 0
-                && playerType < RecordCastAction.DEVICE_TYPE_COUNT;
+    public static void remotePlaybackDeviceSelected(@RecordCastAction.DeviceType int playerType) {
         if (LibraryLoader.getInstance().isInitialized())
             nativeRecordRemotePlaybackDeviceSelected(playerType);
     }
@@ -117,12 +127,12 @@ public class RecordCastAction {
 
         if (isMediaElementAlive) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "Cast.Sender.FullscreenControlsActionWithMediaElement",
-                    action, FULLSCREEN_CONTROLS_COUNT);
+                    "Cast.Sender.FullscreenControlsActionWithMediaElement", action,
+                    FullScreenControls.NUM_ENTRIES);
         } else {
             RecordHistogram.recordEnumeratedHistogram(
-                    "Cast.Sender.FullscreenControlsActionWithoutMediaElement",
-                    action, FULLSCREEN_CONTROLS_COUNT);
+                    "Cast.Sender.FullscreenControlsActionWithoutMediaElement", action,
+                    FullScreenControls.NUM_ENTRIES);
         }
     }
 

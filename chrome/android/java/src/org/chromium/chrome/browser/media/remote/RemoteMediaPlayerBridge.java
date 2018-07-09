@@ -81,7 +81,7 @@ public class RemoteMediaPlayerBridge {
         }
 
         @Override
-        public void onPlaybackStateChanged(PlayerState newState) {
+        public void onPlaybackStateChanged(@PlayerState int newState) {
             if (mNativeRemoteMediaPlayerBridge == 0) return;
             if (newState == PlayerState.FINISHED || newState == PlayerState.INVALIDATED) {
                 nativeOnPlaybackFinished(mNativeRemoteMediaPlayerBridge);
@@ -360,7 +360,6 @@ public class RemoteMediaPlayerBridge {
         mCookies = cookies;
         mRouteController.checkIfPlayableRemotely(mOriginalSourceUrl, mOriginalFrameUrl, cookies,
                 mUserAgent, new MediaRouteController.MediaValidationCallback() {
-
                     @Override
                     public void onResult(
                             boolean isPlayable, String revisedSourceUrl, String revisedFrameUrl) {

@@ -56,7 +56,7 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
         public void onError(int errorType, String message) {}
 
         @Override
-        public void onPlaybackStateChanged(final PlayerState newState) {
+        public void onPlaybackStateChanged(final @PlayerState int newState) {
             // Use postOnUiThread to handling the latch until the current UI task has completed,
             // this makes sure that Cast has finished handling the event.
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -79,7 +79,7 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
         public void onTitleChanged(String title) {}
     }
 
-    private Set<PlayerState> mAwaitedStates;
+    private Set<Integer> mAwaitedStates;
     private CountDownLatch mLatch;
     private EmbeddedTestServer mTestServer;
 
@@ -147,7 +147,7 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Will deadlock if called on the target's UI thread.
      * @param states
      */
-    public boolean waitForStates(final Set<PlayerState> states, int waitTimeMs) {
+    public boolean waitForStates(final Set<Integer> states, int waitTimeMs) {
         mAwaitedStates = states;
         mLatch = new CountDownLatch(1);
         // Deal with the case where Chrome is already in the desired state
@@ -172,8 +172,8 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Will deadlock if called on the target's UI thread.
      * @param state
      */
-    public boolean waitForState(final PlayerState state, int waitTimeMs) {
-        Set<PlayerState> states = new HashSet<PlayerState>();
+    public boolean waitForState(final @PlayerState int state, int waitTimeMs) {
+        Set<Integer> states = new HashSet<Integer>();
         states.add(state);
         return waitForStates(states, waitTimeMs);
     }
@@ -297,7 +297,7 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     public void checkDisconnected() {
-        HashSet<PlayerState> disconnectedStates = new HashSet<PlayerState>();
+        HashSet<Integer> disconnectedStates = new HashSet<Integer>();
         disconnectedStates.add(PlayerState.FINISHED);
         disconnectedStates.add(PlayerState.INVALIDATED);
         waitForStates(disconnectedStates, MAX_VIEW_TIME_MS);
