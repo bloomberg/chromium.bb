@@ -31,9 +31,6 @@ namespace blink {
 LayoutProgress::LayoutProgress(HTMLProgressElement* element)
     : LayoutBlockFlow(element),
       position_(HTMLProgressElement::kInvalidPosition),
-      animation_start_time_(0),
-      animation_repeat_interval_(0),
-      animation_duration_(0),
       animating_(false),
       animation_timer_(
           element->GetDocument().GetTaskRunner(TaskType::kInternalDefault),
@@ -62,10 +59,11 @@ void LayoutProgress::UpdateFromElement() {
 }
 
 double LayoutProgress::AnimationProgress() const {
-  return animating_ ? (fmod((CurrentTime() - animation_start_time_),
-                            animation_duration_) /
-                       animation_duration_)
-                    : 0;
+  if (!animating_)
+    return 0;
+  TimeDelta elapsed = CurrentTimeTicks() - animation_start_time_;
+  return (elapsed % animation_duration_).InSecondsF() /
+         animation_duration_.InSecondsF();
 }
 
 bool LayoutProgress::IsDeterminate() const {
@@ -93,14 +91,14 @@ void LayoutProgress::UpdateAnimationState() {
   animation_repeat_interval_ =
       LayoutTheme::GetTheme().AnimationRepeatIntervalForProgressBar();
 
-  bool animating =
-      !IsDeterminate() && Style()->HasAppearance() && animation_duration_ > 0;
+  bool animating = !IsDeterminate() && Style()->HasAppearance() &&
+                   animation_duration_ > TimeDelta();
   if (animating == animating_)
     return;
 
   animating_ = animating;
   if (animating_) {
-    animation_start_time_ = CurrentTime();
+    animation_start_time_ = CurrentTimeTicks();
     animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
   } else {
     animation_timer_.Stop();

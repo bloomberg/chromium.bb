@@ -582,12 +582,12 @@ void LayoutTheme::AdjustInnerSpinButtonStyle(ComputedStyle&) const {}
 
 void LayoutTheme::AdjustMenuListStyle(ComputedStyle&, Element*) const {}
 
-double LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
-  return 0;
+TimeDelta LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
+  return TimeDelta();
 }
 
-double LayoutTheme::AnimationDurationForProgressBar() const {
-  return 0;
+TimeDelta LayoutTheme::AnimationDurationForProgressBar() const {
+  return TimeDelta();
 }
 
 bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {

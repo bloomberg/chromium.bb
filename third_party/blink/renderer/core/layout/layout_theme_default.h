@@ -107,8 +107,8 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   void AdjustMenuListStyle(ComputedStyle&, Element*) const override;
   void AdjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
 
-  double AnimationRepeatIntervalForProgressBar() const override;
-  double AnimationDurationForProgressBar() const override;
+  TimeDelta AnimationRepeatIntervalForProgressBar() const override;
+  TimeDelta AnimationDurationForProgressBar() const override;
 
   // These methods define the padding for the MenuList's inner block.
   int PopupInternalPaddingStart(const ComputedStyle&) const override;
