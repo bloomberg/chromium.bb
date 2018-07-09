@@ -672,6 +672,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           yuvconfig2image(&ctx->img, sd, frame_worker_data->user_priv);
 
           if (!pbi->ext_tile_debug && cm->large_scale_tile) {
+            *index += 1;  // Advance the iterator to point to the next image
             img = &ctx->img;
             img->img_data = pbi->tile_list_output;
             img->sz = pbi->tile_list_size;
