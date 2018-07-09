@@ -882,7 +882,6 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       return downloads_[id].get();
     }
   }
-  DCHECK(!base::ContainsKey(downloads_by_guid_, guid));
   download::DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
