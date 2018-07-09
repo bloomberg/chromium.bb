@@ -1657,8 +1657,9 @@ static const CSSValue& ComputeRegisteredPropertyValue(
   }
 
   if (value.IsValueList()) {
-    CSSValueList* new_list = CSSValueList::CreateSpaceSeparated();
-    for (const CSSValue* inner_value : ToCSSValueList(value)) {
+    const CSSValueList& old_list = ToCSSValueList(value);
+    CSSValueList* new_list = CSSValueList::CreateWithSeparatorFrom(old_list);
+    for (const CSSValue* inner_value : old_list) {
       new_list->Append(ComputeRegisteredPropertyValue(
           css_to_length_conversion_data, *inner_value));
     }

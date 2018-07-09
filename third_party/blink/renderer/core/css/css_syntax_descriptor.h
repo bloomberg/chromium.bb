@@ -30,18 +30,23 @@ enum class CSSSyntaxType {
   kCustomIdent,
 };
 
+enum class CSSSyntaxRepeat { kNone, kSpaceSeparated, kCommaSeparated };
+
 struct CSSSyntaxComponent {
-  CSSSyntaxComponent(CSSSyntaxType type, const String& string, bool repeatable)
-      : type_(type), string_(string), repeatable_(repeatable) {}
+  CSSSyntaxComponent(CSSSyntaxType type,
+                     const String& string,
+                     CSSSyntaxRepeat repeat)
+      : type_(type), string_(string), repeat_(repeat) {}
 
   bool operator==(const CSSSyntaxComponent& a) const {
-    return type_ == a.type_ && string_ == a.string_ &&
-           repeatable_ == a.repeatable_;
+    return type_ == a.type_ && string_ == a.string_ && repeat_ == a.repeat_;
   }
+
+  bool IsRepeatable() const { return repeat_ != CSSSyntaxRepeat::kNone; }
 
   CSSSyntaxType type_;
   String string_;  // Only used when type_ is CSSSyntaxType::kIdent
-  bool repeatable_;
+  CSSSyntaxRepeat repeat_;
 };
 
 class CORE_EXPORT CSSSyntaxDescriptor {
