@@ -579,12 +579,22 @@ class DriveTestVolume : public TestVolume {
     ASSERT_TRUE(parent_entry);
 
     // Create the capabilities object.
-    google_apis::FileResourceCapabilities capabilities;
-    capabilities.set_can_copy(entry.capabilities.can_copy);
-    capabilities.set_can_delete(entry.capabilities.can_delete);
-    capabilities.set_can_rename(entry.capabilities.can_rename);
-    capabilities.set_can_add_children(entry.capabilities.can_add_children);
-    capabilities.set_can_share(entry.capabilities.can_share);
+    google_apis::FileResourceCapabilities file_capabilities;
+    file_capabilities.set_can_copy(entry.capabilities.can_copy);
+    file_capabilities.set_can_delete(entry.capabilities.can_delete);
+    file_capabilities.set_can_rename(entry.capabilities.can_rename);
+    file_capabilities.set_can_add_children(entry.capabilities.can_add_children);
+    file_capabilities.set_can_share(entry.capabilities.can_share);
+
+    google_apis::TeamDriveCapabilities team_drive_capabilities;
+    team_drive_capabilities.set_can_copy(entry.capabilities.can_copy);
+    team_drive_capabilities.set_can_delete_team_drive(
+        entry.capabilities.can_delete);
+    team_drive_capabilities.set_can_rename_team_drive(
+        entry.capabilities.can_rename);
+    team_drive_capabilities.set_can_add_children(
+        entry.capabilities.can_add_children);
+    team_drive_capabilities.set_can_share(entry.capabilities.can_share);
 
     // Add the file or directory entry.
     switch (entry.type) {
@@ -592,14 +602,14 @@ class DriveTestVolume : public TestVolume {
         CreateFile(entry.source_file_name, parent_entry->resource_id(),
                    target_name, entry.mime_type,
                    entry.shared_option == AddEntriesMessage::SHARED,
-                   entry.last_modified_time, capabilities);
+                   entry.last_modified_time, file_capabilities);
         break;
       case AddEntriesMessage::DIRECTORY:
         CreateDirectory(parent_entry->resource_id(), target_name,
-                        entry.last_modified_time, capabilities);
+                        entry.last_modified_time, file_capabilities);
         break;
       case AddEntriesMessage::TEAM_DRIVE:
-        CreateTeamDrive(entry.team_drive_name);
+        CreateTeamDrive(entry.team_drive_name, team_drive_capabilities);
         break;
     }
 
@@ -609,9 +619,12 @@ class DriveTestVolume : public TestVolume {
     content::RunAllTasksUntilIdle();
   }
 
-  // Creates a new Team Drive with ID |name| and name |name|.
-  void CreateTeamDrive(const std::string& name) {
+  // Creates a new Team Drive with ID |name| and name |name|, and sets the
+  // capabilities to |capabilities|.
+  void CreateTeamDrive(const std::string& name,
+                       google_apis::TeamDriveCapabilities capabilities) {
     fake_drive_service_->AddTeamDrive(name, name);
+    fake_drive_service_->SetTeamDriveCapabilities(name, capabilities);
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.

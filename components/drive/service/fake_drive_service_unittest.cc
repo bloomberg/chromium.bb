@@ -70,7 +70,7 @@ constexpr char TEAM_DRIVE_NAME_3[] = "The Third Team Drive";
 
 // Creates a new FileResourceCapabilities object with mixed (true/false)
 // capability settings.
-google_apis::FileResourceCapabilities CreateMixedCapabilities() {
+google_apis::FileResourceCapabilities CreateMixedFileCapabilities() {
   google_apis::FileResourceCapabilities capabilities;
   capabilities.set_can_add_children(true);
   capabilities.set_can_change_restricted_download(false);
@@ -92,8 +92,28 @@ google_apis::FileResourceCapabilities CreateMixedCapabilities() {
   return capabilities;
 }
 
-// Compares two capabilities objects with EXPECT_EQ.
-void ExpectCapabilitiesEqual(
+// Creates a new TeamDriveCapabilities object with mixed (true/false)
+// capability settings.
+google_apis::TeamDriveCapabilities CreateMixedTeamDriveCapabilities() {
+  google_apis::TeamDriveCapabilities capabilities;
+  capabilities.set_can_add_children(true);
+  capabilities.set_can_comment(false);
+  capabilities.set_can_copy(true);
+  capabilities.set_can_delete_team_drive(false);
+  capabilities.set_can_download(true);
+  capabilities.set_can_edit(false);
+  capabilities.set_can_list_children(true);
+  capabilities.set_can_manage_members(false);
+  capabilities.set_can_read_revisions(true);
+  capabilities.set_can_remove_children(false);
+  capabilities.set_can_rename(true);
+  capabilities.set_can_rename_team_drive(false);
+  capabilities.set_can_share(true);
+  return capabilities;
+}
+
+// Compares two FileResourceCapabilities objects with EXPECT_EQ.
+void ExpectFileCapabilitiesEqual(
     const google_apis::FileResourceCapabilities& expectedCapabilities,
     const google_apis::FileResourceCapabilities& actualCapabilities) {
   EXPECT_EQ(expectedCapabilities.can_add_children(),
@@ -124,6 +144,34 @@ void ExpectCapabilitiesEqual(
   EXPECT_EQ(expectedCapabilities.can_trash(), actualCapabilities.can_trash());
   EXPECT_EQ(expectedCapabilities.can_untrash(),
             actualCapabilities.can_untrash());
+}
+
+// Compares two FileResourceCapabilities objects with EXPECT_EQ.
+void ExpectTeamDriveCapabilitiesEqual(
+    const google_apis::TeamDriveCapabilities& expectedCapabilities,
+    const google_apis::TeamDriveCapabilities& actualCapabilities) {
+  EXPECT_EQ(expectedCapabilities.can_add_children(),
+            actualCapabilities.can_add_children());
+  EXPECT_EQ(expectedCapabilities.can_comment(),
+            actualCapabilities.can_comment());
+  EXPECT_EQ(expectedCapabilities.can_copy(), actualCapabilities.can_copy());
+  EXPECT_EQ(expectedCapabilities.can_delete_team_drive(),
+            actualCapabilities.can_delete_team_drive());
+  EXPECT_EQ(expectedCapabilities.can_download(),
+            actualCapabilities.can_download());
+  EXPECT_EQ(expectedCapabilities.can_edit(), actualCapabilities.can_edit());
+  EXPECT_EQ(expectedCapabilities.can_list_children(),
+            actualCapabilities.can_list_children());
+  EXPECT_EQ(expectedCapabilities.can_manage_members(),
+            actualCapabilities.can_manage_members());
+  EXPECT_EQ(expectedCapabilities.can_read_revisions(),
+            actualCapabilities.can_read_revisions());
+  EXPECT_EQ(expectedCapabilities.can_remove_children(),
+            actualCapabilities.can_remove_children());
+  EXPECT_EQ(expectedCapabilities.can_rename(), actualCapabilities.can_rename());
+  EXPECT_EQ(expectedCapabilities.can_rename_team_drive(),
+            actualCapabilities.can_rename_team_drive());
+  EXPECT_EQ(expectedCapabilities.can_share(), actualCapabilities.can_share());
 }
 
 class FakeDriveServiceTest : public testing::Test {
@@ -2375,7 +2423,7 @@ TEST_F(FakeDriveServiceTest, SetFileCapabilities_ExistingFile) {
 
   const std::string kResourceId = "2_file_resource_id";
   const google_apis::FileResourceCapabilities& kCapabilities =
-      CreateMixedCapabilities();
+      CreateMixedFileCapabilities();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileResource> entry;
@@ -2386,7 +2434,7 @@ TEST_F(FakeDriveServiceTest, SetFileCapabilities_ExistingFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
-  ExpectCapabilitiesEqual(kCapabilities, entry->capabilities());
+  ExpectFileCapabilitiesEqual(kCapabilities, entry->capabilities());
 }
 
 TEST_F(FakeDriveServiceTest, SetFileCapabilities_NonexistingFile) {
@@ -2394,7 +2442,7 @@ TEST_F(FakeDriveServiceTest, SetFileCapabilities_NonexistingFile) {
 
   const std::string kResourceId = "nonexisting_resource_id";
   const google_apis::FileResourceCapabilities& kCapabilities =
-      CreateMixedCapabilities();
+      CreateMixedFileCapabilities();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileResource> entry;
@@ -2413,7 +2461,7 @@ TEST_F(FakeDriveServiceTest, SetFileCapabilities_Offline) {
 
   const std::string kResourceId = "2_file_resource_id";
   const google_apis::FileResourceCapabilities& kCapabilities =
-      CreateMixedCapabilities();
+      CreateMixedFileCapabilities();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileResource> entry;
@@ -2424,6 +2472,33 @@ TEST_F(FakeDriveServiceTest, SetFileCapabilities_Offline) {
 
   EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
+}
+
+TEST_F(FakeDriveServiceTest, SetTeamDriveCapabilities_ExistingTeamDrive) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  // Add a new team drive.
+  fake_service_.AddTeamDrive(TEAM_DRIVE_ID_1, TEAM_DRIVE_NAME_1, "");
+
+  const google_apis::TeamDriveCapabilities& kCapabilities =
+      CreateMixedTeamDriveCapabilities();
+  bool result =
+      fake_service_.SetTeamDriveCapabilities(TEAM_DRIVE_ID_1, kCapabilities);
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<TeamDriveList> team_drive_list;
+  fake_service_.GetAllTeamDriveList(
+      test_util::CreateCopyResultCallback(&error, &team_drive_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(team_drive_list);
+
+  EXPECT_EQ(1U, team_drive_list->items().size());
+  ExpectTeamDriveCapabilitiesEqual(kCapabilities,
+                                   team_drive_list->items()[0]->capabilities());
 }
 
 }  // namespace

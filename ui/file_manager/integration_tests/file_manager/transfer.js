@@ -5,35 +5,101 @@
 'use strict';
 
 /**
+ * Info for the source or destination of a transfer.
+ * @struct
+ */
+class TransferLocationInfo {
+  /*
+   * Create a new TransferLocationInfo.
+   *
+   * @param{{
+         volumeName: !string,
+         isTeamDrive: boolean,
+         initialEntries: !Array<TestEntryInfo>
+     }} opts Options for creating TransferLocationInfo.
+   */
+  constructor(opts) {
+    /**
+     * The volume type (e.g. downloads, drive, drive_recent,
+     * drive_shared_with_me, drive_offline) or team drive name. This is used to
+     * select the volume with selectVolume() or the team drive with
+     * selectTeamDrive().
+     * @type {string}
+     */
+    this.volumeName = opts.volumeName;
+
+    /**
+     * Whether this transfer location is a team drive. Defaults to false.
+     * @type {boolean}
+     */
+    this.isTeamDrive = opts.isTeamDrive || false;
+
+    /**
+     * Expected initial contents in the volume.
+     * @type {Array<TestEntryInfo>}
+     */
+    this.initialEntries = opts.initialEntries;
+  }
+}
+
+/**
  * Test function to copy from the specified source to the specified destination.
  * @param {TestEntryInfo} targetFile TestEntryInfo of target file to be copied.
- * @param {string} srcName Type of source volume. e.g. downloads, drive,
- *     drive_recent, drive_shared_with_me, drive_offline.
- * @param {Array<TestEntryInfo>} srcEntries Expected initial contents in the
- *     source volume.
- * @param {string} dstName Type of destination volume.
- * @param {Array<TestEntryInfo>} dstEntries Expected initial contents in the
- *     destination volume.
+ * @param {TransferLocationInfo} src The source of the transfer.
+ * @param {TransferLocationInfo} dst The destination of the transfer.
+ * @param {string|undefined} opt_dstExpectedDialogText The expected content of
+ *     the transfer dialog (including any buttons), or undefined if no dialog is
+ *     expected.
  */
-function copyBetweenVolumes(targetFile,
-                            srcName,
-                            srcEntries,
-                            dstName,
-                            dstEntries) {
-  var srcContents = TestEntryInfo.getExpectedRows(srcEntries).sort();
-  var dstContents = TestEntryInfo.getExpectedRows(dstEntries).sort();
+function copyBetweenVolumes(targetFile, src, dst, opt_dstExpectedDialogText) {
+  let appId;
 
-  var appId;
+  const localFiles = BASIC_LOCAL_ENTRY_SET;
+  const driveFiles = (src.isTeamDrive || dst.isTeamDrive) ?
+      TEAM_DRIVE_ENTRY_SET :
+      BASIC_DRIVE_ENTRY_SET;
+  let srcContents;
+  if (src.isTeamDrive) {
+    srcContents = TestEntryInfo
+                      .getExpectedRows(src.initialEntries.filter(
+                          entry => entry.type !== EntryType.TEAM_DRIVE &&
+                              entry.teamDriveName === src.volumeName))
+                      .sort();
+  } else {
+    srcContents = TestEntryInfo
+                      .getExpectedRows(src.initialEntries.filter(
+                          entry => entry.type !== EntryType.TEAM_DRIVE &&
+                              entry.teamDriveName === ''))
+                      .sort();
+  }
+
+  let dstContents;
+  if (dst.isTeamDrive) {
+    dstContents = TestEntryInfo
+                      .getExpectedRows(dst.initialEntries.filter(
+                          entry => entry.type !== EntryType.TEAM_DRIVE &&
+                              entry.teamDriveName === dst.volumeName))
+                      .sort();
+  } else {
+    dstContents = TestEntryInfo
+                      .getExpectedRows(dst.initialEntries.filter(
+                          entry => entry.type !== EntryType.TEAM_DRIVE &&
+                              entry.teamDriveName === ''))
+                      .sort();
+  }
+
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, localFiles, driveFiles);
     },
     // Select the source volume.
     function(results) {
       appId = results.windowId;
       remoteCall.callRemoteTestUtil(
-          'selectVolume', appId, [srcName], this.next);
+          src.isTeamDrive ? 'selectTeamDrive' : 'selectVolume', appId,
+          [src.volumeName], this.next);
     },
     // Wait for the expected files to appear in the file list.
     function(result) {
@@ -59,7 +125,8 @@ function copyBetweenVolumes(targetFile,
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.callRemoteTestUtil(
-          'selectVolume', appId, [dstName], this.next);
+          dst.isTeamDrive ? 'selectTeamDrive' : 'selectVolume', appId,
+          [dst.volumeName], this.next);
     },
     // Wait for the expected files to appear in the file list.
     function(result) {
@@ -70,14 +137,38 @@ function copyBetweenVolumes(targetFile,
     function() {
       remoteCall.callRemoteTestUtil('execCommand', appId, ['paste'], this.next);
     },
+    // Wait for a dialog if one is expected, or just continue.
+    function() {
+      // If we're expecting a confirmation dialog, confirm that it is shown.
+      if (opt_dstExpectedDialogText !== undefined) {
+        return remoteCall.waitForElement(appId, '.cr-dialog-container.shown')
+            .then(this.next);
+      } else {
+        setTimeout(this.next, 0);
+      }
+    },
+    // Click OK if the dialog appears.
+    function(element) {
+      if (opt_dstExpectedDialogText !== undefined) {
+        chrome.test.assertEq(opt_dstExpectedDialogText, element.text);
+        // Press OK button.
+        remoteCall
+            .callRemoteTestUtil(
+                'fakeMouseClick', appId, ['button.cr-dialog-ok'])
+            .then(this.next);
+      } else {
+        setTimeout(this.next, 0);
+      }
+    },
     // Wait for the file list to change.
     function(result) {
-      chrome.test.assertTrue(result);
-      var ignoreFileSize =
-          srcName == 'drive_shared_with_me' ||
-          srcName == 'drive_offline' ||
-          dstName == 'drive_shared_with_me' ||
-          dstName == 'drive_offline';
+      if (opt_dstExpectedDialogText !== undefined) {
+        chrome.test.assertTrue(result);
+      }
+      var ignoreFileSize = src.volumeName == 'drive_shared_with_me' ||
+          src.volumeName == 'drive_offline' ||
+          dst.volumeName == 'drive_shared_with_me' ||
+          dst.volumeName == 'drive_offline';
       var dstContentsAfterPaste = dstContents.slice();
       var pasteFile = targetFile.getExpectedRow();
       for (var i = 0; i < dstContentsAfterPaste.length; i++) {
@@ -107,10 +198,10 @@ function copyBetweenVolumes(targetFile,
 testcase.transferFromDriveToDownloads = function() {
   copyBetweenVolumes(
       ENTRIES.hello,
-      'drive',
-      BASIC_DRIVE_ENTRY_SET,
-      'downloads',
-      BASIC_LOCAL_ENTRY_SET);
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}),
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}));
 };
 
 /**
@@ -119,10 +210,10 @@ testcase.transferFromDriveToDownloads = function() {
 testcase.transferFromDownloadsToDrive = function() {
   copyBetweenVolumes(
       ENTRIES.hello,
-      'downloads',
-      BASIC_LOCAL_ENTRY_SET,
-      'drive',
-      BASIC_DRIVE_ENTRY_SET);
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}),
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}));
 };
 
 /**
@@ -130,11 +221,12 @@ testcase.transferFromDownloadsToDrive = function() {
  */
 testcase.transferFromSharedToDownloads = function() {
   copyBetweenVolumes(
-      ENTRIES.testSharedDocument,
-      'drive_shared_with_me',
-      SHARED_WITH_ME_ENTRY_SET,
-      'downloads',
-      BASIC_LOCAL_ENTRY_SET);
+      ENTRIES.testSharedDocument, new TransferLocationInfo({
+        volumeName: 'drive_shared_with_me',
+        initialEntries: SHARED_WITH_ME_ENTRY_SET
+      }),
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}));
 };
 
 /**
@@ -142,11 +234,12 @@ testcase.transferFromSharedToDownloads = function() {
  */
 testcase.transferFromSharedToDrive = function() {
   copyBetweenVolumes(
-      ENTRIES.testSharedDocument,
-      'drive_shared_with_me',
-      SHARED_WITH_ME_ENTRY_SET,
-      'drive',
-      BASIC_DRIVE_ENTRY_SET);
+      ENTRIES.testSharedDocument, new TransferLocationInfo({
+        volumeName: 'drive_shared_with_me',
+        initialEntries: SHARED_WITH_ME_ENTRY_SET
+      }),
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}));
 };
 
 /**
@@ -155,10 +248,10 @@ testcase.transferFromSharedToDrive = function() {
 testcase.transferFromOfflineToDownloads = function() {
   copyBetweenVolumes(
       ENTRIES.testDocument,
-      'drive_offline',
-      OFFLINE_ENTRY_SET,
-      'downloads',
-      BASIC_LOCAL_ENTRY_SET);
+      new TransferLocationInfo(
+          {volumeName: 'drive_offline', initialEntries: OFFLINE_ENTRY_SET}),
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}));
 };
 
 /**
@@ -167,8 +260,89 @@ testcase.transferFromOfflineToDownloads = function() {
 testcase.transferFromOfflineToDrive = function() {
   copyBetweenVolumes(
       ENTRIES.testDocument,
-      'drive_offline',
-      OFFLINE_ENTRY_SET,
-      'drive',
-      BASIC_DRIVE_ENTRY_SET);
+      new TransferLocationInfo(
+          {volumeName: 'drive_offline', initialEntries: OFFLINE_ENTRY_SET}),
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}));
+};
+
+/**
+ * Tests copying from a Team Drive to Drive.
+ */
+testcase.transferFromTeamDriveToDrive = function() {
+  copyBetweenVolumes(
+      ENTRIES.teamDriveAFile, new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: TEAM_DRIVE_ENTRY_SET}));
+};
+
+/**
+ * Tests copying from Drive to a Team Drive.
+ */
+testcase.transferFromDriveToTeamDrive = function() {
+  copyBetweenVolumes(
+      ENTRIES.hello,
+      new TransferLocationInfo(
+          {volumeName: 'drive', initialEntries: TEAM_DRIVE_ENTRY_SET}),
+      new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      'Members of \'Team Drive A\' will gain access to the copy of these ' +
+          'items.CopyCancel');
+};
+
+/**
+ * Tests copying from a Team Drive to Downloads.
+ */
+testcase.transferFromTeamDriveToDownloads = function() {
+  copyBetweenVolumes(
+      ENTRIES.teamDriveAFile, new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}));
+};
+
+/**
+ * Tests copying from Downloads to a Team Drive.
+ */
+testcase.transferFromDownloadsToTeamDrive = function() {
+  copyBetweenVolumes(
+      ENTRIES.hello,
+      new TransferLocationInfo(
+          {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}),
+      new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      'Members of \'Team Drive A\' will gain access to the copy of these ' +
+          'items.CopyCancel');
+};
+
+/**
+ * Tests copying between two Team Drives.
+ */
+testcase.transferBetweenTeamDrives = function() {
+  copyBetweenVolumes(
+      ENTRIES.teamDriveBFile, new TransferLocationInfo({
+        volumeName: 'Team Drive B',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      'Members of \'Team Drive A\' will gain access to the copy of these ' +
+          'items.CopyCancel');
 };

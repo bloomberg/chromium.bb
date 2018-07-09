@@ -253,6 +253,31 @@ test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
 };
 
 /**
+ * Fakes pressing the down arrow until the given |folderName| is selected in the
+ * navigation tree.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} folderName Name of the folder to be selected.
+ * @return {boolean} True if file got selected, false otherwise.
+ */
+test.util.sync.selectTeamDrive = function(contentWindow, teamDriveName) {
+  // Select the 'Team Drives' root.
+  if (!test.util.sync.selectFolderInTree(contentWindow, 'Team Drives'))
+    return false;
+
+  // Expand the 'Team Drives' root.
+  if (!test.util.sync.expandSelectedFolderInTree(contentWindow))
+    return false;
+
+  // Select the team drive.
+  if (!test.util.sync.selectFolderInTree(contentWindow, teamDriveName))
+    return false;
+
+  return true;
+};
+
+
+/**
  * Obtains visible tree items.
  *
  * @param {Window} contentWindow Window to be tested.

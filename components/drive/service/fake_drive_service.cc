@@ -461,6 +461,7 @@ void FakeDriveService::GetTeamDriveListInternal(
     std::unique_ptr<TeamDriveResource> team_drive(new TeamDriveResource);
     team_drive->set_id(team_drive_value_[i]->id());
     team_drive->set_name(team_drive_value_[i]->name());
+    team_drive->set_capabilities(team_drive_value_[i]->capabilities());
     result->mutable_items()->push_back(std::move(team_drive));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1701,6 +1702,37 @@ void FakeDriveService::SetFileCapabilities(
                                 std::make_unique<FileResource>(*file)));
 }
 
+bool FakeDriveService::SetTeamDriveCapabilities(
+    const std::string& team_drive_id,
+    const google_apis::TeamDriveCapabilities& capabilities) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (offline_) {
+    return false;
+  }
+
+  EntryInfo* entry = FindEntryByResourceId(team_drive_id);
+  if (!entry) {
+    return false;
+  }
+
+  for (size_t i = 0; i < team_drive_value_.size(); ++i) {
+    std::unique_ptr<TeamDriveResource> team_drive(new TeamDriveResource);
+    if (team_drive_value_[i]->id() == team_drive_id) {
+      team_drive_value_[i]->set_capabilities(capabilities);
+    }
+  }
+
+  ChangeResource& change = entry->change_resource;
+  DCHECK_EQ(ChangeResource::TEAM_DRIVE, change.type());
+  TeamDriveResource* team_drive = change.mutable_team_drive();
+  team_drive->set_capabilities(capabilities);
+
+  // Changes to Team Drives are added to the default changelist.
+  AddNewChangestamp(&change, std::string());
+  return true;
+}
+
 google_apis::DriveApiErrorCode FakeDriveService::SetUserPermission(
     const std::string& resource_id,
     google_apis::drive::PermissionRole user_permission) {
@@ -1754,10 +1786,17 @@ FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto it = entries_.find(resource_id);
+  if (it == entries_.end()) {
+    return nullptr;
+  }
+
   // Deleted entries don't have FileResource.
-  return it != entries_.end() && it->second->change_resource.file()
-             ? it->second.get()
-             : nullptr;
+  if (it->second->change_resource.type() != ChangeResource::TEAM_DRIVE &&
+      !it->second->change_resource.file()) {
+    return nullptr;
+  }
+
+  return it->second.get();
 }
 
 std::string FakeDriveService::GetNewResourceId() {
