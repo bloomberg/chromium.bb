@@ -271,7 +271,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // in the browser process.
   int GetRoutingID() const { return embedded_worker_id_; }
 
-  void SendWorkerStarted();
+  void SendWorkerStarted(blink::mojom::ServiceWorkerStartStatus status);
 
   // Implements mojom::ServiceWorkerEventDispatcher.
   void InitializeGlobalScope(

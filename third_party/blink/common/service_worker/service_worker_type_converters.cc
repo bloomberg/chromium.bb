@@ -24,4 +24,18 @@ TypeConverter<blink::ServiceWorkerStatusCode,
   return blink::ServiceWorkerStatusCode::kErrorFailed;
 }
 
+blink::ServiceWorkerStatusCode
+TypeConverter<blink::ServiceWorkerStatusCode,
+              blink::mojom::ServiceWorkerStartStatus>::
+    Convert(blink::mojom::ServiceWorkerStartStatus status) {
+  switch (status) {
+    case blink::mojom::ServiceWorkerStartStatus::kNormalCompletion:
+      return blink::ServiceWorkerStatusCode::kOk;
+    case blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion:
+      return blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed;
+  }
+  NOTREACHED() << status;
+  return blink::ServiceWorkerStatusCode::kErrorFailed;
+}
+
 }  // namespace mojo

@@ -236,7 +236,6 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
     case EmbeddedWorkerInstance::SCRIPT_READ_FINISHED:
     case EmbeddedWorkerInstance::SCRIPT_STREAMING:
     case EmbeddedWorkerInstance::SCRIPT_LOADED:
-    case EmbeddedWorkerInstance::SCRIPT_EVALUATED:
     case EmbeddedWorkerInstance::THREAD_STARTED:
       return true;
     case EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE:
@@ -792,21 +791,8 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
     observer.OnThreadStarted();
 }
 
-void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
-  if (!inflight_start_task_)
-    return;
-
-  DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
-  starting_phase_ = SCRIPT_EVALUATED;
-
-  if (!success) {
-    // TODO(falken): Move this to OnStarted().
-    owner_version_->OnScriptEvaluateFailed();
-    // |this| may be destroyed.
-  }
-}
-
 void EmbeddedWorkerInstance::OnStarted(
+    blink::mojom::ServiceWorkerStartStatus start_status,
     mojom::EmbeddedWorkerStartTimingPtr start_timing) {
   if (!(start_timing->start_worker_received_time <=
             start_timing->script_evaluation_start_time &&
@@ -818,7 +804,9 @@ void EmbeddedWorkerInstance::OnStarted(
 
   if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
     return;
-  // Stop is requested before OnStarted is sent back from the worker.
+  // Stop was requested before OnStarted was sent back from the worker. Just
+  // pretend startup didn't happen, so observers don't try to use the running
+  // worker as it will stop soon.
   if (status_ == EmbeddedWorkerStatus::STOPPING)
     return;
 
@@ -838,11 +826,15 @@ void EmbeddedWorkerInstance::OnStarted(
 
     ServiceWorkerMetrics::RecordStartWorkerTiming(times, start_situation_);
   }
+
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
   status_ = EmbeddedWorkerStatus::RUNNING;
   inflight_start_task_.reset();
-  for (auto& observer : listener_list_)
-    observer.OnStarted();
+  for (auto& observer : listener_list_) {
+    observer.OnStarted(start_status);
+    // |this| may be destroyed here. Fortunately we know there is only one
+    // observer in production code.
+  }
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
@@ -991,8 +983,6 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script downloading";
     case SCRIPT_LOADED:
       return "Script loaded";
-    case SCRIPT_EVALUATED:
-      return "Script evaluated";
     case THREAD_STARTED:
       return "Thread started";
     case SCRIPT_READ_STARTED:
