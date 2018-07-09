@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
@@ -199,6 +200,8 @@ std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
   base::DictionaryValue all_policies;
   if (!context)
     return std::make_unique<base::DictionaryValue>(std::move(all_policies));
+
+  context = chrome::GetBrowserContextRedirectedInIncognito(context);
 
   // Add Chrome policy values.
   auto chrome_policies = std::make_unique<base::DictionaryValue>();
