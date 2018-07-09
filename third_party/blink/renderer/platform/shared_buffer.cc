@@ -26,12 +26,16 @@
 
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 
+#include <memory>
+
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/skia/include/core/SkData.h"
 
 namespace blink {
+
+constexpr unsigned SharedBuffer::kSegmentSize;
 
 static inline size_t SegmentIndex(size_t position) {
   return position / SharedBuffer::kSegmentSize;
@@ -41,14 +45,24 @@ static inline size_t OffsetInSegment(size_t position) {
   return position % SharedBuffer::kSegmentSize;
 }
 
-static inline char* AllocateSegment() {
-  return static_cast<char*>(WTF::Partitions::FastMalloc(
-      SharedBuffer::kSegmentSize, "blink::SharedBuffer"));
-}
+class SharedBuffer::Segment final {
+ public:
+  Segment() {
+    ptr_.reset(static_cast<char*>(WTF::Partitions::FastMalloc(
+        SharedBuffer::kSegmentSize, "blink::SharedBuffer")));
+  }
+  ~Segment() = default;
+  Segment(Segment&&) = default;
 
-static inline void FreeSegment(char* p) {
-  WTF::Partitions::FastFree(p);
-}
+  char* get() { return ptr_.get(); }
+  const char* get() const { return ptr_.get(); }
+
+ private:
+  struct Deleter {
+    void operator()(char* p) const { WTF::Partitions::FastFree(p); }
+  };
+  std::unique_ptr<char[], Deleter> ptr_;
+};
 
 SharedBuffer::SharedBuffer() : size_(0) {}
 
@@ -61,9 +75,7 @@ SharedBuffer::SharedBuffer(const char* data, size_t size) : size_(size) {
 SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
     : SharedBuffer(reinterpret_cast<const char*>(data), size) {}
 
-SharedBuffer::~SharedBuffer() {
-  Clear();
-}
+SharedBuffer::~SharedBuffer() = default;
 
 scoped_refptr<SharedBuffer> SharedBuffer::AdoptVector(Vector<char>& vector) {
   scoped_refptr<SharedBuffer> buffer = Create();
@@ -72,11 +84,7 @@ scoped_refptr<SharedBuffer> SharedBuffer::AdoptVector(Vector<char>& vector) {
   return buffer;
 }
 
-size_t SharedBuffer::size() const {
-  return size_;
-}
-
-const char* SharedBuffer::Data() const {
+const char* SharedBuffer::Data() {
   MergeSegmentsIntoBuffer();
   return buffer_.data();
 }
@@ -104,66 +112,43 @@ void SharedBuffer::AppendInternal(const char* data, size_t length) {
     return;
   }
 
-  char* segment;
-  if (!position_in_segment) {
-    segment = AllocateSegment();
-    segments_.push_back(segment);
-  } else
-    segment = segments_.back() + position_in_segment;
+  while (length > 0) {
+    if (!position_in_segment)
+      segments_.push_back(Segment());
 
-  size_t segment_free_space = kSegmentSize - position_in_segment;
-  size_t bytes_to_copy = std::min(length, segment_free_space);
+    size_t bytes_to_copy = std::min(length, kSegmentSize - position_in_segment);
+    memcpy(segments_.back().get() + position_in_segment, data, bytes_to_copy);
 
-  for (;;) {
-    memcpy(segment, data, bytes_to_copy);
-    if (length == bytes_to_copy)
-      break;
-
-    length -= bytes_to_copy;
     data += bytes_to_copy;
-    segment = AllocateSegment();
-    segments_.push_back(segment);
-    bytes_to_copy = std::min(length, static_cast<size_t>(kSegmentSize));
+    length -= bytes_to_copy;
+    position_in_segment = 0;
   }
 }
 
-void SharedBuffer::Append(const Vector<char>& data) {
-  Append(data.data(), data.size());
-}
-
 void SharedBuffer::Clear() {
-  for (size_t i = 0; i < segments_.size(); ++i)
-    FreeSegment(segments_[i]);
-
   segments_.clear();
   size_ = 0;
   buffer_.clear();
 }
 
-void SharedBuffer::MergeSegmentsIntoBuffer() const {
-  size_t buffer_size = buffer_.size();
-  if (size_ > buffer_size) {
-    size_t bytes_left = size_ - buffer_size;
-    for (size_t i = 0; i < segments_.size(); ++i) {
-      size_t bytes_to_copy =
-          std::min(bytes_left, static_cast<size_t>(kSegmentSize));
-      buffer_.Append(segments_[i], bytes_to_copy);
-      bytes_left -= bytes_to_copy;
-      FreeSegment(segments_[i]);
-    }
-    segments_.clear();
+void SharedBuffer::MergeSegmentsIntoBuffer() {
+  size_t bytes_left = size_ - buffer_.size();
+  for (const auto& segment : segments_) {
+    size_t bytes_to_copy = std::min<size_t>(bytes_left, kSegmentSize);
+    buffer_.Append(segment.get(), bytes_to_copy);
+    bytes_left -= bytes_to_copy;
   }
+  segments_.clear();
 }
 
 size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
                                          size_t position) const {
-  size_t total_size = size();
-  if (position >= total_size) {
+  if (position >= size_) {
     some_data = nullptr;
     return 0;
   }
 
-  SECURITY_DCHECK(position < size_);
+  DCHECK(position < size_);
   size_t consecutive_size = buffer_.size();
   if (position < consecutive_size) {
     some_data = buffer_.data() + position;
@@ -171,20 +156,14 @@ size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
   }
 
   position -= consecutive_size;
-  size_t segments = segments_.size();
-  size_t max_segmented_size = segments * kSegmentSize;
-  size_t segment = SegmentIndex(position);
-  if (segment < segments) {
-    size_t bytes_left = total_size - consecutive_size;
-    size_t segmented_size = std::min(max_segmented_size, bytes_left);
+  size_t index = SegmentIndex(position);
+  size_t bytes_left = size_ - consecutive_size;
+  size_t position_in_segment = OffsetInSegment(position);
 
-    size_t position_in_segment = OffsetInSegment(position);
-    some_data = segments_[segment] + position_in_segment;
-    return segment == segments - 1 ? segmented_size - position
-                                   : kSegmentSize - position_in_segment;
-  }
-  NOTREACHED();
-  return 0;
+  DCHECK_LT(index, segments_.size());
+  some_data = segments_[index].get() + position_in_segment;
+  return index == segments_.size() - 1 ? bytes_left - position
+                                       : kSegmentSize - position_in_segment;
 }
 
 bool SharedBuffer::GetBytesInternal(void* dest, size_t byte_length) const {
@@ -211,8 +190,7 @@ bool SharedBuffer::GetBytesInternal(void* dest, size_t byte_length) const {
 }
 
 sk_sp<SkData> SharedBuffer::GetAsSkData() const {
-  size_t buffer_length = size();
-  sk_sp<SkData> data = SkData::MakeUninitialized(buffer_length);
+  sk_sp<SkData> data = SkData::MakeUninitialized(size());
   char* buffer = static_cast<char*>(data->writable_data());
   const char* segment = nullptr;
   size_t position = 0;
@@ -221,11 +199,7 @@ sk_sp<SkData> SharedBuffer::GetAsSkData() const {
     position += segment_size;
   }
 
-  if (position != buffer_length) {
-    NOTREACHED();
-    // Don't return the incomplete SkData.
-    return nullptr;
-  }
+  DCHECK_EQ(position, size());
   return data;
 }
 

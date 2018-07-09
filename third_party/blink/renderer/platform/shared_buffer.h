@@ -45,7 +45,7 @@ class WebProcessMemoryDump;
 
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
-  enum : unsigned { kSegmentSize = 0x1000 };
+  static constexpr unsigned kSegmentSize = 0x1000;
 
   static scoped_refptr<SharedBuffer> Create() {
     return base::AdoptRef(new SharedBuffer);
@@ -80,9 +80,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   // Calling this function will force internal segmented buffers to be merged
   // into a flat buffer. Use getSomeData() whenever possible for better
   // performance.
-  const char* Data() const;
+  const char* Data();
 
-  size_t size() const;
+  size_t size() const { return size_; }
 
   bool IsEmpty() const { return !size(); }
 
@@ -93,7 +93,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
     AppendInternal(data, size);
   }
-  void Append(const Vector<char>&);
+  void Append(const Vector<char>& data) { Append(data.data(), data.size()); }
 
   void Clear();
 
@@ -177,21 +177,23 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   };
 
  private:
+  class Segment;
+
   SharedBuffer();
   explicit SharedBuffer(size_t);
   SharedBuffer(const char*, size_t);
   SharedBuffer(const unsigned char*, size_t);
 
   // See SharedBuffer::data().
-  void MergeSegmentsIntoBuffer() const;
+  void MergeSegmentsIntoBuffer();
 
   void AppendInternal(const char* data, size_t);
   bool GetBytesInternal(void* dest, size_t) const;
   size_t GetSomeDataInternal(const char*& data, size_t position) const;
 
   size_t size_;
-  mutable Vector<char> buffer_;
-  mutable Vector<char*> segments_;
+  Vector<char> buffer_;
+  Vector<Segment> segments_;
 };
 
 // Current CopyAs specializations.
