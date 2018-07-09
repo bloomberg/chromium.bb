@@ -91,7 +91,7 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
     // Migration does not happen if SetDiceMigrationOnStartup() is not called.
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
     AccountConsistencyModeManager manager(&profile);
-    EXPECT_FALSE(manager.IsReadyForDiceMigration());
+    EXPECT_FALSE(manager.IsReadyForDiceMigration(&profile));
     EXPECT_NE(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
@@ -103,7 +103,7 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
     // Migration does not happen if Dice is not enabled.
     ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
     AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(manager.IsReadyForDiceMigration());
+    EXPECT_TRUE(manager.IsReadyForDiceMigration(&profile));
     EXPECT_NE(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
@@ -112,7 +112,7 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
     // Migration happens.
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
     AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(manager.IsReadyForDiceMigration());
+    EXPECT_TRUE(manager.IsReadyForDiceMigration(&profile));
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }

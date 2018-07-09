@@ -130,8 +130,6 @@ class ProfileChooserViewExtensionsTest
     constexpr char kSupervisedUser[] = "SupervisedUser";
 
     Browser* target_browser = browser();
-    std::unique_ptr<ScopedAccountConsistency> scoped_account_consistency;
-
     if (name == kSignedIn || name == kManageAccountLink) {
       constexpr char kEmail[] = "verylongemailfortesting@gmail.com";
       AddAccountToProfile(target_browser->profile(), kEmail);
@@ -153,10 +151,7 @@ class ProfileChooserViewExtensionsTest
       EXPECT_TRUE(guest);
       target_browser = chrome::FindAnyBrowser(guest, true);
     }
-    if (name == kManageAccountLink) {
-      scoped_account_consistency = std::make_unique<ScopedAccountConsistency>(
-          signin::AccountConsistencyMethod::kMirror);
-    }
+
     Profile* supervised = nullptr;
     if (name == kSupervisedOwner || name == kSupervisedUser) {
       supervised = SetupProfilesForLock(target_browser->profile());
@@ -521,6 +516,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 // Shows the |ProfileChooserView| when a supervised user is the active profile.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        MAYBE_InvokeUi_SupervisedUser) {
+  ScopedAccountConsistencyDiceFixAuthErrors scoped_account_consistency;
   ShowAndVerifyUi();
 }
 

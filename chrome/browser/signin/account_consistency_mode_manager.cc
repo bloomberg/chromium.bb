@@ -120,30 +120,35 @@ AccountConsistencyModeManager* AccountConsistencyModeManager::GetForProfile(
 }
 
 AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      account_consistency_(signin::AccountConsistencyMethod::kDisabled),
+      account_consistency_initialized_(false) {
   DCHECK(profile_);
   DCHECK(!profile_->IsOffTheRecord());
+  account_consistency_ = ComputeAccountConsistencyMethod(profile_);
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  bool is_ready_for_dice = IsReadyForDiceMigration();
-  AccountConsistencyMethod account_consistency = GetAccountConsistencyMethod();
+  bool is_ready_for_dice = IsReadyForDiceMigration(profile_);
   if (is_ready_for_dice &&
       signin::DiceMethodGreaterOrEqual(
-          account_consistency, AccountConsistencyMethod::kDiceMigration)) {
-    if (account_consistency != AccountConsistencyMethod::kDice)
+          account_consistency_, AccountConsistencyMethod::kDiceMigration)) {
+    if (account_consistency_ != AccountConsistencyMethod::kDice)
       VLOG(1) << "Profile is migrating to Dice";
     profile_->GetPrefs()->SetBoolean(kDiceMigrationCompletePref, true);
-    account_consistency = GetAccountConsistencyMethod();
-    DCHECK_EQ(AccountConsistencyMethod::kDice, account_consistency);
+    account_consistency_ = AccountConsistencyMethod::kDice;
   }
   UMA_HISTOGRAM_ENUMERATION(
       kDiceMigrationStatusHistogram,
-      account_consistency == AccountConsistencyMethod::kDice
+      account_consistency_ == AccountConsistencyMethod::kDice
           ? DiceMigrationStatus::kEnabled
           : (is_ready_for_dice
                  ? DiceMigrationStatus::kDisabledReadyForMigration
                  : DiceMigrationStatus::kDisabledNotReadyForMigration),
       DiceMigrationStatus::kDiceMigrationStatusCount);
 #endif
+
+  DCHECK_EQ(account_consistency_, ComputeAccountConsistencyMethod(profile_));
+  account_consistency_initialized_ = true;
 }
 
 AccountConsistencyModeManager::~AccountConsistencyModeManager() {}
@@ -190,11 +195,11 @@ void AccountConsistencyModeManager::SetDiceMigrationOnStartup(
   prefs->SetBoolean(kDiceMigrationOnStartupPref, migrate);
 }
 
-bool AccountConsistencyModeManager::IsReadyForDiceMigration() {
-  return (profile_->GetProfileType() ==
-          Profile::ProfileType::REGULAR_PROFILE) &&
-         (profile_->IsNewProfile() ||
-          profile_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
+// static
+bool AccountConsistencyModeManager::IsReadyForDiceMigration(Profile* profile) {
+  return (profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE) &&
+         (profile->IsNewProfile() ||
+          profile->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -211,8 +216,26 @@ void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
 
 AccountConsistencyMethod
 AccountConsistencyModeManager::GetAccountConsistencyMethod() {
-  if (profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
-    DCHECK_EQ(Profile::ProfileType::GUEST_PROFILE, profile_->GetProfileType());
+#if defined(OS_CHROMEOS)
+  // TODO(https://crbug.com/860671): ChromeOS should use the cached value.
+  // Changing the value dynamically is not supported.
+  return ComputeAccountConsistencyMethod(profile_);
+#else
+  // The account consistency method should not change during the lifetime of a
+  // profile. We always return the cached value, but still check that it did not
+  // change, in order to detect inconsisent states. See https://crbug.com/860471
+  CHECK(account_consistency_initialized_);
+  CHECK_EQ(ComputeAccountConsistencyMethod(profile_), account_consistency_);
+  return account_consistency_;
+#endif
+}
+
+// static
+signin::AccountConsistencyMethod
+AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
+    Profile* profile) {
+  if (profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
+    DCHECK_EQ(Profile::ProfileType::GUEST_PROFILE, profile->GetProfileType());
     return GetMethodForNonRegularProfile();
   }
 
@@ -225,7 +248,7 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
 
 #if defined(OS_CHROMEOS)
   return (method_value == kAccountConsistencyFeatureMethodMirror ||
-          profile_->GetPrefs()->GetBoolean(
+          profile->GetPrefs()->GetBoolean(
               prefs::kAccountConsistencyMirrorRequired))
              ? AccountConsistencyMethod::kMirror
              : AccountConsistencyMethod::kDisabled;
@@ -258,7 +281,7 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   // Legacy supervised users cannot get Dice.
   // TODO(droger): remove this once legacy supervised users are no longer
   // supported.
-  if (profile_->IsLegacySupervised())
+  if (profile->IsLegacySupervised())
     return AccountConsistencyMethod::kDiceFixAuthErrors;
 
   bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
@@ -270,7 +293,7 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   }
 
   if (method == AccountConsistencyMethod::kDiceMigration &&
-      profile_->GetPrefs()->GetBoolean(kDiceMigrationCompletePref)) {
+      profile->GetPrefs()->GetBoolean(kDiceMigrationCompletePref)) {
     return AccountConsistencyMethod::kDice;
   }
 
