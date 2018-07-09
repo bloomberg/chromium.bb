@@ -609,4 +609,16 @@ AutomationPredicate.math = function(node) {
   return node.role == Role.MATH || !!node.htmlAttributes['data-mathml'];
 };
 
+/**
+ * Matches against editable nodes, that should not be treated in the usual
+ * fashion.
+ * Instead, only output the contents around the selection in braille.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille = function(node) {
+  return node.state[State.RICHLY_EDITABLE] && node.state[State.FOCUSED] &&
+      node.role == Role.LOG;
+};
+
 });  // goog.scope

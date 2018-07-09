@@ -466,25 +466,28 @@ cursors.Cursor.prototype = {
         }
         break;
       } else if (
-          newNode.role != RoleType.TEXT_FIELD &&
           newNode.role != RoleType.INLINE_TEXT_BOX &&
-          newNode.children[newIndex]) {
+          !newNode.state[StateType.EDITABLE] && newNode.children[newIndex]) {
         // Valid node offset.
         newNode = newNode.children[newIndex];
         newIndex = 0;
       } else {
         // This offset is a text offset into the descendant visible
         // text. Approximate this by indexing into the inline text boxes.
-        var lines = newNode.findAll({role: RoleType.INLINE_TEXT_BOX});
+        var lines = this.getAllLeaves_(newNode);
         if (!lines.length)
           break;
 
         var targetLine, targetIndex = 0;
         for (var i = 0, line, cur = 0; line = lines[i]; i++) {
-          cur += line.name.length;
+          var lineLength = line.name ? line.name.length : 1;
+          cur += lineLength;
           if (cur > newIndex) {
             targetLine = line;
-            targetIndex = newIndex - (cur - line.name.length);
+            if (!line.name)
+              targetIndex = cursors.NODE_INDEX;
+            else
+              targetIndex = newIndex - (cur - lineLength);
             break;
           }
         }
@@ -492,7 +495,8 @@ cursors.Cursor.prototype = {
           // If we got here, that means the index is actually beyond the total
           // length of text. Just get the last line.
           targetLine = lines[lines.length - 1];
-          targetIndex = targetLine.name.length;
+          targetIndex =
+              targetLine ? targetLine.name.length : cursors.NODE_INDEX;
         }
         newNode = targetLine;
         newIndex = targetIndex;
@@ -509,6 +513,24 @@ cursors.Cursor.prototype = {
    */
   isValid: function() {
     return this.node != null;
+  },
+
+  /**
+   * @private
+   * @param {!AutomationNode} node
+   * @return {!Array<!AutomationNode>}
+   */
+  getAllLeaves_: function(node) {
+    var ret = [];
+    if (!node.firstChild) {
+      ret.push(node);
+      return ret;
+    }
+
+    for (var i = 0; i < node.children.length; i++)
+      ret = ret.concat(this.getAllLeaves_(node.children[i]));
+
+    return ret;
   }
 };
 
