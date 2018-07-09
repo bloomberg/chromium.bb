@@ -698,12 +698,17 @@ static void WriteTargetIndex(const dex::MapItem& target_map_item,
                              size_t target_item_size,
                              Reference ref,
                              MutableBufferView image) {
-  const size_t idx = (ref.target - target_map_item.offset) / target_item_size;
+  const size_t unsafe_idx =
+      (ref.target - target_map_item.offset) / target_item_size;
   // Verify that index is within bound.
-  DCHECK_LT(idx, target_map_item.size);
+  if (unsafe_idx >= target_map_item.size) {
+    LOG(ERROR) << "Target index out of bounds at: " << AsHex<8>(ref.location)
+               << ".";
+    return;
+  }
   // Verify that |ref.target| points to start of item.
-  DCHECK_EQ(ref.target, target_map_item.offset + idx * target_item_size);
-  image.write<INT>(ref.location, base::checked_cast<INT>(idx));
+  DCHECK_EQ(ref.target, target_map_item.offset + unsafe_idx * target_item_size);
+  image.write<INT>(ref.location, base::checked_cast<INT>(unsafe_idx));
 }
 
 // Buffer for ReadDexHeader() to optionally return results.
@@ -1453,7 +1458,7 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode8(
     // |ref.location|. The subtraction above removed too much, so +1 to fix.
     base::CheckedNumeric<int8_t> delta((unsafe_byte_diff / kInstrUnitSize) + 1);
     if (!delta.IsValid()) {
-      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location) << ".";
       return;
     }
     image.write<int8_t>(ref.location, delta.ValueOrDie());
@@ -1472,7 +1477,7 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode16(
     base::CheckedNumeric<int16_t> delta((unsafe_byte_diff / kInstrUnitSize) +
                                         1);
     if (!delta.IsValid()) {
-      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location) << ".";
       return;
     }
     image.write<int16_t>(ref.location, delta.ValueOrDie());
@@ -1491,7 +1496,7 @@ std::unique_ptr<ReferenceWriter> DisassemblerDex::MakeWriteRelCode32(
     base::CheckedNumeric<int32_t> delta((unsafe_byte_diff / kInstrUnitSize) +
                                         1);
     if (!delta.IsValid()) {
-      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location);
+      LOG(ERROR) << "Invalid reference at: " << AsHex<8>(ref.location) << ".";
       return;
     }
     image.write<int32_t>(ref.location, delta.ValueOrDie());
