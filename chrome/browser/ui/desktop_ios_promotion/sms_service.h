@@ -19,12 +19,13 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }
-
-class OAuth2TokenService;
-class SigninManagerBase;
 
 // Provides an API for querying a logged in users's verified phone number,
 // and sending a predetermined promotional SMS to that number.  This class is
@@ -61,8 +62,7 @@ class SMSService : public KeyedService {
       PhoneNumberCallback;
   typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
-  SMSService(OAuth2TokenService* token_service,
-             SigninManagerBase* signin_manager,
+  SMSService(identity::IdentityManager* identity_manager,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~SMSService() override;
 
@@ -88,11 +88,9 @@ class SMSService : public KeyedService {
   virtual Request* CreateRequest(const GURL& url,
                                  const CompletionCallback& callback);
 
-  // Stores pointer to OAuth2TokenService and SigninManagerBase instance. They
-  // must outlive the SMSService and can be null during
-  // tests.
-  OAuth2TokenService* token_service_;
-  SigninManagerBase* signin_manager_;
+  // Stores pointer to the IdentityManager instance. It must outlive the
+  // SMSService and can be null during tests.
+  identity::IdentityManager* identity_manager_;
 
   // Request context getter to use.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
