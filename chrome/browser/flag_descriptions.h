@@ -1436,6 +1436,9 @@ extern const char kMediaScreenCaptureDescription[];
 extern const char kModalPermissionPromptsName[];
 extern const char kModalPermissionPromptsDescription[];
 
+extern const char kNewContactsPickerName[];
+extern const char kNewContactsPickerDescription[];
+
 extern const char kNewPhotoPickerName[];
 extern const char kNewPhotoPickerDescription[];
 

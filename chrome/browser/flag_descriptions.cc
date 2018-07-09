@@ -2365,6 +2365,10 @@ const char kModalPermissionPromptsName[] = "Modal Permission Prompts";
 const char kModalPermissionPromptsDescription[] =
     "Whether to use permission dialogs in place of permission infobars.";
 
+const char kNewContactsPickerName[] = "Enable new contacts picker";
+const char kNewContactsPickerDescription[] =
+    "Activates the new picker for selecting contacts.";
+
 const char kNewPhotoPickerName[] = "Enable new Photopicker";
 const char kNewPhotoPickerDescription[] =
     "Activates the new picker for selecting photos.";

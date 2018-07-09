@@ -79,9 +79,11 @@ import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
+import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.SelectFileDialog;
+import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -226,6 +228,19 @@ public class ProcessInitializationHandler {
                 public void onPhotoPickerDismissed() {
                     mDialog = null;
                 }
+            });
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_CONTACTS_PICKER)) {
+            UiUtils.setContactsPickerDelegate(new UiUtils.ContactsPickerDelegate() {
+                @Override
+                public void showContactsPicker(
+                        Context context, ContactsPickerListener listener, boolean allowMultiple) {
+                    Toast.makeText(context, "Not implemented!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onContactsPickerDismissed() {}
             });
         }
 

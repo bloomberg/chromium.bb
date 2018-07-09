@@ -85,6 +85,9 @@ public class UiUtils {
     /** A delegate for the photo picker. */
     private static PhotoPickerDelegate sPhotoPickerDelegate;
 
+    /** A delegate for the contacts picker. */
+    private static ContactsPickerDelegate sContactsPickerDelegate;
+
     /**
      * A delegate that can be implemented to override whether or not keyboard detection will be
      * used.
@@ -118,6 +121,64 @@ public class UiUtils {
          * Called when the photo picker dialog has been dismissed.
          */
         void onPhotoPickerDismissed();
+    }
+
+    // ContactsPickerDelegate:
+
+    /**
+     * Allows setting a delegate for an Android contacts picker.
+     * @param delegate A {@link ContactsPickerDelegate} instance.
+     */
+    public static void setContactsPickerDelegate(ContactsPickerDelegate delegate) {
+        sContactsPickerDelegate = delegate;
+    }
+
+    /**
+     * Returns whether a contacts picker should be called.
+     */
+    public static boolean shouldShowContactsPicker() {
+        return sContactsPickerDelegate != null;
+    }
+
+    /**
+     * Called to display the contacts picker.
+     * @param context  The context to use.
+     * @param listener The listener that will be notified of the action the user took in the
+     *                 picker.
+     */
+    public static boolean showContactsPicker(
+            Context context, ContactsPickerListener listener, boolean allowMultiple) {
+        if (sContactsPickerDelegate == null) return false;
+        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple);
+        return true;
+    }
+
+    /**
+     * Called when the contacts picker dialog has been dismissed.
+     */
+    public static void onContactsPickerDismissed() {
+        if (sContactsPickerDelegate == null) return;
+        sContactsPickerDelegate.onContactsPickerDismissed();
+    }
+
+    /**
+     * A delegate interface for the contacts picker.
+     */
+    public interface ContactsPickerDelegate {
+        /**
+         * Called to display the contacts picker.
+         * @param context  The context to use.
+         * @param listener The listener that will be notified of the action the user took in the
+         *                 picker.
+         * @param allowMultiple Whether to allow multiple contacts to be picked.
+         */
+        void showContactsPicker(
+                Context context, ContactsPickerListener listener, boolean allowMultiple);
+
+        /**
+         * Called when the contacts picker dialog has been dismissed.
+         */
+        void onContactsPickerDismissed();
     }
 
     // PhotoPickerDelegate:

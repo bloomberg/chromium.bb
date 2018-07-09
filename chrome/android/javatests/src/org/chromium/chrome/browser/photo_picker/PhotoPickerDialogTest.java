@@ -99,7 +99,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // PhotoPickerDialog.PhotoPickerListener:
 
     @Override
-    public void onPickerUserAction(Action action, String[] photos) {
+    public void onPhotoPickerUserAction(Action action, String[] photos) {
         mLastActionRecorded = action;
         mLastSelectedPhotos = photos != null ? photos.clone() : null;
         if (mLastSelectedPhotos != null) Arrays.sort(mLastSelectedPhotos);

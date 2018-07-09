@@ -221,6 +221,7 @@ public abstract class ChromeFeatureList {
     public static final String MATERIAL_DESIGN_INCOGNITO_NTP = "MaterialDesignIncognitoNTP";
     public static final String MODAL_PERMISSION_PROMPTS = "ModalPermissionPrompts";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
+    public static final String NEW_CONTACTS_PICKER = "NewContactsPicker";
     public static final String NEW_PHOTO_PICKER = "NewPhotoPicker";
 
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
