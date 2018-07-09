@@ -50,30 +50,6 @@ void AudioBasicInspectorHandler::PullInputs(size_t frames_to_process) {
   Input(0).Pull(Output(0).Bus(), frames_to_process);
 }
 
-AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination,
-                                            unsigned output_index,
-                                            unsigned input_index,
-                                            ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  BaseAudioContext::GraphAutoLocker locker(context());
-
-  AudioNode::connect(destination, output_index, input_index, exception_state);
-  static_cast<AudioBasicInspectorHandler&>(Handler()).UpdatePullStatus();
-
-  return destination;
-}
-
-void AudioBasicInspectorNode::disconnect(unsigned output_index,
-                                         ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  BaseAudioContext::GraphAutoLocker locker(context());
-
-  AudioNode::disconnect(output_index, exception_state);
-  static_cast<AudioBasicInspectorHandler&>(Handler()).UpdatePullStatus();
-}
-
 void AudioBasicInspectorHandler::CheckNumberOfChannelsForInput(
     AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
@@ -93,10 +69,10 @@ void AudioBasicInspectorHandler::CheckNumberOfChannelsForInput(
 
   AudioHandler::CheckNumberOfChannelsForInput(input);
 
-  UpdatePullStatus();
+  UpdatePullStatusIfNeeded();
 }
 
-void AudioBasicInspectorHandler::UpdatePullStatus() {
+void AudioBasicInspectorHandler::UpdatePullStatusIfNeeded() {
   DCHECK(Context()->IsGraphOwner());
 
   if (Output(0).IsConnected()) {

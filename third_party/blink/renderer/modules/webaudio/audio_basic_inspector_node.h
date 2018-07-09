@@ -30,9 +30,6 @@
 
 namespace blink {
 
-class BaseAudioContext;
-class ExceptionState;
-
 // AudioBasicInspectorNode is an AudioNode with one input and one output where
 // the output might not necessarily connect to another node's input.
 // If the output is not connected to any other node, then the
@@ -54,7 +51,7 @@ class AudioBasicInspectorHandler : public AudioHandler {
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
 
-  virtual void UpdatePullStatus();
+  void UpdatePullStatusIfNeeded() override;
 
  protected:
   // When setting to true, AudioBasicInspectorHandler will be pulled
@@ -66,15 +63,6 @@ class AudioBasicInspectorNode : public AudioNode {
  protected:
   explicit AudioBasicInspectorNode(BaseAudioContext& context)
       : AudioNode(context) {}
-
- private:
-  // TODO(tkent): Should AudioBasicInspectorNode override other variants of
-  // connect() and disconnect()?
-  AudioNode* connect(AudioNode*,
-                     unsigned output_index,
-                     unsigned input_index,
-                     ExceptionState&) final;
-  void disconnect(unsigned output_index, ExceptionState&) final;
 };
 
 }  // namespace blink

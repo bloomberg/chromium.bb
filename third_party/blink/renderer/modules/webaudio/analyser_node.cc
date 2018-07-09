@@ -147,7 +147,7 @@ void AnalyserHandler::SetSmoothingTimeConstant(
   }
 }
 
-void AnalyserHandler::UpdatePullStatus() {
+void AnalyserHandler::UpdatePullStatusIfNeeded() {
   DCHECK(Context()->IsGraphOwner());
 
   if (Output(0).IsConnected()) {
