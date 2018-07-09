@@ -49,7 +49,10 @@
 // Bookmarks the current page.
 - (void)bookmarkPage;
 
+// TODO(crbug.com/800266): Remove this command when the StackView and
+// TabSwitcher are removed.
 // Opens a new tab as specified by |newTabCommand|.
+// DEPRECATED: Don't add uses for this command.
 - (void)openNewTab:(OpenNewTabCommand*)newTabCommand;
 
 // Prints the currently active tab.

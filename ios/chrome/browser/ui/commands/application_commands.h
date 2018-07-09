@@ -85,7 +85,8 @@
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController;
 
-// Opens the |command| URL.
+// TODO(crbug.com/861729): Rename this to openURLInNewTab.
+// Opens the |command| URL in a new tab.
 - (void)openURL:(OpenNewTabCommand*)command;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
