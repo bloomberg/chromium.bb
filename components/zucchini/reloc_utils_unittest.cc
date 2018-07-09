@@ -260,8 +260,6 @@ TEST_F(RelocUtilsWin32Test, ReadWrite) {
   EXPECT_EQ(exp_reloc_data1,
             Sub(image_data, reloc_region_.lo(), reloc_region_.hi()));
 
-  EXPECT_DCHECK_DEATH(writer->PutNext({0x608, 0x2000}));
-
   writer->PutNext({0x61C, 0x2950});
   std::vector<uint8_t> exp_reloc_data2 = ParseHexString(
       "00 10 04 00 10 00 00 00 83 3F 18 A3 F8 A7 FF 0F "
