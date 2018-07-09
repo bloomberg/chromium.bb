@@ -36,11 +36,10 @@ std::unique_ptr<TimerFactory> TimerFactoryImpl::Factory::BuildInstance() {
 }
 
 TimerFactoryImpl::TimerFactoryImpl() = default;
-;
 
 TimerFactoryImpl::~TimerFactoryImpl() = default;
 
-std::unique_ptr<base::Timer> TimerFactoryImpl::CreateOneShotTimer() {
+std::unique_ptr<base::OneShotTimer> TimerFactoryImpl::CreateOneShotTimer() {
   return std::make_unique<base::OneShotTimer>();
 }
 

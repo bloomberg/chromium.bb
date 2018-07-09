@@ -137,7 +137,7 @@ class TestTimerFactory : public TimerFactory {
   ~TestTimerFactory() override = default;
 
   // TimerFactory:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override {
     EXPECT_FALSE(device_id_for_next_timer_.empty());
     base::MockOneShotTimer* mock_timer = new base::MockOneShotTimer();
     device_id_to_timer_map_[device_id_for_next_timer_] = mock_timer;

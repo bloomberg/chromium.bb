@@ -17,7 +17,7 @@
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace chromeos {
@@ -71,12 +71,12 @@ class BleAdvertiserImpl : public BleAdvertiser {
   struct ActiveAdvertisementRequest {
     ActiveAdvertisementRequest(DeviceIdPair device_id_pair,
                                ConnectionPriority connection_priority,
-                               std::unique_ptr<base::Timer> timer);
+                               std::unique_ptr<base::OneShotTimer> timer);
     virtual ~ActiveAdvertisementRequest();
 
     DeviceIdPair device_id_pair;
     ConnectionPriority connection_priority;
-    std::unique_ptr<base::Timer> timer;
+    std::unique_ptr<base::OneShotTimer> timer;
 
     DISALLOW_COPY_AND_ASSIGN(ActiveAdvertisementRequest);
   };

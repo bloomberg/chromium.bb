@@ -137,7 +137,7 @@ class BluetoothLowEnergyWeaveClientConnection
 
   void SetupTestDoubles(
       scoped_refptr<base::TaskRunner> test_task_runner,
-      std::unique_ptr<base::Timer> test_timer,
+      std::unique_ptr<base::OneShotTimer> test_timer,
       std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> test_generator,
       std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> test_receiver);
 
@@ -381,7 +381,7 @@ class BluetoothLowEnergyWeaveClientConnection
   RemoteAttribute tx_characteristic_;
   RemoteAttribute rx_characteristic_;
   scoped_refptr<base::TaskRunner> task_runner_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   // These pointers start out null and are created during the connection
   // process.

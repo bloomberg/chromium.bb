@@ -51,7 +51,7 @@ const int64_t BleConnectionManager::kFailImmediatelyTimeoutMillis = 0;
 
 BleConnectionManager::ConnectionMetadata::ConnectionMetadata(
     const std::string& device_id,
-    std::unique_ptr<base::Timer> timer,
+    std::unique_ptr<base::OneShotTimer> timer,
     base::WeakPtr<BleConnectionManager> manager)
     : device_id_(device_id),
       connection_attempt_timeout_timer_(std::move(timer)),

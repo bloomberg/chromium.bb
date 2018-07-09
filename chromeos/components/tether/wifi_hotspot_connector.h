@@ -71,13 +71,13 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
       const std::string& password);
   void OnConnectionTimeout();
 
-  void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
+  void SetTestDoubles(std::unique_ptr<base::OneShotTimer> test_timer,
                       base::Clock* test_clock,
                       scoped_refptr<base::TaskRunner> test_task_runner);
 
   NetworkStateHandler* network_state_handler_;
   NetworkConnect* network_connect_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::Clock* clock_;
 
   std::string ssid_;

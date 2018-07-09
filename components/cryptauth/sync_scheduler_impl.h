@@ -42,8 +42,8 @@ class SyncSchedulerImpl : public SyncScheduler {
   SyncState GetSyncState() const override;
 
  protected:
-  // Creates and returns a base::Timer object. Exposed for testing.
-  virtual std::unique_ptr<base::Timer> CreateTimer();
+  // Creates and returns a base::OneShotTimer object. Exposed for testing.
+  virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
 
  private:
   // SyncScheduler:
@@ -92,7 +92,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   size_t failure_count_;
 
   // Timer firing for the next sync request.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 

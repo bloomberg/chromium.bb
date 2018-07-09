@@ -22,7 +22,7 @@ class TimerFactory {
  public:
   virtual ~TimerFactory();
 
-  virtual std::unique_ptr<base::Timer> CreateOneShotTimer();
+  virtual std::unique_ptr<base::OneShotTimer> CreateOneShotTimer();
 };
 
 }  // namespace tether

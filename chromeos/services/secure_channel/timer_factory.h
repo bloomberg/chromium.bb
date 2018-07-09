@@ -10,7 +10,7 @@
 #include "base/macros.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace chromeos {
@@ -22,7 +22,7 @@ namespace secure_channel {
 class TimerFactory {
  public:
   virtual ~TimerFactory() = default;
-  virtual std::unique_ptr<base::Timer> CreateOneShotTimer() = 0;
+  virtual std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() = 0;
 
  protected:
   TimerFactory() = default;

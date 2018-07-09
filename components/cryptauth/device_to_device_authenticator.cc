@@ -122,7 +122,7 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::unique_ptr<base::Timer> DeviceToDeviceAuthenticator::CreateTimer() {
+std::unique_ptr<base::OneShotTimer> DeviceToDeviceAuthenticator::CreateTimer() {
   return std::make_unique<base::OneShotTimer>();
 }
 

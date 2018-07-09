@@ -126,7 +126,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 
  private:
   // DeviceToDeviceAuthenticator:
-  std::unique_ptr<base::Timer> CreateTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateTimer() override {
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     return std::move(timer);

@@ -229,7 +229,7 @@ ConnectionPreserverImpl::GetRemoteDevice(const std::string device_id) {
 }
 
 void ConnectionPreserverImpl::SetTimerForTesting(
-    std::unique_ptr<base::Timer> timer_for_test) {
+    std::unique_ptr<base::OneShotTimer> timer_for_test) {
   preserved_connection_timer_ = std::move(timer_for_test);
 }
 

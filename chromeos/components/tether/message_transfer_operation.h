@@ -226,7 +226,8 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
   base::flat_map<cryptauth::RemoteDeviceRef, ConnectAttemptCounts>
       remote_device_to_attempts_map_;
-  base::flat_map<cryptauth::RemoteDeviceRef, std::unique_ptr<base::Timer>>
+  base::flat_map<cryptauth::RemoteDeviceRef,
+                 std::unique_ptr<base::OneShotTimer>>
       remote_device_to_timer_map_;
   base::WeakPtrFactory<MessageTransferOperation> weak_ptr_factory_;
 
