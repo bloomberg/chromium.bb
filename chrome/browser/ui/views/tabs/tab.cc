@@ -1548,25 +1548,38 @@ bool Tab::ShouldRenderAsNormalTab() const {
 }
 
 Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
-  if (!MD::IsRefreshUi() || IsActive())
+  if (!MD::IsRefreshUi())
     return SeparatorOpacities();
 
-  // Fade out the trailing separator while this tab or the subsequent tab is
-  // hovered.  If the subsequent tab is active, don't consider its hover
-  // animation value, lest the trailing separator on this tab disappear while
-  // the subsequent tab is being dragged.
-  const float hover_value = hover_controller_.GetAnimationValue();
-  const Tab* subsequent_tab = controller_->GetSubsequentTab(this);
-  const float subsequent_hover =
-      !for_layout && subsequent_tab && !subsequent_tab->IsActive()
-          ? float{subsequent_tab->hover_controller_.GetAnimationValue()}
-          : 0;
-  float trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
+  // Something should visually separate tabs from each other and any adjacent
+  // new tab button.  Normally, active and hovered tabs draw distinct shapes
+  // (via different background colors) and thus need no separators, while
+  // background tabs need separators between them.  In single-tab mode, the
+  // active tab has no visible shape and thus needs separators on any side with
+  // an adjacent new tab button.  (The other sides will be faded out below.)
+  float leading_opacity, trailing_opacity;
+  if (controller_->SingleTabMode()) {
+    leading_opacity = trailing_opacity = 1.f;
+  } else if (IsActive()) {
+    leading_opacity = trailing_opacity = 0;
+  } else {
+    // Fade out the trailing separator while this tab or the subsequent tab is
+    // hovered.  If the subsequent tab is active, don't consider its hover
+    // animation value, lest the trailing separator on this tab disappear while
+    // the subsequent tab is being dragged.
+    const float hover_value = hover_controller_.GetAnimationValue();
+    const Tab* subsequent_tab = controller_->GetSubsequentTab(this);
+    const float subsequent_hover =
+        !for_layout && subsequent_tab && !subsequent_tab->IsActive()
+            ? float{subsequent_tab->hover_controller_.GetAnimationValue()}
+            : 0;
+    trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
 
-  // The leading separator need not consider the previous tab's hover value,
-  // since if there is a previous tab that's hovered and not being dragged, it
-  // will draw atop this tab.
-  float leading_opacity = 1.f - hover_value;
+    // The leading separator need not consider the previous tab's hover value,
+    // since if there is a previous tab that's hovered and not being dragged, it
+    // will draw atop this tab.
+    leading_opacity = 1.f - hover_value;
+  }
 
   // For the first or last tab in the strip, fade the leading or trailing
   // separator based on the NTB position and how close to the target bounds this

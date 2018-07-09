@@ -127,10 +127,6 @@ class TabStrip : public views::View,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Whether the special painting mode for a single tab is enabled. This is only
-  // true if both the mode is available and we have exactly one tab.
-  bool SingleTabMode() const;
-
   // Called when the value of SingleTabMode() changes.
   void SingleTabModeChanged();
 
@@ -243,6 +239,7 @@ class TabStrip : public views::View,
   bool IsTabPinned(const Tab* tab) const override;
   bool IsFirstVisibleTab(const Tab* tab) const override;
   bool IsLastVisibleTab(const Tab* tab) const override;
+  bool SingleTabMode() const override;
   bool IsIncognito() const override;
   void MaybeStartDrag(
       Tab* tab,

@@ -437,11 +437,6 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
     tab_at(i)->Layout();
 }
 
-bool TabStrip::SingleTabMode() const {
-  return controller_->IsSingleTabModeAvailable() && tab_count() == 1 &&
-         !tab_at(0)->data().pinned;
-}
-
 bool TabStrip::SizeTabButtonToTopOfTabStrip() {
   // Extend the button to the screen edge in maximized and immersive fullscreen.
   views::Widget* widget = GetWidget();
@@ -980,6 +975,11 @@ bool TabStrip::IsFirstVisibleTab(const Tab* tab) const {
 
 bool TabStrip::IsLastVisibleTab(const Tab* tab) const {
   return GetLastVisibleTab() == tab;
+}
+
+bool TabStrip::SingleTabMode() const {
+  return controller_->IsSingleTabModeAvailable() && tab_count() == 1 &&
+         !tab_at(0)->data().pinned;
 }
 
 bool TabStrip::IsIncognito() const {
