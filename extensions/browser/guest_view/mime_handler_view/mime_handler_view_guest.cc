@@ -334,6 +334,27 @@ bool MimeHandlerViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
+bool MimeHandlerViewGuest::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
+    content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  embedder_web_contents()->GetDelegate()->OpenURLFromTab(
+      embedder_web_contents(),
+      content::OpenURLParams(target_url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, true));
+  return false;
+}
+
 bool MimeHandlerViewGuest::SetFullscreenState(bool is_fullscreen) {
   // Disallow fullscreen for embedded plugins.
   if (!is_full_page_plugin() || is_fullscreen == is_guest_fullscreen_)
