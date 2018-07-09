@@ -330,6 +330,22 @@ testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = function() {
 };
 
 /**
+ * Tests that the New Folder menu item is enabled if a read-write folder is
+ * selected.
+ */
+testcase.checkNewFolderEnabledForReadWriteFolder = function() {
+  checkContextMenu('new-folder', 'photos', true);
+};
+
+/**
+ * Tests that the New Folder menu item is disabled if a read-only folder is
+ * selected.
+ */
+testcase.checkNewFolderDisabledForReadOnlyFolder = function() {
+  checkContextMenu('new-folder', 'Read-Only Folder', false);
+};
+
+/**
  * Tests that text selection context menus are disabled in tablet mode.
  */
 testcase.checkContextMenusForInputElements = function() {
@@ -468,6 +484,22 @@ function checkContextMenuInDriveFolder(
     }
   ]);
 }
+
+/**
+ * Tests that the New Folder menu item is enabled inside a folder that has
+ * read-write permissions.
+ */
+testcase.checkNewFolderEnabledInsideReadWriteFolder = function() {
+  checkContextMenuInDriveFolder('new-folder', 'photos', true);
+};
+
+/**
+ * Tests that the New Folder menu item is enabled inside a folder that has
+ * read-write permissions.
+ */
+testcase.checkNewFolderDisabledInsideReadOnlyFolder = function() {
+  checkContextMenuInDriveFolder('new-folder', 'Read-Only Folder', false);
+};
 
 /**
  * Tests that the Paste menu item is enabled inside a folder that has read-write

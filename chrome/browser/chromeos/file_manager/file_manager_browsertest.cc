@@ -249,6 +249,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("checkPasteIntoFolderEnabledForReadWriteFolder"),
                       TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder"),
                       TestCase("checkContextMenusForInputElements"),
+                      TestCase("checkNewFolderEnabledInsideReadWriteFolder"),
+                      TestCase("checkNewFolderDisabledInsideReadOnlyFolder"),
                       TestCase("checkPasteEnabledInsideReadWriteFolder"),
                       TestCase("checkPasteDisabledInsideReadOnlyFolder"),
                       TestCase("checkCopyEnabledForReadWriteFolderInTree"),
