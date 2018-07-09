@@ -22,7 +22,7 @@ class NestedMessagePumpAndroid : public base::MessagePumpForUI {
   void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
-  void Start(Delegate* delegate) override;
+  void Attach(Delegate* delegate) override;
 
  protected:
   ~NestedMessagePumpAndroid() override;

@@ -75,10 +75,10 @@ class Waitable {
 class MessagePumpForUIStub : public base::MessagePumpForUI {
   ~MessagePumpForUIStub() override {}
 
-  void Start(base::MessagePump::Delegate* delegate) override {
-    NOTREACHED() << "The Start() method shouldn't be called in test, using"
-        " Run() method should be used.";
-  }
+  // In tests, there isn't a native thread, as such RunLoop::Run() should be
+  // used to run the loop instead of attaching and delegating to the native
+  // loop. As such, this override ignores the Attach() request.
+  void Attach(base::MessagePump::Delegate* delegate) override {}
 
   void Run(base::MessagePump::Delegate* delegate) override {
     // The following was based on message_pump_glib.cc, except we're using a

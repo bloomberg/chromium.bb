@@ -263,6 +263,12 @@ void MessageLoop::BindToCurrentThread() {
       &sequence_local_storage_map_);
 
   RunLoop::RegisterDelegateForCurrentThread(this);
+
+#if defined(OS_ANDROID)
+  // On Android, attach to the native loop when there is one.
+  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
+    static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
+#endif
 }
 
 std::string MessageLoop::GetThreadName() const {
@@ -596,11 +602,6 @@ void MessageLoopForUI::Attach() {
 #endif  // defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-void MessageLoopForUI::Start() {
-  // No Histogram support for UI message loop as it is managed by Java side
-  static_cast<MessagePumpForUI*>(pump_.get())->Start(this);
-}
-
 void MessageLoopForUI::Abort() {
   static_cast<MessagePumpForUI*>(pump_.get())->Abort();
 }

@@ -80,7 +80,7 @@ void MessagePumpForUI::Run(Delegate* delegate) {
                   " test_stub_android.h";
 }
 
-void MessagePumpForUI::Start(Delegate* delegate) {
+void MessagePumpForUI::Attach(Delegate* delegate) {
   DCHECK(!quit_);
   delegate_ = delegate;
   run_loop_ = std::make_unique<RunLoop>();

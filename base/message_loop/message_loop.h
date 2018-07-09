@@ -363,11 +363,6 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 #endif
 
 #if defined(OS_ANDROID)
-  // On Android, the UI message loop is handled by Java side. So Run() should
-  // never be called. Instead use Start(), which will forward all the native UI
-  // events to the Java message loop.
-  void Start();
-
   // In Android there are cases where we want to abort immediately without
   // calling Quit(), in these cases we call Abort().
   void Abort();
