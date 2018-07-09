@@ -70,6 +70,12 @@ on its location, they are more likely to get modified from an old version of a
 binary to a newer version. This is why "naive" patching does not do well on
 binaries.
 
+**Target Key**: An alternative representation of a Target for a fixed pool, as its
+index in the sorted list of Target offsets. Keys are useful since:
+  * Their numerical index are smaller than offsets, allowing more efficient
+  storage of target correction data in patch.
+  * They simplify association from Targets to Labels.
+
 **Disassembler**: Architecture specific data and operations, used to extract and
 correct references in a binary.
 
@@ -127,18 +133,23 @@ bytewise difference to apply.
 3. are not part of any larger region from a different equivalence.
 Not all targets are necessarily associated with another target.
 
-**Label**: An (offset, index) pair, where |offset| is a target, and |index| is
-an integer used to uniquely identify |offset| in its corresponding pool of
-targets. Labels are created for each Reference in "old" and "new" binary as part
+**Target Affinity**: Level of confidence in the association between two targets.
+The affinity between targets that are potentially associated is measured based
+on surrounding content, as well as reference type.
+
+**Label**: An integer assigned for each Target in "old" and "new" binary as part
 of generating a patch, and used to alias targets when searching for similar
-regions that will form equivalences. Labels are created such that associated
-targets in old and new binaries share the same |index|, and such that indices in
-a pool are tightly packed. For example, suppose "old" Labels are:
-  - (0x1111, 0), (0x3333, 4), (0x5555, 1), (0x7777, 3)
-and given the following association of targets between "old" and "new":
-  - 0x1111 <=> 0x6666,  0x3333 <=> 0x2222.
-then we could assign indices for "new" Labels as:
-  - (0x2222, 4}, (0x4444, 8), (0x6666, 0), (0x8888, 2)
+regions that will form equivalences. Labels are assigned such that
+associated targets in old and new binaries share the same Label. Unmatched
+Targets have a Label of 0. For example, given
+  * "Old" targets = [0x1111, 0x3333, 0x5555, 0x7777],
+  * "New" targets = [0x2222, 0x4444, 0x6666, 0x8888],
+to represent matchings 0x1111 <=> 0x6666,  0x3333 <=> 0x2222, we'd assign
+  * Label 1 to 0x1111 (in "old") and 0x6666 (in "new"),
+  * Label 2 to 0x3333 (in "old") and 0x2222 (in "new").
+ Represented as arrays indexed over Target Keys, we'd have:
+  * "Old" labels = [1, 2, 0 ,0],
+  * "New" labels = [2, 0, 1, 0].
 
 **Encoded Image**: The result of projecting the content of an image to scalar
 values that describe content on a higher level of abstraction, masking away
