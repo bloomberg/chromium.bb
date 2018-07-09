@@ -5,6 +5,21 @@
 import("//ios/web/js_compile.gni")
 import("//testing/test.gni")
 
+source_set("form_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "form_activity_observer.h",
+    "form_activity_observer_bridge.h",
+    "form_activity_observer_bridge.mm",
+    "form_activity_tab_helper.h",
+    "form_activity_tab_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
