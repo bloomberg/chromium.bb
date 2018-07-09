@@ -320,6 +320,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       SetSize(GetPreferredSize());
       SizeToContents();
       Layout();
+      EnsureWidgetInWorkArea();
       if (on_remove_user_warning_shown_)
         std::move(on_remove_user_warning_shown_).Run();
       return;
@@ -331,6 +332,26 @@ class LoginUserMenuView : public LoginBaseBubbleView,
 
     if (on_remove_user_requested_)
       std::move(on_remove_user_requested_).Run();
+  }
+
+  void EnsureWidgetInWorkArea() {
+    const int view_bottom = GetBoundsInScreen().bottom();
+    const int work_area_bottom =
+        display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(GetWidget()->GetNativeWindow())
+            .work_area()
+            .bottom();
+
+    if (work_area_bottom >= view_bottom)
+      return;
+
+    // If the bubble extends into the shelf, move the bubble up so that the
+    // bottom edge just touches the top of the shelf. Also shift the bubble
+    // right so that the anchor (arrow) remains visible.
+    set_anchor_view_insets(anchor_view_insets().Offset(gfx::Vector2d(
+        GetAnchorView()->GetBoundsInScreen().right() - GetBoundsInScreen().x(),
+        work_area_bottom - view_bottom)));
+    OnAnchorBoundsChanged();
   }
 
   views::View* remove_user_button() { return remove_user_button_; }
