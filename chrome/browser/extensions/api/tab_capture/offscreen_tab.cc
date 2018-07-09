@@ -94,7 +94,6 @@ OffscreenTab::OffscreenTab(OffscreenTabsOwner* owner)
                       owner->extension_web_contents()->GetBrowserContext()),
                   base::BindOnce(&OffscreenTab::DieIfOriginalProfileDestroyed,
                                  base::Unretained(this)))),
-      capture_poll_timer_(false, false),
       content_capture_was_detected_(false),
       navigation_policy_(
           std::make_unique<media_router::DefaultNavigationPolicy>()) {

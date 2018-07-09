@@ -18,7 +18,7 @@
 // Implementations for chrome.easyUnlockPrivate API functions.
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }
 
 namespace content {
@@ -139,7 +139,7 @@ class EasyUnlockPrivateFindSetupConnectionFunction
       connection_finder_;
 
   // Used for timing out when waiting for the connection finder to return.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateFindSetupConnectionFunction);
 };

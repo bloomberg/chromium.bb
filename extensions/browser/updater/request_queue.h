@@ -111,7 +111,7 @@ class RequestQueue {
 
   // Timer to schedule calls to StartNextRequest, if the first pending request
   // hasn't passed its release time yet.
-  base::Timer timer_;
+  base::OneShotTimer timer_;
 };
 
 // Iterator class that wraps a base::circular_deque<> iterator, only giving
