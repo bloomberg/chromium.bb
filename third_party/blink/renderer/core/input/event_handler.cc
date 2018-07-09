@@ -709,7 +709,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   // the same behavior and it's more compatible with other browsers.
   GetSelectionController().InitializeSelectionState();
   HitTestResult hit_test_result = EventHandlingUtil::HitTestResultInFrame(
-      frame_, document_point, HitTestRequest::kReadOnly);
+      frame_, HitTestLocation(document_point), HitTestRequest::kReadOnly);
   InputDeviceCapabilities* source_capabilities =
       frame_->GetDocument()
           ->domWindow()
@@ -1461,7 +1461,7 @@ bool EventHandler::BestClickableNodeForHitTestResult(
   // FIXME: Unify this with the other best* functions which are very similar.
 
   TRACE_EVENT0("input", "EventHandler::bestClickableNodeForHitTestResult");
-  DCHECK(result.IsRectBasedTest());
+  DCHECK(location.IsRectBasedTest());
 
   // If the touch is over a scrollbar, don't adjust the touch point since touch
   // adjustment only takes into account DOM nodes so a touch over a scrollbar
@@ -1492,7 +1492,7 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
     const HitTestResult& result,
     IntPoint& target_point,
     Node*& target_node) {
-  DCHECK(result.IsRectBasedTest());
+  DCHECK(location.IsRectBasedTest());
   IntPoint touch_center =
       frame_->View()->ConvertToRootFrame(RoundedIntPoint(location.Point()));
   IntRect touch_rect =
@@ -1753,7 +1753,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
         location, hit_type);
   }
 
-  if (hit_test_result.IsRectBasedTest()) {
+  if (location.IsRectBasedTest()) {
     // Adjust the location of the gesture to the most likely nearby node, as
     // appropriate for the type of event.
     ApplyTouchAdjustment(&adjusted_event, location, &hit_test_result);
@@ -1766,16 +1766,16 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     LocalFrame* hit_frame = hit_test_result.InnerNodeFrame();
     if (!hit_frame)
       hit_frame = frame_;
+    location = HitTestLocation(hit_frame->View()->ConvertFromRootFrame(
+        LayoutPoint(adjusted_event.PositionInRootFrame())));
     hit_test_result = EventHandlingUtil::HitTestResultInFrame(
-        hit_frame,
-        hit_frame->View()->ConvertFromRootFrame(
-            LayoutPoint(adjusted_event.PositionInRootFrame())),
+        hit_frame, location,
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
   }
   // If we did a rect-based hit test it must be resolved to the best single node
   // by now to ensure consumers don't accidentally use one of the other
   // candidates.
-  DCHECK(!hit_test_result.IsRectBasedTest());
+  DCHECK(!location.IsRectBasedTest());
 
   if (ShouldApplyTouchAdjustment(gesture_event) &&
       (gesture_event.GetType() == WebInputEvent::kGestureTap ||
@@ -1822,6 +1822,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
   if (adjusted) {
     LayoutPoint point = frame_->View()->ConvertFromRootFrame(adjusted_point);
     DCHECK(location.ContainsPoint(FloatPoint(point)));
+    DCHECK(location.IsRectBasedTest());
     location = hit_test_result->ResolveRectBasedTest(adjusted_node, point);
     gesture_event->ApplyTouchAdjustment(
         WebFloatPoint(adjusted_point.X(), adjusted_point.Y()));

@@ -24,7 +24,7 @@ namespace EventHandlingUtil {
 
 HitTestResult HitTestResultInFrame(
     LocalFrame*,
-    const LayoutPoint&,
+    const HitTestLocation&,
     HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                   HitTestRequest::kActive);
 

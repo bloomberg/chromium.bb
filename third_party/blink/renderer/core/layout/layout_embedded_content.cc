@@ -154,7 +154,7 @@ bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
 
   // Check to see if we are really over the EmbeddedContentView itself (and not
   // just in the border/padding area).
-  if ((inside || result.IsRectBasedTest()) && !had_result &&
+  if ((inside || location_in_container.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
     result.SetIsOverEmbeddedContentView(
         ContentBoxRect().Contains(result.LocalPoint()));

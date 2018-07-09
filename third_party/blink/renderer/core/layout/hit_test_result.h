@@ -94,9 +94,6 @@ class CORE_EXPORT HitTestResult {
     return is_over_embedded_content_view_;
   }
 
-  // Forwarded from HitTestLocation
-  bool IsRectBasedTest() const { return is_rect_based_test_; }
-
   // The hit-tested point in the coordinates of the innerNode frame, the frame
   // containing innerNode.
   const LayoutPoint& PointInInnerNodeFrame() const {
@@ -204,7 +201,6 @@ class CORE_EXPORT HitTestResult {
 
   mutable Member<NodeSet> list_based_test_result_;
   String canvas_region_id_;
-  bool is_rect_based_test_;
 };
 
 }  // namespace blink
