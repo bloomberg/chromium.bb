@@ -1,4 +1,6 @@
+# Preferred reviewer.
 mmenke@chromium.org
-juliatuttle@chromium.org
+
+file://net/OWNERS
 
 # COMPONENT: Internals>Network
