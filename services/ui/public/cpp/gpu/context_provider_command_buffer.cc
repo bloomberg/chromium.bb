@@ -40,104 +40,6 @@
 
 class SkDiscardableMemory;
 
-namespace {
-
-// Derives from SkTraceMemoryDump and implements graphics specific memory
-// backing functionality.
-class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
- public:
-  // This should never outlive the provided ProcessMemoryDump, as it should
-  // always be scoped to a single OnMemoryDump funciton call.
-  explicit SkiaGpuTraceMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                                  uint64_t share_group_tracing_guid)
-      : pmd_(pmd), share_group_tracing_guid_(share_group_tracing_guid) {}
-
-  // Overridden from SkTraceMemoryDump:
-  void dumpNumericValue(const char* dump_name,
-                        const char* value_name,
-                        const char* units,
-                        uint64_t value) override {
-    auto* dump = GetOrCreateAllocatorDump(dump_name);
-    dump->AddScalar(value_name, units, value);
-  }
-
-  void setMemoryBacking(const char* dump_name,
-                        const char* backing_type,
-                        const char* backing_object_id) override {
-    const uint64_t tracing_process_id =
-        base::trace_event::MemoryDumpManager::GetInstance()
-            ->GetTracingProcessId();
-
-    // For uniformity, skia provides this value as a string. Convert back to a
-    // uint32_t.
-    uint32_t gl_id =
-        std::strtoul(backing_object_id, nullptr /* str_end */, 10 /* base */);
-
-    // Constants used by SkiaGpuTraceMemoryDump to identify different memory
-    // types.
-    const char* kGLTextureBackingType = "gl_texture";
-    const char* kGLBufferBackingType = "gl_buffer";
-    const char* kGLRenderbufferBackingType = "gl_renderbuffer";
-
-    // Populated in if statements below.
-    base::trace_event::MemoryAllocatorDumpGuid guid;
-
-    if (strcmp(backing_type, kGLTextureBackingType) == 0) {
-      guid = gl::GetGLTextureClientGUIDForTracing(share_group_tracing_guid_,
-                                                  gl_id);
-    } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
-      guid = gl::GetGLBufferGUIDForTracing(tracing_process_id, gl_id);
-    } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
-      guid = gl::GetGLRenderbufferGUIDForTracing(tracing_process_id, gl_id);
-    }
-
-    if (!guid.empty()) {
-      pmd_->CreateSharedGlobalAllocatorDump(guid);
-
-      auto* dump = GetOrCreateAllocatorDump(dump_name);
-
-      const int kImportance = 2;
-      pmd_->AddOwnershipEdge(dump->guid(), guid, kImportance);
-    }
-  }
-
-  void setDiscardableMemoryBacking(
-      const char* dump_name,
-      const SkDiscardableMemory& discardable_memory_object) override {
-    // We don't use this class for dumping discardable memory.
-    NOTREACHED();
-  }
-
-  LevelOfDetail getRequestedDetails() const override {
-    // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
-    // (crbug.com/499731).
-    return kObjectsBreakdowns_LevelOfDetail;
-  }
-
-  bool shouldDumpWrappedObjects() const override {
-    // Chrome already dumps objects it imports into Skia. Avoid duplicate dumps
-    // by asking Skia not to dump them.
-    return false;
-  }
-
- private:
-  // Helper to create allocator dumps.
-  base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
-      const char* dump_name) {
-    auto* dump = pmd_->GetAllocatorDump(dump_name);
-    if (!dump)
-      dump = pmd_->CreateAllocatorDump(dump_name);
-    return dump;
-  }
-
-  base::trace_event::ProcessMemoryDump* pmd_;
-  uint64_t share_group_tracing_guid_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaGpuTraceMemoryDump);
-};
-
-}  // namespace
-
 namespace ui {
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
@@ -538,9 +440,8 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
 
   if (gr_context_) {
     context_thread_checker_.DetachFromThread();
-    SkiaGpuTraceMemoryDump trace_memory_dump(
-        pmd, gles2_impl_->ShareGroupTracingGUID());
-    gr_context_->get()->dumpMemoryStatistics(&trace_memory_dump);
+    gpu::raster::DumpGrMemoryStatistics(gr_context_->get(), pmd,
+                                        gles2_impl_->ShareGroupTracingGUID());
     context_thread_checker_.DetachFromThread();
   }
   return true;
