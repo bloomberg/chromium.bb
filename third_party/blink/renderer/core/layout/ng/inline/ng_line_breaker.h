@@ -136,7 +136,10 @@ class CORE_EXPORT NGLineBreaker {
     // when it is overflowing.
     kTrailing,
 
-    // The initial state. Looking for items to break the line.
+    // The initial state, until the first character is found.
+    kLeading,
+
+    // Looking for more items to fit into the current line.
     kContinue,
   };
 

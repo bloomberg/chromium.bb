@@ -215,7 +215,7 @@ bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
 void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
   const Vector<NGInlineItem>& items = line_info->ItemsData().items;
-  LineBreakState state = LineBreakState::kContinue;
+  LineBreakState state = LineBreakState::kLeading;
   while (state != LineBreakState::kDone) {
     // Check overflow even if |item_index_| is at the end of the block, because
     // the last item of the block may have caused overflow. In that case,
@@ -265,6 +265,8 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
 
     if (item.Type() == NGInlineItem::kAtomicInline) {
       HandleAtomicInline(item, line_info);
+      if (state == LineBreakState::kLeading)
+        state = LineBreakState::kContinue;
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item, AddItem(item, item_results));
     } else if (item.Type() == NGInlineItem::kFloating) {
@@ -323,6 +325,24 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   // If we're trailing, only trailing spaces can be included in this line.
   if (state == LineBreakState::kTrailing && CanBreakAfterLast(*item_results)) {
     return HandleTrailingSpaces(item, line_info);
+  }
+
+  // Skip leading collapsible spaces.
+  // Most cases such spaces are handled as trailing spaces of the previous line,
+  // but there are some cases doing so is too complex.
+  if (state == LineBreakState::kLeading) {
+    if (item.Style()->CollapseWhiteSpace() &&
+        Text()[offset_] == kSpaceCharacter) {
+      // Skipping one whitespace removes all collapsible spaces because
+      // collapsible spaces are collapsed to single space in
+      // NGInlineItemBuilder.
+      ++offset_;
+      if (offset_ == item.EndOffset()) {
+        MoveToNextOf(item);
+        return LineBreakState::kContinue;
+      }
+    }
+    state = LineBreakState::kContinue;
   }
 
   line_.should_create_line_box = true;
@@ -1036,7 +1056,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
     override_break_anywhere_ = true;
     break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
     Rewind(line_info, 0);
-    return LineBreakState::kContinue;
+    return LineBreakState::kLeading;
   }
 
   // Let this line overflow.
