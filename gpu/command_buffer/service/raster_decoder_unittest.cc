@@ -7,18 +7,24 @@
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/init/gl_factory.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -522,6 +528,124 @@ TEST_P(RasterDecoderTest, YieldAfterEndRasterCHROMIUM) {
   cmds::EndRasterCHROMIUM end_raster_cmd;
   end_raster_cmd.Init();
   EXPECT_EQ(error::kDeferLaterCommands, ExecuteCmd(end_raster_cmd));
+}
+
+class RasterDecoderOOPTest : public testing::Test, DecoderClient {
+ public:
+  RasterDecoderOOPTest() : shader_translator_cache_(gpu_preferences_) {}
+
+  void SetUp() override {
+    gl::GLSurfaceTestSupport::InitializeOneOff();
+    gpu::GpuDriverBugWorkarounds workarounds;
+
+    scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
+    scoped_refptr<gl::GLSurface> surface =
+        gl::init::CreateOffscreenGLSurface(gfx::Size());
+    scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+        share_group.get(), surface.get(), gl::GLContextAttribs());
+    ASSERT_TRUE(context->MakeCurrent(surface.get()));
+
+    context_state_ = new raster::RasterDecoderContextState(
+        std::move(share_group), std::move(surface), std::move(context),
+        false /* use_virtualized_gl_contexts */);
+    context_state_->InitializeGrContext(workarounds);
+
+    GpuFeatureInfo gpu_feature_info;
+    gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+        kGpuFeatureStatusEnabled;
+    scoped_refptr<gles2::FeatureInfo> feature_info =
+        new gles2::FeatureInfo(workarounds, gpu_feature_info);
+    group_ = new gles2::ContextGroup(
+        gpu_preferences_, false, &mailbox_manager_,
+        nullptr /* memory_tracker */, &shader_translator_cache_,
+        &framebuffer_completeness_cache_, feature_info,
+        false /* bind_generates_resource */, &image_manager_,
+        nullptr /* image_factory */, nullptr /* progress_reporter */,
+        gpu_feature_info, &discardable_manager_);
+  }
+  void TearDown() override {
+    context_state_ = nullptr;
+    gl::init::ShutdownGL(false);
+  }
+
+  // DecoderClient implementation.
+  void OnConsoleMessage(int32_t id, const std::string& message) override {}
+  void CacheShader(const std::string& key, const std::string& shader) override {
+  }
+  void OnFenceSyncRelease(uint64_t release) override {}
+  bool OnWaitSyncToken(const gpu::SyncToken&) override { return false; }
+  void OnDescheduleUntilFinished() override {}
+  void OnRescheduleAfterFinished() override {}
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override {}
+
+  std::unique_ptr<RasterDecoder> CreateDecoder() {
+    auto decoder = base::WrapUnique(
+        RasterDecoder::Create(this, &command_buffer_service_, &outputter_,
+                              group_.get(), context_state_));
+    ContextCreationAttribs attribs;
+    attribs.enable_oop_rasterization = true;
+    attribs.enable_raster_interface = true;
+    CHECK_EQ(
+        decoder->Initialize(context_state_->surface, context_state_->context,
+                            true, gles2::DisallowedFeatures(), attribs),
+        ContextResult::kSuccess);
+    return decoder;
+  }
+
+  template <typename T>
+  error::Error ExecuteCmd(RasterDecoder* decoder, const T& cmd) {
+    static_assert(T::kArgFlags == cmd::kFixed,
+                  "T::kArgFlags should equal cmd::kFixed");
+    int entries_processed = 0;
+    return decoder->DoCommands(1, (const void*)&cmd,
+                               ComputeNumEntries(sizeof(cmd)),
+                               &entries_processed);
+  }
+
+ protected:
+  gles2::TraceOutputter outputter_;
+  FakeCommandBufferServiceBase command_buffer_service_;
+  scoped_refptr<RasterDecoderContextState> context_state_;
+
+  GpuPreferences gpu_preferences_;
+  gles2::MailboxManagerImpl mailbox_manager_;
+  gles2::ShaderTranslatorCache shader_translator_cache_;
+  gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
+  gles2::ImageManager image_manager_;
+  ServiceDiscardableManager discardable_manager_;
+  scoped_refptr<gles2::ContextGroup> group_;
+};
+
+TEST_F(RasterDecoderOOPTest, StateRestoreAcrossDecoders) {
+  // First decoder receives a skia command requiring context state reset.
+  auto decoder1 = CreateDecoder();
+  EXPECT_FALSE(context_state_->need_context_state_reset);
+  decoder1->SetUpForRasterCHROMIUMForTest();
+  cmds::EndRasterCHROMIUM end_raster_cmd;
+  end_raster_cmd.Init();
+  EXPECT_FALSE(error::IsError(ExecuteCmd(decoder1.get(), end_raster_cmd)));
+  EXPECT_TRUE(context_state_->need_context_state_reset);
+
+  // Another decoder receives a command which does not require consistent state,
+  // it should be processed without state restoration.
+  auto decoder2 = CreateDecoder();
+  decoder2->SetUpForRasterCHROMIUMForTest();
+  EXPECT_FALSE(error::IsError(ExecuteCmd(decoder2.get(), end_raster_cmd)));
+  EXPECT_TRUE(context_state_->need_context_state_reset);
+
+  // Now process a command which requires consistent state.
+  cmds::CreateTexture create_tex_cmd;
+  create_tex_cmd.Init(false, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                      viz::ResourceFormat::RGBA_8888, 4);
+  EXPECT_FALSE(error::IsError(ExecuteCmd(decoder2.get(), create_tex_cmd)));
+  EXPECT_FALSE(context_state_->need_context_state_reset);
+
+  decoder1->Destroy(true);
+  context_state_->context->MakeCurrent(context_state_->surface.get());
+  decoder2->Destroy(true);
+
+  // Make sure the context is preserved across decoders.
+  EXPECT_FALSE(context_state_->gr_context->abandoned());
 }
 
 }  // namespace raster

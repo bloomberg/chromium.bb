@@ -44,6 +44,15 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
                                &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
+    ContextCreationAttribs attribs;
+    attribs.gpu_preference = gl::PreferIntegratedGpu;
+    attribs.context_type = CONTEXT_TYPE_OPENGLES2;
+    attribs.bind_generates_resource = false;
+    auto raster_decoder_state =
+        channel_manager()->GetRasterDecoderContextState(attribs, &result);
+    EXPECT_EQ(result, ContextResult::kSuccess);
+    ASSERT_TRUE(raster_decoder_state);
+
     CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
     EXPECT_TRUE(stub);
 
@@ -55,6 +64,11 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     } else {
       EXPECT_TRUE(channel);
     }
+
+    // We should always clear the shared raster state on background cleanup.
+    ASSERT_NE(
+        channel_manager()->GetRasterDecoderContextState(attribs, &result).get(),
+        raster_decoder_state.get());
   }
 #endif
 };

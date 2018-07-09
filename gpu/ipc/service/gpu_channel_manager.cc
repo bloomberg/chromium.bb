@@ -32,6 +32,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
@@ -291,6 +292,11 @@ void GpuChannelManager::OnApplicationBackgrounded() {
 
   if (program_cache_)
     program_cache_->Trim(0u);
+
+  if (raster_decoder_context_state_) {
+    raster_decoder_context_state_->context_lost = true;
+    raster_decoder_context_state_.reset();
+  }
 }
 #endif
 
@@ -299,6 +305,114 @@ void GpuChannelManager::HandleMemoryPressure(
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+}
+
+scoped_refptr<raster::RasterDecoderContextState>
+GpuChannelManager::GetRasterDecoderContextState(
+    const ContextCreationAttribs& requested_attribs,
+    ContextResult* result) {
+  if (raster_decoder_context_state_ &&
+      !raster_decoder_context_state_->context_lost) {
+    return raster_decoder_context_state_;
+  }
+
+  ContextCreationAttribs attribs;
+  attribs.gpu_preference = gl::PreferIntegratedGpu;
+  attribs.context_type = CONTEXT_TYPE_OPENGLES2;
+  attribs.bind_generates_resource = false;
+
+  if (attribs.gpu_preference != requested_attribs.gpu_preference ||
+      attribs.context_type != requested_attribs.context_type ||
+      attribs.bind_generates_resource !=
+          requested_attribs.bind_generates_resource) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: Incompatible creation attribs "
+                  "used with RasterDecoder";
+    *result = ContextResult::kFatalFailure;
+  }
+
+  scoped_refptr<gl::GLSurface> surface = GetDefaultOffscreenSurface();
+  if (!surface) {
+    LOG(ERROR) << "Failed to create offscreen surface";
+    *result = ContextResult::kFatalFailure;
+    return nullptr;
+  }
+
+  bool use_virtualized_gl_contexts = false;
+#if defined(OS_MACOSX)
+  // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
+  // performance regressions when enabling FCM.
+  // http://crbug.com/180463
+  if (attribs.gpu_preference == gl::PreferIntegratedGpu)
+    use_virtualized_gl_contexts = true;
+#endif
+  use_virtualized_gl_contexts |=
+      gpu_driver_bug_workarounds_.use_virtualized_gl_contexts;
+  // MailboxManagerSync synchronization correctness currently depends on having
+  // only a single context. See crbug.com/510243 for details.
+  use_virtualized_gl_contexts |= mailbox_manager_->UsesSync();
+
+  const bool use_passthrough_decoder =
+      gles2::PassthroughCommandDecoderSupported() &&
+      gpu_preferences_.use_passthrough_cmd_decoder;
+  scoped_refptr<gl::GLShareGroup> share_group;
+  if (use_passthrough_decoder) {
+    share_group = new gl::GLShareGroup();
+  } else {
+    share_group = share_group_;
+  }
+
+  scoped_refptr<gl::GLContext> context =
+      use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
+                                  : nullptr;
+  if (!context) {
+    context = gl::init::CreateGLContext(
+        share_group.get(), surface.get(),
+        gles2::GenerateGLContextAttribs(attribs, use_passthrough_decoder));
+    if (!context) {
+      // TODO(piman): This might not be fatal, we could recurse into
+      // CreateGLContext to get more info, tho it should be exceedingly
+      // rare and may not be recoverable anyway.
+      LOG(ERROR) << "ContextResult::kFatalFailure: "
+                    "Failed to create shared context for virtualization.";
+      *result = ContextResult::kFatalFailure;
+      return nullptr;
+    }
+    // Ensure that context creation did not lose track of the intended share
+    // group.
+    DCHECK(context->share_group() == share_group.get());
+    gpu_feature_info_.ApplyToGLContext(context.get());
+
+    if (use_virtualized_gl_contexts)
+      share_group->SetSharedContext(surface.get(), context.get());
+  }
+
+  // This should be either:
+  // (1) a non-virtual GL context, or
+  // (2) a mock/stub context.
+  DCHECK(context->GetHandle() ||
+         gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
+         gl::GetGLImplementation() == gl::kGLImplementationStubGL);
+
+  if (!context->MakeCurrent(surface.get())) {
+    LOG(ERROR)
+        << "ContextResult::kTransientFailure, failed to make context current";
+    *result = ContextResult::kTransientFailure;
+    return nullptr;
+  }
+
+  raster_decoder_context_state_ = new raster::RasterDecoderContextState(
+      std::move(share_group), std::move(surface), std::move(context),
+      use_virtualized_gl_contexts);
+  const bool enable_raster_transport =
+      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+  if (enable_raster_transport) {
+    raster_decoder_context_state_->InitializeGrContext(
+        gpu_driver_bug_workarounds_);
+  }
+
+  *result = ContextResult::kSuccess;
+  return raster_decoder_context_state_;
 }
 
 }  // namespace gpu
