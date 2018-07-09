@@ -80,6 +80,10 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "RECOMMEND_APPS_SKIPPED";
     case ScreenExitCode::RECOMMEND_APPS_SELECTED:
       return "RECOMMEND_APPS_SELECTED";
+    case ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED:
+      return "DEMO_MODE_PREFERENCES_CONTINUED";
+    case ScreenExitCode::DEMO_MODE_PREFERENCES_CANCELED:
+      return "DEMO_MODE_PREFERENCES_CANCELED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

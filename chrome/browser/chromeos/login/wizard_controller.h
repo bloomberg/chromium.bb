@@ -99,6 +99,13 @@ class WizardController : public BaseScreenDelegate,
   // Advances to screen defined by |screen| and shows it.
   void AdvanceToScreen(OobeScreen screen);
 
+  // Starts Demo Mode setup flow. The flow starts from network screen and reuses
+  // some of regular OOBE screens. It consists of the following screens:
+  //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES
+  //    chromeos::OobeScreen::SCREEN_OOBE_EULA
+  //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
+  void StartDemoModeSetup();
+
   // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);
   void SkipToUpdateForTesting();
@@ -169,12 +176,16 @@ class WizardController : public BaseScreenDelegate,
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
 
+  // Shows previous screen. Should only be called if previous screen exists.
+  void ShowPreviousScreen();
+
   // Exit handlers:
   void OnHIDDetectionCompleted();
   void OnNetworkConnected();
   void OnConnectionFailed();
   void OnUpdateCompleted();
   void OnEulaAccepted();
+  void OnEulaBack();
   void OnUpdateErrorCheckingForUpdate();
   void OnUpdateErrorUpdating(bool is_critical_update);
   void OnUserImageSelected();
@@ -197,6 +208,8 @@ class WizardController : public BaseScreenDelegate,
   void OnAutoEnrollmentCheckCompleted();
   void OnDemoSetupFinished();
   void OnDemoSetupCanceled();
+  void OnDemoPreferencesContinued();
+  void OnDemoPreferencesCanceled();
   void OnWaitForContainerReadyFinished();
   void OnOobeFlowFinished();
 
@@ -412,6 +425,9 @@ class WizardController : public BaseScreenDelegate,
 
   bool is_in_session_oobe_ = false;
 
+  // Whether the currently presented flow is Demo Mode setup.
+  bool is_in_demo_setup_flow_ = false;
+
   // Indicates that once image selection screen finishes we should return to
   // a previous screen instead of proceeding with usual flow.
   bool user_image_screen_return_to_previous_hack_ = false;
@@ -424,11 +440,12 @@ class WizardController : public BaseScreenDelegate,
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
   friend class WizardControllerBrokenLocalStateTest;
+  friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;
   friend class WizardControllerFlowTest;
+  friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
   friend class WizardInProcessBrowserTest;
-  friend class WizardControllerOobeConfigurationTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
