@@ -100,6 +100,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &data_reduction_proxy::features::kDataReductionMainMenu,
     &kExploreSites,
     &kFullscreenActivity,
+    &kHandleMediaIntents,
     &kHomePageButtonForceEnabled,
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
@@ -276,6 +277,9 @@ const base::Feature kExploreSites{"ExploreSites",
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHandleMediaIntents{"HandleMediaIntents",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kHomePageButtonForceEnabled{
     "HomePageButtonForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};

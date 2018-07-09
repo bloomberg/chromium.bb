@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerat
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.PackageMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -420,6 +421,11 @@ public class ProcessInitializationHandler {
 
         deferredStartupHandler.addDeferredTask(
                 () -> { BuildHooksAndroid.maybeRecordResourceMetrics(); });
+
+        deferredStartupHandler.addDeferredTask(() -> {
+            MediaViewerUtils.updateMediaLauncherActivityEnabled(
+                    ContextUtils.getApplicationContext());
+        });
     }
 
     private void initChannelsAsync() {

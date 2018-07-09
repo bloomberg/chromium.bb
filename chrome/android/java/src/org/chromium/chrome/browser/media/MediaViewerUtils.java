@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.media;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -19,9 +21,11 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
 
@@ -154,6 +158,28 @@ public class MediaViewerUtils {
 
         return (MIMETYPE_AUDIO.equals(pieces[0]) || MIMETYPE_IMAGE.equals(pieces[0])
                 || MIMETYPE_VIDEO.equals(pieces[0]));
+    }
+
+    /**
+     * Selectively enables or disables the MediaLauncherActivity.
+     * @param context The application Context.
+     */
+    public static void updateMediaLauncherActivityEnabled(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
+        int newState = shouldEnableMediaLauncherActivity()
+                ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        // This indicates that we don't want to kill Chrome when changing component enabled state.
+        int flags = PackageManager.DONT_KILL_APP;
+
+        if (packageManager.getComponentEnabledSetting(componentName) != newState)
+            packageManager.setComponentEnabledSetting(componentName, newState, flags);
+    }
+
+    private static boolean shouldEnableMediaLauncherActivity() {
+        return FeatureUtilities.isAndroidGo()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS);
     }
 
     private static Intent createShareIntent(Uri fileUri, String mimeType) {
