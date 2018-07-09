@@ -204,8 +204,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <zircon/process.h>
-#include <zircon/syscalls.h>
+#include <lib/zx/job.h>
 
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -395,10 +394,10 @@ constexpr base::TimeDelta kSwapMetricsInterval =
 // Create and register the job which will contain all child processes
 // of the browser process as well as their descendents.
 void InitDefaultJob() {
-  base::ScopedZxHandle handle;
-  zx_status_t result = zx_job_create(zx_job_default(), 0, handle.receive());
+  zx::job job;
+  zx_status_t result = zx::job::create(*zx::job::default_job(), 0, &job);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
-  base::SetDefaultJob(std::move(handle));
+  base::SetDefaultJob(std::move(job));
 }
 #endif  // defined(OS_FUCHSIA)
 

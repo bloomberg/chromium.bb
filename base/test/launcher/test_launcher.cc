@@ -321,8 +321,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   DCHECK(!new_options.job_handle);
 
   zx::job job_handle;
-  zx_status_t result =
-      zx::job::create(*zx::unowned<zx::job>(GetDefaultJob()), 0, &job_handle);
+  zx_status_t result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
 #endif  // defined(OS_FUCHSIA)
@@ -401,7 +400,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     AutoLock lock(*GetLiveProcessesLock());
 
 #if defined(OS_FUCHSIA)
-    CHECK_EQ(job_handle.kill(), ZX_OK);
+    zx_status_t status = job_handle.kill();
+    ZX_CHECK(status == ZX_OK, status);
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
