@@ -328,7 +328,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("transferFromSharedToDownloads"),
                       TestCase("transferFromSharedToDrive"),
                       TestCase("transferFromOfflineToDownloads"),
-                      TestCase("transferFromOfflineToDrive")));
+                      TestCase("transferFromOfflineToDrive"),
+                      TestCase("transferFromTeamDriveToDrive"),
+                      TestCase("transferFromDriveToTeamDrive"),
+                      TestCase("transferFromTeamDriveToDownloads"),
+                      TestCase("transferFromDownloadsToTeamDrive"),
+                      TestCase("transferBetweenTeamDrives")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestorePrefs, /* restore_prefs.js */

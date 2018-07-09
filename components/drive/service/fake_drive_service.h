@@ -364,6 +364,12 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::FileResourceCapabilities& capabilities,
       const google_apis::FileResourceCallback& callback);
 
+  // Sets the capabilities for the team drive with ID |team_drive_id|.
+  // On success, returns true.
+  bool SetTeamDriveCapabilities(
+      const std::string& team_drive_id,
+      const google_apis::TeamDriveCapabilities& capabilities);
+
   // Sets the user's permission for an entry specified by |resource_id|.
   google_apis::DriveApiErrorCode SetUserPermission(
       const std::string& resource_id,

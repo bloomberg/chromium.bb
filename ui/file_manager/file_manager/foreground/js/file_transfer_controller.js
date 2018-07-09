@@ -1364,6 +1364,11 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
       return false;
     }
 
+    // Cut is unavailable on Team Drive roots.
+    if (util.isTeamDriveRoot(selectedItem.entry)) {
+      return false;
+    }
+
     var metadata = this.metadataModel_.getCache(
         [selectedItem.entry], ['canCopy', 'canDelete']);
     assert(metadata.length === 1);

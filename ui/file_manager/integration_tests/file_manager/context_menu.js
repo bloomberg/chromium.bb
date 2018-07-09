@@ -745,7 +745,7 @@ function checkTeamDriveContextMenuInTree(
 testcase.checkContextMenuForTeamDriveRoot = function() {
   checkTeamDriveContextMenuInTree('Team Drive A', {
     'cut': false,
-    'copy': true,
+    'copy': false,
     'rename': false,
     'delete': false,
     'new-folder': true
