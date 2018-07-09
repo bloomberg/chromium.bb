@@ -426,7 +426,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   // Find a free frame buffer. Return error if can not find any.
   cm->new_fb_idx = get_free_fb(cm);
-  if (cm->new_fb_idx == INVALID_IDX) return AOM_CODEC_MEM_ERROR;
+  if (cm->new_fb_idx == INVALID_IDX) {
+    cm->error.error_code = AOM_CODEC_MEM_ERROR;
+    return 1;
+  }
 
   // Assign a MV array to the frame buffer.
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];

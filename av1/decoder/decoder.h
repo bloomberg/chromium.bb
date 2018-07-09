@@ -206,6 +206,8 @@ typedef struct AV1Decoder {
   int allocated_row_mt_sync_rows;
 } AV1Decoder;
 
+// Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error
+// code and returns a nonzero value on failure.
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
                                 const uint8_t **dest);
 
