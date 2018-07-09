@@ -38,7 +38,7 @@ class FakeTimerFactory : public TimerFactory {
 
  private:
   // TimerFactory:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override;
+  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override;
 
   void OnOneShotTimerDeleted(const base::UnguessableToken& deleted_timer_id);
 

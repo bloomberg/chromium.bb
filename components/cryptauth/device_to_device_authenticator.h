@@ -17,7 +17,7 @@
 #include "components/cryptauth/session_keys.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 };
 
 namespace cryptauth {
@@ -85,8 +85,8 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   void Authenticate(const AuthenticationCallback& callback) override;
 
  protected:
-  // Creates a base::Timer instance. Exposed for testing.
-  virtual std::unique_ptr<base::Timer> CreateTimer();
+  // Creates a base::OneShotTimer instance. Exposed for testing.
+  virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
 
  private:
   // The current state of the authentication flow.
@@ -164,7 +164,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   AuthenticationCallback callback_;
 
   // Used for timing out when waiting for [Remote Auth] from the remote device.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   // The bytes of the [Hello] message sent to the remote device.
   std::string hello_message_;

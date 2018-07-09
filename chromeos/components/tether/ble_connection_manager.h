@@ -173,7 +173,7 @@ class BleConnectionManager : public BleScanner::Observer {
   class ConnectionMetadata final : public cryptauth::SecureChannel::Observer {
    public:
     ConnectionMetadata(const std::string& device_id,
-                       std::unique_ptr<base::Timer> timer,
+                       std::unique_ptr<base::OneShotTimer> timer,
                        base::WeakPtr<BleConnectionManager> manager);
     ~ConnectionMetadata();
 
@@ -217,7 +217,7 @@ class BleConnectionManager : public BleScanner::Observer {
                        base::UnguessableTokenHash>
         request_id_to_priority_map_;
     std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
-    std::unique_ptr<base::Timer> connection_attempt_timeout_timer_;
+    std::unique_ptr<base::OneShotTimer> connection_attempt_timeout_timer_;
     base::WeakPtr<BleConnectionManager> manager_;
 
     base::WeakPtrFactory<ConnectionMetadata> weak_ptr_factory_;

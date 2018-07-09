@@ -38,7 +38,7 @@ KeepAliveScheduler::KeepAliveScheduler(
     BleConnectionManager* connection_manager,
     HostScanCache* host_scan_cache,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
-    std::unique_ptr<base::Timer> timer)
+    std::unique_ptr<base::RepeatingTimer> timer)
     : device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
       active_host_(active_host),

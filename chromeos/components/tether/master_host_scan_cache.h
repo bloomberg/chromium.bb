@@ -76,7 +76,7 @@ class MasterHostScanCache : public HostScanCache {
   // active in the cache, the corresponding Timer object starts running; if the
   // timer fires, the result is removed (unless it corresponds to the active
   // host).
-  std::unordered_map<std::string, std::unique_ptr<base::Timer>>
+  std::unordered_map<std::string, std::unique_ptr<base::OneShotTimer>>
       tether_guid_to_timer_map_;
   base::WeakPtrFactory<MasterHostScanCache> weak_ptr_factory_;
 

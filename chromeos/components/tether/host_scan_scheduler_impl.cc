@@ -155,8 +155,8 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
-    std::unique_ptr<base::Timer> test_host_scan_batch_timer,
-    std::unique_ptr<base::Timer> test_delay_scan_after_unlock_timer,
+    std::unique_ptr<base::OneShotTimer> test_host_scan_batch_timer,
+    std::unique_ptr<base::OneShotTimer> test_delay_scan_after_unlock_timer,
     base::Clock* test_clock,
     scoped_refptr<base::TaskRunner> test_task_runner) {
   host_scan_batch_timer_ = std::move(test_host_scan_batch_timer);

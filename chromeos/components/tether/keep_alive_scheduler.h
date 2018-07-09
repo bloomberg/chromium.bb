@@ -65,7 +65,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
       BleConnectionManager* connection_manager,
       HostScanCache* host_scan_cache,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
-      std::unique_ptr<base::Timer> timer);
+      std::unique_ptr<base::RepeatingTimer> timer);
 
   void SendKeepAliveTickle();
 
@@ -78,7 +78,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   HostScanCache* host_scan_cache_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::RepeatingTimer> timer_;
   base::Optional<cryptauth::RemoteDeviceRef> active_host_device_;
   std::unique_ptr<KeepAliveOperation> keep_alive_operation_;
 

@@ -12,7 +12,7 @@ namespace tether {
 
 TimerFactory::~TimerFactory() = default;
 
-std::unique_ptr<base::Timer> TimerFactory::CreateOneShotTimer() {
+std::unique_ptr<base::OneShotTimer> TimerFactory::CreateOneShotTimer() {
   return std::make_unique<base::OneShotTimer>();
 }
 

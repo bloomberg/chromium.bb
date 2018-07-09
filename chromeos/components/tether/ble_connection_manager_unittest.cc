@@ -65,7 +65,7 @@ struct ReceivedMessage {
 
 class MockTimerFactory : public TimerFactory {
  public:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override {
     return std::make_unique<base::MockOneShotTimer>();
   }
 };

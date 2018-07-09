@@ -82,7 +82,7 @@ class ConnectionPreserverImpl
   base::Optional<cryptauth::RemoteDeviceRef> GetRemoteDevice(
       const std::string device_id);
 
-  void SetTimerForTesting(std::unique_ptr<base::Timer> timer_for_test);
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer_for_test);
 
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
@@ -92,7 +92,7 @@ class ConnectionPreserverImpl
   TetherHostResponseRecorder* tether_host_response_recorder_;
   const base::UnguessableToken request_id_;
 
-  std::unique_ptr<base::Timer> preserved_connection_timer_;
+  std::unique_ptr<base::OneShotTimer> preserved_connection_timer_;
 
   std::string preserved_connection_device_id_;
 

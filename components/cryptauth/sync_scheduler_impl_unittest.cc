@@ -58,7 +58,7 @@ class TestSyncSchedulerImpl : public SyncSchedulerImpl {
   base::MockOneShotTimer* timer() { return mock_timer_; }
 
  private:
-  std::unique_ptr<base::Timer> CreateTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateTimer() override {
     mock_timer_ = new base::MockOneShotTimer();
     return base::WrapUnique(mock_timer_);
   }

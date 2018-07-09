@@ -69,7 +69,7 @@ class TestTimerFactory : public TimerFactory {
   }
 
   // TimerFactory:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override {
+  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override {
     EXPECT_TRUE(!tether_network_guids_for_upcoming_timers_.empty());
 
     // Pop the first GUID off the list of upcoming GUIDs.

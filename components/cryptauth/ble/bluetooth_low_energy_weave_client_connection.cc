@@ -360,7 +360,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnTimeoutForSubStatus(
 
 void BluetoothLowEnergyWeaveClientConnection::SetupTestDoubles(
     scoped_refptr<base::TaskRunner> test_task_runner,
-    std::unique_ptr<base::Timer> test_timer,
+    std::unique_ptr<base::OneShotTimer> test_timer,
     std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> test_generator,
     std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> test_receiver) {
   task_runner_ = test_task_runner;

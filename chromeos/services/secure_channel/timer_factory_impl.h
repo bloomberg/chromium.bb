@@ -11,7 +11,7 @@
 #include "chromeos/services/secure_channel/timer_factory.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace chromeos {
@@ -39,7 +39,7 @@ class TimerFactoryImpl : public TimerFactory {
   TimerFactoryImpl();
 
   // TimerFactory:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override;
+  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override;
 
   DISALLOW_COPY_AND_ASSIGN(TimerFactoryImpl);
 };

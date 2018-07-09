@@ -23,7 +23,7 @@ namespace secure_channel {
 BleAdvertiserImpl::ActiveAdvertisementRequest::ActiveAdvertisementRequest(
     DeviceIdPair device_id_pair,
     ConnectionPriority connection_priority,
-    std::unique_ptr<base::Timer> timer)
+    std::unique_ptr<base::OneShotTimer> timer)
     : device_id_pair(device_id_pair),
       connection_priority(connection_priority),
       timer(std::move(timer)) {}
@@ -253,7 +253,8 @@ void BleAdvertiserImpl::AddActiveAdvertisementRequest(size_t index_to_add) {
 
   // Create a timer, and have it go off in kNumSecondsPerAdvertisementTimeslot
   // seconds.
-  std::unique_ptr<base::Timer> timer = timer_factory_->CreateOneShotTimer();
+  std::unique_ptr<base::OneShotTimer> timer =
+      timer_factory_->CreateOneShotTimer();
   timer->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kNumSecondsPerAdvertisementTimeslot),
