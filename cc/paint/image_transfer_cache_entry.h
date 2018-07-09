@@ -56,11 +56,13 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
 
+  bool fits_on_gpu() const { return fits_on_gpu_; }
   const sk_sp<SkImage>& image() { return image_; }
 
  private:
   sk_sp<SkImage> image_;
   size_t size_ = 0;
+  bool fits_on_gpu_ = false;
 };
 
 }  // namespace cc

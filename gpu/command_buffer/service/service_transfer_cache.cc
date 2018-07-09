@@ -4,9 +4,14 @@
 
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 
+#include <inttypes.h>
+
 #include "base/bind.h"
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "cc/paint/image_transfer_cache_entry.h"
 
 namespace gpu {
 namespace {
@@ -51,10 +56,19 @@ ServiceTransferCache::ServiceTransferCache()
           base::BindRepeating(&ServiceTransferCache::OnMemoryPressure,
                               base::Unretained(this))) {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::GpuImageDecodeCache", base::ThreadTaskRunnerHandle::Get());
+  }
 }
 
 ServiceTransferCache::~ServiceTransferCache() {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool ServiceTransferCache::CreateLockedEntry(
@@ -164,6 +178,51 @@ void ServiceTransferCache::OnPurgeMemory() {
   cache_size_limit_ = 0u;
   EnforceLimits();
   cache_size_limit_ = CacheSizeLimit(memory_state_);
+}
+
+bool ServiceTransferCache::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  using base::trace_event::MemoryAllocatorDumpGuid;
+  using base::trace_event::MemoryDumpLevelOfDetail;
+
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
+    std::string dump_name =
+        base::StringPrintf("gpu/transfer_cache/cache_0x%" PRIXPTR,
+                           reinterpret_cast<uintptr_t>(this));
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, total_size_);
+
+    // Early out, no need for more detail in a BACKGROUND dump.
+    return true;
+  }
+
+  for (auto it = entries_.begin(); it != entries_.end(); it++) {
+    uint32_t entry_id = it->first.second;
+    auto entry_type = it->first.first;
+    const auto* entry = it->second.entry.get();
+
+    std::string dump_name;
+    if (entry_type == cc::TransferCacheEntryType::kImage &&
+        static_cast<const cc::ServiceImageTransferCacheEntry*>(entry)
+            ->fits_on_gpu()) {
+      dump_name = base::StringPrintf(
+          "gpu/transfer_cache/cache_0x%" PRIXPTR "/gpu/entry_%d",
+          reinterpret_cast<uintptr_t>(this), entry_id);
+    } else {
+      dump_name = base::StringPrintf(
+                "gpu/transfer_cache/cache_0x%" PRIXPTR "/cpu/entry_%d",
+                reinterpret_cast<uintptr_t>(this), entry_id);
+    }
+
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+  }
+
+  return true;
 }
 
 }  // namespace gpu
