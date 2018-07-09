@@ -312,12 +312,6 @@ void VrGLThread::OpenFeedback() {
       FROM_HERE, base::BindOnce(&VrShell::OpenFeedback, weak_vr_shell_));
 }
 
-void VrGLThread::ExitCct() {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::ExitCct, weak_vr_shell_));
-}
-
 void VrGLThread::CloseHostedDialog() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(

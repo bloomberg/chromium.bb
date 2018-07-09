@@ -142,7 +142,6 @@ class VrShell : device::GvrGamepadDataProvider,
   void CloseAllTabs();
   void CloseAllIncognitoTabs();
   void OpenFeedback();
-  void ExitCct();
   void CloseHostedDialog();
   void ToggleCardboardGamepad(bool enabled);
   void ToggleGvrGamepad(bool enabled);

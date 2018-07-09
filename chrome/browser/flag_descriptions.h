@@ -2085,9 +2085,6 @@ extern const char kVrBrowsingExperimentalFeaturesDescription[];
 extern const char kVrBrowsingExperimentalRenderingName[];
 extern const char kVrBrowsingExperimentalRenderingDescription[];
 
-extern const char kVrBrowsingInCustomTabName[];
-extern const char kVrBrowsingInCustomTabDescription[];
-
 extern const char kWebVrAutopresentFromIntentName[];
 extern const char kWebVrAutopresentFromIntentDescription[];
 

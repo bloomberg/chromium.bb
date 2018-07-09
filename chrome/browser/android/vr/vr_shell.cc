@@ -422,11 +422,6 @@ void VrShell::OpenFeedback() {
   Java_VrShellImpl_openFeedback(env, j_vr_shell_);
 }
 
-void VrShell::ExitCct() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_exitCct(env, j_vr_shell_);
-}
-
 void VrShell::CloseHostedDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_closeCurrentDialog(env, j_vr_shell_);
@@ -1335,7 +1330,6 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& delegate,
                            jboolean for_web_vr,
-                           jboolean in_cct,
                            jboolean browsing_disabled,
                            jboolean has_or_can_request_audio_permission,
                            jlong gvr_api,
@@ -1349,7 +1343,6 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            jboolean is_standalone_vr_device) {
   UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
-  ui_initial_state.in_cct = in_cct;
   ui_initial_state.in_web_vr = for_web_vr;
   ui_initial_state.has_or_can_request_audio_permission =
       has_or_can_request_audio_permission;

@@ -2257,9 +2257,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVrBrowsingExperimentalRenderingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVrBrowsingExperimentalRendering)},
     // TODO(crbug.com/731802): Only these should be #if defined(OS_ANDROID).
-    {"vr-browsing-in-custom-tab", flag_descriptions::kVrBrowsingInCustomTabName,
-     flag_descriptions::kVrBrowsingInCustomTabDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kVrBrowsingInCustomTab)},
     {"vr-browsing-tabs-view", flag_descriptions::kVrBrowsingTabsViewName,
      flag_descriptions::kVrBrowsingTabsViewDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVrBrowsingTabsView)},

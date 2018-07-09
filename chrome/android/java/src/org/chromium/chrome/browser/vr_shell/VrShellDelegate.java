@@ -171,8 +171,6 @@ public class VrShellDelegate
     // headset on, but we haven't switched into VR mode yet.
     // See further documentation here: https://developers.google.com/vr/daydream/guides/vr-entry
     private boolean mDonSucceeded;
-    // Best effort whether or not the system was in VR when Chrome launched.
-    private Boolean mInVrAtChromeLaunch;
     private boolean mShowingDaydreamDoff;
     private boolean mShowingExitVrPrompt;
     private boolean mDoffOptional;
@@ -183,7 +181,6 @@ public class VrShellDelegate
     private Boolean mShowVrServicesUpdatePrompt;
     private boolean mShowingDoffForGvrUpdate;
     private boolean mExitedDueToUnsupportedMode;
-    private boolean mExitingCct;
     private boolean mPaused;
     private boolean mStopped;
     private boolean mVisible;
@@ -299,7 +296,6 @@ public class VrShellDelegate
             sInstance.mActivateFromHeadsetInsertion = sInstance.mMaybeActivateAfterHeadsetInsertion;
 
             if (sInstance.mPaused) {
-                if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
                 if (activity instanceof ChromeTabbedActivity) {
                     // We can special case singleInstance activities like CTA to avoid having to use
                     // moveTaskToFront. Using moveTaskToFront prevents us from disabling window
@@ -324,7 +320,6 @@ public class VrShellDelegate
                             .moveTaskToFront(activity.getTaskId(), 0, options);
                 }
             } else {
-                if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = true;
                 // If a WebVR app calls requestPresent in response to the displayactivate event
                 // after the DON flow completes, the DON flow is skipped, meaning our app won't be
                 // paused when daydream fires our BroadcastReceiver, so onResume won't be called.
@@ -630,9 +625,6 @@ public class VrShellDelegate
 
     public static boolean activitySupportsVrBrowsing(Activity activity) {
         if (activity instanceof ChromeTabbedActivity) return true;
-        if (activity instanceof CustomTabActivity) {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_IN_CUSTOM_TAB);
-        }
         return false;
     }
 
@@ -1258,8 +1250,7 @@ public class VrShellDelegate
         if (!sRegisteredVrAssetsComponent) {
             registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
         }
-        mVrShell.initializeNative(webVrMode, mActivity instanceof CustomTabActivity,
-                getVrClassesWrapper().bootsToVr());
+        mVrShell.initializeNative(webVrMode, getVrClassesWrapper().bootsToVr());
         mVrShell.setWebVrModeEnabled(webVrMode);
 
         // We're entering VR, but not in WebVr mode.
@@ -1301,7 +1292,6 @@ public class VrShellDelegate
 
     private void onVrIntent() {
         if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
-        mInVrAtChromeLaunch = true;
 
         assert !mInternalIntentUsedToStartVr;
         nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
@@ -1313,7 +1303,6 @@ public class VrShellDelegate
         // it's a reasonable assumption.
         mDonSucceeded = true;
         mEnterVrOnStartup = true;
-        mInVrAtChromeLaunch = true;
 
         nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
     }
@@ -1327,7 +1316,6 @@ public class VrShellDelegate
 
         // We assume that the user is already in VR mode when launched for auto-presentation.
         mDonSucceeded = true;
-        mInVrAtChromeLaunch = true;
 
         nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.DEEP_LINKED_APP);
     }
@@ -1832,11 +1820,9 @@ public class VrShellDelegate
         }
 
         if (success) {
-            shutdownVr(true /* disableVrMode */, !mExitingCct /* stayingInChrome */);
-            if (mExitingCct) ((CustomTabActivity) mActivity).finishAndClose(false);
+            shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
         }
 
-        mExitingCct = false;
         callOnExitVrRequestListener(success);
         mShowingDoffForGvrUpdate = false;
     }
@@ -1955,15 +1941,6 @@ public class VrShellDelegate
         } else {
             callOnExitVrRequestListener(false);
         }
-    }
-
-    /* package */ void exitCctFromUi() {
-        CustomTabActivity customTabActivity = (CustomTabActivity) mActivity;
-        if (!isDaydreamCurrentViewer() || (mInVrAtChromeLaunch != null && mInVrAtChromeLaunch)) {
-            customTabActivity.finishAndClose(false);
-            return;
-        }
-        if (showDoff(true /* optional */)) mExitingCct = true;
     }
 
     /**

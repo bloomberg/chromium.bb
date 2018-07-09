@@ -517,7 +517,6 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
     model_->push_mode(mode);
   }
 
-  model_->in_cct = ui_initial_state.in_cct;
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;

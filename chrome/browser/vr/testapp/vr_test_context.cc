@@ -626,8 +626,6 @@ void VrTestContext::CloseAllIncognitoTabs() {
 
 void VrTestContext::OpenFeedback() {}
 
-void VrTestContext::ExitCct() {}
-
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   if (mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
     ui_->ShowExitVrPrompt(mode);

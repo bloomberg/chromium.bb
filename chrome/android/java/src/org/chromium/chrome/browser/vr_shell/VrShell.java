@@ -15,7 +15,7 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     /**
      * Performs native VrShell initialization.
      */
-    void initializeNative(boolean forWebVr, boolean inCct, boolean isStandaloneVrDevice);
+    void initializeNative(boolean forWebVr, boolean isStandaloneVrDevice);
 
     /**
      * Pauses VrShell.

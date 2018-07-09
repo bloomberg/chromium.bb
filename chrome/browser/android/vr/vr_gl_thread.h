@@ -104,7 +104,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
   void OpenFeedback() override;
-  void ExitCct() override;
   void CloseHostedDialog() override;
   void OnUnsupportedMode(UiUnsupportedMode mode) override;
   void OnExitVrPromptResult(ExitVrPromptChoice choice,

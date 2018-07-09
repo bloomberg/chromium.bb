@@ -340,7 +340,7 @@ public class VrShellImpl
 
     @Override
     @TargetApi(Build.VERSION_CODES.N)
-    public void initializeNative(boolean forWebVr, boolean inCct, boolean isStandaloneVrDevice) {
+    public void initializeNative(boolean forWebVr, boolean isStandaloneVrDevice) {
         Tab tab = mActivity.getActivityTab();
         if (mActivity.isInOverviewMode() || tab == null) {
             launchNTP();
@@ -383,7 +383,7 @@ public class VrShellImpl
                 || mActivity.getWindowAndroid().canRequestPermission(
                            android.Manifest.permission.RECORD_AUDIO);
         boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(mActivity, false);
-        mNativeVrShell = nativeInit(mDelegate, forWebVr, inCct, !mVrBrowsingEnabled,
+        mNativeVrShell = nativeInit(mDelegate, forWebVr, !mVrBrowsingEnabled,
                 hasOrCanRequestAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
                 displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity,
@@ -575,12 +575,6 @@ public class VrShellImpl
             @Override
             public void onDenied() {}
         }, UiUnsupportedMode.NEEDS_KEYBOARD_UPDATE);
-    }
-
-    // Exits CCT, returning to the app that opened it.
-    @CalledByNative
-    public void exitCct() {
-        mDelegate.exitCctFromUi();
     }
 
     // Close the current hosted Dialog in VR
@@ -1253,7 +1247,7 @@ public class VrShellImpl
         mUiActivityResultCallback = null;
     }
 
-    private native long nativeInit(VrShellDelegate delegate, boolean forWebVR, boolean inCct,
+    private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
             boolean browsingDisabled, boolean hasOrCanRequestAudioPermission, long gvrApi,
             boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
             int displayWidthPixels, int displayHeightPixels, boolean pauseContent,

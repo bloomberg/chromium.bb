@@ -149,7 +149,7 @@ class UiInputManagerContentTest : public UiTest {
  public:
   void SetUp() override {
     UiTest::SetUp();
-    CreateScene(kNotInCct, kNotInWebVr);
+    CreateScene(kNotInWebVr);
     input_manager_ = ui_->input_manager();
   }
 

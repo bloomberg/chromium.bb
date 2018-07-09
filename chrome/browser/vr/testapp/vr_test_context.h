@@ -61,7 +61,6 @@ class VrTestContext : public vr::UiBrowserInterface {
   void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
   void OpenFeedback() override;
-  void ExitCct() override;
   void CloseHostedDialog() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
   void OnExitVrPromptResult(vr::ExitVrPromptChoice choice,

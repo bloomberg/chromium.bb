@@ -38,7 +38,7 @@ class TextInputSceneTest : public UiTest {
  public:
   void SetUp() override {
     UiTest::SetUp();
-    CreateScene(kNotInCct, kNotInWebVr);
+    CreateScene(kNotInWebVr);
 
     // Make test text input.
     text_input_delegate_ =
