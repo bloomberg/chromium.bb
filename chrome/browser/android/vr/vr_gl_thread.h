@@ -171,7 +171,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // Both VrInputConnection and VrGlThread are owned by VrShell. In VrShell, we
   // made sure that this input_connection_ is up to date and destroyed after
   // VrGlThread. So it is safe to use raw pointer here.
-  VrInputConnection* input_connection_;
+  VrInputConnection* input_connection_ = nullptr;
 
   // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

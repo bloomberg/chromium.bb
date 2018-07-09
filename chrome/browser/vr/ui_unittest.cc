@@ -388,54 +388,6 @@ TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
   EXPECT_TRUE(IsVisible(kContentQuad));
 }
 
-TEST_F(UiTest, WebVrAutopresented) {
-  CreateSceneForAutoPresentation();
-
-  // Initially, we should only show the splash screen.
-  VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
-
-  // Enter WebVR with autopresentation.
-  ui_->SetWebVrMode(true);
-  ui_->SetCapturingState(CapturingStateModel());
-
-  // The splash screen should go away.
-  RunForSeconds(kSplashScreenMinDurationSeconds + kSmallDelaySeconds);
-  ui_->OnWebVrFrameAvailable();
-  RunForMs(200);
-  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
-
-  // Make sure the transient URL bar times out.
-  RunForSeconds(kToastTimeoutSeconds + kSmallDelaySeconds + 1);
-  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
-}
-
-TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
-  CreateSceneForAutoPresentation();
-
-  // Initially, we should only show the splash screen.
-  VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
-
-  ui_->SetWebVrMode(true);
-  EXPECT_FALSE(
-      RunForSeconds(kSplashScreenMinDurationSeconds + kSmallDelaySeconds * 2));
-
-  ui_->OnWebVrTimeoutImminent();
-  EXPECT_TRUE(RunForMs(10));
-
-  VerifyOnlyElementsVisible(
-      "Timeout imminent",
-      {kWebVrTimeoutSpinner, kWebVrBackground, kWebVrFloor});
-}
-
-TEST_F(UiTest, AppButtonClickForAutopresentation) {
-  CreateSceneForAutoPresentation();
-
-  // Clicking app button should be a no-op.
-  EXPECT_CALL(*browser_, ExitPresent()).Times(0);
-  EXPECT_CALL(*browser_, ExitFullscreen()).Times(0);
-  ui_->OnAppButtonClicked();
-}
-
 TEST_F(UiTest, HostedUiInWebVr) {
   CreateScene(kNotInCct, kInWebVr);
   VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
@@ -1082,50 +1034,6 @@ TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
   ui_->OnAppButtonClicked();
 }
 
-// Tests that transient elements will show, even if there is a long delay
-// between when they are asked to appear and when we issue the first frame with
-// them visible.
-TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
-  CreateSceneForAutoPresentation();
-
-  // Initially, we should only show the splash screen.
-  EXPECT_TRUE(IsVisible(kSplashScreenText));
-  EXPECT_TRUE(IsVisible(kWebVrBackground));
-  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
-
-  // Enter WebVR with autopresentation.
-  ui_->SetWebVrMode(true);
-  ui_->SetCapturingState(CapturingStateModel());
-  OnDelayedFrame(MsToDelta(1000 * kSplashScreenMinDurationSeconds));
-  EXPECT_TRUE(IsVisible(kSplashScreenText));
-  EXPECT_TRUE(IsVisible(kWebVrBackground));
-  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
-
-  OnDelayedFrame(MsToDelta(2000));
-  ui_->OnWebVrTimeoutImminent();
-  OnDelayedFrame(MsToDelta(3000));
-  ui_->OnWebVrTimedOut();
-
-  // A while later, receive only one frame (possibly a splash screen). This will
-  // trigger indicators to start fading in, but they won't actually be visible
-  // on the first frame.  The transient element should know that it's not
-  // visible, and not start its timeout.
-  OnDelayedFrame(MsToDelta(5000));
-  ui_->OnWebVrFrameAvailable();
-  EXPECT_FALSE(IsVisible(kSplashScreenText));
-  EXPECT_FALSE(IsVisible(kWebVrBackground));
-  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
-
-  // If we advance far beyond the timeout for our first frame and our logic was
-  // naive, we would start to hide the transient element.  But, because the
-  // transient element was never actually visible, it should still be showing.
-  OnDelayedFrame(MsToDelta(40000));
-  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
-
-  // Now that it's been seen, it should transiently fade.
-  OnDelayedFrame(MsToDelta(10000));
-  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
-}
 
 TEST_F(UiTest, DefaultBackgroundWhenNoAssetAvailable) {
   UiInitialState state;

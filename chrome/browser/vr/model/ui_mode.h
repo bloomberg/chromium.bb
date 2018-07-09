@@ -12,7 +12,6 @@ enum UiMode {
   kModeBrowsing,
   kModeFullscreen,
   kModeWebVr,
-  kModeWebVrAutopresented,
   kModeVoiceSearch,
   kModeEditingOmnibox,
   kModeTabsView,

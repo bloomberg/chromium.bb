@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
@@ -43,7 +42,6 @@ import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.vr.CustomTabVrActivity;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -149,22 +147,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         recordIntentMetrics();
 
         mIsVrIntent = VrIntentUtils.isVrIntent(mIntent);
-        boolean isCustomTabIntent = (!mIsVrIntent && isCustomTabIntent(mIntent))
-                || (mIsVrIntent && VrIntentUtils.isCustomTabVrIntent(mIntent));
-        mIsCustomTabIntent = isCustomTabIntent;
-    }
-
-    /**
-     * Returns the options that should be used to start an activity.
-     */
-    @Nullable
-    private Bundle getStartActivityIntentOptions() {
-        Bundle options = null;
-        if (mIsVrIntent) {
-            // These options hide the 2D screenshot while we prepare for VR rendering.
-            options = VrIntentUtils.getVrIntentOptions(mActivity);
-        }
-        return options;
+        mIsCustomTabIntent = isCustomTabIntent(mIntent);
     }
 
     /**
@@ -335,11 +318,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // Force a new document L+ to ensure the proper task/stack creation.
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                if (VrIntentUtils.isCustomTabVrIntent(intent)) {
-                    newIntent.setClassName(context, CustomTabVrActivity.class.getName());
-                } else {
-                    newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
-                }
+                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
             } else {
                 int activityIndex =
                         ActivityAssigner.instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE)
@@ -376,7 +355,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
         try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
-            mActivity.startActivity(launchIntent, getStartActivityIntentOptions());
+            mActivity.startActivity(launchIntent, null);
         }
     }
 
@@ -435,7 +414,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            mActivity.startActivity(newIntent, getStartActivityIntentOptions());
+            Bundle options = mIsVrIntent ? VrIntentUtils.getVrIntentOptions(mActivity) : null;
+            mActivity.startActivity(newIntent, options);
         } catch (SecurityException ex) {
             if (isContentScheme) {
                 Toast.makeText(mActivity,

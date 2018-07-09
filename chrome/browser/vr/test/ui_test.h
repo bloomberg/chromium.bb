@@ -48,7 +48,6 @@ class UiTest : public testing::Test {
 
   void CreateScene(const UiInitialState& state);
   void CreateScene(InCct in_cct, InWebVr in_web_vr);
-  void CreateSceneForAutoPresentation();
 
  protected:
   void CreateSceneInternal(

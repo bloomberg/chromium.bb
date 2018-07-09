@@ -449,18 +449,6 @@ by a child template that "extends" this file.
                 {{ self.mhtml_view_intent_shared_filter_with_mime_body() }}
             </intent-filter>
         </activity-alias>
-        <activity android:name="org.chromium.chrome.browser.vr.CustomTabVrActivity"
-            android:theme="@style/VrSupportTheme"
-            android:screenOrientation="landscape"
-            android:enableVrMode="@string/gvr_vr_mode_component"
-            android:taskAffinity=""
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}
-            {{ self.supports_video_persistence() }}
-        >
-            {{ self.supports_vr() }}
-        </activity>
         {% endif %}
 
         <!-- ChromeTabbedActivity related -->

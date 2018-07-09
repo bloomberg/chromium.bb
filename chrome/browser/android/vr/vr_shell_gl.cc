@@ -2050,7 +2050,7 @@ void VrShellGl::DrawWebVr() {
 
 void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
   // Add a 2 pixel border to avoid aliasing issues at the edge of the texture.
-  constexpr float kBorder = 2;
+  constexpr float kBorder = 10;
   TRACE_EVENT0("gpu", "VrShellGl::DrawContentQuad");
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   glDisable(GL_CULL_FACE);
