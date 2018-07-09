@@ -173,6 +173,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         switch (mViewportFit) {
             case ViewportFit.CONTAIN:
                 return VIEWPORT_FIT_CONTAIN;
+            case ViewportFit.COVER_FORCED_BY_USER_AGENT:
             case ViewportFit.COVER:
                 return VIEWPORT_FIT_COVER;
             case ViewportFit.AUTO:

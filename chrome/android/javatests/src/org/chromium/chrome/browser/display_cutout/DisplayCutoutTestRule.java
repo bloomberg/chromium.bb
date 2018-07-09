@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -23,6 +24,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -242,6 +244,11 @@ public class DisplayCutoutTestRule extends ChromeActivityTestRule<ChromeActivity
     public void setViewportFit(String value) throws InterruptedException, TimeoutException {
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mTab.getWebContents(), "setViewportFit('" + value + "')");
+    }
+
+    /** Set the viewport-fit value using internal APIs. */
+    public void setViewportFitInternal(@WebContentsObserver.ViewportFitType int value) {
+        ThreadUtils.runOnUiThreadBlocking(() -> mTestController.setViewportFit(value));
     }
 
     /** Get the safe area using JS and parse the JSON result to a Rect. */

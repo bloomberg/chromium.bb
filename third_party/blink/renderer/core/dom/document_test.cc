@@ -1101,11 +1101,11 @@ TEST_F(ViewportFitDocumentTest, ForceExpandIntoCutout) {
 
   // Now override the viewport fit value and expect it to be kCover.
   GetDocument().GetViewportData().SetExpandIntoDisplayCutout(true);
-  EXPECT_EQ(mojom::ViewportFit::kCover, GetViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, GetViewportFit());
 
   // Test that even if we change the value we ignore it.
   SetHtmlInnerHTML("<meta name='viewport' content='viewport-fit=auto'>");
-  EXPECT_EQ(mojom::ViewportFit::kCover, GetViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, GetViewportFit());
 
   // Now remove the override and check that it went back to the previous value.
   GetDocument().GetViewportData().SetExpandIntoDisplayCutout(false);

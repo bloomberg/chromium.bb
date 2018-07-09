@@ -17,6 +17,10 @@ enum ViewportFit {
   // The initial layout viewport and the visual viewport are set to the
   // circumscribed rectangle of the physical screen of the device.
   kCover,
+
+  // This has the same behaviour as |kCover| but it identifies that the
+  // ViewportFit value was forced by the user agent by the media controls.
+  kCoverForcedByUserAgent,
 };
 
 // Used for renderer -> browser calls about display cutout.
