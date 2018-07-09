@@ -204,8 +204,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
                           const gfx::Size& min_size,
                           const gfx::Size& max_size);
   void OnDisableAutoResize(int browser_plugin_instance_id);
-  void OnSetChildFrameSurface(int instance_id,
-                              const viz::SurfaceInfo& surface_info);
+  void OnFirstSurfaceActivation(int instance_id,
+                                const viz::SurfaceInfo& surface_info);
   void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);

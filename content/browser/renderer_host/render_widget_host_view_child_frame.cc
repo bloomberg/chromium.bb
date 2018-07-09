@@ -638,13 +638,13 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
     return;
   if (!last_activated_surface_info_.is_valid())
     return;
-  SendSurfaceInfoToEmbedderImpl(last_activated_surface_info_);
+  FirstSurfaceActivation(last_activated_surface_info_);
 }
 
-void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
+void RenderWidgetHostViewChildFrame::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (frame_connector_)
-    frame_connector_->SetChildFrameSurface(surface_info);
+    frame_connector_->FirstSurfaceActivation(surface_info);
 }
 
 void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
@@ -944,7 +944,7 @@ void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   last_activated_surface_info_ = surface_info;
   has_frame_ = true;
-  SendSurfaceInfoToEmbedderImpl(surface_info);
+  FirstSurfaceActivation(surface_info);
   ProcessFrameSwappedCallbacks();
 }
 

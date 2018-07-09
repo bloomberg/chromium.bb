@@ -145,9 +145,9 @@ void CrossProcessFrameConnector::RenderProcessGone() {
       frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
 
-void CrossProcessFrameConnector::SetChildFrameSurface(
+void CrossProcessFrameConnector::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_SetChildFrameSurface(
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_FirstSurfaceActivation(
       frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
 }
 

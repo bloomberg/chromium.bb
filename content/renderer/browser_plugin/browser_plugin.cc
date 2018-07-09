@@ -136,13 +136,13 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetChildFrameSurface,
-                        OnSetChildFrameSurface)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_FirstSurfaceActivation,
+                        OnFirstSurfaceActivation)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void BrowserPlugin::OnSetChildFrameSurface(
+void BrowserPlugin::OnFirstSurfaceActivation(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info) {
   if (!attached() || !features::IsAshInBrowserProcess())

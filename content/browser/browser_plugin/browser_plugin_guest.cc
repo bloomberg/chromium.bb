@@ -406,11 +406,11 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       browser_plugin_instance_id(), allow));
 }
 
-void BrowserPluginGuest::SetChildFrameSurface(
+void BrowserPluginGuest::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (features::IsAshInBrowserProcess()) {
     SendMessageToEmbedder(
-        std::make_unique<BrowserPluginMsg_SetChildFrameSurface>(
+        std::make_unique<BrowserPluginMsg_FirstSurfaceActivation>(
             browser_plugin_instance_id(), surface_info));
   }
 }

@@ -117,7 +117,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
     BrowserPluginGuest::set_attached_for_test(attached);
   }
 
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override {
+  void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
     last_surface_info_ = surface_info;
   }
 

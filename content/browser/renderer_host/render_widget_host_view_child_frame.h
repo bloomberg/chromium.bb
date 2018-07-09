@@ -289,8 +289,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            SubframeVisibleAfterRenderViewBecomesSwappedOut);
 
-  virtual void SendSurfaceInfoToEmbedderImpl(
-      const viz::SurfaceInfo& surface_info);
+  virtual void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
 
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();

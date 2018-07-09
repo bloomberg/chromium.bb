@@ -58,7 +58,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
       : FrameConnectorDelegate(use_zoom_for_device_scale_factor) {}
   ~MockFrameConnectorDelegate() override {}
 
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override {
+  void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
     last_surface_info_ = surface_info;
   }
 
