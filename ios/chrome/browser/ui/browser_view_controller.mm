@@ -833,8 +833,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Tap Handling
 // ------------
 // Record the last tap point based on the |originPoint| (if any) passed in
-// |command|.
-- (void)setLastTapPoint:(OpenNewTabCommand*)command;
+// command.
+- (void)setLastTapPointFromCommand:(CGPoint)originPoint;
 // Returns the last stored |_lastTapPoint| if it's been set within the past
 // second.
 - (CGPoint)lastTapPoint;
@@ -1406,6 +1406,54 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _browserState = nullptr;
   [_dispatcher stopDispatchingToTarget:self];
   _dispatcher = nil;
+}
+
+- (void)openNewTabFromOriginPoint:(CGPoint)originPoint
+                     focusOmnibox:(BOOL)focusOmnibox {
+  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+  BOOL offTheRecord = self.isOffTheRecord;
+  ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
+      self.foregroundTabWasAddedCompletionBlock;
+  __weak BrowserViewController* weakSelf = self;
+  self.foregroundTabWasAddedCompletionBlock = ^{
+    if (oldForegroundTabWasAddedCompletionBlock) {
+      oldForegroundTabWasAddedCompletionBlock();
+    }
+    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
+    base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
+    if (offTheRecord) {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
+                          timeDelta);
+    } else {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
+    }
+    if (focusOmnibox) {
+      [weakSelf.dispatcher focusOmnibox];
+    }
+  };
+
+  [self setLastTapPointFromCommand:originPoint];
+  // When the tab switcher presentation experiment is enabled, the new tab can
+  // be opened before BVC has been made visible onscreen.  Test for this case by
+  // checking if the parent container VC is currently in the process of being
+  // presented.
+  DCHECK(self.visible || self.dismissingModal ||
+         (TabSwitcherPresentsBVCEnabled() &&
+          self.parentViewController.isBeingPresented));
+
+  // In most cases, we want to take a snapshot of the current tab before opening
+  // a new tab. However, if the current tab is not fully visible (did not finish
+  // |-viewDidAppear:|, then we must not take an empty snapshot, replacing an
+  // existing snapshot for the tab. This can happen when a new regular tab is
+  // opened from an incognito tab. A different BVC is displayed, which may not
+  // have enough time to finish appearing before a snapshot is requested.
+  Tab* currentTab = [_model currentTab];
+  if (currentTab && self.viewVisible) {
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+  }
+  [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
+                   transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
@@ -2792,12 +2840,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - Private Methods: Tap handling
 
-- (void)setLastTapPoint:(OpenNewTabCommand*)command {
-  if (CGPointEqualToPoint(command.originPoint, CGPointZero)) {
+- (void)setLastTapPointFromCommand:(CGPoint)originPoint {
+  if (CGPointEqualToPoint(originPoint, CGPointZero)) {
     _lastTapPoint = CGPointZero;
   } else {
     _lastTapPoint =
-        [self.view.window convertPoint:command.originPoint toView:self.view];
+        [self.view.window convertPoint:originPoint toView:self.view];
   }
   _lastTapTime = CACurrentMediaTime();
 }
@@ -4625,68 +4673,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
-  if (self.isOffTheRecord != command.inIncognito) {
-    // Must take a snapshot of the tab before we switch the incognito mode
-    // because the currentTab will change after the switch.
-    Tab* currentTab = [_model currentTab];
-    if (currentTab) {
-      SnapshotTabHelper::FromWebState(currentTab.webState)
-          ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
-    }
-    // Not for this browser state, send it on its way.
-    [self.dispatcher switchModesAndOpenNewTab:command];
-    return;
-  }
-
-  // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened"
-  // events to the feature_engagement::Tracker based on |command.userInitiated|
-  // and |command.incognito|.
-  feature_engagement::NotifyNewTabEventForCommand(_browserState, command);
-
-  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
-  BOOL offTheRecord = self.isOffTheRecord;
-  ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
-      self.foregroundTabWasAddedCompletionBlock;
-  __weak BrowserViewController* weakSelf = self;
-  self.foregroundTabWasAddedCompletionBlock = ^{
-    if (oldForegroundTabWasAddedCompletionBlock) {
-      oldForegroundTabWasAddedCompletionBlock();
-    }
-    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
-    base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
-    if (offTheRecord) {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
-                          timeDelta);
-    } else {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
-    }
-    if (command.shouldFocusOmnibox) {
-      [weakSelf.dispatcher focusOmnibox];
-    }
-  };
-
-  [self setLastTapPoint:command];
-  // When the tab switcher presentation experiment is enabled, the new tab can
-  // be opened before BVC has been made visible onscreen.  Test for this case by
-  // checking if the parent container VC is currently in the process of being
-  // presented.
-  DCHECK(self.visible || self.dismissingModal ||
-         (TabSwitcherPresentsBVCEnabled() &&
-          self.parentViewController.isBeingPresented));
-
-  // In most cases, we want to take a snapshot of the current tab before opening
-  // a new tab. However, if the current tab is not fully visible (did not finish
-  // |-viewDidAppear:|, then we must not take an empty snapshot, replacing an
-  // existing snapshot for the tab. This can happen when a new regular tab is
-  // opened from an incognito tab. A different BVC is displayed, which may not
-  // have enough time to finish appearing before a snapshot is requested.
-  Tab* currentTab = [_model currentTab];
-  if (currentTab && self.viewVisible) {
-    SnapshotTabHelper::FromWebState(currentTab.webState)
-        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
-  }
-  [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
-                   transition:ui::PAGE_TRANSITION_TYPED];
+  [self.dispatcher openURL:command];
 }
 
 - (void)printTab {

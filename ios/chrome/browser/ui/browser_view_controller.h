@@ -110,6 +110,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // deallocated soon.
 - (void)browserStateDestroyed;
 
+- (void)openNewTabFromOriginPoint:(CGPoint)originPoint
+                     focusOmnibox:(BOOL)focusOmnibox;
+
 // Add a new tab with the given url, appends it to the end of the model,
 // and makes it the selected tab. The selected tab is returned.
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
