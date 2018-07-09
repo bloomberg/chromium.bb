@@ -293,6 +293,10 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
 blink::WebFormElement FindFormByUniqueRendererId(blink::WebDocument doc,
                                                  uint32_t form_renderer_id);
 
+// Note: The vector-based API of the following two functions is a tax for limiting
+// the frequency and duration of retrieving a lot of DOM elements. Alternative
+// solutions have been discussed on https://crrev.com/c/1108201.
+
 // Returns form control elements by unique renderer id. The result has the same
 // number elements as |form_control_renderer_ids| and i-th element of the result
 // corresponds to the i-th element of |form_control_renderer_ids|.
