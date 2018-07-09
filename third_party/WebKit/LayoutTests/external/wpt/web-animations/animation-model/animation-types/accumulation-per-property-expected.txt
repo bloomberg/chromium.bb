@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 578 tests; 401 PASS, 177 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 566 tests; 389 PASS, 177 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -185,9 +185,6 @@ FAIL column-width: length of rem assert_equals: The value should be 20px at 0ms 
 PASS column-width (type: discrete) has testAccumulation function
 PASS column-width: "1px" onto "auto"
 PASS column-width: "auto" onto "1px"
-PASS contain (type: discrete) has testAccumulation function
-PASS contain: "none" onto "strict"
-PASS contain: "strict" onto "none"
 PASS content (type: discrete) has testAccumulation function
 PASS content: ""b"" onto ""a""
 PASS content: ""a"" onto ""b""
@@ -495,9 +492,6 @@ PASS text-decoration-line: "underline" onto "overline"
 PASS text-decoration-style (type: discrete) has testAccumulation function
 PASS text-decoration-style: "dotted" onto "solid"
 PASS text-decoration-style: "solid" onto "dotted"
-PASS text-orientation (type: discrete) has testAccumulation function
-PASS text-orientation: "sideways" onto "upright"
-PASS text-orientation: "upright" onto "sideways"
 PASS text-overflow (type: discrete) has testAccumulation function
 PASS text-overflow: "ellipsis" onto "clip"
 PASS text-overflow: "clip" onto "ellipsis"
@@ -548,9 +542,6 @@ PASS scale (type: scaleList) has testAccumulation function
 FAIL scale with two unspecified values assert_equals: The value should be -2 at 0ms expected "-2" but got "-3 1"
 FAIL scale with one unspecified value assert_equals: The value should be -2 -2 at 0ms expected "-2 -2" but got "-3 -3"
 FAIL scale assert_equals: The value should be 0 -1 -2 at 0ms expected "0 -1 -2" but got "-1 -2 -3"
-PASS unicode-bidi (type: discrete) has testAccumulation function
-PASS unicode-bidi: "bidi-override" onto "embed"
-PASS unicode-bidi: "embed" onto "bidi-override"
 PASS vector-effect (type: discrete) has testAccumulation function
 PASS vector-effect: "non-scaling-stroke" onto "none"
 PASS vector-effect: "none" onto "non-scaling-stroke"
@@ -575,8 +566,5 @@ FAIL word-spacing: units "rem" onto "em" assert_equals: The value should be 40px
 FAIL word-spacing: units "em" onto "rem" assert_equals: The value should be 40px at 0ms expected "40px" but got "20px"
 FAIL word-spacing: units "calc" onto "px" assert_equals: The value should be calc(30px + 20%) at 0ms expected "calc(30px + 20%)" but got "10px"
 FAIL word-spacing: calc assert_equals: The value should be calc(30px + 30%) at 0ms expected "calc(30px + 30%)" but got "0px"
-PASS will-change (type: discrete) has testAccumulation function
-PASS will-change: "contents" onto "scroll-position"
-PASS will-change: "scroll-position" onto "contents"
 Harness: the test ran to completion.
 

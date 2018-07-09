@@ -1245,12 +1245,18 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyAnimationName:
     case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyContain:
+    case CSSPropertyDirection:
     case CSSPropertyDisplay:
+    case CSSPropertyTextOrientation:
     case CSSPropertyTransition:
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionProperty:
     case CSSPropertyTransitionTimingFunction:
+    case CSSPropertyUnicodeBidi:
+    case CSSPropertyWillChange:
+    case CSSPropertyWritingMode:
       return true;
     default:
       return false;
