@@ -15,8 +15,10 @@ namespace scheduler {
 
 WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
                                  WorkerSchedulerProxy* proxy)
-    : default_task_queue_(worker_thread_scheduler->CreateTaskRunner()),
-      throttleable_task_queue_(worker_thread_scheduler->CreateTaskRunner()),
+    : throttleable_task_queue_(
+          worker_thread_scheduler->CreateTaskRunner("worker_throttleable_tq")),
+      unthrottleable_task_queue_(worker_thread_scheduler->CreateTaskRunner(
+          "worker_unthrottleable_tq")),
       thread_scheduler_(worker_thread_scheduler),
       weak_factory_(this) {
   thread_scheduler_->RegisterWorkerScheduler(this);
@@ -77,7 +79,7 @@ void WorkerScheduler::Dispose() {
 
   thread_scheduler_->UnregisterWorkerScheduler(this);
 
-  default_task_queue_->ShutdownTaskQueue();
+  unthrottleable_task_queue_->ShutdownTaskQueue();
   throttleable_task_queue_->ShutdownTaskQueue();
 
 #if DCHECK_IS_ON()
@@ -128,7 +130,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
-      return TaskQueueWithTaskType::Create(default_task_queue_, type);
+      return TaskQueueWithTaskType::Create(unthrottleable_task_queue_, type);
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kMainThreadTaskQueueDefault:
@@ -168,8 +170,8 @@ void WorkerScheduler::OnLifecycleStateChanged(
 }
 
 scoped_refptr<base::sequence_manager::TaskQueue>
-WorkerScheduler::DefaultTaskQueue() {
-  return default_task_queue_.get();
+WorkerScheduler::UnthrottleableTaskQueue() {
+  return unthrottleable_task_queue_.get();
 }
 
 scoped_refptr<base::sequence_manager::TaskQueue>

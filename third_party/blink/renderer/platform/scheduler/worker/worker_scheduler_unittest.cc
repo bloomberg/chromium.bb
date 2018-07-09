@@ -71,7 +71,7 @@ class WorkerSchedulerForTest : public WorkerScheduler {
       WorkerThreadSchedulerForTest* thread_scheduler)
       : WorkerScheduler(thread_scheduler, nullptr) {}
 
-  using WorkerScheduler::DefaultTaskQueue;
+  using WorkerScheduler::UnthrottleableTaskQueue;
   using WorkerScheduler::ThrottleableTaskQueue;
 };
 

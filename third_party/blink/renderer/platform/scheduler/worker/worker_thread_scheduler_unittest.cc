@@ -101,7 +101,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
     // Null clock might trigger some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
     scheduler_->Init();
-    default_task_runner_ = scheduler_->CreateTaskRunner();
+    default_task_runner_ = scheduler_->CreateTaskRunner("test_tq");
     idle_task_runner_ = scheduler_->IdleTaskRunner();
   }
 

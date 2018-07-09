@@ -33,12 +33,11 @@ void NonMainThreadSchedulerImpl::Init() {
 }
 
 scoped_refptr<NonMainThreadTaskQueue>
-NonMainThreadSchedulerImpl::CreateTaskRunner() {
+NonMainThreadSchedulerImpl::CreateTaskRunner(const char* name) {
   helper_->CheckOnValidThread();
-  return helper_->NewTaskQueue(
-      base::sequence_manager::TaskQueue::Spec("worker_tq")
-          .SetShouldMonitorQuiescence(true)
-          .SetTimeDomain(nullptr));
+  return helper_->NewTaskQueue(base::sequence_manager::TaskQueue::Spec(name)
+                                   .SetShouldMonitorQuiescence(true)
+                                   .SetTimeDomain(nullptr));
 }
 
 void NonMainThreadSchedulerImpl::RunIdleTask(blink::WebThread::IdleTask task,
