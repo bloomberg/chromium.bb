@@ -144,6 +144,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
   void ShowDemoModeSetupScreen();
+  void ShowDemoModePreferencesScreen();
   void ShowResetScreen();
   void ShowKioskAutolaunchScreen();
   void ShowEnableDebuggingScreen();

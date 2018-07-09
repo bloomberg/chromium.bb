@@ -55,6 +55,7 @@ class SigninScreenHandlerDelegate;
 class SupervisedUserCreationScreenHandler;
 class ResetView;
 class DemoSetupScreenView;
+class DemoPreferencesScreenView;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
 class UserBoardView;
@@ -106,6 +107,7 @@ class OobeUI : public content::WebUIController,
   EnrollmentScreenView* GetEnrollmentScreenView();
   ResetView* GetResetView();
   DemoSetupScreenView* GetDemoSetupScreenView();
+  DemoPreferencesScreenView* GetDemoPreferencesScreenView();
   KioskAutolaunchScreenView* GetKioskAutolaunchScreenView();
   KioskEnableScreenView* GetKioskEnableScreenView();
   TermsOfServiceScreenView* GetTermsOfServiceScreenView();

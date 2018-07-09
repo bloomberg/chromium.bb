@@ -18,6 +18,7 @@
 // <include src="oobe_screen_welcome.js">
 // <include src="oobe_screen_update.js">
 // <include src="oobe_screen_demo_setup.js">
+// <include src="oobe_screen_demo_preferences.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
@@ -59,6 +60,7 @@ cr.define('cr.ui.Oobe', function() {
       login.VoiceInteractionValuePropScreen.register();
       login.WaitForContainerReadyScreen.register();
       login.DemoSetupScreen.register();
+      login.DemoPreferencesScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;
