@@ -59,8 +59,10 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
 
   // The page is n-quiet if there are no more than n active network requests for
   // this duration of time.
-  static constexpr double kNetwork2QuietWindowSeconds = 0.5;
-  static constexpr double kNetwork0QuietWindowSeconds = 0.5;
+  static constexpr TimeDelta kNetwork2QuietWindowTimeout =
+      TimeDelta::FromSecondsD(0.5);
+  static constexpr TimeDelta kNetwork0QuietWindowTimeout =
+      TimeDelta::FromSecondsD(0.5);
 
   Document* GetDocument();
   int ActiveConnections();
@@ -81,8 +83,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   TimeTicks provisional_first_meaningful_paint_swap_;
   double max_significance_so_far_ = 0.0;
   double accumulated_significance_while_having_blank_text_ = 0.0;
-  double network2_quiet_window_seconds_ = kNetwork2QuietWindowSeconds;
-  double network0_quiet_window_seconds_ = kNetwork0QuietWindowSeconds;
+  TimeDelta network2_quiet_window_timeout_ = kNetwork2QuietWindowTimeout;
+  TimeDelta network0_quiet_window_timeout_ = kNetwork0QuietWindowTimeout;
   unsigned prev_layout_object_count_ = 0;
   bool seen_first_meaningful_paint_candidate_ = false;
   bool network0_quiet_reached_ = false;

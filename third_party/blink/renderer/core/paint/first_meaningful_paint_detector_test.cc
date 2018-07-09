@@ -18,7 +18,7 @@ namespace blink {
 class FirstMeaningfulPaintDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
-    platform_->AdvanceClockSeconds(1);
+    platform_->AdvanceClock(TimeDelta::FromSeconds(1));
     PageTestBase::SetUp();
     ResetNetworkQuietTimer();
   }
@@ -32,7 +32,7 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   }
 
   TimeTicks AdvanceClockAndGetTime() {
-    platform_->AdvanceClockSeconds(1);
+    platform_->AdvanceClock(TimeDelta::FromSeconds(1));
     return CurrentTimeTicks();
   }
 
@@ -42,7 +42,7 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   }
 
   void SimulateLayoutAndPaint(int new_elements) {
-    platform_->AdvanceClockSeconds(0.001);
+    platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
     StringBuilder builder;
     for (int i = 0; i < new_elements; i++)
       builder.Append("<span>a</span>");
@@ -85,21 +85,21 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   bool HadNetwork2Quiet() { return Detector().network2_quiet_reached_; }
 
   void ClearFirstPaintSwapPromise() {
-    platform_->AdvanceClockSeconds(0.001);
+    platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstPaint,
                                     WebLayerTreeView::SwapResult::kDidSwap,
                                     CurrentTimeTicks());
   }
 
   void ClearFirstContentfulPaintSwapPromise() {
-    platform_->AdvanceClockSeconds(0.001);
+    platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstContentfulPaint,
                                     WebLayerTreeView::SwapResult::kDidSwap,
                                     CurrentTimeTicks());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise() {
-    platform_->AdvanceClockSeconds(0.001);
+    platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
     ClearProvisionalFirstMeaningfulPaintSwapPromise(CurrentTimeTicks());
   }
 
@@ -128,10 +128,12 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 
-  static constexpr double kNetwork0QuietWindowSeconds =
-      FirstMeaningfulPaintDetector::kNetwork0QuietWindowSeconds;
-  static constexpr double kNetwork2QuietWindowSeconds =
-      FirstMeaningfulPaintDetector::kNetwork2QuietWindowSeconds;
+  TimeDelta GetNetwork0QuietWindowTimeout() {
+    return FirstMeaningfulPaintDetector::kNetwork0QuietWindowTimeout;
+  }
+  TimeDelta GetNetwork2QuietWindowTimeout() {
+    return FirstMeaningfulPaintDetector::kNetwork2QuietWindowTimeout;
+  }
 };
 
 TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
@@ -260,7 +262,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
   ClearProvisionalFirstMeaningfulPaintSwapPromise();
-  platform_->AdvanceClockSeconds(0.001);
+  platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
   MarkFirstContentfulPaintAndClearSwapPromise();
   SimulateNetworkStable();
   EXPECT_GE(GetPaintTiming().FirstMeaningfulPaintRendered(),
@@ -329,16 +331,18 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietTimer) {
   EXPECT_FALSE(IsNetwork0QuietTimerActive());
 
   SetActiveConnections(0);
-  platform_->RunForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  platform_->RunForPeriod(GetNetwork0QuietWindowTimeout() -
+                          TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsNetwork0QuietTimerActive());
   EXPECT_FALSE(HadNetwork0Quiet());
 
   SetActiveConnections(0);  // This should reset the 0-quiet timer.
-  platform_->RunForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  platform_->RunForPeriod(GetNetwork0QuietWindowTimeout() -
+                          TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsNetwork0QuietTimerActive());
   EXPECT_FALSE(HadNetwork0Quiet());
 
-  platform_->RunForPeriodSeconds(0.1001);
+  platform_->RunForPeriod(TimeDelta::FromMicroseconds(100100));
   EXPECT_TRUE(HadNetwork0Quiet());
 }
 
@@ -349,17 +353,19 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietTimer) {
   EXPECT_FALSE(IsNetwork2QuietTimerActive());
 
   SetActiveConnections(2);
-  platform_->RunForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
+  platform_->RunForPeriod(GetNetwork2QuietWindowTimeout() -
+                          TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsNetwork2QuietTimerActive());
   EXPECT_FALSE(HadNetwork2Quiet());
 
   SetActiveConnections(2);  // This should reset the 2-quiet timer.
-  platform_->RunForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
+  platform_->RunForPeriod(GetNetwork2QuietWindowTimeout() -
+                          TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsNetwork2QuietTimerActive());
   EXPECT_FALSE(HadNetwork2Quiet());
 
   SetActiveConnections(1);  // This should not reset the 2-quiet timer.
-  platform_->RunForPeriodSeconds(0.1001);
+  platform_->RunForPeriod(TimeDelta::FromMicroseconds(100100));
   EXPECT_TRUE(HadNetwork2Quiet());
 }
 
@@ -408,7 +414,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   MarkFirstContentfulPaintAndClearSwapPromise();
   SimulateLayoutAndPaint(1);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
-  platform_->AdvanceClockSeconds(0.001);
+  platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 2U);
   // Having outstanding swap promises should defer setting FMP.
@@ -438,7 +444,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
   ClearProvisionalFirstMeaningfulPaintSwapPromise();
   TimeTicks after_first_meaningful_paint_candidate = AdvanceClockAndGetTime();
-  platform_->AdvanceClockSeconds(0.001);
+  platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
   GetPaintTiming().MarkFirstContentfulPaint();
   // FCP > FMP candidate, but still waiting for FCP swap.
   SimulateNetworkStable();
@@ -467,14 +473,14 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   // Simulate only network 2-quiet so provisional FMP will be set on next
   // layout.
   TimeTicks pre_stable_timestamp = AdvanceClockAndGetTime();
-  platform_->AdvanceClockSeconds(0.001);
+  platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
   SimulateNetwork2Quiet();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintRendered(), TimeTicks());
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), TimeTicks());
 
   // Force another FMP candidate while there is a pending swap promise and the
   // network 2-quiet FMP non-swap timestamp is set.
-  platform_->AdvanceClockSeconds(0.001);
+  platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
 
