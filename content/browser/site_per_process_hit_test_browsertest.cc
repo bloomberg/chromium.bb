@@ -994,6 +994,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scroll_end_observer.Wait();
 }
 
+#if defined(OS_LINUX)
+// The test is flaky on Linux:  https://crbug.com/833380.
+#define MAYBE_BubbledScrollEventsTransformedCorrectly \
+  DISABLED_BubbledScrollEventsTransformedCorrectly
+#else
+#define MAYBE_BubbledScrollEventsTransformedCorrectly \
+  BubbledScrollEventsTransformedCorrectly
+#endif
 // When a scroll event is bubbled, ensure that the bubbled event's coordinates
 // are correctly updated to the ancestor's coordinate space. In particular,
 // ensure that the transformation considers CSS scaling of the child where
@@ -1001,7 +1009,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // coordinates in the ancestor's coordinate space.
 // See https://crbug.com/817392
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       BubbledScrollEventsTransformedCorrectly) {
+                       MAYBE_BubbledScrollEventsTransformedCorrectly) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_scaled_frame.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
@@ -1215,8 +1223,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(ScrollBubbling);
 }
 
+#if defined(OS_LINUX)
+// Flaky: https://crbug.com/833380
+#define MAYBE_EmulatedTouchPinchGoesToMainFrame \
+  DISABLED_EmulatedTouchPinchGoesToMainFrame
+#else
+#define MAYBE_EmulatedTouchPinchGoesToMainFrame \
+  EmulatedTouchPinchGoesToMainFrame
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       EmulatedTouchPinchGoesToMainFrame) {
+                       MAYBE_EmulatedTouchPinchGoesToMainFrame) {
   RunTest(PinchGoesToMainFrame);
 }
 
@@ -1767,7 +1783,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_EQ(result.target_location.value(), parent_location);
 }
 
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
 // Flaky: https://crbug.com/833380
 #define MAYBE_SurfaceHitTestPointerEventsNone \
   DISABLED_SurfaceHitTestPointerEventsNone
@@ -3675,9 +3691,10 @@ void CreateContextMenuTestHelper(
   EXPECT_NEAR(point.y(), params.y, 2);
 }
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
 // High DPI tests don't work properly on Android, which has fixed scale factor.
 // Windows is disabled because of https://crbug.com/545547.
+// The test is flaky on Linux:  https://crbug.com/833380.
 #define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
 #elif defined(THREAD_SANITIZER)
 // TSAN is flaky on both standard and High DPI: https://crbug.com/833380
