@@ -55,7 +55,8 @@ class FieldTrialToStruct(unittest.TestCase):
         }
       ]
     }
-    result = fieldtrial_to_struct._FieldTrialConfigToDescription(config, 'win')
+    result = fieldtrial_to_struct._FieldTrialConfigToDescription(config,
+                                                                 ['win'])
     expected = {
       'elements': {
         'kFieldTrialConfig': {
@@ -65,6 +66,7 @@ class FieldTrialToStruct(unittest.TestCase):
               'experiments': [
                 {
                   'name': 'Group1',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
                   'params': [
                     {'key': 'x', 'value': '1'},
                     {'key': 'y', 'value': '2'}
@@ -74,6 +76,7 @@ class FieldTrialToStruct(unittest.TestCase):
                 },
                 {
                   'name': 'Group2',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
                   'params': [
                     {'key': 'x', 'value': '3'},
                     {'key': 'y', 'value': '4'}
@@ -85,13 +88,19 @@ class FieldTrialToStruct(unittest.TestCase):
             },
             {
               'name': 'Trial2',
-              'experiments': [{'name': 'OtherGroup'}]
+              'experiments': [
+                {
+                  'name': 'OtherGroup',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
+                }
+              ]
             },
             {
               'name': 'TrialWithForcingFlag',
               'experiments': [
                   {
                     'name': 'ForcedGroup',
+                    'platforms': ['Study::PLATFORM_WINDOWS'],
                     'forcing_flag': "my-forcing-flag"
                   }
               ]
@@ -147,7 +156,7 @@ class FieldTrialToStruct(unittest.TestCase):
 
   def test_FieldTrialToDescriptionMultipleSinglePlatformMultipleTrial(self):
     result = fieldtrial_to_struct._FieldTrialConfigToDescription(
-        self._MULTIPLE_PLATFORM_CONFIG, 'ios')
+        self._MULTIPLE_PLATFORM_CONFIG, ['ios'])
     expected = {
       'elements': {
         'kFieldTrialConfig': {
@@ -157,6 +166,7 @@ class FieldTrialToStruct(unittest.TestCase):
               'experiments': [
                 {
                   'name': 'Group1',
+                  'platforms': ['Study::PLATFORM_IOS'],
                   'params': [
                     {'key': 'x', 'value': '1'},
                     {'key': 'y', 'value': '2'}
@@ -166,6 +176,7 @@ class FieldTrialToStruct(unittest.TestCase):
                 },
                 {
                   'name': 'Group2',
+                  'platforms': ['Study::PLATFORM_IOS'],
                   'params': [
                     {'key': 'x', 'value': '3'},
                     {'key': 'y', 'value': '4'}
@@ -174,7 +185,8 @@ class FieldTrialToStruct(unittest.TestCase):
                   'disable_features': ['F']
                 },
                 {
-                  'name': 'IOSOnly'
+                  'name': 'IOSOnly',
+                  'platforms': ['Study::PLATFORM_IOS'],
                 },
               ],
             },
@@ -187,7 +199,7 @@ class FieldTrialToStruct(unittest.TestCase):
 
   def test_FieldTrialToDescriptionMultipleSinglePlatformSingleTrial(self):
     result = fieldtrial_to_struct._FieldTrialConfigToDescription(
-        self._MULTIPLE_PLATFORM_CONFIG, 'mac')
+        self._MULTIPLE_PLATFORM_CONFIG, ['mac'])
     expected = {
       'elements': {
         'kFieldTrialConfig': {
@@ -197,6 +209,7 @@ class FieldTrialToStruct(unittest.TestCase):
               'experiments': [
                 {
                   'name': 'OtherGroup',
+                  'platforms': ['Study::PLATFORM_MAC'],
                 },
               ],
             },

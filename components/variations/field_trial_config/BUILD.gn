@@ -28,6 +28,13 @@ action("field_trial_testing_config_action") {
     "--platform=" + current_os,
     "--output=$out_name",
   ]
+
+  # At build-time, Chrome and WebView both use platform "android", but at
+  # run-time, variations hase separate platforms "android" and "android_webview".
+  # So if building "android", also include WebView.
+  if (current_os == "android") {
+    args += [ "--platform=android_webview" ]
+  }
 }
 
 static_library("field_trial_config") {
@@ -42,8 +49,11 @@ static_library("field_trial_config") {
     ":field_trial_testing_config_action",
     "//base",
     "//components/variations",
+    "//components/variations/proto:proto",
     "//net",
   ]
+
+  public_deps = [ "//third_party/protobuf:protobuf_lite" ]
 }
 
 source_set("unit_tests") {

@@ -50,15 +50,15 @@ def _CheckForDuplicateFeatures(enable_features, disable_features):
                     ', '.join(features_in_both))
 
 # Generate a list of command-line switches to enable field trials for the
-# provided config_path and platform.
-def GenerateArgs(config_path, platform):
+# provided config_path and platforms.
+def GenerateArgs(config_path, platforms):
   try:
     with open(config_path, 'r') as config_file:
       config = json.load(config_file)
   except (IOError, ValueError):
     return []
 
-  platform_studies = fieldtrial_to_struct.ConfigToStudies(config, platform)
+  platform_studies = fieldtrial_to_struct.ConfigToStudies(config, platforms)
 
   studies = []
   params = []
@@ -108,13 +108,14 @@ def main():
     exit(-1)
   print_shell_cmd = len(sys.argv) >= 4 and sys.argv[3] == 'shell_cmd'
 
-  supported_platforms = ['android', 'chromeos', 'ios', 'linux', 'mac', 'win']
+  supported_platforms = ['android', 'android_webview', 'chromeos', 'ios',
+                         'linux', 'mac', 'win']
   if sys.argv[2] not in supported_platforms:
     print ('\'%s\' is an unknown platform. Supported platforms: %s' %
         (sys.argv[2], supported_platforms))
     exit(-1)
 
-  generated_args = GenerateArgs(sys.argv[1], sys.argv[2])
+  generated_args = GenerateArgs(sys.argv[1], [sys.argv[2]])
   if print_shell_cmd:
     print " ".join(map((lambda arg: '"{0}"'.format(arg)), generated_args))
   else:

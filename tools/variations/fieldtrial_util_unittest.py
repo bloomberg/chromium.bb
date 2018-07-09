@@ -17,13 +17,13 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       try:
         base_file.write(config)
         base_file.close()
-        result = fieldtrial_util.GenerateArgs(base_file.name, platform)
+        result = fieldtrial_util.GenerateArgs(base_file.name, [platform])
       finally:
         os.unlink(base_file.name)
     return result
 
   def test_GenArgsEmptyPaths(self):
-    args = fieldtrial_util.GenerateArgs('', 'linux')
+    args = fieldtrial_util.GenerateArgs('', ['linux'])
     self.assertEqual([], args)
 
   def test_GenArgsOneConfig(self):

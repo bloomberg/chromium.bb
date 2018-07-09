@@ -12,6 +12,7 @@
 
 #include <cstddef>
 
+#include "components/variations/proto/study.pb.h"
 
 struct FieldTrialTestingExperimentParams {
   const char* const key;
@@ -20,6 +21,8 @@ struct FieldTrialTestingExperimentParams {
 
 struct FieldTrialTestingExperiment {
   const char* const name;
+  const Study::Platform * platforms;
+  const size_t platforms_size;
   const FieldTrialTestingExperimentParams * params;
   const size_t params_size;
   const char* const * enable_features;

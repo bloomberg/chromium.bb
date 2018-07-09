@@ -250,9 +250,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->version = version;
   state->channel = GetChannelForVariations(client_->GetChannel());
   state->form_factor = GetCurrentFormFactor();
-  state->platform = (has_platform_override_)
-                        ? platform_override_
-                        : ClientFilterableState::GetCurrentPlatform();
+  state->platform = GetPlatform();
   state->hardware_class = GetShortHardwareClass();
 #if defined(OS_ANDROID)
   // This is set on Android only currently, because the IsLowEndDevice() API
@@ -493,7 +491,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(::switches::kForceFieldTrials) &&
       !command_line->HasSwitch(switches::kVariationsServerURL)) {
-    AssociateDefaultFieldTrialConfig(feature_list.get());
+    AssociateDefaultFieldTrialConfig(feature_list.get(), GetPlatform());
   }
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 
@@ -513,6 +511,12 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
 
 VariationsSeedStore* VariationsFieldTrialCreator::GetSeedStore() {
   return &seed_store_;
+}
+
+Study::Platform VariationsFieldTrialCreator::GetPlatform() {
+  if (has_platform_override_)
+    return platform_override_;
+  return ClientFilterableState::GetCurrentPlatform();
 }
 
 }  // namespace variations

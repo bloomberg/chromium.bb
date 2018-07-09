@@ -6,7 +6,10 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -20,6 +23,15 @@
 
 namespace variations {
 namespace {
+
+bool HasPlatform(const FieldTrialTestingExperiment& experiment,
+                 Study::Platform platform) {
+  for (size_t i = 0; i < experiment.platforms_size; ++i) {
+    if (experiment.platforms[i] == platform)
+      return true;
+  }
+  return false;
+}
 
 void AssociateParamsFromExperiment(
     const std::string& study_name,
@@ -55,27 +67,35 @@ void AssociateParamsFromExperiment(
   }
 }
 
-// Chooses an experiment taking into account the command line. Defaults to
-// picking the first experiment.
-const FieldTrialTestingExperiment& ChooseExperiment(
-    const FieldTrialTestingExperiment experiments[],
-    size_t experiment_size) {
-  DCHECK_GT(experiment_size, 0ul);
+// Choose an experiment to associate. The rules are:
+// - Out of the experiments which match this platform:
+//   - If there is a forcing flag for any experiment, choose the first such
+//     experiment.
+//   - Otherwise, choose the first experiment.
+// - If no experiments match this platform, do not associate any of them.
+void ChooseExperiment(const FieldTrialTestingStudy& study,
+                      base::FeatureList* feature_list,
+                      Study::Platform platform) {
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  size_t chosen_index = 0;
-  for (size_t i = 1; i < experiment_size && chosen_index == 0; ++i) {
-    const auto& experiment = experiments[i];
-    if (experiment.forcing_flag &&
-        command_line.HasSwitch(experiment.forcing_flag)) {
-      chosen_index = i;
-      break;
+  const FieldTrialTestingExperiment* chosen_experiment = nullptr;
+  for (size_t i = 0; i < study.experiments_size; ++i) {
+    const FieldTrialTestingExperiment* experiment = study.experiments + i;
+    if (HasPlatform(*experiment, platform)) {
+      if (!chosen_experiment)
+        chosen_experiment = experiment;
+
+      if (experiment->forcing_flag &&
+          command_line.HasSwitch(experiment->forcing_flag)) {
+        chosen_experiment = experiment;
+        break;
+      }
     }
   }
-  DCHECK_GT(experiment_size, chosen_index);
-  return experiments[chosen_index];
+  if (chosen_experiment)
+    AssociateParamsFromExperiment(study.name, *chosen_experiment, feature_list);
 }
 
-} // namespace
+}  // namespace
 
 std::string UnescapeValue(const std::string& value) {
   return net::UnescapeURLComponent(
@@ -156,22 +176,22 @@ bool AssociateParamsFromString(const std::string& varations_string) {
 }
 
 void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
-                                         base::FeatureList* feature_list) {
+                                         base::FeatureList* feature_list,
+                                         Study::Platform platform) {
   for (size_t i = 0; i < config.studies_size; ++i) {
     const FieldTrialTestingStudy& study = config.studies[i];
     if (study.experiments_size > 0) {
-      AssociateParamsFromExperiment(
-          study.name,
-          ChooseExperiment(study.experiments, study.experiments_size),
-          feature_list);
+      ChooseExperiment(study, feature_list, platform);
     } else {
       DLOG(ERROR) << "Unexpected empty study: " << study.name;
     }
   }
 }
 
-void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list) {
-  AssociateParamsFromFieldTrialConfig(kFieldTrialConfig, feature_list);
+void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list,
+                                      Study::Platform platform) {
+  AssociateParamsFromFieldTrialConfig(kFieldTrialConfig, feature_list,
+                                      platform);
 }
 
 }  // namespace variations
