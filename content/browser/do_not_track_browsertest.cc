@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/test/browser_test_utils.h"
@@ -9,6 +10,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace content {
 
@@ -42,6 +45,20 @@ class DoNotTrackTest : public ContentBrowserTest {
     return value;
   }
 };
+
+std::unique_ptr<net::test_server::HttpResponse> CaptureHeaderHandler(
+    const std::string& path,
+    net::test_server::HttpRequest::HeaderMap* header_map,
+    base::OnceClosure done_callback,
+    const net::test_server::HttpRequest& request) {
+  GURL request_url = request.GetURL();
+  if (request_url.path() != path)
+    return nullptr;
+
+  *header_map = request.headers;
+  std::move(done_callback).Run();
+  return std::make_unique<net::test_server::BasicHttpResponse>();
+}
 
 // Checks that the DNT header is not sent by default.
 IN_PROC_BROWSER_TEST_F(DoNotTrackTest, NotEnabled) {
@@ -82,6 +99,115 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DOMProperty) {
   EnableDoNotTrack();
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ("1", GetDOMDoNotTrackProperty());
+}
+
+// Checks that the DNT header is sent in a request for a dedicated worker
+// script.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Worker) {
+  net::test_server::HttpRequest::HeaderMap header_map;
+  base::RunLoop loop;
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/workers/create_worker.html?worker_url=/capture"));
+  NavigateToURL(shell(), url);
+  loop.Run();
+
+  EXPECT_TRUE(header_map.find("DNT") != header_map.end());
+  EXPECT_EQ("1", header_map["DNT"]);
+}
+
+// Checks that the DNT header is sent in a request for a shared worker
+// script.
+// Disabled due to crbug.com/853085.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_SharedWorker) {
+  net::test_server::HttpRequest::HeaderMap header_map;
+  base::RunLoop loop;
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/workers/create_shared_worker.html?worker_url=/capture"));
+  NavigateToURL(shell(), url);
+  loop.Run();
+
+  EXPECT_TRUE(header_map.find("DNT") != header_map.end());
+  EXPECT_EQ("1", header_map["DNT"]);
+}
+
+// Checks that the DNT header is sent in a request for a service worker
+// script.
+// Disabled due to crbug.com/853085.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_ServiceWorker) {
+  net::test_server::HttpRequest::HeaderMap header_map;
+  base::RunLoop loop;
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL url = embedded_test_server()->GetURL(std::string(
+      "/service_worker/create_service_worker.html?worker_url=/capture"));
+  NavigateToURL(shell(), url);
+  loop.Run();
+
+  EXPECT_TRUE(header_map.find("DNT") != header_map.end());
+  EXPECT_EQ("1", header_map["DNT"]);
+}
+
+// Checks that the DNT header is preserved when fetching from a dedicated
+// worker.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/workers/fetch_from_worker.html?url=") + fetch_url.spec());
+  NavigateToURL(shell(), url);
+
+  const base::string16 title = base::ASCIIToUTF16("DONE");
+  TitleWatcher watcher(shell()->web_contents(), title);
+  EXPECT_EQ(title, watcher.WaitAndGetTitle());
+
+  ExpectPageTextEq("1");
+}
+
+// Checks that the DNT header is preserved when fetching from a shared worker.
+// Disabled due to crbug.com/853085.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromSharedWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/workers/fetch_from_shared_worker.html?url=") +
+      fetch_url.spec());
+  NavigateToURL(shell(), url);
+
+  const base::string16 title = base::ASCIIToUTF16("DONE");
+  TitleWatcher watcher(shell()->web_contents(), title);
+  EXPECT_EQ(title, watcher.WaitAndGetTitle());
+
+  ExpectPageTextEq("1");
+}
+
+// Checks that the DNT header is preserved when fetching from a service worker.
+// Disabled due to crbug.com/853085.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromServiceWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDoNotTrack();
+  const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/service_worker/fetch_from_service_worker.html?url=") +
+      fetch_url.spec());
+  NavigateToURL(shell(), url);
+
+  const base::string16 title = base::ASCIIToUTF16("DONE");
+  TitleWatcher watcher(shell()->web_contents(), title);
+  EXPECT_EQ(title, watcher.WaitAndGetTitle());
+
+  ExpectPageTextEq("1");
 }
 
 }  // namespace

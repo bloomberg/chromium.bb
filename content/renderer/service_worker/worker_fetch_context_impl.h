@@ -8,6 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -57,6 +58,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
   WorkerFetchContextImpl(
+      RendererPreferences renderer_preferences,
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_info,
@@ -189,6 +191,9 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   bool is_secure_context_ = false;
   GURL origin_url_;
   int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
+
+  // TODO(shimazu): Propagate preference changes from the browser process.
+  RendererPreferences renderer_preferences_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
