@@ -64,6 +64,7 @@ const _NO_NAME = '(No path)';
 const _DIRECTORY_TYPE = 'D';
 const _COMPONENT_TYPE = 'C';
 const _FILE_TYPE = 'F';
+const _KNOWN_TYPES = new Set('bdrtv*xmpPo');
 
 /**
  * Return the basename of the pathname 'path'. In a file path, this is the name
@@ -242,13 +243,12 @@ function makeTree(options) {
     );
     // build child nodes for this file's symbols and attach to self
     for (const symbol of fileNode[_KEYS.FILE_SYMBOLS]) {
-      const size = methodCountMode ? 1 : symbol[_KEYS.SIZE];
       const symbolNode = createNode(
         {
           idPath: idPath + ':' + symbol[_KEYS.SYMBOL_NAME],
           shortName: symbol[_KEYS.SYMBOL_NAME],
-          size,
-          type: symbol[_KEYS.TYPE],
+          size: methodCountMode ? 1 : symbol[_KEYS.SIZE],
+          type: _KNOWN_TYPES.has(symbol[_KEYS.TYPE]) ? symbol[_KEYS.TYPE] : 'o',
         },
         sep
       );
@@ -271,6 +271,59 @@ function makeTree(options) {
 }
 
 /**
+ * Parse the options represented as a query string, into an object.
+ * Includes checks for valid values.
+ * @param {string} options Query string
+ */
+function parseOptions(options) {
+  const params = new URLSearchParams(options);
+
+  const groupBy = params.get('group_by') || 'source_path';
+  const methodCountMode = params.has('method_count');
+
+  let minSymbolSize = Number(params.get('min_size'));
+  if (Number.isNaN(minSymbolSize)) {
+    minSymbolSize = 0;
+  }
+
+  const includeRegex = params.get('include');
+  const excludeRegex = params.get('exclude');
+
+  /** @type {Set<string>} */
+  let typeFilter;
+  if (methodCountMode) typeFilter = new Set('m');
+  else {
+    const types = params.getAll('type');
+    typeFilter = new Set(types.length === 0 ? _KNOWN_TYPES : types);
+  }
+
+  /** Ensure symbol size is past the minimum */
+  const checkSize = s => Math.abs(s.size) >= minSymbolSize;
+  /** Ensure the symbol size wasn't filtered out */
+  const checkType = s => typeFilter.has(s.type);
+  const filters = [checkSize, checkType];
+
+  if (includeRegex) {
+    const regex = new RegExp(includeRegex);
+    filters.push(s => regex.test(s.idPath));
+  }
+  if (excludeRegex) {
+    const regex = new RegExp(excludeRegex);
+    filters.push(s => !regex.test(s.idPath));
+  }
+
+  /**
+   * Check that a symbol node passes all the filters in the filters array.
+   * @param {TreeNode} symbol
+   */
+  function filterTest(symbol) {
+    return filters.every(fn => fn(symbol));
+  }
+
+  return {groupBy, methodCountMode, filterTest};
+}
+
+/**
  * Assemble a tree when this worker receives a message.
  * @param {MessageEvent} event Event for when this worker receives a message.
  */
@@ -281,16 +334,7 @@ self.onmessage = event => {
    * flat list of files, and options represented as a query string.
    */
   const {tree, options} = JSON.parse(event.data);
-
-  const params = new URLSearchParams(options);
-  const groupBy = params.get('group_by') || 'source_path';
-  const methodCountMode = params.has('method_count');
-  let typeFilter;
-  if (methodCountMode) typeFilter = new Set('m');
-  else {
-    const types = params.getAll('types');
-    typeFilter = new Set(types.length === 0 ? 'bdrtv*xmpPo' : types);
-  }
+  const {groupBy, methodCountMode, filterTest} = parseOptions(options);
 
   const getPathMap = {
     component(fileEntry) {
@@ -311,7 +355,7 @@ self.onmessage = event => {
     sep: sepMap[groupBy],
     methodCountMode,
     getPath: getPathMap[groupBy],
-    filterTest: s => typeFilter.has(s.type),
+    filterTest,
   });
 
   // @ts-ignore

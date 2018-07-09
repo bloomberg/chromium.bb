@@ -26,6 +26,7 @@
   display: none;
   grid-area: options;
   padding: 0 16px;
+  overflow-y: auto;
   position: fixed;
   right: 0;
   top: 0;
@@ -33,6 +34,19 @@
   width: 224px;
   background: #fffffff5;
   box-shadow: 0 1px 2px #3c40434d, 0 2px 6px 2px #3c404326;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 2em 0 1em;
+}
+.options fieldset:first-of-type {
+  margin-top: 1em;
+}
+legend {
+  margin: 1em 0;
+  padding: 0;
 }
 
 .icon-list li {
@@ -93,21 +107,28 @@
   box-shadow: 0 1px 2px #3c40434d, 0 1px 3px 1px #3c404326;
 }
 
-/** <select> elements */
+/** <input type='text'> or <select> elements */
+.input-wrapper,
 .select-wrapper {
   position: relative;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   background: rgba(0, 0, 0, 0.04);
+  margin-bottom: 1em;
 }
+input[type='text'],
+input[type='number'],
 select {
+  box-sizing: border-box;
   -webkit-appearance: none;
   font: inherit;
   background: transparent;
   border: 0;
-  padding: 20px 8px 13px;
+  padding: 20px 12px 13px;
   width: 100%;
+  caret-color: #1a73e8;
 }
+.input-label,
 .select-label {
   position: absolute;
   z-index: -1;
@@ -132,6 +153,8 @@ select {
   border-color: currentColor transparent transparent transparent;
   transition: transform 0.2s ease-out;
 }
+input[type='text']:focus + .input-label,
+input[type='number']:focus + .input-label,
 select:focus + .select-label {
   color: #1a73e8;
   bottom: -2px;
@@ -142,10 +165,12 @@ select:focus + .select-label::after {
 }
 
 /** <input type='checkbox' or 'radio'> elements */
-input[type='checkbox'], input[type='radio'] {
+input[type='checkbox'],
+input[type='radio'] {
   display: none;
 }
-.checkbox-label, .radio-label {
+.checkbox-label,
+.radio-label {
   display: block;
   position: relative;
   padding-left: 34px;
@@ -153,13 +178,16 @@ input[type='checkbox'], input[type='radio'] {
   cursor: pointer;
   font-size: 14px;
 }
-.checkbox-label::before, .checkbox-label::after,
-.radio-label::before, .radio-label::after {
+.checkbox-label::before,
+.checkbox-label::after,
+.radio-label::before,
+.radio-label::after {
   position: absolute;
   content: '';
   border: 2px solid currentColor;
 }
-.checkbox-label::before, .radio-label::before {
+.checkbox-label::before,
+.radio-label::before {
   width: 14px;
   height: 14px;
   border-radius: 2px;
