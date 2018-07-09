@@ -15,8 +15,8 @@
 #include "net/dns/dns_config_service.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_handler_negotiate.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -32,6 +32,10 @@
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(USE_KERBEROS)
+#include "net/http/http_auth_handler_negotiate.h"
+#endif
 
 namespace network {
 
@@ -107,9 +111,7 @@ TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
 }
 
 // Platforms where Negotiate can be used.
-#if defined(OS_WIN) || \
-    (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS))
-
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
 // Returns the negotiate factory, if one exists, to query its configuration.
 net::HttpAuthHandlerNegotiate::Factory* GetNegotiateFactory(
     NetworkContext* network_context) {
@@ -120,8 +122,7 @@ net::HttpAuthHandlerNegotiate::Factory* GetNegotiateFactory(
           ->GetSchemeFactory(net::kNegotiateAuthScheme));
 }
 
-#endif  //  defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID) &&
-        //  !defined(OS_IOS))
+#endif  // BUILDFLAG(USE_KERBEROS)
 
 TEST_F(NetworkServiceTest, AuthDefaultParams) {
   mojom::NetworkContextPtr network_context_ptr;
@@ -139,17 +140,16 @@ TEST_F(NetworkServiceTest, AuthDefaultParams) {
   EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
   EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
   ASSERT_TRUE(GetNegotiateFactory(&network_context));
+#if defined(OS_CHROMEOS)
   EXPECT_TRUE(GetNegotiateFactory(&network_context)
                   ->allow_gssapi_library_load_for_testing());
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  ASSERT_TRUE(GetNegotiateFactory(&network_context));
+#elif defined(OS_POSIX)
   EXPECT_EQ("",
             GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
-#elif defined(OS_WIN)
-  EXPECT_TRUE(GetNegotiateFactory(&network_context));
 #endif
+#endif  // BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
 
   EXPECT_FALSE(auth_handler_factory->http_auth_preferences()
                    ->NegotiateDisableCnameLookup());

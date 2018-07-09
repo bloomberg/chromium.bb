@@ -69,6 +69,7 @@ buildflag_header("buildflags") {
     "ENABLE_REPORTING=$enable_reporting",
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
+    "USE_KERBEROS=$use_kerberos",
   ]
 }
 
@@ -78,11 +79,8 @@ config("net_internal_config") {
     "NET_IMPLEMENTATION",
   ]
 
-  if (use_kerberos) {
-    defines += [ "USE_KERBEROS" ]
-    if (is_android) {
-      include_dirs = [ "/usr/include/kerberosV" ]
-    }
+  if (use_kerberos && is_android) {
+    include_dirs = [ "/usr/include/kerberosV" ]
   }
 
   if (enable_built_in_dns) {
@@ -5363,10 +5361,6 @@ test("net_unittests") {
         "cert/nss_profile_filter_chromeos_unittest.cc",
       ]
     }
-  }
-
-  if (use_kerberos) {
-    defines += [ "USE_KERBEROS" ]
   }
 
   # These are excluded on Android, because the actual Kerberos support, which
