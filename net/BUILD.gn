@@ -1528,6 +1528,7 @@ component("net") {
       "third_party/quic/platform/impl/quic_flag_utils_impl.h",
       "third_party/quic/platform/impl/quic_flags_impl.cc",
       "third_party/quic/platform/impl/quic_flags_impl.h",
+      "third_party/quic/platform/impl/quic_hkdf_impl.cc",
       "third_party/quic/platform/impl/quic_hkdf_impl.h",
       "third_party/quic/platform/impl/quic_hostname_utils_impl.cc",
       "third_party/quic/platform/impl/quic_hostname_utils_impl.h",
