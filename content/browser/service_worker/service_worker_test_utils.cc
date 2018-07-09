@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -25,6 +26,60 @@
 namespace content {
 
 namespace {
+
+// A mock SharedURLLoaderFactory that always fails to start.
+// TODO(bashi): Make this factory not to fail when unit tests actually need
+// this to be working.
+class MockSharedURLLoaderFactory final
+    : public network::SharedURLLoaderFactory {
+ public:
+  MockSharedURLLoaderFactory() = default;
+
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_NOT_IMPLEMENTED));
+  }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
+
+  // network::SharedURLLoaderFactory:
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+ private:
+  friend class base::RefCounted<MockSharedURLLoaderFactory>;
+
+  ~MockSharedURLLoaderFactory() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(MockSharedURLLoaderFactory);
+};
+
+// Returns MockSharedURLLoaderFactory.
+class MockSharedURLLoaderFactoryInfo final
+    : public network::SharedURLLoaderFactoryInfo {
+ public:
+  MockSharedURLLoaderFactoryInfo() = default;
+  ~MockSharedURLLoaderFactoryInfo() override = default;
+
+ protected:
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
+    return base::MakeRefCounted<MockSharedURLLoaderFactory>();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSharedURLLoaderFactoryInfo);
+};
 
 void OnWriteBodyInfoToDiskCache(
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
@@ -131,9 +186,16 @@ CreateProviderHostForServiceWorkerContext(
   std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForController(std::move(context));
   host->SetDocumentUrl(hosted_version->script_url());
+
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory;
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    loader_factory = network::SharedURLLoaderFactory::Create(
+        std::make_unique<MockSharedURLLoaderFactoryInfo>());
+  }
+
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
-      host->CompleteStartWorkerPreparation(
-          process_id, hosted_version, nullptr /* non_network_loader_factory */);
+      host->CompleteStartWorkerPreparation(process_id, hosted_version,
+                                           loader_factory);
   output_endpoint->BindWithProviderInfo(std::move(provider_info));
   return host;
 }
