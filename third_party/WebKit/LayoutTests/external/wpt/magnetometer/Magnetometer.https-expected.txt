@@ -10,7 +10,7 @@ PASS Magnetometer: no exception is thrown when calling stop() on already stopped
 PASS Magnetometer: Test that fresh reading is fetched on start()
 PASS Magnetometer: frequency hint works
 PASS Magnetometer: sensor receives suspend / resume notifications when  cross-origin subframe is focused
-FAIL Magnetometer: throw 'TypeError' if frequency is invalid assert_throws: when freq is undefined function "() => { new sensorType({frequency: freq}) }" did not throw
+PASS Magnetometer: throw 'TypeError' if frequency is invalid
 PASS Magnetometer: sensor reading is correct when options.referenceFrame is 'screen'
 PASS Magnetometer: throw 'TypeError' if referenceFrame is not one of enumeration values
 FAIL UncalibratedMagnetometer: Test that 'onreading' is called and sensor reading is valid assert_true: expected true got false

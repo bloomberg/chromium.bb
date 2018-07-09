@@ -10,7 +10,7 @@ PASS Accelerometer: no exception is thrown when calling stop() on already stoppe
 PASS Accelerometer: Test that fresh reading is fetched on start()
 PASS Accelerometer: frequency hint works
 PASS Accelerometer: sensor receives suspend / resume notifications when  cross-origin subframe is focused
-FAIL Accelerometer: throw 'TypeError' if frequency is invalid assert_throws: when freq is undefined function "() => { new sensorType({frequency: freq}) }" did not throw
+PASS Accelerometer: throw 'TypeError' if frequency is invalid
 PASS Accelerometer: sensor reading is correct when options.referenceFrame is 'screen'
 PASS Accelerometer: throw 'TypeError' if referenceFrame is not one of enumeration values
 FAIL GravitySensor: Test that 'onreading' is called and sensor reading is valid assert_true: expected true got false
@@ -38,7 +38,7 @@ PASS LinearAccelerationSensor: no exception is thrown when calling stop() on alr
 PASS LinearAccelerationSensor: Test that fresh reading is fetched on start()
 PASS LinearAccelerationSensor: frequency hint works
 PASS LinearAccelerationSensor: sensor receives suspend / resume notifications when  cross-origin subframe is focused
-FAIL LinearAccelerationSensor: throw 'TypeError' if frequency is invalid assert_throws: when freq is undefined function "() => { new sensorType({frequency: freq}) }" did not throw
+PASS LinearAccelerationSensor: throw 'TypeError' if frequency is invalid
 PASS LinearAccelerationSensor: sensor reading is correct when options.referenceFrame is 'screen'
 PASS LinearAccelerationSensor: throw 'TypeError' if referenceFrame is not one of enumeration values
 Harness: the test ran to completion.
