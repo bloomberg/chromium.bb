@@ -2093,9 +2093,9 @@ const char kCCTModuleName[] = "Chrome Custom Tabs Module";
 const char kCCTModuleDescription[] =
     "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";
 
-const char kChromeDuplexName[] = "Chrome Duplex";
-const char kChromeDuplexDescription[] =
-    "Enables Chrome Duplex, split toolbar Chrome Home, on Android.";
+const char kChromeDuetName[] = "Chrome Duet";
+const char kChromeDuetDescription[] =
+    "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
 
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =

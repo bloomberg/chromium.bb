@@ -248,7 +248,7 @@ public class FeatureUtilities {
      */
     public static void cacheBottomToolbarEnabled() {
         ChromePreferenceManager.getInstance().setBottomToolbarEnabled(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUPLEX));
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET));
     }
 
     /**

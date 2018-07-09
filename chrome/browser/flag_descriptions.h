@@ -1275,8 +1275,8 @@ extern const char kBackgroundTaskComponentUpdateDescription[];
 extern const char kCCTModuleName[];
 extern const char kCCTModuleDescription[];
 
-extern const char kChromeDuplexName[];
-extern const char kChromeDuplexDescription[];
+extern const char kChromeDuetName[];
+extern const char kChromeDuetDescription[];
 
 extern const char kChromeHomeSwipeLogicName[];
 extern const char kChromeHomeSwipeLogicDescription[];

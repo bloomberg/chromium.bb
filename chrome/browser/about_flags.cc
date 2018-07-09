@@ -1896,9 +1896,9 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
-    {"enable-chrome-duplex", flag_descriptions::kChromeDuplexName,
-     flag_descriptions::kChromeDuplexDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeDuplexFeature)},
+    {"enable-chrome-duet", flag_descriptions::kChromeDuetName,
+     flag_descriptions::kChromeDuetDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeDuetFeature)},
     {"chrome-home-swipe-logic", flag_descriptions::kChromeHomeSwipeLogicName,
      flag_descriptions::kChromeHomeSwipeLogicDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kChromeHomeSwipeLogicChoices)},
