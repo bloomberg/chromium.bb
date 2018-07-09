@@ -69,6 +69,10 @@ Path SVGEllipseElement::AsPath() const {
 
   FloatSize radii(ToFloatSize(
       length_context.ResolveLengthPair(svg_style.Rx(), svg_style.Ry(), style)));
+  if (svg_style.Rx().IsAuto())
+    radii.SetWidth(radii.Height());
+  else if (svg_style.Ry().IsAuto())
+    radii.SetHeight(radii.Width());
   if (radii.Width() < 0 || radii.Height() < 0 ||
       (!radii.Width() && !radii.Height()))
     return path;
