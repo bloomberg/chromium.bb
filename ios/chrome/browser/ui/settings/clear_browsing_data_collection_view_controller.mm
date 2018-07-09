@@ -25,7 +25,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
@@ -308,8 +308,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 }
 
 - (void)openMyActivityLink {
-  OpenUrlCommand* openMyActivityCommand =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL(kGoogleMyAccountURL)];
+  OpenNewTabCommand* openMyActivityCommand =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL(kGoogleMyAccountURL)];
   [self.dispatcher closeSettingsUIAndOpenURL:openMyActivityCommand];
 }
 

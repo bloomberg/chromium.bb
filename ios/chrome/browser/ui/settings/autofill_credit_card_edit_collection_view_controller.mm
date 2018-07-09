@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -93,8 +93,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD ||
       _creditCard.record_type() == autofill::CreditCard::MASKED_SERVER_CARD) {
     GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl(0);
-    OpenUrlCommand* command =
-        [[OpenUrlCommand alloc] initWithURLFromChrome:paymentsURL];
+    OpenNewTabCommand* command =
+        [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.dispatcher closeSettingsUIAndOpenURL:command];
 
     // Don't call [super editButtonPressed] because edit mode is not actually

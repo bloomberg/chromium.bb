@@ -11,7 +11,6 @@
 
 @protocol BrowserCommands;
 @protocol ImportDataControllerDelegate;
-@class OpenUrlCommand;
 @protocol UserFeedbackDataSource;
 
 namespace ios {

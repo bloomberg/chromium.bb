@@ -4,29 +4,72 @@
 
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 
+#include "base/logging.h"
+#include "ios/web/public/referrer.h"
+#include "url/gurl.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation OpenNewTabCommand
+@implementation OpenNewTabCommand {
+  GURL _URL;
+  web::Referrer _referrer;
+}
 
-@synthesize incognito = _incognito;
+@synthesize inIncognito = _inIncognito;
+@synthesize inBackground = _inBackground;
 @synthesize originPoint = _originPoint;
+@synthesize fromChrome = _fromChrome;
+@synthesize appendTo = _appendTo;
 @synthesize userInitiated = _userInitiated;
 @synthesize shouldFocusOmnibox = _shouldFocusOmnibox;
 
-- (instancetype)initWithIncognito:(BOOL)incognito
-                      originPoint:(CGPoint)originPoint {
+- (instancetype)initInIncognito:(BOOL)inIncognito
+                   inBackground:(BOOL)inBackground {
   if ((self = [super init])) {
-    _incognito = incognito;
-    _originPoint = originPoint;
+    _inIncognito = inIncognito;
+    _inBackground = inBackground;
     _userInitiated = YES;
   }
   return self;
 }
 
+- (instancetype)initWithURL:(const GURL&)URL
+                   referrer:(const web::Referrer&)referrer
+                inIncognito:(BOOL)inIncognito
+               inBackground:(BOOL)inBackground
+                   appendTo:(OpenPosition)append {
+  if ((self = [self initInIncognito:inIncognito inBackground:inBackground])) {
+    _URL = URL;
+    _referrer = referrer;
+    _appendTo = append;
+  }
+  return self;
+}
+
+- (instancetype)initFromChrome:(const GURL&)URL {
+  self = [self initWithURL:URL
+                  referrer:web::Referrer()
+               inIncognito:NO
+              inBackground:NO
+                  appendTo:kLastTab];
+  if (self) {
+    _fromChrome = YES;
+  }
+  return self;
+}
+
++ (instancetype)commandWithIncognito:(BOOL)incognito
+                         originPoint:(CGPoint)origin {
+  OpenNewTabCommand* command =
+      [[self alloc] initInIncognito:incognito inBackground:NO];
+  command.originPoint = origin;
+  return command;
+}
+
 + (instancetype)commandWithIncognito:(BOOL)incognito {
-  return [[self alloc] initWithIncognito:incognito originPoint:CGPointZero];
+  return [[self alloc] initInIncognito:incognito inBackground:NO];
 }
 
 + (instancetype)command {
@@ -35,6 +78,18 @@
 
 + (instancetype)incognitoTabCommand {
   return [self commandWithIncognito:YES];
+}
+
++ (instancetype)commandWithURLFromChrome:(const GURL&)URL {
+  return [[self alloc] initFromChrome:URL];
+}
+
+- (const GURL&)URL {
+  return _URL;
+}
+
+- (const web::Referrer&)referrer {
+  return _referrer;
 }
 
 @end

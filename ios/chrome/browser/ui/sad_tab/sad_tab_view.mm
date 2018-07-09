@@ -12,7 +12,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -308,8 +308,8 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   _footerLabelLinkController = [[LabelLinkController alloc]
       initWithLabel:label
              action:^(const GURL& URL) {
-               OpenUrlCommand* command =
-                   [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
+               OpenNewTabCommand* command =
+                   [OpenNewTabCommand commandWithURLFromChrome:URL];
                [weakSelf.dispatcher openURL:command];
              }];
 

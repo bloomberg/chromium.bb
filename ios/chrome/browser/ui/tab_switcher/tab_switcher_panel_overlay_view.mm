@@ -458,7 +458,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   UIView* view = base::mac::ObjCCast<UIView>(sender);
   CGPoint center = [view.superview convertPoint:view.center toView:view.window];
   OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithIncognito:NO originPoint:center];
+      [OpenNewTabCommand commandWithIncognito:NO originPoint:center];
   [self.dispatcher openNewTab:command];
 }
 
@@ -466,7 +466,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   UIView* view = base::mac::ObjCCast<UIView>(sender);
   CGPoint center = [view.superview convertPoint:view.center toView:view.window];
   OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithIncognito:YES originPoint:center];
+      [OpenNewTabCommand commandWithIncognito:YES originPoint:center];
   [self.dispatcher openNewTab:command];
 }
 

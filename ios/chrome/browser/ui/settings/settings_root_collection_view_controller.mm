@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -130,7 +130,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 - (void)cell:(CollectionViewFooterCell*)cell didTapLinkURL:(GURL)URL {
   // Subclass must have a valid dispatcher assigned.
   DCHECK(self.dispatcher);
-  OpenUrlCommand* command = [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
   [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 

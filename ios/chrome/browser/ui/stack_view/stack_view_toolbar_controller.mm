@@ -98,8 +98,8 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
       [_openNewTabButton.superview convertPoint:_openNewTabButton.center
                                          toView:_openNewTabButton.window];
   OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithIncognito:_openNewTabButton.isIncognito
-                                       originPoint:center];
+      [OpenNewTabCommand commandWithIncognito:_openNewTabButton.isIncognito
+                                  originPoint:center];
   [_dispatcher openNewTab:command];
 }
 

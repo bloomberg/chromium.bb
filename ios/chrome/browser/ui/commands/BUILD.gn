@@ -17,8 +17,6 @@ source_set("commands") {
     "omnibox_suggestion_commands.h",
     "open_new_tab_command.h",
     "open_new_tab_command.mm",
-    "open_url_command.h",
-    "open_url_command.mm",
     "page_info_commands.h",
     "popup_menu_commands.h",
     "qr_scanner_commands.h",

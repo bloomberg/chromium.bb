@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -674,8 +673,7 @@ NSString* StringForItemCount(long count) {
   CGPoint center = [_buttonNewTab.superview convertPoint:_buttonNewTab.center
                                                   toView:_buttonNewTab.window];
   OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithIncognito:_isIncognito
-                                       originPoint:center];
+      [OpenNewTabCommand commandWithIncognito:_isIncognito originPoint:center];
   [self.dispatcher openNewTab:command];
 }
 
@@ -1675,11 +1673,12 @@ NSString* StringForItemCount(long count) {
 
 - (void)URLWasDropped:(GURL const&)url {
   // Called when a URL is dropped on the new tab button.
-  OpenUrlCommand* command = [[OpenUrlCommand alloc] initWithURL:url
-                                                       referrer:web::Referrer()
-                                                    inIncognito:_isIncognito
-                                                   inBackground:NO
-                                                       appendTo:kLastTab];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:url
+                                    referrer:web::Referrer()
+                                 inIncognito:_isIncognito
+                                inBackground:NO
+                                    appendTo:kLastTab];
   [self.dispatcher openURL:command];
 }
 
