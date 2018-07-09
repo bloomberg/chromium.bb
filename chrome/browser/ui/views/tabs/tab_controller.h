@@ -104,10 +104,9 @@ class TabController {
   // Ends dragging a Tab. Returns whether the tab has been destroyed.
   virtual bool EndDrag(EndDragReason reason) = 0;
 
-  // Returns the tab that contains the specified coordinates, in terms of |tab|,
-  // or NULL if there is no tab that contains the specified point.
-  virtual Tab* GetTabAt(Tab* tab,
-                        const gfx::Point& tab_in_tab_coordinates) = 0;
+  // Returns the tab that contains the specified point in tabstrip coordinates,
+  // or null if there is no tab that contains the specified point.
+  virtual Tab* GetTabAt(const gfx::Point& point) = 0;
 
   // Returns the next tab in the model order. Returns nullptr if there
   // isn't another tab beyond the given tab.
