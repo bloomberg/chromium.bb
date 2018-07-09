@@ -29,6 +29,16 @@ message UpgradeArcContainerRequest {
     SKIP_SETUP_COPY_ON_INIT = 2;
   }
 
+  enum SupervisionTransition {
+    // No transition necessary.
+    NONE = 0;
+    // Child user is transitioning to regular account, need to lift supervision.
+    CHILD_TO_REGULAR = 1;
+    // Regular user is transitioning to child account, need to enable
+    // supervision.
+    REGULAR_TO_CHILD = 2;
+  }
+
   // Account ID of the user to start ARC for. This must be the same as the
   // one given in StartSession.
   required string account_id = 1;
@@ -43,8 +53,8 @@ message UpgradeArcContainerRequest {
   // Optional mode for packages cache tests.
   optional PackageCacheMode packages_cache_mode = 4 [default = DEFAULT];
 
-  // Option to notify ARC if the account is a child, allowing us to identify if
-  // supervision should be provisioned or lifted in boot time.
+  // Option to notify ARC if the account is a child, allowing us to provide
+  // special behavior for child account on ARC.
   optional bool is_child = 9;
 
   // Whether the container is being upgraded for a Chrome OS demo session.
@@ -62,9 +72,9 @@ message UpgradeArcContainerRequest {
   // Preferred languages to set in Android container during the boot.
   repeated string preferred_languages = 8;
 
-  // DEPRECATED: use is_child instead to notify the current child status for the
-  // logged-in account.
-  optional int32 supervision_transition = 5 [deprecated = true];
+  // Option to notify ARC that it should transition from a supervised state to
+  // a non-supervised state, and vice-versa.
+  optional SupervisionTransition supervision_transition = 11;
 
-  // Next ID to use: 11
+  // Next ID to use: 12
 }
