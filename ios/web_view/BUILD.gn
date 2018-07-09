@@ -380,8 +380,8 @@ js_compile_bundle("web_view_bundle") {
   closure_entry_point = "__crWeb.webViewBundle"
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
-    "//components/autofill/ios/fill/resources/fill.js",
-    "//components/autofill/ios/fill/resources/form.js",
+    "//components/autofill/ios/form_util/resources/fill.js",
+    "//components/autofill/ios/form_util/resources/form.js",
     "//ios/chrome/browser/passwords/resources/password_controller.js",
     "resources/web_view_bundle.js",
   ]

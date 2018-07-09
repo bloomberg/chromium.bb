@@ -26,6 +26,7 @@ source_set("ssl") {
     ":feature_flags",
     "//base",
     "//base:i18n",
+    "//components/autofill/ios/form_util",
     "//components/captive_portal",
     "//components/security_interstitials/core",
     "//components/security_state/core",

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/ios/form_util/form_activity_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -16,6 +17,7 @@
 // input events. Such events may change the page's Security Level.
 class InsecureInputTabHelper
     : public web::WebStateObserver,
+      public autofill::FormActivityObserver,
       public web::WebStateUserData<InsecureInputTabHelper> {
  public:
   ~InsecureInputTabHelper() override;
@@ -39,9 +41,10 @@ class InsecureInputTabHelper
   friend class web::WebStateUserData<InsecureInputTabHelper>;
   explicit InsecureInputTabHelper(web::WebState* web_state);
 
+  // FormActivityObserver implementation.
+  void OnFormActivity(web::WebState* web_state,
+                      const web::FormActivityParams& params) override;
   // WebStateObserver implementation.
-  void FormActivityRegistered(web::WebState* web_state,
-                              const web::FormActivityParams& params) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The WebState this instance is observing. Will be null after

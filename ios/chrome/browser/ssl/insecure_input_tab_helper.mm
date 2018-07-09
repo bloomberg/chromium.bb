@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -115,9 +116,11 @@ void InsecureInputTabHelper::DidEditFieldInInsecureContext() {
 InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
   web_state_->AddObserver(this);
+  autofill::FormActivityTabHelper::GetOrCreateForWebState(web_state)
+      ->AddObserver(this);
 }
 
-void InsecureInputTabHelper::FormActivityRegistered(
+void InsecureInputTabHelper::OnFormActivity(
     web::WebState* web_state,
     const web::FormActivityParams& params) {
   DCHECK_EQ(web_state_, web_state);
@@ -129,6 +132,8 @@ void InsecureInputTabHelper::FormActivityRegistered(
 
 void InsecureInputTabHelper::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
+  autofill::FormActivityTabHelper::GetOrCreateForWebState(web_state)
+      ->RemoveObserver(this);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }

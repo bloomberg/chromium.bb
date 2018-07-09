@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -43,7 +44,7 @@ TEST_F(FillJsTest, GetCanonicalActionForForm) {
       {@"javascript:login()", @"javascript:login()"},
   };
 
-  for (size_t i = 0; i < arraysize(test_data); i++) {
+  for (size_t i = 0; i < base::size(test_data); i++) {
     TestData& data = test_data[i];
     NSString* html_action =
         data.html_action == nil
