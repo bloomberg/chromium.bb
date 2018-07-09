@@ -9,7 +9,7 @@ package optimization_guide.proto;
 
 enum OptimizationType {
   TYPE_UNSPECIFIED = 0;
-  // This optimization blocks Javascript on the page.
+  // This optimization blocks JavaScript on the page.
   NOSCRIPT = 1;
   // This optimization applies a set of ResourceLoadingHint(s) to load the
   // page.

@@ -1192,6 +1192,8 @@ jumbo_split_static_library("browser") {
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",
     "previews/previews_service_factory.h",
+    "previews/resource_loading_hints/resource_loading_hints_web_contents_observer.cc",
+    "previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h",
     "process_resource_usage.cc",
     "process_resource_usage.h",
     "process_singleton.h",
