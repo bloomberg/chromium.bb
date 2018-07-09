@@ -298,14 +298,12 @@ const int kLocationAuthorizationStatusCount = 4;
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.
 - (NSDictionary*)variationHeadersForURL:(const GURL&)URL {
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not
-  // affect transmission of experiments coming from the variations server.
   net::HttpRequestHeaders variation_headers;
-  variations::AppendVariationHeaders(
+  variations::AppendVariationHeadersUnknownSignedIn(
       URL,
       self.browserState->IsOffTheRecord() ? variations::InIncognito::kYes
                                           : variations::InIncognito::kNo,
-      variations::SignedIn::kNo, &variation_headers);
+      &variation_headers);
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
   net::HttpRequestHeaders::Iterator header_iterator(variation_headers);
   while (header_iterator.GetNext()) {

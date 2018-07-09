@@ -426,13 +426,11 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
 
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     driver_->IsIncognito()
-                                         ? variations::InIncognito::kYes
-                                         : variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
+  variations::AppendVariationHeadersUnknownSignedIn(
+      fetcher->GetOriginalURL(),
+      driver_->IsIncognito() ? variations::InIncognito::kYes
+                             : variations::InIncognito::kNo,
+      &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
 
   // Transfer ownership of the fetcher into url_fetchers_. Temporarily hang

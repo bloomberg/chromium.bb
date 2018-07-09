@@ -943,13 +943,11 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
   request->url = suggest_url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   // Add Chrome experiment state to the request headers.
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(
+  variations::AppendVariationHeadersUnknownSignedIn(
       request->url,
       client()->IsOffTheRecord() ? variations::InIncognito::kYes
                                  : variations::InIncognito::kNo,
-      variations::SignedIn::kNo, &request->headers);
+      &request->headers);
 
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.

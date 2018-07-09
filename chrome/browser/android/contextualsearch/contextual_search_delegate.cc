@@ -154,13 +154,11 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
 
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(
+  variations::AppendVariationHeadersUnknownSignedIn(
       search_term_fetcher_->GetOriginalURL(),
       variations::InIncognito::kNo,  // Impossible to be incognito at this
                                      // point.
-      variations::SignedIn::kNo, &headers);
+      &headers);
   search_term_fetcher_->SetExtraRequestHeaders(headers.ToString());
 
   SetDiscourseContextAndAddToHeader(*context_);

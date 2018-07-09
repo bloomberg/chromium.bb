@@ -35,15 +35,12 @@ const char kDefaultExperimentalServerAddress[] =
 
 void AddVariationHeaders(network::ResourceRequest* request) {
   // Add Chrome experiment state to the request headers.
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
   //
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
   // non-incognito state here (i.e. contextual sugestions are not served in
   // incognito mode).
-  variations::AppendVariationHeaders(request->url, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo,
-                                     &request->headers);
+  variations::AppendVariationHeadersUnknownSignedIn(
+      request->url, variations::InIncognito::kNo, &request->headers);
 }
 
 // Returns API request body. The final result depends on the following input

@@ -178,10 +178,8 @@ OneGoogleBarLoaderImpl::AuthenticatedURLLoader::AuthenticatedURLLoader(
 net::HttpRequestHeaders
 OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
   net::HttpRequestHeaders headers;
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(api_url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
+  variations::AppendVariationHeadersUnknownSignedIn(
+      api_url_, variations::InIncognito::kNo, &headers);
 #if defined(OS_CHROMEOS)
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
       account_consistency_mirror_required_

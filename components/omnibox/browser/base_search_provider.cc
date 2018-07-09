@@ -102,13 +102,11 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(
+  variations::AppendVariationHeadersUnknownSignedIn(
       request->url,
       client->IsOffTheRecord() ? variations::InIncognito::kYes
                                : variations::InIncognito::kNo,
-      variations::SignedIn::kNo, &request->headers);
+      &request->headers);
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // data_use_measurement::DataUseUserData::OMNIBOX
