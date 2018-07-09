@@ -689,10 +689,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     entered_views.push_back(cur_view);
   }
 
-  if (cur_view != root_view) {
-    ReportMouseTargetNotInRoot(cur_view, root_view);
+  // On Windows, it appears to be possible that render widget targeting could
+  // produce a target that is outside of the specified root. For now, we'll
+  // just give up in such a case. See https://crbug.com/851958.
+  if (cur_view != root_view)
     return;
-  }
 
   cur_view = last_mouse_move_target_;
   if (cur_view) {
@@ -770,33 +771,6 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 
   last_mouse_move_target_ = target;
   last_mouse_move_root_view_ = root_view;
-}
-
-void RenderWidgetHostInputEventRouter::ReportMouseTargetNotInRoot(
-    RenderWidgetHostViewBase* target_root,
-    RenderWidgetHostViewBase* specified_root) {
-  static auto* specified_root_is_child_key =
-      base::debug::AllocateCrashKeyString("mouse-outside-root-root-is-child",
-                                          base::debug::CrashKeySize::Size32);
-  base::debug::ScopedCrashKeyString specified_root_is_child_key_value(
-      specified_root_is_child_key,
-      std::to_string(specified_root->IsRenderWidgetHostViewChildFrame()));
-  static auto* specified_root_is_mouse_locked_key =
-      base::debug::AllocateCrashKeyString(
-          "mouse-outside-root-root-is-mouse-locked",
-          base::debug::CrashKeySize::Size32);
-  base::debug::ScopedCrashKeyString specified_root_is_mouse_locked_key_value(
-      specified_root_is_mouse_locked_key,
-      std::to_string(specified_root->IsMouseLocked()));
-  static auto* target_root_is_mouse_locked_key =
-      base::debug::AllocateCrashKeyString(
-          "mouse-outside-root-target-root-is-mouse-locked",
-          base::debug::CrashKeySize::Size32);
-  base::debug::ScopedCrashKeyString target_root_is_mouse_locked_key_value(
-      target_root_is_mouse_locked_key,
-      std::to_string(target_root->IsMouseLocked()));
-
-  base::debug::DumpWithoutCrashing();
 }
 
 void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
