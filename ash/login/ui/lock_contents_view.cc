@@ -1376,10 +1376,10 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
       to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
       keyboard::KeyboardController* keyboard_controller =
           GetKeyboardController();
-      const bool IsKeyboardVisible =
+      const bool is_keyboard_visible =
           keyboard_controller ? keyboard_controller->IsKeyboardVisible()
                               : false;
-      if (state->show_pin && !IsKeyboardVisible &&
+      if (state->show_pin && !is_keyboard_visible &&
           state->fingerprint_state ==
               mojom::FingerprintUnlockState::UNAVAILABLE) {
         to_update_auth |= LoginAuthUserView::AUTH_PIN;
