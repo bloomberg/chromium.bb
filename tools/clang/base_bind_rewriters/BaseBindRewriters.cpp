@@ -623,11 +623,13 @@ class AdaptCallbackForRepeatingRewriter : public MatchFinder::MatchCallback,
         result.SourceManager->getSpellingLoc(target->getLocStart()),
         result.SourceManager->getSpellingLoc(target->getArg(0)->getExprLoc())
             .getLocWithOffset(-1));
-    replacements_->emplace_back(*result.SourceManager, left, "");
+
+    // We use " " as replacement to work around https://crbug.com/861886.
+    replacements_->emplace_back(*result.SourceManager, left, " ");
     auto r_paren = clang::CharSourceRange::getTokenRange(
         result.SourceManager->getSpellingLoc(target->getRParenLoc()),
         result.SourceManager->getSpellingLoc(target->getRParenLoc()));
-    replacements_->emplace_back(*result.SourceManager, r_paren, "");
+    replacements_->emplace_back(*result.SourceManager, r_paren, " ");
   }
 
  private:

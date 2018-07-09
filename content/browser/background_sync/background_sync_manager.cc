@@ -368,10 +368,10 @@ void BackgroundSyncManager::InitDidGetControllerParameters(
     return;
   }
 
-  GetDataFromBackend(kBackgroundSyncUserDataKey,
-                     base::AdaptCallbackForRepeating(base::BindOnce(
-                         &BackgroundSyncManager::InitDidGetDataFromBackend,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+  GetDataFromBackend(
+      kBackgroundSyncUserDataKey,
+      base::BindOnce(&BackgroundSyncManager::InitDidGetDataFromBackend,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncManager::InitDidGetDataFromBackend(
@@ -599,9 +599,8 @@ void BackgroundSyncManager::DisableAndClearManager(base::OnceClosure callback) {
   // loading from storage), so reload the registrations from storage again.
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &BackgroundSyncManager::DisableAndClearDidGetRegistrations,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+      base::BindOnce(&BackgroundSyncManager::DisableAndClearDidGetRegistrations,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
@@ -622,9 +621,8 @@ void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
   for (const auto& sw_id_and_regs : user_data) {
     service_worker_context_->ClearRegistrationUserData(
         sw_id_and_regs.first, {kBackgroundSyncUserDataKey},
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            &BackgroundSyncManager::DisableAndClearManagerClearedOne,
-            weak_ptr_factory_.GetWeakPtr(), barrier_closure)));
+        base::BindOnce(&BackgroundSyncManager::DisableAndClearManagerClearedOne,
+                       weak_ptr_factory_.GetWeakPtr(), barrier_closure));
   }
 }
 
@@ -769,8 +767,7 @@ void BackgroundSyncManager::StoreDataInBackend(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->StoreRegistrationUserData(
-      sw_registration_id, origin, {{backend_key, data}},
-      base::AdaptCallbackForRepeating(std::move(callback)));
+      sw_registration_id, origin, {{backend_key, data}}, std::move(callback));
 }
 
 void BackgroundSyncManager::GetDataFromBackend(
@@ -823,8 +820,8 @@ void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
 
 void BackgroundSyncManager::HasMainFrameProviderHost(const GURL& origin,
                                                      BoolCallback callback) {
-  service_worker_context_->HasMainFrameProviderHost(
-      origin, base::AdaptCallbackForRepeating(std::move(callback)));
+  service_worker_context_->HasMainFrameProviderHost(origin,
+                                                    std::move(callback));
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(
