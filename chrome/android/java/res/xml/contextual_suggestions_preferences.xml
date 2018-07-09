@@ -14,7 +14,7 @@
         app:drawDivider="true" />
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
-        android:title="@string/contextual_suggestions_description" />
+        android:key="contextual_suggestions_description" />
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:key="contextual_suggestions_message" />

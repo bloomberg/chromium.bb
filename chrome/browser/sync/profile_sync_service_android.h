@@ -122,9 +122,9 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   jboolean HasUnrecoverableError(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jint GetUploadToGoogleState(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj,
-                              jint model_type);
+  jboolean IsUrlKeyedAnonymizedDataCollectionEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Gets SyncProtocolError.ClientAction.
   jint GetProtocolErrorClientAction(

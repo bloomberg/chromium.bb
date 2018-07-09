@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/channel_info.h"
@@ -34,6 +35,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/syncable/read_transaction.h"
+#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -48,6 +50,7 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using browser_sync::ProfileSyncService;
 using content::BrowserThread;
+using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
 
@@ -358,13 +361,17 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
   return sync_service_->HasUnrecoverableError();
 }
 
-jint ProfileSyncServiceAndroid::GetUploadToGoogleState(
+jboolean ProfileSyncServiceAndroid::IsUrlKeyedAnonymizedDataCollectionEnabled(
     JNIEnv* env,
-    const JavaParamRef<jobject>&,
-    jint model_type) {
+    const base::android::JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return static_cast<int>(syncer::GetUploadToGoogleState(
-      sync_service_, static_cast<syncer::ModelType>(model_type)));
+  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile_);
+  PrefService* pref_service = profile_->GetPrefs();
+  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
+      unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
+          NewAnonymizedDataCollectionConsentHelper(is_unified_consent_enabled,
+                                                   pref_service, sync_service_);
+  return unified_consent_url_helper->IsEnabled();
 }
 
 jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(

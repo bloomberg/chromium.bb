@@ -18,8 +18,6 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.UploadState;
 
 /**
  * A monitor that is responsible for detecting changes to conditions required for contextual
@@ -94,13 +92,11 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
     public static boolean getSettingsEnabled() {
         if (sSettingsEnabledForTesting) return true;
 
-        ProfileSyncService service = ProfileSyncService.get();
-
-        boolean isUploadToGoogleActive =
-                service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
-                == UploadState.ACTIVE;
         boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
-        return isUploadToGoogleActive && isDSEConditionMet() && !isAccessibilityEnabled
+        // TODO(twellington): Update to also accept personalized activity collection
+        // ("Activity and interactions").
+        return ProfileSyncService.get().isUrlKeyedAnonymizedDataCollectionEnabled()
+                && isDSEConditionMet() && !isAccessibilityEnabled
                 && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy();
     }
 
