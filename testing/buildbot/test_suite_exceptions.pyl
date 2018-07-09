@@ -340,10 +340,6 @@
   },
   'cast_unittests': {
     'remove_from': [
-      # Unclear why these largely aren't run on Android.
-      # TODO(kbr): why are the cast unit tests not run on the Cast bots?!
-      'Cast Audio Linux',
-      'Cast Linux',
       # chromium.clang
       'ToTAndroidCFI',
       'ToTLinuxThinLTO',
@@ -581,9 +577,7 @@
   },
   'components_browsertests': {
     'remove_from': [
-      # On chromium.linux, unclear why these aren't run on the Cast bots.
-      'Cast Audio Linux',
-      'Cast Linux',
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
@@ -613,11 +607,6 @@
     },
   },
   'components_unittests': {
-    'remove_from': [
-      # On chromium.linux, unclear why these aren't run on the Cast bots.
-      'Cast Audio Linux',
-      'Cast Linux',
-    ],
     'modifications': {
       # chromium.android
       'android-marshmallow-arm64-rel': {
@@ -1596,9 +1585,6 @@
       # chromium.gpu.fyi
       # The face and barcode detection tests fail on the Mac Pros.
       'Mac Pro FYI Release (AMD)',
-      # On chromium.linux, unclear why these aren't run on Cast.
-      'Cast Audio Linux',
-      'Cast Linux',
       # chromium.memory
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
