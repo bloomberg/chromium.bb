@@ -31,12 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_CLIENT_H_
 
+#include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
-class WebSocketHandshakeRequest;
-class WebSocketHandshakeResponse;
 
 class WebSocketHandleClient {
  public:
@@ -49,13 +48,14 @@ class WebSocketHandleClient {
   // This notification can be omitted when the inspector is not active.
   virtual void DidStartOpeningHandshake(
       WebSocketHandle*,
-      scoped_refptr<WebSocketHandshakeRequest>) = 0;
+      network::mojom::blink::WebSocketHandshakeRequestPtr) = 0;
 
   // Called when the browser finishes the opening handshake.
   // This notification precedes didConnect.
   // This notification can be omitted when the inspector is not active.
-  virtual void DidFinishOpeningHandshake(WebSocketHandle*,
-                                         const WebSocketHandshakeResponse*) = 0;
+  virtual void DidFinishOpeningHandshake(
+      WebSocketHandle*,
+      network::mojom::blink::WebSocketHandshakeResponsePtr) = 0;
 
   // Called when the browser is required to fail the connection.
   // |message| can be displayed in the inspector, but should not be passed

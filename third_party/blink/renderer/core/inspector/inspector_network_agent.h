@@ -41,6 +41,15 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace network {
+namespace mojom {
+namespace blink {
+class WebSocketHandshakeResponse;
+class WebSocketHandshakeRequest;
+}  // namespace blink
+}  // namespace mojom
+}  // namespace network
+
 namespace blink {
 
 class Document;
@@ -57,8 +66,6 @@ class ResourceResponse;
 class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
-class WebSocketHandshakeRequest;
-class WebSocketHandshakeResponse;
 class WorkerGlobalScope;
 
 class CORE_EXPORT InspectorNetworkAgent final
@@ -154,13 +161,15 @@ class CORE_EXPORT InspectorNetworkAgent final
                           unsigned long identifier,
                           const KURL& request_url,
                           const String&);
-  void WillSendWebSocketHandshakeRequest(ExecutionContext*,
-                                         unsigned long identifier,
-                                         const WebSocketHandshakeRequest*);
-  void DidReceiveWebSocketHandshakeResponse(ExecutionContext*,
-                                            unsigned long identifier,
-                                            const WebSocketHandshakeRequest*,
-                                            const WebSocketHandshakeResponse*);
+  void WillSendWebSocketHandshakeRequest(
+      ExecutionContext*,
+      unsigned long identifier,
+      network::mojom::blink::WebSocketHandshakeRequest*);
+  void DidReceiveWebSocketHandshakeResponse(
+      ExecutionContext*,
+      unsigned long identifier,
+      network::mojom::blink::WebSocketHandshakeRequest*,
+      network::mojom::blink::WebSocketHandshakeResponse*);
   void DidCloseWebSocket(ExecutionContext*, unsigned long identifier);
   void DidReceiveWebSocketFrame(unsigned long identifier,
                                 int op_code,

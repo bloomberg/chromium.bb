@@ -9,8 +9,6 @@
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
-#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
-#include "third_party/blink/renderer/platform/network/websocket_handshake_response.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -154,33 +152,14 @@ void WebSocketHandleImpl::OnStartOpeningHandshake(
     network::mojom::blink::WebSocketHandshakeRequestPtr request) {
   NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
                    << request->url.GetString() << ")";
-
-  scoped_refptr<WebSocketHandshakeRequest> request_to_pass =
-      WebSocketHandshakeRequest::Create(request->url);
-  for (size_t i = 0; i < request->headers.size(); ++i) {
-    const network::mojom::blink::HttpHeaderPtr& header = request->headers[i];
-    request_to_pass->AddHeaderField(AtomicString(header->name),
-                                    AtomicString(header->value));
-  }
-  request_to_pass->SetHeadersText(request->headers_text);
-  client_->DidStartOpeningHandshake(this, request_to_pass);
+  client_->DidStartOpeningHandshake(this, std::move(request));
 }
 
 void WebSocketHandleImpl::OnFinishOpeningHandshake(
     network::mojom::blink::WebSocketHandshakeResponsePtr response) {
   NETWORK_DVLOG(1) << this << " OnFinishOpeningHandshake("
                    << response->url.GetString() << ")";
-
-  WebSocketHandshakeResponse response_to_pass;
-  response_to_pass.SetStatusCode(response->status_code);
-  response_to_pass.SetStatusText(response->status_text);
-  for (size_t i = 0; i < response->headers.size(); ++i) {
-    const network::mojom::blink::HttpHeaderPtr& header = response->headers[i];
-    response_to_pass.AddHeaderField(AtomicString(header->name),
-                                    AtomicString(header->value));
-  }
-  response_to_pass.SetHeadersText(response->headers_text);
-  client_->DidFinishOpeningHandshake(this, &response_to_pass);
+  client_->DidFinishOpeningHandshake(this, std::move(response));
 }
 
 void WebSocketHandleImpl::OnAddChannelResponse(const String& protocol,

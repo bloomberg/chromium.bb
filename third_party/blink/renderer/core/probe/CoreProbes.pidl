@@ -59,8 +59,6 @@ interface CoreProbes {
   class HTMLDocumentParser;
   class ScheduledNavigation;
   class ThreadableLoaderClient;
-  class WebSocketHandshakeRequest;
-  class WebSocketHandshakeResponse;
   class WorkerInspectorProxy;
   class XMLHttpRequest;
 
@@ -128,8 +126,8 @@ interface CoreProbes {
   void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
   void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
   void didCreateWebSocket([Keep] ExecutionContext*, unsigned long identifier, const KURL& requestURL, const String& protocol);
-  void willSendWebSocketHandshakeRequest([Keep] ExecutionContext*, unsigned long identifier, const WebSocketHandshakeRequest* request);
-  void didReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response);
+  void willSendWebSocketHandshakeRequest([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
+  void didReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
   void didCloseWebSocket([Keep] ExecutionContext*, unsigned long identifier);
   void didReceiveWebSocketFrame(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
   void didSendWebSocketFrame(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);

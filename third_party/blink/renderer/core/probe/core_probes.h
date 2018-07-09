@@ -36,6 +36,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/probe/platform_probes.h"
 
+namespace network {
+namespace mojom {
+namespace blink {
+class WebSocketHandshakeResponse;
+class WebSocketHandshakeRequest;
+}  // namespace blink
+}  // namespace mojom
+}  // namespace network
+
 namespace blink {
 
 class CoreProbeSink;

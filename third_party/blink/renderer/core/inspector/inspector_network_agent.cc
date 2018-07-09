@@ -37,6 +37,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -74,8 +75,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
-#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
-#include "third_party/blink/renderer/platform/network/websocket_handshake_response.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
@@ -1220,11 +1219,14 @@ void InspectorNetworkAgent::DidCreateWebSocket(
 void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
     ExecutionContext*,
     unsigned long identifier,
-    const WebSocketHandshakeRequest* request) {
+    network::mojom::blink::WebSocketHandshakeRequest* request) {
   DCHECK(request);
+  HTTPHeaderMap headers;
+  for (auto& header : request->headers)
+    headers.Add(AtomicString(header->name), AtomicString(header->value));
   std::unique_ptr<protocol::Network::WebSocketRequest> request_object =
       protocol::Network::WebSocketRequest::create()
-          .setHeaders(BuildObjectForHeaders(request->HeaderFields()))
+          .setHeaders(BuildObjectForHeaders(headers))
           .build();
   GetFrontend()->webSocketWillSendHandshakeRequest(
       IdentifiersFactory::SubresourceRequestId(identifier),
@@ -1234,24 +1236,41 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
     ExecutionContext*,
     unsigned long identifier,
-    const WebSocketHandshakeRequest* request,
-    const WebSocketHandshakeResponse* response) {
+    network::mojom::blink::WebSocketHandshakeRequest* request,
+    network::mojom::blink::WebSocketHandshakeResponse* response) {
   DCHECK(response);
+
+  HTTPHeaderMap response_headers;
+  for (auto& header : response->headers) {
+    HTTPHeaderMap::AddResult add_result = response_headers.Add(
+        AtomicString(header->name), AtomicString(header->value));
+    if (!add_result.is_new_entry) {
+      // Protocol expects the "\n" separated format.
+      add_result.stored_value->value =
+          add_result.stored_value->value + "\n" + header->value;
+    }
+  }
+
   std::unique_ptr<protocol::Network::WebSocketResponse> response_object =
       protocol::Network::WebSocketResponse::create()
-          .setStatus(response->StatusCode())
-          .setStatusText(response->StatusText())
-          .setHeaders(BuildObjectForHeaders(response->HeaderFields()))
+          .setStatus(response->status_code)
+          .setStatusText(response->status_text)
+          .setHeaders(BuildObjectForHeaders(response_headers))
           .build();
+  if (!response->headers_text.IsEmpty())
+    response_object->setHeadersText(response->headers_text);
 
-  if (!response->HeadersText().IsEmpty())
-    response_object->setHeadersText(response->HeadersText());
   if (request) {
-    response_object->setRequestHeaders(
-        BuildObjectForHeaders(request->HeaderFields()));
-    if (!request->HeadersText().IsEmpty())
-      response_object->setRequestHeadersText(request->HeadersText());
+    HTTPHeaderMap request_headers;
+    for (auto& header : request->headers) {
+      request_headers.Add(AtomicString(header->name),
+                          AtomicString(header->value));
+    }
+    response_object->setRequestHeaders(BuildObjectForHeaders(request_headers));
+    if (!request->headers_text.IsEmpty())
+      response_object->setRequestHeadersText(request->headers_text);
   }
+
   GetFrontend()->webSocketHandshakeResponseReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
       CurrentTimeTicksInSeconds(), std::move(response_object));

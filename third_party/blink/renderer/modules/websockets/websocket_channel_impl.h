@@ -55,7 +55,6 @@
 
 namespace blink {
 
-class WebSocketHandshakeRequest;
 class WebSocketHandshakeThrottle;
 
 // This is an implementation of WebSocketChannel. This is created on the main
@@ -163,9 +162,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
                   const String& extensions) override;
   void DidStartOpeningHandshake(
       WebSocketHandle*,
-      scoped_refptr<WebSocketHandshakeRequest>) override;
-  void DidFinishOpeningHandshake(WebSocketHandle*,
-                                 const WebSocketHandshakeResponse*) override;
+      network::mojom::blink::WebSocketHandshakeRequestPtr) override;
+  void DidFinishOpeningHandshake(
+      WebSocketHandle*,
+      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void DidFail(WebSocketHandle*, const String& message) override;
   void DidReceiveData(WebSocketHandle*,
                       bool fin,
@@ -213,7 +213,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
       connection_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> location_at_construction_;
-  scoped_refptr<WebSocketHandshakeRequest> handshake_request_;
+  network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;
   std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle_;
   // This field is only initialised if the object is still waiting for a
   // throttle response when DidConnect is called.
