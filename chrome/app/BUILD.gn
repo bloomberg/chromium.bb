@@ -447,7 +447,6 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chromeos/services/secure_channel:manifest",
-      "//components/services/font:manifest",
       "//ui/accessibility:manifest",
     ]
   }
