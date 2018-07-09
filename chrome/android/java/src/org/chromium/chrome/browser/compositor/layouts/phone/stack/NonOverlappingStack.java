@@ -24,11 +24,12 @@ import java.util.Collection;
  * The non-overlapping tab stack we use when the HorizontalTabSwitcherAndroid flag is enabled.
  */
 public class NonOverlappingStack extends Stack {
-    @IntDef({SWITCH_DIRECTION_LEFT, SWITCH_DIRECTION_RIGHT})
+    @IntDef({SwitchDirection.LEFT, SwitchDirection.RIGHT})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SwitchDirection {}
-    public static final int SWITCH_DIRECTION_LEFT = 0;
-    public static final int SWITCH_DIRECTION_RIGHT = 1;
+    public @interface SwitchDirection {
+        int LEFT = 0;
+        int RIGHT = 1;
+    }
 
     /**
      * The scale the tabs should be shown at when there's exactly one tab open.
@@ -411,7 +412,7 @@ public class NonOverlappingStack extends Stack {
             StackTab tab = mStackTabs[i];
 
             float endOffset;
-            if (direction == SWITCH_DIRECTION_LEFT) {
+            if (direction == SwitchDirection.LEFT) {
                 endOffset = -SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
             } else {
                 endOffset = SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
@@ -465,7 +466,7 @@ public class NonOverlappingStack extends Stack {
             StackTab tab = mStackTabs[i];
 
             float startOffset;
-            if (direction == SWITCH_DIRECTION_LEFT) {
+            if (direction == SwitchDirection.LEFT) {
                 startOffset = SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
             } else {
                 startOffset = -SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();

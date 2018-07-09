@@ -49,10 +49,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     /**
      * The orientation of the device.
      */
-    public interface Orientation {
-        public static final int UNSET = 0;
-        public static final int PORTRAIT = 1;
-        public static final int LANDSCAPE = 2;
+    public @interface Orientation {
+        int UNSET = 0;
+        int PORTRAIT = 1;
+        int LANDSCAPE = 2;
     }
 
     /** The possible variations of the visible viewport that different layouts may need. */
@@ -96,7 +96,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     protected TabModelSelector mTabModelSelector;
     protected TabContentManager mTabContentManager;
 
-    private ChromeAnimation<Animatable<?>> mLayoutAnimations;
+    private ChromeAnimation<Animatable> mLayoutAnimations;
 
     // Tablet tab strip managers.
     private final List<SceneOverlay> mSceneOverlays = new ArrayList<SceneOverlay>();
@@ -891,8 +891,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * .AnimatableAnimation} and adds it to the animation.
      * Automatically sets the start value at the beginning of the animation.
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
-            float end, long duration, long startTime) {
+    protected void addToAnimation(
+            Animatable object, int prop, float start, float end, long duration, long startTime) {
         addToAnimation(object, prop, start, end, duration, startTime, false);
     }
 
@@ -900,8 +900,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation
      * .AnimatableAnimation} and it to the animation. Uses a deceleration interpolator by default.
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
-            float end, long duration, long startTime, boolean setStartValueAfterDelay) {
+    protected void addToAnimation(Animatable object, int prop, float start, float end,
+            long duration, long startTime, boolean setStartValueAfterDelay) {
         addToAnimation(object, prop, start, end, duration, startTime, setStartValueAfterDelay,
                 ChromeAnimation.getDecelerateInterpolator());
     }
@@ -921,11 +921,11 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param setStartValueAfterDelay See {@link Animation#setStartValueAfterStartDelay(boolean)}
      * @param interpolator            The interpolator to use for the animation
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
-            float end, long duration, long startTime, boolean setStartValueAfterDelay,
+    protected void addToAnimation(Animatable object, int prop, float start, float end,
+            long duration, long startTime, boolean setStartValueAfterDelay,
             Interpolator interpolator) {
-        ChromeAnimation.Animation<Animatable<?>> component = createAnimation(object, prop, start,
-                end, duration, startTime, setStartValueAfterDelay, interpolator);
+        ChromeAnimation.Animation<Animatable> component = createAnimation(object, prop, start, end,
+                duration, startTime, setStartValueAfterDelay, interpolator);
         addToAnimation(component);
     }
 
@@ -933,10 +933,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * Appends an Animation to the current animation set and starts it immediately.  If the set is
      * already finished or doesn't exist, the animation set is also started.
      */
-    protected void addToAnimation(ChromeAnimation.Animation<Animatable<?>> component) {
+    protected void addToAnimation(ChromeAnimation.Animation<Animatable> component) {
         if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
             onAnimationStarted();
-            mLayoutAnimations = new ChromeAnimation<Animatable<?>>();
+            mLayoutAnimations = new ChromeAnimation<Animatable>();
             mLayoutAnimations.start();
         }
         component.start();
@@ -949,10 +949,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param object The object being animated.
      * @param prop   The property to search for.
      */
-    protected <T extends Enum<?>> void cancelAnimation(Animatable<T> object, T prop) {
-        if (mLayoutAnimations != null) {
-            mLayoutAnimations.cancel(object, prop);
-        }
+    protected void cancelAnimation(Animatable object, int prop) {
+        if (mLayoutAnimations != null) mLayoutAnimations.cancel(object, prop);
     }
 
     /**

@@ -120,8 +120,8 @@ public class StackLayout extends StackLayoutBase {
             NonOverlappingStack oldStack = (NonOverlappingStack) mStacks.get(
                     toIncognitoTabModel ? NORMAL_STACK_INDEX : INCOGNITO_STACK_INDEX);
             oldStack.runSwitchAwayAnimation(toIncognitoTabModel
-                            ? NonOverlappingStack.SWITCH_DIRECTION_LEFT
-                            : NonOverlappingStack.SWITCH_DIRECTION_RIGHT);
+                            ? NonOverlappingStack.SwitchDirection.LEFT
+                            : NonOverlappingStack.SwitchDirection.RIGHT);
         } else {
             flingStacks(toIncognitoTabModel ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX);
             mFlingFromModelChange = true;
@@ -134,8 +134,8 @@ public class StackLayout extends StackLayoutBase {
         mRenderedScrollOffset = -newStackIndex;
         NonOverlappingStack newStack = (NonOverlappingStack) mStacks.get(newStackIndex);
         newStack.runSwitchToAnimation(newStackIndex == INCOGNITO_STACK_INDEX
-                        ? NonOverlappingStack.SWITCH_DIRECTION_LEFT
-                        : NonOverlappingStack.SWITCH_DIRECTION_RIGHT);
+                        ? NonOverlappingStack.SwitchDirection.LEFT
+                        : NonOverlappingStack.SwitchDirection.RIGHT);
     }
 
     @Override
@@ -184,9 +184,9 @@ public class StackLayout extends StackLayoutBase {
     protected @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
         // If this experiment flag is enabled, we add an incognito toggle button to the toolbar, and
         // disable swiping between the stacks.
-        if (isHorizontalTabSwitcherFlagEnabled()) return SWIPE_MODE_SEND_TO_STACK;
+        if (isHorizontalTabSwitcherFlagEnabled()) return SwipeMode.SEND_TO_STACK;
 
-        if (mStacks.size() == 2 && !mStacks.get(1).isDisplayable()) return SWIPE_MODE_SEND_TO_STACK;
+        if (mStacks.size() == 2 && !mStacks.get(1).isDisplayable()) return SwipeMode.SEND_TO_STACK;
         return super.computeInputMode(time, x, y, dx, dy);
     }
 

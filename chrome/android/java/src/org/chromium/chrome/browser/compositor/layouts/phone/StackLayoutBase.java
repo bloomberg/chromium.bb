@@ -56,27 +56,30 @@ import java.util.List;
 /**
  * Base class for layouts that show one or more stacks of tabs.
  */
-public abstract class StackLayoutBase
-        extends Layout implements Animatable<StackLayoutBase.Property> {
-    public enum Property {
-        INNER_MARGIN_PERCENT,
-        STACK_SNAP,
-        STACK_OFFSET_Y_PERCENT,
+public abstract class StackLayoutBase extends Layout implements Animatable {
+    @IntDef({Property.INNER_MARGIN_PERCENT, Property.STACK_SNAP, Property.STACK_OFFSET_Y_PERCENT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Property {
+        int INNER_MARGIN_PERCENT = 0;
+        int STACK_SNAP = 1;
+        int STACK_OFFSET_Y_PERCENT = 2;
     }
 
-    @IntDef({DRAG_DIRECTION_NONE, DRAG_DIRECTION_HORIZONTAL, DRAG_DIRECTION_VERTICAL})
+    @IntDef({DragDirection.NONE, DragDirection.HORIZONTAL, DragDirection.VERTICAL})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface DragDirection {}
-    private static final int DRAG_DIRECTION_NONE = 0;
-    private static final int DRAG_DIRECTION_HORIZONTAL = 1;
-    private static final int DRAG_DIRECTION_VERTICAL = 2;
+    public @interface DragDirection {
+        int NONE = 0;
+        int HORIZONTAL = 1;
+        int VERTICAL = 2;
+    }
 
-    @IntDef({SWIPE_MODE_NONE, SWIPE_MODE_SEND_TO_STACK, SWIPE_MODE_SWITCH_STACK})
+    @IntDef({SwipeMode.NONE, SwipeMode.SEND_TO_STACK, SwipeMode.SWITCH_STACK})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SwipeMode {}
-    protected static final int SWIPE_MODE_NONE = 0;
-    protected static final int SWIPE_MODE_SEND_TO_STACK = 1;
-    protected static final int SWIPE_MODE_SWITCH_STACK = 2;
+    public @interface SwipeMode {
+        int NONE = 0;
+        int SEND_TO_STACK = 1;
+        int SWITCH_STACK = 2;
+    }
 
     protected static final int INVALID_STACK_INDEX = -1;
 
@@ -134,10 +137,10 @@ public abstract class StackLayoutBase
     private float mStackOffsetYPercent;
 
     @DragDirection
-    private int mDragDirection = DRAG_DIRECTION_NONE;
+    private int mDragDirection = DragDirection.NONE;
 
     @SwipeMode
-    private int mInputMode = SWIPE_MODE_NONE;
+    private int mInputMode = SwipeMode.NONE;
     private float mLastOnDownX;
     private float mLastOnDownY;
     private long mLastOnDownTimeStamp;
@@ -188,7 +191,7 @@ public abstract class StackLayoutBase
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
             long time = time();
-            mDragDirection = DRAG_DIRECTION_NONE;
+            mDragDirection = DragDirection.NONE;
             mLastOnDownX = x;
             mLastOnDownY = y;
             mLastOnDownTimeStamp = time;
@@ -213,19 +216,19 @@ public abstract class StackLayoutBase
             float amountY = dy;
             mInputMode = computeInputMode(time, x, y, amountX, amountY);
 
-            if (mDragDirection == DRAG_DIRECTION_HORIZONTAL) amountY = 0;
-            if (mDragDirection == DRAG_DIRECTION_VERTICAL) amountX = 0;
+            if (mDragDirection == DragDirection.HORIZONTAL) amountY = 0;
+            if (mDragDirection == DragDirection.VERTICAL) amountX = 0;
 
-            if (oldInputMode == SWIPE_MODE_SEND_TO_STACK && mInputMode == SWIPE_MODE_SWITCH_STACK) {
+            if (oldInputMode == SwipeMode.SEND_TO_STACK && mInputMode == SwipeMode.SWITCH_STACK) {
                 mStacks.get(getTabStackIndex()).onUpOrCancel(time);
-            } else if (oldInputMode == SWIPE_MODE_SWITCH_STACK
-                    && mInputMode == SWIPE_MODE_SEND_TO_STACK) {
+            } else if (oldInputMode == SwipeMode.SWITCH_STACK
+                    && mInputMode == SwipeMode.SEND_TO_STACK) {
                 onUpOrCancel(time);
             }
 
-            if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
+            if (mInputMode == SwipeMode.SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).drag(time, x, y, amountX, amountY);
-            } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
+            } else if (mInputMode == SwipeMode.SWITCH_STACK) {
                 scrollStacks(isUsingHorizontalLayout() ? amountY : amountX);
             }
         }
@@ -257,14 +260,14 @@ public abstract class StackLayoutBase
             float vx = velocityX;
             float vy = velocityY;
 
-            if (mInputMode == SWIPE_MODE_NONE) {
+            if (mInputMode == SwipeMode.NONE) {
                 mInputMode = computeInputMode(
                         time, x, y, vx * SWITCH_STACK_FLING_DT, vy * SWITCH_STACK_FLING_DT);
             }
 
-            if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
+            if (mInputMode == SwipeMode.SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).fling(time, x, y, vx, vy);
-            } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
+            } else if (mInputMode == SwipeMode.SWITCH_STACK) {
                 final float velocity = isUsingHorizontalLayout() ? vy : vx;
                 final float origin = isUsingHorizontalLayout() ? y : x;
                 final float max = isUsingHorizontalLayout() ? getHeight() : getWidth();
@@ -307,7 +310,7 @@ public abstract class StackLayoutBase
             mClicked = false;
             finishScrollStacks();
             mStacks.get(getTabStackIndex()).onUpOrCancel(time);
-            mInputMode = SWIPE_MODE_NONE;
+            mInputMode = SwipeMode.NONE;
         }
 
         private long time() {
@@ -867,8 +870,8 @@ public abstract class StackLayoutBase
      * @return     The input mode to select.
      */
     protected @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
-        if (mStacks.size() == 0) return SWIPE_MODE_NONE;
-        if (mStacks.size() == 1) return SWIPE_MODE_SEND_TO_STACK;
+        if (mStacks.size() == 0) return SwipeMode.NONE;
+        if (mStacks.size() == 1) return SwipeMode.SEND_TO_STACK;
 
         int currentIndex = getTabStackIndex();
 
@@ -876,16 +879,16 @@ public abstract class StackLayoutBase
         // next touch down. The deltas here are already verified by StackLayoutGestureHandler as
         // being above some threshold so that we know we're handling a drag or fling and not a long
         // press.
-        if (mDragDirection == DRAG_DIRECTION_NONE) {
+        if (mDragDirection == DragDirection.NONE) {
             if (Math.abs(dx) > Math.abs(dy)) {
-                mDragDirection = DRAG_DIRECTION_HORIZONTAL;
+                mDragDirection = DragDirection.HORIZONTAL;
             } else {
-                mDragDirection = DRAG_DIRECTION_VERTICAL;
+                mDragDirection = DragDirection.VERTICAL;
             }
         }
 
-        if ((mDragDirection == DRAG_DIRECTION_VERTICAL) ^ isUsingHorizontalLayout()) {
-            return SWIPE_MODE_SEND_TO_STACK;
+        if ((mDragDirection == DragDirection.VERTICAL) ^ isUsingHorizontalLayout()) {
+            return SwipeMode.SEND_TO_STACK;
         }
 
         float relativeX = mLastOnDownX - (x + dx);
@@ -909,10 +912,10 @@ public abstract class StackLayoutBase
         if ((onLeftmostStack && switchDelta < 0) || (onRightmostStack && switchDelta > 0)) {
             // Dragging in a direction the stack cannot switch. Pass the drag to the Stack, which
             // will treat it as intending to discard a tab.
-            return SWIPE_MODE_SEND_TO_STACK;
+            return SwipeMode.SEND_TO_STACK;
         } else {
             // Interpret the drag as intending to switch between tab stacks.
-            return SWIPE_MODE_SWITCH_STACK;
+            return SwipeMode.SWITCH_STACK;
         }
     }
 
@@ -1471,23 +1474,23 @@ public abstract class StackLayoutBase
      * @param p New value of the property
      */
     @Override
-    public void setProperty(Property prop, float p) {
+    public void setProperty(@Property int prop, float p) {
         switch (prop) {
-            case STACK_SNAP:
+            case Property.STACK_SNAP:
                 mRenderedScrollOffset = p;
                 mScrollIndexOffset = p;
                 break;
-            case INNER_MARGIN_PERCENT:
+            case Property.INNER_MARGIN_PERCENT:
                 mInnerMarginPercent = p;
                 break;
-            case STACK_OFFSET_Y_PERCENT:
+            case Property.STACK_OFFSET_Y_PERCENT:
                 mStackOffsetYPercent = p;
                 break;
         }
     }
 
     @Override
-    public void onPropertyAnimationFinished(Property prop) {}
+    public void onPropertyAnimationFinished(@Property int prop) {}
 
     /**
      * Called by the stacks whenever they start an animation.
