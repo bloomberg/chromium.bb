@@ -35,8 +35,10 @@ UnifiedSliderBubbleController::~UnifiedSliderBubbleController() {
 void UnifiedSliderBubbleController::CloseBubble() {
   autoclose_.Stop();
   slider_controller_.reset();
-  if (bubble_widget_)
-    bubble_widget_->Close();
+  if (!bubble_widget_)
+    return;
+  bubble_widget_->Close();
+  tray_->SetTrayBubbleHeight(0);
 }
 
 bool UnifiedSliderBubbleController::IsBubbleShown() const {
@@ -135,6 +137,9 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   bubble_view_->InitializeAndShowBubble();
 
   StartAutoCloseTimer();
+
+  tray_->SetTrayBubbleHeight(
+      bubble_widget_->GetWindowBoundsInScreen().height());
 }
 
 void UnifiedSliderBubbleController::CreateSliderController() {
