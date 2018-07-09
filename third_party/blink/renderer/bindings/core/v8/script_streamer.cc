@@ -287,18 +287,21 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
       return;
     }
 
-    // Get as much data from the ResourceBuffer as we can.
-    const char* data = nullptr;
-    while (size_t length =
-               resource_buffer_->GetSomeData(data, queue_tail_position_)) {
-      // Copy the data chunks into a new buffer, since we're going to
-      // give the data to a background thread.
-      uint8_t* copied_data = new uint8_t[length];
-      memcpy(copied_data, data, length);
-      data_queue_.Produce(copied_data, length);
+    // Get as much data from the ResourceBuffer as we can in one chunk.
+    const size_t length = resource_buffer_->size() - queue_tail_position_;
 
-      queue_tail_position_ += length;
+    uint8_t* const copied_data = new uint8_t[length];
+    size_t pos = 0;
+
+    const char* data = nullptr;
+    while (size_t segment_size = resource_buffer_->GetSomeData(
+               data, queue_tail_position_ + pos)) {
+      memcpy(copied_data + pos, data, segment_size);
+      pos += segment_size;
     }
+    DCHECK_EQ(pos, length);
+    queue_tail_position_ = resource_buffer_->size();
+    data_queue_.Produce(copied_data, length);
   }
 
   // For coordinating between the main thread and background thread tasks.
