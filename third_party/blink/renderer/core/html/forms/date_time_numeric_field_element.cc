@@ -164,6 +164,10 @@ int DateTimeNumericFieldElement::Maximum() const {
   return range_.maximum;
 }
 
+String DateTimeNumericFieldElement::Placeholder() const {
+  return placeholder_;
+}
+
 void DateTimeNumericFieldElement::SetEmptyValue(EventBehavior event_behavior) {
   if (IsDisabled())
     return;

@@ -1,22 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/multiple-fields-ax-aria-attributes.js"></script>
 </head>
 <body>
-<input id=test type="time" step="0.001" value="12:34:56.789">
+<input id=test type="time" step="0.001" value="12:34:56.789" aria-label="TestLabel" title="TestTitle">
 <script>
-description('This test checks aria-help attribute of fields in multiple fields time input UI.');
-
-function enableAccessibility()
-{
-    if (!window.accessibilityController) {
-        debug("Please run inside DumpRenderTree.");
-        return;
-    }
-}
-
 function keyDown(key, modifiers)
 {
     if (!window.eventSender)
@@ -26,39 +17,46 @@ function keyDown(key, modifiers)
 
 var testInput = document.getElementById("test");
 
-enableAccessibility();
-testInput.focus();
+test(function(t) {
+    testInput.focus();
+    assert_equals(focusedElementDescription(),
+                  'Hours TestLabel, --, "12", TestTitle, intValue:12, range:1-12');
+    keyDown('\t');
+    assert_equals(focusedElementDescription(),
+                  'Minutes TestLabel, --, "34", TestTitle, intValue:34, range:0-59');
+    keyDown('\t');
+    assert_equals(focusedElementDescription(),
+                  'Seconds TestLabel, --, "56", TestTitle, intValue:56, range:0-59');
+    keyDown('\t');
+    assert_equals(focusedElementDescription(),
+                  'Milliseconds TestLabel, ---, "789", TestTitle, intValue:789, range:0-999');
+    keyDown('\t');
+    assert_equals(focusedElementDescription(),
+                  'AM/PM TestLabel, --, "PM", TestTitle, intValue:2, range:1-2');
+}, 'Non-empty value');
 
-debug('Non-empty value');
-testInput.focus();
-checkFocusedElementAXAttributes('Hours, AXValueDescription: 12, intValue:12, range:1-12');
-keyDown('\t');
-checkFocusedElementAXAttributes('Minutes, AXValueDescription: 34, intValue:34, range:0-59');
-keyDown('\t');
-checkFocusedElementAXAttributes('Seconds, AXValueDescription: 56, intValue:56, range:0-59');
-keyDown('\t');
-checkFocusedElementAXAttributes('Milliseconds, AXValueDescription: 789, intValue:789, range:0-999');
-keyDown('\t');
-checkFocusedElementAXAttributes('AM/PM, AXValueDescription: PM, intValue:2, range:1-2');
+test(function(t) {
+    keyDown('Backspace');
+    assert_equals(focusedElementDescription(),
+                  'AM/PM TestLabel, --, "", TestTitle, intValue:0, range:1-2');
+    keyDown('\t', ['shiftKey']);
+    keyDown('Backspace');
+    assert_equals(focusedElementDescription(),
+                  'Milliseconds TestLabel, ---, "", TestTitle, intValue:0, range:0-999');
+    keyDown('\t', ['shiftKey']);
+    keyDown('Backspace');
+    assert_equals(focusedElementDescription(),
+                  'Seconds TestLabel, --, "", TestTitle, intValue:0, range:0-59');
+    keyDown('\t', ['shiftKey']);
+    keyDown('Backspace');
+    assert_equals(focusedElementDescription(),
+                  'Minutes TestLabel, --, "", TestTitle, intValue:0, range:0-59');
+    keyDown('\t', ['shiftKey']);
+    keyDown('Backspace');
+    assert_equals(focusedElementDescription(),
+                  'Hours TestLabel, --, "", TestTitle, intValue:0, range:1-12');
+}, 'Empty value');
 
-debug('Empty value');
-keyDown('Backspace');
-checkFocusedElementAXAttributes('AM/PM, AXValueDescription: --, intValue:0, range:1-2');
-keyDown('\t', ['shiftKey']);
-keyDown('Backspace');
-checkFocusedElementAXAttributes('Milliseconds, AXValueDescription: ---, intValue:0, range:0-999');
-keyDown('\t', ['shiftKey']);
-keyDown('Backspace');
-checkFocusedElementAXAttributes('Seconds, AXValueDescription: --, intValue:0, range:0-59');
-keyDown('\t', ['shiftKey']);
-keyDown('Backspace');
-checkFocusedElementAXAttributes('Minutes, AXValueDescription: --, intValue:0, range:0-59');
-keyDown('\t', ['shiftKey']);
-keyDown('Backspace');
-checkFocusedElementAXAttributes('Hours, AXValueDescription: --, intValue:0, range:1-12');
-
-debug('');
-testInput.parentNode.removeChild(testInput);
 </script>
 </body>
 </html>

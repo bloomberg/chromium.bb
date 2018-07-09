@@ -120,6 +120,10 @@ void DateTimeSymbolicFieldElement::SetValueAsInteger(
   UpdateVisibleValue(event_behavior);
 }
 
+String DateTimeSymbolicFieldElement::Placeholder() const {
+  return VisibleEmptyValue();
+}
+
 void DateTimeSymbolicFieldElement::StepDown() {
   if (HasValue()) {
     if (!IndexIsInRange(--selected_index_))

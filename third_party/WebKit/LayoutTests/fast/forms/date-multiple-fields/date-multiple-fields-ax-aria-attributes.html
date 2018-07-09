@@ -1,50 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/multiple-fields-ax-aria-attributes.js"></script>
 </head>
 <body>
-<input id="test" type="date">
+<input id="test" type="date" aria-label="TestLabel" title="TestTitle">
 <script>
-description('This test checks aria-help attribute of fields in multiple fields date input UI.');
-
 var testInput = document.getElementById('test');
 
-if (!window.accessibilityController || !window.eventSender)
-    debug('Please run inside DRT or WTR.');
-else {
+test(function(t) {
     testInput.focus();
-    debug('Initial empty state');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: mm, intValue:0, range:1-12');
+    assert_equals(focusedElementDescription(),
+                  'Month TestLabel, mm, "", TestTitle, intValue:0, range:1-12');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Day, AXValueDescription: dd, intValue:0, range:1-31');
+    assert_equals(focusedElementDescription(),
+                  'Day TestLabel, dd, "", TestTitle, intValue:0, range:1-31');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: yyyy, intValue:0, range:1-275760');
+    assert_equals(focusedElementDescription(),
+                  'Year TestLabel, yyyy, "", TestTitle, intValue:0, range:1-275760');
+    eventSender.keyDown('\t', ['shiftKey']);
+    eventSender.keyDown('\t', ['shiftKey']);
+}, 'Initial empty state');
 
-    eventSender.keyDown('\t', ['shiftKey']);
-    eventSender.keyDown('\t', ['shiftKey']);
-    debug('Non-empty value');
+test(function(t) {
+    testInput.focus();
     testInput.value = "2012-10-09";
-    checkFocusedElementAXAttributes('Month, AXValueDescription: 10, intValue:10, range:1-12');
+    assert_equals(focusedElementDescription(),
+                  'Month TestLabel, mm, "10", TestTitle, intValue:10, range:1-12');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Day, AXValueDescription: 09, intValue:9, range:1-31');
+    assert_equals(focusedElementDescription(),
+                  'Day TestLabel, dd, "09", TestTitle, intValue:9, range:1-31');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: 2012, intValue:2012, range:1-275760');
+    assert_equals(focusedElementDescription(),
+                  'Year TestLabel, yyyy, "2012", TestTitle, intValue:2012, range:1-275760');
+}, 'Non-empty value');
 
-    debug('Empty value');
+test(function(t) {
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: yyyy, intValue:0, range:1-275760');
+    assert_equals(focusedElementDescription(),
+                  'Year TestLabel, yyyy, "", TestTitle, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Day, AXValueDescription: dd, intValue:0, range:1-31');
+    assert_equals(focusedElementDescription(),
+                  'Day TestLabel, dd, "", TestTitle, intValue:0, range:1-31');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: mm, intValue:0, range:1-12');
-
-    debug('');
-    testInput.parentNode.removeChild(testInput);
-}
+    assert_equals(focusedElementDescription(),
+                  'Month TestLabel, mm, "", TestTitle, intValue:0, range:1-12');
+}, 'Empty value');
 </script>
 </body>
 </html>

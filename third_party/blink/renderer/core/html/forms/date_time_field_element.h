@@ -64,6 +64,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   virtual bool HasValue() const = 0;
   bool IsDisabled() const;
   virtual float MaximumWidth(const ComputedStyle&);
+  virtual String Placeholder() const = 0;
   virtual void PopulateDateTimeFieldsState(DateTimeFieldsState&) = 0;
   void RemoveEventHandler() { field_owner_ = nullptr; }
   void SetDisabled();

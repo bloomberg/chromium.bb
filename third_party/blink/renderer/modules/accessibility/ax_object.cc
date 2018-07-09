@@ -1119,6 +1119,26 @@ const AXObject* AXObject::DisabledAncestor() const {
   return nullptr;
 }
 
+const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
+  switch (RoleValue()) {
+    case kDateTimeRole:
+    case kDateRole:
+    case kInputTimeRole:
+    case kTimeRole:
+      return this;
+    default:
+      break;
+  }
+
+  if (max_levels_to_check == 0)
+    return nullptr;
+
+  if (AXObject* parent = ParentObject())
+    return parent->DatetimeAncestor(max_levels_to_check - 1);
+
+  return nullptr;
+}
+
 bool AXObject::LastKnownIsIgnoredValue() const {
   if (last_known_is_ignored_value_ == kDefaultBehavior) {
     last_known_is_ignored_value_ =

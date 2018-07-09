@@ -157,6 +157,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AccessibilityRole AriaRoleAttribute() const final;
 
   // AX name calculation.
+  String GetName(AXNameFrom&, AXObjectVector* name_objects) const override;
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
