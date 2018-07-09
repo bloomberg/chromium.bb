@@ -210,7 +210,19 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
       trial.get());
 }
 
-void UkmRecorderImpl::SourceCounts::Reset() {
+UkmRecorderImpl::EventAggregate::EventAggregate() = default;
+UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
+
+UkmRecorderImpl::Recordings::Recordings() = default;
+UkmRecorderImpl::Recordings& UkmRecorderImpl::Recordings::operator=(
+    Recordings&&) = default;
+UkmRecorderImpl::Recordings::~Recordings() = default;
+
+void UkmRecorderImpl::Recordings::Reset() {
+  *this = Recordings();
+}
+
+void UkmRecorderImpl::Recordings::SourceCounts::Reset() {
   *this = SourceCounts();
 }
 
@@ -232,11 +244,7 @@ void UkmRecorderImpl::DisableSamplingForTesting() {
 
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sources_.clear();
-  source_counts_.Reset();
-  carryover_urls_whitelist_.clear();
-  entries_.clear();
-  event_aggregations_.clear();
+  recordings_.Reset();
 }
 
 void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
@@ -248,19 +256,19 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::set<SourceId> ids_seen;
-  for (const auto& entry : entries_) {
+  for (const auto& entry : recordings_.entries) {
     Entry* proto_entry = report->add_entries();
     StoreEntryProto(*entry, proto_entry);
     ids_seen.insert(entry->source_id);
   }
 
   std::unordered_set<std::string> url_whitelist;
-  carryover_urls_whitelist_.swap(url_whitelist);
-  AppendWhitelistedUrls(sources_, &url_whitelist);
+  recordings_.carryover_urls_whitelist.swap(url_whitelist);
+  AppendWhitelistedUrls(recordings_.sources, &url_whitelist);
 
   std::vector<std::unique_ptr<UkmSource>> unsent_sources;
   int unmatched_sources = 0;
-  for (auto& kv : sources_) {
+  for (auto& kv : recordings_.sources) {
     // If the source id is not whitelisted, don't send it unless it has
     // associated entries and the URL matches a URL of a whitelisted source.
     // Note: If ShouldRestrictToWhitelistedSourceIds() is true, this logic will
@@ -284,7 +292,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     if (!ShouldRecordInitialUrl())
       proto_source->clear_initial_url();
   }
-  for (const auto& event_and_aggregate : event_aggregations_) {
+  for (const auto& event_and_aggregate : recordings_.event_aggregations) {
     if (event_and_aggregate.second.metrics.empty())
       continue;
     const EventAggregate& event_aggregate = event_and_aggregate.second;
@@ -326,23 +334,25 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   }
 
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount",
-                            sources_.size() - unsent_sources.size());
-  UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCount2", entries_.size());
+                            recordings_.sources.size() - unsent_sources.size());
+  UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCount2",
+                              recordings_.entries.size());
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnsentSourcesCount",
                             unsent_sources.size());
 
   Report::SourceCounts* source_counts_proto = report->mutable_source_counts();
-  source_counts_proto->set_observed(source_counts_.observed);
+  source_counts_proto->set_observed(recordings_.source_counts.observed);
   source_counts_proto->set_navigation_sources(
-      source_counts_.navigation_sources);
+      recordings_.source_counts.navigation_sources);
   source_counts_proto->set_unmatched_sources(unmatched_sources);
   source_counts_proto->set_deferred_sources(unsent_sources.size());
-  source_counts_proto->set_carryover_sources(source_counts_.carryover_sources);
+  source_counts_proto->set_carryover_sources(
+      recordings_.source_counts.carryover_sources);
 
-  sources_.clear();
-  source_counts_.Reset();
-  entries_.clear();
-  event_aggregations_.clear();
+  recordings_.sources.clear();
+  recordings_.source_counts.Reset();
+  recordings_.entries.clear();
+  recordings_.event_aggregations.clear();
 
   // Keep at most |max_kept_sources|, prioritizing most-recent entries (by
   // creation time).
@@ -361,11 +371,12 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   for (auto& source : unsent_sources) {
     // We already matched these sources against the URL whitelist.
     // Re-whitelist them for the next report.
-    carryover_urls_whitelist_.insert(source->url().spec());
-    sources_.emplace(source->id(), std::move(source));
+    recordings_.carryover_urls_whitelist.insert(source->url().spec());
+    recordings_.sources.emplace(source->id(), std::move(source));
   }
-  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount", sources_.size());
-  source_counts_.carryover_sources = sources_.size();
+  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount",
+                            recordings_.sources.size());
+  recordings_.source_counts.carryover_sources = recordings_.sources.size();
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -376,9 +387,6 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
   return true;
 }
-
-UkmRecorderImpl::EventAggregate::EventAggregate() = default;
-UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
 
 void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
                                       const GURL& unsanitized_url) {
@@ -400,9 +408,9 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
     return;
   }
 
-  source_counts_.observed++;
+  recordings_.source_counts.observed++;
   if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID)
-    source_counts_.navigation_sources++;
+    recordings_.source_counts.navigation_sources++;
 
   GURL url = SanitizeURL(unsanitized_url);
 
@@ -430,16 +438,17 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
   // Update the pre-existing source if there is any. This happens when the
   // initial URL is different from the committed URL for the same source, e.g.,
   // when there is redirection.
-  if (base::ContainsKey(sources_, source_id)) {
-    sources_[source_id]->UpdateUrl(url);
+  if (base::ContainsKey(recordings_.sources, source_id)) {
+    recordings_.sources[source_id]->UpdateUrl(url);
     return;
   }
 
-  if (sources_.size() >= GetMaxSources()) {
+  if (recordings_.sources.size() >= GetMaxSources()) {
     RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
-  sources_.emplace(source_id, std::make_unique<UkmSource>(source_id, url));
+  recordings_.sources.emplace(source_id,
+                              std::make_unique<UkmSource>(source_id, url));
 }
 
 void UkmRecorderImpl::UpdateAppURL(SourceId source_id, const GURL& url) {
@@ -460,7 +469,8 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  EventAggregate& event_aggregate = event_aggregations_[entry->event_hash];
+  EventAggregate& event_aggregate =
+      recordings_.event_aggregations[entry->event_hash];
   event_aggregate.total_count++;
   for (const auto& metric : entry->metrics) {
     MetricAggregate& aggregate = event_aggregate.metrics[metric.first];
@@ -496,7 +506,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  if (entries_.size() >= GetMaxEntries()) {
+  if (recordings_.entries.size() >= GetMaxEntries()) {
     RecordDroppedEntry(DroppedDataReason::MAX_HIT);
     event_aggregate.dropped_due_to_limits++;
     for (auto& metric : entry->metrics)
@@ -504,7 +514,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  entries_.push_back(std::move(entry));
+  recordings_.entries.push_back(std::move(entry));
 }
 
 void UkmRecorderImpl::LoadExperimentSamplingInfo() {
