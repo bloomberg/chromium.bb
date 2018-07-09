@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
@@ -577,6 +578,10 @@ class Document::NetworkStateObserver final
   std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
       online_observer_handle_;
 };
+
+Document* Document::CreateForTest() {
+  return new Document(DocumentInit::Create());
+}
 
 Document* Document::Create(Document& document) {
   Document* new_document = new Document(

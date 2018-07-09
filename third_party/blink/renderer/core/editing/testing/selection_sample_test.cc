@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 

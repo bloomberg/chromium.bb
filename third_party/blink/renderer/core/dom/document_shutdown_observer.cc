@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
 
 namespace blink {

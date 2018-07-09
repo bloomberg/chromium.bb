@@ -33,12 +33,8 @@ class CORE_EXPORT HTMLDocument : public Document {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLDocument* Create(const DocumentInit& initializer) {
-    return new HTMLDocument(initializer);
-  }
-  static HTMLDocument* CreateForTest() {
-    return new HTMLDocument(DocumentInit::Create());
-  }
+  static HTMLDocument* Create(const DocumentInit& initializer);
+  static HTMLDocument* CreateForTest();
   ~HTMLDocument() override;
 
   void AddNamedItem(const AtomicString& name);

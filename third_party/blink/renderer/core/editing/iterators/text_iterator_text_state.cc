@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
 
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/iterators/backwards_text_buffer.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
