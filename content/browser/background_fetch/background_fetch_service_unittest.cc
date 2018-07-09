@@ -1078,14 +1078,7 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   EXPECT_TRUE(registration.developer_id.empty());
 }
 
-// Flaky on Android: http://crbug.com/861639.
-#if defined(OS_ANDROID)
-#define MAYBE_JobsInitializedOnBrowserRestart \
-  DISABLED_JobsInitializedOnBrowserRestart
-#else
-#define MAYBE_JobsInitializedOnBrowserRestart JobsInitializedOnBrowserRestart
-#endif
-TEST_F(BackgroundFetchServiceTest, MAYBE_JobsInitializedOnBrowserRestart) {
+TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
   // Initially there are no jobs in the JobController map.
   EXPECT_TRUE(GetJobIDs().empty());
 
@@ -1109,20 +1102,10 @@ TEST_F(BackgroundFetchServiceTest, MAYBE_JobsInitializedOnBrowserRestart) {
   // Simulate browser restart by re-creating |context_| and |service_|.
   SetUp();
 
-  // Give initialization tasks a chance to finish.
-  base::RunLoop().RunUntilIdle();
-
-  // At this point the Fetch ran up until the MarkRequestCompleteTask, since it
-  // is waiting for the Cache Storage to respond which runs on another thread.
-  // Check that the job is re-loaded into the job map.
-  ASSERT_EQ(GetJobIDs().size(), 1u);
-  EXPECT_EQ(*GetJobIDs().begin(), kExampleUniqueId);
-
+  // Queue up a GetRegistration DatabaseTask to run right after the
+  // initialization, but before the fetch is resumed.
   BackgroundFetchRegistration registration;
   blink::mojom::BackgroundFetchError error;
-
-  // NOTE: This GetRegistration works because it runs between the
-  // MarkRequestCompleteTask and the GetSettledFetchesTask.
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
                   &registration);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1131,6 +1114,7 @@ TEST_F(BackgroundFetchServiceTest, MAYBE_JobsInitializedOnBrowserRestart) {
   // Allow the fetch to completely finish.
   thread_bundle_.RunUntilIdle();
 
+  // At this point the fetch ran to completion.
   EXPECT_TRUE(GetJobIDs().empty());
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
                   &registration);
