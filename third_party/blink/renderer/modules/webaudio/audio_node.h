@@ -346,9 +346,6 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
 
   // Called inside AudioHandler constructors.
   void DidAddOutput(unsigned number_of_outputs);
-  // Like disconnect, but no exception is thrown if the outputIndex is invalid.
-  // Just do nothing in that case.
-  void DisconnectWithoutException(unsigned output_index);
 
  protected:
   explicit AudioNode(BaseAudioContext&);
