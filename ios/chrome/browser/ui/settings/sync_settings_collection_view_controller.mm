@@ -33,7 +33,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -499,8 +499,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       GURL learnMoreUrl = google_util::AppendGoogleLocaleParam(
           GURL(kSyncGoogleDashboardURL),
           GetApplicationContext()->GetApplicationLocale());
-      OpenUrlCommand* command =
-          [[OpenUrlCommand alloc] initWithURLFromChrome:learnMoreUrl];
+      OpenNewTabCommand* command =
+          [OpenNewTabCommand commandWithURLFromChrome:learnMoreUrl];
       [self.dispatcher closeSettingsUIAndOpenURL:command];
       break;
     }

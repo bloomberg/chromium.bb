@@ -27,7 +27,7 @@ void NotifyNewTabEvent(ios::ChromeBrowserState* browserState,
 void NotifyNewTabEventForCommand(ios::ChromeBrowserState* browserState,
                                  OpenNewTabCommand* command) {
   if (command.isUserInitiated) {
-    NotifyNewTabEvent(browserState, command.incognito);
+    NotifyNewTabEvent(browserState, command.inIncognito);
   }
 }
 

@@ -444,13 +444,13 @@ enum class SnapshotViewOption {
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
   // Ensure that the right mode is showing.
-  NSInteger panelIndex = command.incognito ? kLocalTabsOffTheRecordPanelIndex
-                                           : kLocalTabsOnTheRecordPanelIndex;
+  NSInteger panelIndex = command.inIncognito ? kLocalTabsOffTheRecordPanelIndex
+                                             : kLocalTabsOnTheRecordPanelIndex;
   [_tabSwitcherView selectPanelAtIndex:panelIndex];
 
   const TabSwitcherSessionType panelSessionType =
-      (command.incognito) ? TabSwitcherSessionType::OFF_THE_RECORD_SESSION
-                          : TabSwitcherSessionType::REGULAR_SESSION;
+      (command.inIncognito) ? TabSwitcherSessionType::OFF_THE_RECORD_SESSION
+                            : TabSwitcherSessionType::REGULAR_SESSION;
 
   TabModel* model = [self tabModelForSessionType:panelSessionType];
 

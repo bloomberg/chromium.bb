@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 
 @class OpenNewTabCommand;
-@class OpenUrlCommand;
 @class ShowSigninCommand;
 @class StartVoiceSearchCommand;
 @class UIViewController;
@@ -70,7 +69,7 @@
 - (void)showHistory;
 
 // Closes the History UI and opens a URL.
-- (void)closeSettingsUIAndOpenURL:(OpenUrlCommand*)command;
+- (void)closeSettingsUIAndOpenURL:(OpenNewTabCommand*)command;
 
 // Closes the History UI.
 - (void)closeSettingsUI;
@@ -92,7 +91,7 @@
     (UIViewController*)baseViewController;
 
 // Opens the |command| URL.
-- (void)openURL:(OpenUrlCommand*)command;
+- (void)openURL:(OpenNewTabCommand*)command;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the signin UI, presenting from |baseViewController|.

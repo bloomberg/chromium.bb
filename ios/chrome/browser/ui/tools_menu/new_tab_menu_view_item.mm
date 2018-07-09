@@ -30,8 +30,8 @@
   UIView* view = self.tableViewCell;
   CGPoint center = [view.superview convertPoint:view.center toView:view.window];
   OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithIncognito:self.isIncognito
-                                       originPoint:center];
+      [OpenNewTabCommand commandWithIncognito:self.isIncognito
+                                  originPoint:center];
   [dispatcher openNewTab:command];
 }
 

@@ -11,7 +11,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/referrer.h"
@@ -46,7 +46,7 @@ int IOSChromePasswordManagerInfoBarDelegate::GetIconId() const {
 
 bool IOSChromePasswordManagerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  OpenUrlCommand* command = [[OpenUrlCommand alloc]
+  OpenNewTabCommand* command = [[OpenNewTabCommand alloc]
        initWithURL:GURL(password_manager::kPasswordManagerHelpCenterSmartLock)
           referrer:web::Referrer()
        inIncognito:NO

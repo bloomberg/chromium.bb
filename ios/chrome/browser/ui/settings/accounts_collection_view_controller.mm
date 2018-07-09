@@ -33,7 +33,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -652,8 +652,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)openURL:(NSURL*)url
               view:(UIView*)view
     viewController:(UIViewController*)viewController {
-  OpenUrlCommand* command =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:net::GURLWithNSURL(url)];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:net::GURLWithNSURL(url)];
   [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 

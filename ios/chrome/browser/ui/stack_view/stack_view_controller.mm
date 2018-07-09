@@ -2864,7 +2864,7 @@ NSString* const kTransitionToolbarAnimationKey =
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
   // Ensure that the right mode is showing.
-  if ([self isCurrentSetIncognito] != command.incognito)
+  if ([self isCurrentSetIncognito] != command.inIncognito)
     [self setActiveCardSet:[self inactiveCardSet]];
 
   // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened" to

@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -337,8 +337,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
 
   // Open new tab to cancel sign-in.
-  OpenUrlCommand* command =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -378,8 +378,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Open new tab to cancel sign-in.
-  OpenUrlCommand* command =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -440,8 +440,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGreyUI signInToIdentityByEmail:identity1.userEmail];
 
   // Open new tab to cancel sign-in.
-  OpenUrlCommand* command =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -482,8 +482,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open new tab to cancel sign-in.
-  OpenUrlCommand* command =
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,

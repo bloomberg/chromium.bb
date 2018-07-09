@@ -132,7 +132,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -4404,7 +4403,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // ends up appended to the end of the model, not just next to what is
   // currently selected in the other mode. This is done with the |append|
   // parameter.
-  OpenUrlCommand* command = [[OpenUrlCommand alloc]
+  OpenNewTabCommand* command = [[OpenNewTabCommand alloc]
        initWithURL:url
           referrer:web::Referrer()  // Strip referrer when switching modes.
        inIncognito:inIncognito
@@ -4626,7 +4625,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
-  if (self.isOffTheRecord != command.incognito) {
+  if (self.isOffTheRecord != command.inIncognito) {
     // Must take a snapshot of the tab before we switch the incognito mode
     // because the currentTab will change after the switch.
     Tab* currentTab = [_model currentTab];
@@ -5780,7 +5779,7 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
   [self.tabModel.currentTab goBack];
 
   if (url.is_valid()) {
-    OpenUrlCommand* command = [[OpenUrlCommand alloc]
+    OpenNewTabCommand* command = [[OpenNewTabCommand alloc]
          initWithURL:url
             referrer:web::Referrer()  // Strip referrer when switching modes.
          inIncognito:YES
