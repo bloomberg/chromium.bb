@@ -136,6 +136,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
+bool ChromeRenderThreadObserver::is_signed_in_ = false;
+
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : visited_link_slave_(new visitedlink::VisitedLinkSlave),
       weak_factory_(this) {
@@ -189,6 +191,10 @@ void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
 void ChromeRenderThreadObserver::SetInitialConfiguration(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
+}
+
+void ChromeRenderThreadObserver::SetIsSignedIn(bool is_signed_in) {
+  is_signed_in_ = is_signed_in;
 }
 
 void ChromeRenderThreadObserver::SetContentSettingRules(

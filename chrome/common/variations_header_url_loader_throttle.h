@@ -18,6 +18,7 @@ class VariationsHeaderURLLoaderThrottle
 
  private:
   // content::URLLoaderThrottle:
+  void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(

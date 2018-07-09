@@ -35,6 +35,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   ~ChromeRenderThreadObserver() override;
 
   static bool is_incognito_process() { return is_incognito_process_; }
+  static bool is_signed_in() { return is_signed_in_; }
 
   // Returns a pointer to the content setting rules owned by
   // |ChromeRenderThreadObserver|.
@@ -53,6 +54,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   // chrome::mojom::RendererConfiguration:
   void SetInitialConfiguration(bool is_incognito_process) override;
+  void SetIsSignedIn(bool is_signed_in) override;
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;
   void SetFieldTrialGroup(const std::string& trial_name,
@@ -62,6 +64,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       chrome::mojom::RendererConfigurationAssociatedRequest request);
 
   static bool is_incognito_process_;
+  static bool is_signed_in_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
 
