@@ -293,6 +293,9 @@ MockVolumeManagerWrapper.prototype.getDriveConnectionState = function() {
 MockVolumeManagerWrapper.createMockVolumeInfo =
     function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+
+  // If there's no label set it to volumeId to make shorter to write tests.
+  var label = label || volumeId;
   var volumeInfo = new VolumeInfoImpl(
       type, volumeId, fileSystem,
       '',                                          // error
