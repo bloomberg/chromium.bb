@@ -10,14 +10,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -40,8 +40,7 @@ const char kSendSMSPromoFormat[] = "{promo_id:%s}";
 // The maximum number of retries for the URLFetcher requests.
 const size_t kMaxRetries = 1;
 
-class RequestImpl : public SMSService::Request,
-                    private OAuth2TokenService::Consumer {
+class RequestImpl : public SMSService::Request {
  public:
   ~RequestImpl() override {}
 
@@ -57,14 +56,11 @@ class RequestImpl : public SMSService::Request,
  private:
   friend class ::SMSService;
 
-  RequestImpl(OAuth2TokenService* token_service,
-              SigninManagerBase* signin_manager,
+  RequestImpl(identity::IdentityManager* identity_manager,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const GURL& url,
               const SMSService::CompletionCallback& callback)
-      : OAuth2TokenService::Consumer("desktop_ios_promotion"),
-        token_service_(token_service),
-        signin_manager_(signin_manager),
+      : identity_manager_(identity_manager),
         url_loader_factory_(std::move(url_loader_factory)),
         url_(url),
         post_data_mime_type_(kPostDataMimeType),
@@ -72,16 +68,19 @@ class RequestImpl : public SMSService::Request,
         auth_retry_count_(0),
         callback_(callback),
         is_pending_(false) {
-    DCHECK(token_service_);
-    DCHECK(signin_manager_);
+    DCHECK(identity_manager_);
     DCHECK(url_loader_factory_);
   }
 
   void Start() override {
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(kDesktopIOSPromotionOAuthScope);
-    token_request_ = token_service_->StartRequest(
-        signin_manager_->GetAuthenticatedAccountId(), oauth_scopes, this);
+    token_fetcher_ =
+        identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+            "desktop_ios_promotion", oauth_scopes,
+            base::BindOnce(&RequestImpl::AccessTokenFetchComplete,
+                           base::Unretained(this)),
+            identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
     is_pending_ = true;
   }
 
@@ -103,10 +102,9 @@ class RequestImpl : public SMSService::Request,
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(kDesktopIOSPromotionOAuthScope);
-      token_service_->InvalidateAccessToken(
-          signin_manager_->GetAuthenticatedAccountId(), oauth_scopes,
+      identity_manager_->RemoveAccessTokenFromCache(
+          identity_manager_->GetPrimaryAccountInfo().account_id, oauth_scopes,
           access_token_);
-
       access_token_.clear();
       Start();
       return;
@@ -124,11 +122,20 @@ class RequestImpl : public SMSService::Request,
     // members below here.
   }
 
-  // OAuth2TokenService::Consumer interface.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override {
-    token_request_.reset();
+  void AccessTokenFetchComplete(GoogleServiceAuthError error,
+                                std::string access_token) {
+    token_fetcher_.reset();
+
+    if (error.state() != GoogleServiceAuthError::NONE) {
+      is_pending_ = false;
+      UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.OAuthTokenCompletion", false);
+
+      callback_.Run(this, false);
+      // It is valid for the callback to delete |this|, so do not access any
+      // members below here.
+      return;
+    }
+
     DCHECK(!access_token.empty());
     access_token_ = access_token;
 
@@ -187,18 +194,6 @@ class RequestImpl : public SMSService::Request,
                        base::Unretained(this)));
   }
 
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override {
-    token_request_.reset();
-    is_pending_ = false;
-
-    UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.OAuthTokenCompletion", false);
-
-    callback_.Run(this, false);
-    // It is valid for the callback to delete |this|, so do not access any
-    // members below here.
-  }
-
   void SetPostData(const std::string& post_data) override {
     SetPostDataAndType(post_data, kPostDataMimeType);
   }
@@ -209,8 +204,7 @@ class RequestImpl : public SMSService::Request,
     post_data_mime_type_ = mime_type;
   }
 
-  OAuth2TokenService* token_service_;
-  SigninManagerBase* signin_manager_;
+  identity::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The URL of the API endpoint.
@@ -223,7 +217,7 @@ class RequestImpl : public SMSService::Request,
   std::string post_data_mime_type_;
 
   // The OAuth2 access token request.
-  std::unique_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // The current OAuth2 access token.
   std::string access_token_;
@@ -255,11 +249,9 @@ SMSService::Request::Request() {}
 SMSService::Request::~Request() {}
 
 SMSService::SMSService(
-    OAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : token_service_(token_service),
-      signin_manager_(signin_manager),
+    : identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       weak_ptr_factory_(this) {}
 
@@ -268,8 +260,7 @@ SMSService::~SMSService() {}
 SMSService::Request* SMSService::CreateRequest(
     const GURL& url,
     const CompletionCallback& callback) {
-  return new RequestImpl(token_service_, signin_manager_, url_loader_factory_,
-                         url, callback);
+  return new RequestImpl(identity_manager_, url_loader_factory_, url, callback);
 }
 
 void SMSService::QueryPhoneNumber(const PhoneNumberCallback& callback) {

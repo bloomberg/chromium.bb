@@ -11,8 +11,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_features.h"
@@ -22,12 +21,11 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 
 namespace {
 
@@ -81,8 +79,7 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
     profile_ = profile_builder.Build();
     sync_service_ = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetForProfile(profile_.get()));
-    mock_signin_ = SigninManagerFactory::GetForProfile(profile_.get());
-    mock_signin_->SetAuthenticatedAccountInfo("test", "test");
+    identity_test_environment_.MakePrimaryAccountAvailable("test@gmail.com");
   }
 
   void TearDown() override {
@@ -97,6 +94,12 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
+  const std::string& account_id() {
+    return identity_test_environment_.identity_manager()
+        ->GetPrimaryAccountInfo()
+        .account_id;
+  }
+
   double GetDoubleNDayOldDate(int days) {
     base::Time time_result =
         base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(days);
@@ -106,8 +109,8 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
  private:
   TestSyncService* sync_service_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
+  identity::IdentityTestEnvironment identity_test_environment_;
   ScopedTestingLocalState local_state_;
-  SigninManagerBase* mock_signin_ = nullptr;
   std::unique_ptr<TestingProfile> profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopIOSPromotionUtilTest);
 };
@@ -187,12 +190,9 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
             ? GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS
             : GoogleServiceAuthError::NONE);
 
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-    token_service->UpdateCredentials("test", "refresh_token");
-    // TODO(https://crbug.com/836212): Do not use the delegate directly, because
-    // it is internal API.
-    token_service->GetDelegate()->UpdateAuthError("test", error);
+    FakeAuthStatusProvider auth_status_provider(
+        SigninErrorControllerFactory::GetForProfile(profile()));
+    auth_status_provider.SetAuthError(account_id(), error);
 
     local_state()->SetBoolean(prefs::kSavePasswordsBubbleIOSPromoDismissed,
                               test_case.is_dismissed);

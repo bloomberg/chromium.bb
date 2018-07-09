@@ -7,10 +7,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "net/http/http_status_code.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -23,11 +22,10 @@ namespace {
 // TestRequest instead of a normal request.
 class TestingSMSService : public SMSService {
  public:
-  explicit TestingSMSService(
-      ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+  TestingSMSService(
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      : SMSService(token_service, signin_manager, url_loader_factory) {}
+      : SMSService(identity_manager, url_loader_factory) {}
 
   ~TestingSMSService() override {}
 
@@ -126,13 +124,10 @@ SMSService::Request* TestingSMSService::CreateRequest(
 class SMSServiceTest : public testing::Test {
  public:
   SMSServiceTest()
-      : signin_client_(nullptr),
-        signin_manager_(&signin_client_, &account_tracker_),
-        test_shared_loader_factory_(
+      : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        sms_service_(&token_service_,
-                     &signin_manager_,
+        sms_service_(identity_test_environment_.identity_manager(),
                      test_shared_loader_factory_) {}
 
   ~SMSServiceTest() override {}
@@ -153,10 +148,7 @@ class SMSServiceTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  FakeProfileOAuth2TokenService token_service_;
-  AccountTrackerService account_tracker_;
-  TestSigninClient signin_client_;
-  FakeSigninManagerBase signin_manager_;
+  identity::IdentityTestEnvironment identity_test_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestingSMSService sms_service_;

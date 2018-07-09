@@ -32,7 +32,7 @@ namespace {
 
 class FakeSMSService : public SMSService {
  public:
-  FakeSMSService() : SMSService(nullptr, nullptr, nullptr) {}
+  FakeSMSService() : SMSService(nullptr, nullptr) {}
   ~FakeSMSService() override {}
   MOCK_METHOD1(QueryPhoneNumber, void(const PhoneNumberCallback&));
   MOCK_METHOD2(SendSMS,
