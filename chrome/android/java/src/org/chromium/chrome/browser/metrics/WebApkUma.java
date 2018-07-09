@@ -57,25 +57,6 @@ public class WebApkUma {
         int NUM_ENTRIES = 3;
     }
 
-    // TODO(yfriedman): Remove once internal repo is updated.
-    public static final int GOOGLE_PLAY_INSTALL_SUCCESS = 0;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_NO_DELEGATE = 1;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_TO_CONNECT_TO_SERVICE = 2;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_CALLER_VERIFICATION_FAILURE = 3;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_POLICY_VIOLATION = 4;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_API_DISABLED = 5;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_REQUEST_FAILED = 6;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_DOWNLOAD_CANCELLED = 7;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_DOWNLOAD_ERROR = 8;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_ERROR = 9;
-    public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_TIMEOUT = 10;
-    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_POLICY_DISABLED = 11;
-    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_UNKNOWN_ACCOUNT = 12;
-    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NETWORK_ERROR = 13;
-    public static final int GOOGLE_PLAY_INSTALL_REQUSET_FAILED_RESOLVE_ERROR = 14;
-    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NOT_GOOGLE_SIGNED = 15;
-    public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 16;
-
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
     @IntDef({GooglePlayInstallResult.SUCCESS, GooglePlayInstallResult.FAILED_NO_DELEGATE,
             GooglePlayInstallResult.FAILED_TO_CONNECT_TO_SERVICE,
