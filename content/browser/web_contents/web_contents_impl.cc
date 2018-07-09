@@ -679,7 +679,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 #endif  // !defined(OS_ANDROID)
 
-  display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
+    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
+#endif
 
   registry_.AddInterface(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
@@ -1392,7 +1395,8 @@ const std::string& WebContentsImpl::GetMediaDeviceGroupIDSaltBase() const {
 #if defined(OS_ANDROID)
 
 void WebContentsImpl::SetDisplayCutoutSafeArea(gfx::Insets insets) {
-  display_cutout_host_impl_->SetDisplayCutoutSafeArea(insets);
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->SetDisplayCutoutSafeArea(insets);
 }
 
 #endif
@@ -4152,9 +4156,11 @@ void WebContentsImpl::ReadyToCommitNavigation(
   SetNotWaitingForResponse();
 
   // Reset the viewport fit
-  display_cutout_host_impl_->ViewportFitChangedForFrame(
-      navigation_handle->GetRenderFrameHost(),
-      blink::mojom::ViewportFit::kAuto);
+  if (display_cutout_host_impl_) {
+    display_cutout_host_impl_->ViewportFitChangedForFrame(
+        navigation_handle->GetRenderFrameHost(),
+        blink::mojom::ViewportFit::kAuto);
+  }
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
