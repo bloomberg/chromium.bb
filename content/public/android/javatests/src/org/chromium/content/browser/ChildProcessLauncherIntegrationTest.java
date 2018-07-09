@@ -93,7 +93,7 @@ public class ChildProcessLauncherIntegrationTest {
 
         public void throwIfDroppedBothModerateAndStrongBinding() {
             if (mRemovedBothModerateAndStrongBinding != null) {
-                throw mRemovedBothModerateAndStrongBinding;
+                throw new RuntimeException(mRemovedBothModerateAndStrongBinding);
             }
         }
     }
