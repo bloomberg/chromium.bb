@@ -6,6 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/feedback/feedback_uploader_chrome.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace feedback {
 
@@ -28,7 +30,10 @@ FeedbackUploaderFactoryChrome::~FeedbackUploaderFactoryChrome() = default;
 
 KeyedService* FeedbackUploaderFactoryChrome::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FeedbackUploaderChrome(context, task_runner_);
+  return new FeedbackUploaderChrome(
+      content::BrowserContext::GetDefaultStoragePartition(context)
+          ->GetURLLoaderFactoryForBrowserProcess(),
+      context, task_runner_);
 }
 
 }  // namespace feedback

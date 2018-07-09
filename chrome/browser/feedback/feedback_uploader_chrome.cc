@@ -10,6 +10,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace feedback {
 
@@ -21,9 +22,10 @@ constexpr char kAuthenticationErrorLogMessage[] =
 }  // namespace
 
 FeedbackUploaderChrome::FeedbackUploaderChrome(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     content::BrowserContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : FeedbackUploader(context, task_runner) {}
+    : FeedbackUploader(url_loader_factory, context, task_runner) {}
 
 FeedbackUploaderChrome::~FeedbackUploaderChrome() = default;
 
@@ -70,11 +72,11 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
 }
 
 void FeedbackUploaderChrome::AppendExtraHeadersToUploadRequest(
-    net::URLFetcher* fetcher) {
+    network::ResourceRequest* resource_request) {
   if (access_token_.empty())
     return;
 
-  fetcher->AddExtraRequestHeader(
+  resource_request->headers.AddHeaderFromString(
       base::StringPrintf("Authorization: Bearer %s", access_token_.c_str()));
 }
 

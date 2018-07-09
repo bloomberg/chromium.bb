@@ -9,12 +9,14 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
-#include "components/feedback/feedback_uploader_delegate.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace feedback {
 
@@ -27,6 +29,11 @@ constexpr char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
 constexpr char kProtoBufMimeType[] = "application/x-protobuf";
+
+constexpr int kHttpPostSuccessNoContent = 204;
+constexpr int kHttpPostFailNoConnection = -1;
+constexpr int kHttpPostFailClientError = 400;
+constexpr int kHttpPostFailServerError = 500;
 
 // The minimum time to wait before uploading reports are retried. Exponential
 // backoff delay is applied on successive failures.
@@ -53,9 +60,11 @@ GURL GetFeedbackPostGURL() {
 }  // namespace
 
 FeedbackUploader::FeedbackUploader(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     content::BrowserContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : context_(context),
+    : url_loader_factory_(std::move(url_loader_factory)),
+      context_(context),
       feedback_reports_path_(GetPathFromContext(context)),
       task_runner_(task_runner),
       feedback_post_url_(GetFeedbackPostGURL()),
@@ -116,7 +125,7 @@ bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
 }
 
 void FeedbackUploader::AppendExtraHeadersToUploadRequest(
-    net::URLFetcher* fetcher) {}
+    network::ResourceRequest* resource_request) {}
 
 void FeedbackUploader::DispatchReport() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -148,39 +157,80 @@ void FeedbackUploader::DispatchReport() {
             "by direct user request."
           policy_exception_justification: "Not implemented."
         })");
-  // Note: FeedbackUploaderDelegate deletes itself and the fetcher.
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(
-          feedback_post_url_, net::URLFetcher::POST,
-          new FeedbackUploaderDelegate(
-              base::Bind(&FeedbackUploader::OnReportUploadSuccess, AsWeakPtr()),
-              base::Bind(&FeedbackUploader::OnReportUploadFailure,
-                         AsWeakPtr())),
-          traffic_annotation)
-          .release();
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = feedback_post_url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->method = "POST";
+
   // Tell feedback server about the variation state of this install.
-  net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     context_->IsOffTheRecord()
-                                         ? variations::InIncognito::kYes
-                                         : variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
-  fetcher->SetExtraRequestHeaders(headers.ToString());
+  variations::AppendVariationHeaders(
+      feedback_post_url_,
+      context_->IsOffTheRecord() ? variations::InIncognito::kYes
+                                 : variations::InIncognito::kNo,
+      variations::SignedIn::kNo, &resource_request->headers);
 
-  fetcher->SetUploadData(kProtoBufMimeType, report_being_dispatched_->data());
-  fetcher->SetRequestContext(
-      content::BrowserContext::GetDefaultStoragePartition(context_)
-          ->GetURLRequestContext());
+  AppendExtraHeadersToUploadRequest(resource_request.get());
 
-  AppendExtraHeadersToUploadRequest(fetcher);
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  network::SimpleURLLoader* simple_url_loader_ptr = simple_url_loader.get();
+  simple_url_loader->AttachStringForUpload(report_being_dispatched_->data(),
+                                           kProtoBufMimeType);
+  auto it = uploads_in_progress_.insert(uploads_in_progress_.begin(),
+                                        std::move(simple_url_loader));
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER
+  simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&FeedbackUploader::OnDispatchComplete,
+                     base::Unretained(this), std::move(it)));
+}
 
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES);
-  fetcher->Start();
+void FeedbackUploader::OnDispatchComplete(
+    UrlLoaderList::iterator it,
+    std::unique_ptr<std::string> response_body) {
+  std::stringstream error_stream;
+  network::SimpleURLLoader* simple_url_loader = it->get();
+  int response_code = kHttpPostFailNoConnection;
+  if (simple_url_loader->ResponseInfo() &&
+      simple_url_loader->ResponseInfo()->headers) {
+    response_code = simple_url_loader->ResponseInfo()->headers->response_code();
+  }
+  if (response_code == kHttpPostSuccessNoContent) {
+    error_stream << "Success";
+    OnReportUploadSuccess();
+  } else {
+    bool should_retry = true;
+    // Process the error for debug output
+    if (response_code == kHttpPostFailNoConnection) {
+      error_stream << "No connection to server.";
+    } else if ((response_code >= kHttpPostFailClientError) &&
+               (response_code < kHttpPostFailServerError)) {
+      // Client errors mean that the server failed to parse the proto that was
+      // sent, or that some requirements weren't met by the server side
+      // validation, and hence we should NOT retry sending this corrupt report
+      // and give up.
+      should_retry = false;
+
+      error_stream << "Client error: HTTP response code " << response_code;
+    } else if (response_code >= kHttpPostFailServerError) {
+      error_stream << "Server error: HTTP response code " << response_code;
+    } else {
+      error_stream << "Unknown error: HTTP response code " << response_code;
+    }
+
+    OnReportUploadFailure(should_retry);
+  }
+
+  LOG(WARNING) << "FEEDBACK: Submission to feedback server ("
+               << simple_url_loader->GetFinalURL()
+               << ") status: " << error_stream.str();
+  uploads_in_progress_.erase(it);
 }
 
 void FeedbackUploader::UpdateUploadTimer() {

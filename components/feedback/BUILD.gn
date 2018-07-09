@@ -16,8 +16,6 @@ static_library("feedback") {
     "feedback_switches.h",
     "feedback_uploader.cc",
     "feedback_uploader.h",
-    "feedback_uploader_delegate.cc",
-    "feedback_uploader_delegate.h",
     "feedback_uploader_factory.cc",
     "feedback_uploader_factory.h",
     "feedback_util.cc",
@@ -40,6 +38,7 @@ static_library("feedback") {
     "//content/public/browser",
     "//content/public/common",
     "//net",
+    "//services/network/public/cpp",
     "//third_party/re2",
     "//third_party/zlib/google:zip",
   ]
@@ -65,6 +64,8 @@ source_set("unit_tests") {
     "//components/variations/net",
     "//content/test:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]
