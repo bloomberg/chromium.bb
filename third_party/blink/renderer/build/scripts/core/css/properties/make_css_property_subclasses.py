@@ -134,6 +134,9 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             yield "core/css/css_primitive_value_mappings.h"
         elif property_['converter'] == "CSSIdentifierValue":
             yield "core/css/css_identifier_value.h"
+        elif property_['converter'] == "ConvertElementReference":
+            yield "core/css/resolver/style_builder_converter.h"
+            yield "core/style/style_svg_resource.h"
         else:
             yield "core/css/css_primitive_value_mappings.h"
             yield "core/css/resolver/style_builder_converter.h"

@@ -72,6 +72,7 @@ class CSSTransitionData;
 class CSSVariableData;
 class FilterOperations;
 class Font;
+class FloatRoundedRect;
 class Hyphenation;
 class NinePieceImage;
 class ShadowList;

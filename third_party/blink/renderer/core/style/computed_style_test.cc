@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"

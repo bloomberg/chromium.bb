@@ -27,32 +27,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
+#include "third_party/blink/renderer/core/style/shape_value.h"
 
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 
 namespace blink {
 
-class ClipPathOperation : public RefCounted<ClipPathOperation> {
- public:
-  enum OperationType { REFERENCE, SHAPE };
-
-  virtual ~ClipPathOperation() = default;
-
-  virtual bool operator==(const ClipPathOperation&) const = 0;
-  bool operator!=(const ClipPathOperation& o) const { return !(*this == o); }
-
-  virtual OperationType GetType() const = 0;
-  bool IsSameType(const ClipPathOperation& o) const {
-    return o.GetType() == GetType();
-  }
-
- protected:
-  ClipPathOperation() = default;
-};
+bool ShapeValue::IsImageValid() const {
+  if (!GetImage())
+    return false;
+  if (GetImage()->IsImageResource() || GetImage()->IsImageResourceSet())
+    return GetImage()->CachedImage() && GetImage()->CachedImage()->HasImage();
+  return GetImage()->IsGeneratedImage();
+}
 
 }  // namespace blink
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_

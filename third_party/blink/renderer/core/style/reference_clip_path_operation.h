@@ -27,32 +27,49 @@
  * SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_REFERENCE_CLIP_PATH_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_REFERENCE_CLIP_PATH_OPERATION_H_
 
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include <memory>
+
+#include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 
 namespace blink {
 
-class ClipPathOperation : public RefCounted<ClipPathOperation> {
+class SVGResourceClient;
+
+class ReferenceClipPathOperation final : public ClipPathOperation {
  public:
-  enum OperationType { REFERENCE, SHAPE };
-
-  virtual ~ClipPathOperation() = default;
-
-  virtual bool operator==(const ClipPathOperation&) const = 0;
-  bool operator!=(const ClipPathOperation& o) const { return !(*this == o); }
-
-  virtual OperationType GetType() const = 0;
-  bool IsSameType(const ClipPathOperation& o) const {
-    return o.GetType() == GetType();
+  static scoped_refptr<ReferenceClipPathOperation> Create(
+      const String& url,
+      SVGResource* resource) {
+    return base::AdoptRef(new ReferenceClipPathOperation(url, resource));
   }
 
- protected:
-  ClipPathOperation() = default;
+  void AddClient(SVGResourceClient&);
+  void RemoveClient(SVGResourceClient&);
+
+  SVGResource* Resource() const;
+  const String& Url() const { return url_; }
+
+ private:
+  bool operator==(const ClipPathOperation&) const override;
+  OperationType GetType() const override { return REFERENCE; }
+
+  ReferenceClipPathOperation(const String& url, SVGResource* resource)
+      : resource_(resource), url_(url) {}
+
+  Persistent<SVGResource> resource_;
+  String url_;
 };
+
+DEFINE_TYPE_CASTS(ReferenceClipPathOperation,
+                  ClipPathOperation,
+                  op,
+                  op->GetType() == ClipPathOperation::REFERENCE,
+                  op.GetType() == ClipPathOperation::REFERENCE);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_REFERENCE_CLIP_PATH_OPERATION_H_

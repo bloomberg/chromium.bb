@@ -29,6 +29,8 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"

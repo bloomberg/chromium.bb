@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"

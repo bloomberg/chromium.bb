@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
