@@ -2716,12 +2716,12 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Simulate activating the autofill popup for the email field after typing.
+    // Simulate activating the autofill popup for the email field after a fill.
     form.fields[0].is_autofilled = true;
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
-    histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 0);
+    histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 1);
   }
 }
 

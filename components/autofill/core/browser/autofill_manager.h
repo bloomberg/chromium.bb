@@ -329,7 +329,6 @@ class AutofillManager : public AutofillHandler,
     bool is_filling_credit_card = false;
     // Flag to indicate whether all suggestions come from Google Payments.
     bool is_all_server_suggestions = false;
-    bool section_has_autofilled_field = false;
     SuppressReason suppress_reason = SuppressReason::kNotSuppressed;
   };
 
