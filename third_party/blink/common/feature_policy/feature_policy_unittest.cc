@@ -23,6 +23,11 @@ mojom::FeaturePolicyFeature kDefaultOffFeature =
     static_cast<mojom::FeaturePolicyFeature>(
         static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 3);
 
+// This feature is defined in code, but not present in the feature list.
+mojom::FeaturePolicyFeature kUnavailableFeature =
+    static_cast<mojom::FeaturePolicyFeature>(
+        static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 4);
+
 }  // namespace
 
 class FeaturePolicyTest : public testing::Test {
@@ -52,6 +57,13 @@ class FeaturePolicyTest : public testing::Test {
     return FeaturePolicy::CreateFromParentPolicy(parent, frame_policy, origin,
                                                  feature_list_);
   }
+
+  bool PolicyContainsInheritedValue(const FeaturePolicy* policy,
+                                    mojom::FeaturePolicyFeature feature) {
+    return policy->inherited_policies_.find(feature) !=
+           policy->inherited_policies_.end();
+  }
+
   url::Origin origin_a_ = url::Origin::Create(GURL("https://example.com/"));
   url::Origin origin_b_ = url::Origin::Create(GURL("https://example.net/"));
   url::Origin origin_c_ = url::Origin::Create(GURL("https://example.org/"));
@@ -1217,6 +1229,37 @@ TEST_F(FeaturePolicyTest, TestSandboxedPolicyCanBePropagated) {
                                                   sandboxed_origin_1));
   EXPECT_FALSE(policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
                                                   sandboxed_origin_2));
+}
+
+TEST_F(FeaturePolicyTest, TestUndefinedFeaturesInFramePolicy) {
+  // +---------------------------------------------------+
+  // |(1)Origin A                                        |
+  // |No Policy                                          |
+  // |                                                   |
+  // |<iframe allow="nosuchfeature; unavailablefeature"> |
+  // | +-------------+                                   |
+  // | |(2)Origin B  |                                   |
+  // | |No Policy    |                                   |
+  // | +-------------+                                   |
+  // +---------------------------------------------------+
+  // A feature which is not in the declared feature list should be ignored if
+  // present in a container policy.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicy frame_policy = {
+      {{mojom::FeaturePolicyFeature::kNotFound, false, true,
+        std::vector<url::Origin>()},
+       {kUnavailableFeature, false, true, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
+  EXPECT_FALSE(PolicyContainsInheritedValue(
+      policy1.get(), mojom::FeaturePolicyFeature::kNotFound));
+  EXPECT_FALSE(
+      PolicyContainsInheritedValue(policy1.get(), kUnavailableFeature));
+  EXPECT_FALSE(PolicyContainsInheritedValue(
+      policy2.get(), mojom::FeaturePolicyFeature::kNotFound));
+  EXPECT_FALSE(
+      PolicyContainsInheritedValue(policy2.get(), kUnavailableFeature));
 }
 
 }  // namespace blink

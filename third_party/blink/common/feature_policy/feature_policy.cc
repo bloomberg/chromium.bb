@@ -209,22 +209,26 @@ void FeaturePolicy::AddContainerPolicy(
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
-    if (feature == mojom::FeaturePolicyFeature::kNotFound)
+    // Do not allow setting a container policy for a feature which is not in the
+    // feature list.
+    auto search = inherited_policies_.find(feature);
+    if (search == inherited_policies_.end())
       continue;
+    bool& inherited_policy = search->second;
     // If the parent frame does not enable the feature, then the child frame
     // must not.
-    inherited_policies_[feature] = false;
+    inherited_policy = false;
     if (parent_policy->IsFeatureEnabled(feature)) {
       if (parsed_declaration.matches_opaque_src && origin_.unique()) {
         // If the child frame has an opaque origin, and the declared container
         // policy indicates that the feature should be enabled, enable it for
         // the child frame.
-        inherited_policies_[feature] = true;
+        inherited_policy = true;
       } else if (AllowlistFromDeclaration(parsed_declaration)
                      ->Contains(origin_)) {
         // Otherwise, enbable the feature if the declared container policy
         // includes the origin of the child frame.
-        inherited_policies_[feature] = true;
+        inherited_policy = true;
       }
     }
   }
