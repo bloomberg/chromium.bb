@@ -164,8 +164,7 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
       scoped_refptr<ServiceWorkerContextWatcher> watcher,
       int64_t version_id,
       const ServiceWorkerContextCoreObserver::ErrorInfo& error_info) {
-    watcher->OnErrorReported(version_id, 0 /* process_id */, 0 /* thread_id */,
-                             error_info);
+    watcher->OnErrorReported(version_id, error_info);
   }
 
  private:

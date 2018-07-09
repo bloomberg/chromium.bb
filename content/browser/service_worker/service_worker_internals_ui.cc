@@ -268,15 +268,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
         Value(base::Int64ToString(version_id)));
   }
   void OnErrorReported(int64_t version_id,
-                       int process_id,
-                       int thread_id,
                        const ErrorInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
     args.push_back(std::make_unique<Value>(base::Int64ToString(version_id)));
-    args.push_back(std::make_unique<Value>(process_id));
-    args.push_back(std::make_unique<Value>(thread_id));
     auto value = std::make_unique<DictionaryValue>();
     value->SetString("message", info.error_message);
     value->SetInteger("lineNumber", info.line_number);
@@ -287,15 +283,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
                                           ConvertToRawPtrVector(args));
   }
   void OnReportConsoleMessage(int64_t version_id,
-                              int process_id,
-                              int thread_id,
                               const ConsoleMessage& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
     args.push_back(std::make_unique<Value>(base::Int64ToString(version_id)));
-    args.push_back(std::make_unique<Value>(process_id));
-    args.push_back(std::make_unique<Value>(thread_id));
     auto value = std::make_unique<DictionaryValue>();
     value->SetInteger("sourceIdentifier", message.source_identifier);
     value->SetInteger("message_level", message.message_level);
