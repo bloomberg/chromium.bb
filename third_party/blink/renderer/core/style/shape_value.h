@@ -31,7 +31,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHAPE_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
@@ -65,13 +64,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
   BasicShape* Shape() const { return shape_.get(); }
 
   StyleImage* GetImage() const { return image_.Get(); }
-  bool IsImageValid() const {
-    if (!GetImage())
-      return false;
-    if (GetImage()->IsImageResource() || GetImage()->IsImageResourceSet())
-      return GetImage()->CachedImage() && GetImage()->CachedImage()->HasImage();
-    return GetImage()->IsGeneratedImage();
-  }
+  bool IsImageValid() const;
   void SetImage(StyleImage* image) {
     DCHECK_EQ(GetType(), kImage);
     if (image_ != image)

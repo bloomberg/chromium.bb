@@ -257,26 +257,14 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
 
   // Setters for non-inherited resources
-  void SetMaskerResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(resources->masker == resource))
-      resources.Access()->masker = std::move(resource);
-  }
+  void SetMaskerResource(scoped_refptr<StyleSVGResource> resource);
 
   // Setters for inherited resources
-  void SetMarkerStartResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_start == resource))
-      inherited_resources.Access()->marker_start = std::move(resource);
-  }
+  void SetMarkerStartResource(scoped_refptr<StyleSVGResource> resource);
 
-  void SetMarkerMidResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_mid == resource))
-      inherited_resources.Access()->marker_mid = std::move(resource);
-  }
+  void SetMarkerMidResource(scoped_refptr<StyleSVGResource> resource);
 
-  void SetMarkerEndResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_end == resource))
-      inherited_resources.Access()->marker_end = std::move(resource);
-  }
+  void SetMarkerEndResource(scoped_refptr<StyleSVGResource> resource);
 
   // Read accessors for all the properties
   EAlignmentBaseline AlignmentBaseline() const {

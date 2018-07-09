@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
 
 #include "third_party/blink/renderer/core/style/style_difference.h"
+#include "third_party/blink/renderer/core/style/style_svg_resource.h"
 
 namespace blink {
 
@@ -271,6 +272,30 @@ EPaintOrderType SVGComputedStyle::PaintOrderType(unsigned index) const {
   pt =
       (pt >> (kPaintOrderBitwidth * index)) & ((1u << kPaintOrderBitwidth) - 1);
   return (EPaintOrderType)pt;
+}
+
+void SVGComputedStyle::SetMaskerResource(
+    scoped_refptr<StyleSVGResource> resource) {
+  if (!(resources->masker == resource))
+    resources.Access()->masker = std::move(resource);
+}
+
+void SVGComputedStyle::SetMarkerStartResource(
+    scoped_refptr<StyleSVGResource> resource) {
+  if (!(inherited_resources->marker_start == resource))
+    inherited_resources.Access()->marker_start = std::move(resource);
+}
+
+void SVGComputedStyle::SetMarkerMidResource(
+    scoped_refptr<StyleSVGResource> resource) {
+  if (!(inherited_resources->marker_mid == resource))
+    inherited_resources.Access()->marker_mid = std::move(resource);
+}
+
+void SVGComputedStyle::SetMarkerEndResource(
+    scoped_refptr<StyleSVGResource> resource) {
+  if (!(inherited_resources->marker_end == resource))
+    inherited_resources.Access()->marker_end = std::move(resource);
 }
 
 }  // namespace blink

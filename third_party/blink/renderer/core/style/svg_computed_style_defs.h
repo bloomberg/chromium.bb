@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/style_path.h"
-#include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -40,6 +39,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+class StyleSVGResource;
 
 typedef RefVector<Length> SVGDashArray;
 
@@ -121,8 +122,11 @@ enum EPaintOrder {
 };
 
 struct SVGPaint {
-  SVGPaint() : type(SVG_PAINTTYPE_NONE) {}
-  SVGPaint(Color color) : color(color), type(SVG_PAINTTYPE_RGBCOLOR) {}
+  CORE_EXPORT SVGPaint();
+  SVGPaint(Color color);
+  SVGPaint(const SVGPaint& paint);
+  CORE_EXPORT ~SVGPaint();
+  CORE_EXPORT SVGPaint& operator=(const SVGPaint& paint);
 
   CORE_EXPORT bool operator==(const SVGPaint&) const;
   bool operator!=(const SVGPaint& other) const { return !(*this == other); }
@@ -149,7 +153,7 @@ struct SVGPaint {
   StyleSVGResource* Resource() const { return resource.get(); }
 
   const Color& GetColor() const { return color; }
-  const String& GetUrl() const { return Resource()->Url(); }
+  const String& GetUrl() const;
 
   scoped_refptr<StyleSVGResource> resource;
   Color color;
@@ -285,6 +289,7 @@ class StyleResourceData : public RefCounted<StyleResourceData> {
   static scoped_refptr<StyleResourceData> Create() {
     return base::AdoptRef(new StyleResourceData);
   }
+  ~StyleResourceData();
   scoped_refptr<StyleResourceData> Copy() const {
     return base::AdoptRef(new StyleResourceData(*this));
   }
@@ -308,6 +313,7 @@ class StyleInheritedResourceData
   static scoped_refptr<StyleInheritedResourceData> Create() {
     return base::AdoptRef(new StyleInheritedResourceData);
   }
+  ~StyleInheritedResourceData();
   scoped_refptr<StyleInheritedResourceData> Copy() const {
     return base::AdoptRef(new StyleInheritedResourceData(*this));
   }
