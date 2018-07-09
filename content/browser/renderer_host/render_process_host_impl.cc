@@ -4050,6 +4050,13 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   }
 
   bool inputs_changed = new_visible_widgets_count != visible_clients_;
+#if defined(OS_ANDROID)
+  // OS_ANDROID in order to maintain the workaround on desktop to avoid
+  // backgrounding a new process. See the comment in OnProcessLaunched and
+  // https://crbug.com/560446. Only android uses frame_depth for now, so
+  // not a huge change.
+  inputs_changed = inputs_changed || frame_depth_ != new_frame_depth;
+#endif
   visible_clients_ = new_visible_widgets_count;
   frame_depth_ = new_frame_depth;
 #if defined(OS_ANDROID)
