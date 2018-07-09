@@ -54,8 +54,8 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/threading/background_task_runner.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -297,7 +297,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
     DOMArrayBuffer* array_buffer) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
-  BackgroundTaskRunner::PostOnBackgroundThread(
+  BackgroundScheduler::PostOnBackgroundThread(
       FROM_HERE,
       CrossThreadBind(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,

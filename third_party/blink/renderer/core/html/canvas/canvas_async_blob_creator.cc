@@ -18,8 +18,8 @@
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
+#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/threading/background_task_runner.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -371,7 +371,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
                         WrapPersistent(this)));
 
     } else {
-      BackgroundTaskRunner::PostOnBackgroundThread(
+      BackgroundScheduler::PostOnBackgroundThread(
           FROM_HERE,
           CrossThreadBind(&CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
                           WrapCrossThreadPersistent(this), quality));
