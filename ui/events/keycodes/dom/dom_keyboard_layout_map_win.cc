@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -60,6 +61,16 @@ uint32_t DomKeyboardLayoutMapWin::GetKeyboardLayoutCount() {
     return false;
   }
   DCHECK_EQ(keyboard_layout_count, copy_count);
+
+  // The set of layouts returned from GetKeyboardLayoutList does not follow the
+  // the order of the layouts in the control panel so we use GetKeyboardLayout
+  // to retrieve the current layout and swap (if needed) to ensure it is always
+  // evaluated first.
+  auto iter = std::find(keyboard_layout_handles_.begin(),
+                        keyboard_layout_handles_.end(), GetKeyboardLayout(0));
+  if (iter != keyboard_layout_handles_.begin() &&
+      iter != keyboard_layout_handles_.end())
+    std::iter_swap(keyboard_layout_handles_.begin(), iter);
 
   return keyboard_layout_handles_.size();
 }
