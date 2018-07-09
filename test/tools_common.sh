@@ -47,26 +47,16 @@ test_end() {
 
 # Echoes the target configuration being tested.
 test_configuration_target() {
-  aom_config_mk="${LIBAOM_CONFIG_PATH}/config.mk"
-  # TODO(tomfinegan): Remove the parts requiring config.mk when the configure
-  # script is removed from the repository.
-  if [ ! -f "${aom_config_mk}" ]; then
-    aom_config_c="${LIBAOM_CONFIG_PATH}/aom_config.c"
-    # Clean up the cfg pointer line from aom_config.c for easier re-use by
-    # someone examining a failure in the example tests.
-    # 1. Run grep on aom_config.c for cfg and limit the results to 1.
-    # 2. Split the line using ' = ' as separator.
-    # 3. Abuse sed to consume the leading " and trailing "; from the assignment
-    #    to the cfg pointer.
-    cmake_config=$(awk -F ' = ' '/cfg/ { print $NF; exit }' "${aom_config_c}" \
-      | sed -e s/\"// -e s/\"\;//)
-    echo cmake generated via command: cmake path/to/aom ${cmake_config}
-    return
-  fi
-  # Find the TOOLCHAIN line, split it using ':=' as the field separator, and
-  # print the last field to get the value. Then pipe the value to tr to consume
-  # any leading/trailing spaces while allowing tr to echo the output to stdout.
-  awk -F ':=' '/TOOLCHAIN/ { print $NF }' "${aom_config_mk}" | tr -d ' '
+  aom_config_c="${LIBAOM_CONFIG_PATH}/config/aom_config.c"
+  # Clean up the cfg pointer line from aom_config.c for easier re-use by
+  # someone examining a failure in the example tests.
+  # 1. Run grep on aom_config.c for cfg and limit the results to 1.
+  # 2. Split the line using ' = ' as separator.
+  # 3. Abuse sed to consume the leading " and trailing "; from the assignment
+  #    to the cfg pointer.
+  cmake_config=$(awk -F ' = ' '/cfg/ { print $NF; exit }' "${aom_config_c}" \
+    | sed -e s/\"// -e s/\"\;//)
+  echo cmake generated via command: cmake path/to/aom ${cmake_config}
 }
 
 # Trap function used for failure reports and tool output directory removal.
