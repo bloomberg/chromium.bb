@@ -41,10 +41,6 @@
 #include "shared/helpers.h"
 #include "libweston-desktop/libweston-desktop.h"
 
-#ifndef static_assert
-#define static_assert(cond, msg)
-#endif
-
 struct desktest_shell {
 	struct wl_listener compositor_destroy_listener;
 	struct weston_desktop *desktop;

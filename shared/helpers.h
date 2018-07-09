@@ -100,6 +100,40 @@ extern "C" {
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 #endif
 
+/**
+ * Build-time static assertion support
+ *
+ * A build-time equivalent to assert(), will generate a compilation error
+ * if the supplied condition does not evaluate true.
+ *
+ * The following example demonstrates use of static_assert to ensure that
+ * arrays which are supposed to mirror each other have a consistent
+ * size.
+ *
+ * This is only a fallback definition; support must be provided by the
+ * compiler itself.
+ *
+ * @code
+ * int small[4];
+ * long expanded[4];
+ *
+ * static_assert(ARRAY_LENGTH(small) == ARRAY_LENGTH(expanded),
+ *               "size mismatch between small and expanded arrays");
+ * for (i = 0; i < ARRAY_LENGTH(small); i++)
+ *     expanded[i] = small[4];
+ * @endcode
+ *
+ * @param condition Expression to check for truth
+ * @param msg Message to print on failure
+ */
+#ifndef static_assert
+# ifdef _Static_assert
+#  define static_assert(cond, msg) _Static_assert(cond, msg)
+# else
+#  define static_assert(cond, msg)
+# endif
+#endif
+
 #ifdef  __cplusplus
 }
 #endif
