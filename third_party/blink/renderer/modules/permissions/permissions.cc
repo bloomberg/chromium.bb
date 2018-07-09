@@ -97,11 +97,9 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   }
   if (name == "background-sync")
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
-  // TODO(riju): Remove runtime flag check when Generic Sensor feature is
-  // stable.
   if (name == "ambient-light-sensor" || name == "accelerometer" ||
       name == "gyroscope" || name == "magnetometer") {
-    if (!OriginTrials::sensorEnabled(ExecutionContext::From(script_state))) {
+    if (!RuntimeEnabledFeatures::SensorEnabled()) {
       exception_state.ThrowTypeError("GenericSensor flag is not enabled.");
       return nullptr;
     }

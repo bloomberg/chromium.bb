@@ -1132,8 +1132,7 @@
     },
     {
       name: "Sensor",
-      origin_trial_feature_name: "GenericSensor",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SensorExtraClasses",
