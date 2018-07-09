@@ -42,8 +42,8 @@ const bool PlatformStyle::kIsOkButtonLeading = false;
 
 // Set kFocusHaloInset to negative half of kFocusHaloThickness to draw half of
 // the focus ring inside and half outside the parent elmeent
-const float PlatformStyle::kFocusHaloThickness = 4.f;
-const float PlatformStyle::kFocusHaloInset = -2.f;
+const float PlatformStyle::kFocusHaloThickness = 2.f;
+const float PlatformStyle::kFocusHaloInset = -1.f;
 
 #if !defined(OS_MACOSX)
 
