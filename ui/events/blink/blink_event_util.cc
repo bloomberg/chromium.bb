@@ -1244,7 +1244,7 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
     web_event->data.fling_start.velocity_y = event.velocity_y();
     web_event->data.fling_start.target_viewport = event.target_viewport();
   } else if (event_type == WebInputEvent::kGestureFlingCancel) {
-    web_event->data.fling_cancel.prevent_boosting = true;
+    web_event->data.fling_cancel.prevent_boosting = event.prevent_boosting();
     if (event.synthetic_scroll())
       web_event->data.fling_cancel.target_viewport = true;
   } else if (event_type == WebInputEvent::kGestureDoubleTap) {

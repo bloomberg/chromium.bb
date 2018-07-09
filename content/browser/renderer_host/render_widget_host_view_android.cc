@@ -700,7 +700,9 @@ bool RenderWidgetHostViewAndroid::OnGestureEvent(
     web_event = ui::CreateWebGestureEventFromGestureEventAndroid(
         ui::GestureEventAndroid(event.type(), event.location(),
                                 event.screen_location(), event.time(), delta, 0,
-                                0, 0, 0, false, false));
+                                0, 0, 0, /*target_viewport*/ false,
+                                /*synthetic_scroll*/ false,
+                                /*prevent_boosting*/ false));
   } else {
     web_event = ui::CreateWebGestureEventFromGestureEventAndroid(event);
   }
