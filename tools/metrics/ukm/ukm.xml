@@ -3532,6 +3532,12 @@ be describing additional metrics about the same event.
       example).
     </summary>
   </metric>
+  <metric name="FailureLiveStateDevToolsOpen">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently using DevTools.
+    </summary>
+  </metric>
   <metric name="FailureLiveStateExtensionDisallowed">
     <summary>
       Booling indicating that the intervention was disallowed by an extension.

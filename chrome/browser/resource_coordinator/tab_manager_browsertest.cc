@@ -12,6 +12,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -602,6 +603,42 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   video_stream_ui.reset();
 
   // Should be able to discard the background tab now.
+  EXPECT_TRUE(tab_manager()->DiscardTabImpl(DiscardReason::kProactive));
+}
+
+// Makes sure that tabs using DevTools are protected from discarding.
+IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectDevToolsTabsFromDiscarding) {
+  // Get two tabs open, the second one being the foreground tab.
+  GURL test_page(ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("simple.html"))));
+  ui_test_utils::NavigateToURL(browser(), test_page);
+  // Open a DevTools window for the first.
+  DevToolsWindow* devtool = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      GetWebContentsAt(0), true /* is_docked */);
+  EXPECT_TRUE(devtool);
+
+  GURL url2(chrome::kChromeUIAboutURL);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIAboutURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // No discarding should be possible as the only background tab is currently
+  // using DevTools.
+  EXPECT_FALSE(tab_manager()->DiscardTabImpl(DiscardReason::kProactive));
+
+  // Close the DevTools window and repeat the test, this time use a non-docked
+  // window.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtool);
+  devtool = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      GetWebContentsAt(0), false /* is_docked */);
+  EXPECT_TRUE(devtool);
+  EXPECT_FALSE(tab_manager()->DiscardTabImpl(DiscardReason::kProactive));
+
+  // TODO(sebmarchand): Also ensure that the tab can't be frozen.
+
+  // Close the DevTools window, ensure that the tab can be discarded.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtool);
   EXPECT_TRUE(tab_manager()->DiscardTabImpl(DiscardReason::kProactive));
 }
 

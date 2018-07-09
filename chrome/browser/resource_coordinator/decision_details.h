@@ -68,6 +68,8 @@ enum class DecisionFailureReason : int32_t {
   LIVE_STATE_USING_WEB_USB,
   // The tab is opted out of the intervention as it is currently visible.
   LIVE_STATE_VISIBLE,
+  // The tab is opted out of the intervention as it's currently using DevTools.
+  LIVE_STATE_DEVTOOLS_OPEN,
   // This must remain last.
   MAX,
 };

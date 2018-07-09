@@ -32,6 +32,7 @@ const char* kDecisionFailureReasonStrings[] = {
     "Tab is currently using WebSockets",
     "Tab is currently using WebUSB",
     "Tab is currently visible",
+    "Tab is currently using DevTools",
 };
 static_assert(base::size(kDecisionFailureReasonStrings) ==
                   static_cast<size_t>(DecisionFailureReason::MAX),
@@ -121,6 +122,9 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::LIVE_STATE_VISIBLE:
       ukm->SetFailureLiveStateVisible(1);
+      break;
+    case DecisionFailureReason::LIVE_STATE_DEVTOOLS_OPEN:
+      ukm->SetFailureLiveStateDevToolsOpen(1);
       break;
     case DecisionFailureReason::MAX:
       break;
