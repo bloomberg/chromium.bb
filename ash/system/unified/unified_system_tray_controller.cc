@@ -151,6 +151,9 @@ void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
+  if (animation_->is_animating())
+    return;
+
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
