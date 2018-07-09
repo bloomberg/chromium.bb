@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
@@ -37,6 +38,7 @@ class AssistantUiController;
 
 class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
+      public AssistantUiModelObserver,
       public HighlighterController::Observer,
       public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
@@ -84,6 +86,9 @@ class ASH_EXPORT AssistantController
       mojom::WebContentsManagerPtr web_contents_manager) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;

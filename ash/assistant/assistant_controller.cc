@@ -118,12 +118,13 @@ AssistantController::AssistantController()
   assistant_ui_controller_->SetAssistantInteractionController(
       assistant_interaction_controller_.get());
 
-  // Observe HighlighterController for region selections.
+  assistant_ui_controller_->AddModelObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantController::~AssistantController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
+  assistant_ui_controller_->RemoveModelObserver(this);
 
   // Explicitly clean up the circular dependency in the sub-controllers.
   assistant_interaction_controller_->SetAssistantUiController(nullptr);
@@ -256,10 +257,27 @@ void AssistantController::DownloadImage(
   assistant_image_downloader_->Download(account_id, url, std::move(callback));
 }
 
+void AssistantController::OnUiVisibilityChanged(bool visible,
+                                                AssistantSource source) {
+  // We don't initiate a contextual query for caching if the UI is being hidden.
+  if (!visible)
+    return;
+
+  // We don't initiate a contextual query for caching if we are using stylus
+  // input modality because we will do so on metalayer session complete.
+  if (assistant_interaction_controller_->model()->input_modality() ==
+      InputModality::kStylus) {
+    return;
+  }
+
+  // TODO(dmblack): Activate the Assistant UI when the callback is run.
+  assistant_->RequestScreenContext(gfx::Rect(), base::DoNothing());
+}
+
 void AssistantController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
-  // TODO(muyuanli): Request screen context for |rect|.
-  NOTIMPLEMENTED();
+  // TODO(dmblack): Activate the Assistant UI when the callback is run.
+  assistant_->RequestScreenContext(rect, base::DoNothing());
 }
 
 void AssistantController::OnOpenUrlFromTab(const GURL& url) {

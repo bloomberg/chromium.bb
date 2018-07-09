@@ -199,6 +199,8 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     container_view_->GetWidget()->AddObserver(this);
   }
 
+  // TODO(dmblack): Initially show UI as inactive and only activate after the
+  // screen context has been sent to the server.
   container_view_->GetWidget()->Show();
   assistant_ui_model_.SetVisible(true, source);
 }

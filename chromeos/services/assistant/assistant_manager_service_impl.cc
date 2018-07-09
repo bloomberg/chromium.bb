@@ -178,15 +178,17 @@ void AssistantManagerServiceImpl::RequestScreenContext(
     return;
   }
 
+  // We wait for the closure to execute twice: once for the screenshot and once
+  // for the view hierarchy.
   auto on_done = base::BarrierClosure(
-      2,  // We wait for the closure execute twice: 1 for screenshot and 1 for
-          // view hierarchy.
-      base::BindOnce(
-          &AssistantManagerServiceImpl::SendContextQueryAndRunCallback,
-          weak_factory_.GetWeakPtr(), std::move(callback)));
+      2, base::BindOnce(
+             &AssistantManagerServiceImpl::SendContextQueryAndRunCallback,
+             weak_factory_.GetWeakPtr(), std::move(callback)));
+
   service_->client()->RequestAssistantStructure(
       base::BindOnce(&AssistantManagerServiceImpl::OnAssistantStructureReceived,
                      weak_factory_.GetWeakPtr(), on_done));
+
   // TODO(muyuanli): handle metalayer and grab only part of the screen.
   service_->assistant_controller()->RequestScreenshot(
       region, base::BindOnce(
