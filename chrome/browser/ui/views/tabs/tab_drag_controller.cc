@@ -276,10 +276,8 @@ TabDragController::~TabDragController() {
   if (g_tab_drag_controller == this)
     g_tab_drag_controller = NULL;
 
-  if (move_loop_widget_) {
-    if (added_observer_to_move_loop_widget_)
-      move_loop_widget_->RemoveObserver(this);
-  }
+  if (move_loop_widget_)
+    move_loop_widget_->RemoveObserver(this);
 
   if (source_tabstrip_)
     GetModel(source_tabstrip_)->RemoveObserver(this);
@@ -1155,7 +1153,6 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   move_loop_widget_ = GetAttachedBrowserWidget();
   DCHECK(move_loop_widget_);
   move_loop_widget_->AddObserver(this);
-  added_observer_to_move_loop_widget_ = true;
   is_dragging_window_ = true;
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   if (can_release_capture_) {
@@ -1411,7 +1408,14 @@ void TabDragController::EndDragImpl(EndDragType type) {
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
 
-  ClearTabDraggingInfo();
+  if (move_loop_widget_) {
+    // This function is only called when the drag is ending. At this point we
+    // don't care about any subsequent moves to the widget, so we remove the
+    // observer. If we didn't do this we could get told the widget moved and
+    // attempt to do the wrong thing.
+    move_loop_widget_->RemoveObserver(this);
+    move_loop_widget_ = nullptr;
+  }
 
   if (is_dragging_window_) {
     waiting_for_run_loop_to_exit_ = true;
@@ -1419,6 +1423,8 @@ void TabDragController::EndDragImpl(EndDragType type) {
     // End the nested drag loop.
     GetAttachedBrowserWidget()->EndMoveLoop();
   }
+
+  ClearTabDraggingInfo();
 
   if (type != TAB_DESTROYED) {
     // We only finish up the drag if we were actually dragging. If start_drag_
@@ -1638,14 +1644,6 @@ void TabDragController::CompleteDrag() {
 }
 
 void TabDragController::MaximizeAttachedWindow() {
-  if (move_loop_widget_ && added_observer_to_move_loop_widget_) {
-    // This function is only called when the drag is ending. At this point we
-    // don't care about any subsequent moves to the widget, so we remove the
-    // observer. If we didn't do this we could get told the widget moved and
-    // attempt to do the wrong thing.
-    move_loop_widget_->RemoveObserver(this);
-    added_observer_to_move_loop_widget_ = false;
-  }
   GetAttachedBrowserWidget()->Maximize();
 #if defined(OS_CHROMEOS)
   if (was_source_fullscreen_) {
