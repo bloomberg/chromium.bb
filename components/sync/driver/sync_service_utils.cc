@@ -16,12 +16,11 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   // Note: Before configuration is done, GetPreferredDataTypes returns
   // "everything" (i.e. the default setting). If a data type is missing there,
   // it must be because the user explicitly disabled it.
-  if (!sync_service || !sync_service->CanSyncStart() ||
-      sync_service->IsLocalSyncEnabled() ||
-      !sync_service->GetPreferredDataTypes().Has(type) ||
-      sync_service->GetAuthError().IsPersistentError()) {
+  if (!sync_service || sync_service->IsLocalSyncEnabled() ||
+      !sync_service->GetPreferredDataTypes().Has(type)) {
     return UploadState::NOT_ACTIVE;
   }
+
   // If the given ModelType is encrypted with a custom passphrase, we also
   // consider uploading inactive, since Google can't read the data.
   // Note that encryption is tricky: Some data types (e.g. PASSWORDS) are always
@@ -32,22 +31,46 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
       sync_service->IsUsingSecondaryPassphrase()) {
     return UploadState::NOT_ACTIVE;
   }
-  // TODO(crbug.com/831579): We currently need to wait for GetLastCycleSnapshot
-  // to return an initialized snapshot because we don't actually know if the
-  // token is valid until sync has tried it. This is bad because sync can take
-  // arbitrarily long to try the token (especially if the user doesn't have
-  // history sync enabled). Instead, if the identity code would persist
-  // persistent auth errors, we could read those from startup.
-  if (!sync_service->IsSyncActive() || !sync_service->ConfigurationDone() ||
-      !sync_service->GetLastCycleSnapshot().is_initialized()) {
-    return UploadState::INITIALIZING;
+
+  switch (sync_service->GetState()) {
+    case SyncService::State::DISABLED:
+      return UploadState::NOT_ACTIVE;
+
+    case SyncService::State::AUTH_ERROR:
+      // For transient errors, give the benefit of the doubt and say we're
+      // INITIALIZING.
+      if (sync_service->GetAuthError().IsTransientError()) {
+        return UploadState::INITIALIZING;
+      }
+      return UploadState::NOT_ACTIVE;
+
+    case SyncService::State::WAITING_FOR_START_REQUEST:
+    case SyncService::State::START_DEFERRED:
+    case SyncService::State::INITIALIZING:
+    case SyncService::State::WAITING_FOR_CONSENT:
+    case SyncService::State::CONFIGURING:
+      return UploadState::INITIALIZING;
+
+    case SyncService::State::ACTIVE:
+      // If sync is active, but the data type in question still isn't, then
+      // something must have gone wrong with that data type.
+      if (!sync_service->GetActiveDataTypes().Has(type)) {
+        return UploadState::NOT_ACTIVE;
+      }
+      // TODO(crbug.com/831579): We currently need to wait for
+      // GetLastCycleSnapshot to return an initialized snapshot because we don't
+      // actually know if the token is valid until sync has tried it. This is
+      // bad because sync can take arbitrarily long to try the token (especially
+      // if the user doesn't have history sync enabled). Instead, if the
+      // identity code would persist persistent auth errors, we could read those
+      // from startup.
+      if (!sync_service->GetLastCycleSnapshot().is_initialized()) {
+        return UploadState::INITIALIZING;
+      }
+      return UploadState::ACTIVE;
   }
-  // If configuration is done and sync is active, but the data type in question
-  // still isn't, then something must have gone wrong with that data type.
-  if (!sync_service->GetActiveDataTypes().Has(type)) {
-    return UploadState::NOT_ACTIVE;
-  }
-  return UploadState::ACTIVE;
+  NOTREACHED();
+  return UploadState::NOT_ACTIVE;
 }
 
 }  // namespace syncer

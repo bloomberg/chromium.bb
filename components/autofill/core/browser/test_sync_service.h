@@ -20,6 +20,7 @@ class TestSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   bool IsEngineInitialized() const override;
+  bool IsFirstSetupComplete() const override;
   bool IsUsingSecondaryPassphrase() const override;
   bool IsSyncActive() const override;
   bool ConfigurationDone() const override;

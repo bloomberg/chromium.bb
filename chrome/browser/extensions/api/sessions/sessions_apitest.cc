@@ -244,9 +244,12 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   EXPECT_CALL(*service, AddObserver(testing::_)).Times(testing::AnyNumber());
   EXPECT_CALL(*service, RemoveObserver(testing::_)).Times(testing::AnyNumber());
 
-  browser_ = new Browser(Browser::CreateParams(profile, true));
-
+  // Note: ProfileSyncService::Initialize must be called ASAP after constructing
+  // the object. In particular, creating the Browser below calls into
+  // ProfileSyncService which is illegal before Initialize() has been called.
   service->Initialize();
+
+  browser_ = new Browser(Browser::CreateParams(profile, true));
 }
 
 void ExtensionSessionsTest::CreateTestExtension() {

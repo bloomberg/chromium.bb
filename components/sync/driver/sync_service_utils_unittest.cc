@@ -36,8 +36,10 @@ class TestSyncService : public FakeSyncService {
 
   // SyncService implementation.
   int GetDisableReasons() const override { return disable_reasons_; }
+  bool IsEngineInitialized() const override { return sync_active_; }
   bool IsSyncActive() const override { return sync_active_; }
   bool IsLocalSyncEnabled() const override { return local_sync_enabled_; }
+  bool IsFirstSetupComplete() const override { return true; }
   ModelTypeSet GetPreferredDataTypes() const override {
     return preferred_data_types_;
   }
@@ -215,13 +217,13 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   ASSERT_EQ(UploadState::ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
-  // On a transient error, uploading remains active.
+  // On a transient error, uploading goes back to INITIALIZING.
   GoogleServiceAuthError transient_error(
       GoogleServiceAuthError::CONNECTION_FAILED);
   ASSERT_TRUE(transient_error.IsTransientError());
   service.set_auth_error(transient_error);
 
-  EXPECT_EQ(UploadState::ACTIVE,
+  EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // On a persistent error, uploading is not considered active anymore (even

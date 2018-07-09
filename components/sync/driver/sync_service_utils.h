@@ -17,8 +17,9 @@ class SyncService;
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
 enum class UploadState {
-  // Syncing is enabled in principle, but the sync service is still
-  // initializing, so e.g. we don't know about any auth errors yet.
+  // Syncing is enabled in principle, but the sync service is not actually
+  // active yet. Either it's still initializing (in which case we e.g. don't
+  // know about any auth errors yet), or it's in a transient auth error state.
   INITIALIZING,
   // We are not syncing to Google, and the caller should assume that we do not
   // have consent to do so. This can have a number of reasons, e.g.: sync as a

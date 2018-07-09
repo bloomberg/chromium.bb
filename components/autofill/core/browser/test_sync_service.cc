@@ -34,6 +34,10 @@ bool TestSyncService::IsEngineInitialized() const {
   return is_engine_initialized_;
 }
 
+bool TestSyncService::IsFirstSetupComplete() const {
+  return true;
+}
+
 bool TestSyncService::IsUsingSecondaryPassphrase() const {
   return is_using_secondary_passphrase_;
 }
