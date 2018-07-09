@@ -37,8 +37,10 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1034,6 +1036,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   constexpr GLuint texture_id2 = 2;
   constexpr GLuint image_id1 = 3;
   constexpr GLuint image_id2 = 4;
+  const GLuint texture_target = gpu::GetPlatformSpecificTextureTarget();
 
   std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
       IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1043,6 +1046,13 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id_for_copy = 17;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id_for_copy));
+    EXPECT_CALL(gl_, GenTextures(1, _));
+    EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_2d_id_for_copy));
+  }
   DrawSomething(bridge.get());
   bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
@@ -1050,6 +1060,13 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id_for_copy = 19;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id_for_copy));
+    EXPECT_CALL(gl_, GenTextures(1, _));
+    EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_2d_id_for_copy));
+  }
   DrawSomething(bridge.get());
   bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
@@ -1099,6 +1116,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   constexpr GLuint texture_id2 = 2;
   constexpr GLuint image_id1 = 3;
   constexpr GLuint image_id2 = 4;
+  const GLuint texture_target = gpu::GetPlatformSpecificTextureTarget();
 
   std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
       IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1108,6 +1126,13 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id_for_copy = 17;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id_for_copy));
+    EXPECT_CALL(gl_, GenTextures(1, _));
+    EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_2d_id_for_copy));
+  }
   DrawSomething(bridge.get());
   bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
@@ -1115,6 +1140,13 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id_for_copy = 19;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id_for_copy));
+    EXPECT_CALL(gl_, GenTextures(1, _));
+    EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_2d_id_for_copy));
+  }
   DrawSomething(bridge.get());
   bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
@@ -1159,6 +1191,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   constexpr GLuint texture_id = 1;
   constexpr GLuint image_id = 2;
+  const GLuint texture_target = gpu::GetPlatformSpecificTextureTarget();
 
   std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
       IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1168,6 +1201,14 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
+
+  if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint image_2d_id_for_copy = 17;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(image_2d_id_for_copy));
+    EXPECT_CALL(gl_, GenTextures(1, _));
+    EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_2d_id_for_copy));
+  }
   DrawSomething(bridge.get());
   bridge->PrepareTransferableResource(nullptr, &resource, &release_callback);
 

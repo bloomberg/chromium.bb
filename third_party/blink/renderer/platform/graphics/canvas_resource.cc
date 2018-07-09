@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {
@@ -345,7 +346,24 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
   gl->GenTextures(1, &texture_id_);
   const GLenum target = TextureTarget();
   gl->BindTexture(target, texture_id_);
+  // TODO(mcasas): consider making |image_id_| a local variable and balancing
+  // BindTexImage2DCHROMIUM() with DestroyImageCHROMIUM(), leaving |texture_id_|
+  // to keep alive the Image2DCHROMIUM.
   gl->BindTexImage2DCHROMIUM(target, image_id_);
+
+  if (is_accelerated_ && target == GL_TEXTURE_EXTERNAL_OES) {
+    // We can't CopyTextureCHROMIUM() into a GL_TEXTURE_EXTERNAL_OES; create
+    // another image and bind a GL_TEXTURE_2D texture to it.
+    const GLuint image_2d_id_for_copy = gl->CreateImageCHROMIUM(
+        gpu_memory_buffer_->AsClientBuffer(), size.Width(), size.Height(),
+        ColorParams().GLInternalFormat());
+
+    gl->GenTextures(1, &texture_2d_id_for_copy_);
+    gl->BindTexture(GL_TEXTURE_2D, texture_2d_id_for_copy_);
+    gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_2d_id_for_copy);
+
+    gl->DestroyImageCHROMIUM(image_2d_id_for_copy);
+  }
 }
 
 CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
@@ -353,7 +371,7 @@ CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
 }
 
 bool CanvasResourceGpuMemoryBuffer::IsValid() const {
-  return context_provider_wrapper_ && image_id_;
+  return !!context_provider_wrapper_ && image_id_;
 }
 
 GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
@@ -390,14 +408,17 @@ void CanvasResourceGpuMemoryBuffer::TearDown() {
 
   surface_ = nullptr;
   if (context_provider_wrapper_ && image_id_) {
-    auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
+    auto* gl = ContextGL();
     if (gl && image_id_)
       gl->DestroyImageCHROMIUM(image_id_);
     if (gl && texture_id_)
       gl->DeleteTextures(1, &texture_id_);
+    if (gl && texture_2d_id_for_copy_)
+      gl->DeleteTextures(1, &texture_2d_id_for_copy_);
   }
   image_id_ = 0;
   texture_id_ = 0;
+  texture_2d_id_for_copy_ = 0;
   gpu_memory_buffer_ = nullptr;
 }
 
@@ -405,6 +426,7 @@ void CanvasResourceGpuMemoryBuffer::Abandon() {
   surface_ = nullptr;
   image_id_ = 0;
   texture_id_ = 0;
+  texture_2d_id_for_copy_ = 0;
   gpu_memory_buffer_ = nullptr;
 }
 
@@ -446,11 +468,21 @@ void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
     return;
 
   TRACE_EVENT0("blink", "CanvasResourceGpuMemoryBuffer::CopyFromTexture");
+  GLenum target = TextureTarget();
+  GLuint texture_id = texture_id_;
+
+  if (texture_2d_id_for_copy_) {
+    // We can't CopyTextureCHROMIUM() into a GL_TEXTURE_EXTERNAL_OES; use
+    // instead GL_TEXTURE_2D for the CopyTextureChromium().
+    target = GL_TEXTURE_2D;
+    texture_id = texture_2d_id_for_copy_;
+  }
 
   ContextGL()->CopyTextureCHROMIUM(
-      source_texture, 0 /*sourceLevel*/, TextureTarget(), texture_id_,
-      0 /*destLevel*/, format, type, false /*unpackFlipY*/,
-      false /*unpackPremultiplyAlpha*/, false /*unpackUnmultiplyAlpha*/);
+      source_texture, 0 /*sourceLevel*/, target, texture_id, 0 /*destLevel*/,
+      format, type, false /*unpackFlipY*/, false /*unpackPremultiplyAlpha*/,
+      false /*unpackUnmultiplyAlpha*/);
+
   mailbox_needs_new_sync_token_ = true;
 }
 
