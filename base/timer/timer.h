@@ -293,7 +293,7 @@ class RetainingOneShotTimer : public Timer {
 //
 // If destroyed, the timeout is canceled and will not occur even if already
 // inflight.
-class DelayTimer : protected Timer {
+class DelayTimer {
  public:
   template <class Receiver>
   DelayTimer(const Location& posted_from,
@@ -308,13 +308,17 @@ class DelayTimer : protected Timer {
              Receiver* receiver,
              void (Receiver::*method)(),
              const TickClock* tick_clock)
-      : Timer(posted_from,
-              delay,
-              base::Bind(method, base::Unretained(receiver)),
-              false,
-              tick_clock) {}
+      : timer_(posted_from,
+               delay,
+               BindRepeating(method, Unretained(receiver)),
+               tick_clock) {}
 
-  using Timer::Reset;
+  void Reset() { timer_.Reset(); }
+
+ private:
+  RetainingOneShotTimer timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayTimer);
 };
 
 }  // namespace base
