@@ -644,9 +644,7 @@ AtomicString AccessibleNode::current() const {
 
 void AccessibleNode::setCurrent(const AtomicString& current) {
   SetStringProperty(AOMStringProperty::kCurrent, current);
-
-  if (AXObjectCache* cache = GetAXObjectCache())
-    cache->HandleAttributeChanged(aria_currentAttr, element_);
+  NotifyAttributeChanged(aria_currentAttr);
 }
 
 AccessibleNodeList* AccessibleNode::describedBy() {
@@ -1173,8 +1171,12 @@ void AccessibleNode::NotifyAttributeChanged(
     const blink::QualifiedName& attribute) {
   // TODO(dmazzoni): Make a cleaner API for this rather than pretending
   // the DOM attribute changed.
-  if (AXObjectCache* cache = GetAXObjectCache())
-    cache->HandleAttributeChanged(attribute, element_);
+  if (AXObjectCache* cache = GetAXObjectCache()) {
+    if (element_)
+      cache->HandleAttributeChanged(attribute, element_);
+    else
+      cache->HandleAttributeChanged(attribute, this);
+  }
 }
 
 AXObjectCache* AccessibleNode::GetAXObjectCache() {

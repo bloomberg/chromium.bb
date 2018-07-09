@@ -33,6 +33,11 @@ void AXVirtualObject::AddChildren() {
     children_.push_back(AXObjectCache().GetOrCreate(child));
 }
 
+void AXVirtualObject::ChildrenChanged() {
+  ClearChildren();
+  AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
+}
+
 const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(
     AOMStringProperty property) const {
   if (!accessible_node_)
