@@ -321,8 +321,8 @@
 -PredictorBrowserTest.SubframeInitiatesPreconnects
 -PredictorBrowserTest.SubframeLearning
 
-# Requires a replacement for ChromeNetworkDelegate.
-# http://crbug.com/841309
+# Variations appending not working when network service is enabled.
+# http://crbug.com/857165
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
 
 # https://crbug.com/773295

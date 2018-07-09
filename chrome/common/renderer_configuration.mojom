@@ -12,6 +12,9 @@ interface RendererConfiguration {
   // launch.
   SetInitialConfiguration(bool is_incognito_process);
 
+  // Set the |is_signed_in| stored by the renderer.
+  SetIsSignedIn(bool is_signed_in);
+
   // Set the content setting rules stored by the renderer.
   SetContentSettingRules(
       content_settings.mojom.RendererContentSettingRules rules);

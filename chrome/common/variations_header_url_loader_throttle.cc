@@ -13,6 +13,8 @@ VariationsHeaderURLLoaderThrottle::VariationsHeaderURLLoaderThrottle(
 
 VariationsHeaderURLLoaderThrottle::~VariationsHeaderURLLoaderThrottle() {}
 
+void VariationsHeaderURLLoaderThrottle::DetachFromCurrentSequence() {}
+
 void VariationsHeaderURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {

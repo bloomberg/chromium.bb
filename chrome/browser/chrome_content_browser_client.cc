@@ -100,6 +100,9 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_updater.h"
+#include "chrome/browser/signin/signin_updater_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -200,6 +203,7 @@
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/task_scheduler_util/variations_util.h"
@@ -1303,9 +1307,18 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       new cdm::CdmMessageFilterAndroid(!is_incognito_process, false));
 #endif
 
+  Profile* original_profile = profile->GetOriginalProfile();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(original_profile);
+  bool is_signed_in = signin_manager->IsAuthenticated();
+  // Create the sign-in updater service that is responsible to update the
+  // sign-in state for all renderers.
+  SigninUpdaterFactory::GetForProfile(original_profile);
+
   chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
   host->GetChannel()->GetRemoteAssociatedInterface(&rc_interface);
   rc_interface->SetInitialConfiguration(is_incognito_process);
+  rc_interface->SetIsSignedIn(is_signed_in);
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->RenderProcessWillLaunch(host);
