@@ -52,6 +52,8 @@ bool NativeViewGLSurfaceEGLX11::InitializeNativeWindow() {
 }
 
 void NativeViewGLSurfaceEGLX11::Destroy() {
+  NativeViewGLSurfaceEGL::Destroy();
+
   if (window_) {
     if (PlatformEventSource* source = PlatformEventSource::GetInstance())
       source->RemovePlatformEventDispatcher(this);
@@ -61,8 +63,6 @@ void NativeViewGLSurfaceEGLX11::Destroy() {
     window_ = 0;
     XFlush(x11_display);
   }
-
-  NativeViewGLSurfaceEGL::Destroy();
 }
 
 EGLConfig NativeViewGLSurfaceEGLX11::GetConfig() {
