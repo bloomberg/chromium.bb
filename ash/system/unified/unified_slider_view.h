@@ -81,6 +81,10 @@ class UnifiedSliderView : public views::View {
   UnifiedSliderButton* button() { return button_; }
   views::Slider* slider() { return slider_; }
 
+  // Sets a slider value. If |by_user| is false, accessibility events will not
+  // be triggered.
+  void SetSliderValue(float value, bool by_user);
+
  private:
   // Unowned. Owned by views hierarchy.
   UnifiedSliderButton* const button_;

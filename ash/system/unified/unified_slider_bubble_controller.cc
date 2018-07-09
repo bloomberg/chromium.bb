@@ -99,7 +99,9 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
       slider_type_ = slider_type;
       CreateSliderController();
 
-      bubble_view_->AddChildView(slider_controller_->CreateView());
+      UnifiedSliderView* slider_view =
+          static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
+      bubble_view_->AddChildView(slider_view);
       bubble_view_->Layout();
     }
 
@@ -124,7 +126,9 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
       tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
 
   bubble_view_ = new views::TrayBubbleView(init_params);
-  bubble_view_->AddChildView(slider_controller_->CreateView());
+  UnifiedSliderView* slider_view =
+      static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
+  bubble_view_->AddChildView(slider_view);
   bubble_view_->SetBorder(
       views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
   bubble_view_->set_color(kUnifiedMenuBackgroundColor);
@@ -135,6 +139,11 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
+
+  // Notify value change accessibility event because the popup is triggered by
+  // changing value using an accessor key like VolUp.
+  slider_view->slider()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kValueChanged, true);
 
   StartAutoCloseTimer();
 

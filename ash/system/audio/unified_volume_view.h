@@ -23,7 +23,7 @@ class UnifiedVolumeView : public UnifiedSliderView,
   views::Button* more_button() { return more_button_; }
 
  private:
-  void Update();
+  void Update(bool by_user);
 
   // CrasAudioHandler::AudioObserver:
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;

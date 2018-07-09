@@ -55,7 +55,7 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
   AddChildView(more_button_);
-  Update();
+  Update(false /* by_user */);
 }
 
 UnifiedVolumeView::~UnifiedVolumeView() {
@@ -63,7 +63,7 @@ UnifiedVolumeView::~UnifiedVolumeView() {
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
-void UnifiedVolumeView::Update() {
+void UnifiedVolumeView::Update(bool by_user) {
   bool is_muted = CrasAudioHandler::Get()->IsOutputMuted();
   float level = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.f;
 
@@ -84,32 +84,32 @@ void UnifiedVolumeView::Update() {
   if (std::abs(level - slider()->value()) < kSliderIgnoreUpdateThreshold)
     return;
 
-  slider()->SetValue(level);
+  SetSliderValue(level, by_user);
 }
 
 void UnifiedVolumeView::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                   int volume) {
-  Update();
+  Update(true /* by_user */);
 }
 
 void UnifiedVolumeView::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
-  Update();
+  Update(true /* by_user */);
 }
 
 void UnifiedVolumeView::OnAudioNodesChanged() {
-  Update();
+  Update(true /* by_user */);
 }
 
 void UnifiedVolumeView::OnActiveOutputNodeChanged() {
-  Update();
+  Update(true /* by_user */);
 }
 
 void UnifiedVolumeView::OnActiveInputNodeChanged() {
-  Update();
+  Update(true /* by_user */);
 }
 
 void UnifiedVolumeView::ChildVisibilityChanged(views::View* child) {
-  Layout();
+  Update(true /* by_user */);
 }
 
 }  // namespace ash

@@ -29,7 +29,7 @@ UnifiedBrightnessView::~UnifiedBrightnessView() {
 }
 
 void UnifiedBrightnessView::OnDisplayBrightnessChanged(bool by_user) {
-  slider()->SetValue(model_->display_brightness());
+  SetSliderValue(model_->display_brightness(), by_user);
 }
 
 }  // namespace ash
