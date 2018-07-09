@@ -251,14 +251,6 @@ class MODULES_EXPORT BaseAudioContext
   // Called at the end of each render quantum.
   void HandlePostRenderTasks();
 
-  // Keeps track of the number of connections made.
-  void IncrementConnectionCount() {
-    DCHECK(IsMainThread());
-    connection_count_++;
-  }
-
-  unsigned ConnectionCount() const { return connection_count_; }
-
   DeferredTaskHandler& GetDeferredTaskHandler() const {
     return *deferred_task_handler_;
   }
@@ -420,8 +412,6 @@ class MODULES_EXPORT BaseAudioContext
   // perform delayed state sync'ing updates that needs to be done on the main
   // thread. Cleared by the main thread task once it has run.
   bool has_posted_cleanup_task_;
-
-  unsigned connection_count_;
 
   // Graph locking.
   scoped_refptr<DeferredTaskHandler> deferred_task_handler_;

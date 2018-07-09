@@ -730,9 +730,6 @@ AudioNode* AudioNode::connect(AudioNode* destination,
     connected_nodes_[output_index] = new HeapHashSet<Member<AudioNode>>();
   connected_nodes_[output_index]->insert(destination);
 
-  // Let context know that a connection has been made.
-  context()->IncrementConnectionCount();
-
   return destination;
 }
 
