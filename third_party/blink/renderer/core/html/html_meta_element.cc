@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -457,19 +458,20 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
     ViewportDescription::Type origin) {
   DCHECK(!content.IsNull());
 
-  if (!GetDocument().ShouldOverrideLegacyDescription(origin))
+  ViewportData& viewport_data = GetDocument().GetViewportData();
+  if (!viewport_data.ShouldOverrideLegacyDescription(origin))
     return;
 
   ViewportDescription description_from_legacy_tag(origin);
-  if (GetDocument().ShouldMergeWithLegacyDescription(origin))
-    description_from_legacy_tag = GetDocument().GetViewportDescription();
+  if (viewport_data.ShouldMergeWithLegacyDescription(origin))
+    description_from_legacy_tag = viewport_data.GetViewportDescription();
 
   GetViewportDescriptionFromContentAttribute(
       content, description_from_legacy_tag, &GetDocument(),
       GetDocument().GetSettings() &&
           GetDocument().GetSettings()->GetViewportMetaZeroValuesQuirk());
 
-  GetDocument().SetViewportDescription(description_from_legacy_tag);
+  viewport_data.SetViewportDescription(description_from_legacy_tag);
 }
 
 void HTMLMetaElement::ParseAttribute(

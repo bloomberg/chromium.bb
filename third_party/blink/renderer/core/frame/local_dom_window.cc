@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/frame/screen.h"
 #include "third_party/blink/renderer/core/frame/scroll_to_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -315,7 +316,7 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
     return document_;
 
   GetFrame()->GetScriptController().UpdateDocument();
-  document_->UpdateViewportDescription();
+  document_->GetViewportData().UpdateViewportDescription();
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());

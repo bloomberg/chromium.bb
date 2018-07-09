@@ -111,6 +111,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -1304,7 +1305,8 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers) {
 
   EXPECT_TRUE(SetTextAutosizingMultiplier(document, 2));
 
-  ViewportDescription description = document->GetViewportDescription();
+  ViewportDescription description =
+      document->GetViewportData().GetViewportDescription();
   // Choose a width that's not going match the viewport width of the loaded
   // document.
   description.min_width = Length(100, blink::kFixed);
@@ -1537,12 +1539,13 @@ TEST_F(WebFrameTest, DelayedViewportInitialScale) {
 
   EXPECT_EQ(0.25f, web_view_helper.GetWebView()->PageScaleFactor());
 
-  Document* document =
+  ViewportData& viewport =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument();
-  ViewportDescription description = document->GetViewportDescription();
+          ->GetDocument()
+          ->GetViewportData();
+  ViewportDescription description = viewport.GetViewportDescription();
   description.zoom = 2;
-  document->SetViewportDescription(description);
+  viewport.SetViewportDescription(description);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(2, web_view_helper.GetWebView()->PageScaleFactor());
 }
@@ -2104,16 +2107,17 @@ TEST_F(WebFrameTest, ToggleViewportMetaOnOff) {
   settings->SetShrinksViewportContentToFit(true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  Document* document =
+  ViewportData& viewport =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument();
-  EXPECT_FALSE(document->GetViewportDescription().IsLegacyViewportType());
+          ->GetDocument()
+          ->GetViewportData();
+  EXPECT_FALSE(viewport.GetViewportDescription().IsLegacyViewportType());
 
   settings->SetViewportMetaEnabled(true);
-  EXPECT_TRUE(document->GetViewportDescription().IsLegacyViewportType());
+  EXPECT_TRUE(viewport.GetViewportDescription().IsLegacyViewportType());
 
   settings->SetViewportMetaEnabled(false);
-  EXPECT_FALSE(document->GetViewportDescription().IsLegacyViewportType());
+  EXPECT_FALSE(viewport.GetViewportDescription().IsLegacyViewportType());
 }
 
 TEST_F(WebFrameTest,
@@ -2375,13 +2379,14 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
 
   // The magic number to snap to device-width is 320, so test that 321 is
   // respected.
-  Document* document =
+  ViewportData& viewport =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument();
-  ViewportDescription description = document->GetViewportDescription();
+          ->GetDocument()
+          ->GetViewportData();
+  ViewportDescription description = viewport.GetViewportDescription();
   description.min_width = Length(321, blink::kFixed);
   description.max_width = Length(321, blink::kFixed);
-  document->SetViewportDescription(description);
+  viewport.SetViewportDescription(description);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(321, web_view_helper.GetWebView()
                      ->MainFrameImpl()
@@ -2391,7 +2396,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
 
   description.min_width = Length(320, blink::kFixed);
   description.max_width = Length(320, blink::kFixed);
-  document->SetViewportDescription(description);
+  viewport.SetViewportDescription(description);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(600, web_view_helper.GetWebView()
                      ->MainFrameImpl()
@@ -2399,9 +2404,9 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
                      ->GetLayoutSize()
                      .Width());
 
-  description = document->GetViewportDescription();
+  description = viewport.GetViewportDescription();
   description.max_height = Length(1000, blink::kFixed);
-  document->SetViewportDescription(description);
+  viewport.SetViewportDescription(description);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(1000, web_view_helper.GetWebView()
                       ->MainFrameImpl()
@@ -2410,7 +2415,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
                       .Height());
 
   description.max_height = Length(320, blink::kFixed);
-  document->SetViewportDescription(description);
+  viewport.SetViewportDescription(description);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(800, web_view_helper.GetWebView()
                      ->MainFrameImpl()

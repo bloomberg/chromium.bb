@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
@@ -197,7 +198,7 @@ void ViewportStyleResolver::AddViewportRule(StyleRuleViewport& viewport_rule,
 
 void ViewportStyleResolver::Resolve() {
   if (!property_set_) {
-    document_->SetViewportDescription(
+    document_->GetViewportData().SetViewportDescription(
         ViewportDescription(ViewportDescription::kUserAgentStyleSheet));
     return;
   }
@@ -218,7 +219,7 @@ void ViewportStyleResolver::Resolve() {
   if (HasViewportFitProperty(property_set_))
     description.SetViewportFit(ViewportFitValue());
 
-  document_->SetViewportDescription(description);
+  document_->GetViewportData().SetViewportDescription(description);
 
   DCHECK(initial_style_);
   if (initial_style_->HasViewportUnits())

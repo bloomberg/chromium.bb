@@ -7,6 +7,7 @@
 #include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -148,6 +149,10 @@ class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
                          FloatSize(1, 1), 90, 0, "test");
   }
 
+  mojom::ViewportFit CurrentViewportFit() const {
+    return GetDocument().GetViewportData().GetCurrentViewportFitForTests();
+  }
+
  private:
   MediaControlsDisplayCutoutDelegate& GetDelegate() {
     MediaControlsImpl* controls =
@@ -172,16 +177,14 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, CombinedGesture) {
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
 
   // Finish the gesture by contracting.
   list = CreateTouchListWithTwoPoints(0, 0, 0, 0);
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
   EXPECT_TRUE(UseCounter::IsCounted(
@@ -194,13 +197,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
 
   // Simulate a contracting gesture and check the value has been restored.
   SimulateContractingGesture();
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
   EXPECT_TRUE(UseCounter::IsCounted(
@@ -213,8 +214,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture_Noop) {
   SimulateContractingGesture();
 
   // Check that the value did not change.
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture) {
@@ -223,13 +223,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
 
   // Exit fullscreen and check the value has been restored.
   SimulateExitFullscreen();
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
   EXPECT_TRUE(UseCounter::IsCounted(
@@ -242,13 +240,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture_DoubleNoop) {
   SimulateExpandingGesture();
 
   // Check the viewport fit value has been correctly set.
-  EXPECT_EQ(mojom::ViewportFit::kCover,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
 
   // Simulate another expanding gesture and make sure nothing changed.
   SimulateExpandingGesture();
-  EXPECT_EQ(mojom::ViewportFit::kCover,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kCover, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, IncompleteGestureClearsState) {
@@ -276,16 +272,14 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, MetricsNoop) {
 TEST_F(MediaControlsDisplayCutoutDelegateTest, NoFullscreen_Noop) {
   // Simulate an expanding gesture and make sure it had no effect.
   SimulateExpandingGesture();
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, SingleTouchGesture_Noop) {
   // Simulate a single touch gesture and make sure it had no effect.
   SimulateEnterFullscreen();
   SimulateSingleTouchGesture();
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
@@ -300,8 +294,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchcancel, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
@@ -316,8 +309,7 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetCurrentViewportFitForTests());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
 }  // namespace blink

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -602,7 +603,8 @@ void TextAutosizer::UpdatePageInfo() {
     // If the page has a meta viewport or @viewport, don't apply the device
     // scale adjustment.
     if (!main_frame.GetDocument()
-             ->GetViewportDescription()
+             ->GetViewportData()
+             .GetViewportDescription()
              .IsSpecifiedByAuthor()) {
       page_info_.device_scale_adjustment_ =
           document_->GetSettings()->GetDeviceScaleAdjustment();

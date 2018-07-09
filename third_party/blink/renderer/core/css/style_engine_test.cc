@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -1175,29 +1176,21 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
-  float min_width =
-      document->GetViewportDescription().min_width.GetFloatValue();
-  float max_width =
-      document->GetViewportDescription().max_width.GetFloatValue();
-  float min_height =
-      document->GetViewportDescription().min_height.GetFloatValue();
-  float max_height =
-      document->GetViewportDescription().max_height.GetFloatValue();
+  auto desc = document->GetViewportData().GetViewportDescription();
+  float min_width = desc.min_width.GetFloatValue();
+  float max_width = desc.max_width.GetFloatValue();
+  float min_height = desc.min_height.GetFloatValue();
+  float max_height = desc.max_height.GetFloatValue();
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
   web_view_impl->UpdateAllLifecyclePhases();
 
-  EXPECT_FLOAT_EQ(device_scale * min_width,
-                  document->GetViewportDescription().min_width.GetFloatValue());
-  EXPECT_FLOAT_EQ(device_scale * max_width,
-                  document->GetViewportDescription().max_width.GetFloatValue());
-  EXPECT_FLOAT_EQ(
-      device_scale * min_height,
-      document->GetViewportDescription().min_height.GetFloatValue());
-  EXPECT_FLOAT_EQ(
-      device_scale * max_height,
-      document->GetViewportDescription().max_height.GetFloatValue());
+  desc = document->GetViewportData().GetViewportDescription();
+  EXPECT_FLOAT_EQ(device_scale * min_width, desc.min_width.GetFloatValue());
+  EXPECT_FLOAT_EQ(device_scale * max_width, desc.max_width.GetFloatValue());
+  EXPECT_FLOAT_EQ(device_scale * min_height, desc.min_height.GetFloatValue());
+  EXPECT_FLOAT_EQ(device_scale * max_height, desc.max_height.GetFloatValue());
 }
 
 TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementNoMedia) {

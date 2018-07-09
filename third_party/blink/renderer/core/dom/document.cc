@@ -145,6 +145,7 @@
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -684,7 +685,8 @@ Document::Document(const DocumentInit& initializer,
 #if DCHECK_IS_ON()
       slot_assignment_recalc_forbidden_recursion_depth_(0),
 #endif
-      needs_to_record_ukm_outlive_time_(false) {
+      needs_to_record_ukm_outlive_time_(false),
+      viewport_data_(new ViewportData(*this)) {
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());
@@ -2694,9 +2696,7 @@ void Document::Shutdown() {
   if (!IsActive())
     return;
 
-  // TODO(https://crbug.com/800641): Use InterfaceInvalidator once it works with
-  // associated interfaces.
-  display_cutout_host_.reset();
+  GetViewportData().Shutdown();
 
   // Frame navigation can cause a new Document to be attached. Don't allow that,
   // since that will cause a situation where LocalFrame still has a Document
@@ -3405,7 +3405,7 @@ void Document::CheckCompleted() {
   // No need to repeat if we've already notified this load as finished.
   if (!Loader()->SentDidFinishLoad()) {
     if (frame_->IsMainFrame())
-      GetViewportDescription().ReportMobilePageStats(frame_);
+      GetViewportData().GetViewportDescription().ReportMobilePageStats(frame_);
     Loader()->SetSentDidFinishLoad();
     frame_->Client()->DispatchDidFinishLoad();
     if (!frame_)
@@ -4082,86 +4082,6 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   }
   frame_->GetNavigationScheduler().ScheduleRedirect(delay, refresh_url,
                                                     http_refresh_type);
-}
-
-bool Document::ShouldMergeWithLegacyDescription(
-    ViewportDescription::Type origin) const {
-  return GetSettings() && GetSettings()->GetViewportMetaMergeContentQuirk() &&
-         legacy_viewport_description_.IsMetaViewportType() &&
-         legacy_viewport_description_.type == origin;
-}
-
-void Document::SetViewportDescription(
-    const ViewportDescription& viewport_description) {
-  if (viewport_description.IsLegacyViewportType()) {
-    if (viewport_description == legacy_viewport_description_)
-      return;
-    legacy_viewport_description_ = viewport_description;
-  } else {
-    if (viewport_description == viewport_description_)
-      return;
-    viewport_description_ = viewport_description;
-
-    // The UA-defined min-width is considered specifically by Android WebView
-    // quirks mode.
-    if (!viewport_description.IsSpecifiedByAuthor())
-      viewport_default_min_width_ = viewport_description.min_width;
-  }
-
-  UpdateViewportDescription();
-}
-
-ViewportDescription Document::GetViewportDescription() const {
-  ViewportDescription applied_viewport_description = viewport_description_;
-  bool viewport_meta_enabled =
-      GetSettings() && GetSettings()->GetViewportMetaEnabled();
-  if (legacy_viewport_description_.type !=
-          ViewportDescription::kUserAgentStyleSheet &&
-      viewport_meta_enabled)
-    applied_viewport_description = legacy_viewport_description_;
-  if (ShouldOverrideLegacyDescription(viewport_description_.type))
-    applied_viewport_description = viewport_description_;
-
-  return applied_viewport_description;
-}
-
-void Document::UpdateViewportDescription() {
-  if (!GetFrame())
-    return;
-
-  // If the viewport_fit has changed we should send this to the browser. We
-  // use the legacy viewport description which contains the viewport_fit
-  // defined from the layout meta tag.
-  mojom::ViewportFit current_viewport_fit =
-      GetViewportDescription().GetViewportFit();
-
-  // If we are forcing to expand into the display cutout then we should override
-  // the viewport fit value.
-  if (force_expand_display_cutout_)
-    current_viewport_fit = mojom::ViewportFit::kCover;
-
-  if (viewport_fit_ != current_viewport_fit) {
-    if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-      // Bind the mojo interface.
-      if (!display_cutout_host_.is_bound()) {
-        frame_->Client()
-            ->GetRemoteNavigationAssociatedInterfaces()
-            ->GetInterface(&display_cutout_host_);
-        DCHECK(display_cutout_host_.is_bound());
-      }
-
-      // Even though we bind the mojo interface above there still may be cases
-      // where this will fail (e.g. unit tests).
-      display_cutout_host_->NotifyViewportFitChanged(current_viewport_fit);
-    }
-
-    viewport_fit_ = current_viewport_fit;
-  }
-
-  if (GetFrame()->IsMainFrame()) {
-    GetPage()->GetChromeClient().DispatchViewportPropertiesDidChange(
-        GetViewportDescription());
-  }
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
@@ -7433,6 +7353,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(network_state_observer_);
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
+  visitor->Trace(viewport_data_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7493,14 +7414,6 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
     return true;
   }
   return false;
-}
-
-void Document::SetExpandIntoDisplayCutout(bool expand) {
-  if (force_expand_display_cutout_ == expand)
-    return;
-
-  force_expand_display_cutout_ = expand;
-  UpdateViewportDescription();
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -23,7 +24,10 @@ class HTMLMetaElementTest : public PageTestBase {
 
   mojom::ViewportFit LoadTestPageAndReturnViewportFit(const String& value) {
     LoadTestPageWithViewportFitValue(value);
-    return GetDocument().GetViewportDescription().GetViewportFit();
+    return GetDocument()
+        .GetViewportData()
+        .GetViewportDescription()
+        .GetViewportFit();
   }
 
  private:
