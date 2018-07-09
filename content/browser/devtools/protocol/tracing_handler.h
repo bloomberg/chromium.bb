@@ -24,7 +24,7 @@
 #include "content/public/browser/tracing_controller.h"
 
 namespace base {
-class Timer;
+class RepeatingTimer;
 }
 
 namespace media {
@@ -121,7 +121,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
                        std::unordered_set<base::ProcessId>* process_set);
   void OnProcessReady(RenderProcessHost*);
 
-  std::unique_ptr<base::Timer> buffer_usage_poll_timer_;
+  std::unique_ptr<base::RepeatingTimer> buffer_usage_poll_timer_;
 
   std::unique_ptr<Tracing::Frontend> frontend_;
   DevToolsIOContext* io_context_;

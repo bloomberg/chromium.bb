@@ -125,7 +125,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   base::ObserverList<TouchSelectionControllerClientManager::Observer>
       observers_;
 
-  base::Timer quick_menu_timer_;
+  base::RetainingOneShotTimer quick_menu_timer_;
   bool quick_menu_requested_;
   bool touch_down_;
   bool scroll_in_progress_;

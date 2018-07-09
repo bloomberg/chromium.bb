@@ -596,14 +596,13 @@ void TracingHandler::SetupTimer(double usage_reporting_interval) {
 
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
       std::ceil(usage_reporting_interval));
-  buffer_usage_poll_timer_.reset(new base::Timer(
+  buffer_usage_poll_timer_.reset(new base::RepeatingTimer());
+  buffer_usage_poll_timer_->Start(
       FROM_HERE, interval,
       base::Bind(base::IgnoreResult(&TracingController::GetTraceBufferUsage),
                  base::Unretained(TracingController::GetInstance()),
                  base::Bind(&TracingHandler::OnBufferUsage,
-                            weak_factory_.GetWeakPtr())),
-      true));
-  buffer_usage_poll_timer_->Reset();
+                            weak_factory_.GetWeakPtr())));
 }
 
 void TracingHandler::StopTracing(

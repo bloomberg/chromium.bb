@@ -64,7 +64,7 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
   IndexedDBPreCloseTaskQueue(std::list<std::unique_ptr<PreCloseTask>> tasks,
                              base::OnceClosure on_complete,
                              base::TimeDelta max_run_time,
-                             std::unique_ptr<base::Timer> timer);
+                             std::unique_ptr<base::OneShotTimer> timer);
   ~IndexedDBPreCloseTaskQueue();
 
   bool started() const { return started_; }
@@ -96,7 +96,7 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
   base::OnceClosure on_done_;
 
   base::TimeDelta timeout_time_;
-  std::unique_ptr<base::Timer> timeout_timer_;
+  std::unique_ptr<base::OneShotTimer> timeout_timer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<IndexedDBPreCloseTaskQueue> ptr_factory_;
