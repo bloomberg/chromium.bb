@@ -1509,7 +1509,6 @@ void UiSceneCreator::CreateContentQuad() {
 }
 
 void UiSceneCreator::CreateWebVrSubtree() {
-  CreateSplashScreenForDirectWebVrLaunch();
   CreateWebVrOverlayElements();
   CreateWebVrTimeoutScreen();
 
@@ -1557,72 +1556,16 @@ void UiSceneCreator::CreateWebVrSubtree() {
   scene_->AddUiElement(kWebVrRoot, std::move(bg));
 }
 
-void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
-  // Create transient parent.
-  // TODO(crbug.com/762074): We should timeout after some time and show an
-  // error if the user is stuck on the splash screen.
-  auto transient_parent = std::make_unique<ShowUntilSignalTransientElement>(
-      base::TimeDelta::FromSeconds(kSplashScreenMinDurationSeconds),
-      base::TimeDelta::Max(),
-      base::BindRepeating(
-          [](Model* model) {
-            DCHECK(model->web_vr.awaiting_min_splash_screen_duration());
-            // TODO(ymalik): The assumption here is that the WebVR VSync will be
-            // paused until the min splash screen duration passes. This state
-            // change should be driven by the scheduler in the future and the UI
-            // should act on it.
-            model->web_vr.state = kWebVrAwaitingFirstFrame;
-          },
-          base::Unretained(model_)),
-      base::BindRepeating(
-          [](Model* model, UiBrowserInterface* browser,
-             TransientElementHideReason reason) {
-            if (reason == TransientElementHideReason::kTimeout) {
-              browser->ExitPresent();
-            }
-          },
-          base::Unretained(model_), base::Unretained(browser_)));
-  transient_parent->SetName(kSplashScreenTransientParent);
-  transient_parent->SetTransitionedProperties({OPACITY});
-  VR_BIND_VISIBILITY(transient_parent,
-                     model->web_vr_autopresentation_enabled());
-  transient_parent->AddBinding(VR_BIND_FUNC(
-      bool, Model, model_,
-      model->web_vr_autopresentation_enabled() &&
-          model->web_vr.state > kWebVrAwaitingFirstFrame,
-      ShowUntilSignalTransientElement, transient_parent.get(), Signal));
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(transient_parent));
-
-  // Add "Running in Chrome" text.
-  auto text_scaler =
-      std::make_unique<ScaledDepthAdjuster>(kSplashScreenTextDistance);
-  auto text = std::make_unique<Text>(kSplashScreenTextFontHeightDMM);
-  VR_BIND_COLOR(model_, text.get(), &ColorScheme::splash_screen_text_color,
-                &Text::SetColor);
-  text->SetText(l10n_util::GetStringUTF16(IDS_VR_RUNNING_IN_CHROME_MESSAGE));
-  text->SetName(kSplashScreenText);
-  text->SetDrawPhase(kPhaseForeground);
-  text->SetFieldWidth(kSplashScreenTextWidthDMM);
-  text->SetTranslate(0, kSplashScreenTextVerticalOffsetDMM, 0);
-  text_scaler->AddChild(std::move(text));
-  scene_->AddUiElement(kSplashScreenTransientParent, std::move(text_scaler));
-}
-
 void UiSceneCreator::CreateWebVrTimeoutScreen() {
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kTimeoutScreenDisatance);
   scaler->SetName(kWebVrTimeoutRoot);
   scaler->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
-          [](Model* model, UiElement* splash_screen) {
-            // The timeout UI should only be visible when the splash screen is
-            // not visible.
+          [](Model* model) {
             return (model->web_vr.state == kWebVrTimeoutImminent ||
-                    model->web_vr.state == kWebVrTimedOut) &&
-                   splash_screen->GetTargetOpacity() == 0.f;
+                    model->web_vr.state == kWebVrTimedOut);
           },
-          base::Unretained(model_),
-          base::Unretained(
-              scene_->GetUiElementByName(kSplashScreenTransientParent))),
+          base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
           base::Unretained(scaler.get()))));
@@ -2941,26 +2884,6 @@ void UiSceneCreator::CreatePrompts() {
 }
 
 void UiSceneCreator::CreateWebVrOverlayElements() {
-  // Create url toast shown when WebVR is auto-presented.
-  auto parent = CreateTransientParent(kWebVrUrlToastTransientParent,
-                                      kToastTimeoutSeconds, true);
-  parent->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* model, UiElement* splash_screen) {
-            // The WebVR indicators should only be visible when the splash
-            // screen is not visible.
-            return model->web_vr_autopresentation_enabled() &&
-                   model->web_vr.presenting_web_vr() &&
-                   splash_screen->GetTargetOpacity() == 0.f;
-          },
-          base::Unretained(model_),
-          base::Unretained(
-              scene_->GetUiElementByName(kSplashScreenTransientParent))),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const bool& value) { e->SetVisible(value); },
-          base::Unretained(parent.get()))));
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(parent));
-
   // Create transient WebVR elements.
   auto indicators = Create<LinearLayout>(kWebVrIndicatorLayout, kPhaseNone,
                                          LinearLayout::kDown);
@@ -2979,39 +2902,23 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                    false};
   indicators->AddChild(CreateWebVrIndicator(model_, browser_, app_button_spec));
 
-  IndicatorSpec url_indicator_spec = {kNone,
-                                      kWebVrUrlToast,
-                                      toolbar::kHttpsInvalidIcon,
-                                      0,
-                                      0,
-                                      0,
-                                      nullptr,
-                                      nullptr,
-                                      nullptr,
-                                      true};
-  indicators->AddChild(
-      CreateWebVrIndicator(model_, browser_, url_indicator_spec));
-
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {
     indicators->AddChild(CreateWebVrIndicator(model_, browser_, spec));
   }
 
-  parent = CreateTransientParent(kWebVrIndicatorTransience,
-                                 kToastTimeoutSeconds, true);
+  auto parent = CreateTransientParent(kWebVrIndicatorTransience,
+                                      kToastTimeoutSeconds, true);
   parent->AddBinding(std::make_unique<Binding<std::tuple<bool, bool, bool>>>(
       VR_BIND_LAMBDA(
-          [](Model* model, UiElement* splash_screen) {
+          [](Model* model) {
             return std::tuple<bool, bool, bool>(
                 model->web_vr_enabled() && model->web_vr.presenting_web_vr() &&
-                    model->web_vr.has_received_permissions &&
-                    splash_screen->GetTargetOpacity() == 0.f,
+                    model->web_vr.has_received_permissions,
                 model->controller.app_button_long_pressed,
                 model->web_vr.showing_hosted_ui);
           },
-          base::Unretained(model_),
-          base::Unretained(
-              scene_->GetUiElementByName(kSplashScreenTransientParent))),
+          base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](TransientElement* e, Model* model, UiScene* scene,
              const base::Optional<std::tuple<bool, bool, bool>>& last_value,
@@ -3045,11 +2952,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             e->RefreshVisible();
             SetVisibleInLayout(
                 scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                !model->web_vr_autopresentation_enabled() &&
-                    !model->browsing_disabled && !in_long_press);
-            SetVisibleInLayout(scene->GetUiElementByName(kWebVrUrlToast),
-                               model->web_vr_autopresentation_enabled() &&
-                                   model->toolbar_state.should_display_url);
+                !model->browsing_disabled && !in_long_press);
 
             auto specs = GetIndicatorSpecs();
             for (const auto& spec : specs) {

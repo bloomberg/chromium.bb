@@ -501,8 +501,6 @@ void VrTestContext::CycleWebVrModes() {
       ui_->SetWebVrMode(true);
       break;
     }
-    case kWebVrAwaitingMinSplashScreenDuration:
-      break;
     case kWebVrAwaitingFirstFrame:
       ui_->OnWebVrTimeoutImminent();
       break;

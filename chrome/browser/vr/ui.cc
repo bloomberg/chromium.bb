@@ -85,20 +85,11 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
 void Ui::SetWebVrMode(bool enabled) {
   if (enabled) {
     model_->web_vr.has_received_permissions = false;
-    if (!model_->web_vr_autopresentation_enabled()) {
-      // When auto-presenting, we transition into this state when the minimum
-      // splash-screen duration has passed.
-      model_->web_vr.state = kWebVrAwaitingFirstFrame;
-    }
-    // We have this check here so that we don't set the mode to kModeWebVr when
-    // it should be kModeWebVrAutopresented. The latter is set when the UI is
-    // initialized.
-    if (!model_->web_vr_enabled())
-      model_->push_mode(kModeWebVr);
+    model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    model_->push_mode(kModeWebVr);
   } else {
     model_->web_vr.state = kWebVrNoTimeoutPending;
-    if (model_->web_vr_enabled())
-      model_->pop_mode();
+    model_->pop_mode();
   }
 }
 
@@ -279,9 +270,7 @@ void Ui::RemoveAllTabs() {
 }
 
 bool Ui::CanSendWebVrVSync() {
-  return model_->web_vr_enabled() &&
-         !model_->web_vr.awaiting_min_splash_screen_duration() &&
-         !model_->web_vr.showing_hosted_ui;
+  return model_->web_vr_enabled() && !model_->web_vr.showing_hosted_ui;
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
@@ -360,9 +349,8 @@ void Ui::OnKeyboardHidden() {
 }
 
 void Ui::OnAppButtonClicked() {
-  // App button clicks should be a no-op when auto-presenting WebVR or if
-  // browsing mode is disabled.
-  if (model_->web_vr_autopresentation_enabled() || model_->browsing_disabled)
+  // App button clicks should be a no-op when browsing mode is disabled.
+  if (model_->browsing_disabled)
     return;
 
   if (model_->reposition_window_enabled()) {
@@ -525,12 +513,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   if (ui_initial_state.in_web_vr) {
     auto mode = kModeWebVr;
     model_->web_vr.has_received_permissions = false;
-    if (ui_initial_state.web_vr_autopresentation_expected) {
-      mode = kModeWebVrAutopresented;
-      model_->web_vr.state = kWebVrAwaitingMinSplashScreenDuration;
-    } else {
-      model_->web_vr.state = kWebVrAwaitingFirstFrame;
-    }
+    model_->web_vr.state = kWebVrAwaitingFirstFrame;
     model_->push_mode(mode);
   }
 

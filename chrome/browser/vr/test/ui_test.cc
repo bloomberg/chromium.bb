@@ -103,13 +103,6 @@ void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {
   CreateScene(state);
 }
 
-void UiTest::CreateSceneForAutoPresentation() {
-  UiInitialState state;
-  state.in_web_vr = true;
-  state.web_vr_autopresentation_expected = true;
-  CreateScene(state);
-}
-
 void UiTest::SetIncognito(bool incognito) {
   model_->incognito = incognito;
 }

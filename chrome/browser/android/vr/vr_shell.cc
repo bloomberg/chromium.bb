@@ -1335,7 +1335,6 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& delegate,
                            jboolean for_web_vr,
-                           jboolean web_vr_autopresentation_expected,
                            jboolean in_cct,
                            jboolean browsing_disabled,
                            jboolean has_or_can_request_audio_permission,
@@ -1352,8 +1351,6 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;
   ui_initial_state.in_web_vr = for_web_vr;
-  ui_initial_state.web_vr_autopresentation_expected =
-      web_vr_autopresentation_expected;
   ui_initial_state.has_or_can_request_audio_permission =
       has_or_can_request_audio_permission;
   ui_initial_state.skips_redraw_when_not_dirty =

@@ -81,7 +81,6 @@ struct VR_EXPORT Model {
   bool editing_enabled() const;
   bool fullscreen_enabled() const;
   bool web_vr_enabled() const;
-  bool web_vr_autopresentation_enabled() const;
   bool reposition_window_enabled() const;
   bool reposition_window_permitted() const;
 

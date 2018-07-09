@@ -82,13 +82,6 @@ public class VrFirstRunActivity extends Activity {
     }
 
     private void recordFreHistogram() {
-        // This is the intent that started the activity that triggered the FRE.
-        Intent freCallerIntent = (Intent) IntentUtils.safeGetParcelableExtra(
-                getIntent(), VrIntentUtils.VR_FRE_CALLER_INTENT_EXTRA);
-        if (VrIntentUtils.getHandlerInstance().isTrustedAutopresentIntent(freCallerIntent)) {
-            sFreNotCompleteAutopresentHistogram.record(true);
-        } else {
-            sFreNotCompleteBrowserHistogram.record(true);
-        }
+        sFreNotCompleteBrowserHistogram.record(true);
     }
 }

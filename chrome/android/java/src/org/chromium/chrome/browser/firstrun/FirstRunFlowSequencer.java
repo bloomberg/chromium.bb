@@ -381,7 +381,7 @@ public abstract class FirstRunFlowSequencer  {
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (isVrIntent) {
-                freIntent = VrIntentUtils.setupVrFreIntent(caller, intent, freIntent);
+                freIntent = VrIntentUtils.setupVrFreIntent(caller, freIntent);
             }
             IntentUtils.safeStartActivity(caller, freIntent);
         } else {

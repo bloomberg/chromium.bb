@@ -120,11 +120,6 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
 
-  // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
-  // the splash screen has been visible for its minimum duration. The visibility
-  // logic currently lives in the UI, and it'd be much cleaner if the UI didn't
-  // have to worry about this, and if it were told to hide the splash screen
-  // like other WebVR phases (e.g. OnWebVrFrameAvailable below).
   bool CanSendWebVrVSync();
 
   void SetAlertDialogEnabled(bool enabled,

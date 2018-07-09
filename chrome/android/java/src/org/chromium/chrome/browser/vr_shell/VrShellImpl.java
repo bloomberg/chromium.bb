@@ -340,8 +340,7 @@ public class VrShellImpl
 
     @Override
     @TargetApi(Build.VERSION_CODES.N)
-    public void initializeNative(boolean forWebVr, boolean webVrAutopresentationExpected,
-            boolean inCct, boolean isStandaloneVrDevice) {
+    public void initializeNative(boolean forWebVr, boolean inCct, boolean isStandaloneVrDevice) {
         Tab tab = mActivity.getActivityTab();
         if (mActivity.isInOverviewMode() || tab == null) {
             launchNTP();
@@ -384,8 +383,8 @@ public class VrShellImpl
                 || mActivity.getWindowAndroid().canRequestPermission(
                            android.Manifest.permission.RECORD_AUDIO);
         boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(mActivity, false);
-        mNativeVrShell = nativeInit(mDelegate, forWebVr, webVrAutopresentationExpected, inCct,
-                !mVrBrowsingEnabled, hasOrCanRequestAudioPermission && supportsRecognition,
+        mNativeVrShell = nativeInit(mDelegate, forWebVr, inCct, !mVrBrowsingEnabled,
+                hasOrCanRequestAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
                 displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity,
                 isStandaloneVrDevice);
@@ -1254,12 +1253,11 @@ public class VrShellImpl
         mUiActivityResultCallback = null;
     }
 
-    private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
-            boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
-            boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
-            float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
-            int displayHeightPixels, boolean pauseContent, boolean lowDensity,
-            boolean isStandaloneVrDevice);
+    private native long nativeInit(VrShellDelegate delegate, boolean forWebVR, boolean inCct,
+            boolean browsingDisabled, boolean hasOrCanRequestAudioPermission, long gvrApi,
+            boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
+            int displayWidthPixels, int displayHeightPixels, boolean pauseContent,
+            boolean lowDensity, boolean isStandaloneVrDevice);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(

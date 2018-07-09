@@ -54,7 +54,6 @@ class UiSceneCreator {
   void CreateExitWarning();
   void CreateWebVrSubtree();
   void CreateWebVrOverlayElements();
-  void CreateSplashScreenForDirectWebVrLaunch();
   void CreateWebVrTimeoutScreen();
   void CreateController();
   void CreateKeyboard();
