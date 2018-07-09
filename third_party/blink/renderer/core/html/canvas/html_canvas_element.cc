@@ -697,7 +697,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
   if (PlaceholderFrame()) {
     DCHECK(GetDocument().Printing());
     context.DrawImage(PlaceholderFrame()->Bitmap().get(), Image::kSyncDecode,
-                      PixelSnappedIntRect(r));
+                      FloatRect(PixelSnappedIntRect(r)));
     return;
   }
 
@@ -718,7 +718,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
         snapshot = snapshot->MakeUnaccelerated();
         DCHECK(!snapshot->IsTextureBacked());
         context.DrawImage(snapshot.get(), Image::kSyncDecode,
-                          PixelSnappedIntRect(r), &src_rect,
+                          FloatRect(PixelSnappedIntRect(r)), &src_rect,
                           composite_operator);
       }
     }

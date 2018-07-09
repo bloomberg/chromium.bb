@@ -876,7 +876,7 @@ void GraphicsContext::DrawImage(
   if (ContextDisabled() || !image)
     return;
 
-  const FloatRect src = src_ptr ? *src_ptr : image->Rect();
+  const FloatRect src = src_ptr ? *src_ptr : FloatRect(image->Rect());
 
   PaintFlags image_flags = ImmutableState()->FillFlags();
   image_flags.setBlendMode(op);
@@ -908,7 +908,8 @@ void GraphicsContext::DrawImageRRect(
 
   DCHECK(dest.IsRenderable());
 
-  const FloatRect visible_src = Intersection(src_rect, image->Rect());
+  const FloatRect visible_src =
+      Intersection(src_rect, FloatRect(image->Rect()));
   if (dest.IsEmpty() || visible_src.IsEmpty())
     return;
 
@@ -1042,6 +1043,16 @@ void GraphicsContext::FillPath(const Path& path_to_fill) {
     return;
 
   DrawPath(path_to_fill.GetSkPath(), ImmutableState()->FillFlags());
+}
+
+void GraphicsContext::FillRect(const IntRect& rect) {
+  FillRect(FloatRect(rect));
+}
+
+void GraphicsContext::FillRect(const IntRect& rect,
+                               const Color& color,
+                               SkBlendMode xfer_mode) {
+  FillRect(FloatRect(rect), color, xfer_mode);
 }
 
 void GraphicsContext::FillRect(const FloatRect& rect) {

@@ -133,7 +133,7 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
       scroll_hit_test_chunk.properties.Transform();
   EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
   auto* scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
-  EXPECT_EQ(LayoutRect::InfiniteIntRect(),
+  EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
             scroll_hit_test_clip->ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.

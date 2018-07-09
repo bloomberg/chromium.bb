@@ -4667,8 +4667,8 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
-  image->Draw(resource_provider->Canvas(), flags, dest_rect, src_rect,
-              kDoNotRespectImageOrientation,
+  image->Draw(resource_provider->Canvas(), flags, FloatRect(dest_rect),
+              FloatRect(src_rect), kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   return resource_provider->Snapshot();
 }

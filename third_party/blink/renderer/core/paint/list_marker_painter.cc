@@ -37,10 +37,10 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
   context.SetStrokeThickness(1.0f);
   switch (style.ListStyleType()) {
     case EListStyleType::kDisc:
-      context.FillEllipse(marker);
+      context.FillEllipse(FloatRect(marker));
       break;
     case EListStyleType::kCircle:
-      context.StrokeEllipse(marker);
+      context.StrokeEllipse(FloatRect(marker));
       break;
     case EListStyleType::kSquare:
       context.FillRect(marker);
@@ -144,7 +144,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   }
 
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds = EnclosingIntRect(marker);
+  text_run_paint_info.bounds = FloatRect(EnclosingIntRect(marker));
   const SimpleFontData* font_data =
       layout_list_marker_.Style()->GetFont().PrimaryFont();
   IntPoint text_origin =
@@ -175,7 +175,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
                        layout_list_marker_.Style()->Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
-  suffix_run_info.bounds = EnclosingIntRect(marker);
+  suffix_run_info.bounds = FloatRect(EnclosingIntRect(marker));
 
   if (layout_list_marker_.Style()->IsLeftToRightDirection()) {
     context.DrawText(font, text_run_paint_info, text_origin);

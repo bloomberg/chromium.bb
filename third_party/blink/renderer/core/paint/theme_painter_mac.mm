@@ -325,7 +325,7 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
   PaintSliderTicks(o, paint_info, r);
 
   float zoom_level = o.StyleRef().EffectiveZoom();
-  FloatRect unzoomed_rect = r;
+  FloatRect unzoomed_rect(r);
 
   if (o.StyleRef().Appearance() == kSliderHorizontalPart ||
       o.StyleRef().Appearance() == kMediaSliderPart) {

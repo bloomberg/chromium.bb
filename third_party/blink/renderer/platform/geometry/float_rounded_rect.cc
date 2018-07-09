@@ -42,6 +42,9 @@ FloatRoundedRect::FloatRoundedRect(float x, float y, float width, float height)
 FloatRoundedRect::FloatRoundedRect(const FloatRect& rect, const Radii& radii)
     : rect_(rect), radii_(radii) {}
 
+FloatRoundedRect::FloatRoundedRect(const IntRect& rect, const Radii& radii)
+    : rect_(FloatRect(rect)), radii_(radii) {}
+
 FloatRoundedRect::FloatRoundedRect(const FloatRect& rect,
                                    const FloatSize& top_left,
                                    const FloatSize& top_right,

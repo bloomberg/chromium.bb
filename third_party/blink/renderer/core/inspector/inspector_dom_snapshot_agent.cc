@@ -863,8 +863,8 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
 
   auto layout_tree_node = protocol::DOMSnapshot::LayoutTreeNode::create()
                               .setDomNodeIndex(node_index)
-                              .setBoundingBox(BuildRectForFloatRect(
-                                  layout_object->AbsoluteBoundingBoxRect()))
+                              .setBoundingBox(BuildRectForFloatRect(FloatRect(
+                                  layout_object->AbsoluteBoundingBoxRect())))
                               .build();
 
   int style_index = GetStyleIndexForNode(node);
@@ -918,8 +918,8 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(Node* node, int node_index) {
   int index = layout_tree_snapshot_->getNodeIndex()->length();
   layout_tree_snapshot_->getNodeIndex()->addItem(node_index);
   layout_tree_snapshot_->getStyles()->addItem(BuildStylesForNode(node));
-  layout_tree_snapshot_->getBounds()->addItem(
-      BuildRectForFloatRect2(layout_object->AbsoluteBoundingBoxRect()));
+  layout_tree_snapshot_->getBounds()->addItem(BuildRectForFloatRect2(
+      FloatRect(layout_object->AbsoluteBoundingBoxRect())));
   auto* text_box_snapshot = layout_tree_snapshot_->getTextBoxes();
 
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()

@@ -116,6 +116,17 @@ bool FloatRect::Intersects(const FloatRect& other) const {
          other.X() < MaxX() && Y() < other.MaxY() && other.Y() < MaxY();
 }
 
+bool FloatRect::Intersects(const IntRect& other) const {
+  // Checking emptiness handles negative widths as well as zero.
+  return !IsEmpty() && !other.IsEmpty() && X() < other.MaxX() &&
+         other.X() < MaxX() && Y() < other.MaxY() && other.Y() < MaxY();
+}
+
+bool FloatRect::Contains(const IntRect& other) const {
+  return X() <= other.X() && MaxX() >= other.MaxX() && Y() <= other.Y() &&
+         MaxY() >= other.MaxY();
+}
+
 bool FloatRect::Contains(const FloatRect& other) const {
   return X() <= other.X() && MaxX() >= other.MaxX() && Y() <= other.Y() &&
          MaxY() >= other.MaxY();
@@ -127,6 +138,23 @@ bool FloatRect::Contains(const FloatPoint& point,
     return Contains(point.X(), point.Y());
   return X() < point.X() && MaxX() > point.X() && Y() < point.Y() &&
          MaxY() > point.Y();
+}
+
+void FloatRect::Intersect(const IntRect& other) {
+  float left = std::max(X(), static_cast<float>(other.X()));
+  float top = std::max(Y(), static_cast<float>(other.Y()));
+  float right = std::min(MaxX(), static_cast<float>(other.MaxX()));
+  float bottom = std::min(MaxY(), static_cast<float>(other.MaxY()));
+
+  // Return a clean empty rectangle for non-intersecting cases.
+  if (left >= right || top >= bottom) {
+    left = 0;
+    top = 0;
+    right = 0;
+    bottom = 0;
+  }
+
+  SetLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
 void FloatRect::Intersect(const FloatRect& other) {

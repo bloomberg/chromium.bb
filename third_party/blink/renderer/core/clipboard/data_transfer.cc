@@ -372,7 +372,7 @@ FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& absolute_rect,
   IntRect viewport_in_root_frame =
       EnclosingIntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
   FloatRect absolute_viewport =
-      frame.View()->ConvertFromRootFrame(viewport_in_root_frame);
+      FloatRect(frame.View()->ConvertFromRootFrame(viewport_in_root_frame));
   return Intersection(absolute_viewport, absolute_rect);
 }
 

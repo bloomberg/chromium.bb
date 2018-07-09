@@ -272,7 +272,8 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
 
     const auto& chunk_state = chunk.properties.GetPropertyTreeState();
     for (auto touch_action_rect : hit_test_data->touch_action_rects) {
-      auto rect = FloatClipRect(PixelSnappedIntRect(touch_action_rect.rect));
+      auto rect =
+          FloatClipRect(FloatRect(PixelSnappedIntRect(touch_action_rect.rect)));
       if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
                                                      rect)) {
         continue;

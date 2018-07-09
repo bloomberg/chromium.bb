@@ -261,8 +261,8 @@ static bool ExtractImageData(Image* image,
   canvas->save();
   canvas->clear(SK_ColorTRANSPARENT);
 
-  image->Draw(canvas.get(), flags, image_dest_rect, image_source_rect,
-              kDoNotRespectImageOrientation,
+  image->Draw(canvas.get(), flags, FloatRect(image_dest_rect),
+              image_source_rect, kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
   return StaticBitmapImage::ConvertToArrayBufferContents(

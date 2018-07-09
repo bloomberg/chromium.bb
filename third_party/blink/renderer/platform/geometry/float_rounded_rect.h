@@ -111,6 +111,7 @@ class PLATFORM_EXPORT FloatRoundedRect {
 
   FloatRoundedRect() = default;
   explicit FloatRoundedRect(const FloatRect&, const Radii& = Radii());
+  explicit FloatRoundedRect(const IntRect&, const Radii& = Radii());
   FloatRoundedRect(float x, float y, float width, float height);
   FloatRoundedRect(const FloatRect&,
                    const FloatSize& top_left,

@@ -61,6 +61,12 @@ class PLATFORM_EXPORT FloatQuad {
         p3_(in_rect.MaxX(), in_rect.MaxY()),
         p4_(in_rect.X(), in_rect.MaxY()) {}
 
+  explicit FloatQuad(const IntRect& in_rect)
+      : p1_(in_rect.Location()),
+        p2_(in_rect.MaxX(), in_rect.Y()),
+        p3_(in_rect.MaxX(), in_rect.MaxY()),
+        p4_(in_rect.X(), in_rect.MaxY()) {}
+
   // Converts from an array of four SkPoints, as from SkMatrix::mapRectToQuad.
   explicit FloatQuad(const SkPoint (&)[4]);
 
