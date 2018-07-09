@@ -33,6 +33,8 @@ const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
     "StoreDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
     "RetrieveDeviceLocalAccountPolicy";
+const char kSessionManagerListStoredComponentPolicies[] =
+    "ListStoredComponentPolicies";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
 const char kSessionManagerStartTPMFirmwareUpdate[] = "StartTPMFirmwareUpdate";
