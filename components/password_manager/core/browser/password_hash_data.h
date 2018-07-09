@@ -56,6 +56,14 @@ struct SyncPasswordData {
 uint64_t CalculatePasswordHash(const base::StringPiece16& text,
                                const std::string& salt);
 
+// If username is an email address, canonicalizes this email. Otherwise, returns
+// |username|.
+std::string CanonicalizeUsername(const std::string& username);
+
+// Returns true if the two usernames the same after canonicalization.
+bool AreUsernamesSame(const std::string& username1,
+                      const std::string& username2);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_HASH_DATA_H_

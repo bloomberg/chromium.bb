@@ -243,6 +243,7 @@ static_library("password_hash_data") {
   deps = [
     "//base",
     "//crypto",
+    "//google_apis",
   ]
 }
 

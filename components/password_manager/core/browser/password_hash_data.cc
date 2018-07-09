@@ -5,8 +5,11 @@
 #include "components/password_manager/core/browser/password_hash_data.h"
 
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/random.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace password_manager {
@@ -44,7 +47,8 @@ PasswordHashData::PasswordHashData(const std::string& username,
 bool PasswordHashData::MatchesPassword(const std::string& username,
                                        const base::string16& password,
                                        bool is_gaia_password) const {
-  if (password.size() != this->length || username != this->username ||
+  if (password.size() != this->length ||
+      !AreUsernamesSame(username, this->username) ||
       is_gaia_password != this->is_gaia_password) {
     return false;
   }
@@ -97,6 +101,17 @@ uint64_t CalculatePasswordHash(const base::StringPiece16& text,
                     (((static_cast<uint64_t>(hash[4])) & 0x1F) << 32);
 
   return hash37;
+}
+
+std::string CanonicalizeUsername(const std::string& username) {
+  std::vector<std::string> parts = base::SplitString(
+      username, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  return parts.size() != 2U ? username : gaia::CanonicalizeEmail(username);
+}
+
+bool AreUsernamesSame(const std::string& username1,
+                      const std::string& username2) {
+  return CanonicalizeUsername(username1) == CanonicalizeUsername(username2);
 }
 
 }  // namespace password_manager

@@ -166,7 +166,9 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
   // sign in timestamp.
   ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
   for (base::Value& password_hash_data : update.Get()->GetList()) {
-    if (GetAndDecryptField(password_hash_data, kUsernameFieldKey) == username) {
+    if (AreUsernamesSame(
+            GetAndDecryptField(password_hash_data, kUsernameFieldKey),
+            username)) {
       base::Optional<PasswordHashData> existing_password_hash =
           ConvertToPasswordHashData(password_hash_data);
       if (existing_password_hash && existing_password_hash->MatchesPassword(
@@ -213,13 +215,14 @@ void HashPasswordManager::ClearSavedPasswordHash(const std::string& username,
                                                  bool is_gaia_password) {
   if (prefs_) {
     ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
-    for (auto it = update->GetList().begin(); it != update->GetList().end();
-         it++) {
-      if (GetAndDecryptField(*it, kUsernameFieldKey) == username &&
+    for (auto it = update->GetList().begin(); it != update->GetList().end();) {
+      if (AreUsernamesSame(GetAndDecryptField(*it, kUsernameFieldKey),
+                           username) &&
           GetAndDecryptField(*it, kIsGaiaFieldKey) ==
               BooleanToString(is_gaia_password)) {
-        update->GetList().erase(it);
-        return;
+        it = update->GetList().erase(it);
+      } else {
+        it++;
       }
     }
   }
@@ -283,7 +286,8 @@ base::Optional<PasswordHashData> HashPasswordManager::RetrievePasswordHash(
 
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
-    if (GetAndDecryptField(entry, kUsernameFieldKey) == username &&
+    if (AreUsernamesSame(GetAndDecryptField(entry, kUsernameFieldKey),
+                         username) &&
         GetAndDecryptField(entry, kIsGaiaFieldKey) ==
             BooleanToString(is_gaia_password)) {
       return ConvertToPasswordHashData(entry);
@@ -306,7 +310,8 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username,
 
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
-    if (username == GetAndDecryptField(entry, kUsernameFieldKey) &&
+    if (AreUsernamesSame(GetAndDecryptField(entry, kUsernameFieldKey),
+                         username) &&
         BooleanToString(is_gaia_password) ==
             GetAndDecryptField(entry, kIsGaiaFieldKey)) {
       return true;
@@ -392,7 +397,8 @@ bool HashPasswordManager::EncryptAndSave(
     return false;
   }
 
-  std::string encrypted_username = EncryptString(password_hash_data.username);
+  std::string encrypted_username =
+      EncryptString(CanonicalizeUsername(password_hash_data.username));
   if (encrypted_username.empty())
     return false;
 
@@ -423,17 +429,23 @@ bool HashPasswordManager::EncryptAndSave(
   encrypted_password_hash_entry.SetKey(
       kLastSignInTimeFieldKey, base::Value(base::Time::Now().ToDoubleT()));
   ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
-  for (auto it = update->GetList().begin(); it != update->GetList().end();
-       it++) {
-    if (GetAndDecryptField(*it, kUsernameFieldKey) ==
-            password_hash_data.username &&
+  bool replace_old_entry = false;
+  for (auto it = update->GetList().begin(); it != update->GetList().end();) {
+    if (AreUsernamesSame(GetAndDecryptField(*it, kUsernameFieldKey),
+                         password_hash_data.username) &&
         GetAndDecryptField(*it, kIsGaiaFieldKey) ==
             BooleanToString(password_hash_data.is_gaia_password)) {
-      update->GetList().erase(it);
-      update->GetList().push_back(std::move(encrypted_password_hash_entry));
-      return true;
+      it = update->GetList().erase(it);
+      replace_old_entry = true;
+    } else {
+      it++;
     }
   }
+  if (replace_old_entry) {
+    update->GetList().push_back(std::move(encrypted_password_hash_entry));
+    return true;
+  }
+
   if (update->GetList().size() >= kMaxPasswordHashDataDictSize)
     RemoveOldestSignInPasswordHashData(&update->GetList());
 
