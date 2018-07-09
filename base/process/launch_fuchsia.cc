@@ -8,9 +8,9 @@
 #include <lib/fdio/namespace.h>
 #include <lib/fdio/spawn.h>
 #include <lib/fdio/util.h>
+#include <lib/zx/job.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <zircon/process.h>
 #include <zircon/processargs.h>
 
 #include "base/command_line.h"
@@ -120,9 +120,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   }
 
   // Determine the job under which to launch the new process.
-  zx_handle_t job = options.job_handle != ZX_HANDLE_INVALID ? options.job_handle
-                                                            : GetDefaultJob();
-  DCHECK_NE(ZX_HANDLE_INVALID, job);
+  zx::unowned_job job = options.job_handle != ZX_HANDLE_INVALID
+                            ? zx::unowned_job(options.job_handle)
+                            : GetDefaultJob();
+  DCHECK(job->is_valid());
 
   // Construct an |argv| array of C-strings from the supplied std::strings.
   std::vector<const char*> argv_cstr;
@@ -203,9 +204,9 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   // case of failure, so we avoid unnecessarily initializing it here.
   char error_message[FDIO_SPAWN_ERR_MSG_MAX_LENGTH];
   zx_status_t status = fdio_spawn_etc(
-      job, spawn_flags, argv_cstr[0], argv_cstr.data(), new_environ.get(),
-      spawn_actions.size(), spawn_actions.data(), process_handle.receive(),
-      error_message);
+      job->get(), spawn_flags, argv_cstr[0], argv_cstr.data(),
+      new_environ.get(), spawn_actions.size(), spawn_actions.data(),
+      process_handle.receive(), error_message);
 
   // fdio_spawn_etc() will close all handles specified in add-handle actions,
   // regardless of whether it succeeds or fails, so release our copies.

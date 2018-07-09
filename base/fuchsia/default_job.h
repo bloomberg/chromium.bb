@@ -5,17 +5,18 @@
 #ifndef BASE_FUCHSIA_DEFAULT_JOB_H_
 #define BASE_FUCHSIA_DEFAULT_JOB_H_
 
+#include <lib/zx/job.h>
+
 #include "base/base_export.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 
 namespace base {
 
 // Gets and sets the job object used for creating new child processes,
 // and looking them up by their process IDs.
-// zx_job_default() will be returned if no job is explicitly set here.
+// zx::job::default_job() will be returned if no job is explicitly set here.
 // Only valid handles may be passed to SetDefaultJob().
-BASE_EXPORT zx_handle_t GetDefaultJob();
-BASE_EXPORT void SetDefaultJob(ScopedZxHandle job);
+BASE_EXPORT zx::unowned_job GetDefaultJob();
+BASE_EXPORT void SetDefaultJob(zx::job job);
 
 }  // namespace base
 

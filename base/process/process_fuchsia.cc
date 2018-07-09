@@ -4,6 +4,7 @@
 
 #include "base/process/process.h"
 
+#include <lib/zx/process.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
 
@@ -49,15 +50,15 @@ Process Process::Open(ProcessId pid) {
     return Current();
 
   // While a process with object id |pid| might exist, the job returned by
-  // zx_job_default() might not contain it, so this call can fail.
-  ScopedZxHandle handle;
-  zx_status_t status = zx_object_get_child(
-      GetDefaultJob(), pid, ZX_RIGHT_SAME_RIGHTS, handle.receive());
+  // zx::job::default_job() might not contain it, so this call can fail.
+  zx::process process;
+  zx_status_t status =
+      GetDefaultJob()->get_child(pid, ZX_RIGHT_SAME_RIGHTS, &process);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_object_get_child";
     return Process();
   }
-  return Process(handle.release());
+  return Process(process.release());
 }
 
 // static

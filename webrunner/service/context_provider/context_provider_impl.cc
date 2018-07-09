@@ -5,6 +5,7 @@
 #include "webrunner/service/context_provider/context_provider_impl.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/zx/job.h>
 #include <zircon/processargs.h>
 
 #include <utility>
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "webrunner/service/switches.h"
@@ -56,14 +56,14 @@ void ContextProviderImpl::Create(
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
   base::LaunchOptions launch_options;
-  base::ScopedZxHandle context_handle(context_request.TakeChannel().release());
+  zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
       {PA_HND(PA_USER0, 0), context_handle.get()});
 
   // Isolate the child Context processes by containing them within their own
   // respective jobs.
-  base::ScopedZxHandle job;
-  zx_status_t status = zx_job_create(base::GetDefaultJob(), 0, job.receive());
+  zx::job job;
+  zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
 
   ignore_result(launch_.Run(launch_options));
