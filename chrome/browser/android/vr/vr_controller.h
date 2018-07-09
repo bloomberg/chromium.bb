@@ -78,6 +78,7 @@ class VrController : public PlatformController {
   bool ButtonState(gvr::ControllerButton button) const;
 
   bool IsConnected();
+  void EnableDeadzoneForTesting();
 
   // PlatformController
   bool IsButtonDown(PlatformController::ButtonType type) const override;
@@ -135,6 +136,8 @@ class VrController : public PlatformController {
   int64_t last_timestamp_nanos_ = 0;
 
   float alpha_value_ = 1.0f;
+
+  bool enable_deadzone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };

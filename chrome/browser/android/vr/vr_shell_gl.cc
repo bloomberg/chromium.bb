@@ -2588,6 +2588,12 @@ void VrShellGl::SetUiExpectingActivityForTesting(
   ui_test_state_ = std::make_unique<UiTestState>();
   ui_test_state_->quiescence_timeout_ms =
       base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
+  // The controller is pretty much perpetually dirty due to noise, even during
+  // tests, so we need to apply a deadzone to it. We can't apply this deadzone
+  // all the time since it results in grid-like pointer movement.
+  // TODO(https://crbug.com/861807): Remove this workaround once the controller
+  // can be dirty with affecting quiescence.
+  controller_->EnableDeadzoneForTesting();
 }
 
 void VrShellGl::PerformControllerActionForTesting(
