@@ -5247,47 +5247,9 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-vulkan"
-        ],
-        "name": "angle_deqp_egl_vulkan_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-384.90",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_deqp_egl_tests"
-      },
-      {
-        "args": [
-          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles2_gl_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-384.90",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_deqp_gles2_tests"
-      },
-      {
-        "args": [
-          "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=400"
-        ],
-        "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
