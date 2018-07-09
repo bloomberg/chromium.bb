@@ -2601,6 +2601,12 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   }
 
   std::unique_ptr<DocumentState> document_state;
+  // If we sent a successful navigation to commit but for whatever reason the
+  // commit was interrupted we might end up with empty
+  // |pending_navigation_params_| here. For example, if
+  // there's no byte in the response and the network connection gets closed. In
+  // that case, the provisional load does not commit and we get a
+  // DidFailProvisionalLoad.
   if (pending_navigation_params_)
     document_state =
         BuildDocumentStateFromPending(pending_navigation_params_.get());
