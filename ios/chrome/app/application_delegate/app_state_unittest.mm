@@ -32,7 +32,9 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -687,8 +689,8 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
   [[mainTabModel expect] resetSessionMetrics];
 
-  id dispatcher = [OCMockObject mockForProtocol:@protocol(BrowserCommands)];
-  [[dispatcher expect] openNewTab:[OCMArg any]];
+  id dispatcher = [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
+  [((id<ApplicationCommands>)[dispatcher expect]) openURL:[OCMArg any]];
 
   id currentBVC = [OCMockObject mockForClass:[BrowserViewController class]];
   stubBrowserState(currentBVC);

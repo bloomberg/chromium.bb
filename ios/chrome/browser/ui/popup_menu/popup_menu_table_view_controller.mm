@@ -202,15 +202,13 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       break;
     case PopupMenuActionOpenNewTab:
       base::RecordAction(UserMetricsAction("MobileMenuNewTab"));
-      [self.dispatcher
-          openNewTab:[OpenNewTabCommand commandWithIncognito:NO
-                                                 originPoint:origin]];
+      [self.dispatcher openURL:[OpenNewTabCommand commandWithIncognito:NO
+                                                           originPoint:origin]];
       break;
     case PopupMenuActionOpenNewIncognitoTab:
       base::RecordAction(UserMetricsAction("MobileMenuNewIncognitoTab"));
-      [self.dispatcher
-          openNewTab:[OpenNewTabCommand commandWithIncognito:YES
-                                                 originPoint:origin]];
+      [self.dispatcher openURL:[OpenNewTabCommand commandWithIncognito:YES
+                                                           originPoint:origin]];
       break;
     case PopupMenuActionReadLater:
       base::RecordAction(UserMetricsAction("MobileMenuReadLater"));

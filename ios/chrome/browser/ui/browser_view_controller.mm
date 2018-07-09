@@ -3768,8 +3768,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   switch (action) {
     case OverscrollAction::NEW_TAB:
       [self.dispatcher
-          openNewTab:[OpenNewTabCommand
-                         commandWithIncognito:self.isOffTheRecord]];
+          openURL:[OpenNewTabCommand commandWithIncognito:self.isOffTheRecord]];
       break;
     case OverscrollAction::CLOSE_TAB:
       [self.dispatcher closeCurrentTab];
@@ -4268,7 +4267,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (entry->type != sessions::TabRestoreService::TAB)
     return;
 
-  [self.dispatcher openNewTab:[OpenNewTabCommand command]];
+  [self.dispatcher openURL:[OpenNewTabCommand command]];
   [self restoreTabWithSessionID:entry->id];
 }
 
@@ -5774,7 +5773,7 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
             appendTo:kLastTab];
     [self.dispatcher openURL:command];
   } else {
-    [self.dispatcher openNewTab:[OpenNewTabCommand command]];
+    [self.dispatcher openURL:[OpenNewTabCommand command]];
   }
 }
 

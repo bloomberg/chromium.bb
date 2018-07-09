@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
@@ -230,7 +231,7 @@
                    didTriggerAction:(OverscrollAction)action {
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      [_dispatcher openNewTab:[OpenNewTabCommand command]];
+      [_dispatcher openURL:[OpenNewTabCommand command]];
     } break;
     case OverscrollAction::CLOSE_TAB: {
       [_dispatcher closeCurrentTab];

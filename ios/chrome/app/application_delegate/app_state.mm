@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #include "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
@@ -364,7 +365,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       BOOL incognito =
           bvc == [[_browserLauncher browserViewInformation] otrBVC];
       [bvc.dispatcher
-          openNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
+          openURL:[OpenNewTabCommand commandWithIncognito:incognito]];
     }
   } else {
     [[[_browserLauncher browserViewInformation] currentBVC]
