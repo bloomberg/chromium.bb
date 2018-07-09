@@ -752,6 +752,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
   DCHECK(child.CreatesNewFormattingContext());
+  DCHECK(child.IsBlock());
 
   const ComputedStyle& child_style = child.Style();
   const TextDirection direction = ConstraintSpace().Direction();
@@ -916,6 +917,13 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
+
+  // The margins we store will be used by e.g. getComputedStyle().
+  // When calculating these values, ignore any floats that might have
+  // affected the child. This is what Edge does.
+  ResolveInlineMargins(child_style, Style(), child_available_size_.inline_size,
+                       fragment.InlineSize(), &child_data.margins);
+  ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
 
   *previous_inflow_position = ComputeInflowPosition(
       *previous_inflow_position, child, child_data, child_bfc_offset,
@@ -1257,6 +1265,9 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   container_builder_.AddChild(layout_result, logical_offset);
   if (child.IsBlock())
     container_builder_.PropagateBreak(layout_result);
+
+  if (child.IsBlock())
+    ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
 
   *previous_inflow_position =
       ComputeInflowPosition(*previous_inflow_position, child, child_data,

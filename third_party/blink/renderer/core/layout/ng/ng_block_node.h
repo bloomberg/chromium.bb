@@ -77,6 +77,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&,
                                  const LayoutObject* offset_container);
 
+  // Write back resolved margins to legacy.
+  void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
+
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;
 
