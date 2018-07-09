@@ -51,7 +51,14 @@ class WebContents;
 - (void)requestSuggestionsForText:(NSString*)text
                           inRange:(NSRange)range API_AVAILABLE(macos(10.12.2));
 
-- (void)replaceSelectedText:(NSString*)text;
+// Select the range of the editing word and replace it with a suggestion
+// from the touch bar.
+- (void)replaceEditingWordWithSuggestion:(NSString*)text;
+
+// Returns a range from start to the end of the word that the cursor is
+// currently in.
+- (NSRange)editingWordRangeFromText:(NSString*)text
+                     cursorPosition:(size_t)cursor;
 
 @end
 
