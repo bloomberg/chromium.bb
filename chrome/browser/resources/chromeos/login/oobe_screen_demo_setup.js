@@ -10,8 +10,14 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
   return {
     EXTERNAL_API: ['onSetupFinished'],
 
+    /** Returns a control which should receive an initial focus. */
     get defaultControl() {
       return $('demo-setup-content');
+    },
+
+    /** Called after resources are updated. */
+    updateLocalizedContent: function() {
+      $('demo-setup-content').updateLocalizedContent();
     },
 
     /** @override */

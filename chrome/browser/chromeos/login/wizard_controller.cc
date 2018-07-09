@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
@@ -395,6 +396,9 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP) {
     return new chromeos::DemoSetupScreen(this,
                                          oobe_ui_->GetDemoSetupScreenView());
+  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES) {
+    return new chromeos::DemoPreferencesScreen(
+        this, oobe_ui_->GetDemoPreferencesScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING) {
     return new EnableDebuggingScreen(this,
                                      oobe_ui_->GetEnableDebuggingScreenView());
@@ -536,6 +540,12 @@ void WizardController::ShowEnrollmentScreen() {
                                       ->browser_policy_connector_chromeos()
                                       ->GetPrescribedEnrollmentConfig();
   StartEnrollmentScreen(false);
+}
+
+void WizardController::ShowDemoModePreferencesScreen() {
+  VLOG(1) << "Showing demo mode preferences screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
 void WizardController::ShowDemoModeSetupScreen() {
@@ -1209,6 +1219,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowEnrollmentScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP) {
     ShowDemoModeSetupScreen();
+  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES) {
+    ShowDemoModePreferencesScreen();
   } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
     ShowTermsOfServiceScreen();
   } else if (screen == OobeScreen::SCREEN_SYNC_CONSENT) {

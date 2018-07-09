@@ -1989,6 +1989,8 @@ split_static_library("ui") {
       "webui/chromeos/login/controller_pairing_screen_handler.h",
       "webui/chromeos/login/core_oobe_handler.cc",
       "webui/chromeos/login/core_oobe_handler.h",
+      "webui/chromeos/login/demo_preferences_screen_handler.cc",
+      "webui/chromeos/login/demo_preferences_screen_handler.h",
       "webui/chromeos/login/demo_setup_screen_handler.cc",
       "webui/chromeos/login/demo_setup_screen_handler.h",
       "webui/chromeos/login/device_disabled_screen_handler.cc",

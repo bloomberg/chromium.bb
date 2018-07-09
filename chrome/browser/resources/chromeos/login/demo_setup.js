@@ -40,6 +40,11 @@ Polymer({
     this.showScreen_(this.screens_[0]);
   },
 
+  /** Called after resources are updated. */
+  updateLocalizedContent: function() {
+    this.i18nUpdateLocale();
+  },
+
   /**
    * Called when demo mode setup finished.
    * @param {string} isSuccess Whether demo setup finished successfully.
