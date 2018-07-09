@@ -23,6 +23,7 @@ class MessageLoop;
 namespace sequence_manager {
 namespace internal {
 
+// TODO(kraynov): Rename to ThreadControllerWithMessageLoopImpl.
 class BASE_EXPORT ThreadControllerImpl : public ThreadController,
                                          public RunLoop::NestingObserver {
  public:

@@ -53,6 +53,7 @@ class ThreadController {
   // scheduled delayed work. Can only be called from the main sequence.
   // NOTE: DelayTillNextTask might return a different value as it also takes
   // immediate work into account.
+  // TODO(kraynov): Remove |lazy_now| parameter.
   virtual void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) = 0;
 
   // Sets the sequenced task source from which to take tasks after
