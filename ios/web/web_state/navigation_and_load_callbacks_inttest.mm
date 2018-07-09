@@ -48,10 +48,7 @@ namespace web {
 
 namespace {
 
-const char kTestPageText[] = "landing!";
 const char kExpectedMimeType[] = "text/html";
-
-const char kDownloadMimeType[] = "application/vnd.test";
 
 // NavigationAndLoadCallbacksTest is parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
@@ -518,18 +515,6 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
   MOCK_METHOD2(ShouldAllowResponse, bool(NSURLResponse*, bool for_main_frame));
 };
 
-// Responds with a download.
-std::unique_ptr<net::test_server::HttpResponse> HandleDownloadPage(
-    const net::test_server::HttpRequest& request) {
-  if (request.GetURL().path() == "/download") {
-    auto result = std::make_unique<net::test_server::BasicHttpResponse>();
-    result->set_content_type(kDownloadMimeType);
-    result->set_content(kTestPageText);
-    return std::move(result);
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 using testing::Return;
@@ -571,8 +556,9 @@ class NavigationAndLoadCallbacksTest
     test_server_->RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
                             base::BindRepeating(&testing::HandleForm)));
-    test_server_->RegisterDefaultHandler(
-        base::BindRepeating(&HandleDownloadPage));
+    test_server_->RegisterRequestHandler(base::BindRepeating(
+        &net::test_server::HandlePrefixedRequest, "/download",
+        base::BindRepeating(&testing::HandleDownload)));
     RegisterDefaultHandlers(test_server_.get());
     test_server_->ServeFilesFromSourceDirectory(
         base::FilePath("ios/testing/data/http_server_files/"));

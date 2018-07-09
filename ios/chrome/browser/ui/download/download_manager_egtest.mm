@@ -10,10 +10,12 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,20 +35,12 @@ id<GREYMatcher> OpenInButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_OPEN_IN);
 }
 
-// Provides downloads landing page and download response.
+// Provides downloads landing page with download link.
 std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     const net::test_server::HttpRequest& request) {
   auto result = std::make_unique<net::test_server::BasicHttpResponse>();
   result->set_code(net::HTTP_OK);
-
-  if (request.GetURL().path() == "/") {
-    // Landing page with download links.
-    result->set_content("<a id='download' href='/download'>Download</a>");
-  } else if (request.GetURL().path() == "/download") {
-    // Sucessfully provide download response.
-    result->AddCustomHeader("Content-Type", "application/vnd.test");
-  }
-
+  result->set_content("<a id='download' href='/download?50000'>Download</a>");
   return result;
 }
 
@@ -65,7 +59,14 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
   _featureList.InitAndEnableFeature(web::features::kNewFileDownload);
 
-  self.testServer->RegisterRequestHandler(base::BindRepeating(&GetResponse));
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/",
+                          base::BindRepeating(&GetResponse)));
+
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/download",
+                          base::BindRepeating(&testing::HandleDownload)));
+
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
 

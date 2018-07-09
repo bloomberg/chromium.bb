@@ -20,6 +20,7 @@ namespace testing {
 extern const char kTestFormPage[];
 // Field value for form returned from HandleForm handler.
 extern const char kTestFormFieldValue[];
+extern const char kTestDownloadMimeType[];
 
 // Returns a page with iframe which uses URL from the query as src.
 std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
@@ -35,6 +36,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleEchoQueryOrCloseSocket(
 // Returns a page with html form and kTestFormPage text. The form contains one
 // text field with kTestFormFieldValue value.
 std::unique_ptr<net::test_server::HttpResponse> HandleForm(
+    const net::test_server::HttpRequest& request);
+
+// Returns a download response with kTestDownloadMimeType MIME type. The length
+// of the response is taken from the number passed as URL query (1 byte if the
+// length is not provided).
+std::unique_ptr<net::test_server::HttpResponse> HandleDownload(
     const net::test_server::HttpRequest& request);
 
 }  // namespace testing
