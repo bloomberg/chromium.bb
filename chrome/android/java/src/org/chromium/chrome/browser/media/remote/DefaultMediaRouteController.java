@@ -97,13 +97,9 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             new ApplicationStatus.ApplicationStateListener() {
                 @Override
                 public void onApplicationStateChange(int newState) {
-                    switch (newState) {
-                        // HAS_DESTROYED_ACTIVITIES means all Chrome activities have been destroyed.
-                        case ApplicationState.HAS_DESTROYED_ACTIVITIES:
-                            onActivitiesDestroyed();
-                            break;
-                        default:
-                            break;
+                    // HAS_DESTROYED_ACTIVITIES means all Chrome activities have been destroyed.
+                    if (newState == ApplicationState.HAS_DESTROYED_ACTIVITIES) {
+                        onActivitiesDestroyed();
                     }
                 }
             };
@@ -140,10 +136,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     @Override
     public boolean canPlayMedia(String sourceUrl, String frameUrl) {
-
-        if (mediaRouterInitializationFailed()) return false;
-
-        if (sourceUrl == null) return false;
+        if (mediaRouterInitializationFailed() || sourceUrl == null) return false;
 
         try {
             String scheme = new URI(sourceUrl).getScheme();
@@ -478,8 +471,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
         RecordCastAction.castPlayRequested();
 
-        RecordCastAction.remotePlaybackDeviceSelected(
-                RecordCastAction.DEVICE_TYPE_CAST_GENERIC);
+        RecordCastAction.remotePlaybackDeviceSelected(RecordCastAction.DeviceType.CAST_GENERIC);
         installBroadcastReceivers();
 
         if (getMediaStateListener() == null) {
