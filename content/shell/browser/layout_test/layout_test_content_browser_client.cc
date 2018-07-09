@@ -231,12 +231,6 @@ void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kEnableDisplayCompositorPixelDump)) {
     command_line->AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
   }
-  // This non-sandboxed gpu process used for Windows gpu info collection
-  // is not needed here. (This task is delayed 15 seconds after the browser
-  // starts and quits when the job is done.) Because it might interfere with the
-  // layout test, a command line switch is added to skip this gpu process.
-  command_line->AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
 }
 
 BrowserMainParts* LayoutTestContentBrowserClient::CreateBrowserMainParts(
