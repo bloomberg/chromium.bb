@@ -189,8 +189,8 @@ void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
   // currently fade out so the fadeOutDuration and Delay  Now that this has
   // been added into Blink for other platforms we should plumb that through for
   // Android as well.
-  style->fade_out_delay_seconds = 0;
-  style->fade_out_duration_seconds = 0;
+  style->fade_out_delay = base::TimeDelta();
+  style->fade_out_duration = base::TimeDelta();
   if (getMajorVersion() >= kVersionLollipop) {
     style->thumb_thickness = 4;
     style->scrollbar_margin = 0;

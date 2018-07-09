@@ -60,11 +60,11 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
         .ShouldSnapBackToDragOrigin(scrollbar, event);
   }
 
-  double InitialAutoscrollTimerDelay() override {
+  TimeDelta InitialAutoscrollTimerDelay() override {
     return ScrollbarTheme::DeprecatedStaticGetTheme()
         .InitialAutoscrollTimerDelay();
   }
-  double AutoscrollTimerDelay() override {
+  TimeDelta AutoscrollTimerDelay() override {
     return ScrollbarTheme::DeprecatedStaticGetTheme().AutoscrollTimerDelay();
   }
 

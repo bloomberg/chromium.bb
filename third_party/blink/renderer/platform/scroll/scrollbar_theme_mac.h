@@ -58,8 +58,8 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   // Mac queues up scrollbar paint timers.
   bool ShouldDisableInvisibleScrollbars() const override { return false; }
 
-  double InitialAutoscrollTimerDelay() override;
-  double AutoscrollTimerDelay() override;
+  TimeDelta InitialAutoscrollTimerDelay() override;
+  TimeDelta AutoscrollTimerDelay() override;
 
   void PaintTickmarks(GraphicsContext&,
                       const Scrollbar&,

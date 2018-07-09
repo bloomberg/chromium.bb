@@ -169,12 +169,12 @@ void ScrollbarThemeMac::PreferencesChanged(
   }
 }
 
-double ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
-  return g_initial_button_delay;
+TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
+  return TimeDelta::FromSecondsD(g_initial_button_delay);
 }
 
-double ScrollbarThemeMac::AutoscrollTimerDelay() {
-  return g_autoscroll_button_delay;
+TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
+  return TimeDelta::FromSecondsD(g_autoscroll_button_delay);
 }
 
 bool ScrollbarThemeMac::ShouldDragDocumentInsteadOfThumb(

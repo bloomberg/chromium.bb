@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -169,8 +170,8 @@ class WebThemeEngine {
     int thumb_thickness;
     int scrollbar_margin;
     SkColor color;
-    double fade_out_delay_seconds;
-    double fade_out_duration_seconds;
+    base::TimeDelta fade_out_delay;
+    base::TimeDelta fade_out_duration;
   };
 
   // Gets the overlay scrollbar style. Not used on Mac.
@@ -178,8 +179,8 @@ class WebThemeEngine {
     // Disable overlay scrollbar fade out (for non-composited scrollers) unless
     // explicitly enabled by the implementing child class. NOTE: these values
     // aren't used to control Mac fade out - that happens in ScrollAnimatorMac.
-    style->fade_out_delay_seconds = 0.0;
-    style->fade_out_duration_seconds = 0.0;
+    style->fade_out_delay = base::TimeDelta();
+    style->fade_out_duration = base::TimeDelta();
     // The other fields in this struct are used only on Android to draw solid
     // color scrollbars. On other platforms the scrollbars are painted in
     // NativeTheme so these fields are unused in non-Android WebThemeEngines.
