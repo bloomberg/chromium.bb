@@ -171,7 +171,7 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerWithAutoAdvancingTimeTest);
 };
 
-INSTANTIATE_TEST_CASE_P(All,
+INSTANTIATE_TEST_CASE_P(,
                         TaskQueueThrottlerWithAutoAdvancingTimeTest,
                         testing::Bool());
 
