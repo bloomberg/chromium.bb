@@ -1382,6 +1382,13 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(context, WebFeature::kRTCPeerConnectionGetStats);
 
+    if (!peer_handler_) {
+      LOG(ERROR) << "Internal error: peer_handler_ has been discarded";
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(DOMExceptionCode::kOperationError,
+                               "Internal error: release in progress"));
+    }
     ScriptPromiseResolver* resolver =
         ScriptPromiseResolver::Create(script_state);
     ScriptPromise promise = resolver->Promise();
