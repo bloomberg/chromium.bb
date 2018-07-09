@@ -93,8 +93,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
   void Play() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(started_);
-    if (playing_state_.playing())
+    if (!started_ || playing_state_.playing())
       return;
     playing_state_.set_playing(true);
     on_play_state_changed_.Run(media_stream_, &playing_state_);
@@ -102,8 +101,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
   void Pause() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(started_);
-    if (!playing_state_.playing())
+    if (!started_ || !playing_state_.playing())
       return;
     playing_state_.set_playing(false);
     on_play_state_changed_.Run(media_stream_, &playing_state_);
