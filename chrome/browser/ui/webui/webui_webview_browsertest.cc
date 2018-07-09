@@ -143,7 +143,13 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DisplayNone) {
       "testDisplayNone", base::Value(GetTestUrl("empty.html").spec())));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCode) {
+// TODO(crbug.com/861600) Flaky on CrOS trybots.
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_ExecuteScriptCode DISABLED_ExecuteScriptCode
+#else
+#define MAYBE_ExecuteScriptCode ExecuteScriptCode
+#endif
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, MAYBE_ExecuteScriptCode) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
