@@ -47,6 +47,10 @@ class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
 
   message_center::UiController* ui_controller() { return ui_controller_.get(); }
 
+  void SetTrayBubbleHeight(int height) {
+    popup_alignment_delegate_->SetTrayBubbleHeight(height);
+  }
+
  private:
   std::unique_ptr<message_center::UiController> ui_controller_;
   std::unique_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
@@ -89,6 +93,7 @@ bool UnifiedSystemTray::UiDelegate::ShowPopups() {
 
 void UnifiedSystemTray::UiDelegate::HidePopups() {
   message_popup_collection_->MarkAllPopupsShown();
+  popup_alignment_delegate_->SetTrayBubbleHeight(0);
 }
 
 bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
@@ -203,6 +208,10 @@ void UnifiedSystemTray::EnsureBubbleExpanded() {
 void UnifiedSystemTray::ShowVolumeSliderBubble() {
   slider_bubble_controller_->ShowBubble(
       UnifiedSliderBubbleController::SLIDER_TYPE_VOLUME);
+}
+
+void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
+  ui_delegate_->SetTrayBubbleHeight(height);
 }
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {

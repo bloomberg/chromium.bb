@@ -70,6 +70,11 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // open when disabling, also close it.
   void SetTrayEnabled(bool enabled);
 
+  // Sets the height of the system tray bubble from the edge of the work area
+  // so that the notification popups don't overlap with the tray. Pass 0 if no
+  // bubble is shown.
+  void SetTrayBubbleHeight(int height);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
