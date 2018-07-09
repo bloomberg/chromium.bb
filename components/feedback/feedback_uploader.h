@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_H_
 #define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_H_
 
+#include <list>
 #include <queue>
 #include <vector>
 
@@ -22,9 +23,11 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace net {
-class URLFetcher;
-}  // namespace net
+namespace network {
+struct ResourceRequest;
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace feedback {
 
@@ -36,8 +39,10 @@ class FeedbackReport;
 class FeedbackUploader : public KeyedService,
                          public base::SupportsWeakPtr<FeedbackUploader> {
  public:
-  FeedbackUploader(content::BrowserContext* context,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FeedbackUploader(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      content::BrowserContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~FeedbackUploader() override;
 
   static void SetMinimumRetryDelayForTesting(base::TimeDelta delay);
@@ -84,6 +89,9 @@ class FeedbackUploader : public KeyedService,
  private:
   friend class FeedbackUploaderTest;
 
+  // This is a std::list so that iterators remain valid during modifications.
+  using UrlLoaderList = std::list<std::unique_ptr<network::SimpleURLLoader>>;
+
   struct ReportsUploadTimeComparator {
     bool operator()(const scoped_refptr<FeedbackReport>& a,
                     const scoped_refptr<FeedbackReport>& b) const;
@@ -91,18 +99,25 @@ class FeedbackUploader : public KeyedService,
 
   // Called from DispatchReport() to give implementers a chance to add extra
   // headers to the upload request before it's sent.
-  virtual void AppendExtraHeadersToUploadRequest(net::URLFetcher* fetcher);
+  virtual void AppendExtraHeadersToUploadRequest(
+      network::ResourceRequest* resource_request);
 
   // Uploads the |report_being_dispatched_| to be uploaded. It must
   // call either OnReportUploadSuccess() or OnReportUploadFailure() so that
   // dispatching reports can progress.
   void DispatchReport();
 
+  void OnDispatchComplete(UrlLoaderList::iterator it,
+                          std::unique_ptr<std::string> response_body);
+
   // Update our timer for uploading the next report.
   void UpdateUploadTimer();
 
   void QueueReportWithDelay(std::unique_ptr<std::string> data,
                             base::TimeDelta delay);
+
+  // URLLoaderFactory used for network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Browser context this uploader was created for.
   content::BrowserContext* context_;
@@ -131,6 +146,8 @@ class FeedbackUploader : public KeyedService,
   // True when a report is currently being dispatched. Only a single report
   // at-a-time should be dispatched.
   bool is_dispatching_;
+
+  UrlLoaderList uploads_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploader);
 };

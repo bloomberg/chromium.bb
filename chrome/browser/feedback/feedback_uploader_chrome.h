@@ -22,6 +22,7 @@ namespace feedback {
 class FeedbackUploaderChrome : public FeedbackUploader {
  public:
   FeedbackUploaderChrome(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       content::BrowserContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~FeedbackUploaderChrome() override;
@@ -29,7 +30,8 @@ class FeedbackUploaderChrome : public FeedbackUploader {
  private:
   // feedback::FeedbackUploader:
   void StartDispatchingReport() override;
-  void AppendExtraHeadersToUploadRequest(net::URLFetcher* fetcher) override;
+  void AppendExtraHeadersToUploadRequest(
+      network::ResourceRequest* resource_request) override;
 
   void AccessTokenAvailable(GoogleServiceAuthError error,
                             std::string access_token);

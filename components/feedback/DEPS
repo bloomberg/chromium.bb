@@ -11,6 +11,9 @@ include_rules = [
   "+net/base",
   "+net/traffic_annotation",
   "+net/url_request",
+  "+net/http",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+third_party/re2",
   "+third_party/zlib/google",
 ]

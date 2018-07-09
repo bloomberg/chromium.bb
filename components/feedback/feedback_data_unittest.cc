@@ -14,6 +14,9 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feedback {
@@ -26,18 +29,21 @@ constexpr char kFileData[] = "";
 
 class MockUploader : public FeedbackUploader {
  public:
-  MockUploader(content::BrowserContext* context,
-               const base::Closure& on_report_sent)
-      : FeedbackUploader(context,
+  MockUploader(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      content::BrowserContext* context,
+      base::OnceClosure on_report_sent)
+      : FeedbackUploader(url_loader_factory,
+                         context,
                          FeedbackUploaderFactory::CreateUploaderTaskRunner()),
-        on_report_sent_(on_report_sent) {}
+        on_report_sent_(std::move(on_report_sent)) {}
   ~MockUploader() override {}
 
   // feedback::FeedbackUploader:
-  void StartDispatchingReport() override { on_report_sent_.Run(); }
+  void StartDispatchingReport() override { std::move(on_report_sent_).Run(); }
 
  private:
-  base::Closure on_report_sent_;
+  base::OnceClosure on_report_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(MockUploader);
 };
@@ -51,9 +57,13 @@ std::unique_ptr<std::string> MakeScoped(const char* str) {
 class FeedbackDataTest : public testing::Test {
  protected:
   FeedbackDataTest()
-      : uploader_(&context_,
-                  base::Bind(&FeedbackDataTest::set_send_report_callback,
-                             base::Unretained(this))),
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        uploader_(test_shared_loader_factory_,
+                  &context_,
+                  base::BindOnce(&FeedbackDataTest::set_send_report_callback,
+                                 base::Unretained(this))),
         data_(base::MakeRefCounted<FeedbackData>(&uploader_)) {}
   ~FeedbackDataTest() override = default;
 
@@ -79,6 +89,8 @@ class FeedbackDataTest : public testing::Test {
   base::Closure quit_closure_;
   std::unique_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   content::TestBrowserContext context_;
   MockUploader uploader_;
   scoped_refptr<FeedbackData> data_;
