@@ -590,6 +590,38 @@ TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_IdenticalProfiles) {
                                    CreateAutofillProfile(merged2)));
 }
 
+TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_NonSimilarProfiles) {
+  AutofillProfile local = ConstructCompleteProfile();
+  local.set_guid(kGuidA);
+  local.SetRawInfo(NAME_FULL, ASCIIToUTF16("John K. Doe, Jr."));
+  local.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  local.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("K."));
+  local.SetRawInfo(NAME_LAST, ASCIIToUTF16("Doe"));
+  AddAutofillProfilesToTable({local});
+
+  // The remote profile are not similar as the names are different (all other
+  // fields except for guids are identical).
+  AutofillProfileSpecifics remote = ConstructCompleteSpecifics();
+  remote.set_guid(kGuidB);
+  remote.set_name_full(0, "Jane T. Roe, Sr.");
+  remote.set_name_first(0, "Jane");
+  remote.set_name_middle(0, "T.");
+  remote.set_name_last(0, "Roe");
+
+  // The profiles are not similar enough and thus do not get merged.
+  // Expect the local one being synced up and the remote one being added to the
+  // local database.
+  EXPECT_CALL(
+      mock_processor(),
+      Put(kGuidA, HasSpecifics(CreateAutofillProfileSpecifics(local)), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  StartSyncing({remote});
+
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(local, CreateAutofillProfile(remote)));
+}
+
 TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_SimilarProfiles) {
   AutofillProfile local1 = AutofillProfile(kGuidA, kHttpOrigin);
   local1.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
