@@ -553,10 +553,6 @@ TEST_P(ServiceWorkerProviderHostTest,
 }
 
 TEST_P(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
-  // TODO(crbug.com/860380): Fails with NetS13nServiceWorker.
-  if (IsServiceWorkerServicificationEnabled())
-    return;
-
   // Create an active version.
   scoped_refptr<ServiceWorkerVersion> version =
       base::MakeRefCounted<ServiceWorkerVersion>(
