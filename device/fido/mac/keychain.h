@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -24,7 +25,7 @@ namespace mac {
 // keychain-access-group entitlements, and therefore requires code signing with
 // a real Apple developer ID. We therefore group these function here, so they
 // can be mocked out in testing.
-class API_AVAILABLE(macosx(10.12.2)) Keychain {
+class COMPONENT_EXPORT(DEVICE_FIDO) API_AVAILABLE(macosx(10.12.2)) Keychain {
  public:
   static const Keychain& GetInstance();
 

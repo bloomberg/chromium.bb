@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_MAC_AUTHENTICATOR_H_
 #define DEVICE_FIDO_MAC_AUTHENTICATOR_H_
 
+#include "base/component_export.h"
 #include "base/mac/availability.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
@@ -25,6 +26,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   // CreateIfAvailable returns a TouchIdAuthenticator if IsAvailable() returns
   // true and nullptr otherwise.
   static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable(
+      std::string keychain_access_group,
+      std::string metadata_secret);
+  static std::unique_ptr<TouchIdAuthenticator> CreateForTesting(
       std::string keychain_access_group,
       std::string metadata_secret);
 

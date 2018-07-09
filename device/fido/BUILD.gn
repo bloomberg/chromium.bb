@@ -157,6 +157,8 @@ component("fido") {
     sources += [
       "mac/authenticator.h",
       "mac/authenticator.mm",
+      "mac/browsing_data_deletion.h",
+      "mac/browsing_data_deletion.mm",
       "mac/credential_metadata.cc",
       "mac/credential_metadata.h",
       "mac/get_assertion_operation.h",
