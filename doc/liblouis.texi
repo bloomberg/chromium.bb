@@ -662,7 +662,10 @@ capsletter 6
 
 @opcode{begcapsword, dots}
 The dot pattern which begins a block of capital letters at the
-beginning or within a word. For example:
+beginning or within a word. The block is automatically terminated
+by any character that is not a capital letter, e.g. small letters, punctuation, numbers etc.
+
+Example:
 
 @example
 begcapsword 6-6
@@ -670,6 +673,8 @@ begcapsword 6-6
 
 @opcode{endcapsword, dots}
 The dot pattern which ends a block of capital letters within a word.
+It is used in cases where the block is not terminated automatically
+by a word boundary, a number or punctuation.
 For example:
 
 @example
@@ -678,11 +683,17 @@ endcapsword 6-3
 
 @opcode{begcaps, dots}
 The dot pattern which begins a block of capital letters defined by the
-provided @code{typeform} without regard for any other rules. For
-example:
+provided @code{typeform} without regard for any other rules.
+This construct is sometimes also called a capsphrase. It is used
+in some Braille codes to mark a whole phrase or sentence as capital
+letters. The block can contain capital letters as well as
+none-alphabetic characters, punctuation, numbers etc. The
+block is terminated when a small letter is encountered or at the end of the input string.
+
+Example:
 
 @example
-begcaps 6-6
+begcaps 6-6-6
 @end example
 
 @opcode{endcaps, dots}
@@ -743,7 +754,14 @@ similar to the @opcoderef{letsign}.
 @opcode{numsign, dots}
 The translator inserts this indicator before numbers made up of digits
 defined with the @opcoderef{litdigit} to show that they are a number
-and not letters or some other symbols. For example:
+and not letters or some other symbols. A number is terminated when a
+space, a letter or any other none-@opcoderef{litdigit} character is
+encountered.
+
+You can define characters or strings to be part of a number by using
+the @opcoderef{midnum} opcode.
+
+Example:
 
 @example
 numsign 3456
