@@ -94,6 +94,10 @@ void LayoutSVGEllipse::CalculateRadiiAndCenter() {
   } else {
     radii_ = ToFloatSize(length_context.ResolveLengthPair(
         svg_style.Rx(), svg_style.Ry(), style));
+    if (svg_style.Rx().IsAuto())
+      radii_.SetWidth(radii_.Height());
+    else if (svg_style.Ry().IsAuto())
+      radii_.SetHeight(radii_.Width());
   }
 }
 
