@@ -28,6 +28,7 @@ mojom("mojom_platform") {
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",
     "loader/prefetch_url_loader_service.mojom",
+    "loader/previews_resource_loading_hints.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
