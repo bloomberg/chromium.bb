@@ -8817,7 +8817,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       restore_dst_buf(xd, orig_dst, num_planes);
       continue;
     } else if (cpi->sf.model_based_post_interp_filter_breakout &&
-               ref_best_rd != INT64_MAX && (rd > ref_best_rd * 6)) {
+               ref_best_rd != INT64_MAX && (rd / 6 > ref_best_rd)) {
       early_terminate = INT64_MAX;
       restore_dst_buf(xd, orig_dst, num_planes);
       if ((rd >> 4) > ref_best_rd) break;
