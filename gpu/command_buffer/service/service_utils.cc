@@ -37,10 +37,16 @@ bool GetUintFromSwitch(const base::CommandLine* command_line,
 gl::GLContextAttribs GenerateGLContextAttribs(
     const ContextCreationAttribs& attribs_helper,
     const ContextGroup* context_group) {
-  DCHECK(context_group != nullptr);
+  return GenerateGLContextAttribs(attribs_helper,
+                                  context_group->use_passthrough_cmd_decoder());
+}
+
+gl::GLContextAttribs GenerateGLContextAttribs(
+    const ContextCreationAttribs& attribs_helper,
+    bool use_passthrough_cmd_decoder) {
   gl::GLContextAttribs attribs;
   attribs.gpu_preference = attribs_helper.gpu_preference;
-  if (context_group->use_passthrough_cmd_decoder()) {
+  if (use_passthrough_cmd_decoder) {
     attribs.bind_generates_resource = attribs_helper.bind_generates_resource;
     attribs.webgl_compatibility_context =
         IsWebGLContextType(attribs_helper.context_type);

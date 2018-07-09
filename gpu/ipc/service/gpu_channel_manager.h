@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -135,6 +136,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   void GetVideoMemoryUsageStats(
       VideoMemoryUsageStats* video_memory_usage_stats) const;
 
+  scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
+      const ContextCreationAttribs& attribs,
+      ContextResult* result);
+
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
@@ -191,6 +196,19 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   GpuProcessActivityFlags activity_flags_;
 
   base::MemoryPressureListener memory_pressure_listener_;
+
+  // The RasterDecoderContextState is shared across all RasterDecoders. Note
+  // that this class needs to be ref-counted to conveniently manage the lifetime
+  // of the shared context in the case of a context loss. While the
+  // RasterDecoders strictly outlive the GpuChannelManager, in the event of a
+  // context loss the clients need to re-create the GpuChannel and command
+  // buffers once notified. In this interim state we can have multiple instances
+  // of the RasterDecoderContextState, for the lost and recovered clients. In
+  // order to avoid having the GpuChannelManager keep the lost context state
+  // alive until all clients have recovered, we use a ref-counted object and
+  // allow the decoders to manage its lifetime.
+  scoped_refptr<raster::RasterDecoderContextState>
+      raster_decoder_context_state_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members
