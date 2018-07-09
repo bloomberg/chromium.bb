@@ -92,10 +92,25 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
       break;
     case HighlighterEnabledState::kDisabledByUser:
       FALLTHROUGH;
-    case HighlighterEnabledState::kDisabledBySessionEnd:
+    case HighlighterEnabledState::kDisabledBySessionComplete:
       assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
       break;
+    case HighlighterEnabledState::kDisabledBySessionAbort:
+      // When metalayer mode has been aborted, no action necessary. Abort occurs
+      // as a result of an interaction starting, most likely due to hotword
+      // detection. Setting the input modality in these cases would have the
+      // unintended consequence of stopping the active interaction.
+      break;
   }
+}
+
+void AssistantInteractionController::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  if (interaction_state != InteractionState::kActive)
+    return;
+
+  // Metalayer mode should not be sticky. Disable it on interaction start.
+  Shell::Get()->highlighter_controller()->AbortSession();
 }
 
 void AssistantInteractionController::OnInputModalityChanged(

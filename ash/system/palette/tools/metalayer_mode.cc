@@ -224,7 +224,7 @@ void MetalayerMode::UpdateView() {
 
 void MetalayerMode::OnMetalayerSessionComplete() {
   Shell::Get()->highlighter_controller()->UpdateEnabledState(
-      HighlighterEnabledState::kDisabledBySessionEnd);
+      HighlighterEnabledState::kDisabledBySessionComplete);
 }
 
 }  // namespace ash
