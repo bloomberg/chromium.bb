@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -21,11 +23,18 @@ RasterDecoderContextState::RasterDecoderContextState(
     : share_group(std::move(share_group)),
       surface(std::move(surface)),
       context(std::move(context)),
-      use_virtualized_gl_contexts(use_virtualized_gl_contexts) {}
+      use_virtualized_gl_contexts(use_virtualized_gl_contexts) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
 RasterDecoderContextState::~RasterDecoderContextState() {
   if (gr_context)
     gr_context->abandonContext();
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void RasterDecoderContextState::InitializeGrContext(
@@ -60,6 +69,14 @@ void RasterDecoderContextState::InitializeGrContext(
     gr_context->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
                                        max_resource_cache_bytes);
   }
+}
+
+bool RasterDecoderContextState::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (gr_context)
+    DumpGrMemoryStatistics(gr_context.get(), pmd, base::nullopt);
+  return true;
 }
 
 }  // namespace raster

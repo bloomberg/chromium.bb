@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -22,7 +23,8 @@ class GpuDriverBugWorkarounds;
 namespace raster {
 
 struct GPU_GLES2_EXPORT RasterDecoderContextState
-    : public base::RefCounted<RasterDecoderContextState> {
+    : public base::RefCounted<RasterDecoderContextState>,
+      public base::trace_event::MemoryDumpProvider {
  public:
   RasterDecoderContextState(scoped_refptr<gl::GLShareGroup> share_group,
                             scoped_refptr<gl::GLSurface> surface,
@@ -44,9 +46,13 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   // PermitsInconsistentContextState.
   bool need_context_state_reset = false;
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class base::RefCounted<RasterDecoderContextState>;
-  ~RasterDecoderContextState();
+  ~RasterDecoderContextState() override;
 };
 
 }  // namespace raster
