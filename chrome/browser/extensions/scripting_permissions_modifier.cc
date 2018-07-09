@@ -219,9 +219,10 @@ void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
   }
 
   PermissionsUpdater(browser_context_)
-      .AddPermissions(extension_.get(),
-                      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                                    new_explicit_hosts, new_scriptable_hosts));
+      .GrantRuntimePermissions(
+          *extension_,
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        new_explicit_hosts, new_scriptable_hosts));
 }
 
 bool ScriptingPermissionsModifier::HasGrantedHostPermission(
@@ -254,11 +255,10 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
     scriptable_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(), origin);
 
   PermissionsUpdater(browser_context_)
-      .RemovePermissions(
-          extension_.get(),
+      .RevokeRuntimePermissions(
+          *extension_,
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        explicit_hosts, scriptable_hosts),
-          PermissionsUpdater::REMOVE_HARD);
+                        explicit_hosts, scriptable_hosts));
 }
 
 // static
@@ -318,7 +318,7 @@ void ScriptingPermissionsModifier::GrantWithheldHostPermissions() {
                             withheld.explicit_hosts(),
                             withheld.scriptable_hosts());
   PermissionsUpdater(browser_context_)
-      .AddPermissions(extension_.get(), permissions);
+      .GrantRuntimePermissions(*extension_, permissions);
 }
 
 void ScriptingPermissionsModifier::WithholdHostPermissions() {
@@ -327,8 +327,7 @@ void ScriptingPermissionsModifier::WithholdHostPermissions() {
   // introduce another enum to PermissionsModifier for removing only from
   // runtime granted permissions.
   PermissionsUpdater(browser_context_)
-      .RemovePermissions(extension_.get(), *GetRevokablePermissions(),
-                         PermissionsUpdater::REMOVE_HARD);
+      .RevokeRuntimePermissions(*extension_, *GetRevokablePermissions());
 }
 
 }  // namespace extensions

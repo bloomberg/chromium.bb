@@ -80,8 +80,8 @@ class PermissionMessagesUnittest : public testing::Test {
 
   void GrantOptionalPermissions() {
     PermissionsUpdater perms_updater(env_.profile());
-    perms_updater.AddPermissions(
-        app_.get(), PermissionsParser::GetOptionalPermissions(app_.get()));
+    perms_updater.GrantOptionalPermissions(
+        *app_, PermissionsParser::GetOptionalPermissions(app_.get()));
   }
 
   std::vector<base::string16> active_permissions() {
