@@ -162,22 +162,30 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
   this.queue_.run(function(callback) {
-    this.item_.state = ProgressItemState.PROGRESSING;
-    this.item_.type = ProgressItemType.SYNC;
-    this.item_.quiet = true;
-    this.syncing_ = true;
-    if (status.num_total_jobs > 1) {
-      this.item_.message = strf('SYNC_FILE_NUMBER', status.num_total_jobs);
-    } else {
-      this.item_.message = strf(
-          'SYNC_FILE_NAME',
-          status.fileUrl.substr(status.fileUrl.lastIndexOf('/') + 1));
-    }
-    this.item_.cancelCallback = this.requestCancel_.bind(this);
-    this.item_.progressValue = status.processed || 0;
-    this.item_.progressMax = status.total || 0;
-    this.progressCenter_.updateItem(this.item_);
-    callback();
+    window.webkitResolveLocalFileSystemURL(
+        status.fileUrl,
+        function(entry) {
+          this.item_.state = ProgressItemState.PROGRESSING;
+          this.item_.type = ProgressItemType.SYNC;
+          this.item_.quiet = true;
+          this.syncing_ = true;
+          if (status.num_total_jobs > 1) {
+            this.item_.message =
+                strf('SYNC_FILE_NUMBER', status.num_total_jobs);
+          } else {
+            this.item_.message = strf('SYNC_FILE_NAME', entry.name);
+          }
+          this.item_.cancelCallback = this.requestCancel_.bind(this);
+          this.item_.progressValue = status.processed || 0;
+          this.item_.progressMax = status.total || 0;
+          this.progressCenter_.updateItem(this.item_);
+          callback();
+        }.bind(this),
+        function(error) {
+          console.warn(
+              'Resolving URL ' + status.fileUrl + ' is failed: ', error);
+          callback();
+        });
   }.bind(this));
 };
 

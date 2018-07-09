@@ -160,7 +160,7 @@ struct ItemEvent {
   // A unique ID corresponding to a particular sync action.
   int64 group_id;
 
-  string file_title;
+  string path;
 
   State state;
 

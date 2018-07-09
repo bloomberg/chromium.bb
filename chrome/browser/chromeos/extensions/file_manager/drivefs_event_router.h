@@ -6,9 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DRIVEFS_EVENT_ROUTER_H_
 
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/macros.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
+#include "url/gurl.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace extensions {
 namespace api {
@@ -32,7 +39,19 @@ class DriveFsEventRouter : public drivefs::DriveFsHostObserver {
   void OnSyncingStatusUpdate(
       const drivefs::mojom::SyncingStatus& status) override;
 
-  virtual void DispatchOnFileTransfersUpdatedEvent(
+  void DispatchOnFileTransfersUpdatedEvent(
+      const extensions::api::file_manager_private::FileTransferStatus& status);
+
+  virtual std::set<std::string>
+  GetFileTransfersUpdateEventListenerExtensionIds() = 0;
+
+  virtual GURL ConvertDrivePathToFileSystemUrl(
+      const base::FilePath& file_path,
+      const std::string& extension_id) = 0;
+
+  // Helper method for dispatching an event to an extension.
+  virtual void DispatchOnFileTransfersUpdatedEventToExtension(
+      const std::string& extension_id,
       const extensions::api::file_manager_private::FileTransferStatus&
           status) = 0;
 

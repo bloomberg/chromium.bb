@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
 
+#include "base/files/file_path.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 
@@ -105,11 +106,25 @@ void DriveFsEventRouter::OnSyncingStatusUpdate(
   status.processed = total_bytes_transferred;
   status.total = total_bytes_to_transfer;
 
+  auto extension_ids = GetFileTransfersUpdateEventListenerExtensionIds();
+
   for (const auto& item : syncing_status.item_events) {
     status.transfer_state = ConvertItemEventState(item->state);
-    status.file_url = item->file_title;
 
-    DispatchOnFileTransfersUpdatedEvent(status);
+    base::FilePath path(item->path);
+    for (const auto& extension_id : extension_ids) {
+      status.file_url =
+          ConvertDrivePathToFileSystemUrl(path, extension_id).spec();
+      DispatchOnFileTransfersUpdatedEventToExtension(extension_id, status);
+    }
+  }
+}
+
+void DriveFsEventRouter::DispatchOnFileTransfersUpdatedEvent(
+    const extensions::api::file_manager_private::FileTransferStatus& status) {
+  for (const auto& extension_id :
+       GetFileTransfersUpdateEventListenerExtensionIds()) {
+    DispatchOnFileTransfersUpdatedEventToExtension(extension_id, status);
   }
 }
 
