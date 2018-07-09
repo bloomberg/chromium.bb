@@ -76,6 +76,10 @@ message BackgroundFetchMetadata {
 
   // Number of fetches initiated by the developer.
   optional int32 num_fetches = 5;
+
+  // Raw bytes needed to deserialize into a PNG icon. Only used if the icon
+  // has a max resolution of 256x256. This means this is at most ~256KB.
+  optional bytes icon = 6;
 }
 
 // A background fetch request that is still in a pending state.
