@@ -2,80 +2,30 @@
 <!-- TODO(rakina): move to WPT once spec is finalized -->
 <script src = '../../resources/testharness.js'></script>
 <script src = '../../resources/testharnessreport.js'></script>
-<style>dummy {}</style>
-
-<section id="firstSection">
-  <div>
-    <span class="green"></span>
-    <span class="red"></span>
-    <span class="blue"></span>
-    <span class="white"></span>
-    <span class="yellow"></span>
-  </div>
-</section>
-<section id="secondSection"></section>
 
 <script>
 'use strict';
-const greenStyleText = ".green { color: green; }";
+
 const redStyleTexts = [".red { color: red; }", ".red + span + span { color: red; }"];
-const blueStyleTexts = [".blue { color: blue; }", ".blue + span + span { color: blue; }"];
-const whiteStyleText = "* { color: white; }";
-const yellowStyleText = ".yellow { color: yellow; }";
 
 test(() => {
   // Style sheets can be created
-  const greenStyleSheet = new CSSStyleSheet(greenStyleText);
-  const redStyleSheet = new CSSStyleSheet(redStyleTexts[0] + redStyleTexts[1], {media: "screen, print"});
-  const blueStyleSheet = new CSSStyleSheet(blueStyleTexts[0] + blueStyleTexts[1], {title: "Blue", disabled: true});
-  const whiteStyleSheet = new CSSStyleSheet(whiteStyleText, {title: "White", alternate: true});
-  const yellowStyleSheet = new CSSStyleSheet(yellowStyleText, {disabled: false});
+const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
+  assert_equals(sheet.title, "Red");
+  assert_equals(sheet.ownerNode, null);
+  assert_equals(sheet.ownerRule, null);
+  assert_equals(sheet.media.length, 2);
+  assert_equals(sheet.media.item(0), "screen");
+  assert_equals(sheet.media.item(1), "print");
+  assert_true(sheet.disabled);
+  assert_equals(sheet.cssRules.length, 0);
 
-  assert_equals(greenStyleSheet.title, "");
-  assert_equals(redStyleSheet.title, "");
-  assert_equals(blueStyleSheet.title, "Blue");
-  assert_equals(whiteStyleSheet.title, "White");
-  assert_equals(yellowStyleSheet.title, "");
+  sheet.insertRule(redStyleTexts[0]);
+  assert_equals(sheet.cssRules.length, 1);
+  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[0]);
 
-  assert_equals(greenStyleSheet.ownerNode, null);
-  assert_equals(redStyleSheet.ownerNode, null);
-  assert_equals(blueStyleSheet.ownerNode, null);
-  assert_equals(whiteStyleSheet.ownerNode, null);
-  assert_equals(yellowStyleSheet.ownerNode, null);
-
-  assert_equals(greenStyleSheet.ownerRule, null);
-  assert_equals(redStyleSheet.ownerRule, null);
-  assert_equals(blueStyleSheet.ownerRule, null);
-  assert_equals(whiteStyleSheet.ownerRule, null);
-  assert_equals(yellowStyleSheet.ownerRule, null);
-
-  assert_equals(greenStyleSheet.media.length, 0);
-  assert_equals(redStyleSheet.media.length, 2);
-  assert_equals(redStyleSheet.media.item(0), "screen");
-  assert_equals(redStyleSheet.media.item(1), "print");
-  assert_equals(blueStyleSheet.media.length, 0);
-  assert_equals(whiteStyleSheet.media.length, 0);
-  assert_equals(yellowStyleSheet.media.length, 0);
-
-  assert_false(greenStyleSheet.disabled);
-  assert_false(redStyleSheet.disabled);
-  assert_true(blueStyleSheet.disabled);
-  assert_false(whiteStyleSheet.disabled);
-  assert_false(yellowStyleSheet.disabled);
-
-  assert_equals(greenStyleSheet.cssRules.length, 1);
-  assert_equals(redStyleSheet.cssRules.length, 2);
-  assert_equals(blueStyleSheet.cssRules.length, 2);
-  assert_equals(whiteStyleSheet.cssRules.length, 1);
-  assert_equals(yellowStyleSheet.cssRules.length, 1);
-
-  assert_equals(greenStyleSheet.cssRules[0].cssText, greenStyleText);
-  assert_equals(redStyleSheet.cssRules[0].cssText, redStyleTexts[0]);
-  assert_equals(redStyleSheet.cssRules[1].cssText, redStyleTexts[1]);
-  assert_equals(blueStyleSheet.cssRules[0].cssText, blueStyleTexts[0]);
-  assert_equals(blueStyleSheet.cssRules[1].cssText, blueStyleTexts[1]);
-  assert_equals(whiteStyleSheet.cssRules[0].cssText, whiteStyleText);
-  assert_equals(yellowStyleSheet.cssRules[0].cssText, yellowStyleText);
-
-}, 'Style sheets can be constructed using script');
+  sheet.insertRule(redStyleTexts[1]);
+  assert_equals(sheet.cssRules.length, 2);
+  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
+}, 'Empty CSSStyleSheet can be constructed using script');
 </script>
