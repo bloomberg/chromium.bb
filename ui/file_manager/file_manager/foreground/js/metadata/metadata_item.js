@@ -12,9 +12,9 @@
 var ImageTransformation;
 
 /**
- * Metadata of a file.
+ * Metadata of a file. Doesn't have @struct to allow for '[]' computed property
+ * access.
  * @constructor
- * @struct
  */
 function MetadataItem() {
   /**

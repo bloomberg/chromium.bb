@@ -560,6 +560,13 @@ var ENTRIES = {
   teamDriveA: new TestEntryInfo({
     type: EntryType.TEAM_DRIVE,
     teamDriveName: 'Team Drive A',
+    capabilities: {
+      canCopy: true,
+      canDelete: true,
+      canRename: true,
+      canAddChildren: true,
+      canShare: true,
+    },
   }),
 
   teamDriveAFile: new TestEntryInfo({
@@ -584,6 +591,13 @@ var ENTRIES = {
   teamDriveB: new TestEntryInfo({
     type: EntryType.TEAM_DRIVE,
     teamDriveName: 'Team Drive B',
+    capabilities: {
+      canCopy: true,
+      canDelete: false,
+      canRename: false,
+      canAddChildren: false,
+      canShare: true,
+    },
   }),
 
   teamDriveBFile: new TestEntryInfo({
