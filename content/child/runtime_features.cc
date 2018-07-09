@@ -316,11 +316,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kCSSFragmentIdentifiers))
     WebRuntimeFeatures::EnableCSSFragmentIdentifiers(true);
 
-  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
-    WebRuntimeFeatures::EnableGenericSensor(true);
-    if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
-      WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
-  }
+  if (!base::FeatureList::IsEnabled(features::kGenericSensor))
+    WebRuntimeFeatures::EnableGenericSensor(false);
+
+  if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
+    WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
 
   if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
     WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
