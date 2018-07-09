@@ -131,7 +131,7 @@ void BackgroundFetchDataManager::CreateRegistration(
   auto registration_callback =
       base::BindOnce(&GetRegistrationFromMetadata, std::move(callback));
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
-      this, registration_id, requests, options,
+      this, registration_id, requests, options, icon,
       std::move(registration_callback)));
 }
 
