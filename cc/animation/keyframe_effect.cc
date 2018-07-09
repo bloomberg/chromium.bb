@@ -240,6 +240,15 @@ void KeyframeEffect::AddKeyframeModel(
          (animation_->animation_host()->SupportsScrollAnimations()));
   DCHECK(!keyframe_model->is_impl_only() ||
          keyframe_model->target_property_id() == TargetProperty::SCROLL_OFFSET);
+  // This is to make sure that keyframe models in the same group, i.e., start
+  // together, don't animate the same property.
+  DCHECK(std::none_of(
+      keyframe_models_.begin(), keyframe_models_.end(),
+      [&](const auto& existing_keyframe_model) {
+        return keyframe_model->target_property_id() ==
+                   existing_keyframe_model->target_property_id() &&
+               keyframe_model->group() == existing_keyframe_model->group();
+      }));
 
   keyframe_models_.push_back(std::move(keyframe_model));
 
