@@ -2771,7 +2771,11 @@ public class ToolbarPhone extends ToolbarLayout
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
         mExperimentalButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
-        mExperimentalButton.setVisibility(View.VISIBLE);
+        if (mTabSwitcherState == STATIC_TAB) {
+            mExperimentalButton.setVisibility(View.VISIBLE);
+        } else {
+            mExperimentalButton.setVisibility(View.INVISIBLE);
+        }
 
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
