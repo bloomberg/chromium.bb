@@ -159,6 +159,21 @@ void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
                                          LayoutSides side_flags,
                                          ChromeDirectionalEdgeInsets insets);
 
+// Adds an optional amount of padding to the top and bottom of a view using a
+// constraint with a lowered priority. One use case is with a collectionview or
+// tableview cell. When the cell is self-sizing, these constraints will kick in
+// and expand the cell to add the desired padding around the inner views, but
+// the padding is optional so that the inner views are not artificially
+// shortened when fixed-size cells cut into that padding.  The padding is added
+// between |outerView| and |innerView|.
+void AddOptionalVerticalPadding(UIView* outerView,
+                                UIView* innerView,
+                                CGFloat padding);
+void AddOptionalVerticalPadding(UIView* outerView,
+                                UIView* topInnerView,
+                                UIView* bottomInnerView,
+                                CGFloat padding);
+
 #pragma mark - Safe Area.
 
 // Returns a safeAreaLayoutGuide for a given view.
