@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
