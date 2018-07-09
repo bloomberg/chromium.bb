@@ -165,10 +165,13 @@ NSEvent* MockTabletEventWithParams(CGEventType type,
 NSEvent* MockMouseEventWithParams(CGEventType mouse_type,
                                   CGPoint location,
                                   CGMouseButton button,
-                                  CGEventMouseSubtype subtype) {
+                                  CGEventMouseSubtype subtype,
+                                  bool is_entering_proximity = false) {
   CGEventRef cg_event =
       CGEventCreateMouseEvent(NULL, mouse_type, location, button);
   CGEventSetIntegerValueField(cg_event, kCGMouseEventSubtype, subtype);
+  CGEventSetIntegerValueField(cg_event, kCGTabletProximityEventEnterProximity,
+                              is_entering_proximity);
   NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
   CFRelease(cg_event);
   return event;
@@ -940,6 +943,36 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenType) {
   ASSERT_EQ("MouseLeave", GetMessageNames(events));
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             GetPointerType(events));
+}
+
+TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeNoTabletEvent) {
+  // Send a NSEvent of a mouse type with a subtype of
+  // NSTabletProximityEventSubtype, which indicates the input device is a pen.
+  NSEvent* event =
+      MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
+                               kCGEventMouseSubtypeTabletProximity, true);
+  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      host_->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseLeave", GetMessageNames(events));
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
+            GetPointerType(events));
+  events.clear();
+
+  event = cocoa_test_event_utils::EnterEvent();
+  [rwhv_mac_->cocoa_view() mouseEntered:event];
+  base::RunLoop().RunUntilIdle();
+  events = host_->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseMove MouseMove", GetMessageNames(events));
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
+            static_cast<const blink::WebMouseEvent*>(
+                events[0]->ToEvent()->Event()->web_event.get())
+                ->pointer_type);
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
+            static_cast<const blink::WebMouseEvent*>(
+                events[1]->ToEvent()->Event()->web_event.get())
+                ->pointer_type);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {

@@ -479,6 +479,13 @@ void ExtractUnderlines(NSAttributedString* string,
     if (subtype != NSTabletPointEventSubtype &&
         subtype != NSTabletProximityEventSubtype) {
       pointerType_ = blink::WebPointerProperties::PointerType::kMouse;
+    } else if (subtype == NSTabletProximityEventSubtype) {
+      isStylusEnteringProximity_ = [theEvent isEnteringProximity];
+      NSPointingDeviceType deviceType = [theEvent pointingDeviceType];
+      // For all tablet events, the pointer type will be pen or eraser.
+      pointerType_ = deviceType == NSEraserPointingDevice
+                         ? blink::WebPointerProperties::PointerType::kEraser
+                         : blink::WebPointerProperties::PointerType::kPen;
     }
   }
 
