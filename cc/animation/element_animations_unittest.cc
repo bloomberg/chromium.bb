@@ -294,7 +294,7 @@ TEST_F(ElementAnimationsTest,
                             CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   const int animation2_id = 2;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-      std::move(curve), animation2_id, 0, TargetProperty::SCROLL_OFFSET));
+      std::move(curve), animation2_id, 1, TargetProperty::SCROLL_OFFSET));
   animation_->AddKeyframeModel(std::move(keyframe_model));
   PushProperties();
   EXPECT_VECTOR2DF_EQ(provider_initial_value,
@@ -3722,7 +3722,7 @@ TEST_F(ElementAnimationsTest, RemoveAndReAddAnimationToTicking) {
   // animations. Remove the animation using RemoveFromTicking().
   animation_->AddKeyframeModel(CreateKeyframeModel(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
-      2, TargetProperty::OPACITY));
+      1, TargetProperty::OPACITY));
   ASSERT_EQ(1u, host_->ticking_animations_for_testing().size());
   animation_->keyframe_effect()->RemoveFromTicking();
   ASSERT_EQ(0u, host_->ticking_animations_for_testing().size());
