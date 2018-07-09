@@ -15,6 +15,9 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/sync/driver/sync_driver_switches.h"
+
+namespace {
 
 using autofill::ServerFieldType;
 using autofill::AutofillKey;
@@ -36,13 +39,40 @@ using sync_timing_helper::TimeMutualSyncCycle;
 static const int kNumKeys = 163;
 static const int kNumProfiles = 163;
 
-class AutofillSyncPerfTest : public SyncTest {
+std::string IntToName(int n) {
+  return base::StringPrintf("Name%d", n);
+}
+
+void ForceSync(int profile) {
+  static int id = 0;
+  ++id;
+  EXPECT_TRUE(bookmarks_helper::AddURL(
+                  profile, 0, bookmarks_helper::IndexedURLTitle(id),
+                  GURL(bookmarks_helper::IndexedURL(id))) != nullptr);
+}
+
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
  public:
-  AutofillSyncPerfTest()
-      : SyncTest(TWO_CLIENT),
-        guid_number_(0),
-        name_number_(0),
-        value_number_(0) {}
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(
+          switches::kSyncUSSAutofillProfile);
+    } else {
+      override_features_.InitAndDisableFeature(
+          switches::kSyncUSSAutofillProfile);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+class AutofillProfileSyncPerfTest : public UssSwitchToggler, public SyncTest {
+ public:
+  AutofillProfileSyncPerfTest()
+      : SyncTest(TWO_CLIENT), guid_number_(0), name_number_(0) {}
 
   // Adds |num_profiles| new autofill profiles to the sync profile |profile|.
   void AddProfiles(int profile, int num_profiles);
@@ -53,15 +83,9 @@ class AutofillSyncPerfTest : public SyncTest {
   // Removes all autofill profiles from |profile|.
   void RemoveProfiles(int profile);
 
-  // Adds |num_keys| new autofill keys to the sync profile |profile|.
-  void AddKeys(int profile, int num_keys);
-
  private:
   // Returns a new unique autofill profile.
   const AutofillProfile NextAutofillProfile();
-
-  // Returns a new unique autofill key.
-  const AutofillKey NextAutofillKey();
 
   // Returns an unused unique guid.
   const std::string NextGUID();
@@ -72,22 +96,12 @@ class AutofillSyncPerfTest : public SyncTest {
   // Returns a new unused unique name.
   const std::string NextName();
 
-  // Returns a unique name based on the input integer |n|.
-  const std::string IntToName(int n);
-
-  // Returns a new unused unique value for autofill entries.
-  const std::string NextValue();
-
-  // Returnes a unique value based on the input integer |n|.
-  const std::string IntToValue(int n);
-
   int guid_number_;
   int name_number_;
-  int value_number_;
-  DISALLOW_COPY_AND_ASSIGN(AutofillSyncPerfTest);
+  DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncPerfTest);
 };
 
-void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
+void AutofillProfileSyncPerfTest::AddProfiles(int profile, int num_profiles) {
   const std::vector<AutofillProfile*>& all_profiles =
       GetAllAutoFillProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
@@ -100,7 +114,7 @@ void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
   SetProfiles(profile, &autofill_profiles);
 }
 
-void AutofillSyncPerfTest::UpdateProfiles(int profile) {
+void AutofillProfileSyncPerfTest::UpdateProfiles(int profile) {
   const std::vector<AutofillProfile*>& all_profiles =
       GetAllAutoFillProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
@@ -112,20 +126,12 @@ void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   SetProfiles(profile, &autofill_profiles);
 }
 
-void AutofillSyncPerfTest::RemoveProfiles(int profile) {
+void AutofillProfileSyncPerfTest::RemoveProfiles(int profile) {
   std::vector<AutofillProfile> empty;
   SetProfiles(profile, &empty);
 }
 
-void AutofillSyncPerfTest::AddKeys(int profile, int num_keys) {
-  std::set<AutofillKey> keys;
-  for (int i = 0; i < num_keys; ++i) {
-    keys.insert(NextAutofillKey());
-  }
-  autofill_helper::AddKeys(profile, keys);
-}
-
-const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
+const AutofillProfile AutofillProfileSyncPerfTest::NextAutofillProfile() {
   AutofillProfile profile;
   autofill::test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
                                          NextName().c_str(), "", "", "", "", "",
@@ -133,43 +139,19 @@ const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
   return profile;
 }
 
-const AutofillKey AutofillSyncPerfTest::NextAutofillKey() {
-  return AutofillKey(NextName().c_str(), NextName().c_str());
-}
-
-const std::string AutofillSyncPerfTest::NextGUID() {
+const std::string AutofillProfileSyncPerfTest::NextGUID() {
   return IntToGUID(guid_number_++);
 }
 
-const std::string AutofillSyncPerfTest::IntToGUID(int n) {
+const std::string AutofillProfileSyncPerfTest::IntToGUID(int n) {
   return base::StringPrintf("00000000-0000-0000-0000-%012X", n);
 }
 
-const std::string AutofillSyncPerfTest::NextName() {
+const std::string AutofillProfileSyncPerfTest::NextName() {
   return IntToName(name_number_++);
 }
 
-const std::string AutofillSyncPerfTest::IntToName(int n) {
-  return base::StringPrintf("Name%d", n);
-}
-
-const std::string AutofillSyncPerfTest::NextValue() {
-  return IntToValue(value_number_++);
-}
-
-const std::string AutofillSyncPerfTest::IntToValue(int n) {
-  return base::StringPrintf("Value%d", n);
-}
-
-void ForceSync(int profile) {
-  static int id = 0;
-  ++id;
-  EXPECT_TRUE(bookmarks_helper::AddURL(
-                  profile, 0, bookmarks_helper::IndexedURLTitle(id),
-                  GURL(bookmarks_helper::IndexedURL(id))) != nullptr);
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
+IN_PROC_BROWSER_TEST_P(AutofillProfileSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfiles(0, kNumProfiles);
@@ -188,7 +170,47 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
   PrintResult("autofill", "delete_autofill_profiles", dt);
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Autofill_P0) {
+// Only parametrize the test above that tests autofill_profile, the test below
+// addresses autocomplete and thus does not need parametrizing.
+INSTANTIATE_TEST_CASE_P(USS,
+                        AutofillProfileSyncPerfTest,
+                        ::testing::Values(false, true));
+
+class AutocompleteSyncPerfTest : public SyncTest {
+ public:
+  AutocompleteSyncPerfTest() : SyncTest(TWO_CLIENT), name_number_(0) {}
+
+  // Adds |num_keys| new autofill keys to the sync profile |profile|.
+  void AddKeys(int profile, int num_keys);
+
+ private:
+  // Returns a new unique autofill key.
+  const AutofillKey NextAutofillKey();
+
+  // Returns a new unused unique name.
+  const std::string NextName();
+
+  int name_number_;
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncPerfTest);
+};
+
+void AutocompleteSyncPerfTest::AddKeys(int profile, int num_keys) {
+  std::set<AutofillKey> keys;
+  for (int i = 0; i < num_keys; ++i) {
+    keys.insert(NextAutofillKey());
+  }
+  autofill_helper::AddKeys(profile, keys);
+}
+
+const AutofillKey AutocompleteSyncPerfTest::NextAutofillKey() {
+  return AutofillKey(NextName().c_str(), NextName().c_str());
+}
+
+const std::string AutocompleteSyncPerfTest::NextName() {
+  return IntToName(name_number_++);
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddKeys(0, kNumKeys);
@@ -205,3 +227,5 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Autofill_P0) {
   ASSERT_EQ(0, GetKeyCount(1));
   PrintResult("autofill", "delete_autofill_keys", dt);
 }
+
+}  // namespace
