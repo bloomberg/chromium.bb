@@ -183,9 +183,16 @@ void RenderWidgetTargeter::QueryClient(
     const gfx::PointF& last_target_location) {
   DCHECK(!request_in_flight_);
 
+  auto* target_client = target->host()->input_target_client();
+  // |target_client| may not be set yet for this |target| on Mac, need to
+  // understand why this happens. https://crbug.com/859492
+  if (!target_client) {
+    FoundTarget(root_view, target, event, latency, target_location, false);
+    return;
+  }
+
   request_in_flight_ = true;
   async_depth_++;
-  auto* target_client = target->host()->input_target_client();
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime",
                             "input,latency");
   async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
