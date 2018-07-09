@@ -17,6 +17,10 @@ namespace message_center {
 class Notification;
 }
 
+namespace views {
+class MenuSeparator;
+}
+
 namespace ash {
 
 class NotificationMenuHeaderView;
@@ -71,8 +75,12 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
   // which is shown.
   std::deque<std::unique_ptr<NotificationItemView>> notification_item_views_;
 
-  // Holds the header and counter texts. Owned by this.
+  // Holds the header and counter texts. Owned by views hierarchy.
   NotificationMenuHeaderView* header_view_ = nullptr;
+
+  // A double separator used to distinguish notifications from context menu
+  // options. Owned by views hierarchy.
+  views::MenuSeparator* double_separator_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuView);
 };
