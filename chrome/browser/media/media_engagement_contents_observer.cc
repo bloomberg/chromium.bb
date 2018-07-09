@@ -76,7 +76,6 @@ MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     MediaEngagementService* service)
     : WebContentsObserver(web_contents),
       service_(service),
-      playback_timer_(new base::Timer(true, false)),
       task_runner_(nullptr) {}
 
 MediaEngagementContentsObserver::~MediaEngagementContentsObserver() = default;
@@ -120,7 +119,7 @@ void MediaEngagementContentsObserver::WebContentsDestroyed() {
 }
 
 void MediaEngagementContentsObserver::ClearPlayerStates() {
-  playback_timer_->Stop();
+  playback_timer_.Stop();
   player_states_.clear();
   significant_players_.clear();
 }
@@ -398,8 +397,7 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
   if (state.muted == false && state.playing == true &&
       state.has_audio == true &&
       audible_players_.find(id) == audible_players_.end()) {
-    audible_players_[id] =
-        std::make_pair(false, base::WrapUnique<base::Timer>(nullptr));
+    audible_players_[id] = std::make_pair(false, nullptr);
   }
 
   bool is_currently_significant =
@@ -450,8 +448,7 @@ void MediaEngagementContentsObserver::UpdatePlayerTimer(
     if (audible_row->second.second)
       return;
 
-    std::unique_ptr<base::Timer> new_timer =
-        std::make_unique<base::Timer>(true, false);
+    auto new_timer = std::make_unique<base::OneShotTimer>();
     if (task_runner_)
       new_timer->SetTaskRunner(task_runner_);
 
@@ -481,22 +478,22 @@ void MediaEngagementContentsObserver::UpdatePageTimer() {
     return;
 
   if (AreConditionsMet()) {
-    if (playback_timer_->IsRunning())
+    if (playback_timer_.IsRunning())
       return;
 
     if (task_runner_)
-      playback_timer_->SetTaskRunner(task_runner_);
+      playback_timer_.SetTaskRunner(task_runner_);
 
-    playback_timer_->Start(
+    playback_timer_.Start(
         FROM_HERE,
         MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
         base::Bind(&MediaEngagementContentsObserver::
                        OnSignificantMediaPlaybackTimeForPage,
                    base::Unretained(this)));
   } else {
-    if (!playback_timer_->IsRunning())
+    if (!playback_timer_.IsRunning())
       return;
-    playback_timer_->Stop();
+    playback_timer_.Stop();
   }
 }
 

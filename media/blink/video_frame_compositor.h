@@ -190,7 +190,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Manages UpdateCurrentFrame() callbacks if |client_| has stopped sending
   // them for various reasons.  Runs on |task_runner_| and is reset
   // after each successful UpdateCurrentFrame() call.
-  base::Timer background_rendering_timer_;
+  base::RetainingOneShotTimer background_rendering_timer_;
 
   // These values are only set and read on the compositor thread.
   cc::VideoFrameProvider::Client* client_;

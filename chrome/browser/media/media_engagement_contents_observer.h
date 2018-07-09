@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_CONTENTS_OBSERVER_H_
 
+#include "base/timer/timer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
@@ -106,7 +107,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   // Timer that will fire when the playback time reaches the minimum for
   // significant media playback.
-  std::unique_ptr<base::Timer> playback_timer_;
+  base::OneShotTimer playback_timer_;
 
   // Set of active players that can produce a significant playback. In other
   // words, whether this set is empty can be used to know if there is a
@@ -216,7 +217,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   // Stores the ids of the players that were audible. The boolean will be true
   // if the player was significant.
-  using AudiblePlayerRow = std::pair<bool, std::unique_ptr<base::Timer>>;
+  using AudiblePlayerRow = std::pair<bool, std::unique_ptr<base::OneShotTimer>>;
   std::map<MediaPlayerId, AudiblePlayerRow> audible_players_;
 
   // The task runner to use when creating timers. It is used only for testing.

@@ -98,7 +98,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   // states by clearing the dispatcher if all proxies have been closed and none
   // have been created within |close_delay_|.  Without this, audio may be lost
   // to a fake stream indefinitely for transient errors.
-  base::Timer reinitialize_timer_;
+  base::RetainingOneShotTimer reinitialize_timer_;
 
   // Callback for registering a debug recording source.
   RegisterDebugRecordingSourceCallback
