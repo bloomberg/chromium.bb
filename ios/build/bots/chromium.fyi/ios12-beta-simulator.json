@@ -1,7 +1,8 @@
 {
   "comments": [
     "Run tests on iOS12beta track on 64-bit iOS 12 simulators.",
-    "Note: Xcode 10.3 requires Mac OS 10.13.4 so .4 is specified for 'host os'."
+    "Note: Xcode 10 requires a minimum of OSX 10.13.4 so .5 is specified for",
+    "'host os'."
   ],
   "xcode build version": "9C40b",
   "gn_args": [
