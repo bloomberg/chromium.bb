@@ -44,6 +44,10 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   static CSSValueList* CreateSlashSeparated() {
     return new CSSValueList(kSlashSeparator);
   }
+  static CSSValueList* CreateWithSeparatorFrom(const CSSValueList& list) {
+    return new CSSValueList(
+        static_cast<ValueListSeparator>(list.value_list_separator_));
+  }
 
   iterator begin() { return values_.begin(); }
   iterator end() { return values_.end(); }

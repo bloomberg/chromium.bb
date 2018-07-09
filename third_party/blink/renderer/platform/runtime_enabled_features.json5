@@ -317,6 +317,12 @@
       name: "CSSOverscrollBehavior",
       status: "stable",
     },
+    // Do not ship CSSPaintAPIArguments without shipping CSSVariables2 first.
+    //
+    // CSSPaintAPIArguments depends on parts of the the 'CSS Properties and
+    // Values API Level 1', specification (section 'Supported syntax strings').
+    // That specification is implemented behind the runtime enabled feature
+    // CSSVariables2.
     {
       name: "CSSPaintAPIArguments",
       status: "experimental",
