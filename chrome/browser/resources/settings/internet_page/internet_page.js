@@ -245,7 +245,8 @@ Polymer({
       // entire list for now.
       selector = '* /deep/ #networkList';
     } else if (this.detailType_) {
-      selector = '* /deep/ #' + this.detailType_ + ' /deep/ .subpage-arrow';
+      selector =
+          '* /deep/ #' + this.detailType_ + ' /deep/ .subpage-arrow button';
     }
     if (selector && this.querySelector(selector))
       this.focusConfig_.set(oldRoute.path, selector);

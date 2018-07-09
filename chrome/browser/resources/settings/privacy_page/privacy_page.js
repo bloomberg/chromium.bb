@@ -100,13 +100,13 @@ Polymer({
         if (settings.routes.CERTIFICATES) {
           map.set(
               settings.routes.CERTIFICATES.path,
-              '#manageCertificates .subpage-arrow');
+              '#manageCertificates .subpage-arrow button');
         }
         // </if>
         if (settings.routes.SITE_SETTINGS) {
           map.set(
               settings.routes.SITE_SETTINGS.path,
-              '#site-settings-subpage-trigger .subpage-arrow');
+              '#site-settings-subpage-trigger .subpage-arrow button');
         }
         return map;
       },

@@ -41,7 +41,7 @@ Polymer({
         if (settings.routes.DATETIME_TIMEZONE_SUBPAGE)
           map.set(
               settings.routes.DATETIME_TIMEZONE_SUBPAGE.path,
-              '#timeZoneSettingsTrigger .subpage-arrow');
+              '#timeZoneSettingsTrigger .subpage-arrow button');
         return map;
       },
     },

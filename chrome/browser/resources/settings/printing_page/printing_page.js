@@ -24,13 +24,13 @@ Polymer({
         if (settings.routes.CLOUD_PRINTERS) {
           map.set(
               settings.routes.CLOUD_PRINTERS.path,
-              '#cloudPrinters .subpage-arrow');
+              '#cloudPrinters .subpage-arrow button');
         }
         // <if expr="chromeos">
         if (settings.routes.CUPS_PRINTERS) {
           map.set(
               settings.routes.CUPS_PRINTERS.path,
-              '#cupsPrinters .subpage-arrow');
+              '#cupsPrinters .subpage-arrow button');
         }
         // </if>
         return map;

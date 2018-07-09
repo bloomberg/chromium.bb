@@ -101,14 +101,14 @@ Polymer({
         if (settings.routes.EDIT_DICTIONARY) {
           map.set(
               settings.routes.EDIT_DICTIONARY.path,
-              '#spellCheckCollapse .subpage-arrow');
+              '#spellCheckCollapse .subpage-arrow button');
         }
         // </if>
         // <if expr="chromeos">
         if (settings.routes.INPUT_METHODS) {
           map.set(
               settings.routes.INPUT_METHODS.path,
-              '#inputMethodsCollapse .subpage-arrow');
+              '#inputMethodsCollapse .subpage-arrow button');
         }
         // </if>
         return map;
