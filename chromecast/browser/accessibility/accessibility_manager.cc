@@ -5,6 +5,7 @@
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 
 #include "chromecast/graphics/accessibility/focus_ring_controller.h"
+#include "chromecast/graphics/accessibility/partial_magnification_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/public/activation_client.h"
@@ -26,6 +27,9 @@ AccessibilityManager::AccessibilityManager(
   touch_exploration_manager_ = std::make_unique<TouchExplorationManager>(
       root_window, activation_client,
       accessibility_focus_ring_controller_.get());
+  triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
+  magnification_controller_ =
+      std::make_unique<PartialMagnificationController>(root_window);
 }
 
 AccessibilityManager::~AccessibilityManager() {}
@@ -77,6 +81,19 @@ void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
 aura::WindowTreeHost* AccessibilityManager::window_tree_host() const {
   DCHECK(window_tree_host_);
   return window_tree_host_;
+}
+
+void AccessibilityManager::SetMagnificationGestureEnabled(bool enabled) {
+  triple_tap_detector_->set_enabled(enabled);
+}
+
+bool AccessibilityManager::IsMagnificationGestureEnabled() const {
+  return triple_tap_detector_->enabled();
+}
+
+void AccessibilityManager::OnTripleTap(const gfx::Point& tap_location) {
+  magnification_controller_->SetEnabled(
+      !magnification_controller_->IsEnabled());
 }
 
 }  // namespace shell

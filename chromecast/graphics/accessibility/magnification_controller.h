@@ -16,6 +16,9 @@ class MagnificationController {
   // Turns magnifier feature on or off.
   virtual void SetEnabled(bool enabled) = 0;
 
+  // Returns true if magnification feature is on.
+  virtual bool IsEnabled() const = 0;
+
   // Adjust the ratio of the scale of magnification.
   virtual void SetMagnificationScale(float magnification_scale) = 0;
 };

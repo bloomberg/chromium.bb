@@ -10,6 +10,7 @@
 
 #include "chromecast/browser/accessibility/touch_exploration_manager.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
+#include "chromecast/graphics/triple_tap_detector.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -18,15 +19,16 @@ class WindowTreeHost;
 namespace chromecast {
 
 class FocusRingController;
+class MagnificationController;
 
 namespace shell {
 
 // Responsible for delegating chromecast browser process accessibility functions
 // to the responsible party.
-class AccessibilityManager {
+class AccessibilityManager : public TripleTapDetectorDelegate {
  public:
   explicit AccessibilityManager(aura::WindowTreeHost* window_tree_host);
-  ~AccessibilityManager();
+  ~AccessibilityManager() override;
 
   // Sets the focus ring color.
   void SetFocusRingColor(SkColor color);
@@ -63,12 +65,23 @@ class AccessibilityManager {
   // Get the window tree host this AccessibilityManager was created with.
   aura::WindowTreeHost* window_tree_host() const;
 
+  // Enable or disable the triple-tap gesture to turn on magnification.
+  void SetMagnificationGestureEnabled(bool enabled);
+
+  // Returns whether the magnification gesture is currently enabled.
+  bool IsMagnificationGestureEnabled() const;
+
+  // TripleTapDetectorDelegate implementation
+  void OnTripleTap(const gfx::Point& tap_location) override;
+
  private:
   std::unique_ptr<FocusRingController> focus_ring_controller_;
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   aura::WindowTreeHost* window_tree_host_;
   std::unique_ptr<TouchExplorationManager> touch_exploration_manager_;
+  std::unique_ptr<TripleTapDetector> triple_tap_detector_;
+  std::unique_ptr<MagnificationController> magnification_controller_;
 };
 
 }  // namespace shell
