@@ -114,5 +114,11 @@
   /**
    * The filename prefix for a third party wallpaper.
    */
-  ThirdPartyWallpaperPrefix: 'third_party_'
+  ThirdPartyWallpaperPrefix: 'third_party_',
+
+  /**
+   * The name of the custom event that's fired when the wallpaper is changed by
+   * third-party apps.
+   */
+  WallpaperChangedBy3rdParty: 'wallpaperChangedBy3rdParty'
 };
