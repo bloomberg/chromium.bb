@@ -321,7 +321,8 @@ def check_file(root_path, rel_path):
 
 
 def check_files(root, files):
-  gen = (check_file(root, f) for f in files if not is_ignored(f))
+  gen = (check_file(root, f) for f in files
+         if not is_ignored(f) and not os.path.isdir(f))
   return filter(None, gen)
 
 
