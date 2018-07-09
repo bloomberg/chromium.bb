@@ -81,13 +81,21 @@ class AccountConsistencyModeManager : public KeyedService {
   static void SetDiceMigrationOnStartup(PrefService* prefs, bool migrate);
 
   // Returns true if migration can happen on the next startup.
-  bool IsReadyForDiceMigration();
+  static bool IsReadyForDiceMigration(Profile* profile);
 #endif
 
   // Returns the account consistency method for the current profile.
   signin::AccountConsistencyMethod GetAccountConsistencyMethod();
 
+  // Computes the account consistency method for the current profile. This is
+  // only called from the constructor, the account consistency method cannot
+  // change during the lifetime of a profile.
+  static signin::AccountConsistencyMethod ComputeAccountConsistencyMethod(
+      Profile* profile);
+
   Profile* profile_;
+  signin::AccountConsistencyMethod account_consistency_;
+  bool account_consistency_initialized_;
 
   // By default, DICE is not enabled in builds lacking an API key. Set to true
   // for tests.
