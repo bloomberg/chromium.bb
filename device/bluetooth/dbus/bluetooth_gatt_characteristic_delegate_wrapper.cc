@@ -49,4 +49,17 @@ void BluetoothGattCharacteristicDelegateWrapper::StopNotifications(
                                                 characteristic_);
 }
 
+void BluetoothGattCharacteristicDelegateWrapper::PrepareSetValue(
+    const dbus::ObjectPath& device_path,
+    const std::vector<uint8_t>& value,
+    int offset,
+    bool has_subsequent_request,
+    const base::Closure& callback,
+    const device::BluetoothLocalGattService::Delegate::ErrorCallback&
+        error_callback) {
+  service()->GetDelegate()->OnCharacteristicPrepareWriteRequest(
+      GetDeviceWithPath(device_path), characteristic_, value, offset,
+      has_subsequent_request, callback, error_callback);
+}
+
 }  // namespace bluez

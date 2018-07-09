@@ -51,6 +51,14 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback);
+  void PrepareSetValue(
+      const dbus::ObjectPath& device_path,
+      const std::vector<uint8_t>& value,
+      int offset,
+      bool has_subsequent_write,
+      const base::Closure& callback,
+      const device::BluetoothLocalGattService::Delegate::ErrorCallback&
+          error_callback);
 
   // Method to simulate starting and stopping notifications.
   bool NotificationsChange(bool start);

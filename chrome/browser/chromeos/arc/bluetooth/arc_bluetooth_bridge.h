@@ -162,6 +162,15 @@ class ArcBluetoothBridge
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
 
+  void OnCharacteristicPrepareWriteRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value,
+      int offset,
+      bool has_subsequent_write,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+
   void OnDescriptorReadRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
@@ -448,6 +457,9 @@ class ArcBluetoothBridge
       const ErrorCallback& error_callback);
 
   // Common code for OnCharacteristicWriteRequest and OnDescriptorWriteRequest
+  // |is_prepare| is only set when a local characteristic receives a prepare
+  // write request, and |has_subsequent_write| indicates whether there are
+  // subsequent prepare write requests following the current one.
   template <class LocalGattAttribute>
   void OnGattAttributeWriteRequest(
       const device::BluetoothDevice* device,
@@ -455,6 +467,8 @@ class ArcBluetoothBridge
       const std::vector<uint8_t>& value,
       int offset,
       mojom::BluetoothGattDBAttributeType attribute_type,
+      bool is_prepare,
+      bool has_subsequent_write,
       const base::Closure& success_callback,
       const ErrorCallback& error_callback);
 
@@ -518,6 +532,19 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device,
                   bool include_cached_device) const;
+
+  void OnGattServerPrepareWrite(mojom::BluetoothAddressPtr addr,
+                                bool has_subsequent_write,
+                                const base::Closure& success_callback,
+                                const ErrorCallback& error_callback,
+                                mojom::BluetoothGattStatus status);
+
+  void SendDevice(const device::BluetoothDevice* device) const;
+
+  // Shows a pairing dialog to handle incoming pairing requests.
+  // Returns the pairing delegate of the dialog UI.
+  device::BluetoothDevice::PairingDelegate* ShowPairingDialog(
+      device::BluetoothDevice* device);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 

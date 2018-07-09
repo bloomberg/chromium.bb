@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 12
+// Next MinVersion: 13
 
 module arc.mojom;
 
@@ -409,7 +409,7 @@ interface BluetoothHost {
       => (BluetoothGattStatus status);
 };
 
-// Next Method ID: 20
+// Next Method ID: 21
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -467,7 +467,12 @@ interface BluetoothInstance {
       int32 attribute_handle,
       int32 offset,
       array<uint8> value,
-      [MinVersion=9] BluetoothGattDBAttributeType attribute_type)
+      [MinVersion=9] BluetoothGattDBAttributeType attribute_type,
+      [MinVersion=12] bool is_prepare)
+      => (BluetoothGattStatus status);
+  [MinVersion=12] RequestGattExecuteWrite@20(
+      BluetoothAddress address,
+      bool execute)
       => (BluetoothGattStatus status);
   [MinVersion=10] OnMTUReceived@19(BluetoothAddress remote_addr, uint16 mtu);
 

@@ -224,6 +224,41 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
   run_loop.Run();
 }
 
+void BluetoothTestBlueZ::
+    SimulateLocalGattCharacteristicValuePrepareWriteRequest(
+        BluetoothDevice* from_device,
+        BluetoothLocalGattCharacteristic* characteristic,
+        const std::vector<uint8_t>& value_to_write,
+        int offset,
+        bool has_subsequent_write,
+        const base::Closure& success_callback,
+        const base::Closure& error_callback) {
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattCharacteristicServiceProvider*
+      characteristic_provider =
+          fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
+              characteristic_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          characteristic->GetService());
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_characteristic(characteristic);
+
+  base::RunLoop run_loop;
+  characteristic_provider->PrepareSetValue(
+      GetDevicePath(from_device), value_to_write, offset, has_subsequent_write,
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), success_callback),
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
+  run_loop.Run();
+}
+
 void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
     BluetoothDevice* from_device,
     BluetoothLocalGattDescriptor* descriptor,

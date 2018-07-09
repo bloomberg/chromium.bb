@@ -843,6 +843,31 @@ void ArcBluetoothBridge::OnGattAttributeReadRequest(
       base::BindOnce(&OnGattServerRead, success_callback, error_callback));
 }
 
+void ArcBluetoothBridge::OnGattServerPrepareWrite(
+    mojom::BluetoothAddressPtr addr,
+    bool has_subsequent_write,
+    const base::Closure& success_callback,
+    const ErrorCallback& error_callback,
+    mojom::BluetoothGattStatus status) {
+  bool success = (status == mojom::BluetoothGattStatus::GATT_SUCCESS);
+  const base::Closure& callback = (success ? success_callback : error_callback);
+  if (success && has_subsequent_write) {
+    callback.Run();
+    return;
+  }
+
+  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), RequestGattExecuteWrite);
+  if (bluetooth_instance == nullptr) {
+    error_callback.Run();
+    return;
+  }
+
+  bluetooth_instance->RequestGattExecuteWrite(
+      std::move(addr), success,
+      base::BindOnce(&OnGattServerWrite, callback, error_callback));
+}
+
 template <class LocalGattAttribute>
 void ArcBluetoothBridge::OnGattAttributeWriteRequest(
     const BluetoothDevice* device,
@@ -850,6 +875,8 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
     const std::vector<uint8_t>& value,
     int offset,
     mojom::BluetoothGattDBAttributeType attribute_type,
+    bool is_prepare,
+    bool has_subsequent_write,
     const base::Closure& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -860,12 +887,19 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
     return;
   }
 
+  GattStatusCallback callback =
+      is_prepare ? base::BindOnce(
+                       &ArcBluetoothBridge::OnGattServerPrepareWrite,
+                       weak_factory_.GetWeakPtr(),
+                       mojom::BluetoothAddress::From(device->GetAddress()),
+                       has_subsequent_write, success_callback, error_callback)
+                 : base::BindOnce(&OnGattServerWrite, success_callback,
+                                  error_callback);
   DCHECK(gatt_handle_.find(attribute->GetIdentifier()) != gatt_handle_.end());
-
   bluetooth_instance->RequestGattWrite(
       mojom::BluetoothAddress::From(device->GetAddress()),
       gatt_handle_[attribute->GetIdentifier()], offset, value, attribute_type,
-      base::BindOnce(&OnGattServerWrite, success_callback, error_callback));
+      is_prepare, std::move(callback));
 }
 
 void ArcBluetoothBridge::OnCharacteristicReadRequest(
@@ -889,8 +923,23 @@ void ArcBluetoothBridge::OnCharacteristicWriteRequest(
     const ErrorCallback& error_callback) {
   OnGattAttributeWriteRequest(
       device, characteristic, value, offset,
-      mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC, callback,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
+      /* is_prepare = */ false, /* has_subsequent_write, = */ false, callback,
       error_callback);
+}
+
+void ArcBluetoothBridge::OnCharacteristicPrepareWriteRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value,
+    int offset,
+    bool has_subsequent_write,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  OnGattAttributeWriteRequest(
+      device, characteristic, value, offset,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
+      /* is_prepare = */ true, has_subsequent_write, callback, error_callback);
 }
 
 void ArcBluetoothBridge::OnDescriptorReadRequest(
@@ -914,7 +963,8 @@ void ArcBluetoothBridge::OnDescriptorWriteRequest(
     const ErrorCallback& error_callback) {
   OnGattAttributeWriteRequest(
       device, descriptor, value, offset,
-      mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR, callback,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR,
+      /* is_prepare = */ false, /* has_subsequent_write = */ false, callback,
       error_callback);
 }
 

@@ -88,6 +88,36 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_PrepareWriteLocalCharacteristicValue \
+  PrepareWriteLocalCharacteristicValue
+#else
+#define MAYBE_PrepareWriteLocalCharacteristicValue \
+  DISABLED_PrepareWriteLocalCharacteristicValue
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       MAYBE_PrepareWriteLocalCharacteristicValue) {
+  const uint64_t kValueToWrite = 0x7331ul;
+  // Clear existing value.
+  SimulateLocalGattCharacteristicValueWriteRequest(
+      device_, write_characteristic_.get(), GetValue(0),
+      GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
+
+  // Reliable write session is going on.
+  SimulateLocalGattCharacteristicValuePrepareWriteRequest(
+      device_, write_characteristic_.get(), GetValue(402289342ul), 0, true,
+      GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
+  EXPECT_EQ(0ul, delegate_->last_written_value_);
+  EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
+
+  // Reliable write session ends.
+  SimulateLocalGattCharacteristicValuePrepareWriteRequest(
+      device_, write_characteristic_.get(), GetValue(kValueToWrite), 0, false,
+      GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
+  EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
+  EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
+}
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_ReadLocalCharacteristicValueFail ReadLocalCharacteristicValueFail
 #else
 #define MAYBE_ReadLocalCharacteristicValueFail \

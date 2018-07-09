@@ -73,6 +73,19 @@ class BluetoothGattAttributeValueDelegate {
   // descriptors.
   virtual void StopNotifications(const dbus::ObjectPath& device_path) = 0;
 
+  // This method will be called, when a remote device requests to prepare
+  // write the value of the exported GATT characteristic. Invoke |callback| to
+  // report that the request was successful. Invoke |error_callback| to report
+  // a failure. This will never be called for descriptors.
+  virtual void PrepareSetValue(
+      const dbus::ObjectPath& device_path,
+      const std::vector<uint8_t>& value,
+      int offset,
+      bool has_subsequent_request,
+      const base::Closure& callback,
+      const device::BluetoothLocalGattService::Delegate::ErrorCallback&
+          error_callback) {}
+
  protected:
   // Gets the Bluetooth device object on the current service's adapter with
   // the given object path.

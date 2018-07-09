@@ -319,6 +319,14 @@ class BluetoothLowEnergyEventRouter
       int offset,
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
+  void OnCharacteristicPrepareWriteRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value,
+      int offset,
+      bool has_subsequent_request,
+      const base::Closure& callback,
+      const Delegate::ErrorCallback& error_callback) override;
   void OnDescriptorReadRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,

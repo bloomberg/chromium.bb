@@ -70,6 +70,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
   void WriteValue(dbus::MethodCall* method_call,
                   dbus::ExportedObject::ResponseSender response_sender);
 
+  // Called by BlueZ when a remote central is requesting to prepare the reliable
+  // write value of this characteristic.
+  void PrepareWriteValue(dbus::MethodCall* method_call,
+                         dbus::ExportedObject::ResponseSender response_sender);
+
   // Called by BlueZ when a remote central is requesting to start a
   // notification session for this characteristic.
   void StartNotify(dbus::MethodCall* method_call,

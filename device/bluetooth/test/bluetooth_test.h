@@ -378,6 +378,17 @@ class BluetoothTestBase : public testing::Test {
       const base::Closure& success_callback,
       const base::Closure& error_callback) {}
 
+  // Simulates prepare write a value to a locally hosted GATT characteristic by
+  // a remote central device.
+  virtual void SimulateLocalGattCharacteristicValuePrepareWriteRequest(
+      BluetoothDevice* from_device,
+      BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value_to_write,
+      int offset,
+      bool has_subsequent_write,
+      const base::Closure& success_callback,
+      const base::Closure& error_callback) {}
+
   // Simulates reading a value from a locally hosted GATT descriptor by a
   // remote central device. Returns the value that was read from the local
   // GATT descriptor in the value callback.
