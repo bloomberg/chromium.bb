@@ -103,9 +103,14 @@ void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
 }
 
 void VerifyCommitCount(const DataTypeDebugInfoEmitter* emitter,
-                       int expected_count) {
-  EXPECT_EQ(expected_count, emitter->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(expected_count, emitter->GetCommitCounters().num_commits_success);
+                       int expected_creation_count,
+                       int expected_deletion_count) {
+  EXPECT_EQ(expected_creation_count,
+            emitter->GetCommitCounters().num_creation_commits_attempted);
+  EXPECT_EQ(expected_deletion_count,
+            emitter->GetCommitCounters().num_deletion_commits_attempted);
+  EXPECT_EQ(expected_creation_count + expected_deletion_count,
+            emitter->GetCommitCounters().num_commits_success);
 }
 
 }  // namespace
@@ -510,7 +515,8 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_EQ(nullptr, worker()->GetContribution(INT_MAX));
   EXPECT_EQ(0U, server()->GetNumCommitMessages());
   EXPECT_EQ(0U, processor()->GetNumCommitResponses());
-  VerifyCommitCount(emitter(), 0);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/0,
+                    /*expected_deletion_count=*/0);
 
   worker()->NudgeForCommit();
   EXPECT_EQ(1, nudge_handler()->GetNumCommitNudges());
@@ -535,7 +541,8 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_FALSE(entity.deleted());
   EXPECT_EQ(kValue1, entity.specifics().preference().value());
 
-  VerifyCommitCount(emitter(), 1);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/1,
+                    /*expected_deletion_count=*/0);
 
   // Exhaustively verify the commit response returned to the model thread.
   ASSERT_EQ(1U, processor()->GetNumCommitResponses());
@@ -559,11 +566,13 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
 
   // We can't delete an entity that was never committed.
   // Step 1 is to create and commit a new entity.
-  VerifyCommitCount(emitter(), 0);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/0,
+                    /*expected_deletion_count=*/0);
   processor()->SetCommitRequest(GenerateCommitRequest(kTag1, kValue1));
   DoSuccessfulCommit();
 
-  VerifyCommitCount(emitter(), 1);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/1,
+                    /*expected_deletion_count=*/0);
 
   ASSERT_TRUE(processor()->HasCommitResponse(kHash1));
   const CommitResponseData& initial_commit_response =
@@ -574,7 +583,8 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   processor()->SetCommitRequest(GenerateDeleteRequest(kTag1));
   DoSuccessfulCommit();
 
-  VerifyCommitCount(emitter(), 2);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/1,
+                    /*expected_deletion_count=*/1);
 
   // Verify the SyncEntity sent in the commit message.
   ASSERT_EQ(2U, server()->GetNumCommitMessages());
@@ -1141,7 +1151,8 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
   EXPECT_TRUE(entity.specifics().has_user_event());
   EXPECT_EQ(id, entity.specifics().user_event().event_time_usec());
 
-  VerifyCommitCount(emitter(), 1);
+  VerifyCommitCount(emitter(), /*expected_creation_count=*/1,
+                    /*expected_deletion_count=*/0);
 
   ASSERT_EQ(1U, processor()->GetNumCommitResponses());
   EXPECT_EQ(1U, processor()->GetNthCommitResponse(0).size());

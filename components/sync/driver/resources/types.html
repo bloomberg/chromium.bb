@@ -4,9 +4,12 @@
       <table id="type-counters-table">
         <thead>
           <tr>
-            <th class='type'>Type</th>
-            <th>Total Entries</th>
-
+            <th class='type' rowspan="2">Type</th>
+            <th rowspan="2">Total Entries</th>
+            <th colspan="8">Updates</th>
+            <th colspan="7">Commits</th>
+          </tr>
+          <tr>
             <th>Updates Received</th>
             <th>Reflected Updates Received</th>
             <th>Tombstone Updates Received</th>
@@ -18,7 +21,10 @@
             <th>Server Overwrite Conflicts</th>
             <th>Local Overwrite Conflicts</th>
 
-            <th>Commit Attempts</th>
+            <th>Creation Commit Attempts</th>
+            <th>Deletion Commit Attempts</th>
+            <th>Update Commit Attempts</th>
+            <th>All Commit Attempts</th>
             <th>Commit Successes</th>
             <th>Commit Conflicts</th>
             <th>Commit Errors</th>
@@ -40,6 +46,9 @@
             <td jscontent="counters.numServerOverwrites || 0">0</td>
             <td jscontent="counters.numLocalOverwrites || 0">0</td>
 
+            <td jscontent="counters.numCreationCommitsAttempted || 0">0</td>
+            <td jscontent="counters.numDeletionCommitsAttempted || 0">0</td>
+            <td jscontent="counters.numUpdateCommitsAttempted || 0">0</td>
             <td jscontent="counters.numCommitsAttempted || 0">0</td>
             <td jscontent="counters.numCommitsSuccess || 0">0</td>
             <td jscontent="counters.numCommitsConflict || 0">0</td>
