@@ -385,6 +385,7 @@ void SubmenuView::ShowAt(Widget* parent,
                          const gfx::Rect& bounds,
                          bool do_capture) {
   if (host_) {
+    host_->SetMenuHostBounds(bounds);
     host_->ShowMenuHost(do_capture);
   } else {
     host_ = new MenuHost(this);
