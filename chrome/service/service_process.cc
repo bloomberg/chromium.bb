@@ -131,16 +131,15 @@ void PrepareRestartOnCrashEnviroment(
 ServiceProcess::ServiceProcess()
     : shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-      main_message_loop_(NULL),
       enabled_services_(0),
       update_available_(false) {
   DCHECK(!g_service_process);
   g_service_process = this;
 }
 
-bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
+bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
                                 const base::CommandLine& command_line,
-                                ServiceProcessState* state) {
+                                std::unique_ptr<ServiceProcessState> state) {
 #if defined(USE_GLIB)
   // g_type_init has been deprecated since version 2.35.
 #if !GLIB_CHECK_VERSION(2, 35, 0)
@@ -148,8 +147,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   g_type_init();
 #endif
 #endif  // defined(USE_GLIB)
-  main_message_loop_ = message_loop;
-  service_process_state_.reset(state);
+  quit_closure_ = std::move(quit_closure);
+  service_process_state_ = std::move(state);
 
   // Initialize TaskScheduler.
   constexpr int kMaxBackgroundThreads = 1;
@@ -300,8 +299,7 @@ void ServiceProcess::Shutdown() {
 }
 
 void ServiceProcess::Terminate() {
-  main_message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(quit_closure_).Run();
 }
 
 void ServiceProcess::OnShutdown() {

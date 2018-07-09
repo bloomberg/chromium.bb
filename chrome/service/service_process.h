@@ -50,11 +50,11 @@ class ServiceProcess : public ServiceIPCServer::Client,
   ServiceProcess();
   ~ServiceProcess() override;
 
-  // Initialize the ServiceProcess with the message loop that it should run on.
-  // ServiceProcess takes ownership of |state|.
-  bool Initialize(base::MessageLoopForUI* message_loop,
+  // Initialize the ServiceProcess. |quit_closure| will be run when the service
+  // process is ready to exit.
+  bool Initialize(base::OnceClosure quit_closure,
                   const base::CommandLine& command_line,
-                  ServiceProcessState* state);
+                  std::unique_ptr<ServiceProcessState> state);
 
   bool Teardown();
 
@@ -123,8 +123,8 @@ class ServiceProcess : public ServiceIPCServer::Client,
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
 
-  // Pointer to the main message loop that host this object.
-  base::MessageLoop* main_message_loop_;
+  // Closure to run to cause the main message loop to exit.
+  base::OnceClosure quit_closure_;
 
   // Count of currently enabled services in this process.
   int enabled_services_;
