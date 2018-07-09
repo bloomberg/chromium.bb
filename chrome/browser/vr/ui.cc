@@ -85,10 +85,12 @@ void Ui::SetWebVrMode(bool enabled) {
   if (enabled) {
     model_->web_vr.has_received_permissions = false;
     model_->web_vr.state = kWebVrAwaitingFirstFrame;
-    model_->push_mode(kModeWebVr);
+    if (!model_->web_vr_enabled())
+      model_->push_mode(kModeWebVr);
   } else {
     model_->web_vr.state = kWebVrNoTimeoutPending;
-    model_->pop_mode();
+    if (model_->web_vr_enabled())
+      model_->pop_mode();
   }
 }
 
