@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,15 +12,18 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
@@ -105,16 +107,16 @@ bool RulesMonitorService::HasAnyRegisteredRulesets() const {
 
 bool RulesMonitorService::HasRegisteredRuleset(
     const Extension* extension) const {
-  return extensions_with_rulesets_.find(extension) !=
-         extensions_with_rulesets_.end();
+  return extension && extensions_with_rulesets_.find(extension->id()) !=
+                          extensions_with_rulesets_.end();
 }
 
 RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
     : registry_observer_(this),
-      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+      file_task_runner_(GetExtensionFileTaskRunner()),
+      info_map_(ExtensionSystem::Get(browser_context)->info_map()),
+      prefs_(ExtensionPrefs::Get(browser_context)) {
   registry_observer_.Add(ExtensionRegistry::Get(browser_context));
 }
 
@@ -123,22 +125,19 @@ RulesMonitorService::~RulesMonitorService() = default;
 void RulesMonitorService::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
-
   int ruleset_checksum;
-  if (!prefs->GetDNRRulesetChecksum(extension->id(), &ruleset_checksum))
+  if (!prefs_->GetDNRRulesetChecksum(extension->id(), &ruleset_checksum))
     return;
 
-  URLPatternSet allowed_pages = prefs->GetDNRAllowedPages(extension->id());
+  URLPatternSet allowed_pages = prefs_->GetDNRAllowedPages(extension->id());
 
   DCHECK(IsAPIAvailable());
-  extensions_with_rulesets_.insert(extension);
+  extensions_with_rulesets_.insert(extension->id());
 
   base::OnceClosure task = base::BindOnce(
       &LoadRulesetOnFileTaskRunner, extension->id(), ruleset_checksum,
       file_util::GetIndexedRulesetPath(extension->path()),
-      std::move(allowed_pages),
-      base::WrapRefCounted(ExtensionSystem::Get(browser_context)->info_map()));
+      std::move(allowed_pages), base::WrapRefCounted(info_map_));
   file_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
@@ -147,7 +146,7 @@ void RulesMonitorService::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionReason reason) {
   // Return early if the extension does not have an indexed ruleset.
-  if (!extensions_with_rulesets_.erase(extension))
+  if (!extensions_with_rulesets_.erase(extension->id()))
     return;
 
   DCHECK(IsAPIAvailable());
@@ -156,11 +155,21 @@ void RulesMonitorService::OnExtensionUnloaded(
   // even though we don't need to do any file IO. Posting the task directly to
   // the IO thread here can lead to RulesetManager::RemoveRuleset being called
   // before a corresponding RulesetManager::AddRuleset.
-  base::OnceClosure task = base::BindOnce(
-      &UnloadRulesetOnFileTaskRunner, extension->id(),
-      base::WrapRefCounted(ExtensionSystem::Get(browser_context)->info_map()));
+  base::OnceClosure task =
+      base::BindOnce(&UnloadRulesetOnFileTaskRunner, extension->id(),
+                     base::WrapRefCounted(info_map_));
   file_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
 }  // namespace declarative_net_request
+
+template <>
+void BrowserContextKeyedAPIFactory<
+    declarative_net_request::RulesMonitorService>::
+    DeclareFactoryDependencies() {
+  DependsOn(ExtensionRegistryFactory::GetInstance());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+}
+
 }  // namespace extensions
