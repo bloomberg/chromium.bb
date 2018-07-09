@@ -455,12 +455,6 @@ bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
           line_offset = line_info.LineBfcOffset().line_offset -
                         ConstraintSpace().BfcOffset().line_offset;
         }
-        if (IsRtl(Style().Direction())) {
-          LayoutUnit container_inline_size =
-              ConstraintSpace().AvailableSize().inline_size;
-          LayoutUnit line_end_offset = line_offset + line_info.AvailableWidth();
-          line_offset = container_inline_size - line_end_offset;
-        }
         line_offset += line_info.TextIndent();
 
         // We need to subtract the line offset, in order to ignore
