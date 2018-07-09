@@ -588,6 +588,17 @@ var ENTRIES = {
     },
   }),
 
+  teamDriveAHostedFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    targetPath: 'teamDriveAHostedDoc',
+    mimeType: 'application/vnd.google-apps.document',
+    lastModifiedTime: 'Apr 10, 2013, 4:20 PM',
+    nameText: 'teamDriveAHostedDoc.gdoc',
+    sizeText: '--',
+    typeText: 'Google document',
+    teamDriveName: 'Team Drive A',
+  }),
+
   teamDriveB: new TestEntryInfo({
     type: EntryType.TEAM_DRIVE,
     teamDriveName: 'Team Drive B',

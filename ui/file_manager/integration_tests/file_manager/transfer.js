@@ -39,6 +39,12 @@ class TransferLocationInfo {
      * @type {Array<TestEntryInfo>}
      */
     this.initialEntries = opts.initialEntries;
+
+    /**
+     * Whether the test is expected to fail, i.e. transferring to a folder
+     * without correct permissions.
+     */
+    this.expectFailure = opts.expectFailure || false;
   }
 }
 
@@ -160,26 +166,34 @@ function copyBetweenVolumes(targetFile, src, dst, opt_dstExpectedDialogText) {
         setTimeout(this.next, 0);
       }
     },
-    // Wait for the file list to change.
+    // Wait for the file list to change, if the test is expected to pass.
     function(result) {
       if (opt_dstExpectedDialogText !== undefined) {
         chrome.test.assertTrue(result);
       }
+
+      const dstContentsAfterPaste = dstContents.slice();
       var ignoreFileSize = src.volumeName == 'drive_shared_with_me' ||
           src.volumeName == 'drive_offline' ||
           dst.volumeName == 'drive_shared_with_me' ||
           dst.volumeName == 'drive_offline';
-      var dstContentsAfterPaste = dstContents.slice();
-      var pasteFile = targetFile.getExpectedRow();
-      for (var i = 0; i < dstContentsAfterPaste.length; i++) {
-        if (dstContentsAfterPaste[i][0] === pasteFile[0]) {
-          // Replace the last '.' in filename with ' (1).'.
-          // e.g. 'my.note.txt' -> 'my.note (1).txt'
-          pasteFile[0] = pasteFile[0].replace(/\.(?=[^\.]+$)/, ' (1).');
-          break;
+
+      // If we expected the transfer to succeed, add the pasted file to the list
+      // of expected rows.
+      if (!dst.expectFailure) {
+        var pasteFile = targetFile.getExpectedRow();
+        // Check if we need to add (1) to the filename, in the case of a
+        // duplicate file.
+        for (var i = 0; i < dstContentsAfterPaste.length; i++) {
+          if (dstContentsAfterPaste[i][0] === pasteFile[0]) {
+            // Replace the last '.' in filename with ' (1).'.
+            // e.g. 'my.note.txt' -> 'my.note (1).txt'
+            pasteFile[0] = pasteFile[0].replace(/\.(?=[^\.]+$)/, ' (1).');
+            break;
+          }
         }
+        dstContentsAfterPaste.push(pasteFile);
       }
-      dstContentsAfterPaste.push(pasteFile);
       remoteCall.waitForFiles(appId, dstContentsAfterPaste, {
         ignoreFileSize: ignoreFileSize,
         ignoreLastModifiedTime: true
@@ -309,6 +323,24 @@ testcase.transferFromTeamDriveToDownloads = function() {
       }),
       new TransferLocationInfo(
           {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}));
+};
+
+/**
+ * Tests that a gdoc file cannot be transferred from a Team Drive to a local
+ * drive (e.g. Downloads).
+ */
+testcase.transferHostedFileFromTeamDriveToDownloads = function() {
+  copyBetweenVolumes(
+      ENTRIES.teamDriveAHostedFile, new TransferLocationInfo({
+        volumeName: 'Team Drive A',
+        isTeamDrive: true,
+        initialEntries: TEAM_DRIVE_ENTRY_SET
+      }),
+      new TransferLocationInfo({
+        volumeName: 'downloads',
+        initialEntries: BASIC_LOCAL_ENTRY_SET,
+        expectFailure: true
+      }));
 };
 
 /**
