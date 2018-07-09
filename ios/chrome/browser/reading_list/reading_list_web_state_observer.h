@@ -80,7 +80,7 @@ class ReadingListWebStateObserver
   web::WebState* web_state_ = nullptr;
 
   ReadingListModel* reading_list_model_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::RepeatingTimer> timer_;
   GURL pending_url_;
   int try_number_;
   bool last_load_was_offline_;

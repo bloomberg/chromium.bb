@@ -179,7 +179,7 @@ enum AuthenticationState {
   // Signin pending state.
   AuthenticationState _activityIndicatorNextState;
   std::unique_ptr<base::ElapsedTimer> _pendingStateTimer;
-  std::unique_ptr<base::Timer> _leavingPendingStateTimer;
+  std::unique_ptr<base::OneShotTimer> _leavingPendingStateTimer;
 
   // Identity selected state.
   SigninConfirmationViewController* _confirmationVC;
