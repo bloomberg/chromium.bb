@@ -38,6 +38,12 @@ constexpr float kScrimBlur = 5.f;
 constexpr int kScrimTransitionInMs = 250;
 constexpr int kScrimRoundRectRadiusDp = 4;
 
+// The threshold to compute the vertical distance to create/reset the scrim. The
+// scrim is placed below the current dragged window. This value is smaller than
+// kIndicatorsThreshouldRatio to prevent the dragged window to merge back to
+// its source window during its source window's animation.
+constexpr float kScrimResetThresholdRatio = 0.05;
+
 // Returns the window selector if overview mode is active, otherwise returns
 // nullptr.
 WindowSelector* GetWindowSelector() {
@@ -61,6 +67,15 @@ std::unique_ptr<views::Widget> CreateScrim(aura::Window* dragged_window,
       /*stack_on_top=*/false);
   widget->SetBounds(bounds);
   return widget;
+}
+
+// When the dragged window is dragged past this value, a transparent scrim will
+// be created to place below the current dragged window to prevent the dragged
+// window to merge into any browser window beneath it and when it's dragged back
+// toward the top of the screen, the scrim will be destroyed.
+int GetScrimVerticalThreshold(const gfx::Rect& work_area_bounds) {
+  return work_area_bounds.y() +
+         work_area_bounds.height() * kScrimResetThresholdRatio;
 }
 
 }  // namespace
@@ -226,9 +241,7 @@ void TabletModeBrowserWindowDragController::UpdateScrim(
   const gfx::Rect work_area_bounds = display::Screen::GetScreen()
                                          ->GetDisplayNearestWindow(GetTarget())
                                          .work_area();
-  if (location_in_screen.y() <
-      TabletModeWindowDragDelegate::GetIndicatorsVerticalThreshold(
-          work_area_bounds)) {
+  if (location_in_screen.y() < GetScrimVerticalThreshold(work_area_bounds)) {
     // Remove |scrim_| entirely so that the dragged window can be merged back
     // to the source window when the dragged window is dragged back toward the
     // top area of the screen.

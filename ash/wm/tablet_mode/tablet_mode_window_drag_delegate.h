@@ -32,8 +32,8 @@ class ASH_EXPORT TabletModeWindowDragDelegate {
   // will show up.
   static int GetIndicatorsVerticalThreshold(const gfx::Rect& work_area_bounds);
 
-  // When the dragged window is dragged past this value, a scrim will show up,
-  // indicating the dragged window will be maximized after releasing.
+  // When the dragged window is dragged past this value, a blured scrim will
+  // show up, indicating the dragged window will be maximized after releasing.
   static int GetMaximizeVerticalThreshold(const gfx::Rect& work_area_bounds);
 
   // Called when a browser/app window start/end being dragging around.
