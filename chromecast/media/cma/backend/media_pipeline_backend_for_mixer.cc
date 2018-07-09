@@ -189,11 +189,11 @@ MediaPipelineBackendForMixer::GetTaskRunner() const {
 #if defined(OS_LINUX)
 int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
   timespec now = {0, 0};
-#if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+#if BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
 #else
   clock_gettime(CLOCK_MONOTONIC, &now);
-#endif
+#endif // MEDIA_CLOCK_MONOTONIC_RAW
   return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
 }
 #elif defined(OS_FUCHSIA)

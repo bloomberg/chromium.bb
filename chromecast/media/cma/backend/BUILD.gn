@@ -8,10 +8,6 @@ import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
 declare_args() {
-  # Set true to use raw timestamps on non-desktop cast build.
-  # ALSA version equal or later than 1.0.29 support this function.
-  use_alsa_monotonic_raw_tstamps = use_alsa && !is_cast_desktop_build
-
   system_owns_volume =
       use_alsa && !enable_assistant && chromecast_branding != "google"
 }
@@ -92,7 +88,7 @@ buildflag_header("audio_buildflags") {
   header = "audio_buildflags.h"
 
   flags = [
-    "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps",
+    "MEDIA_CLOCK_MONOTONIC_RAW=$media_clock_monotonic_raw",
     "SYSTEM_OWNS_VOLUME=$system_owns_volume",
   ]
 }
