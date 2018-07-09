@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -317,11 +318,25 @@ void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
 
 void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
                                              ExceptionState& exception_state) {
-  // Bust the MemoryCache to ensure script requests reach the browser-side
-  // and get added to and retrieved from the ServiceWorker's script cache.
-  // FIXME: Revisit in light of the solution to crbug/388375.
-  for (Vector<String>::const_iterator it = urls.begin(); it != urls.end(); ++it)
-    GetExecutionContext()->RemoveURLFromMemoryCache(CompleteURL(*it));
+  InstalledScriptsManager* installed_scripts_manager =
+      GetThread()->GetInstalledScriptsManager();
+  for (auto& url : urls) {
+    KURL completed_url = CompleteURL(url);
+    // Counts the usage of importScripts() of new scripts after installation
+    // because we want to deprecate such usage (https://crbug.com/719052).
+    // This will undercount because installed scripts manager is only provided
+    // to installed service workers on startup, but this gives us an idea of
+    // the usage.
+    if (installed_scripts_manager &&
+        !installed_scripts_manager->IsScriptInstalled(completed_url)) {
+      DCHECK(installed_scripts_manager->IsScriptInstalled(Url()));
+      CountFeature(WebFeature::kServiceWorkerImportScriptNotInstalled);
+    }
+    // Bust the MemoryCache to ensure script requests reach the browser-side
+    // and get added to and retrieved from the ServiceWorker's script cache.
+    // FIXME: Revisit in light of the solution to crbug/388375.
+    RemoveURLFromMemoryCache(completed_url);
+  }
   WorkerGlobalScope::importScripts(urls, exception_state);
 }
 
