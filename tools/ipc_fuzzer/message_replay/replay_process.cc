@@ -180,11 +180,10 @@ void ReplayProcess::SendNextMessage() {
 }
 
 void ReplayProcess::Run() {
-  timer_.reset(new base::Timer(false, true));
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromMilliseconds(1),
-                base::Bind(&ReplayProcess::SendNextMessage,
-                           base::Unretained(this)));
+  base::RepeatingTimer timer;
+  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1),
+              base::BindRepeating(&ReplayProcess::SendNextMessage,
+                                  base::Unretained(this)));
   base::RunLoop().Run();
 }
 
