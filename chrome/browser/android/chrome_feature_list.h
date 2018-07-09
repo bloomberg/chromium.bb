@@ -24,7 +24,7 @@ extern const base::Feature kCCTModule;
 extern const base::Feature kCCTParallelRequest;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kCCTRedirectPreconnect;
-extern const base::Feature kChromeDuplexFeature;
+extern const base::Feature kChromeDuetFeature;
 extern const base::Feature kChromeHomeSwipeLogic;
 extern const base::Feature kChromeHomeSwipeLogicVelocity;
 extern const base::Feature kChromeMemexFeature;

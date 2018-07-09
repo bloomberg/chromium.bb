@@ -97,7 +97,7 @@ import java.util.Locale;
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
         ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
-        ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUPLEX})
+        ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUET})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
