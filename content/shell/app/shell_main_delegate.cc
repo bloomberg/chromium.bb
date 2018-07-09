@@ -271,6 +271,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kUseFakeUIForMediaStream);
     command_line.AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
+    // Always disable the unsandbox GPU process for DX12 and Vulkan Info
+    // collection to avoid interference. This GPU process is launched 15
+    // seconds after chrome starts.
+    command_line.AppendSwitch(
+        switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+
     if (!BlinkTestPlatformInitialize()) {
       *exit_code = 1;
       return true;

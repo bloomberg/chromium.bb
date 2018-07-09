@@ -29,6 +29,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "gpu/config/gpu_switches.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_ANDROID)
@@ -130,6 +131,12 @@ int LayoutTestBrowserMain(
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kContentShellDataPath,
       browser_context_path_for_layout_tests.GetPath().MaybeAsASCII());
+
+  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
+  // collection to avoid interference. This GPU process is launched 15
+  // seconds after chrome starts.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
 
 #if defined(OS_ANDROID)
   content::ScopedAndroidConfiguration android_configuration;
