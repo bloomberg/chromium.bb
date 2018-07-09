@@ -70,10 +70,6 @@
     {
       "object": "NGPaintFragment",
       "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
     }
   ]
 }

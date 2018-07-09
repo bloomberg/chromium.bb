@@ -50,7 +50,7 @@
         {
           "object": "LayoutView #document",
           "rect": [8, 108, 300, 300],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "HorizontalScrollbar",

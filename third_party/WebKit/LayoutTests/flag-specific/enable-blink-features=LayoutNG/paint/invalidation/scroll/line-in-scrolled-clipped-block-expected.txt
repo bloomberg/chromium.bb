@@ -15,18 +15,17 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "LayoutTableRow TR",
-      "position": [8, 8],
-      "bounds": [74, 24],
-      "backgroundColor": "#FF0000",
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [0, 0, 37, 23],
-          "reason": "appeared"
+          "rect": [8, 8, 100, 19],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [8, 8, 100, 19],
+          "reason": "chunk disappeared"
         }
       ]
     }
@@ -34,7 +33,11 @@
   "objectPaintInvalidations": [
     {
       "object": "NGPaintFragment",
-      "reason": "style change"
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
     }
   ]
 }
