@@ -552,6 +552,7 @@
     'sql_unittests': {},
     'storage_unittests': {},
     'ui_base_unittests': {},
+    'ui_touch_selection_unittests': {},
     'unit_tests': {
       'android_swarming': {
         'hard_timeout': 900,
@@ -1958,7 +1959,6 @@
   'non_mac_chromium_gtests': {
     # It's unclear why at least some of these aren't run on macOS.
     'latency_unittests': {},
-    'ui_touch_selection_unittests': {},
   },
 
   'ozone_linux_gtests': {
