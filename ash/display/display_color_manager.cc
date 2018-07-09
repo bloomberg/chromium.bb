@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -19,6 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
@@ -326,8 +327,11 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
   // TODO: enable QuirksManager for mash. http://crbug.com/728748. Some tests
   // don't create the Shell when running this code, hence the
   // Shell::HasInstance() conditional.
-  if (Shell::HasInstance() && Shell::GetAshConfig() == Config::MASH)
+  if (Shell::HasInstance() &&
+      (base::FeatureList::IsEnabled(::features::kMash) ||
+       base::FeatureList::IsEnabled(::features::kOopAsh))) {
     return false;
+  }
 
   const bool valid_product_code =
       display->product_code() != display::DisplaySnapshot::kInvalidProductCode;

@@ -8,6 +8,10 @@
 #include "base/component_export.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace ui {
 namespace ws2 {
 
@@ -23,6 +27,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
   // ui::mojom::GpuRequest.
   virtual void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) = 0;
+
+#if defined(USE_OZONE)
+  // Registers the gpu-related interfaces needed by Ozone.
+  virtual void RegisterOzoneGpuInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) = 0;
+#endif
 };
 
 }  // namespace ws2

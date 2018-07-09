@@ -18,6 +18,9 @@ assert(is_chromeos)
 assert(use_aura)
 assert(enable_hidpi)
 
+# Chromebooks use ozone/DRM. linux-chromeos uses ozone/X11.
+assert(use_ozone)
+
 component("ash") {
   sources = [
     "accelerators/accelerator_commands.cc",
