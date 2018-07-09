@@ -1693,6 +1693,7 @@ test("ash_unittests") {
     "app_menu/notification_menu_controller_unittest.cc",
     "app_menu/notification_menu_view_unittest.cc",
     "assistant/assistant_controller_unittest.cc",
+    "assistant/util/deep_link_util_unittest.cc",
     "autoclick/autoclick_unittest.cc",
     "cursor_unittest.cc",
     "detachable_base/detachable_base_handler_unittest.cc",
