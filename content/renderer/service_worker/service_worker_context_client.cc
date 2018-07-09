@@ -865,17 +865,22 @@ void ServiceWorkerContextClient::WillEvaluateClassicScript() {
 void ServiceWorkerContextClient::DidEvaluateClassicScript(bool success) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_end_time = base::TimeTicks::Now();
-  (*instance_host_)->OnScriptEvaluated(success);
 
-  // Schedule a task to send back WorkerStarted asynchronously,
-  // so that at the time we send it we can be sure that the
-  // worker run loop has been started.
+  blink::mojom::ServiceWorkerStartStatus status =
+      success ? blink::mojom::ServiceWorkerStartStatus::kNormalCompletion
+              : blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion;
+
+  // Schedule a task to send back WorkerStarted asynchronously, so we can be
+  // sure that the worker is really started.
+  // TODO(falken): Is this really needed? Probably if kNormalCompletion, the
+  // worker is definitely running so we can SendStartWorker immediately.
   worker_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerContextClient::SendWorkerStarted,
-                                GetWeakPtr()));
+                                GetWeakPtr(), status));
 
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "EVALUATE_SCRIPT", this,
-                                  "Status", success ? "Success" : "Failure");
+                                  "Status",
+                                  ServiceWorkerUtils::MojoEnumToString(status));
 }
 
 void ServiceWorkerContextClient::DidInitializeWorkerContext(
@@ -1479,9 +1484,11 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
   proxy_->DispatchPaymentRequestEvent(event_id, webEventData);
 }
 
-void ServiceWorkerContextClient::SendWorkerStarted() {
+void ServiceWorkerContextClient::SendWorkerStarted(
+    blink::mojom::ServiceWorkerStartStatus status) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  (*instance_host_)->OnStarted(std::move(start_timing_));
+
+  (*instance_host_)->OnStarted(status, std::move(start_timing_));
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
 

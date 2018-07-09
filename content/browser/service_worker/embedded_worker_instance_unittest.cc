@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -120,13 +121,15 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
 
   struct EventLog {
     EventType type;
-    EmbeddedWorkerStatus status;
+    base::Optional<EmbeddedWorkerStatus> status;
+    base::Optional<blink::mojom::ServiceWorkerStartStatus> start_status;
   };
 
-  void RecordEvent(
-      EventType type,
-      EmbeddedWorkerStatus status = EmbeddedWorkerStatus::STOPPED) {
-    EventLog log = {type, status};
+  void RecordEvent(EventType type,
+                   base::Optional<EmbeddedWorkerStatus> status = base::nullopt,
+                   base::Optional<blink::mojom::ServiceWorkerStartStatus>
+                       start_status = base::nullopt) {
+    EventLog log = {type, status, start_status};
     events_.push_back(log);
   }
 
@@ -134,7 +137,9 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   void OnStartWorkerMessageSent() override {
     RecordEvent(START_WORKER_MESSAGE_SENT);
   }
-  void OnStarted() override { RecordEvent(STARTED); }
+  void OnStarted(blink::mojom::ServiceWorkerStartStatus status) override {
+    RecordEvent(STARTED, base::nullopt, status);
+  }
   void OnStopped(EmbeddedWorkerStatus old_status) override {
     RecordEvent(STOPPED, old_status);
   }
@@ -354,7 +359,6 @@ TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
   worker->AddObserver(this);
 
   // Start should succeed.
-  base::RunLoop run_loop;
   mojom::EmbeddedWorkerStartParamsPtr params =
       CreateStartParams(service_worker_version_id, pattern, url);
   StartWorker(worker.get(), std::move(params));
@@ -378,6 +382,8 @@ TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
   EXPECT_EQ(STARTED, events_[2].type);
+  EXPECT_EQ(blink::mojom::ServiceWorkerStartStatus::kNormalCompletion,
+            events_[2].start_status.value());
   EXPECT_EQ(STOPPED, events_[3].type);
 }
 
@@ -535,7 +541,7 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(DETACHED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
 TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
@@ -565,7 +571,7 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   // "STARTED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(DETACHED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
 TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
@@ -598,7 +604,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(STOPPED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
   events_.clear();
 
   // Restart the worker.
@@ -694,7 +700,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   // "STARTED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(STOPPED, events_[0].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, events_[0].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, events_[0].status.value());
   events_.clear();
 
   // Restart the worker.
@@ -773,7 +779,7 @@ TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
   EXPECT_EQ(DETACHED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status.value());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
@@ -822,7 +828,7 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
   EXPECT_EQ(DETACHED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status.value());
 }
 
 class StoreMessageInstanceClient
@@ -981,6 +987,45 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
     worker->Stop();
     base::RunLoop().RunUntilIdle();
   }
+}
+
+// Starts the worker with kAbruptCompletion status.
+class AbruptCompletionHelper : public EmbeddedWorkerTestHelper {
+ public:
+  AbruptCompletionHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~AbruptCompletionHelper() override = default;
+
+  void OnResumeAfterDownload(int embedded_worker_id) override {
+    SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+    SimulateWorkerStarted(
+        embedded_worker_id,
+        blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion);
+  }
+};
+
+// Tests that kAbruptCompletion is the OnStarted() status when the
+// renderer reports abrupt completion.
+TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  helper_ = std::make_unique<AbruptCompletionHelper>();
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  const int64_t version_id = pair.second->version_id();
+  std::unique_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker(pair.second.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+  worker->AddObserver(this);
+
+  StartWorker(worker.get(), CreateStartParams(version_id, scope, url));
+
+  ASSERT_EQ(3u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  EXPECT_EQ(STARTED, events_[2].type);
+  EXPECT_EQ(blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
+            events_[2].start_status.value());
+  worker->Stop();
 }
 
 INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,

@@ -19,6 +19,14 @@ struct BLINK_COMMON_EXPORT
       blink::mojom::ServiceWorkerEventStatus status);
 };
 
+template <>
+struct BLINK_COMMON_EXPORT
+    TypeConverter<blink::ServiceWorkerStatusCode,
+                  blink::mojom::ServiceWorkerStartStatus> {
+  static blink::ServiceWorkerStatusCode Convert(
+      blink::mojom::ServiceWorkerStartStatus status);
+};
+
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_

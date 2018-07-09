@@ -11813,7 +11813,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="SENT_START_WORKER"/>
   <int value="4" label="SCRIPT_DOWNLOADING"/>
   <int value="5" label="SCRIPT_LOADED"/>
-  <int value="6" label="SCRIPT_EVALUATED"/>
+  <int value="6" label="SCRIPT_EVALUATED (obsolete)"/>
   <int value="7" label="THREAD_STARTED"/>
   <int value="8" label="SCRIPT_READ_STARTED"/>
   <int value="9" label="SCRIPT_READ_FINISHED"/>

@@ -66,8 +66,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     SENT_START_WORKER = 3,
     SCRIPT_DOWNLOADING = 4,
     SCRIPT_LOADED = 5,
-    SCRIPT_EVALUATED = 6,
-    // THREAD_STARTED happens after SCRIPT_LOADED and before SCRIPT_EVALUATED
+    // SCRIPT_EVALUATED = 6,  // Obsolete
+    // THREAD_STARTED happens after SCRIPT_LOADED
     THREAD_STARTED = 7,
     // Script read happens after SENT_START_WORKER and before SCRIPT_LOADED
     // (installed scripts only)
@@ -92,7 +92,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     virtual void OnRegisteredToDevToolsManager() {}
     virtual void OnStartWorkerMessageSent() {}
     virtual void OnThreadStarted() {}
-    virtual void OnStarted() {}
+    virtual void OnStarted(blink::mojom::ServiceWorkerStartStatus status) {}
 
     // Called when status changed to STOPPING. The renderer has been sent a Stop
     // IPC message and OnStopped() will be called upon successful completion.
@@ -270,10 +270,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Notifies the corresponding provider host that the thread has started and is
   // ready to receive messages.
   void OnThreadStarted(int thread_id) override;
-  // Fires the callback passed to Start().
-  void OnScriptEvaluated(bool success) override;
   // Changes the internal worker status from STARTING to RUNNING.
-  void OnStarted(mojom::EmbeddedWorkerStartTimingPtr start_timing) override;
+  void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
+                 mojom::EmbeddedWorkerStartTimingPtr start_timing) override;
   // Resets the embedded worker instance to the initial state. This will change
   // the internal status from STARTING or RUNNING to STOPPED.
   void OnStopped() override;

@@ -1028,12 +1028,14 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
-    if (!force_start_worker_failure_) {
-      EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
-    } else {
+    if (force_start_worker_failure_) {
       SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
-      SimulateWorkerScriptEvaluated(embedded_worker_id, false);
+      SimulateWorkerStarted(
+          embedded_worker_id,
+          blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion);
+      return;
     }
+    EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
   }
 
   // ServiceWorkerRegistration::Listener overrides

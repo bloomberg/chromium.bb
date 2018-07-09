@@ -27,6 +27,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -249,8 +250,8 @@ class EmbeddedWorkerTestHelper {
                                   base::OnceClosure callback);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
   void SimulateWorkerThreadStarted(int thread_id, int embedded_worker_id);
-  void SimulateWorkerScriptEvaluated(int embedded_worker_id, bool success);
-  void SimulateWorkerStarted(int embedded_worker_id);
+  void SimulateWorkerStarted(int embedded_worker_id,
+                             blink::mojom::ServiceWorkerStartStatus status);
   void SimulateWorkerStopped(int embedded_worker_id);
 
   EmbeddedWorkerRegistry* registry();

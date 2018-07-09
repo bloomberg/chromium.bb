@@ -949,13 +949,22 @@ void ServiceWorkerVersion::OnStarting() {
     observer.OnRunningStateChanged(this);
 }
 
-void ServiceWorkerVersion::OnStarted() {
+void ServiceWorkerVersion::OnStarted(
+    blink::mojom::ServiceWorkerStartStatus start_status) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
   RestartTick(&idle_time_);
 
+  // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
+  // most start callbacks will consider to be a failure. But the worker thread
+  // is running, and the spec considers it a success, so the callbacks should
+  // change to treat kErrorScriptEvaluated as success, or use
+  // ServiceWorkerStartStatus directly.
+  blink::ServiceWorkerStatusCode status =
+      mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
+
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  FinishStartWorker(blink::ServiceWorkerStatusCode::kOk);
+  FinishStartWorker(status);
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
 
@@ -1000,12 +1009,6 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
         ServiceWorkerMetrics::StopStatus::DETACH_BY_REGISTRY);
   }
   OnStoppedInternal(old_status);
-}
-
-void ServiceWorkerVersion::OnScriptEvaluateFailed() {
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-  FinishStartWorker(DeduceStartWorkerFailureReason(
-      blink::ServiceWorkerStatusCode::kErrorScriptEvaluateFailed));
 }
 
 void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {

@@ -479,11 +479,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   static bool IsInstalled(ServiceWorkerVersion::Status status);
 
-  // For ServiceWorkerRegisterJob to know if the worker started up with an
-  // uncaught runtime error occurred.
-  // TODO(falken): Move to a status in OnStarted().
-  void OnScriptEvaluateFailed();
-
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerReadFromCacheJobTest;
@@ -614,7 +609,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // EmbeddedWorkerInstance::Listener overrides:
   void OnThreadStarted() override;
   void OnStarting() override;
-  void OnStarted() override;
+  void OnStarted(blink::mojom::ServiceWorkerStartStatus status) override;
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerStatus old_status) override;
   void OnDetached(EmbeddedWorkerStatus old_status) override;
