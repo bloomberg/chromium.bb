@@ -599,61 +599,20 @@
     "isolated_scripts": [
       {
         "args": [
-          "heap_profiling.mobile.disabled",
+          "--smoke-test-mode",
+          "--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo",
           "-v",
           "--output-format=chartjson",
           "--browser=android-chromium"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.disabled",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead",
-              "os": "Android"
-            }
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
           ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "heap_profiling.mobile.native",
-          "-v",
-          "--output-format=chartjson",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.native",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead",
-              "os": "Android"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "heap_profiling.mobile.pseudo",
-          "-v",
-          "--output-format=chartjson",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "heap_profiling.mobile.pseudo",
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "heap_profiling.mobile",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

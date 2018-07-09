@@ -1596,16 +1596,23 @@
   'leak_detection_isolated_scripts': {
     'memory.leak_detection': {
       'args': [
-        'memory.leak_detection',
+        '--benchmarks=memory.leak_detection',
+        '--smoke-test-mode',
         '--upload-results',
         '--output-format=histograms',
         '--browser=release',
         '--xvfb'
       ],
-      'isolate_name': 'telemetry_perf_tests',
+      'isolate_name': 'performance_test_suite',
       'override_compile_targets': [
-        'telemetry_perf_tests',
+        'performance_test_suite',
       ],
+      'merge': {
+        'args': [
+          '--smoke-test-mode',
+        ],
+        'script': '//tools/perf/process_perf_results.py',
+      },
       'swarming': {
         'expiration': 36000,
         'hard_timeout': 10800,
@@ -1692,32 +1699,21 @@
   },
 
   'memory_infra_isolated_scripts': {
-    'heap_profiling.mobile.disabled': {
+    'heap_profiling.mobile': {
       'args': [
-        'heap_profiling.mobile.disabled',
+        '--smoke-test-mode',
+        '--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo',
         '-v',
         '--output-format=chartjson',
         '--browser=android-chromium',
       ],
-      'isolate_name': 'telemetry_perf_tests',
-    },
-    'heap_profiling.mobile.native': {
-      'args': [
-        'heap_profiling.mobile.native',
-        '-v',
-        '--output-format=chartjson',
-        '--browser=android-chromium',
-      ],
-      'isolate_name': 'telemetry_perf_tests',
-    },
-    'heap_profiling.mobile.pseudo': {
-      'args': [
-        'heap_profiling.mobile.pseudo',
-        '-v',
-        '--output-format=chartjson',
-        '--browser=android-chromium',
-      ],
-      'isolate_name': 'telemetry_perf_tests',
+      'isolate_name': 'performance_test_suite',
+      'merge': {
+        'args': [
+          '--smoke-test-mode',
+        ],
+        'script': '//tools/perf/process_perf_results.py',
+      },
     },
   },
 
