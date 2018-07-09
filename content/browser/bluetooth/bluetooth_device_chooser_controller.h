@@ -147,7 +147,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
 
   // Automatically stops Bluetooth discovery a set amount of time after it was
   // started.
-  base::Timer discovery_session_timer_;
+  base::RetainingOneShotTimer discovery_session_timer_;
 
   // The last discovery session to be started.
   // TODO(ortuno): This should be null unless there is an active discovery
