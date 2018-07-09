@@ -172,7 +172,7 @@ bool Scrollbar::ThumbWillBeUnderMouse() const {
   return PressedPos() >= thumb_pos && PressedPos() < thumb_pos + thumb_length;
 }
 
-void Scrollbar::AutoscrollPressedPart(double delay) {
+void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
   if (!scrollable_area_)
     return;
 
@@ -211,7 +211,7 @@ void Scrollbar::AutoscrollPressedPart(double delay) {
   }
 }
 
-void Scrollbar::StartTimerIfNeeded(double delay) {
+void Scrollbar::StartTimerIfNeeded(TimeDelta delay) {
   // Don't do anything for the thumb.
   if (pressed_part_ == kThumbPart)
     return;

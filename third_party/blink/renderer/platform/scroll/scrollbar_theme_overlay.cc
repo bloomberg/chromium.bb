@@ -82,25 +82,25 @@ bool ScrollbarThemeOverlay::UsesOverlayScrollbars() const {
   return true;
 }
 
-double ScrollbarThemeOverlay::OverlayScrollbarFadeOutDelaySeconds() const {
+TimeDelta ScrollbarThemeOverlay::OverlayScrollbarFadeOutDelay() const {
   // TODO(bokan): Unit tests run without a theme engine. This is normally fine
   // because they expect to use ScrollbarThemeMock which doesn't use a theme
   // engine.  If overlays are turned on though, this class is used even if mock
   // scrollbars are on. We should either provide mock out a web theme engine for
   // unit tests or provide a mock version of this class.
   if (!Platform::Current()->ThemeEngine())
-    return 0.0;
+    return TimeDelta();
   WebThemeEngine::ScrollbarStyle style;
   Platform::Current()->ThemeEngine()->GetOverlayScrollbarStyle(&style);
-  return style.fade_out_delay_seconds;
+  return style.fade_out_delay;
 }
 
-double ScrollbarThemeOverlay::OverlayScrollbarFadeOutDurationSeconds() const {
+TimeDelta ScrollbarThemeOverlay::OverlayScrollbarFadeOutDuration() const {
   if (!Platform::Current()->ThemeEngine())
-    return 0.0;
+    return TimeDelta();
   WebThemeEngine::ScrollbarStyle style;
   Platform::Current()->ThemeEngine()->GetOverlayScrollbarStyle(&style);
-  return style.fade_out_duration_seconds;
+  return style.fade_out_duration;
 }
 
 int ScrollbarThemeOverlay::ThumbLength(const Scrollbar& scrollbar) {

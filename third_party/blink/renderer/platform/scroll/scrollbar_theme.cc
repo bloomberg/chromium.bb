@@ -252,14 +252,14 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
 #endif
 }
 
-double ScrollbarTheme::OverlayScrollbarFadeOutDelaySeconds() const {
+TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDelay() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return 0.0;
+  return TimeDelta();
 }
 
-double ScrollbarTheme::OverlayScrollbarFadeOutDurationSeconds() const {
+TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDuration() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return 0.0;
+  return TimeDelta();
 }
 
 int ScrollbarTheme::ThumbPosition(const Scrollbar& scrollbar,
@@ -360,6 +360,14 @@ void ScrollbarTheme::SplitTrack(const Scrollbar& scrollbar,
         track_rect.X(), track_rect.Y() + before_thumb_rect.Height(),
         track_rect.Width(), track_rect.MaxY() - before_thumb_rect.MaxY());
   }
+}
+
+TimeDelta ScrollbarTheme::InitialAutoscrollTimerDelay() {
+  return TimeDelta::FromMilliseconds(250);
+}
+
+TimeDelta ScrollbarTheme::AutoscrollTimerDelay() {
+  return TimeDelta::FromMilliseconds(50);
 }
 
 ScrollbarTheme& ScrollbarTheme::DeprecatedStaticGetTheme() {

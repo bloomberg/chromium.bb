@@ -203,9 +203,9 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
             ScrollbarTheme* = nullptr);
 
   void AutoscrollTimerFired(TimerBase*);
-  void StartTimerIfNeeded(double delay);
+  void StartTimerIfNeeded(TimeDelta delay);
   void StopTimerIfNeeded();
-  void AutoscrollPressedPart(double delay);
+  void AutoscrollPressedPart(TimeDelta delay);
   ScrollDirectionPhysical PressedPartScrollDirectionPhysical();
   ScrollGranularity PressedPartScrollGranularity();
 

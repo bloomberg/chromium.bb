@@ -38,17 +38,14 @@ namespace blink {
 class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
  public:
   ScrollbarThemeOverlayMock()
-      : ScrollbarThemeOverlay(3, 4, kDisallowHitTest, Color(128, 128, 128)),
-        delay_in_seconds_(0.0) {}
+      : ScrollbarThemeOverlay(3, 4, kDisallowHitTest, Color(128, 128, 128)) {}
 
-  double OverlayScrollbarFadeOutDelaySeconds() const override {
-    return delay_in_seconds_;
+  TimeDelta OverlayScrollbarFadeOutDelay() const override { return delay_; }
+  TimeDelta OverlayScrollbarFadeOutDuration() const override {
+    return TimeDelta();
   }
-  double OverlayScrollbarFadeOutDurationSeconds() const override { return 0.0; }
 
-  void SetOverlayScrollbarFadeOutDelay(double delay_in_seconds) {
-    delay_in_seconds_ = delay_in_seconds;
-  }
+  void SetOverlayScrollbarFadeOutDelay(TimeDelta delay) { delay_ = delay; }
 
   void PaintThumb(GraphicsContext& gc,
                   const Scrollbar& scrollbar,
@@ -66,7 +63,7 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
   int MinimumThumbLength(const Scrollbar&) override { return 7; }
 
  private:
-  double delay_in_seconds_;
+  TimeDelta delay_;
   bool IsMockTheme() const final { return true; }
 };
 
