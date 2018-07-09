@@ -398,7 +398,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
     canvas->scale(1, -1);
   }
   DrawForContainer(canvas, PaintFlags(), FloatSize(container_size), 1,
-                   draw_dst_rect, draw_src_rect, url);
+                   FloatRect(draw_dst_rect), FloatRect(draw_src_rect), url);
   return recorder.finishRecordingAsPicture();
 }
 
@@ -414,7 +414,7 @@ void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
   PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording(container_rect);
   DrawForContainer(canvas, PaintFlags(), FloatSize(container_rect.Size()), 1,
-                   container_rect, container_rect, url);
+                   FloatRect(container_rect), FloatRect(container_rect), url);
   builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect,
                            PaintImage::GetNextContentId());
 }

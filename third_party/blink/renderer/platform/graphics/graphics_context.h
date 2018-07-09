@@ -189,6 +189,10 @@ class PLATFORM_EXPORT GraphicsContext {
   void FillEllipse(const FloatRect&);
   void StrokeEllipse(const FloatRect&);
 
+  void FillRect(const IntRect&);
+  void FillRect(const IntRect&,
+                const Color&,
+                SkBlendMode = SkBlendMode::kSrcOver);
   void FillRect(const FloatRect&);
   void FillRect(const FloatRect&,
                 const Color&,

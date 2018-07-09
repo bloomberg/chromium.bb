@@ -153,7 +153,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   if (!image || image->IsNull())
     return;
 
-  FloatRect src_rect = image->Rect();
+  FloatRect src_rect = FloatRect(image->Rect());
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
   if (!content_rect.Contains(dest_rect)) {
@@ -161,8 +161,8 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     pixel_snapped_content_rect.Intersect(pixel_snapped_dest_rect);
     if (pixel_snapped_content_rect.IsEmpty())
       return;
-    src_rect =
-        MapRect(pixel_snapped_content_rect, pixel_snapped_dest_rect, src_rect);
+    src_rect = MapRect(FloatRect(pixel_snapped_content_rect),
+                       FloatRect(pixel_snapped_dest_rect), src_rect);
     pixel_snapped_dest_rect = pixel_snapped_content_rect;
   }
 
@@ -181,7 +181,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
                 image->paint_image_id())
           : Image::kUnspecifiedDecode;
   context.DrawImage(
-      image.get(), decode_mode, pixel_snapped_dest_rect, &src_rect,
+      image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
 }

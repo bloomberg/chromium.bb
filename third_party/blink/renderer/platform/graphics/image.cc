@@ -368,7 +368,7 @@ void Image::DrawPattern(GraphicsContext& context,
   flags.setColor(SK_ColorBLACK);
   flags.setBlendMode(composite_op);
   flags.setFilterQuality(
-      context.ComputeFilterQuality(this, dest_rect, subset_rect));
+      context.ComputeFilterQuality(this, dest_rect, FloatRect(subset_rect)));
   flags.setAntiAlias(context.ShouldAntialias());
   flags.setShader(CreatePatternShader(
       image, local_matrix, flags,

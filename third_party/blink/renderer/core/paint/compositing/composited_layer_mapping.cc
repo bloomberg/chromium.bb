@@ -3248,11 +3248,11 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   // If the visible content rect is empty, then it makes no sense to map it back
   // since there is nothing to map.
   if (!visible_content_rect.IsEmpty()) {
-    local_interest_rect =
+    local_interest_rect = FloatRect(
         anchor_layout_object
             ->AbsoluteToLocalQuad(visible_content_rect,
                                   kUseTransforms | kTraverseDocumentBoundaries)
-            .EnclosingBoundingBox();
+            .EnclosingBoundingBox());
     local_interest_rect.Move(-offset_from_anchor_layout_object);
     // TODO(chrishtr): the code below is a heuristic, instead we should detect
     // and return whether the mapping failed.  In some cases,

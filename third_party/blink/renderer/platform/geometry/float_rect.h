@@ -67,7 +67,7 @@ class PLATFORM_EXPORT FloatRect {
       : location_(location), size_(size) {}
   FloatRect(float x, float y, float width, float height)
       : location_(FloatPoint(x, y)), size_(FloatSize(width, height)) {}
-  FloatRect(const IntRect&);
+  explicit FloatRect(const IntRect&);
   explicit FloatRect(const LayoutRect&);
   FloatRect(const SkRect&);
 
@@ -136,10 +136,13 @@ class PLATFORM_EXPORT FloatRect {
                       location_.Y() + size_.Height());
   }  // typically bottomRight
 
+  bool Intersects(const IntRect&) const;
   bool Intersects(const FloatRect&) const;
+  bool Contains(const IntRect&) const;
   bool Contains(const FloatRect&) const;
   bool Contains(const FloatPoint&, ContainsMode = kInsideOrOnStroke) const;
 
+  void Intersect(const IntRect&);
   void Intersect(const FloatRect&);
   // Set this rect to be the intersection of itself and the argument rect
   // using edge-inclusive geometry. If the two rectangles overlap but the

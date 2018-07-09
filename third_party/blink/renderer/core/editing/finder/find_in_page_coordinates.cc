@@ -80,8 +80,8 @@ static FloatRect ToNormalizedRect(const FloatRect& absolute_rect,
   FloatRect overflow_rect(scrolled_origin,
                           FloatSize(container->MaxLayoutOverflow()));
   FloatRect container_rect =
-      container->LocalToAbsoluteQuad(FloatQuad(overflow_rect))
-          .EnclosingBoundingBox();
+      FloatRect(container->LocalToAbsoluteQuad(FloatQuad(overflow_rect))
+                    .EnclosingBoundingBox());
 
   if (container_rect.IsEmpty())
     return FloatRect();
@@ -117,8 +117,9 @@ FloatRect FindInPageRectFromAbsoluteRect(
       const LayoutBlock* container = EnclosingScrollableAncestor(layout_object);
 
       // Compose the normalized rects.
-      FloatRect normalized_box_rect = ToNormalizedRect(
-          layout_object->AbsoluteBoundingBoxRect(), layout_object, container);
+      FloatRect normalized_box_rect =
+          ToNormalizedRect(FloatRect(layout_object->AbsoluteBoundingBoxRect()),
+                           layout_object, container);
       normalized_rect.Scale(normalized_box_rect.Width(),
                             normalized_box_rect.Height());
       normalized_rect.MoveBy(normalized_box_rect.Location());
