@@ -914,7 +914,7 @@ drm_fb_addfb(struct drm_fb *fb)
 	int ret = -EINVAL;
 #ifdef HAVE_DRM_ADDFB2_MODIFIERS
 	uint64_t mods[4] = { };
-	int i;
+	size_t i;
 #endif
 
 	/* If we have a modifier set, we must only use the WithModifiers
@@ -923,7 +923,7 @@ drm_fb_addfb(struct drm_fb *fb)
 		/* KMS demands that if a modifier is set, it must be the same
 		 * for all planes. */
 #ifdef HAVE_DRM_ADDFB2_MODIFIERS
-		for (i = 0; i < (int) ARRAY_LENGTH(mods) && fb->handles[i]; i++)
+		for (i = 0; i < ARRAY_LENGTH(mods) && fb->handles[i]; i++)
 			mods[i] = fb->modifier;
 		ret = drmModeAddFB2WithModifiers(fb->fd, fb->width, fb->height,
 						 fb->format->format,
