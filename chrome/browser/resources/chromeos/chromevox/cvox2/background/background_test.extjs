@@ -1363,6 +1363,7 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
 
 // Flaky. See http://crbug.com/857382.
 TEST_F('BackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
+  DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div><input value="test" type="text"></input></div>

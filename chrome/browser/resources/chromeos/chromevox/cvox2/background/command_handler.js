@@ -1010,6 +1010,11 @@ CommandHandler.onEditCommand_ = function(command) {
       chrome.automation.Restriction.READ_ONLY)
     return true;
 
+  // Skips customized keys if they get suppressed in speech.
+  if (AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille(
+          textEditHandler.node))
+    return true;
+
   var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
     case 'previousCharacter':
