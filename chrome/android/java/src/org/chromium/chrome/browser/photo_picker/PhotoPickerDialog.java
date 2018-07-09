@@ -55,13 +55,13 @@ public class PhotoPickerDialog extends AlertDialog {
 
         // PhotoPickerListener:
         @Override
-        public void onPickerUserAction(Action action, String[] photos) {
+        public void onPhotoPickerUserAction(Action action, String[] photos) {
             mExternalIntentSelected = false;
             if (action == Action.LAUNCH_GALLERY || action == Action.LAUNCH_CAMERA) {
                 mExternalIntentSelected = true;
             }
 
-            mListener.onPickerUserAction(action, photos);
+            mListener.onPhotoPickerUserAction(action, photos);
         }
 
         /**

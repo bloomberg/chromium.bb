@@ -424,7 +424,7 @@ public class PickerCategoryView extends RelativeLayout
      * @param umaId The UMA value to record with the action.
      */
     private void executeAction(PhotoPickerListener.Action action, String[] photos, int umaId) {
-        mListener.onPickerUserAction(action, photos);
+        mListener.onPhotoPickerUserAction(action, photos);
         mDialog.dismiss();
         UiUtils.onPhotoPickerDismissed();
         recordFinalUmaStats(umaId);
