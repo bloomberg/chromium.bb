@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,6 +27,7 @@ public class OmniboxStartupMetrics {
     // Since these values are persisted to logs, they should never be renumbered nor reused.
     @IntDef({StartupState.PRE_NATIVE_INITIALIZATION, StartupState.POST_NATIVE_INITIALIZATION,
             StartupState.POST_FIRST_MEANINGFUL_PAINT, StartupState.POST_FIRST_PAGELOAD_FINISHED})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface StartupState {
         // This is the state of startup before native has been loaded
         int PRE_NATIVE_INITIALIZATION = 0;
@@ -37,7 +40,7 @@ public class OmniboxStartupMetrics {
         // This is after the first page has been loaded completely.
         int POST_FIRST_PAGELOAD_FINISHED = 3;
 
-        int COUNT = 4;
+        int NUM_ENTRIES = 4;
     }
 
     private static final int MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 1000;
@@ -90,7 +93,6 @@ public class OmniboxStartupMetrics {
     }
 
     private void updateStartupState(@StartupState int newState) {
-        assert newState < StartupState.COUNT;
         // Should not go backwards in startup state
         if (newState < mCurrentStartupState) return;
         mCurrentStartupState = newState;
@@ -137,7 +139,7 @@ public class OmniboxStartupMetrics {
             String activityName = mActivity.getClass().getSimpleName();
             RecordHistogram.recordEnumeratedHistogram(
                     "MobileStartup.ToolbarFirstFocusStartupState." + activityName,
-                    mUrlBarFocusedStartupState, StartupState.COUNT);
+                    mUrlBarFocusedStartupState, StartupState.NUM_ENTRIES);
 
             RecordHistogram.recordCustomTimesHistogram(
                     "MobileStartup.ToolbarFirstFocusTime2." + activityName,

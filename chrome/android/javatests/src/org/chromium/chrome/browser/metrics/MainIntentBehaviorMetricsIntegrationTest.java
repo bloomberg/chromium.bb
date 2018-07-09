@@ -71,7 +71,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                 OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
             }
         });
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.FOCUS_OMNIBOX);
+        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.FOCUS_OMNIBOX);
     }
 
     @MediumTest
@@ -101,7 +101,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                 TabModelUtils.setIndex(mActivityTestRule.getActivity().getCurrentTabModel(), 1);
             }
         });
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.SWITCH_TABS);
+        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.SWITCH_TABS);
     }
 
     @MediumTest
@@ -115,7 +115,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                 mActivityTestRule.getActivity().finish();
             }
         });
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.BACKGROUNDED);
+        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.BACKGROUNDED);
     }
 
     @MediumTest
@@ -129,7 +129,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                 mActivityTestRule.getActivity().getTabCreator(false).launchNTP();
             }
         });
-        assertMainIntentBehavior(MainIntentBehaviorMetrics.NTP_CREATED);
+        assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.NTP_CREATED);
     }
 
     @MediumTest
@@ -138,7 +138,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
         try {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(500);
             startActivity(true);
-            assertMainIntentBehavior(MainIntentBehaviorMetrics.CONTINUATION);
+            assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.CONTINUATION);
         } finally {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(
                     MainIntentBehaviorMetrics.TIMEOUT_DURATION_MS);

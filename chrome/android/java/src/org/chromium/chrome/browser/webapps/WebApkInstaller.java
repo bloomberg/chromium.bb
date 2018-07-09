@@ -69,7 +69,7 @@ public class WebApkInstaller {
         if (mInstallDelegate == null) {
             notify(WebApkInstallResult.FAILURE);
             WebApkUma.recordGooglePlayInstallResult(
-                    WebApkUma.GOOGLE_PLAY_INSTALL_FAILED_NO_DELEGATE);
+                    WebApkUma.GooglePlayInstallResult.FAILED_NO_DELEGATE);
             return;
         }
 

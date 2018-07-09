@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
  * Records the behavior metrics after an ACTION_MAIN intent is received.
  */
 public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStateListener {
-
     private static final long BACKGROUND_TIME_24_HOUR_MS = 86400000;
     private static final long BACKGROUND_TIME_12_HOUR_MS = 43200000;
     private static final long BACKGROUND_TIME_6_HOUR_MS = 21600000;
@@ -36,14 +35,17 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
     static final long TIMEOUT_DURATION_MS = 10000;
 
+    @IntDef({MainIntentActionType.CONTINUATION, MainIntentActionType.FOCUS_OMNIBOX,
+            MainIntentActionType.SWITCH_TABS, MainIntentActionType.NTP_CREATED,
+            MainIntentActionType.BACKGROUNDED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CONTINUATION, FOCUS_OMNIBOX, SWITCH_TABS, NTP_CREATED, BACKGROUNDED})
-    @interface MainIntentActionType {}
-    static final int CONTINUATION = 0;
-    static final int FOCUS_OMNIBOX = 1;
-    static final int SWITCH_TABS = 2;
-    static final int NTP_CREATED = 3;
-    static final int BACKGROUNDED = 4;
+    @interface MainIntentActionType {
+        int CONTINUATION = 0;
+        int FOCUS_OMNIBOX = 1;
+        int SWITCH_TABS = 2;
+        int NTP_CREATED = 3;
+        int BACKGROUNDED = 4;
+    }
 
     // Min and max values (in minutes) for the buckets in the duration histograms.
     private static final int DURATION_HISTOGRAM_MIN = 5;
@@ -73,7 +75,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         mTimeoutRunnable = new Runnable() {
             @Override
             public void run() {
-                recordUserBehavior(CONTINUATION);
+                recordUserBehavior(MainIntentActionType.CONTINUATION);
             }
         };
     }
@@ -110,12 +112,13 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (type == TabLaunchType.FROM_RESTORE) return;
-                if (NewTabPage.isNTPUrl(tab.getUrl())) recordUserBehavior(NTP_CREATED);
+                if (NewTabPage.isNTPUrl(tab.getUrl()))
+                    recordUserBehavior(MainIntentActionType.NTP_CREATED);
             }
 
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                recordUserBehavior(SWITCH_TABS);
+                recordUserBehavior(MainIntentActionType.SWITCH_TABS);
             }
         };
     }
@@ -133,13 +136,13 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
      * Signal that the omnibox received focus.
      */
     public void onOmniboxFocused() {
-        recordUserBehavior(FOCUS_OMNIBOX);
+        recordUserBehavior(MainIntentActionType.FOCUS_OMNIBOX);
     }
 
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         if (newState == ActivityState.STOPPED || newState == ActivityState.DESTROYED) {
-            recordUserBehavior(BACKGROUNDED);
+            recordUserBehavior(MainIntentActionType.BACKGROUNDED);
         }
     }
 
@@ -168,15 +171,15 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
     private String getHistogramNameForBehavior(@MainIntentActionType int behavior) {
         switch (behavior) {
-            case CONTINUATION:
+            case MainIntentActionType.CONTINUATION:
                 return "FirstUserAction.BackgroundTime.MainIntent.Continuation";
-            case FOCUS_OMNIBOX:
+            case MainIntentActionType.FOCUS_OMNIBOX:
                 return "FirstUserAction.BackgroundTime.MainIntent.Omnibox";
-            case SWITCH_TABS:
+            case MainIntentActionType.SWITCH_TABS:
                 return "FirstUserAction.BackgroundTime.MainIntent.SwitchTabs";
-            case NTP_CREATED:
+            case MainIntentActionType.NTP_CREATED:
                 return "FirstUserAction.BackgroundTime.MainIntent.NtpCreated";
-            case BACKGROUNDED:
+            case MainIntentActionType.BACKGROUNDED:
                 return "FirstUserAction.BackgroundTime.MainIntent.Backgrounded";
             default:
                 return null;

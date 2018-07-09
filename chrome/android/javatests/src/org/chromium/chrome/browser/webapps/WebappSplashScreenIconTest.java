@@ -65,7 +65,7 @@ public class WebappSplashScreenIconTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM));
+                        WebappUma.SplashScreenIconType.CUSTOM));
 
         Bitmap icon =
                 ShortcutHelper.decodeBitmapFromString(WebappActivityTestRule.TEST_SPLASH_ICON);
