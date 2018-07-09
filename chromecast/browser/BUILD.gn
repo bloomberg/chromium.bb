@@ -463,6 +463,10 @@ cast_source_set("browsertests") {
     "//components/prefs",
     "//media:test_support",
   ]
+
+  data = [
+    "//media/test/data/",
+  ]
 }
 
 cast_source_set("unittests") {
