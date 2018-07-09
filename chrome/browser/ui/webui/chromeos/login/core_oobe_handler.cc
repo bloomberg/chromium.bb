@@ -648,7 +648,7 @@ void CoreOobeHandler::GetPrimaryDisplayNameCallback(
 void CoreOobeHandler::HandleSetupDemoMode() {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
-    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+    wizard_controller->StartDemoModeSetup();
   }
 }
 

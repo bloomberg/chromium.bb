@@ -506,6 +506,11 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   login_screen_started_ = true;
 }
 
+void WizardController::ShowPreviousScreen() {
+  DCHECK(previous_screen_);
+  SetCurrentScreen(previous_screen_);
+}
+
 void WizardController::ShowUserImageScreen() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
@@ -798,10 +803,23 @@ void WizardController::OnEulaAccepted() {
                  weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
 
+  if (is_in_demo_setup_flow_) {
+    ShowDemoModeSetupScreen();
+    return;
+  }
+
   if (skip_update_enroll_after_eula_) {
     ShowAutoEnrollmentCheckScreen();
   } else {
     InitiateOOBEUpdate();
+  }
+}
+
+void WizardController::OnEulaBack() {
+  if (is_in_demo_setup_flow_) {
+    ShowPreviousScreen();
+  } else {
+    ShowWelcomeScreen();
   }
 }
 
@@ -974,13 +992,27 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
 }
 
 void WizardController::OnDemoSetupFinished() {
+  DCHECK(is_in_demo_setup_flow_);
+  is_in_demo_setup_flow_ = false;
   PerformOOBECompletedActions();
   ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnDemoSetupCanceled() {
-  DCHECK(previous_screen_);
-  SetCurrentScreen(previous_screen_);
+  DCHECK(is_in_demo_setup_flow_);
+  is_in_demo_setup_flow_ = false;
+  ShowWelcomeScreen();
+}
+
+void WizardController::OnDemoPreferencesContinued() {
+  DCHECK(is_in_demo_setup_flow_);
+  ShowEulaScreen();
+}
+
+void WizardController::OnDemoPreferencesCanceled() {
+  DCHECK(is_in_demo_setup_flow_);
+  is_in_demo_setup_flow_ = false;
+  ShowWelcomeScreen();
 }
 
 void WizardController::OnOobeFlowFinished() {
@@ -1275,6 +1307,11 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
   }
 }
 
+void WizardController::StartDemoModeSetup() {
+  is_in_demo_setup_flow_ = true;
+  ShowDemoModePreferencesScreen();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::OnExit(BaseScreen& /* screen */,
@@ -1318,7 +1355,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       OnEulaAccepted();
       break;
     case ScreenExitCode::EULA_BACK:
-      ShowWelcomeScreen();
+      OnEulaBack();
       break;
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       OnDeviceModificationCanceled();
@@ -1392,6 +1429,12 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::DEMO_MODE_SETUP_CANCELED:
       OnDemoSetupCanceled();
+      break;
+    case ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED:
+      OnDemoPreferencesContinued();
+      break;
+    case ScreenExitCode::DEMO_MODE_PREFERENCES_CANCELED:
+      OnDemoPreferencesCanceled();
       break;
     default:
       NOTREACHED();

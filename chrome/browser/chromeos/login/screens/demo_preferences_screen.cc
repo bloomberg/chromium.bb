@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
+#include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
 
 namespace chromeos {
 
@@ -40,11 +41,9 @@ void DemoPreferencesScreen::Hide() {
 
 void DemoPreferencesScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionContinue) {
-    // TODO(agawronska): Add continue action.
-    NOTIMPLEMENTED();
+    Finish(ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
   } else if (action_id == kUserActionClose) {
-    // TODO(agawronska): Add close action.
-    NOTIMPLEMENTED();
+    Finish(ScreenExitCode::DEMO_MODE_PREFERENCES_CANCELED);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
