@@ -18,6 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/appcache/appcache_dispatcher.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
@@ -382,8 +383,12 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // supposed to go through AppCache.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       loader_factories_->Clone();
+
+  // TODO(crbug.com/853085): Send the preference from the browser process.
+  RendererPreferences renderer_preferences;
+
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
-      std::move(worker_client_request),
+      std::move(renderer_preferences), std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), loader_factories_->Clone(),
       std::move(fallback_factory),

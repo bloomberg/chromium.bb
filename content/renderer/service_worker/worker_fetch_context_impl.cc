@@ -9,6 +9,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -141,6 +142,7 @@ class WorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 };
 
 WorkerFetchContextImpl::WorkerFetchContextImpl(
+    RendererPreferences renderer_preferences,
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerWorkerClientRegistryPtrInfo
         service_worker_worker_client_registry_info,
@@ -161,6 +163,7 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       loader_factory_info_(std::move(loader_factory_info)),
       fallback_factory_info_(std::move(fallback_factory_info)),
       thread_safe_sender_(thread_safe_sender),
+      renderer_preferences_(std::move(renderer_preferences)),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
@@ -181,7 +184,7 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
   // currently not spec compliant and we don't want to propagate the wrong
   // behavior. See https://crbug.com/731604
   auto new_context = std::make_unique<WorkerFetchContextImpl>(
-      mojom::ServiceWorkerWorkerClientRequest(),
+      renderer_preferences_, mojom::ServiceWorkerWorkerClientRequest(),
       mojom::ServiceWorkerWorkerClientRegistryPtrInfo(),
       mojom::ServiceWorkerContainerHostPtrInfo(), loader_factory_->Clone(),
       fallback_factory_->Clone(),
@@ -251,6 +254,11 @@ WorkerFetchContextImpl::WrapURLLoaderFactory(
 }
 
 void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
+  if (renderer_preferences_.enable_do_not_track) {
+    request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
+                               "1");
+  }
+
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(parent_frame_id_);
@@ -271,6 +279,11 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   if (g_rewrite_url)
     request.SetURL(g_rewrite_url(request.Url().GetString().Utf8(), false));
+
+  if (!renderer_preferences_.enable_referrers) {
+    request.SetHTTPReferrer(blink::WebString(),
+                            blink::kWebReferrerPolicyDefault);
+  }
 }
 
 blink::mojom::ControllerServiceWorkerMode

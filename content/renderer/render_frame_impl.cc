@@ -3539,6 +3539,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
 
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       std::make_unique<WorkerFetchContextImpl>(
+          render_view_->renderer_preferences(),
           std::move(service_worker_client_request),
           std::move(service_worker_worker_client_registry_ptr_info),
           std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),

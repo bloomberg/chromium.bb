@@ -1,0 +1,8 @@
+<script>
+const params = new URLSearchParams(location.search);
+async function run() {
+  const reg = await navigator.serviceWorker.register(
+     params.get('worker_url'));
+}
+self.onload = run;
+</script>
