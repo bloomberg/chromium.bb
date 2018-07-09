@@ -654,13 +654,25 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
         WallpaperUtil.saveToSyncStorage(
             Constants.AccessSyncSurpriseMeEnabledKey, false);
       });
-  SurpriseWallpaper.getInstance().disable();
 
   // Make third party wallpaper syncable through different devices.
-  var filename = Constants.ThirdPartyWallpaperPrefix + new Date().getTime();
-  var thumbnailFilename = filename + Constants.CustomWallpaperThumbnailSuffix;
-  WallpaperUtil.storeWallpaperToSyncFS(filename, wallpaper);
-  WallpaperUtil.storeWallpaperToSyncFS(thumbnailFilename, thumbnail);
+  var fileName = Constants.ThirdPartyWallpaperPrefix + new Date().getTime();
+  var thumbnailFileName = fileName + Constants.CustomWallpaperThumbnailSuffix;
+  WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaper);
+  WallpaperUtil.storeWallpaperToSyncFS(thumbnailFileName, thumbnail);
   WallpaperUtil.saveWallpaperInfo(
-      filename, layout, Constants.WallpaperSourceEnum.ThirdParty, appName);
+      fileName, layout, Constants.WallpaperSourceEnum.ThirdParty, appName);
+
+  getWallpaperPickerInfo((useNewWallpaperPicker, highResolutionSuffix) => {
+    if (!useNewWallpaperPicker) {
+      SurpriseWallpaper.getInstance().disable();
+      return;
+    }
+    if (wallpaperPickerWindow) {
+      var event = new CustomEvent(
+          Constants.WallpaperChangedBy3rdParty,
+          {detail: {wallpaperFileName: fileName}});
+      wallpaperPickerWindow.contentWindow.dispatchEvent(event);
+    }
+  });
 });

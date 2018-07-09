@@ -505,6 +505,13 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
     $('close-button').addEventListener('click', function() {
       window.close();
     });
+    window.addEventListener(Constants.WallpaperChangedBy3rdParty, e => {
+      this.currentWallpaper_ = e.detail.wallpaperFileName;
+      this.decorateCurrentWallpaperInfoBar_();
+      // Clear the check mark (if any). Do not try to locate the new wallpaper
+      // in the picker to avoid changing the selected category abruptly.
+      this.wallpaperGrid_.selectedItem = null;
+    });
   } else {
     $('window-close-button').addEventListener('click', function() {
       window.close();
