@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
-#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -580,7 +579,7 @@ void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
 
 void WebSocketChannelImpl::DidStartOpeningHandshake(
     WebSocketHandle* handle,
-    scoped_refptr<WebSocketHandshakeRequest> request) {
+    network::mojom::blink::WebSocketHandshakeRequestPtr request) {
   NETWORK_DVLOG(1) << this << " DidStartOpeningHandshake(" << handle << ")";
 
   DCHECK(handle_);
@@ -597,7 +596,7 @@ void WebSocketChannelImpl::DidStartOpeningHandshake(
 
 void WebSocketChannelImpl::DidFinishOpeningHandshake(
     WebSocketHandle* handle,
-    const WebSocketHandshakeResponse* response) {
+    network::mojom::blink::WebSocketHandshakeResponsePtr response) {
   NETWORK_DVLOG(1) << this << " DidFinishOpeningHandshake(" << handle << ")";
 
   DCHECK(handle_);
@@ -608,7 +607,8 @@ void WebSocketChannelImpl::DidFinishOpeningHandshake(
       TRACE_EVENT_SCOPE_THREAD, "data",
       InspectorWebSocketEvent::Data(GetExecutionContext(), identifier_));
   probe::didReceiveWebSocketHandshakeResponse(
-      GetExecutionContext(), identifier_, handshake_request_.get(), response);
+      GetExecutionContext(), identifier_, handshake_request_.get(),
+      response.get());
   handshake_request_ = nullptr;
 }
 
