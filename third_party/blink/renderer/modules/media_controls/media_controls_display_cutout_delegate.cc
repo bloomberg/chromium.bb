@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -74,7 +75,7 @@ void MediaControlsDisplayCutoutDelegate::DidEnterFullscreen() {
 }
 
 void MediaControlsDisplayCutoutDelegate::DidExitFullscreen() {
-  GetDocument().SetExpandIntoDisplayCutout(false);
+  GetDocument().GetViewportData().SetExpandIntoDisplayCutout(false);
 
   video_element_->removeEventListener(EventTypeNames::touchstart, this, true);
   video_element_->removeEventListener(EventTypeNames::touchend, this, true);
@@ -147,8 +148,8 @@ void MediaControlsDisplayCutoutDelegate::HandleTouchEvent(TouchEvent* event) {
 
     UseCounter::Count(GetDocument(),
                       WebFeature::kMediaControlsDisplayCutoutGesture);
-    GetDocument().SetExpandIntoDisplayCutout(direction ==
-                                             Direction::kExpanding);
+    GetDocument().GetViewportData().SetExpandIntoDisplayCutout(
+        direction == Direction::kExpanding);
   }
 
   // If we are finishing a touch then clear any stored value, otherwise store

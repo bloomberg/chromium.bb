@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -202,7 +203,8 @@ ViewportDescription Page::GetViewportDescription() const {
                  DeprecatedLocalMainFrame()->GetDocument()
              ? DeprecatedLocalMainFrame()
                    ->GetDocument()
-                   ->GetViewportDescription()
+                   ->GetViewportData()
+                   .GetViewportDescription()
              : ViewportDescription();
 }
 
@@ -544,7 +546,10 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       break;
     case SettingsDelegate::kViewportDescriptionChange:
       if (MainFrame() && MainFrame()->IsLocalFrame()) {
-        DeprecatedLocalMainFrame()->GetDocument()->UpdateViewportDescription();
+        DeprecatedLocalMainFrame()
+            ->GetDocument()
+            ->GetViewportData()
+            .UpdateViewportDescription();
         // The text autosizer has dependencies on the viewport.
         if (TextAutosizer* text_autosizer =
                 DeprecatedLocalMainFrame()->GetDocument()->GetTextAutosizer())

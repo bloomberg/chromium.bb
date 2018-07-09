@@ -105,6 +105,7 @@
 #include "third_party/blink/renderer/core/frame/rotation_viewport_anchor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -1551,8 +1552,11 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
 
   GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(icb_size);
 
-  UpdatePageDefinedViewportConstraints(
-      MainFrameImpl()->GetFrame()->GetDocument()->GetViewportDescription());
+  UpdatePageDefinedViewportConstraints(MainFrameImpl()
+                                           ->GetFrame()
+                                           ->GetDocument()
+                                           ->GetViewportData()
+                                           .GetViewportDescription());
   UpdateMainFrameLayoutSize();
 
   GetPage()->GetVisualViewport().SetSize(size_);
@@ -2694,8 +2698,11 @@ void WebViewImpl::RefreshPageScaleFactorAfterLayout() {
     return;
   LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
 
-  UpdatePageDefinedViewportConstraints(
-      MainFrameImpl()->GetFrame()->GetDocument()->GetViewportDescription());
+  UpdatePageDefinedViewportConstraints(MainFrameImpl()
+                                           ->GetFrame()
+                                           ->GetDocument()
+                                           ->GetViewportData()
+                                           .GetViewportDescription());
   GetPageScaleConstraintsSet().ComputeFinalConstraints();
 
   int vertical_scrollbar_width = 0;
@@ -2748,7 +2755,8 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
         matches_heuristics_for_gpu_rasterization_);
   }
 
-  Length default_min_width = document->ViewportDefaultMinWidth();
+  Length default_min_width =
+      document->GetViewportData().ViewportDefaultMinWidth();
   if (default_min_width.IsAuto())
     default_min_width = Length(kExtendToZoom);
 

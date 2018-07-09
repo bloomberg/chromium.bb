@@ -34,7 +34,6 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -61,10 +60,8 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
-#include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -181,6 +178,7 @@ class TextAutosizer;
 class TransformSource;
 class TreeWalker;
 class V8NodeFilter;
+class ViewportData;
 class VisitedLinkState;
 class WebMouseEvent;
 class WorkletAnimationController;
@@ -312,11 +310,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange);
 
-  bool ShouldMergeWithLegacyDescription(ViewportDescription::Type) const;
-  bool ShouldOverrideLegacyDescription(ViewportDescription::Type) const;
-  void SetViewportDescription(const ViewportDescription&);
-  ViewportDescription GetViewportDescription() const;
-  Length ViewportDefaultMinWidth() const { return viewport_default_min_width_; }
+  ViewportData& GetViewportData() const { return *viewport_data_; }
 
   String OutgoingReferrer() const override;
   ReferrerPolicy GetReferrerPolicy() const override;
@@ -869,8 +863,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   ResizeObserverController& EnsureResizeObserverController();
 
-  void UpdateViewportDescription();
-
   // Returns the owning element in the parent document. Returns nullptr if
   // this is the top level document or the owner is remote.
   HTMLFrameOwnerElement* LocalOwner() const;
@@ -1415,13 +1407,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 #endif
 
-  // When true this will force a kCover viewport fit value which will result in
-  // the document expanding into the display cutout area.
-  void SetExpandIntoDisplayCutout(bool expand);
-  mojom::ViewportFit GetCurrentViewportFitForTests() const {
-    return viewport_fit_;
-  }
-
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
 
  protected:
@@ -1743,10 +1728,6 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskRunnerTimer<Document> load_event_delay_timer_;
   TaskRunnerTimer<Document> plugin_loading_timer_;
 
-  ViewportDescription viewport_description_;
-  ViewportDescription legacy_viewport_description_;
-  Length viewport_default_min_width_;
-
   DocumentTiming document_timing_;
   Member<MediaQueryMatcher> media_query_matcher_;
   bool write_recursion_is_too_deep_;
@@ -1841,25 +1822,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used for legacy layout tree fallback
   ReattachLegacyLayoutObjectList* reattach_legacy_object_list_;
 
-  // Stores the current value viewport-fit value.
-  mojom::ViewportFit viewport_fit_ = blink::mojom::ViewportFit::kAuto;
-  bool force_expand_display_cutout_ = false;
+  // TODO(tkent): Should it be moved to LocalFrame or LocalFrameView?
+  Member<ViewportData> viewport_data_;
 
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
-
-  mojom::blink::DisplayCutoutHostAssociatedPtr display_cutout_host_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
-
-inline bool Document::ShouldOverrideLegacyDescription(
-    ViewportDescription::Type origin) const {
-  // The different (legacy) meta tags have different priorities based on the
-  // type regardless of which order they appear in the DOM. The priority is
-  // given by the ViewportDescription::Type enum.
-  return origin >= legacy_viewport_description_.type;
-}
 
 inline void Document::ScheduleLayoutTreeUpdateIfNeeded() {
   // Inline early out to avoid the function calls below.

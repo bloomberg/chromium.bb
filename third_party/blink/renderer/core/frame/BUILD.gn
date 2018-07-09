@@ -160,6 +160,8 @@ blink_core_sources("frame") {
     "use_counter.h",
     "user_activation.cc",
     "user_activation.h",
+    "viewport_data.cc",
+    "viewport_data.h",
     "visual_viewport.cc",
     "visual_viewport.h",
     "web_feature.h",

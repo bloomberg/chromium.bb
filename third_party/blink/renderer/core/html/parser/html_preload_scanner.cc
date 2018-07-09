@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
@@ -936,7 +937,8 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   do_html_preload_scanning =
       !document->GetSettings() ||
       document->GetSettings()->GetDoHtmlPreloadScanning();
-  default_viewport_min_width = document->ViewportDefaultMinWidth();
+  default_viewport_min_width =
+      document->GetViewportData().ViewportDefaultMinWidth();
   viewport_meta_zero_values_quirk =
       document->GetSettings() &&
       document->GetSettings()->GetViewportMetaZeroValuesQuirk();
