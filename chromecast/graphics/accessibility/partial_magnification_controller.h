@@ -37,6 +37,8 @@ class PartialMagnificationController : public MagnificationController,
   // and active. Magnification becomes active on a finger press.
   void SetEnabled(bool enabled) override;
 
+  bool IsEnabled() const override;
+
   // Adjust the scale of magnification.
   void SetMagnificationScale(float magnification_scale) override;
 

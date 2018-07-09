@@ -4,6 +4,7 @@
 
 #include "chromecast/graphics/triple_tap_detector.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -209,6 +209,10 @@ void PartialMagnificationController::SetEnabled(bool enabled) {
   SetActive(false);
 }
 
+bool PartialMagnificationController::IsEnabled() const {
+  return is_enabled_;
+}
+
 void PartialMagnificationController::SwitchTargetRootWindowIfNeeded(
     aura::Window* new_root_window) {
   if (host_widget_ &&
