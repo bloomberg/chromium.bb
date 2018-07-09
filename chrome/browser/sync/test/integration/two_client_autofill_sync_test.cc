@@ -5,6 +5,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -14,6 +15,10 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
 
 using autofill::AutofillKey;
 using autofill::AutofillTable;
@@ -44,18 +49,18 @@ using bookmarks_helper::AddURL;
 using bookmarks_helper::IndexedURL;
 using bookmarks_helper::IndexedURLTitle;
 
-class TwoClientAutofillSyncTest : public SyncTest {
+class TwoClientAutocompleteSyncTest : public SyncTest {
  public:
-  TwoClientAutofillSyncTest() : SyncTest(TWO_CLIENT) {}
-  ~TwoClientAutofillSyncTest() override {}
+  TwoClientAutocompleteSyncTest() : SyncTest(TWO_CLIENT) {}
+  ~TwoClientAutocompleteSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(TwoClientAutocompleteSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutocompleteSyncTest, WebDataServiceSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a key.
@@ -91,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   ASSERT_EQ(0U, GetAllKeys(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddUnicodeProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutocompleteSyncTest, AddUnicodeProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   std::set<AutofillKey> keys;
@@ -102,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddUnicodeProfile) {
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutocompleteSyncTest,
                        AddDuplicateNamesToSameProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -116,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   ASSERT_EQ(2U, GetAllKeys(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutocompleteSyncTest,
                        AddDuplicateNamesToDifferentProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -136,7 +141,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   ASSERT_EQ(5U, GetAllKeys(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+// TODO(jkrcal): When the new implementation fully launches, remove this class,
+// convert all tests from *_P back to *_F and remove the instance at the end.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(
+          switches::kSyncUSSAutofillProfile);
+    } else {
+      override_features_.InitAndDisableFeature(
+          switches::kSyncUSSAutofillProfile);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
+                                         public SyncTest {
+ public:
+  TwoClientAutofillProfileSyncTest() : SyncTest(TWO_CLIENT) {}
+  ~TwoClientAutofillProfileSyncTest() override {}
+
+  bool TestUsesSelfNotifications() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillProfileSyncTest);
+};
+
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        PersonalDataManagerSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -174,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddDuplicateProfiles) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -184,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddDuplicateProfiles) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+                       SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AutofillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
@@ -199,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddEmptyProfile) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
@@ -207,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddEmptyProfile) {
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -215,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddMultipleProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -225,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
   ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -237,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MergeProfiles) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MergeProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -248,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MergeProfiles) {
   ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -267,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -288,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -312,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -343,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
 }
 
 // Test credit cards don't sync.
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   CreditCard card;
@@ -365,8 +403,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
   ASSERT_EQ(0U, pdm->GetCreditCards().size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
-    E2E_ONLY(TwoClientsAddAutofillProfiles)) {
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+                       E2E_ONLY(TwoClientsAddAutofillProfiles)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // All profiles should sync same autofill profiles.
@@ -389,3 +427,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
         "Total autofill profile count is wrong.";
   }
 }
+
+// Only parametrize the tests above that test autofill_profile, the tests below
+// address autocomplete and thus do not need parametrizing.
+INSTANTIATE_TEST_CASE_P(USS,
+                        TwoClientAutofillProfileSyncTest,
+                        ::testing::Values(false, true));
+
+}  // namespace
