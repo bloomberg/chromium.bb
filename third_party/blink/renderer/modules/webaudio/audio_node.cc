@@ -987,16 +987,6 @@ void AudioNode::disconnect(AudioParam* destination_param,
   }
 }
 
-void AudioNode::DisconnectWithoutException(unsigned output_index) {
-  DCHECK(IsMainThread());
-  BaseAudioContext::GraphAutoLocker locker(context());
-
-  // Sanity check input and output indices.
-  if (output_index >= Handler().NumberOfOutputs())
-    return;
-  DisconnectAllFromOutput(output_index);
-}
-
 unsigned AudioNode::numberOfInputs() const {
   return Handler().NumberOfInputs();
 }
