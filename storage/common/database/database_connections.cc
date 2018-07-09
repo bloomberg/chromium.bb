@@ -4,13 +4,7 @@
 
 #include "storage/common/database/database_connections.h"
 
-#include <stdint.h>
-
-#include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_task_runner_handle.h"
 
 namespace storage {
 
@@ -117,50 +111,6 @@ bool DatabaseConnections::RemoveConnectionsHelper(
   if (db_connections.empty())
     connections_.erase(origin_iterator);
   return true;
-}
-
-DatabaseConnectionsWrapper::DatabaseConnectionsWrapper() = default;
-
-DatabaseConnectionsWrapper::~DatabaseConnectionsWrapper() = default;
-
-bool DatabaseConnectionsWrapper::HasOpenConnections() {
-  base::AutoLock auto_lock(open_connections_lock_);
-  return !open_connections_.IsEmpty();
-}
-
-void DatabaseConnectionsWrapper::AddOpenConnection(
-    const std::string& origin_identifier,
-    const base::string16& database_name) {
-  base::AutoLock auto_lock(open_connections_lock_);
-  open_connections_.AddConnection(origin_identifier, database_name);
-}
-
-void DatabaseConnectionsWrapper::RemoveOpenConnection(
-    const std::string& origin_identifier,
-    const base::string16& database_name) {
-  base::AutoLock auto_lock(open_connections_lock_);
-  open_connections_.RemoveConnection(origin_identifier, database_name);
-  if (waiting_to_close_event_ && open_connections_.IsEmpty())
-    waiting_to_close_event_->Signal();
-}
-
-bool DatabaseConnectionsWrapper::WaitForAllDatabasesToClose(
-    base::TimeDelta timeout) {
-  base::WaitableEvent waitable_event(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  {
-    base::AutoLock auto_lock(open_connections_lock_);
-    if (open_connections_.IsEmpty())
-      return true;
-    waiting_to_close_event_ = &waitable_event;
-  }
-  waitable_event.TimedWait(timeout);
-  {
-    base::AutoLock auto_lock(open_connections_lock_);
-    waiting_to_close_event_ = nullptr;
-    return open_connections_.IsEmpty();
-  }
 }
 
 }  // namespace storage

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "storage/common/database/database_connections.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
 #include "third_party/blink/public/platform/web_database_observer.h"
 
@@ -62,8 +61,6 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
                                   const blink::WebString& database_name,
                                   int sqlite_error) override;
 
-  bool WaitForAllDatabasesToClose(base::TimeDelta timeout);
-
  private:
   void HandleSqliteError(const blink::WebSecurityOrigin& origin,
                          const blink::WebString& database_name,
@@ -73,7 +70,6 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
   blink::mojom::WebDatabaseHost& GetWebDatabaseHost();
 
   scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
-  scoped_refptr<storage::DatabaseConnectionsWrapper> open_connections_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseObserverImpl);

@@ -4,31 +4,13 @@
 
 #include <stdint.h>
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "storage/common/database/database_connections.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-using storage::DatabaseConnections;
-using storage::DatabaseConnectionsWrapper;
 
-namespace content {
-
-namespace {
-
-void RemoveConnectionTask(
-    const std::string& origin_id, const base::string16& database_name,
-    scoped_refptr<DatabaseConnectionsWrapper> obj,
-    bool* did_task_execute) {
-  *did_task_execute = true;
-  obj->RemoveOpenConnection(origin_id, database_name);
-}
-
-}  // anonymous namespace
+namespace storage {
 
 TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   const std::string kOriginId("origin_id");
@@ -92,38 +74,4 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   EXPECT_TRUE(connections.RemoveConnection(kOriginId, kName));
 }
 
-TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
-  const std::string kOriginId("origin_id");
-  const base::string16 kName(ASCIIToUTF16("database_name"));
-
-  base::MessageLoop message_loop;
-  scoped_refptr<DatabaseConnectionsWrapper> obj(new DatabaseConnectionsWrapper);
-  EXPECT_FALSE(obj->HasOpenConnections());
-  obj->AddOpenConnection(kOriginId, kName);
-  EXPECT_TRUE(obj->HasOpenConnections());
-  obj->AddOpenConnection(kOriginId, kName);
-  EXPECT_TRUE(obj->HasOpenConnections());
-  obj->RemoveOpenConnection(kOriginId, kName);
-  EXPECT_TRUE(obj->HasOpenConnections());
-  obj->RemoveOpenConnection(kOriginId, kName);
-  EXPECT_FALSE(obj->HasOpenConnections());
-  EXPECT_TRUE(obj->WaitForAllDatabasesToClose(base::TimeDelta()));
-
-  // Test WaitForAllDatabasesToClose with the last connection
-  // being removed on another thread.
-  obj->AddOpenConnection(kOriginId, kName);
-  EXPECT_FALSE(obj->WaitForAllDatabasesToClose(base::TimeDelta()));
-  base::Thread thread("WrapperTestThread");
-  thread.Start();
-  bool did_task_execute = false;
-  thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RemoveConnectionTask, kOriginId, kName, obj,
-                                &did_task_execute));
-  // Use a long timeout value to avoid timeouts on test bots.
-  EXPECT_TRUE(obj->WaitForAllDatabasesToClose(
-      base::TimeDelta::FromSeconds(15)));
-  EXPECT_TRUE(did_task_execute);
-  EXPECT_FALSE(obj->HasOpenConnections());
-}
-
-}  // namespace content
+}  // namespace storage
