@@ -400,9 +400,15 @@ void ChromePasswordProtectionService::ShowInterstitial(
     web_contents->ExitFullscreen(/*will_cause_resize=*/true);
 
   GURL trigger_url = web_contents->GetLastCommittedURL();
-  OpenUrl(web_contents, GURL(chrome::kChromeUIResetPasswordURL),
-          content::Referrer(trigger_url, blink::kWebReferrerPolicyDefault),
-          /*in_new_tab=*/true);
+  content::OpenURLParams params(
+      GURL(chrome::kChromeUIResetPasswordURL), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      /*is_renderer_initiated=*/false);
+  params.uses_post = true;
+  std::string post_data = base::NumberToString(password_type);
+  params.post_data = network::ResourceRequestBody::CreateFromBytes(
+      post_data.data(), post_data.size());
+  web_contents->OpenURL(params);
 
   RecordWarningAction(PasswordProtectionService::INTERSTITIAL,
                       PasswordProtectionService::SHOWN, password_type);
@@ -419,20 +425,6 @@ void ChromePasswordProtectionService::OnUserAction(
     ReusedPasswordType password_type,
     PasswordProtectionService::WarningUIType ui_type,
     PasswordProtectionService::WarningAction action) {
-  // TODO(jialiul): Find a way to pass |password_type| info to the
-  // chrome://reset-password page. For now, takes an educated guess.
-  // This info only impacts UMA tracking.
-  if (password_type == PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN) {
-    DCHECK_EQ(PasswordProtectionService::INTERSTITIAL, ui_type);
-    DCHECK_EQ(PasswordProtectionService::CHANGE_PASSWORD, action);
-    password_type = GetSyncAccountType() == PasswordReuseEvent::GSUITE
-                        ? PasswordReuseEvent::SIGN_IN_PASSWORD
-                        : PasswordReuseEvent::ENTERPRISE_PASSWORD;
-  }
-
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
-
   RecordWarningAction(ui_type, action, password_type);
 
   switch (ui_type) {
@@ -1151,7 +1143,7 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
     return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
   }
 
-  std::string org_name = GetOrganizationName();
+  std::string org_name = GetOrganizationName(password_type);
   if (!org_name.empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
@@ -1161,9 +1153,12 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 }
 
-std::string ChromePasswordProtectionService::GetOrganizationName() const {
-  if (GetSyncAccountType() != PasswordReuseEvent::GSUITE)
+std::string ChromePasswordProtectionService::GetOrganizationName(
+    ReusedPasswordType password_type) const {
+  if (GetSyncAccountType() != PasswordReuseEvent::GSUITE ||
+      password_type != PasswordReuseEvent::SIGN_IN_PASSWORD) {
     return std::string();
+  }
 
   std::string email = GetAccountInfo().email;
   return email.empty() ? std::string() : gaia::ExtractDomainName(email);

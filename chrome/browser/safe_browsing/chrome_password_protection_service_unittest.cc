@@ -407,7 +407,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
   EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN, service_->GetSyncAccountType());
-  EXPECT_TRUE(service_->GetOrganizationName().empty());
+  EXPECT_TRUE(
+      service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD)
+          .empty());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestGmail);
@@ -415,12 +417,17 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
                    std::string(kTestGaiaID),
                    std::string(kTestGmail /*foo@gmail.com*/));
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
-  EXPECT_EQ("", service_->GetOrganizationName());
+  EXPECT_EQ(
+      "", service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_EQ("", service_->GetOrganizationName(
+                    PasswordReuseEvent::ENTERPRISE_PASSWORD));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
   EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN, service_->GetSyncAccountType());
-  EXPECT_TRUE(service_->GetOrganizationName().empty());
+  EXPECT_TRUE(
+      service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD)
+          .empty());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
 
@@ -428,7 +435,10 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
   SetUpSyncAccount("example.com", std::string(kTestGaiaID),
                    std::string(kTestEmail /*foo@example.com*/));
   EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
-  EXPECT_EQ("example.com", service_->GetOrganizationName());
+  EXPECT_EQ("example.com", service_->GetOrganizationName(
+                               PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_EQ("", service_->GetOrganizationName(
+                    PasswordReuseEvent::ENTERPRISE_PASSWORD));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {

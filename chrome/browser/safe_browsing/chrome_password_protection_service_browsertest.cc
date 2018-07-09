@@ -534,6 +534,76 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       ChromeEnterprisePasswordAlertMode) {
+  ConfigureEnterprisePasswordProtection(
+      /*is_gsuite=*/false, PasswordProtectionTrigger::PASSWORD_REUSE);
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kLoginPageUrl));
+
+  base::HistogramTester histograms;
+  // Shows interstitial on current web_contents.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  service->ShowInterstitial(web_contents,
+                            PasswordReuseEvent::ENTERPRISE_PASSWORD);
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(new_web_contents,
+                                           /*number_of_navigations=*/1);
+  observer.Wait();
+  EXPECT_THAT(histograms.GetAllSamples("PasswordProtection.InterstitialString"),
+              testing::ElementsAre(base::Bucket(2, 1)));
+
+  // Clicks on "Reset Password" button.
+  std::string script =
+      "var node = document.getElementById('reset-password-button'); \n"
+      "node.click();";
+  ASSERT_TRUE(content::ExecuteScript(new_web_contents, script));
+  content::TestNavigationObserver observer1(new_web_contents,
+                                            /*number_of_navigations=*/1);
+  observer1.Wait();
+  EXPECT_EQ(embedded_test_server()->GetURL(kChangePasswordUrl),
+            new_web_contents->GetLastCommittedURL());
+  EXPECT_THAT(histograms.GetAllSamples("PasswordProtection.InterstitialAction."
+                                       "NonGaiaEnterprisePasswordEntry"),
+              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       UserDirectlyNavigateToResetPasswordPage) {
+  base::HistogramTester histograms;
+  ConfigureEnterprisePasswordProtection(
+      /*is_gsuite=*/false, PasswordProtectionTrigger::PASSWORD_REUSE);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://reset-password"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // chrome://reset-password page should be opened.
+  ASSERT_EQ(GURL(chrome::kChromeUIResetPasswordURL),
+            web_contents->GetVisibleURL());
+  EXPECT_THAT(histograms.GetAllSamples("PasswordProtection.InterstitialString"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+
+  // Clicks on "Reset Password" button.
+  std::string script =
+      "var node = document.getElementById('reset-password-button'); \n"
+      "node.click();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, script));
+  content::TestNavigationObserver observer1(web_contents,
+                                            /*number_of_navigations=*/1);
+  observer1.Wait();
+  EXPECT_EQ(browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL(),
+            embedded_test_server()->GetURL(kChangePasswordUrl));
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PasswordProtection.InterstitialActionByUserNavigation"),
+              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        EnterprisePhishingReuseMode) {
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
