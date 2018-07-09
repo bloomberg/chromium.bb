@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler.h"
@@ -13,6 +14,7 @@
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/http/url_security_manager.h"
 #include "net/log/net_log_with_source.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -172,7 +174,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
         "Negotiate", HttpAuth::AUTH_SERVER, null_ssl_info, server_origin,
         NetLogWithSource(), &handler);
 // Note the default factory doesn't support Kerberos on Android
-#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
     EXPECT_THAT(rv, IsOk());
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_NEGOTIATE, handler->auth_scheme());
@@ -183,7 +185,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
 #else
     EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
     EXPECT_TRUE(handler.get() == NULL);
-#endif  // defined(USE_KERBEROS) && !defined(OS_ANDROID)
+#endif  // BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
   }
 }
 

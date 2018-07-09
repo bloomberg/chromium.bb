@@ -16,9 +16,10 @@
 #include "net/http/http_auth_handler_ntlm.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 
-#if defined(USE_KERBEROS)
+#if BUILDFLAG(USE_KERBEROS)
 #include "net/http/http_auth_handler_negotiate.h"
 #endif
 
@@ -53,7 +54,7 @@ int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
 namespace {
 
 const char* const kDefaultAuthSchemes[] = {kBasicAuthScheme, kDigestAuthScheme,
-#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
                                            kNegotiateAuthScheme,
 #endif
                                            kNtlmAuthScheme};
@@ -157,7 +158,7 @@ HttpAuthHandlerRegistryFactory::Create(
     registry_factory->RegisterSchemeFactory(kNtlmAuthScheme, ntlm_factory);
   }
 
-#if defined(USE_KERBEROS)
+#if BUILDFLAG(USE_KERBEROS)
   if (base::ContainsKey(auth_schemes_set, kNegotiateAuthScheme)) {
     DCHECK(host_resolver);
     HttpAuthHandlerNegotiate::Factory* negotiate_factory =
@@ -175,7 +176,7 @@ HttpAuthHandlerRegistryFactory::Create(
     registry_factory->RegisterSchemeFactory(kNegotiateAuthScheme,
                                             negotiate_factory);
   }
-#endif  // defined(USE_KERBEROS)
+#endif  // BUILDFLAG(USE_KERBEROS)
 
   if (prefs) {
     registry_factory->set_http_auth_preferences(prefs);
