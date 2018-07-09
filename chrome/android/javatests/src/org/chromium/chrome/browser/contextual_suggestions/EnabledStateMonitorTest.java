@@ -25,8 +25,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.UploadState;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -52,9 +50,8 @@ public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
         }
 
         @Override
-        @UploadState
-        public int getUploadToGoogleState(@ModelType int modelType) {
-            return UploadState.ACTIVE;
+        public boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
+            return true;
         }
     }
 
