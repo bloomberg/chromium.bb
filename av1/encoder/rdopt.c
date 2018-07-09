@@ -2519,6 +2519,23 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
   if (rate) *rate = rate_i;
   if (dist) *dist = dist_i;
   if (rsse) *rsse = sse;
+  /*
+  {
+    static int count = 0;
+    RD_STATS rd_stats_y;
+    if (count >= 159984) {
+      printf("Gotcha\n");
+    }
+    printf("Count: %d\n", count++);
+    av1_invalid_rd_stats(&rd_stats_y);
+    select_tx_type_yrd(cpi, x, &rd_stats_y, plane_bsize, mi_row, mi_col,
+                       INT64_MAX);
+    printf("Full RD:      %d %"PRId64", skip %d sse %"PRId64"\n",
+  rd_stats_y.rate, rd_stats_y.dist, rd_stats_y.skip, rd_stats_y.sse);
+    printf("DNN Model RD: %d %"PRId64"\n", rate_i, dist_i);
+    assert(IMPLIES(rd_stats_y.rate == 0, rd_stats_y.dist == sse << 4));
+  }
+  */
   return;
 }
 
