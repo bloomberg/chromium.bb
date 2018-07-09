@@ -228,6 +228,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
+  bool frame_enabled() const {
+    return frame_type_ != SurfaceFrameType::NONE &&
+           frame_type_ != SurfaceFrameType::SHADOW;
+  }
+
   Surface* surface_for_testing() { return root_surface(); }
 
  protected:
@@ -324,11 +329,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
   bool is_popup_ = false;
   bool has_grab_ = false;
-
-  bool frame_enabled() const {
-    return frame_type_ != SurfaceFrameType::NONE &&
-           frame_type_ != SurfaceFrameType::SHADOW;
-  }
 
  private:
   struct Config;

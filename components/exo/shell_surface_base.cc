@@ -808,6 +808,12 @@ bool ShellSurfaceBase::IsInputEnabled(Surface*) const {
 }
 
 void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
+  if (is_popup_) {
+    // TODO(oshima): Consider supporting shadow type.
+    DLOG(WARNING) << "popup does not support frame decoration";
+    return;
+  }
+
   bool frame_was_disabled = !frame_enabled();
   frame_type_ = frame_type;
   switch (frame_type) {

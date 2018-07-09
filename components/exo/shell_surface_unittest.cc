@@ -630,6 +630,10 @@ TEST_F(ShellSurfaceTest, Popup) {
   EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
 
+  // Setting frame type on popup should have no effect.
+  popup_surface->SetFrame(SurfaceFrameType::NORMAL);
+  EXPECT_FALSE(popup_shell_surface->frame_enabled());
+
   // ShellSurface can capture the event even after it is craeted.
   std::unique_ptr<Buffer> sub_popup_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
