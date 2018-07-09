@@ -26,7 +26,7 @@
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
-#include "ios/web_view/internal/language/web_view_language_model_factory.h"
+#include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
@@ -161,7 +161,7 @@ void WebViewBrowserState::RegisterPrefs(
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
   // Instantiate all factories to setup dependency graph for pref registration.
-  WebViewLanguageModelFactory::GetInstance();
+  WebViewLanguageModelManagerFactory::GetInstance();
   WebViewTranslateRankerFactory::GetInstance();
   WebViewUrlLanguageHistogramFactory::GetInstance();
   WebViewTranslateAcceptLanguagesFactory::GetInstance();

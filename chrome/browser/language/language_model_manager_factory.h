@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H_
-#define CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H_
+#ifndef CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_
+#define CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -14,7 +14,7 @@ class BrowserContext;
 }
 
 namespace language {
-class LanguageModel;
+class LanguageModelManager;
 }
 
 namespace user_prefs {
@@ -23,17 +23,17 @@ class PrefRegistrySyncable;
 
 // Manages the language model for each profile. The particular language model
 // provided depends on feature flags.
-class LanguageModelFactory : public BrowserContextKeyedServiceFactory {
+class LanguageModelManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static LanguageModelFactory* GetInstance();
-  static language::LanguageModel* GetForBrowserContext(
+  static LanguageModelManagerFactory* GetInstance();
+  static language::LanguageModelManager* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
  private:
-  friend struct base::DefaultSingletonTraits<LanguageModelFactory>;
+  friend struct base::DefaultSingletonTraits<LanguageModelManagerFactory>;
 
-  LanguageModelFactory();
-  ~LanguageModelFactory() override;
+  LanguageModelManagerFactory();
+  ~LanguageModelManagerFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides.
   KeyedService* BuildServiceInstanceFor(
@@ -43,7 +43,7 @@ class LanguageModelFactory : public BrowserContextKeyedServiceFactory {
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageModelFactory);
+  DISALLOW_COPY_AND_ASSIGN(LanguageModelManagerFactory);
 };
 
-#endif  // CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_FACTORY_H_
+#endif  // CHROME_BROWSER_LANGUAGE_LANGUAGE_MODEL_MANAGER_FACTORY_H_

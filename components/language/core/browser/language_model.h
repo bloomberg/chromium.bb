@@ -14,7 +14,7 @@ namespace language {
 
 // Defines a user language model represented by a ranked list of languages and
 // associated scores.
-class LanguageModel : public KeyedService {
+class LanguageModel {
  public:
   // Information about one language that a user understands.
   struct LanguageDetails {
@@ -28,6 +28,8 @@ class LanguageModel : public KeyedService {
     // scores mean that the language is of more importance to the user.
     float score;
   };
+
+  virtual ~LanguageModel() {}
 
   // The set of languages that the user understands. The languages are ranked
   // from most important to least.
