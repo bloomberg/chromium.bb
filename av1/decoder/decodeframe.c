@@ -3745,13 +3745,13 @@ static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 }
 
 void av1_read_color_config(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
-                           int allow_lowbitdepth) {
+                           int allow_lowbitdepth, SequenceHeader *seq_params) {
   av1_read_bitdepth(cm, rb);
 
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
   // monochrome bit (not needed for PROFILE_1)
   const int is_monochrome = cm->profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
-  cm->seq_params.monochrome = is_monochrome;
+  seq_params->monochrome = is_monochrome;
   int color_description_present_flag = aom_rb_read_bit(rb);
   if (color_description_present_flag) {
     cm->color_primaries = aom_rb_read_literal(rb, 8);
@@ -3879,17 +3879,12 @@ static void av1_read_temporal_point_info(AV1_COMMON *const cm,
       rb, cm->buffer_model.frame_presentation_time_length);
 }
 
-void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  // rb->error_handler may be triggered during aom_rb_read_bit(), raising
-  // internal errors and immediate decoding termination. We use a local variable
-  // to store the info. as we decode. At the end, if no errors have occurred,
-  // cm->seq_params is updated.
-  SequenceHeader sh = cm->seq_params;
-  SequenceHeader *const seq_params = &sh;
-  int num_bits_width = aom_rb_read_literal(rb, 4) + 1;
-  int num_bits_height = aom_rb_read_literal(rb, 4) + 1;
-  int max_frame_width = aom_rb_read_literal(rb, num_bits_width) + 1;
-  int max_frame_height = aom_rb_read_literal(rb, num_bits_height) + 1;
+void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
+                              SequenceHeader *seq_params) {
+  const int num_bits_width = aom_rb_read_literal(rb, 4) + 1;
+  const int num_bits_height = aom_rb_read_literal(rb, 4) + 1;
+  const int max_frame_width = aom_rb_read_literal(rb, num_bits_width) + 1;
+  const int max_frame_height = aom_rb_read_literal(rb, num_bits_height) + 1;
 
   seq_params->num_bits_width = num_bits_width;
   seq_params->num_bits_height = num_bits_height;
@@ -3964,7 +3959,6 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   seq_params->enable_superres = aom_rb_read_bit(rb);
   seq_params->enable_cdef = aom_rb_read_bit(rb);
   seq_params->enable_restoration = aom_rb_read_bit(rb);
-  cm->seq_params = *seq_params;
 }
 
 static int read_global_motion_params(WarpedMotionParams *params,
