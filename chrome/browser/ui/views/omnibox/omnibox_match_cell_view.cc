@@ -288,7 +288,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   if (is_old_style_answer_ || is_rich_suggestion_ || has_tab_match_) {
     separator_view_->SetSize(gfx::Size());
   } else {
-    separator_view_->SetSize(separator_view_->CalculatePreferredSize());
+    separator_view_->SetSize(separator_view_->GetPreferredSize());
   }
 
   if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
@@ -450,7 +450,7 @@ void OmniboxMatchCellView::LayoutSplit(int icon_view_width, int text_indent) {
   icon_view_->SetBounds(child_area.x(), y, icon_view_width, row_height);
   int content_width = content_view_->GetPreferredSize().width();
   int description_width = description_view_->GetPreferredSize().width();
-  gfx::Size separator_size = separator_view_->CalculatePreferredSize();
+  gfx::Size separator_size = separator_view_->GetPreferredSize();
   OmniboxPopupModel::ComputeMatchMaxWidths(
       content_width, separator_size.width(), description_width,
       child_area.width() - text_indent,
