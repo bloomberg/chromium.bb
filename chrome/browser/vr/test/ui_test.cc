@@ -96,9 +96,8 @@ void UiTest::CreateScene(const UiInitialState& state) {
   CreateSceneInternal(state, std::move(content_input_delegate));
 }
 
-void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {
+void UiTest::CreateScene(InWebVr in_web_vr) {
   UiInitialState state;
-  state.in_cct = in_cct;
   state.in_web_vr = in_web_vr;
   CreateScene(state);
 }

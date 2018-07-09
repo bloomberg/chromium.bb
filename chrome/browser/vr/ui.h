@@ -44,7 +44,6 @@ struct ReticleModel;
 struct VR_EXPORT UiInitialState {
   UiInitialState();
   UiInitialState(const UiInitialState& other);
-  bool in_cct = false;
   bool in_web_vr = false;
   bool web_vr_autopresentation_expected = false;
   bool browsing_disabled = false;

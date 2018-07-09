@@ -130,7 +130,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTrustedWebActivity,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
-    &kVrBrowsingInCustomTab,
     &kVrBrowsingNativeAndroidUi,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
@@ -375,9 +374,6 @@ const base::Feature kVideoPersistence{"VideoPersistence",
 
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kVrBrowsingInCustomTab{"VrBrowsingInCustomTab",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVrBrowsingNativeAndroidUi{
     "VrBrowsingNativeAndroidUi", base::FEATURE_ENABLED_BY_DEFAULT};

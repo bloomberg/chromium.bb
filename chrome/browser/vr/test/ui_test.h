@@ -31,11 +31,6 @@ class UiTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  enum InCct : bool {
-    kNotInCct = false,
-    kInCct = true,
-  };
-
   enum InWebVr : bool {
     kNotInWebVr = false,
     kInWebVr = true,
@@ -47,7 +42,7 @@ class UiTest : public testing::Test {
   };
 
   void CreateScene(const UiInitialState& state);
-  void CreateScene(InCct in_cct, InWebVr in_web_vr);
+  void CreateScene(InWebVr in_web_vr);
 
  protected:
   void CreateSceneInternal(

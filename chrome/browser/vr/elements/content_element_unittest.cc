@@ -86,7 +86,6 @@ class ContentElementSceneTest : public UiTest {
     UiTest::SetUp();
 
     UiInitialState state;
-    state.in_cct = false;
     state.in_web_vr = false;
     auto content_input_delegate =
         std::make_unique<testing::NiceMock<TestContentInputDelegate>>();
@@ -200,7 +199,7 @@ class ContentElementInputEditingTest : public UiTest {
   void SetUp() override {
     UiTest::SetUp();
 
-    CreateScene(kNotInCct, kNotInWebVr);
+    CreateScene(kNotInWebVr);
 
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();

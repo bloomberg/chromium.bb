@@ -102,10 +102,10 @@ void VerifyNoHitTestableElementInSubtree(UiElement* element) {
 TEST_F(UiTest, WebVrToastStateTransitions) {
   // Tests toast not showing when directly entering VR though WebVR
   // presentation.
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true);
@@ -124,7 +124,7 @@ TEST_F(UiTest, WebVrToastStateTransitions) {
 }
 
 TEST_F(UiTest, WebVrToastTransience) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
@@ -138,7 +138,7 @@ TEST_F(UiTest, WebVrToastTransience) {
 }
 
 TEST_F(UiTest, PlatformToast) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   EXPECT_FALSE(IsVisible(kPlatformToast));
 
   // show and hide toast after a timeout.
@@ -164,7 +164,7 @@ TEST_F(UiTest, PlatformToast) {
 }
 
 TEST_F(UiTest, CaptureToasts) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
@@ -191,13 +191,9 @@ TEST_F(UiTest, CaptureToasts) {
   }
 }
 
-TEST_F(UiTest, CloseButtonVisibleInCctFullscreen) {
-  // Button should be visible in cct.
-  CreateScene(kInCct, kNotInWebVr);
-  EXPECT_TRUE(IsVisible(kCloseButton));
-
-  // Button should not be visible when not in cct or fullscreen.
-  CreateScene(kNotInCct, kNotInWebVr);
+TEST_F(UiTest, CloseButtonVisibleInFullscreen) {
+  // Button should not be visible when not in fullscreen.
+  CreateScene(kNotInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
 
   // Button should be visible in fullscreen and hidden when leaving fullscreen.
@@ -207,22 +203,14 @@ TEST_F(UiTest, CloseButtonVisibleInCctFullscreen) {
   EXPECT_FALSE(IsVisible(kCloseButton));
 
   // Button should not be visible when in WebVR.
-  CreateScene(kInCct, kInWebVr);
+  CreateScene(kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
   ui_->SetWebVrMode(false);
-  EXPECT_TRUE(IsVisible(kCloseButton));
-
-  // Button should be visible in Cct across transistions in fullscreen.
-  CreateScene(kInCct, kNotInWebVr);
-  EXPECT_TRUE(IsVisible(kCloseButton));
-  ui_->SetFullscreen(true);
-  EXPECT_TRUE(IsVisible(kCloseButton));
-  ui_->SetFullscreen(false);
-  EXPECT_TRUE(IsVisible(kCloseButton));
+  EXPECT_FALSE(IsVisible(kCloseButton));
 }
 
 TEST_F(UiTest, UiUpdatesForIncognito) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
   SkColor initial_background = SK_ColorBLACK;
@@ -272,7 +260,7 @@ TEST_F(UiTest, UiUpdatesForIncognito) {
 }
 
 TEST_F(UiTest, VoiceSearchHiddenInIncognito) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   model_->push_mode(kModeEditingOmnibox);
   EXPECT_TRUE(OnBeginFrame());
@@ -284,7 +272,7 @@ TEST_F(UiTest, VoiceSearchHiddenInIncognito) {
 }
 
 TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
@@ -297,7 +285,7 @@ TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
 }
 
 TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
@@ -311,7 +299,7 @@ TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
 }
 
 TEST_F(UiTest, UiModeWebVr) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
@@ -330,7 +318,7 @@ TEST_F(UiTest, UiModeWebVr) {
 }
 
 TEST_F(UiTest, UiModeOmniboxEditing) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
@@ -352,7 +340,7 @@ TEST_F(UiTest, UiModeOmniboxEditing) {
 }
 
 TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
@@ -389,7 +377,7 @@ TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
 }
 
 TEST_F(UiTest, HostedUiInWebVr) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
   VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
   EXPECT_TRUE(ui_->CanSendWebVrVSync());
 
@@ -417,7 +405,7 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kContentFrame);
   visible_in_fullscreen.insert(kContentFrameHitPlane);
 
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
   SkColor initial_background = SK_ColorBLACK;
@@ -469,7 +457,7 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
 }
 
 TEST_F(UiTest, SecurityIconClickTriggersUnsupportedMode) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -517,7 +505,7 @@ TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
 }
 
 TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
   ui_->ShowSoftInput(true);
   OnBeginFrame();
@@ -529,7 +517,7 @@ TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
 }
 
 TEST_F(UiTest, ShowAndHideExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
   model_->push_mode(kModeModalPrompt);
@@ -543,7 +531,7 @@ TEST_F(UiTest, ShowAndHideExitPrompt) {
 }
 
 TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -561,7 +549,7 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
 }
 
 TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -580,7 +568,7 @@ TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
 }
 
 TEST_F(UiTest, ClickOnPromptBackgroundDoesNothing) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
   OnBeginFrame();
@@ -598,7 +586,7 @@ TEST_F(UiTest, ClickOnPromptBackgroundDoesNothing) {
 }
 
 TEST_F(UiTest, UiUpdatesForWebVR) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
 
   model_->capturing_state.audio_capture_enabled = true;
   model_->capturing_state.video_capture_enabled = true;
@@ -615,7 +603,7 @@ TEST_F(UiTest, UiUpdatesForWebVR) {
 // user hits the app button to exit WebVR mode, but the site continues to pump
 // frames. If the frame is not ignored, our UI will think we're in WebVR mode.
 TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
 
   ui_->OnWebVrFrameAvailable();
   VerifyOnlyElementsVisible("Elements hidden", std::set<UiElementName>{});
@@ -628,7 +616,7 @@ TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
 }
 
 TEST_F(UiTest, UiUpdateTransitionToWebVR) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   model_->capturing_state.audio_capture_enabled = true;
   model_->capturing_state.video_capture_enabled = true;
   model_->capturing_state.screen_capture_enabled = true;
@@ -650,7 +638,7 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
       kBluetoothConnectedIndicator,
   };
 
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 
@@ -684,7 +672,7 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
 }
 
 TEST_F(UiTest, PropagateContentBoundsOnStart) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   gfx::SizeF expected_bounds(0.495922f, 0.330614f);
   EXPECT_CALL(*browser_,
@@ -696,7 +684,7 @@ TEST_F(UiTest, PropagateContentBoundsOnStart) {
 }
 
 TEST_F(UiTest, PropagateContentBoundsOnFullscreen) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   ui_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
   ui_->SetFullscreen(true);
@@ -711,7 +699,7 @@ TEST_F(UiTest, PropagateContentBoundsOnFullscreen) {
 }
 
 TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   EXPECT_FALSE(RunForMs(0));
   ui_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
@@ -728,7 +716,7 @@ TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
 }
 
 TEST_F(UiTest, LoadingIndicatorBindings) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   UiElement* background = scene_->GetUiElementByName(kLoadingIndicator);
   UiElement* foreground =
       scene_->GetUiElementByName(kLoadingIndicatorForeground);
@@ -759,13 +747,13 @@ TEST_F(UiTest, LoadingIndicatorBindings) {
 }
 
 TEST_F(UiTest, ExitWarning) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   ui_->SetIsExiting();
   EXPECT_TRUE(VerifyVisibility(kElementsVisibleWithExitWarning, true));
 }
 
 TEST_F(UiTest, WebVrTimeout) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
 
   ui_->SetWebVrMode(true);
   model_->web_vr.state = kWebVrAwaitingFirstFrame;
@@ -817,7 +805,7 @@ TEST_F(UiTest, WebVrTimeout) {
 }
 
 TEST_F(UiTest, SpeechRecognitionUiVisibility) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   ui_->SetSpeechRecognitionEnabled(true);
 
@@ -883,7 +871,7 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
 }
 
 TEST_F(UiTest, SpeechRecognitionUiVisibilityNoResult) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   ui_->SetSpeechRecognitionEnabled(true);
   EXPECT_TRUE(RunForMs(kSpeechRecognitionOpacityAnimationDurationMs));
@@ -912,7 +900,7 @@ TEST_F(UiTest, SpeechRecognitionUiVisibilityNoResult) {
 }
 
 TEST_F(UiTest, OmniboxSuggestionBindings) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   UiElement* container = scene_->GetUiElementByName(kOmniboxSuggestions);
   ASSERT_NE(container, nullptr);
 
@@ -938,7 +926,7 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
 }
 
 TEST_F(UiTest, OmniboxSuggestionNavigates) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   GURL gurl("http://test.com/");
   model_->push_mode(kModeEditingOmnibox);
   model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
@@ -961,7 +949,7 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
 }
 
 TEST_F(UiTest, ControllerQuiescence) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   OnBeginFrame();
   EXPECT_TRUE(IsVisible(kControllerGroup));
   model_->skips_redraw_when_not_dirty = true;
@@ -986,7 +974,8 @@ TEST_F(UiTest, ControllerQuiescence) {
 }
 
 TEST_F(UiTest, CloseButtonColorBindings) {
-  CreateScene(kInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
+  ui_->SetFullscreen(true);
   EXPECT_TRUE(IsVisible(kCloseButton));
   DiscButton* button =
       static_cast<DiscButton*>(scene_->GetUiElementByName(kCloseButton));
@@ -1025,7 +1014,7 @@ TEST_F(UiTest, CloseButtonColorBindings) {
 }
 
 TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   ui_->SetWebVrMode(true);
   // Clicking app button should trigger to exit presentation.
   EXPECT_CALL(*browser_, ExitPresent());
@@ -1064,7 +1053,7 @@ TEST_F(UiTest, TextureBackgroundAfterAssetLoaded) {
 }
 
 TEST_F(UiTest, ControllerLabels) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerTrackpadRepositionLabel));
@@ -1128,7 +1117,7 @@ TEST_F(UiTest, ControllerLabels) {
 }
 
 TEST_F(UiTest, ResetRepositioner) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   Repositioner* repositioner = static_cast<Repositioner*>(
       scene_->GetUiElementByName(k2dBrowsingRepositioner));
@@ -1152,13 +1141,13 @@ TEST_F(UiTest, ResetRepositioner) {
 
 // No element in the controller root's subtree should be hit testable.
 TEST_F(UiTest, ControllerHitTest) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   auto* controller = scene_->GetUiElementByName(kControllerRoot);
   VerifyNoHitTestableElementInSubtree(controller);
 }
 
 TEST_F(UiTest, BrowsingRootBounds) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   auto* elem = scene_->GetUiElementByName(k2dBrowsingContentGroup);
   auto* root = scene_->GetUiElementByName(k2dBrowsingRepositioner);
   for (; elem; elem = elem->parent()) {
@@ -1174,7 +1163,7 @@ TEST_F(UiTest, BrowsingRootBounds) {
 }
 
 TEST_F(UiTest, DisableResizeWhenEditing) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   UiElement* hit_plane = scene_->GetUiElementByName(kContentFrameHitPlane);
   EXPECT_TRUE(hit_plane->hit_testable());
   model_->editing_web_input = true;
@@ -1208,7 +1197,7 @@ TEST_F(UiTest, DisableResizeWhenEditing) {
 }
 
 TEST_F(UiTest, RepositionHostedUi) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
 
   Repositioner* repositioner = static_cast<Repositioner*>(
       scene_->GetUiElementByName(k2dBrowsingRepositioner));
@@ -1229,7 +1218,7 @@ TEST_F(UiTest, RepositionHostedUi) {
 
 // Ensures that permissions do not appear after showing hosted UI.
 TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
@@ -1249,7 +1238,7 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
 // is released that we do not show the exclusive screen toast. Distinguishing
 // these cases requires knowledge of the previous state.
 TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
-  CreateScene(kNotInCct, kInWebVr);
+  CreateScene(kInWebVr);
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
@@ -1272,7 +1261,7 @@ TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
 }
 
 TEST_F(UiTest, MenuItems) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   model_->overflow_menu_enabled = true;
 
   EXPECT_EQ(IsVisible(kOverflowMenuNewIncognitoTabItem), true);
@@ -1295,7 +1284,7 @@ TEST_F(UiTest, MenuItems) {
 }
 
 TEST_F(UiTest, SteadyState) {
-  CreateScene(kNotInCct, kNotInWebVr);
+  CreateScene(kNotInWebVr);
   RunForSeconds(10.0f);
   // Should have reached steady state.
   EXPECT_FALSE(OnBeginFrame());

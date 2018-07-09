@@ -2747,9 +2747,6 @@ void UiSceneCreator::CreateCloseButton() {
         if (model->fullscreen_enabled()) {
           browser->ExitFullscreen();
         }
-        if (model->in_cct) {
-          browser->ExitCct();
-        }
       },
       base::Unretained(model_), base::Unretained(browser_));
   std::unique_ptr<DiscButton> element =
@@ -2765,7 +2762,7 @@ void UiSceneCreator::CreateCloseButton() {
 
   // Close button is a special control element that needs to be hidden when
   // in WebVR, but it needs to be visible when in cct or fullscreen.
-  VR_BIND_VISIBILITY(element, model->fullscreen_enabled() || model->in_cct);
+  VR_BIND_VISIBILITY(element, model->fullscreen_enabled());
   element->AddBinding(
       VR_BIND(bool, Model, model_, model->fullscreen_enabled(), UiElement,
               element.get(),

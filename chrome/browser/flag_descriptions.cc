@@ -3386,10 +3386,6 @@ const char kVrBrowsingExperimentalRenderingDescription[] =
     "Experimental rendering features for VR browsing (e.g. power-saving "
     "rendering modes).";
 
-const char kVrBrowsingInCustomTabName[] = "VR browsing in Custom Tabs";
-const char kVrBrowsingInCustomTabDescription[] =
-    "Allow browsing within a VR headset while in a Custom Tab.";
-
 const char kWebVrAutopresentFromIntentName[] =
     "WebVR auto presentation from intents";
 const char kWebVrAutopresentFromIntentDescription[] =

@@ -44,7 +44,6 @@ class UiBrowserInterface {
   virtual void CloseAllTabs() = 0;
   virtual void CloseAllIncognitoTabs() = 0;
   virtual void OpenFeedback() = 0;
-  virtual void ExitCct() = 0;
   virtual void CloseHostedDialog() = 0;
   virtual void OnUnsupportedMode(UiUnsupportedMode mode) = 0;
   virtual void OnExitVrPromptResult(ExitVrPromptChoice choice,

@@ -36,7 +36,6 @@ struct VR_EXPORT Model {
   bool loading = false;
   float load_progress = 0.0f;
   bool incognito = false;
-  bool in_cct = false;
   bool can_navigate_back = false;
   bool can_navigate_forward = false;
   ToolbarState toolbar_state;
