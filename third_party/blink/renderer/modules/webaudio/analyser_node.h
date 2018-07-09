@@ -80,7 +80,7 @@ class AnalyserHandler final : public AudioBasicInspectorHandler {
   // because the node must get pulled even if there are no inputs or
   // outputs so that the internal state is properly updated with the
   // correct time data.
-  void UpdatePullStatus() override;
+  void UpdatePullStatusIfNeeded() override;
 
   bool RequiresTailProcessing() const final;
   double TailTime() const final;

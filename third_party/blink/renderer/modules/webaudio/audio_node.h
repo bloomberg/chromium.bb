@@ -238,6 +238,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   void UpdateChannelCountMode();
   void UpdateChannelInterpretation();
 
+  // Called when this node's outputs may have become connected or disconnected
+  // to handle automatic pull nodes.
+  virtual void UpdatePullStatusIfNeeded() {}
+
  protected:
   // Inputs and outputs must be created before the AudioHandler is
   // initialized.
@@ -315,13 +319,13 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
 
   void HandleChannelOptions(const AudioNodeOptions&, ExceptionState&);
 
-  virtual AudioNode* connect(AudioNode*,
-                             unsigned output_index,
-                             unsigned input_index,
-                             ExceptionState&);
+  AudioNode* connect(AudioNode*,
+                     unsigned output_index,
+                     unsigned input_index,
+                     ExceptionState&);
   void connect(AudioParam*, unsigned output_index, ExceptionState&);
   void disconnect();
-  virtual void disconnect(unsigned output_index, ExceptionState&);
+  void disconnect(unsigned output_index, ExceptionState&);
   void disconnect(AudioNode*, ExceptionState&);
   void disconnect(AudioNode*, unsigned output_index, ExceptionState&);
   void disconnect(AudioNode*,
