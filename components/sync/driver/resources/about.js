@@ -191,7 +191,16 @@ cr.define('chrome.sync.about_tab', function() {
    * @param {MouseEvent} e the click event that triggered the toggle.
    */
   function expandListener(e) {
-    e.target.classList.toggle('traffic-event-entry-expanded');
+    if (e.target.classList.contains("proto")) {
+      // We ignore proto clicks to keep it copyable.
+      return;
+    }
+    var traffic_event_div = e.target;
+    // Click might be on div's child.
+    if (traffic_event_div.nodeName != "DIV") {
+      traffic_event_div = traffic_event_div.parentNode;
+    }
+    traffic_event_div.classList.toggle('traffic-event-entry-expanded');
   }
 
   /**
