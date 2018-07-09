@@ -396,7 +396,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         WebappActivity.addWebappInfo(info.id(), info);
         Intent launchIntent = WebappLauncherActivity.createWebappLaunchIntent(info, false);
         launchIntent.putExtras(mIntent.getExtras());
-        launchIntent.setFlags(launchIntent.getFlags() | mIntent.getFlags());
 
         mActivity.startActivity(launchIntent);
         return true;
