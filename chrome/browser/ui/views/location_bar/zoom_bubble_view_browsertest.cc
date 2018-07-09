@@ -273,6 +273,72 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest,
   EXPECT_NE(new_label, old_label);
 }
 
+class ZoomBubbleReuseTest : public ZoomBubbleBrowserTest {
+ protected:
+  // Performs two zoom changes by these respective clients (where nullptr
+  // represents a user initiated zoom). Returns true if the zoom change by
+  // |client2| reused the bubble from the zoom change by |client1|.
+  bool IsBubbleReused(scoped_refptr<const TestZoomRequestClient> client1,
+                      scoped_refptr<const TestZoomRequestClient> client2) {
+    // This test would be inconclusive for clients that do not create bubbles.
+    // See BubbleSuppressingExtensionRefreshesExistingBubble instead.
+    DCHECK(!client1 || !client1->ShouldSuppressBubble());
+    DCHECK(!client2 || !client2->ShouldSuppressBubble());
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    zoom::ZoomController* zoom_controller =
+        zoom::ZoomController::FromWebContents(web_contents);
+    EXPECT_TRUE(zoom_controller);
+
+    const double starting_zoom_level = zoom_controller->GetZoomLevel();
+    const double zoom_level1 = starting_zoom_level + 0.5;
+    const double zoom_level2 = zoom_level1 + 0.5;
+
+    zoom_controller->SetZoomLevelByClient(zoom_level1, client1);
+    const ZoomBubbleView* bubble1 = ZoomBubbleView::GetZoomBubble();
+    EXPECT_TRUE(bubble1);
+    zoom_controller->SetZoomLevelByClient(zoom_level2, client2);
+    const ZoomBubbleView* bubble2 = ZoomBubbleView::GetZoomBubble();
+    EXPECT_TRUE(bubble2);
+
+    return bubble1 == bubble2;
+  }
+
+  void SetUpOnMainThread() override {
+    extension1_ = extensions::ExtensionBuilder("Test1").Build();
+    client1_ =
+        base::MakeRefCounted<const TestZoomRequestClient>(extension1_, false);
+    extension2_ = extensions::ExtensionBuilder("Test2").Build();
+    client2_ =
+        base::MakeRefCounted<const TestZoomRequestClient>(extension2_, false);
+  }
+
+  scoped_refptr<const extensions::Extension> extension1_;
+  scoped_refptr<const TestZoomRequestClient> client1_;
+  scoped_refptr<const extensions::Extension> extension2_;
+  scoped_refptr<const TestZoomRequestClient> client2_;
+};
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleReuseTest, BothUserInitiated) {
+  EXPECT_TRUE(IsBubbleReused(nullptr, nullptr));
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleReuseTest, SameExtension) {
+  EXPECT_TRUE(IsBubbleReused(client1_, client1_));
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleReuseTest, DifferentExtension) {
+  EXPECT_FALSE(IsBubbleReused(client1_, client2_));
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleReuseTest, ExtensionThenUser) {
+  EXPECT_FALSE(IsBubbleReused(client1_, nullptr));
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleReuseTest, UserThenExtension) {
+  EXPECT_FALSE(IsBubbleReused(nullptr, client1_));
+}
+
 class ZoomBubbleDialogTest : public DialogBrowserTest {
  public:
   ZoomBubbleDialogTest() {}

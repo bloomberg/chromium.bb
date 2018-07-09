@@ -282,20 +282,27 @@ bool ZoomBubbleView::RefreshBubbleIfShowing(
 
 // static
 bool ZoomBubbleView::CanRefresh(const content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
+  // Can't refresh when there's not already a bubble for this tab.
+  if (!zoom_bubble_ || (zoom_bubble_->web_contents() != web_contents))
     return false;
 
-  const views::View* anchor_view = GetAnchorViewForBrowser(browser);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser ||
+      (zoom_bubble_->GetAnchorView() != GetAnchorViewForBrowser(browser)))
+    return false;
+
   const extensions::ExtensionZoomRequestClient* client =
       GetExtensionZoomRequestClient(web_contents);
 
-  // If the bubble is already showing in this window and the zoom change was not
-  // initiated by an extension that needs attribution in the zoom bubble, then
-  // the bubble can be reused and only the label text needs to be updated.
-  return zoom_bubble_ && zoom_bubble_->web_contents() == web_contents &&
-         zoom_bubble_->GetAnchorView() == anchor_view &&
-         (!client || client->ShouldSuppressBubble());
+  // Allow refreshes when the client won't create its own bubble; otherwise
+  // the existing bubble would show the wrong zoom value.
+  if (client && client->ShouldSuppressBubble())
+    return true;
+
+  // Allow refreshes when the existing bubble has the same attribution for
+  // the zoom change, so only the label needs updating.
+  return zoom_bubble_->extension_info_.id ==
+         (client ? client->extension()->id() : std::string());
 }
 
 // static
