@@ -1569,17 +1569,27 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   // Next, insert items which is in dataModel but not in current items.
   var modelIndex = 0;
   var itemIndex = 0;
+  // Starts with TOP_SECTION so first section doesn't get the separator line.
+  var previousSection = NavigationSection.TOP;
   while (modelIndex < this.dataModel.length) {
     if (itemIndex < this.items.length &&
         this.items[itemIndex].modelItem === this.dataModel.item(modelIndex)) {
+      var modelItem = this.items[itemIndex].modelItem;
+      if (previousSection !== modelItem.section)
+        this.items[itemIndex].setAttribute('section-start', previousSection);
+      previousSection = modelItem.section;
       if (recursive && this.items[itemIndex] instanceof VolumeItem)
         this.items[itemIndex].updateSubDirectories(true);
     } else {
       var modelItem = this.dataModel.item(modelIndex);
       if (modelItem) {
         var item = DirectoryTree.createDirectoryItem(modelItem, this);
-        if (item)
+        if (item) {
           this.addAt(item, itemIndex);
+          if (previousSection !== modelItem.section)
+            item.setAttribute('section-start', previousSection);
+        }
+        previousSection = modelItem.section;
       }
     }
     itemIndex++;

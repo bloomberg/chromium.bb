@@ -15,6 +15,24 @@ var NavigationModelItemType = {
 };
 
 /**
+ * Navigation List sections. A section is just a visual grouping of some items.
+ *
+ * Sections:
+ *      - TOP: Recents, Shortcuts.
+ *      - MY_FILES: My Files (which includes Downloads, Crostini and Arc++ as
+ *                  its children).
+ *      - REMOVABLE: Archives, MTPs, Media Views and Removables.
+ *      - CLOUD: Drive and FSPs.
+ * @enum {string}
+ */
+var NavigationSection = {
+  TOP: 'top',
+  MY_FILES: 'my_files',
+  REMOVABLE: 'removable',
+  CLOUD: 'cloud',
+};
+
+/**
  * Base item of NavigationListModel. Should not be created directly.
  * @param {string} label
  * @param {NavigationModelItemType} type
@@ -24,11 +42,40 @@ var NavigationModelItemType = {
 function NavigationModelItem(label, type) {
   this.label_ = label;
   this.type_ = type;
+
+  /**
+   * @type {NavigationSection} section which this item belongs to.
+   */
+  this.section_ = NavigationSection.TOP;
+
+  /** @type {number} original order when returned from VolumeManager. */
+  this.originalOrder_ = -1;
 }
 
 NavigationModelItem.prototype = /** @struct */ {
-  get label() { return this.label_; },
-  get type() { return this.type_; }
+  get label() {
+    return this.label_;
+  },
+  get type() {
+    return this.type_;
+  },
+
+  /** @type {NavigationSection} */
+  get section() {
+    return this.section_;
+  },
+  /** @param {NavigationSection} section */
+  set section(section) {
+    this.section_ = section;
+  },
+
+  /** @type {number} */
+  get originalOrder() {
+    return this.originalOrder_;
+  },
+  set originalOrder(order) {
+    this.originalOrder_ = order;
+  },
 };
 
 /**
@@ -431,6 +478,7 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   // of indexes, otherwise saves the index as int directly.
   for (let i = 0; i < volumeList.length; i++) {
     const volumeType = volumeList[i].volumeInfo.volumeType;
+    volumeList[i].originalOrder = i;
     switch (volumeType) {
       case VolumeManagerCommon.VolumeType.CROSTINI:
       case VolumeManagerCommon.VolumeType.DOWNLOADS:
@@ -492,6 +540,7 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
 
   this.navigationItems_.push(myFilesModel);
+  myFilesModel.section = NavigationSection.MY_FILES;
 
   const androidVolume =
       getSingleVolume(VolumeManagerCommon.VolumeType.ANDROID_FILES);
@@ -508,22 +557,32 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     myFilesEntry.addEntry(this.linuxFilesItem_.entry);
   }
 
-  // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE.
-  // TODO(lucmult) sort based on the index number to preserve original order.
-  const otherVolumes = [].concat(
-      getVolumes(VolumeManagerCommon.VolumeType.MEDIA_VIEW),
-      getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
-      getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
-      getVolumes(VolumeManagerCommon.VolumeType.MTP));
+  // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE. These types belong to same
+  // section.
+  const otherVolumes =
+      [].concat(
+            getVolumes(VolumeManagerCommon.VolumeType.MEDIA_VIEW),
+            getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
+            getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
+            getVolumes(VolumeManagerCommon.VolumeType.MTP))
+          .sort((volume1, volume2) => {
+            return volume1.originalOrder - volume2.originalOrder;
+          });
 
-  for (const volume of otherVolumes)
+  for (const volume of otherVolumes) {
     this.navigationItems_.push(volume);
+    volume.section = NavigationSection.REMOVABLE;
+  }
 
-  for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE))
+  for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
     this.navigationItems_.push(driveItem);
+    driveItem.section = NavigationSection.CLOUD;
+  }
 
-  for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED))
+  for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED)) {
     this.navigationItems_.push(provided);
+    provided.section = NavigationSection.CLOUD;
+  }
 
   if (this.addNewServicesItem_)
     this.navigationItems_.push(this.addNewServicesItem_);
