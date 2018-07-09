@@ -7,10 +7,12 @@
 #include "ash/app_menu/notification_item_view.h"
 #include "ash/app_menu/notification_menu_header_view.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -31,6 +33,10 @@ NotificationMenuView::NotificationMenuView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
+  double_separator_ =
+      new views::MenuSeparator(ui::MenuSeparatorType::DOUBLE_SEPARATOR);
+  AddChildView(double_separator_);
+
   header_view_ = new NotificationMenuHeaderView();
   AddChildView(header_view_);
 }
@@ -42,9 +48,10 @@ bool NotificationMenuView::IsEmpty() const {
 }
 
 gfx::Size NotificationMenuView::CalculatePreferredSize() const {
-  return gfx::Size(
-      views::MenuConfig::instance().touchable_menu_width,
-      header_view_->GetPreferredSize().height() + kNotificationItemViewHeight);
+  return gfx::Size(views::MenuConfig::instance().touchable_menu_width,
+                   double_separator_->GetPreferredSize().height() +
+                       header_view_->GetPreferredSize().height() +
+                       kNotificationItemViewHeight);
 }
 
 void NotificationMenuView::AddNotificationItemView(
