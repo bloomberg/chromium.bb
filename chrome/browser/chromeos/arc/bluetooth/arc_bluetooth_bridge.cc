@@ -478,7 +478,6 @@ ArcBluetoothBridge::ConnectionObserverImpl<
 ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service), weak_factory_(this) {
-  arc_bridge_service_->bluetooth()->SetHost(this);
   arc_bridge_service_->bluetooth()->AddObserver(this);
 
   app_observer_ = std::make_unique<
@@ -520,6 +519,12 @@ void ArcBluetoothBridge::OnAdapterInitialized(
 
   if (!bluetooth_adapter_->HasObserver(this))
     bluetooth_adapter_->AddObserver(this);
+
+  // Once the bluetooth adapter is ready, we can now signal the container that
+  // the interface is ready to be interacted with. This avoids races in most
+  // methods, since it's undesirable to implement a retry mechanism for the
+  // cases when an inbound method is called and the adapter is not ready yet.
+  arc_bridge_service_->bluetooth()->SetHost(this);
 }
 
 void ArcBluetoothBridge::OnConnectionReady() {
