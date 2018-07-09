@@ -572,7 +572,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CommitNavigation(
       network::ResourceResponse* response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      mojo::ScopedDataPipeConsumerHandle response_body,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       bool is_view_source,

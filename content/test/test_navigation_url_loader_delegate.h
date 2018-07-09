@@ -63,7 +63,6 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnResponseStarted(
       const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      mojo::ScopedDataPipeConsumerHandle response_body,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
@@ -79,7 +78,6 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   scoped_refptr<network::ResourceResponse> redirect_response_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   scoped_refptr<network::ResourceResponse> response_;
-  mojo::ScopedDataPipeConsumerHandle response_body_;
   int net_error_;
   net::SSLInfo ssl_info_;
   int on_request_handled_counter_;

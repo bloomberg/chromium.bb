@@ -53,7 +53,6 @@ interface NavigationClient {
       CommonNavigationParams common_params,
       RequestNavigationParams request_params,
       network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints,
-      handle<data_pipe_consumer>? response_body,
       URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       ControllerServiceWorkerInfo? controller_service_worker_info,

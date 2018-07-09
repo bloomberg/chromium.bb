@@ -54,7 +54,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -913,15 +912,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    // When NavigationImmediateResponseBody is enabled, wait for
-    // DidStartLoadingResponseBody() before sending anything to the renderer
-    // process.
-    if (IsNavigationImmediateResponseBodyEnabled() &&
-        !IsLoaderInterceptionEnabled() && !response_body_.is_valid()) {
-      head_ = head;
-      return;
-    }
-
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -1076,11 +1066,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // response. https://crbug.com/416050
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &NavigationURLLoaderImpl::OnReceiveResponse, owner_,
-            response->DeepCopy(), std::move(url_loader_client_endpoints),
-            std::move(response_body_), std::move(cloned_navigation_data),
-            global_request_id_, is_download, is_stream));
+        base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
+                       response->DeepCopy(),
+                       std::move(url_loader_client_endpoints),
+                       std::move(cloned_navigation_data), global_request_id_,
+                       is_download, is_stream));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1118,19 +1108,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle response_body) override {
-    // When NavigationImmediateResponseBody is disabled, this is not reached.
-    // At this point, the loader and client endpoints must have been unbound and
-    // forwarded to the renderer.
-    CHECK(IsNavigationImmediateResponseBodyEnabled());
-
-    // When NavigationImmediateResponseBody is enabled, the NavigationURLLoader
-    // waits for OnStartLoadingResponseBody() instead of OnReceiveResponse()
-    // before delegating the load to an URLLoaderClientImpl in the renderer
-    // process.
-    response_body_ = std::move(response_body);
-    OnReceiveResponse(head_);
+  void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle) override {
+    // Not reached. At this point, the loader and client endpoints must have
+    // been unbound and forwarded to the renderer.
+    CHECK(false);
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
@@ -1300,9 +1281,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // protocol handlers.
   std::set<std::string> known_schemes_;
 
-  network::ResourceResponseHead head_;
-  mojo::ScopedDataPipeConsumerHandle response_body_;
-
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -1466,7 +1444,6 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {}
 void NavigationURLLoaderImpl::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
@@ -1479,7 +1456,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
 
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints),
-      std::move(response_body), std::move(navigation_data), global_request_id,
+      std::move(navigation_data), global_request_id,
       allow_download_ && is_download, is_stream,
       request_controller_->TakeSubresourceLoaderParams());
 }

@@ -44,7 +44,6 @@ void TestNavigationURLLoaderDelegate::WaitForRequestStarted() {
 
 void TestNavigationURLLoaderDelegate::ReleaseURLLoaderClientEndpoints() {
   url_loader_client_endpoints_ = nullptr;
-  response_body_.reset();
 }
 
 void TestNavigationURLLoaderDelegate::OnRequestRedirected(
@@ -59,7 +58,6 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -67,7 +65,6 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   response_ = response;
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
-  response_body_ = std::move(response_body);
   if (response->head.ssl_info.has_value())
     ssl_info_ = *response->head.ssl_info;
   is_download_ = is_download;

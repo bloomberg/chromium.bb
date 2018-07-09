@@ -135,17 +135,11 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   void OnUploadProgressACK();
   static void InitializeResourceBufferConstants();
 
-  void MaybeCreateResponseBodyDataPipe();
-  void MaybeSendStartLoadingResponseBody();
-
-  bool has_created_response_body_data_pipe_ = false;
-
   ResourceDispatcherHostImpl* rdh_;
   mojo::Binding<network::mojom::URLLoader> binding_;
 
   uint32_t url_loader_options_;
 
-  bool has_started_one_read_ = false;
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;

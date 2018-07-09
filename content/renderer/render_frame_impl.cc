@@ -3045,7 +3045,6 @@ void RenderFrameImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
@@ -3140,7 +3139,7 @@ void RenderFrameImpl::CommitNavigation(
     } else {
       WebURLRequest request = CreateURLRequestForCommit(
           common_params, request_params, std::move(url_loader_client_endpoints),
-          std::move(response_body), head);
+          head);
       frame_->CommitNavigation(request, load_type, item_for_history_navigation,
                                is_client_redirect, devtools_navigation_token,
                                std::move(document_state));
@@ -6519,7 +6518,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    mojo::ScopedDataPipeConsumerHandle response_body,
     const network::ResourceResponseHead& head) {
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
@@ -6527,7 +6525,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
       new NavigationResponseOverrideParameters());
   response_override->url_loader_client_endpoints =
       std::move(url_loader_client_endpoints);
-  response_override->response_body = std::move(response_body);
   response_override->response = head;
   response_override->redirects = request_params.redirects;
   response_override->redirect_responses = request_params.redirect_response;
