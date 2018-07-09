@@ -62,7 +62,7 @@ sync_pb::SessionSpecifics SessionTabToSpecifics(
     const std::string& local_tag,
     int tab_node_id) {
   sync_pb::SessionSpecifics specifics;
-  session_tab.ToSyncData().Swap(specifics.mutable_tab());
+  SessionTabToSyncData(session_tab).Swap(specifics.mutable_tab());
   specifics.set_session_tag(local_tag);
   specifics.set_tab_node_id(tab_node_id);
   return specifics;

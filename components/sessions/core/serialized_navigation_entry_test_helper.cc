@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
-#include "components/sync/base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -31,7 +30,8 @@ const bool kHasPostData = true;
 const int64_t kPostID = 100;
 const GURL kOriginalRequestURL = GURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
-const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
+const base::Time kTimestamp =
+    base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(100);
 const GURL kFaviconURL = GURL("http://virtual-url.com/favicon.ico");
 const int kHttpStatusCode = 404;
 const GURL kRedirectURL0 = GURL("http://go/redirect0");

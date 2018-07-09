@@ -25,18 +25,13 @@ class Pickle;
 class PickleIterator;
 }
 
-namespace sync_pb {
-class TabNavigation;
-}
-
 namespace sessions {
 
 class SerializedNavigationEntryTestHelper;
 
 // SerializedNavigationEntry is a "freeze-dried" version of NavigationEntry.  It
 // contains the data needed to restore a NavigationEntry during session restore
-// and tab restore, and it can also be pickled and unpickled.  It is also
-// convertible to a sync protocol buffer for session syncing.
+// and tab restore, and it can also be pickled and unpickled.
 //
 // Default copy constructor and assignment operator welcome.
 class SESSIONS_EXPORT SerializedNavigationEntry {
@@ -64,42 +59,37 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   SerializedNavigationEntry& operator=(const SerializedNavigationEntry& other);
   SerializedNavigationEntry& operator=(SerializedNavigationEntry&& other);
 
-  // Construct a SerializedNavigationEntry for a particular index from a sync
-  // protocol buffer.  Note that the sync protocol buffer doesn't contain all
-  // SerializedNavigationEntry fields.  Also, the timestamp of the returned
-  // SerializedNavigationEntry is nulled out, as we assume that the protocol
-  // buffer is from a foreign session.
-  static SerializedNavigationEntry FromSyncData(
-      int index,
-      const sync_pb::TabNavigation& sync_data);
-
   // Note that not all SerializedNavigationEntry fields are preserved.
   // |max_size| is the max number of bytes to write.
   void WriteToPickle(int max_size, base::Pickle* pickle) const;
   bool ReadFromPickle(base::PickleIterator* iterator);
-
-  // Convert this navigation into its sync protocol buffer equivalent.  Note
-  // that the protocol buffer doesn't contain all SerializedNavigationEntry
-  // fields.
-  sync_pb::TabNavigation ToSyncData() const;
 
   // The index in the NavigationController. This SerializedNavigationEntry is
   // valid only when the index is non-negative.
   int index() const { return index_; }
   void set_index(int index) { index_ = index; }
 
-  // Accessors for some fields taken from NavigationEntry.
   int unique_id() const { return unique_id_; }
+  void set_unique_id(int unique_id) { unique_id_ = unique_id; }
   const base::string16& title() const { return title_; }
+  void set_title(const base::string16& title) { title_ = title; }
   const GURL& favicon_url() const { return favicon_url_; }
+  void set_favicon_url(const GURL& favicon_url) { favicon_url_ = favicon_url; }
   int http_status_code() const { return http_status_code_; }
+  void set_http_status_code(int http_status_code) {
+    http_status_code_ = http_status_code;
+  }
   ui::PageTransition transition_type() const {
     return transition_type_;
+  }
+  void set_transition_type(ui::PageTransition transition_type) {
+    transition_type_ = transition_type;
   }
   bool has_post_data() const { return has_post_data_; }
   int64_t post_id() const { return post_id_; }
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
   base::Time timestamp() const { return timestamp_; }
+  void set_timestamp(base::Time timestamp) { timestamp_ = timestamp; }
 
   BlockedState blocked_state() const { return blocked_state_; }
   void set_blocked_state(BlockedState blocked_state) {
@@ -159,6 +149,13 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
       const {
     return replaced_entry_data_;
   }
+  void set_replaced_entry_data(
+      const base::Optional<ReplacedNavigationEntryData>& replaced_entry_data) {
+    replaced_entry_data_ = replaced_entry_data;
+  }
+
+  bool is_restored() const { return is_restored_; }
+  void set_is_restored(bool is_restored) { is_restored_ = is_restored; }
 
   const std::map<std::string, std::string>& extended_info_map() const {
     return extended_info_map_;

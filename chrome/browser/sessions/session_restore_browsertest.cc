@@ -47,7 +47,6 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/sync/protocol/session_specifics.pb.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -686,24 +685,24 @@ void VerifyNavigationEntries(
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
-  SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(), "one");
-  SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(), "two");
 
   // Set up the restore data.
-  sync_pb::SessionTab sync_data;
-  sync_data.set_tab_visual_index(0);
-  sync_data.set_current_navigation_index(1);
-  sync_data.set_pinned(false);
-  sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
-  sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
-
   sessions::SessionTab tab;
-  tab.SetFromSyncData(sync_data, base::Time::Now());
-  EXPECT_EQ(2U, tab.navigations.size());
-  for (size_t i = 0; i < tab.navigations.size(); ++i)
-    EXPECT_FALSE(tab.navigations[i].timestamp().is_null());
+  tab.tab_visual_index = 0;
+  tab.current_navigation_index = 1;
+  tab.pinned = false;
+  tab.navigations.push_back(
+      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(),
+                                                            "one"));
+  tab.navigations.push_back(
+      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(),
+                                                            "two"));
+
+  for (size_t i = 0; i < tab.navigations.size(); ++i) {
+    ASSERT_FALSE(tab.navigations[i].timestamp().is_null());
+    tab.navigations[i].set_index(i);
+    tab.navigations[i].set_encoded_page_state("");
+  }
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -782,27 +781,27 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   // Set up the restore data -- one window with two tabs.
   std::vector<const sessions::SessionWindow*> session;
   sessions::SessionWindow window;
-  auto tab1 = std::make_unique<sessions::SessionTab>();
   {
-    sync_pb::SessionTab sync_data;
-    sync_data.set_tab_visual_index(0);
-    sync_data.set_current_navigation_index(0);
-    sync_data.set_pinned(true);
-    sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
-    tab1->SetFromSyncData(sync_data, base::Time::Now());
+    auto tab1 = std::make_unique<sessions::SessionTab>();
+    tab1->tab_visual_index = 0;
+    tab1->current_navigation_index = 0;
+    tab1->pinned = true;
+    tab1->navigations.push_back(
+        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+            url1.spec(), "one"));
+    window.tabs.push_back(std::move(tab1));
   }
-  window.tabs.push_back(std::move(tab1));
 
-  auto tab2 = std::make_unique<sessions::SessionTab>();
   {
-    sync_pb::SessionTab sync_data;
-    sync_data.set_tab_visual_index(1);
-    sync_data.set_current_navigation_index(0);
-    sync_data.set_pinned(false);
-    sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
-    tab2->SetFromSyncData(sync_data, base::Time::Now());
+    auto tab2 = std::make_unique<sessions::SessionTab>();
+    tab2->tab_visual_index = 1;
+    tab2->current_navigation_index = 0;
+    tab2->pinned = false;
+    tab2->navigations.push_back(
+        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+            url2.spec(), "two"));
+    window.tabs.push_back(std::move(tab2));
   }
-  window.tabs.push_back(std::move(tab2));
 
   // Leave a third tab empty. Should have no effect on restored session, but
   // simulates partially complete foreign session data.
