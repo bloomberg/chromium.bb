@@ -67,7 +67,16 @@ void DirectoryCommitContribution::AddToCommitMessage(
     commit_message->add_client_contexts()->Swap(&context_);
 
   CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
-  counters->num_commits_attempted += entities_.size();
+  for (const sync_pb::SyncEntity& entity : entities_) {
+    // Update the relevant counter based on the type of |entity|.
+    if (entity.deleted()) {
+      counters->num_deletion_commits_attempted++;
+    } else if (entity.version() <= 0) {
+      counters->num_creation_commits_attempted++;
+    } else {
+      counters->num_update_commits_attempted++;
+    }
+  }
 }
 
 SyncerError DirectoryCommitContribution::ProcessCommitResponse(

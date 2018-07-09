@@ -20,7 +20,12 @@ struct CommitCounters {
   std::unique_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;
 
-  int num_commits_attempted;
+  // Counters updated before sending a commit message to the server.
+  int num_creation_commits_attempted;
+  int num_deletion_commits_attempted;
+  int num_update_commits_attempted;
+
+  // Counters updated based on the response from the server.
   int num_commits_success;
   int num_commits_conflict;
   int num_commits_error;

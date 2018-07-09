@@ -9,7 +9,9 @@
 namespace syncer {
 
 CommitCounters::CommitCounters()
-    : num_commits_attempted(0),
+    : num_creation_commits_attempted(0),
+      num_deletion_commits_attempted(0),
+      num_update_commits_attempted(0),
       num_commits_success(0),
       num_commits_conflict(0),
       num_commits_error(0) {}
@@ -18,7 +20,14 @@ CommitCounters::~CommitCounters() {}
 
 std::unique_ptr<base::DictionaryValue> CommitCounters::ToValue() const {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetInteger("numCommitsAttempted", num_commits_attempted);
+  value->SetInteger("numCreationCommitsAttempted",
+                    num_creation_commits_attempted);
+  value->SetInteger("numDeletionCommitsAttempted",
+                    num_deletion_commits_attempted);
+  value->SetInteger("numUpdateCommitsAttempted", num_update_commits_attempted);
+  value->SetInteger("numCommitsAttempted", num_creation_commits_attempted +
+                                               num_deletion_commits_attempted +
+                                               num_update_commits_attempted);
   value->SetInteger("numCommitsSuccess", num_commits_success);
   value->SetInteger("numCommitsConflict", num_commits_conflict);
   value->SetInteger("numCommitsError", num_commits_error);

@@ -44,6 +44,7 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
 
   commit_message->mutable_entries()->Reserve(commit_message->entries_size() +
                                              commit_requests_.size());
+  CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
 
   for (const auto& commit_request : commit_requests_) {
     sync_pb::SyncEntity* sync_entity = commit_message->add_entries();
@@ -57,13 +58,19 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
       PopulateCommitProto(commit_request, sync_entity);
       AdjustCommitProto(sync_entity);
     }
+
+    // Update the relevant counter based on the type of the commit request.
+    if (commit_request.entity->is_deleted()) {
+      counters->num_deletion_commits_attempted++;
+    } else if (commit_request.base_version <= 0) {
+      counters->num_creation_commits_attempted++;
+    } else {
+      counters->num_update_commits_attempted++;
+    }
   }
 
   if (!context_.context().empty())
     commit_message->add_client_contexts()->CopyFrom(context_);
-
-  CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
-  counters->num_commits_attempted += commit_requests_.size();
 }
 
 SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(

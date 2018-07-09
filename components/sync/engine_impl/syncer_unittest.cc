@@ -1198,9 +1198,9 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_local_overwrites);
 
   // We successfully commited item(s).
-  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_attempted);
+  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_update_commits_attempted);
   EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_success);
-  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_attempted);
+  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_update_commits_attempted);
   EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_success);
 
   EXPECT_TRUE(SyncShareNudge());
