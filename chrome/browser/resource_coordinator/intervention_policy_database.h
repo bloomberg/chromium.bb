@@ -9,9 +9,13 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/version.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.pb.h"
 #include "url/origin.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace resource_coordinator {
 
@@ -41,7 +45,10 @@ class InterventionPolicyDatabase {
 
   // Initialize the database with the OriginInterventionsDatabase protobuf
   // stored in |proto_location|.
-  void InitializeDatabaseWithProtoFile(const base::FilePath& proto_location);
+  void InitializeDatabaseWithProtoFile(
+      const base::FilePath& proto_location,
+      const base::Version& version,
+      std::unique_ptr<base::DictionaryValue> manifest);
 
  protected:
   // Map that associates the MD5 hash of an origin to its polices.
@@ -64,12 +71,6 @@ class InterventionPolicyDatabase {
 
   // The map that stores all the per-origin intervention policies.
   InterventionsMap database_;
-
-  // Used to run all the blocking operations asynchronously.
-  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()});
 
   base::WeakPtrFactory<InterventionPolicyDatabase> weak_factory_;
 

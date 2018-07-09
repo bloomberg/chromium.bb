@@ -188,6 +188,7 @@ TabManager::TabManager()
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
   TabLoadTracker::Get()->AddObserver(this);
+  intervention_policy_database_.reset(new InterventionPolicyDatabase());
 }
 
 TabManager::~TabManager() {

@@ -7,6 +7,10 @@
 
 #include "components/component_updater/component_installer.h"
 
+namespace resource_coordinator {
+class InterventionPolicyDatabase;
+}
+
 namespace component_updater {
 
 class ComponentUpdateService;
@@ -17,7 +21,8 @@ class ComponentUpdateService;
 class InterventionPolicyDatabaseComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
-  InterventionPolicyDatabaseComponentInstallerPolicy() = default;
+  InterventionPolicyDatabaseComponentInstallerPolicy(
+      resource_coordinator::InterventionPolicyDatabase* database);
   ~InterventionPolicyDatabaseComponentInstallerPolicy() override = default;
 
  private:
@@ -39,12 +44,16 @@ class InterventionPolicyDatabaseComponentInstallerPolicy
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+  resource_coordinator::InterventionPolicyDatabase* database_;
+
   DISALLOW_COPY_AND_ASSIGN(InterventionPolicyDatabaseComponentInstallerPolicy);
 };
 
 // Call once to make the component update service aware of the Intervention
 // Policy Database component.
-void RegisterInterventionPolicyDatabaseComponent(ComponentUpdateService* cus);
+void RegisterInterventionPolicyDatabaseComponent(
+    ComponentUpdateService* cus,
+    resource_coordinator::InterventionPolicyDatabase* database);
 
 }  // namespace component_updater
 
