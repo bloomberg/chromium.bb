@@ -164,13 +164,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
         return false;
       }
     }
-    if (fd.is_valid()) {
-      // "a+" is always appropriate: if it's a new file, a+ is similar to w+.
-      if (!fdopen(fd.get(), "a+")) {
-        PLOG(ERROR) << "Creating file stream in " << path.value() << " failed";
-        return false;
-      }
-    }
   }
   if (fd.is_valid() && fix_size) {
     // Get current size.
