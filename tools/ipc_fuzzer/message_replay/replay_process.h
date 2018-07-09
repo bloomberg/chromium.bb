@@ -66,7 +66,6 @@ class ReplayProcess : public IPC::Listener {
   base::MessageLoop main_loop_;
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
-  std::unique_ptr<base::Timer> timer_;
   MessageVector messages_;
   size_t message_index_;
 
