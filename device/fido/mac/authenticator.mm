@@ -47,6 +47,14 @@ std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
                        : nullptr;
 }
 
+// static
+std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
+    std::string keychain_access_group,
+    std::string metadata_secret) {
+  return base::WrapUnique(new TouchIdAuthenticator(
+      std::move(keychain_access_group), std::move(metadata_secret)));
+}
+
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
 
 void TouchIdAuthenticator::MakeCredential(
