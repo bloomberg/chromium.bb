@@ -17,6 +17,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
+#include "ui/base/pref_names.h"
 
 namespace {
 

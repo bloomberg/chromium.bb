@@ -252,6 +252,8 @@ component("base") {
     "page_transition_types.h",
     "platform_window_defaults.cc",
     "platform_window_defaults.h",
+    "pref_names.cc",
+    "pref_names.h",
     "property_data.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",

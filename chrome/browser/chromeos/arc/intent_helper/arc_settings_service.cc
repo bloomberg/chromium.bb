@@ -44,6 +44,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/common/page_zoom.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "ui/base/pref_names.h"
 
 using ::chromeos::CrosSettings;
 using ::chromeos::system::TimezoneSettings;

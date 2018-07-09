@@ -63,6 +63,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "ui/base/pref_names.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
