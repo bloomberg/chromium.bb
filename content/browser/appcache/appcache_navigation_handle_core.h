@@ -50,7 +50,7 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
   void AddRequestToDebugLog(const GURL& url);
   void AddDefaultFactoryRunToDebugLog(bool was_request_intercepted);
   void AddCreateURLLoaderToDebugLog();
-  void AddNavigationStartToDebugLog();
+  void AddNavigationStartToDebugLog(bool network_service);
   std::string GetDebugLog();
 
  protected:

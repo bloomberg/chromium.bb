@@ -373,6 +373,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Temporary CHECKs for https://crbug.com/857005.
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     CHECK(started_);
+    CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     if (appcache_handle_core)
       appcache_handle_core->AddDefaultFactoryRunToDebugLog(
           was_request_intercepted);
@@ -403,8 +404,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    // Temporary CHECKs for https://crbug.com/857005.
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CHECK(started_);
+    CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 
     if (appcache_handle_core)
       appcache_handle_core->AddCreateURLLoaderToDebugLog();
@@ -475,7 +478,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     CHECK(!started_);
     CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     if (appcache_handle_core)
-      appcache_handle_core->AddNavigationStartToDebugLog();
+      appcache_handle_core->AddNavigationStartToDebugLog(
+          false /* network_service */);
 
     started_ = true;
     request_info_ = std::move(request_info);
@@ -570,6 +574,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     CHECK(!started_);
+    if (appcache_handle_core)
+      appcache_handle_core->AddNavigationStartToDebugLog(
+          true /* network_service */);
     global_request_id_ = MakeGlobalRequestID();
     frame_tree_node_id_ = frame_tree_node_id;
     started_ = true;
