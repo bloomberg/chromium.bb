@@ -39,6 +39,25 @@ class TopBackgroundView : public views::View {
     background->set_blend_mode(SkBlendMode::kSrc);
     SetBackground(std::move(background));
   }
+
+#if !defined(USE_AURA)
+  // For non-Aura platforms, forward mouse events intended for the omnibox to
+  // the Widget owning the omnibox. For Aura platforms, this is done with an
+  // event targeter set up in RoundedOmniboxResultsFrame::AddedToWidget(),
+  // below.
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    views::Widget* omnibox_widget = GetWidget()->GetTopLevelWidgetForNativeView(
+        GetWidget()->GetNativeView());
+    DCHECK_NE(GetWidget(), omnibox_widget);
+    ui::MouseEvent omnibox_event(*event);
+    gfx::Point event_location = event->location();
+    views::View::ConvertPointToScreen(this, &event_location);
+    views::View::ConvertPointFromScreen(omnibox_widget->GetRootView(),
+                                        &event_location);
+    omnibox_event.set_location(event_location);
+    omnibox_widget->OnMouseEvent(&omnibox_event);
+  }
+#endif  // !AURA
 };
 
 // Insets used to position |contents_| within |contents_host_|.
