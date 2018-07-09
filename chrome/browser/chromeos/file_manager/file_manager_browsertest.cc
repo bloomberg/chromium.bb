@@ -334,6 +334,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("transferFromTeamDriveToDrive"),
                       TestCase("transferFromDriveToTeamDrive"),
                       TestCase("transferFromTeamDriveToDownloads"),
+                      TestCase("transferHostedFileFromTeamDriveToDownloads"),
                       TestCase("transferFromDownloadsToTeamDrive"),
                       TestCase("transferBetweenTeamDrives")));
 

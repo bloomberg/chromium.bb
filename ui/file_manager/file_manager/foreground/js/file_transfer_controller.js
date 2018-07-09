@@ -703,7 +703,34 @@ FileTransferController.prototype.paste = function(
       this.preparePaste(clipboardData, opt_destinationEntry, opt_effect);
 
   return util.URLsToEntries(pastePlan.sourceURLs).then(function(entriesResult) {
-    var sourceEntries = entriesResult.entries;
+    const sourceEntries = entriesResult.entries;
+    const destinationEntry = pastePlan.destinationEntry;
+    const destinationLocationInfo =
+        this.volumeManager_.getLocationInfo(destinationEntry);
+
+    const destinationIsOutsideOfDrive =
+        VolumeManagerCommon.getVolumeTypeFromRootType(
+            destinationLocationInfo.rootType) !==
+        VolumeManagerCommon.VolumeType.DRIVE;
+
+    // Disallow transferring hosted files from Team Drives to outside of Drive.
+    // This is because hosted files aren't 'real' files, so it doesn't make
+    // sense to allow a 'local' copy (e.g. in Downloads, or on a USB), where the
+    // file can't be accessed offline (or necessarily accessed at all) by the
+    // person who tries to open it.
+    // In future, block this for all hosted files, regardless of their source.
+    // For now, to maintain backwards-compatibility, just block this for hosted
+    // files stored in a Team Drive.
+    if (sourceEntries.some(
+            entry =>
+                util.isTeamDriveEntry(entry) && FileType.isHosted(entry)) &&
+        destinationIsOutsideOfDrive) {
+      // For now, just don't execute the paste.
+      // TODO(sashab): Display a warning message, and disallow drag-drop
+      // operations.
+      return null;
+    }
+
     if (sourceEntries.length == 0) {
       // This can happen when copied files were deleted before pasting them.
       // We execute the plan as-is, so as to share the post-copy logic.
@@ -1446,7 +1473,7 @@ FileTransferController.prototype.onPaste_ = function(event) {
     return;
   }
   event.preventDefault();
-  this.paste(assert(event.clipboardData), destination).then(function(effect) {
+  this.paste(assert(event.clipboardData), destination).then(effect => {
     // On cut, we clear the clipboard after the file is pasted/moved so we don't
     // try to move/delete the original file again.
     if (effect === 'move') {
@@ -1455,7 +1482,7 @@ FileTransferController.prototype.onPaste_ = function(event) {
         event.clipboardData.setData('fs/clear', '');
       });
     }
-  }.bind(this));
+  });
 };
 
 /**
