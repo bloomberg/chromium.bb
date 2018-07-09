@@ -76,23 +76,27 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
   }
   DCHECK(surface_);
 
-  if (!gpu_service_->CreateGrContextIfNecessary(surface_.get())) {
+  gl::GLContext* gl_context = nullptr;
+  if (!gpu_service_->GetGrContextForGLSurface(surface_.get(), &gr_context_,
+                                              &gl_context)) {
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
   }
+  gl_context_ = gl_context;
+  DCHECK(gr_context_);
+  DCHECK(gl_context_);
 
-  DCHECK(gpu_service_->context_for_skia());
-  DCHECK(gpu_service_->gr_context());
-
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+  if (!gl_context_->MakeCurrent(surface_.get())) {
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle the failure.
   }
 
+  gl_version_info_ = gl_context_->GetVersionInfo();
+
   capabilities_.flipped_output_surface = surface_->FlipsVertically();
 
   // Get stencil bits from the default frame buffer.
-  auto* current_gl = gpu_service_->context_for_skia()->GetCurrentGL();
+  auto* current_gl = gl_context_->GetCurrentGL();
   const auto* version = current_gl->Version;
   auto* api = current_gl->Api;
   GLint stencil_bits = 0;
@@ -128,7 +132,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+  if (!gl_context_->MakeCurrent(surface_.get())) {
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle the failure.
   }
@@ -141,22 +145,21 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     LOG(FATAL) << "Failed to resize.";
     // TODO(penghuang): Handle the failure.
   }
-  DCHECK(gpu_service_->context_for_skia()->IsCurrent(surface_.get()));
-  DCHECK(gpu_service_->gr_context());
+  DCHECK(gl_context_->IsCurrent(surface_.get()));
+  DCHECK(gr_context_);
 
   SkSurfaceProps surface_props =
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = 0;
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
-  framebuffer_info.fFormat = version_info->is_es ? GL_BGRA8_EXT : GL_RGBA8;
+  framebuffer_info.fFormat = gl_version_info_->is_es ? GL_BGRA8_EXT : GL_RGBA8;
 
   GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
                                       framebuffer_info);
 
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gpu_service_->gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
+      gr_context_, render_target, kBottomLeft_GrSurfaceOrigin,
       kBGRA_8888_SkColorType, nullptr, &surface_props);
   DCHECK(sk_surface_);
 
@@ -174,7 +177,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   DCHECK(ddl);
   DCHECK(sk_surface_);
 
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+  if (!gl_context_->MakeCurrent(surface_.get())) {
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle the failure.
   }
@@ -182,14 +185,14 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   PreprocessYUVResources(std::move(yuv_resource_metadatas));
 
   sk_surface_->draw(ddl.get());
-  gpu_service_->gr_context()->flush();
+  gr_context_->flush();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sk_surface_);
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+  if (!gl_context_->MakeCurrent(surface_.get())) {
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle the failure.
   }
@@ -207,7 +210,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+  if (!gl_context_->MakeCurrent(surface_.get())) {
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle resize failure.
   }
@@ -220,8 +223,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   // the SkSurfaceCharacterization::operator!= is implemented in Skia.
   if (!surface || !surface->characterize(&characterization) ||
       characterization != ddl->characterization()) {
-    surface = SkSurface::MakeRenderTarget(
-        gpu_service_->gr_context(), ddl->characterization(), SkBudgeted::kNo);
+    surface = SkSurface::MakeRenderTarget(gr_context_, ddl->characterization(),
+                                          SkBudgeted::kNo);
     DCHECK(surface);
   }
   surface->draw(ddl.get());
@@ -307,6 +310,11 @@ void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
   DLOG_IF(ERROR, !backend_texture->isValid())
       << "Failed to full fill the promise texture created from RenderPassId:"
       << id;
+}
+
+sk_sp<GrContextThreadSafeProxy>
+SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
+  return gr_context_->threadSafeProxy();
 }
 
 #if defined(OS_WIN)
@@ -413,15 +421,13 @@ void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
     sk_sp<SkImage> image;
     if (metadatas.size() == 2) {
       image = SkImage::MakeFromNV12TexturesCopy(
-          gpu_service_->gr_context(), yuv_metadata->yuv_color_space(),
-          backend_textures, kTopLeft_GrSurfaceOrigin,
-          nullptr /* image_color_space */);
+          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
+          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
       DCHECK(image);
     } else {
       image = SkImage::MakeFromYUVTexturesCopy(
-          gpu_service_->gr_context(), yuv_metadata->yuv_color_space(),
-          backend_textures, kTopLeft_GrSurfaceOrigin,
-          nullptr /* image_color_space */);
+          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
+          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
       DCHECK(image);
     }
     yuv_metadata->set_image(std::move(image));

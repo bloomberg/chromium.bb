@@ -123,6 +123,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void FullfillPromiseTexture(const RenderPassId id,
                               GrBackendTexture* backend_texture);
 
+  sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
+  const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
+
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -153,6 +156,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<gl::GLSurface> surface_;
   sk_sp<SkSurface> sk_surface_;
+  GrContext* gr_context_ = nullptr;
+  scoped_refptr<gl::GLContext> gl_context_;
+  const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
