@@ -125,14 +125,22 @@ int AXSystemCaretWin::GetTableColCount() const {
   return 0;
 }
 
+std::vector<int32_t> AXSystemCaretWin::GetColHeaderNodeIds() const {
+  return {};
+}
+
 std::vector<int32_t> AXSystemCaretWin::GetColHeaderNodeIds(
     int32_t col_index) const {
-  return std::vector<int32_t>();
+  return {};
+}
+
+std::vector<int32_t> AXSystemCaretWin::GetRowHeaderNodeIds() const {
+  return {};
 }
 
 std::vector<int32_t> AXSystemCaretWin::GetRowHeaderNodeIds(
     int32_t row_index) const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 int32_t AXSystemCaretWin::GetCellId(int32_t row_index,

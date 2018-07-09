@@ -127,12 +127,16 @@ class AuraLinuxApplication
 
   int GetTableColCount() const override { return 0; }
 
+  std::vector<int32_t> GetColHeaderNodeIds() const override { return {}; }
+
   std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override {
-    return std::vector<int32_t>();
+    return {};
   }
 
+  std::vector<int32_t> GetRowHeaderNodeIds() const override { return {}; }
+
   std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override {
-    return std::vector<int32_t>();
+    return {};
   }
 
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override {

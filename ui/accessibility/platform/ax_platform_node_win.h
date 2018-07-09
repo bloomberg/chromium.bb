@@ -242,12 +242,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
                         public IExpandCollapseProvider,
+                        public IGridItemProvider,
+                        public IGridProvider,
                         public IRangeValueProvider,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
                         public ISelectionItemProvider,
                         public ISelectionProvider,
                         public IServiceProvider,
+                        public ITableItemProvider,
+                        public ITableProvider,
                         public IToggleProvider,
                         public IValueProvider,
                         public AXPlatformNodeBase {
@@ -264,11 +268,15 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
+    COM_INTERFACE_ENTRY(IGridItemProvider)
+    COM_INTERFACE_ENTRY(IGridProvider)
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
     COM_INTERFACE_ENTRY(ISelectionItemProvider)
     COM_INTERFACE_ENTRY(ISelectionProvider)
+    COM_INTERFACE_ENTRY(ITableItemProvider)
+    COM_INTERFACE_ENTRY(ITableProvider)
     COM_INTERFACE_ENTRY(IToggleProvider)
     COM_INTERFACE_ENTRY(IValueProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
@@ -443,6 +451,32 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   STDMETHODIMP get_ExpandCollapseState(ExpandCollapseState* result) override;
 
   //
+  // IGridItemProvider methods.
+  //
+
+  STDMETHODIMP get_Column(int* result) override;
+
+  STDMETHODIMP get_ColumnSpan(int* result) override;
+
+  STDMETHODIMP get_ContainingGrid(IRawElementProviderSimple** result) override;
+
+  STDMETHODIMP get_Row(int* result) override;
+
+  STDMETHODIMP get_RowSpan(int* result) override;
+
+  //
+  // IGridProvider methods.
+  //
+
+  STDMETHODIMP GetItem(int row,
+                       int column,
+                       IRawElementProviderSimple** result) override;
+
+  STDMETHODIMP get_RowCount(int* result) override;
+
+  STDMETHODIMP get_ColumnCount(int* result) override;
+
+  //
   // IScrollItemProvider methods.
   //
 
@@ -472,6 +506,24 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   STDMETHODIMP get_CanSelectMultiple(BOOL* result) override;
 
   STDMETHODIMP get_IsSelectionRequired(BOOL* result) override;
+
+  //
+  // ITableItemProvider methods.
+  //
+
+  STDMETHODIMP GetColumnHeaderItems(SAFEARRAY** result) override;
+
+  STDMETHODIMP GetRowHeaderItems(SAFEARRAY** result) override;
+
+  //
+  // ITableProvider methods.
+  //
+
+  STDMETHODIMP GetColumnHeaders(SAFEARRAY** result) override;
+
+  STDMETHODIMP GetRowHeaders(SAFEARRAY** result) override;
+
+  STDMETHODIMP get_RowOrColumnMajor(RowOrColumnMajor* result) override;
 
   //
   // IToggleProvider methods.
@@ -928,6 +980,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // IntList attribute. Otherwise return an empty array.
   SAFEARRAY* CreateUIAElementsArrayForRelation(
       const ax::mojom::IntListAttribute& attribute);
+
+  // Return an array of automation elements given a vector
+  // of |AXNode| ids.
+  SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
 
   void AddAlertTarget();
   void RemoveAlertTarget();

@@ -401,20 +401,26 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::vector<int32_t> id_list = GetIntListAttribute(attribute);
-  SAFEARRAY* propertyvalue =
-      SafeArrayCreateVector(VT_UNKNOWN, 0, id_list.size());
+  SAFEARRAY* propertyvalue = CreateUIAElementsArrayFromIdVector(id_list);
+  return propertyvalue;
+}
+
+SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
+    std::vector<int32_t>& ids) {
+  SAFEARRAY* uia_array = SafeArrayCreateVector(VT_UNKNOWN, 0, ids.size());
 
   LONG i = 0;
-  for (int32_t node_id : id_list) {
-    AXPlatformNodeWin* node =
+  for (const auto& node_id : ids) {
+    AXPlatformNodeWin* node_win =
         static_cast<AXPlatformNodeWin*>(delegate_->GetFromNodeID(node_id));
-    DCHECK(node);
-    node->AddRef();
-    SafeArrayPutElement(propertyvalue, &i, node);
+    DCHECK(node_win);
+    node_win->AddRef();
+    SafeArrayPutElement(uia_array, &i,
+                        static_cast<IRawElementProviderSimple*>(node_win));
     ++i;
   }
 
-  return propertyvalue;
+  return uia_array;
 }
 
 //
@@ -1441,6 +1447,79 @@ STDMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
 }
 
 //
+// IGridItemProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_Column(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableColumn();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ColumnSpan(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableColumnSpan();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ContainingGrid(
+    IRawElementProviderSimple** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return E_FAIL;
+
+  auto* node_win = static_cast<AXPlatformNodeWin*>(table);
+  node_win->AddRef();
+  *result = static_cast<IRawElementProviderSimple*>(node_win);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_Row(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableRow();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_RowSpan(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableRowSpan();
+  return S_OK;
+}
+
+//
+// IGridProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetItem(int row,
+                                        int column,
+                                        IRawElementProviderSimple** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  AXPlatformNodeBase* cell = GetTableCell(row, column);
+  if (!cell)
+    return E_INVALIDARG;
+
+  auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
+  node_win->AddRef();
+  *result = static_cast<IRawElementProviderSimple*>(node_win);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableRowCount();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = GetTableColumnCount();
+  return S_OK;
+}
+
+//
 // IScrollItemProvider implementation.
 //
 
@@ -1555,6 +1634,69 @@ STDMETHODIMP AXPlatformNodeWin::get_CanSelectMultiple(BOOL* result) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
+  return E_NOTIMPL;
+}
+
+//
+// ITableItemProvider methods.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  if (!IsCellOrTableHeaderRole(GetData().role) || !GetTable())
+    return E_FAIL;
+
+  std::vector<int32_t> column_header_ids =
+      delegate_->GetColHeaderNodeIds(GetTableColumn());
+  if (column_header_ids.empty())
+    return S_FALSE;
+  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  if (!IsCellOrTableHeaderRole(GetData().role) || !GetTable())
+    return E_FAIL;
+
+  std::vector<int32_t> row_header_ids =
+      delegate_->GetRowHeaderNodeIds(GetTableRow());
+  if (row_header_ids.empty())
+    return S_FALSE;
+  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+  return S_OK;
+}
+
+//
+// ITableProvider methods.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  if (!GetTable())
+    return E_FAIL;
+
+  std::vector<int32_t> column_header_ids = delegate_->GetColHeaderNodeIds();
+  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  if (!GetTable())
+    return E_FAIL;
+
+  std::vector<int32_t> row_header_ids = delegate_->GetRowHeaderNodeIds();
+  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_RowOrColumnMajor(RowOrColumnMajor* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
   return E_NOTIMPL;
 }
 
@@ -2844,7 +2986,19 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_GridPatternId:
+      if (IsTableLikeRole(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_GridItemPatternId:
+      if (IsCellOrTableHeaderRole(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_MultipleViewPatternId:
       break;
 
@@ -2862,8 +3016,22 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_SynchronizedInputPatternId:
+      break;
+
     case UIA_TablePatternId:
+      if (IsTableLikeRole(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_TableItemPatternId:
+      if (IsCellOrTableHeaderRole(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_TransformPatternId:
       break;
 
