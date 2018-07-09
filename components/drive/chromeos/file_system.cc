@@ -889,8 +889,10 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
         // If we were tracking the update status we can remove that as well.
         last_update_metadata_.erase(change.team_drive_id());
       } else if (change.IsAddOrUpdate()) {
-        DCHECK_EQ(
-            0UL, team_drive_change_list_loaders_.count(change.team_drive_id()));
+        // If this is an update (e.g. a renamed team drive), then just erase the
+        // existing entry so we can re-add it with the new path.
+        team_drive_change_list_loaders_.erase(change.team_drive_id());
+
         auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
             change.team_drive_id(), entry.first, logger_,
             blocking_task_runner_.get(), resource_metadata_, scheduler_,
