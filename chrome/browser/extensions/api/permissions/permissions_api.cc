@@ -122,8 +122,8 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
       *permissions, extension()->permissions_data()->active_permissions());
 
   PermissionsUpdater(browser_context())
-      .RemovePermissions(extension(), *permissions,
-                         PermissionsUpdater::REMOVE_SOFT);
+      .RevokeOptionalPermissions(*extension(), *permissions,
+                                 PermissionsUpdater::REMOVE_SOFT);
   return RespondNow(
       ArgumentList(api::permissions::Remove::Results::Create(true)));
 }
@@ -197,7 +197,8 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
           ->GetGrantedPermissions(extension()->id());
   if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(browser_context());
-    perms_updater.AddPermissions(extension(), *requested_permissions_);
+    perms_updater.GrantOptionalPermissions(*extension(),
+                                           *requested_permissions_);
     return RespondNow(
         ArgumentList(api::permissions::Request::Results::Create(true)));
   }
@@ -255,7 +256,8 @@ void PermissionsRequestFunction::OnInstallPromptDone(
   bool granted = result == ExtensionInstallPrompt::Result::ACCEPTED;
   if (granted) {
     PermissionsUpdater perms_updater(browser_context());
-    perms_updater.AddPermissions(extension(), *requested_permissions_);
+    perms_updater.GrantOptionalPermissions(*extension(),
+                                           *requested_permissions_);
   }
 
   Respond(ArgumentList(api::permissions::Request::Results::Create(granted)));

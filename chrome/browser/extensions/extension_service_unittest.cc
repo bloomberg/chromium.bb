@@ -619,7 +619,8 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     const PermissionSet& all_optional_permissions =
         PermissionsParser::GetOptionalPermissions(extension);
     PermissionsUpdater perms_updater(profile());
-    perms_updater.AddPermissions(extension, all_optional_permissions);
+    perms_updater.GrantOptionalPermissions(*extension,
+                                           all_optional_permissions);
   }
 
   testing::AssertionResult IsBlocked(const std::string& id) {
