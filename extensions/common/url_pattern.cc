@@ -161,8 +161,13 @@ URLPattern::URLPattern(int valid_schemes, base::StringPiece pattern)
       match_effective_tld_(true),
       port_("*") {
   ParseResult result = Parse(pattern);
-  if (PARSE_SUCCESS != result)
+  if (PARSE_SUCCESS != result) {
+    // Temporarily add more logging to investigate why this code path is
+    // reached. For http://crbug.com/856948
+    LOG(ERROR) << "Invalid pattern was given " << pattern << " result "
+               << result;
     NOTREACHED() << "URLPattern invalid: " << pattern << " result " << result;
+  }
 }
 
 URLPattern::URLPattern(const URLPattern& other) = default;
