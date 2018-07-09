@@ -79,7 +79,7 @@ void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
       font_render_style.is_null()) {
     LOG(ERROR) << "GetRenderStyleForStrike did not receive a response for "
                   "family and size: "
-               << family << ", " << size;
+               << (family ? family : "<empty>") << ", " << size;
     return;
   }
 
