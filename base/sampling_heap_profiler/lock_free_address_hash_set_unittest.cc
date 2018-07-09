@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <cinttypes>
+#include <memory>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/debug/alias.h"
