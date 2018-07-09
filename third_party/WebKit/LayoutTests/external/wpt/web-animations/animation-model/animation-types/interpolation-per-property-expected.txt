@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 716 tests; 642 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 700 tests; 626 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -224,10 +224,6 @@ PASS column-width (type: discrete) has testInterpolation function
 PASS column-width uses discrete animation when animating between "auto" and "1px" with linear easing
 PASS column-width uses discrete animation when animating between "auto" and "1px" with effect easing
 PASS column-width uses discrete animation when animating between "auto" and "1px" with keyframe easing
-PASS contain (type: discrete) has testInterpolation function
-PASS contain uses discrete animation when animating between "strict" and "none" with linear easing
-PASS contain uses discrete animation when animating between "strict" and "none" with effect easing
-PASS contain uses discrete animation when animating between "strict" and "none" with keyframe easing
 PASS content (type: discrete) has testInterpolation function
 PASS content uses discrete animation when animating between ""a"" and ""b"" with linear easing
 PASS content uses discrete animation when animating between ""a"" and ""b"" with effect easing
@@ -614,10 +610,6 @@ PASS text-decoration-style (type: discrete) has testInterpolation function
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with linear easing
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with effect easing
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with keyframe easing
-PASS text-orientation (type: discrete) has testInterpolation function
-PASS text-orientation uses discrete animation when animating between "upright" and "sideways" with linear easing
-PASS text-orientation uses discrete animation when animating between "upright" and "sideways" with effect easing
-PASS text-orientation uses discrete animation when animating between "upright" and "sideways" with keyframe easing
 PASS text-overflow (type: discrete) has testInterpolation function
 PASS text-overflow uses discrete animation when animating between "clip" and "ellipsis" with linear easing
 PASS text-overflow uses discrete animation when animating between "clip" and "ellipsis" with effect easing
@@ -682,10 +674,6 @@ PASS scale (type: scaleList) has testInterpolation function
 FAIL scale with two unspecified values assert_equals: The value should be 4 at 500ms expected "4" but got "4 1"
 PASS scale with one unspecified value
 PASS scale
-PASS unicode-bidi (type: discrete) has testInterpolation function
-PASS unicode-bidi uses discrete animation when animating between "embed" and "bidi-override" with linear easing
-PASS unicode-bidi uses discrete animation when animating between "embed" and "bidi-override" with effect easing
-PASS unicode-bidi uses discrete animation when animating between "embed" and "bidi-override" with keyframe easing
 PASS vector-effect (type: discrete) has testInterpolation function
 PASS vector-effect uses discrete animation when animating between "none" and "non-scaling-stroke" with linear easing
 PASS vector-effect uses discrete animation when animating between "none" and "non-scaling-stroke" with effect easing
@@ -712,9 +700,5 @@ FAIL word-spacing supports animating as combination units "%" and "em" assert_eq
 PASS word-spacing supports animating as combination units "em" and "rem"
 FAIL word-spacing supports animating as combination units "px" and "calc" assert_equals: The value should be calc(10px + 10%) at 500ms expected "calc(10px + 10%)" but got "5px"
 FAIL word-spacing supports animating as a calc assert_equals: The value should be calc(15px + 15%) at 500ms expected "calc(15px + 15%)" but got "0px"
-PASS will-change (type: discrete) has testInterpolation function
-PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with linear easing
-PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with effect easing
-PASS will-change uses discrete animation when animating between "scroll-position" and "contents" with keyframe easing
 Harness: the test ran to completion.
 
