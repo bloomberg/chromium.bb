@@ -175,15 +175,6 @@ element
             AXRole: AXCell "Cell2"
                 AXRole: AXStaticText "Cell2"
                     AXRole: AXInlineTextBox "Cell2"
-        AXRole: AXColumn
-            AXRole: AXCell "Cell1"
-                AXRole: AXStaticText "Cell1"
-                    AXRole: AXInlineTextBox "Cell1"
-        AXRole: AXColumn
-            AXRole: AXCell "Cell2"
-                AXRole: AXStaticText "Cell2"
-                    AXRole: AXInlineTextBox "Cell2"
-        AXRole: AXTableHeaderContainer
     AXRole: AXFigure "Fig1. - Blue Box"
         AXRole: AXImage "blue"
         AXRole: AXFigcaption

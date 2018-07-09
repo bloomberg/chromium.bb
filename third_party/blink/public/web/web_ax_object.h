@@ -298,7 +298,6 @@ class WebAXObject {
   BLINK_EXPORT unsigned RowCount() const;
   BLINK_EXPORT WebAXObject CellForColumnAndRow(unsigned column,
                                                unsigned row) const;
-  BLINK_EXPORT WebAXObject HeaderContainerObject() const;
   BLINK_EXPORT void RowHeaders(WebVector<WebAXObject>&) const;
   BLINK_EXPORT void ColumnHeaders(WebVector<WebAXObject>&) const;
 

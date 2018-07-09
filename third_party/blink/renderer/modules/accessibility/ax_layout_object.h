@@ -197,7 +197,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void ColumnHeaders(AXObjectVector&) const override;
   void RowHeaders(AXObjectVector&) const override;
   AXObject* CellForColumnAndRow(unsigned column, unsigned row) const override;
-  AXObject* HeaderContainer() override;
 
   // For a table cell.
   unsigned ColumnIndex() const override;

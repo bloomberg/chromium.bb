@@ -1142,16 +1142,6 @@ WebAXObject WebAXObject::CellForColumnAndRow(unsigned column,
   return WebAXObject(private_->CellForColumnAndRow(column, row));
 }
 
-WebAXObject WebAXObject::HeaderContainerObject() const {
-  if (IsDetached())
-    return WebAXObject();
-
-  if (!private_->IsTableLikeRole())
-    return WebAXObject();
-
-  return WebAXObject(private_->HeaderContainer());
-}
-
 unsigned WebAXObject::RowIndex() const {
   if (IsDetached())
     return 0;

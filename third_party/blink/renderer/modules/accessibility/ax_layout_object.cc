@@ -96,9 +96,9 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -3101,18 +3101,6 @@ void AXLayoutObject::RowHeaders(AXObjectVector& headers) const {
     AXNodeObject::RowHeaders(headers);
 }
 
-AXObject* AXLayoutObject::HeaderContainer() {
-  for (const auto& child : Children()) {
-    if (child->RoleValue() == kTableHeaderContainerRole)
-      return child;
-  }
-
-  AXMockObject* header_container =
-      ToAXMockObject(AXObjectCache().GetOrCreate(kTableHeaderContainerRole));
-  header_container->SetParent(this);
-  return header_container;
-}
-
 AXObject* AXLayoutObject::HeaderObject() const {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object || !layout_object->IsTableRow())
@@ -3412,21 +3400,6 @@ void AXLayoutObject::AddTableChildren() {
           children_.push_front(caption_object);
       }
     }
-  }
-
-  for (unsigned i = 0; i < ColumnCount(); i++) {
-    AXTableColumn* column = ToAXTableColumn(ax_cache.GetOrCreate(kColumnRole));
-    column->SetColumnIndex(i);
-    column->SetParent(this);
-    if (!column->AccessibilityIsIgnored())
-      children_.push_back(column);
-  }
-
-  AXObject* header_container_object = HeaderContainer();
-  if (header_container_object &&
-      !header_container_object->AccessibilityIsIgnored()) {
-    children_.push_back(header_container_object);
-    header_container_object->SetParent(this);
   }
 }
 
