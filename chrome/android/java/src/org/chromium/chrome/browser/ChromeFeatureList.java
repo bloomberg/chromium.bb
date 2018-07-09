@@ -211,6 +211,7 @@ public abstract class ChromeFeatureList {
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
+    public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HOME_PAGE_BUTTON_FORCE_ENABLED = "HomePageButtonForceEnabled";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS = "InterestFeedContentSuggestions";

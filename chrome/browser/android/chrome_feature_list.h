@@ -47,6 +47,7 @@ extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kExploreSites;
 extern const base::Feature kFullscreenActivity;
+extern const base::Feature kHandleMediaIntents;
 extern const base::Feature kHomePageButtonForceEnabled;
 extern const base::Feature kHorizontalTabSwitcherAndroid;
 extern const base::Feature kImprovedA2HS;

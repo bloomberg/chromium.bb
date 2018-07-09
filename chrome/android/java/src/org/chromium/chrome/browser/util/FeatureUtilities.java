@@ -17,6 +17,7 @@ import android.speech.RecognizerIntent;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -357,6 +358,15 @@ public class FeatureUtilities {
                             ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
                            || ChromeFeatureList.isEnabled(
                                       ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
+    }
+
+    /**
+     * @return Whether this device is running Android Go. This is assumed when we're running Android
+     * O or later and we're on a low-end device.
+     */
+    public static boolean isAndroidGo() {
+        return SysUtils.isLowEndDevice()
+                && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);
