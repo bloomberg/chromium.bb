@@ -994,8 +994,8 @@ TEST_F(AccessibilityTest, PositionAtStartAndEndOfTable) {
   const auto ax_position_at_end =
       AXPosition::CreateLastPositionInObject(*ax_table);
   const auto position_at_end = ax_position_at_end.ToPositionWithAffinity();
-  EXPECT_EQ(last_cell_text, position_at_end.AnchorNode());
-  EXPECT_EQ(3, position_at_end.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(table, position_at_end.AnchorNode());
+  EXPECT_TRUE(position_at_end.GetPosition().IsAfterChildren());
 
   const auto ax_position_at_end_from_dom =
       AXPosition::FromPosition(position_at_end);

@@ -81,8 +81,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_header_container.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 
@@ -465,12 +463,6 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
   AXObject* obj = nullptr;
 
   switch (role) {
-    case kColumnRole:
-      obj = AXTableColumn::Create(*this);
-      break;
-    case kTableHeaderContainerRole:
-      obj = AXTableHeaderContainer::Create(*this);
-      break;
     case kSliderThumbRole:
       obj = AXSliderThumb::Create(*this);
       break;

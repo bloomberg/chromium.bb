@@ -877,8 +877,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void ColumnHeaders(AXObjectVector&) const;
   virtual void RowHeaders(AXObjectVector&) const;
   virtual AXObject* CellForColumnAndRow(unsigned column, unsigned row) const;
-  // an object that contains, as children, all the objects that act as headers
-  virtual AXObject* HeaderContainer() { return nullptr; }
 
   // For a cell.
   virtual unsigned ColumnIndex() const;

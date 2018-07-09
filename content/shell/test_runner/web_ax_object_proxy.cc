@@ -744,7 +744,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetMethod("boundsForRange", &WebAXObjectProxy::BoundsForRange)
       .SetMethod("childAtIndex", &WebAXObjectProxy::ChildAtIndex)
       .SetMethod("elementAtPoint", &WebAXObjectProxy::ElementAtPoint)
-      .SetMethod("tableHeader", &WebAXObjectProxy::TableHeader)
       .SetMethod("rowHeaderAtIndex", &WebAXObjectProxy::RowHeaderAtIndex)
       .SetMethod("columnHeaderAtIndex", &WebAXObjectProxy::ColumnHeaderAtIndex)
       .SetMethod("rowIndexRange", &WebAXObjectProxy::RowIndexRange)
@@ -1533,15 +1532,6 @@ v8::Local<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebPoint point(x, y);
   blink::WebAXObject obj = accessibility_object_.HitTest(point);
-  if (obj.IsNull())
-    return v8::Local<v8::Object>();
-
-  return factory_->GetOrCreate(obj);
-}
-
-v8::Local<v8::Object> WebAXObjectProxy::TableHeader() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  blink::WebAXObject obj = accessibility_object_.HeaderContainerObject();
   if (obj.IsNull())
     return v8::Local<v8::Object>();
 

@@ -66,14 +66,6 @@ AXRole: AXWebArea
             AXRole: AXCell "Normal td"
                 AXRole: AXStaticText "Normal td"
                     AXRole: AXInlineTextBox "Normal td"
-        AXRole: AXColumn
-            AXRole: AXGenericContainer
-                AXRole: AXStaticText "Presentation th"
-                    AXRole: AXInlineTextBox "Presentation th"
-            AXRole: AXCell "Normal td"
-                AXRole: AXStaticText "Normal td"
-                    AXRole: AXInlineTextBox "Normal td"
-        AXRole: AXTableHeaderContainer
     AXRole: AXGenericContainer
         AXRole: AXStaticText "The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role."
             AXRole: AXInlineTextBox "The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role."

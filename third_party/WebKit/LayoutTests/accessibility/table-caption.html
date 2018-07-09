@@ -20,7 +20,7 @@
 
     if (window.accessibilityController) {
         var table = accessibilityController.accessibleElementById("table");
-        shouldBe("table.childrenCount", "5");
+        shouldBe("table.childrenCount", "2");
         window.captionText = table.childAtIndex(0).childAtIndex(0).name;
         shouldBe("captionText", "'TableCaption'");
         // Clear the HTML for cleaner results.
