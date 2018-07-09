@@ -40,8 +40,8 @@
 
 namespace blink {
 
-static const double kMinimumProgressEventDispatchingIntervalInSeconds =
-    .05;  // 50 ms per specification.
+static constexpr TimeDelta kMinimumProgressEventDispatchingInterval =
+    TimeDelta::FromMilliseconds(50);  // 50 ms per specification.
 
 XMLHttpRequestProgressEventThrottle::DeferredEvent::DeferredEvent() {
   Clear();
@@ -105,7 +105,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
   } else {
     DispatchProgressProgressEvent(ProgressEvent::Create(
         EventTypeNames::progress, length_computable, loaded, total));
-    StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
+    StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
   }
 }
 
@@ -169,7 +169,7 @@ void XMLHttpRequestProgressEventThrottle::Fired() {
   DispatchProgressProgressEvent(deferred_.Take());
 
   // Watch if another "progress" ProgressEvent arrives in the next 50ms.
-  StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
+  StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
 }
 
 void XMLHttpRequestProgressEventThrottle::Pause() {

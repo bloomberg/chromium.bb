@@ -19,7 +19,7 @@ namespace {
 
 // Reject the payment request if the page does not resolve the promise from
 // updateWith within 60 seconds.
-static const int kAbortTimeout = 60;
+constexpr TimeDelta kAbortTimeout = TimeDelta::FromSeconds(60);
 
 class UpdatePaymentDetailsFunction : public ScriptFunction {
  public:

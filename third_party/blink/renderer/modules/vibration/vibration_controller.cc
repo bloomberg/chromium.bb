@@ -152,7 +152,8 @@ void VibrationController::DidVibrate() {
     pattern_.EraseAt(0);
   }
 
-  timer_do_vibrate_.StartOneShot(interval / 1000.0, FROM_HERE);
+  timer_do_vibrate_.StartOneShot(TimeDelta::FromMilliseconds(interval),
+                                 FROM_HERE);
 }
 
 void VibrationController::Cancel() {

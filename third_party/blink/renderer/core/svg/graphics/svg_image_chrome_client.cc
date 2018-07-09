@@ -38,7 +38,8 @@
 
 namespace blink {
 
-static const double kAnimationFrameDelay = 1.0 / 60;
+static constexpr TimeDelta kAnimationFrameDelay =
+    TimeDelta::FromSecondsD(1.0 / 60);
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : image_(image),
@@ -110,7 +111,7 @@ void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
   // animations, but prefer a fixed, jittery, frame-delay if there're any
   // animations. Checking for pending/active animations could be more
   // stringent.
-  double fire_time = 0;
+  TimeDelta fire_time;
   if (image_->MaybeAnimated()) {
     if (IsSuspended())
       return;

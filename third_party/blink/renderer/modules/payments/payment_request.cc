@@ -139,7 +139,7 @@ namespace {
 
 // If the website does not call complete() 60 seconds after show() has been
 // resolved, then behave as if the website called complete("fail").
-static const int kCompleteTimeoutSeconds = 60;
+constexpr TimeDelta kCompleteTimeout = TimeDelta::FromSeconds(60);
 
 // Validates ShippingOption or PaymentItem, which happen to have identical
 // fields, except for "id", which is present only in ShippingOption.
@@ -1076,7 +1076,7 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     return;
   }
 
-  complete_timer_.StartOneShot(kCompleteTimeoutSeconds, FROM_HERE);
+  complete_timer_.StartOneShot(kCompleteTimeout, FROM_HERE);
 
   show_resolver_->Resolve(new PaymentResponse(
       std::move(response), shipping_address_.Get(), this, id_));

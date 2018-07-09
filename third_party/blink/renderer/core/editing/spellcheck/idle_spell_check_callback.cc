@@ -29,8 +29,9 @@ namespace blink {
 
 namespace {
 
-const int kColdModeTimerIntervalMS = 1000;
-const int kConsecutiveColdModeTimerIntervalMS = 200;
+constexpr TimeDelta kColdModeTimerInterval = TimeDelta::FromMilliseconds(1000);
+constexpr TimeDelta kConsecutiveColdModeTimerInterval =
+    TimeDelta::FromMilliseconds(200);
 const int kHotModeRequestTimeoutMS = 200;
 const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
@@ -118,10 +119,10 @@ void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
     return;
 
   DCHECK(!cold_mode_timer_.IsActive());
-  int interval_ms = state_ == State::kInColdModeInvocation
-                        ? kConsecutiveColdModeTimerIntervalMS
-                        : kColdModeTimerIntervalMS;
-  cold_mode_timer_.StartOneShot(interval_ms / 1000.0, FROM_HERE);
+  TimeDelta interval = state_ == State::kInColdModeInvocation
+                           ? kConsecutiveColdModeTimerInterval
+                           : kColdModeTimerInterval;
+  cold_mode_timer_.StartOneShot(interval, FROM_HERE);
   state_ = State::kColdModeTimerStarted;
 }
 

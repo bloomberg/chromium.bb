@@ -15,7 +15,7 @@
 
 namespace blink {
 
-static const float kTimerDelay = 3.0;
+static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(3);
 static const float kRegionGranularitySteps = 60.0;
 
 static FloatPoint LogicalStart(const FloatRect& rect,

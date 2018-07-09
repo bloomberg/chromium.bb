@@ -127,7 +127,8 @@ using namespace HTMLNames;
 
 // The amount of time to wait for a cursor update on style and layout changes
 // Set to 50Hz, no need to be faster than common screen refresh rate
-static const double kCursorUpdateInterval = 0.02;
+static constexpr TimeDelta kCursorUpdateInterval =
+    TimeDelta::FromMilliseconds(20);
 
 static const int kMaximumCursorSize = 128;
 
@@ -1707,7 +1708,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
         event_with_hit_test_results.GetHitTestResult().InnerElement();
     // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
     active_interval_timer_.StartOneShot(
-        (kMinimumActiveInterval - active_interval).InSecondsF(), FROM_HERE);
+        kMinimumActiveInterval - active_interval, FROM_HERE);
   }
 
   return event_with_hit_test_results;

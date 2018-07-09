@@ -106,7 +106,7 @@
 namespace blink {
 
 // Timeout for link preloads to be used after window.onload
-static const int kUnusedPreloadTimeoutInSeconds = 3;
+static constexpr TimeDelta kUnusedPreloadTimeout = TimeDelta::FromSeconds(3);
 
 class PostMessageTimer final
     : public GarbageCollectedFinalized<PostMessageTimer>,
@@ -1452,8 +1452,7 @@ void LocalDOMWindow::DispatchLoadEvent() {
     if (GetFrame() &&
         document_loader == GetFrame()->Loader().GetDocumentLoader() &&
         document_loader->Fetcher()->CountPreloads()) {
-      unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeoutInSeconds,
-                                          FROM_HERE);
+      unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeout, FROM_HERE);
     }
   } else {
     DispatchEvent(load_event, document());

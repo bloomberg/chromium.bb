@@ -70,7 +70,6 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
 
     // TimerBase-compatible API
     void StartOneShot(TimeDelta interval, const base::Location& caller);
-    void StartOneShot(double interval, const base::Location& caller);
     void Stop();
     bool IsActive() const { return timer_.IsActive(); }
 

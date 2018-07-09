@@ -62,11 +62,13 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
 
 // The amount of time to wait before sending a fake mouse event triggered
 // during a scroll.
-constexpr double kFakeMouseMoveIntervalDuringScroll = 0.1;
+constexpr TimeDelta kFakeMouseMoveIntervalDuringScroll =
+    TimeDelta::FromMilliseconds(100);
 
 // The amount of time to wait before sending a fake mouse event on style and
 // layout changes sets to 50Hz, same as common screen refresh rate.
-constexpr double kFakeMouseMoveIntervalPerFrame = 0.02;
+constexpr TimeDelta kFakeMouseMoveIntervalPerFrame =
+    TimeDelta::FromMilliseconds(20);
 
 // TODO(crbug.com/653490): Read these values from the OS.
 #if defined(OS_MACOSX)
@@ -624,7 +626,7 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoon(
   // during a scroll. This avoids a potential source of scroll jank.
   // Or dispatch a fake mouse move to update hover states when the layout
   // changes.
-  double interval =
+  TimeDelta interval =
       fake_mouse_move_reason ==
               MouseEventManager::FakeMouseMoveReason::kDuringScroll
           ? kFakeMouseMoveIntervalDuringScroll
