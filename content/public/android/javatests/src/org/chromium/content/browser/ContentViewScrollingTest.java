@@ -116,7 +116,7 @@ public class ContentViewScrollingTest {
             @Override
             public void run() {
                 mActivityTestRule.getWebContents().getEventForwarder().startFling(
-                        SystemClock.uptimeMillis(), vx, vy, false);
+                        SystemClock.uptimeMillis(), vx, vy, false, true);
             }
         });
     }

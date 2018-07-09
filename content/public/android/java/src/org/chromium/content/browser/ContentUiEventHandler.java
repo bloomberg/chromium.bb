@@ -169,7 +169,7 @@ public class ContentUiEventHandler {
         // It's a very real (and valid) possibility that a fling may still
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
-        if (GestureListenerManagerImpl.fromWebContents(mWebContents).hasPotentiallyActiveFling()) {
+        if (GestureListenerManagerImpl.fromWebContents(mWebContents).hasActiveFlingScroll()) {
             nativeCancelFling(mNativeContentUiEventHandler, time);
         }
         nativeSendScrollEvent(mNativeContentUiEventHandler, time, dxPix, dyPix);

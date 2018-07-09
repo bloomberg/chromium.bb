@@ -45,10 +45,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private ViewAndroidDelegate mViewDelegate;
     private InternalAccessDelegate mScrollDelegate;
 
-    // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
-    // onFlingEnd() is called asynchronously.
-    private int mPotentiallyActiveFlingCount;
-
     private long mNativeGestureListenerManager;
 
     /**
@@ -57,6 +53,13 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
      * sequence, so this will also be true for the duration of a pinch gesture.
      */
     private boolean mIsTouchScrollInProgress;
+
+    /**
+     * Whether a fling scroll is currently active. Used in combination with the
+     * above boolean for touch scrolling to determine if the content is
+     * "currently scrolling".
+     */
+    private boolean mHasActiveFlingScroll;
 
     /**
      * @param webContents {@link WebContents} object.
@@ -123,9 +126,9 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onTouchDown();
     }
 
-    /** Checks if there's outstanding fling start events that hasn't got fling end yet. */
-    public boolean hasPotentiallyActiveFling() {
-        return mPotentiallyActiveFlingCount > 0;
+    /** Returns whether there's an active, ongoing fling scroll. */
+    public boolean hasActiveFlingScroll() {
+        return mHasActiveFlingScroll;
     }
 
     // WindowEventObserver
@@ -170,15 +173,15 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     /* Called when ongoing fling gesture needs to be reset. */
     public void resetFlingGesture() {
-        if (mPotentiallyActiveFlingCount > 0) {
+        if (mHasActiveFlingScroll) {
             onFlingEnd();
-            mPotentiallyActiveFlingCount = 0;
+            mHasActiveFlingScroll = false;
         }
     }
 
     @CalledByNative
     private void onFlingEnd() {
-        if (mPotentiallyActiveFlingCount > 0) mPotentiallyActiveFlingCount--;
+        mHasActiveFlingScroll = false;
         // Note that mTouchScrollInProgress should normally be false at this
         // point, but we reset it anyway as another failsafe.
         setTouchScrollInProgress(false);
@@ -193,7 +196,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
             case WebInputEventType.GESTURE_FLING_START:
                 if (consumed) {
                     // The view expects the fling velocity in pixels/s.
-                    mPotentiallyActiveFlingCount++;
+                    mHasActiveFlingScroll = true;
                     setTouchScrollInProgress(false);
                     for (mIterator.rewind(); mIterator.hasNext();) {
                         mIterator.next().onFlingStartGesture(
@@ -333,7 +336,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @Override
     public boolean isScrollInProgress() {
-        return mIsTouchScrollInProgress || hasPotentiallyActiveFling();
+        return mIsTouchScrollInProgress || mHasActiveFlingScroll;
     }
 
     void setTouchScrollInProgress(boolean touchScrollInProgress) {

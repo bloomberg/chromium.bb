@@ -1375,7 +1375,8 @@ public class TabsTest {
                 mTestServer.getURL("/chrome/test/data/android/tabstest/text_page.html"));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             WebContents webContents = mActivityTestRule.getWebContents();
-            webContents.getEventForwarder().startFling(SystemClock.uptimeMillis(), 0, -2000, false);
+            webContents.getEventForwarder().startFling(
+                    SystemClock.uptimeMillis(), 0, -2000, false, true);
         });
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());

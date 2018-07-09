@@ -16,7 +16,10 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.RenderCoordinates;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -131,7 +134,29 @@ public class FullscreenManagerTestUtils {
         float dragX = 50f;
         float dragStartY = tab.getView().getHeight() - 50f;
 
+        WebContents webContents = tab.getWebContents();
+
+        final CallbackHelper scrollEndCallback = new CallbackHelper();
+        final CallbackHelper flingEndCallback = new CallbackHelper();
+        GestureStateListener scrollEndListener = new GestureStateListener() {
+            @Override
+            public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
+                scrollEndCallback.notifyCalled();
+            }
+
+            @Override
+            public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
+                flingEndCallback.notifyCalled();
+            }
+
+        };
+        GestureListenerManager gestureListenerManager =
+                GestureListenerManager.fromWebContents(webContents);
+        gestureListenerManager.addListener(scrollEndListener);
+
         for (int i = 0; i < 10; i++) {
+            int numScrollEndCalled = scrollEndCallback.getCallCount();
+            int numFlingEndCalled = flingEndCallback.getCallCount();
             float dragEndY = dragStartY - fullscreenManager.getTopControlsHeight();
 
             long downTime = SystemClock.uptimeMillis();
@@ -143,8 +168,48 @@ public class FullscreenManagerTestUtils {
             try {
                 contentMovedCallback.waitForCallback(0, 1, 500, TimeUnit.MILLISECONDS);
 
+                try {
+                    scrollEndCallback.waitForCallback(
+                            numScrollEndCalled, 1, 5000, TimeUnit.MILLISECONDS);
+                    flingEndCallback.waitForCallback(
+                            numFlingEndCalled, 1, 5000, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    Assert.fail("Didn't get expected ScrollEnd gestures");
+                }
+
+                try {
+                    flingEndCallback.waitForCallback(
+                            numFlingEndCalled, 1, 200, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    // Depending on timing - the above scroll may not have
+                    // generated a fling. If it did, it the fling end may
+                    // sometimes be called after the scroll end so wait a little
+                    // for it.
+                }
+
+                numFlingEndCalled = flingEndCallback.getCallCount();
+
                 scrollBrowserControls(testRule, false);
                 scrollBrowserControls(testRule, true);
+
+                // Make sure the gesture stream is finished before we hand back control.
+                try {
+                    scrollEndCallback.waitForCallback(
+                            numScrollEndCalled + 1, 2, 5000, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    Assert.fail("Didn't get expected ScrollEnd gestures");
+                }
+
+                try {
+                    flingEndCallback.waitForCallback(
+                            numFlingEndCalled, 2, 200, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    // Depending on timing - the above scrolls may not have
+                    // generated flings. If they did, the fling end may sometimes
+                    // be called after the scroll end so wait a little for it.
+                }
+
+                gestureListenerManager.removeListener(scrollEndListener);
 
                 return;
             } catch (TimeoutException e) {
@@ -165,5 +230,21 @@ public class FullscreenManagerTestUtils {
                 BrowserStateBrowserControlsVisibilityDelegate.disableForTesting();
             }
         });
+    }
+
+    public static void fling(ChromeTabbedActivityTestRule testRule, final int vx, final int vy) {
+        try {
+            ThreadUtils.runOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    testRule.getWebContents().getEventForwarder().startFling(
+                            SystemClock.uptimeMillis(), vx, vy, /*synthetic_scroll*/ false,
+                            /*prevent_boosting*/ false);
+                    return true;
+                }
+            });
+        } catch (Throwable e) {
+            Assert.fail("Failed to fling");
+        }
     }
 }

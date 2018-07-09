@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -49,9 +50,13 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -78,8 +83,8 @@ public class FullscreenManagerTest {
                     + "</body>"
                     + "</html>");
 
-    private static final String LONG_HTML_TEST_PAGE = UrlUtils.encodeHtmlDataUri(
-            "<html><body style='height:10000px;'></body></html>");
+    private static final String LONG_HTML_TEST_PAGE =
+            UrlUtils.encodeHtmlDataUri("<html><body style='height:100000px;'></body></html>");
     private static final String LONG_FULLSCREEN_API_HTML_TEST_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html>"
             + "<head>"
@@ -242,6 +247,103 @@ public class FullscreenManagerTest {
         // Check that the URL bar has not grabbed focus (http://crbug/236365)
         UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         Assert.assertFalse("Url bar grabbed focus", urlBar.hasFocus());
+    }
+
+    @Test
+    @LargeTest
+    @RetryOnFailure
+    public void testHideBrowserControlsAfterFlingBoosting() throws InterruptedException {
+        // Test that fling boosting doesn't break the scroll state management
+        // that's used by the FullscreenManager to dispatch URL bar based
+        // resizes to the renderer.
+        FullscreenManagerTestUtils.disableBrowserOverrides();
+        mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
+
+        FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
+                mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
+
+        final CallbackHelper flingEndCallback = new CallbackHelper();
+        final CallbackHelper scrollStartCallback = new CallbackHelper();
+        GestureStateListener scrollListener = new GestureStateListener() {
+            @Override
+            public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
+                scrollStartCallback.notifyCalled();
+            }
+
+            @Override
+            public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
+                flingEndCallback.notifyCalled();
+            }
+
+        };
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        WebContents webContents = tab.getWebContents();
+        GestureListenerManager gestureListenerManager =
+                GestureListenerManager.fromWebContents(webContents);
+        gestureListenerManager.addListener(scrollListener);
+
+        final CallbackHelper viewportCallback = new CallbackHelper();
+        ChromeFullscreenManager.FullscreenListener fullscreenListener =
+                new ChromeFullscreenManager.FullscreenListener() {
+                    @Override
+                    public void onContentOffsetChanged(float offset) {}
+                    @Override
+                    public void onControlsOffsetChanged(
+                            float topOffset, float bottomOffset, boolean needsAnimate) {}
+                    @Override
+                    public void onToggleOverlayVideoMode(boolean enabled) {}
+                    @Override
+                    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+                    @Override
+                    public void onUpdateViewportSize() {
+                        viewportCallback.notifyCalled();
+                    }
+                };
+
+        ChromeFullscreenManager fullscreenManager =
+                mActivityTestRule.getActivity().getFullscreenManager();
+        fullscreenManager.addListener(fullscreenListener);
+
+        Assert.assertEquals(0, scrollStartCallback.getCallCount());
+        Assert.assertEquals(0, viewportCallback.getCallCount());
+
+        // Start the first fling.
+        FullscreenManagerTestUtils.fling(mActivityTestRule, 0, -2000);
+
+        // Wait until we hear the gesture scroll begin before we try to fling
+        // again since we'll hit DCHECKs in the fling controller state
+        // management.
+        try {
+            scrollStartCallback.waitForCallback(0, 1, 1000, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            Assert.fail("Timeout waiting for scroll to start");
+        }
+
+        // Fling again while the first fling is still active. This will boost
+        // the first fling.
+        FullscreenManagerTestUtils.fling(mActivityTestRule, 0, -2000);
+
+        Assert.assertEquals(0, flingEndCallback.getCallCount());
+        Assert.assertTrue(gestureListenerManager.isScrollInProgress());
+
+        try {
+            flingEndCallback.waitForCallback(0, 1, 5000, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            Assert.fail("Timeout waiting for scroll to end");
+        }
+
+        // Make sure we call the viewport changed callback since the URL bar was hidden.
+        // Can be called once for the FlingEnd and once for the ScrollEnd.
+        try {
+            viewportCallback.waitForCallback(0, 1, 500, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            Assert.fail("Failed to update viewport");
+        }
+
+        // Ensure we don't still think we're scrolling.
+        Assert.assertFalse(
+                "Failed to reset scrolling state", gestureListenerManager.isScrollInProgress());
     }
 
     @Test
