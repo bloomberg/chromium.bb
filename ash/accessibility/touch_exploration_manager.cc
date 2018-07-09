@@ -37,7 +37,8 @@ AccessibilityController* GetA11yController() {
 TouchExplorationManager::TouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
-      audio_handler_(chromeos::CrasAudioHandler::Get()) {
+      audio_handler_(chromeos::CrasAudioHandler::Get()),
+      observing_window_(nullptr) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
@@ -54,9 +55,20 @@ TouchExplorationManager::~TouchExplorationManager() {
   keyboard::KeyboardController::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  if (observing_window_)
+    observing_window_->RemoveObserver(this);
 }
 
 void TouchExplorationManager::OnAccessibilityStatusChanged() {
+  UpdateTouchExplorationState();
+}
+
+void TouchExplorationManager::OnWindowPropertyChanged(aura::Window* winodw,
+                                                      const void* key,
+                                                      intptr_t old) {
+  if (key != aura::client::kAccessibilityTouchExplorationPassThrough)
+    return;
+
   UpdateTouchExplorationState();
 }
 
@@ -151,6 +163,16 @@ void TouchExplorationManager::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
+  if (lost_active && lost_active->HasObserver(this)) {
+    lost_active->RemoveObserver(this);
+    observing_window_ = nullptr;
+  }
+
+  if (gained_active && !gained_active->HasObserver(this)) {
+    gained_active->AddObserver(this);
+    observing_window_ = gained_active;
+  }
+
   UpdateTouchExplorationState();
 }
 

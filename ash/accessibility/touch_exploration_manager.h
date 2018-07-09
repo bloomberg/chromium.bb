@@ -34,6 +34,7 @@ class RootWindowController;
 // on Windows, which we don't ship anymore.
 class ASH_EXPORT TouchExplorationManager
     : public AccessibilityObserver,
+      public aura::WindowObserver,
       public TouchExplorationControllerDelegate,
       public TouchAccessibilityEnablerDelegate,
       public display::DisplayObserver,
@@ -47,6 +48,11 @@ class ASH_EXPORT TouchExplorationManager
 
   // AccessibilityObserver overrides:
   void OnAccessibilityStatusChanged() override;
+
+  // aura::WindowObserver overrides:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // TouchExplorationControllerDelegate overrides:
   void SetOutputLevel(int volume) override;
@@ -90,6 +96,7 @@ class ASH_EXPORT TouchExplorationManager
   std::unique_ptr<TouchAccessibilityEnabler> touch_accessibility_enabler_;
   RootWindowController* root_window_controller_;
   chromeos::CrasAudioHandler* audio_handler_;
+  aura::Window* observing_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationManager);
 };
