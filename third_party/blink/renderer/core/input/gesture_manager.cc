@@ -196,7 +196,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     adjusted_point = frame_view->ConvertFromRootFrame(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
-        frame_, adjusted_point, hit_type);
+        frame_, HitTestLocation(adjusted_point), hit_type);
   }
 
   // Capture data for showUnhandledTapUIIfNeeded.
@@ -259,7 +259,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
       main_frame.View()->UpdateAllLifecyclePhases();
     adjusted_point = frame_view->ConvertFromRootFrame(tapped_position);
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
-        frame_, adjusted_point, hit_type);
+        frame_, HitTestLocation(adjusted_point), hit_type);
   }
 
   WebMouseEvent fake_mouse_up(

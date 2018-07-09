@@ -532,11 +532,11 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   if (touch_sequence_document_ &&
       (!touch_node || &touch_node->GetDocument() != touch_sequence_document_)) {
     if (touch_sequence_document_->GetFrame()) {
-      LayoutPoint frame_point = LayoutPoint(
+      HitTestLocation location(LayoutPoint(
           touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
-              event.PositionInWidget()));
+              event.PositionInWidget())));
       result = EventHandlingUtil::HitTestResultInFrame(
-          touch_sequence_document_->GetFrame(), frame_point, hit_type);
+          touch_sequence_document_->GetFrame(), location, hit_type);
       Node* node = result.InnerNode();
       if (!node)
         return;

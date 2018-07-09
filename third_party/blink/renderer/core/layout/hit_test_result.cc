@@ -50,16 +50,14 @@ using namespace HTMLNames;
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
       cacheable_(true),
-      is_over_embedded_content_view_(false),
-      is_rect_based_test_(false) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& other_request,
                              const HitTestLocation& location)
     : hit_test_request_(other_request),
       cacheable_(true),
       point_in_inner_node_frame_(location.Point()),
-      is_over_embedded_content_view_(false),
-      is_rect_based_test_(location.IsRectBasedTest()) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestResult& other)
     : hit_test_request_(other.hit_test_request_),
@@ -71,8 +69,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
       inner_url_element_(other.URLElement()),
       scrollbar_(other.GetScrollbar()),
       is_over_embedded_content_view_(other.IsOverEmbeddedContentView()),
-      canvas_region_id_(other.CanvasRegionId()),
-      is_rect_based_test_(other.IsRectBasedTest()) {
+      canvas_region_id_(other.CanvasRegionId()) {
   // Only copy the NodeSet in case of list hit test.
   list_based_test_result_ = other.list_based_test_result_
                                 ? new NodeSet(*other.list_based_test_result_)
@@ -114,7 +111,6 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   is_over_embedded_content_view_ = other.IsOverEmbeddedContentView();
   cacheable_ = other.cacheable_;
   canvas_region_id_ = other.CanvasRegionId();
-  is_rect_based_test_ = other.IsRectBasedTest();
 
   // Only copy the NodeSet in case of list hit test.
   list_based_test_result_ = other.list_based_test_result_
@@ -455,7 +451,6 @@ HitTestResult::NodeSet& HitTestResult::MutableListBasedTestResult() {
 HitTestLocation HitTestResult::ResolveRectBasedTest(
     Node* resolved_inner_node,
     const LayoutPoint& resolved_point_in_main_frame) {
-  DCHECK(IsRectBasedTest());
   point_in_inner_node_frame_ = resolved_point_in_main_frame;
   inner_node_ = nullptr;
   inner_possibly_pseudo_node_ = nullptr;
@@ -468,7 +463,6 @@ HitTestLocation HitTestResult::ResolveRectBasedTest(
   DCHECK(resolved_inner_node);
   if (auto* layout_object = resolved_inner_node->GetLayoutObject())
     layout_object->UpdateHitTestResult(*this, LayoutPoint());
-  is_rect_based_test_ = false;
 
   return HitTestLocation(resolved_point_in_main_frame);
 }

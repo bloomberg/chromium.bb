@@ -2185,7 +2185,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
                        unflattened_transform_state.get())) {
-      if (result.IsRectBasedTest())
+      if (recursion_data.original_location.IsRectBasedTest())
         result.Append(temp_result);
       else
         result = temp_result;
@@ -2413,7 +2413,8 @@ PaintLayer* PaintLayer::HitTestChildren(
 
     // If it is a list-based test, we can safely append the temporary result
     // since it might had hit nodes but not necesserily had hitLayer set.
-    DCHECK(!result.IsRectBasedTest() || result.GetHitTestRequest().ListBased());
+    DCHECK(!recursion_data.original_location.IsRectBasedTest() ||
+           result.GetHitTestRequest().ListBased());
     if (result.GetHitTestRequest().ListBased())
       result.Append(temp_result);
 
