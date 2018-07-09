@@ -98,7 +98,7 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
   }
 
   run_loop_.reset(new base::RunLoop());
-  base::Timer timer(false, false);
+  base::OneShotTimer timer;
   timer.Start(
       FROM_HERE, timeout_,
       base::Bind(&WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));

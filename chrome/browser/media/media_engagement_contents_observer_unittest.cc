@@ -78,7 +78,7 @@ class MediaEngagementContentsObserverTest
   }
 
   bool IsTimerRunning() const {
-    return contents_observer_->playback_timer_->IsRunning();
+    return contents_observer_->playback_timer_.IsRunning();
   }
 
   bool IsTimerRunningForPlayer(int id) const {

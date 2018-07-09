@@ -58,14 +58,13 @@ class WasRecentlyAudibleWatcher {
   // |web_contents| must be non-NULL and needs to stay alive for the
   // entire lifetime of |this|.
   explicit WasRecentlyAudibleWatcher(content::WebContents* web_contents)
-      : audible_helper_(RecentlyAudibleHelper::FromWebContents(web_contents)),
-        timer_(new base::Timer(true, true)) {}
+      : audible_helper_(RecentlyAudibleHelper::FromWebContents(web_contents)) {}
   ~WasRecentlyAudibleWatcher() = default;
 
   // Waits until WasRecentlyAudible is true.
   void WaitForWasRecentlyAudible() {
     if (!audible_helper_->WasRecentlyAudible()) {
-      timer_->Start(
+      timer_.Start(
           FROM_HERE, base::TimeDelta::FromMicroseconds(100),
           base::Bind(&WasRecentlyAudibleWatcher::TestWasRecentlyAudible,
                      base::Unretained(this)));
@@ -78,13 +77,13 @@ class WasRecentlyAudibleWatcher {
   void TestWasRecentlyAudible() {
     if (audible_helper_->WasRecentlyAudible()) {
       run_loop_->Quit();
-      timer_->Stop();
+      timer_.Stop();
     }
   }
 
   RecentlyAudibleHelper* const audible_helper_;
 
-  std::unique_ptr<base::Timer> timer_;
+  base::RepeatingTimer timer_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WasRecentlyAudibleWatcher);

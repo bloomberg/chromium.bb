@@ -262,8 +262,7 @@ AudioOutputResampler::AudioOutputResampler(
       reinitialize_timer_(FROM_HERE,
                           close_delay_,
                           base::Bind(&AudioOutputResampler::Reinitialize,
-                                     base::Unretained(this)),
-                          false),
+                                     base::Unretained(this))),
       register_debug_recording_source_callback_(
           register_debug_recording_source_callback),
       weak_factory_(this) {

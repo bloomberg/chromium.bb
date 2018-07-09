@@ -2181,7 +2181,7 @@ class VEANoInputClient : public SimpleVEAClientBase {
  private:
   // The timer used to monitor the encoder doesn't return an output buffer in
   // a period of time.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 };
 
 VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
@@ -2202,12 +2202,10 @@ void VEANoInputClient::RequireBitstreamBuffers(
                                                output_size);
 
   // Timer is used to make sure there is no output frame in 100ms.
-  timer_.reset(
-      new base::Timer(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
-                      base::BindRepeating(&VEANoInputClient::SetState,
-                                          base::Unretained(this), CS_FINISHED),
-                      false));
-  timer_->Reset();
+  timer_.reset(new base::OneShotTimer());
+  timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
+                base::Bind(&VEANoInputClient::SetState, base::Unretained(this),
+                           CS_FINISHED));
 }
 
 void VEANoInputClient::BitstreamBufferReady(int32_t bitstream_buffer_id,

@@ -30,9 +30,7 @@ VideoFrameCompositor::VideoFrameCompositor(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kBackgroundRenderingTimeoutMs),
           base::Bind(&VideoFrameCompositor::BackgroundRender,
-                     base::Unretained(this)),
-          // Task is not repeating, CallRender() will reset the task as needed.
-          false),
+                     base::Unretained(this))),
       client_(nullptr),
       rendering_(false),
       rendered_last_frame_(false),
