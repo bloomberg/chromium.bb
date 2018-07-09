@@ -39,7 +39,8 @@
 
 namespace blink {
 
-static const double kAnimationPolicyOnceDuration = 3.000;
+static constexpr TimeDelta kAnimationPolicyOnceDuration =
+    TimeDelta::FromSeconds(3);
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : presentation_time_(0),

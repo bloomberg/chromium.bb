@@ -111,7 +111,7 @@ namespace blink {
 
 namespace {
 
-const double kSecondsBetweenRestoreAttempts = 1.0;
+constexpr TimeDelta kDurationBetweenRestoreAttempts = TimeDelta::FromSeconds(1);
 const int kMaxGLErrorsAllowedToConsole = 256;
 const unsigned kMaxGLActiveContextsOnWorker = 4;
 
@@ -7660,7 +7660,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   }
   if (!buffer) {
     if (context_lost_mode_ == kRealLostContext) {
-      restore_timer_.StartOneShot(kSecondsBetweenRestoreAttempts, FROM_HERE);
+      restore_timer_.StartOneShot(kDurationBetweenRestoreAttempts, FROM_HERE);
     } else {
       // This likely shouldn't happen but is the best way to report it to the
       // WebGL app.

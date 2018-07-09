@@ -72,7 +72,8 @@ void GeoNotifier::RunErrorCallback(PositionError* error) {
 }
 
 void GeoNotifier::StartTimer() {
-  timer_->StartOneShot(options_.timeout() / 1000.0, FROM_HERE);
+  timer_->StartOneShot(TimeDelta::FromMilliseconds(options_.timeout()),
+                       FROM_HERE);
 }
 
 void GeoNotifier::StopTimer() {
@@ -88,12 +89,6 @@ void GeoNotifier::Timer::Trace(blink::Visitor* visitor) {
 }
 
 void GeoNotifier::Timer::StartOneShot(TimeDelta interval,
-                                      const base::Location& caller) {
-  DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
-  timer_.StartOneShot(interval, caller);
-}
-
-void GeoNotifier::Timer::StartOneShot(double interval,
                                       const base::Location& caller) {
   DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
   timer_.StartOneShot(interval, caller);
