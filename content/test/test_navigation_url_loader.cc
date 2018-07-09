@@ -90,6 +90,7 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           url_loader_ptr.PassInterface(), std::move(url_loader_client_request));
 
   delegate_->OnResponseStarted(response, std::move(url_loader_client_endpoints),
+                               mojo::ScopedDataPipeConsumerHandle(),
                                std::move(navigation_data), global_id, false,
                                false, base::nullopt);
 }

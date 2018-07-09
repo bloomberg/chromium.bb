@@ -17,6 +17,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/mime_sniffer.h"
@@ -191,7 +192,13 @@ void MojoAsyncResourceHandler::OnResponseStarted(
     response->head.ssl_info = request()->ssl_info();
   }
 
-  url_loader_client_->OnReceiveResponse(response->head);
+  if (IsNavigationImmediateResponseBodyEnabled()) {
+    MaybeCreateResponseBodyDataPipe();
+    url_loader_client_->OnReceiveResponse(response->head);
+    MaybeSendStartLoadingResponseBody();
+  } else {
+    url_loader_client_->OnReceiveResponse(response->head);
+  }
 
   net::IOBufferWithSize* metadata = GetResponseMetadata(request());
   if (metadata) {
@@ -242,31 +249,10 @@ void MojoAsyncResourceHandler::OnWillRead(
     return;
   }
 
-  bool first_call = false;
+  MaybeCreateResponseBodyDataPipe();
   if (!shared_writer_) {
-    first_call = true;
-    MojoCreateDataPipeOptions options;
-    options.struct_size = sizeof(MojoCreateDataPipeOptions);
-    options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-    options.element_num_bytes = 1;
-    options.capacity_num_bytes = g_allocation_size;
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-
-    MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
-    if (result != MOJO_RESULT_OK) {
-      controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
-      return;
-    }
-    DCHECK(producer.is_valid());
-    DCHECK(consumer.is_valid());
-
-    response_body_consumer_handle_ = std::move(consumer);
-    shared_writer_ = new SharedWriter(std::move(producer));
-    handle_watcher_.Watch(shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                          base::Bind(&MojoAsyncResourceHandler::OnWritable,
-                                     base::Unretained(this)));
-    handle_watcher_.ArmOrNotify();
+    controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
   }
 
   bool defer = false;
@@ -288,7 +274,8 @@ void MojoAsyncResourceHandler::OnWillRead(
   // The first call to OnWillRead must return a buffer of at least
   // kMinAllocationSize. If the Mojo buffer is too small, need to allocate an
   // intermediary buffer.
-  if (first_call && static_cast<size_t>(buffer_->size()) < kMinAllocationSize) {
+  if (!has_started_one_read_ &&
+      static_cast<size_t>(buffer_->size()) < kMinAllocationSize) {
     // The allocated buffer is too small, so need to create an intermediary one.
     if (EndWrite(0) != MOJO_RESULT_OK) {
       controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
@@ -301,6 +288,8 @@ void MojoAsyncResourceHandler::OnWillRead(
 
   *buf = buffer_;
   *buf_size = buffer_->size();
+
+  has_started_one_read_ = true;
   controller->Resume();
 }
 
@@ -329,12 +318,8 @@ void MojoAsyncResourceHandler::OnReadCompleted(
     }
   }
 
-  if (response_body_consumer_handle_.is_valid()) {
-    // Send the data pipe on the first OnReadCompleted call.
-    url_loader_client_->OnStartLoadingResponseBody(
-        std::move(response_body_consumer_handle_));
-    response_body_consumer_handle_.reset();
-  }
+  // Send the data pipe on the first OnReadCompleted call.
+  MaybeSendStartLoadingResponseBody();
 
   if (is_using_io_buffer_not_from_writer_) {
     // Couldn't allocate a large enough buffer on the data pipe in OnWillRead.
@@ -652,6 +637,42 @@ void MojoAsyncResourceHandler::SendUploadProgress(
 void MojoAsyncResourceHandler::OnUploadProgressACK() {
   if (upload_progress_tracker_)
     upload_progress_tracker_->OnAckReceived();
+}
+
+void MojoAsyncResourceHandler::MaybeCreateResponseBodyDataPipe() {
+  if (has_created_response_body_data_pipe_)
+    return;
+  has_created_response_body_data_pipe_ = true;
+
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = g_allocation_size;
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+
+  MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+  if (result != MOJO_RESULT_OK)
+    return;
+
+  DCHECK(producer.is_valid());
+  DCHECK(consumer.is_valid());
+
+  response_body_consumer_handle_ = std::move(consumer);
+  shared_writer_ = new SharedWriter(std::move(producer));
+  handle_watcher_.Watch(
+      shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&MojoAsyncResourceHandler::OnWritable,
+                          base::Unretained(this)));
+  handle_watcher_.ArmOrNotify();
+}
+
+void MojoAsyncResourceHandler::MaybeSendStartLoadingResponseBody() {
+  if (response_body_consumer_handle_.is_valid()) {
+    url_loader_client_->OnStartLoadingResponseBody(
+        std::move(response_body_consumer_handle_));
+  }
 }
 
 }  // namespace content

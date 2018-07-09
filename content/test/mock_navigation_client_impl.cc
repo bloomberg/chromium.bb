@@ -20,6 +20,7 @@ void MockNavigationClientImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,

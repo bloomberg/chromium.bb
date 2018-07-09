@@ -19,4 +19,9 @@ bool IsPerNavigationMojoInterfaceEnabled() {
   return base::FeatureList::IsEnabled(features::kPerNavigationMojoInterface);
 }
 
+bool IsNavigationImmediateResponseBodyEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kNavigationImmediateResponseBody);
+}
+
 }  // namespace content

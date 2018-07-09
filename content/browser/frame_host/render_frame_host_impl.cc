@@ -3472,8 +3472,9 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       std::vector<ContentSecurityPolicy>() /* initiator_csp */,
       CSPSource() /* initiator_self_source */);
   CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
-                   common_params, RequestNavigationParams(), false,
-                   base::nullopt, base::nullopt /* subresource_overrides */,
+                   mojo::ScopedDataPipeConsumerHandle(), common_params,
+                   RequestNavigationParams(), false, base::nullopt,
+                   base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
 }
 
@@ -3632,6 +3633,7 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 void RenderFrameHostImpl::CommitNavigation(
     network::ResourceResponse* response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source,
@@ -3803,15 +3805,15 @@ void RenderFrameHostImpl::CommitNavigation(
         navigation_request_->GetCommitNavigationClient()) {
       navigation_request_->GetCommitNavigationClient()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
-          std::move(subresource_overrides), std::move(controller),
-          devtools_navigation_token);
+          std::move(url_loader_client_endpoints), std::move(response_body),
+          CloneSubresourceFactories(), std::move(subresource_overrides),
+          std::move(controller), devtools_navigation_token);
     } else {
       GetNavigationControl()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
-          std::move(subresource_overrides), std::move(controller),
-          devtools_navigation_token,
+          std::move(url_loader_client_endpoints), std::move(response_body),
+          CloneSubresourceFactories(), std::move(subresource_overrides),
+          std::move(controller), devtools_navigation_token,
           navigation_request_
               ? base::BindOnce(
                     &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,

@@ -1280,8 +1280,6 @@ TEST_P(
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
-
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("A"));
   url_loader_client_.RunUntilResponseBodyArrived();
@@ -1333,7 +1331,6 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
