@@ -94,8 +94,12 @@ void TestingPlatformSupportWithMockScheduler::RunUntilIdle() {
 
 void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
     double seconds) {
-  const base::TimeTicks deadline =
-      clock_.NowTicks() + base::TimeDelta::FromSecondsD(seconds);
+  RunForPeriod(base::TimeDelta::FromSecondsD(seconds));
+}
+
+void TestingPlatformSupportWithMockScheduler::RunForPeriod(
+    base::TimeDelta period) {
+  const base::TimeTicks deadline = clock_.NowTicks() + period;
 
   for (;;) {
     // If we've run out of immediate work then fast forward to the next delayed

@@ -25,6 +25,9 @@ const int kBlankCharactersThreshold = 200;
 
 }  // namespace
 
+constexpr TimeDelta FirstMeaningfulPaintDetector::kNetwork2QuietWindowTimeout;
+constexpr TimeDelta FirstMeaningfulPaintDetector::kNetwork0QuietWindowTimeout;
+
 FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
     Document& document) {
   return PaintTiming::From(document).GetFirstMeaningfulPaintDetector();
@@ -43,9 +46,9 @@ FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
           this,
           &FirstMeaningfulPaintDetector::Network2QuietTimerFired) {
   if (GetDocument() && GetDocument()->GetSettings()) {
-    network2_quiet_window_seconds_ =
-        GetDocument()->GetSettings()->GetFMPNetworkQuietTimeout();
-    network0_quiet_window_seconds_ = network2_quiet_window_seconds_;
+    network2_quiet_window_timeout_ = TimeDelta::FromSecondsD(
+        GetDocument()->GetSettings()->GetFMPNetworkQuietTimeout());
+    network0_quiet_window_timeout_ = network2_quiet_window_timeout_;
   }
 }
 
@@ -142,13 +145,13 @@ void FirstMeaningfulPaintDetector::SetNetworkQuietTimers(
     // If activeConnections < 2 and the timer is already running, current
     // 2-quiet window continues; the timer shouldn't be restarted.
     if (active_connections == 2 || !network2_quiet_timer_.IsActive()) {
-      network2_quiet_timer_.StartOneShot(network2_quiet_window_seconds_,
+      network2_quiet_timer_.StartOneShot(network2_quiet_window_timeout_,
                                          FROM_HERE);
     }
   }
   if (!network0_quiet_reached_ && active_connections == 0) {
     // This restarts 0-quiet timer if it's already running.
-    network0_quiet_timer_.StartOneShot(network0_quiet_window_seconds_,
+    network0_quiet_timer_.StartOneShot(network0_quiet_window_timeout_,
                                        FROM_HERE);
   }
 }

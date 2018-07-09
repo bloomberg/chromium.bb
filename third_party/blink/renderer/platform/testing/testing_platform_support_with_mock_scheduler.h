@@ -52,8 +52,9 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // time elapsed will typically much less than |seconds| because delays between
   // timers are fast forwarded.
   void RunForPeriodSeconds(double seconds);
+  void RunForPeriod(base::TimeDelta period);
 
-  // Advances |m_clock| by |seconds|.
+  // Advances |clock_| by |seconds|.
   void AdvanceClockSeconds(double seconds);
   void AdvanceClock(base::TimeDelta duration);
 
