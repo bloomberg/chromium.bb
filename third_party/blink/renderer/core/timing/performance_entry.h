@@ -69,8 +69,9 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
   };
 
   String name() const;
-  String entryType() const;
   DOMHighResTimeStamp startTime() const;
+  virtual AtomicString entryType() const = 0;
+  virtual PerformanceEntryType EntryTypeEnum() const = 0;
   // PerformanceNavigationTiming will override this due to
   // the nature of reporting it early, which means not having a
   // finish time available at construction time.
@@ -79,13 +80,11 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  PerformanceEntryType EntryTypeEnum() const { return entry_type_enum_; }
-
-  bool IsResource() const { return entry_type_enum_ == kResource; }
-  bool IsRender() const { return entry_type_enum_ == kRender; }
-  bool IsComposite() const { return entry_type_enum_ == kComposite; }
-  bool IsMark() const { return entry_type_enum_ == kMark; }
-  bool IsMeasure() const { return entry_type_enum_ == kMeasure; }
+  bool IsResource() const { return EntryTypeEnum() == kResource; }
+  bool IsRender() const { return EntryTypeEnum() == kRender; }
+  bool IsComposite() const { return EntryTypeEnum() == kComposite; }
+  bool IsMark() const { return EntryTypeEnum() == kMark; }
+  bool IsMeasure() const { return EntryTypeEnum() == kMeasure; }
 
   static bool StartTimeCompareLessThan(PerformanceEntry* a,
                                        PerformanceEntry* b) {
@@ -94,11 +93,22 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
     return a->startTime() < b->startTime();
   }
 
-  static PerformanceEntry::EntryType ToEntryTypeEnum(const String& entry_type);
+  static const AtomicString& CompositeKeyword();
+  static const AtomicString& EventKeyword();
+  static const AtomicString& FirstInputKeyword();
+  static const AtomicString& LongtaskKeyword();
+  static const AtomicString& MarkKeyword();
+  static const AtomicString& MeasureKeyword();
+  static const AtomicString& NavigationKeyword();
+  static const AtomicString& PaintKeyword();
+  static const AtomicString& RenderKeyword();
+  static const AtomicString& ResourceKeyword();
+  static const AtomicString& TaskattributionKeyword();
+  static PerformanceEntry::EntryType ToEntryTypeEnum(
+      const AtomicString& entry_type);
 
  protected:
   PerformanceEntry(const String& name,
-                   const String& entry_type,
                    double start_time,
                    double finish_time);
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
@@ -108,9 +118,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
 
  private:
   const String name_;
-  const String entry_type_;
   const double start_time_;
-  const PerformanceEntryType entry_type_enum_;
   const int index_;
 };
 

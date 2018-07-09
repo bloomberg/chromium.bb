@@ -46,7 +46,6 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     TimeTicks time_origin,
     const AtomicString& initiator_type)
     : PerformanceEntry(info.name,
-                       "resource",
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
                            info.start_time,
@@ -78,15 +77,22 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 // This constructor is for PerformanceNavigationTiming.
 PerformanceResourceTiming::PerformanceResourceTiming(
     const String& name,
-    const String& entry_type,
     TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
-    : PerformanceEntry(name, entry_type, 0.0, 0.0),
+    : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(server_timing)) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;
+
+AtomicString PerformanceResourceTiming::entryType() const {
+  return PerformanceEntry::ResourceKeyword();
+}
+
+PerformanceEntryType PerformanceResourceTiming::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kResource;
+}
 
 ResourceLoadTiming* PerformanceResourceTiming::GetResourceLoadTiming() const {
   return timing_.get();

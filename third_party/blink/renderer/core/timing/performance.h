@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -113,9 +114,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   double GetTimeOrigin() const { return TimeTicksInSeconds(time_origin_); }
 
   PerformanceEntryVector getEntries();
-  PerformanceEntryVector getEntriesByType(const String& entry_type);
+  PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByName(const String& name,
-                                          const String& entry_type);
+                                          const AtomicString& entry_type);
 
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);

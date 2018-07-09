@@ -29,6 +29,9 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
       String frame_name,
       const SubTaskAttribution::EntriesVector& sub_task_attributions);
 
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
+
   TaskAttributionVector attribution() const;
 
   void Trace(blink::Visitor*) override;

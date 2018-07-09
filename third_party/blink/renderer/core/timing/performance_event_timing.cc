@@ -18,34 +18,41 @@ PerformanceEventTiming* PerformanceEventTiming::Create(
   // TODO(npm): enable this DCHECK once https://crbug.com/852846 is fixed.
   // DCHECK_LE(start_time, processing_start);
   DCHECK_LE(processing_start, processing_end);
-  return new PerformanceEventTiming(event_type, "event", start_time,
-                                    processing_start, processing_end,
-                                    cancelable);
+  return new PerformanceEventTiming(
+      event_type, PerformanceEntry::EventKeyword(), start_time,
+      processing_start, processing_end, cancelable);
 }
 
 // static
 PerformanceEventTiming* PerformanceEventTiming::CreateFirstInputTiming(
     PerformanceEventTiming* entry) {
   PerformanceEventTiming* first_input = new PerformanceEventTiming(
-      entry->name(), "firstInput", entry->startTime(), entry->processingStart(),
-      entry->processingEnd(), entry->cancelable());
+      entry->name(), PerformanceEntry::FirstInputKeyword(), entry->startTime(),
+      entry->processingStart(), entry->processingEnd(), entry->cancelable());
   first_input->SetDuration(entry->duration());
   return first_input;
 }
 
 PerformanceEventTiming::PerformanceEventTiming(
     const String& event_type,
-    const String& entry_type,
+    const AtomicString& entry_type,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp processing_start,
     DOMHighResTimeStamp processing_end,
     bool cancelable)
-    : PerformanceEntry(event_type, entry_type, start_time, 0.0),
+    : PerformanceEntry(event_type, start_time, 0.0),
+      entry_type_(entry_type),
       processing_start_(processing_start),
       processing_end_(processing_end),
       cancelable_(cancelable) {}
 
 PerformanceEventTiming::~PerformanceEventTiming() = default;
+
+PerformanceEntryType PerformanceEventTiming::EntryTypeEnum() const {
+  return entry_type_ == PerformanceEntry::EventKeyword()
+             ? PerformanceEntry::EntryType::kEvent
+             : PerformanceEntry::EntryType::kFirstInput;
+}
 
 DOMHighResTimeStamp PerformanceEventTiming::processingStart() const {
   return processing_start_;

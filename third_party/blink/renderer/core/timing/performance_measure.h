@@ -48,6 +48,9 @@ class PerformanceMeasure final : public PerformanceEntry {
   }
   ScriptValue detail(ScriptState*) const;
 
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
+
   void Trace(blink::Visitor* visitor) override {
     PerformanceEntry::Trace(visitor);
   }

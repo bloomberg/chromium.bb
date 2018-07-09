@@ -41,24 +41,17 @@ static base::AtomicSequenceNumber index_seq;
 }
 
 PerformanceEntry::PerformanceEntry(const String& name,
-                                   const String& entry_type,
                                    double start_time,
                                    double finish_time)
     : duration_(finish_time - start_time),
       name_(name),
-      entry_type_(entry_type),
       start_time_(start_time),
-      entry_type_enum_(ToEntryTypeEnum(entry_type)),
       index_(index_seq.GetNext()) {}
 
 PerformanceEntry::~PerformanceEntry() = default;
 
 String PerformanceEntry::name() const {
   return name_;
-}
-
-String PerformanceEntry::entryType() const {
-  return entry_type_;
 }
 
 DOMHighResTimeStamp PerformanceEntry::startTime() const {
@@ -69,29 +62,107 @@ DOMHighResTimeStamp PerformanceEntry::duration() const {
   return duration_;
 }
 
+const AtomicString& PerformanceEntry::CompositeKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, composite, ());
+  if (!composite.IsSet())
+    *composite = "composite";
+  return *composite;
+}
+
+const AtomicString& PerformanceEntry::EventKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, event, ());
+  if (!event.IsSet())
+    *event = "event";
+  return *event;
+}
+
+const AtomicString& PerformanceEntry::FirstInputKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, firstInput, ());
+  if (!firstInput.IsSet())
+    *firstInput = "firstInput";
+  return *firstInput;
+}
+
+const AtomicString& PerformanceEntry::LongtaskKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, longtask, ());
+  if (!longtask.IsSet())
+    *longtask = "longtask";
+  return *longtask;
+}
+
+const AtomicString& PerformanceEntry::MarkKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, mark, ());
+  if (!mark.IsSet())
+    *mark = "mark";
+  return *mark;
+}
+
+const AtomicString& PerformanceEntry::MeasureKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, measure, ());
+  if (!measure.IsSet())
+    *measure = "measure";
+  return *measure;
+}
+
+const AtomicString& PerformanceEntry::NavigationKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, navigation, ());
+  if (!navigation.IsSet())
+    *navigation = "navigation";
+  return *navigation;
+}
+
+const AtomicString& PerformanceEntry::PaintKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, paint, ());
+  if (!paint.IsSet())
+    *paint = "paint";
+  return *paint;
+}
+
+const AtomicString& PerformanceEntry::RenderKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, render, ());
+  if (!render.IsSet())
+    *render = "render";
+  return *render;
+}
+
+const AtomicString& PerformanceEntry::ResourceKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, resource, ());
+  if (!resource.IsSet())
+    *resource = "resource";
+  return *resource;
+}
+
+const AtomicString& PerformanceEntry::TaskattributionKeyword() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, taskattribution,
+                                  ());
+  if (!taskattribution.IsSet())
+    *taskattribution = "taskattribution";
+  return *taskattribution;
+}
+
 PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
-    const String& entry_type) {
-  if (entry_type == "composite")
+    const AtomicString& entry_type) {
+  if (entry_type == CompositeKeyword())
     return kComposite;
-  if (entry_type == "longtask")
+  if (entry_type == LongtaskKeyword())
     return kLongTask;
-  if (entry_type == "mark")
+  if (entry_type == MarkKeyword())
     return kMark;
-  if (entry_type == "measure")
+  if (entry_type == MeasureKeyword())
     return kMeasure;
-  if (entry_type == "render")
+  if (entry_type == RenderKeyword())
     return kRender;
-  if (entry_type == "resource")
+  if (entry_type == ResourceKeyword())
     return kResource;
-  if (entry_type == "navigation")
+  if (entry_type == NavigationKeyword())
     return kNavigation;
-  if (entry_type == "taskattribution")
+  if (entry_type == TaskattributionKeyword())
     return kTaskAttribution;
-  if (entry_type == "paint")
+  if (entry_type == PaintKeyword())
     return kPaint;
-  if (entry_type == "event")
+  if (entry_type == EventKeyword())
     return kEvent;
-  if (entry_type == "firstInput")
+  if (entry_type == FirstInputKeyword())
     return kFirstInput;
   return kInvalid;
 }

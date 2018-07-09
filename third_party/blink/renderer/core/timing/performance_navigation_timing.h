@@ -38,6 +38,8 @@ class CORE_EXPORT PerformanceNavigationTiming final
 
   // Attributes inheritted from PerformanceEntry.
   DOMHighResTimeStamp duration() const override;
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
 
   AtomicString initiatorType() const override;
 

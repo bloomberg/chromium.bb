@@ -160,7 +160,8 @@ PerformanceEntryVector Performance::getEntries() {
   return entries;
 }
 
-PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
+PerformanceEntryVector Performance::getEntriesByType(
+    const AtomicString& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
@@ -228,8 +229,9 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
   return entries;
 }
 
-PerformanceEntryVector Performance::getEntriesByName(const String& name,
-                                                     const String& entry_type) {
+PerformanceEntryVector Performance::getEntriesByName(
+    const String& name,
+    const AtomicString& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);

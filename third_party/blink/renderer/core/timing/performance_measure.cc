@@ -14,7 +14,7 @@ PerformanceMeasure::PerformanceMeasure(ScriptState* script_state,
                                        double start_time,
                                        double end_time,
                                        const ScriptValue& detail)
-    : PerformanceEntry(name, "measure", start_time, end_time) {
+    : PerformanceEntry(name, start_time, end_time) {
   if (detail.IsEmpty()) {
     detail_ = SerializedScriptValue::NullValue();
   } else {
@@ -27,6 +27,14 @@ ScriptValue PerformanceMeasure::detail(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Value> detail = detail_->Deserialize(isolate);
   return ScriptValue(script_state, detail);
+}
+
+AtomicString PerformanceMeasure::entryType() const {
+  return PerformanceEntry::MeasureKeyword();
+}
+
+PerformanceEntryType PerformanceMeasure::EntryTypeEnum() const {
+  return PerformanceEntry::EntryType::kMeasure;
 }
 
 }  // namespace blink

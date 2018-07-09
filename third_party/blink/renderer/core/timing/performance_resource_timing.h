@@ -57,6 +57,9 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
     return new PerformanceResourceTiming(info, time_origin, initiator_type);
   }
 
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
+
   // Related doc: https://goo.gl/uNecAj.
   virtual AtomicString initiatorType() const;
   AtomicString nextHopProtocol() const;
@@ -85,7 +88,6 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   // This constructor is for PerformanceNavigationTiming.
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const String& name,
-                            const String& entry_type,
                             TimeTicks time_origin,
                             const WebVector<WebServerTimingInfo>&);
   virtual AtomicString AlpnNegotiatedProtocol() const;

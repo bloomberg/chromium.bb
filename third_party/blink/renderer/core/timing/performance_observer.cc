@@ -73,8 +73,10 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
   PerformanceEntryTypeMask entry_types = PerformanceEntry::kInvalid;
   if (observer_init.hasEntryTypes() && observer_init.entryTypes().size()) {
     const Vector<String>& sequence = observer_init.entryTypes();
-    for (const auto& entry_type_string : sequence)
-      entry_types |= PerformanceEntry::ToEntryTypeEnum(entry_type_string);
+    for (const auto& entry_type_string : sequence) {
+      entry_types |=
+          PerformanceEntry::ToEntryTypeEnum(AtomicString(entry_type_string));
+    }
   }
   if (entry_types == PerformanceEntry::kInvalid) {
     exception_state.ThrowTypeError(
