@@ -1056,45 +1056,6 @@ TEST_F(DownloadItemTest, ClearReceivedSliceIfEtagChanged) {
   CleanupItem(item, download_file, DownloadItem::IN_PROGRESS);
 }
 
-// Ensure when a network socket error happens on resumption, the received slices
-// info should be kept if the download is not restarted from beginning, so the
-// download progress will not move backward.
-TEST_F(DownloadItemTest, KeepReceivedSliceIfNetworkError) {
-  const char kFirstETag[] = "ABC";
-  const DownloadItem::ReceivedSlices kReceivedSlice = {
-      DownloadItem::ReceivedSlice(0, 10), DownloadItem::ReceivedSlice(20, 30)};
-  create_info()->etag = kFirstETag;
-
-  DownloadItemImpl* item = CreateDownloadItem();
-  MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-
-  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_));
-  EXPECT_CALL(*download_file, Detach());
-
-  item->DestinationObserverAsWeakPtr()->DestinationUpdate(20, 100,
-                                                          kReceivedSlice);
-  EXPECT_EQ(kReceivedSlice, item->GetReceivedSlices());
-  EXPECT_EQ(20, item->GetReceivedBytes());
-
-  item->DestinationObserverAsWeakPtr()->DestinationError(
-      DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 20 /* bytes_so_far */,
-      std::unique_ptr<crypto::SecureHash>());
-  task_environment_.RunUntilIdle();
-
-  // Simulate a socket error, and start the download.
-  create_info()->result = DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT;
-  DownloadItemImplDelegate::DownloadTargetCallback target_callback;
-  download_file = CallDownloadItemStart(item, &target_callback);
-
-  // After starting the download, the slice info and received bytes should not
-  // change.
-  EXPECT_EQ(kReceivedSlice, item->GetReceivedSlices());
-  EXPECT_EQ(20, item->GetReceivedBytes());
-
-  CleanupItem(item, download_file, DownloadItem::IN_PROGRESS);
-}
-
 // Test that resumption uses the final URL in a URL chain when resuming.
 TEST_F(DownloadItemTest, ResumeUsesFinalURL) {
   create_info()->save_info->prompt_for_save_location = false;
