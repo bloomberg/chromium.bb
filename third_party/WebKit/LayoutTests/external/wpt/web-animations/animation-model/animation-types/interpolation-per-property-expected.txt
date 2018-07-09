@@ -394,9 +394,9 @@ PASS grid-template-rows uses discrete animation when animating between "1px" and
 PASS grid-template-rows uses discrete animation when animating between "1px" and "5px" with effect easing
 PASS grid-template-rows uses discrete animation when animating between "1px" and "5px" with keyframe easing
 PASS hyphens (type: discrete) has testInterpolation function
-PASS hyphens uses discrete animation when animating between "manual" and "auto" with linear easing
-PASS hyphens uses discrete animation when animating between "manual" and "auto" with effect easing
-PASS hyphens uses discrete animation when animating between "manual" and "auto" with keyframe easing
+PASS hyphens uses discrete animation when animating between "manual" and "none" with linear easing
+PASS hyphens uses discrete animation when animating between "manual" and "none" with effect easing
+PASS hyphens uses discrete animation when animating between "manual" and "none" with keyframe easing
 PASS image-orientation (type: discrete) has testInterpolation function
 FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with linear easing assert_equals: The value should be 90deg at 500ms expected "90deg" but got "0deg"
 FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with effect easing assert_equals: The value should be 90deg at 960ms expected "90deg" but got "0deg"
