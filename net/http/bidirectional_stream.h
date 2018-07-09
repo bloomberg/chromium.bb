@@ -22,6 +22,10 @@
 #include "net/http/http_stream_request.h"
 #include "net/log/net_log_with_source.h"
 
+namespace base {
+class OneShotTimer;
+}  // namespace base
+
 namespace spdy {
 class SpdyHeaderBlock;
 }  // namespace spdy
@@ -120,7 +124,7 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
       HttpNetworkSession* session,
       bool send_request_headers_automatically,
       Delegate* delegate,
-      std::unique_ptr<base::Timer> timer);
+      std::unique_ptr<base::OneShotTimer> timer);
 
   // Cancels |stream_request_| or |stream_impl_| if applicable.
   // |this| should not be destroyed during Delegate::OnHeadersSent or
@@ -240,7 +244,7 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
 
   // Timer used to buffer data received in short time-spans and send a single
   // read completion notification.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   // HttpStreamRequest used to request a BidirectionalStreamImpl. This is NULL
   // if the request has been canceled or completed.
   std::unique_ptr<HttpStreamRequest> stream_request_;

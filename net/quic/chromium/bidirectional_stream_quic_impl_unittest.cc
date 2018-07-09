@@ -79,11 +79,11 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   TestDelegateBase(IOBuffer* read_buf, int read_buf_len)
       : TestDelegateBase(read_buf,
                          read_buf_len,
-                         std::make_unique<base::Timer>(false, false)) {}
+                         std::make_unique<base::OneShotTimer>()) {}
 
   TestDelegateBase(IOBuffer* read_buf,
                    int read_buf_len,
-                   std::unique_ptr<base::Timer> timer)
+                   std::unique_ptr<base::OneShotTimer> timer)
       : read_buf_(read_buf),
         read_buf_len_(read_buf_len),
         timer_(std::move(timer)),
@@ -293,7 +293,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   std::unique_ptr<BidirectionalStreamQuicImpl> stream_;
   scoped_refptr<IOBuffer> read_buf_;
   int read_buf_len_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   std::string data_received_;
   std::unique_ptr<base::RunLoop> loop_;
   spdy::SpdyHeaderBlock response_headers_;

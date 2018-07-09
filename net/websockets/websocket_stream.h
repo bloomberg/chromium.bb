@@ -23,7 +23,7 @@
 class GURL;
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }
 
 namespace url {
@@ -173,7 +173,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
       std::unique_ptr<ConnectDelegate> connect_delegate,
-      std::unique_ptr<base::Timer> timer,
+      std::unique_ptr<base::OneShotTimer> timer,
       std::unique_ptr<WebSocketStreamRequestAPI> api_delegate);
 
   // Derived classes must make sure Close() is called when the stream is not

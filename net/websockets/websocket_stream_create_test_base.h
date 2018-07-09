@@ -45,7 +45,7 @@ class WebSocketStreamCreateTestBase : public WithScopedTaskEnvironment {
                               const url::Origin& origin,
                               const GURL& site_for_cookies,
                               const HttpRequestHeaders& additional_headers,
-                              std::unique_ptr<base::Timer> timer);
+                              std::unique_ptr<base::OneShotTimer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(
       const HttpRequestHeaders& headers);

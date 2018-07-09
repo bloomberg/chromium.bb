@@ -29,7 +29,7 @@
 
 namespace base {
 class Clock;
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace net {
@@ -121,7 +121,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   // invalidate the core.
   class Core : public base::SupportsWeakPtr<Core>, MDnsConnection::Delegate {
    public:
-    Core(base::Clock* clock, base::Timer* timer);
+    Core(base::Clock* clock, base::OneShotTimer* timer);
     ~Core() override;
 
     // Initialize the core. Returns true on success.
@@ -176,7 +176,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     MDnsCache cache_;
 
     base::Clock* clock_;
-    base::Timer* cleanup_timer_;
+    base::OneShotTimer* cleanup_timer_;
     base::Time scheduled_cleanup_;
 
     std::unique_ptr<MDnsConnection> connection_;
@@ -210,11 +210,11 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
 
   // Test constructor, takes a mock clock and mock timer.
   MDnsClientImpl(base::Clock* clock,
-                 std::unique_ptr<base::Timer> cleanup_timer);
+                 std::unique_ptr<base::OneShotTimer> cleanup_timer);
 
   std::unique_ptr<Core> core_;
   base::Clock* clock_;
-  std::unique_ptr<base::Timer> cleanup_timer_;
+  std::unique_ptr<base::OneShotTimer> cleanup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsClientImpl);
 };

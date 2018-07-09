@@ -18,7 +18,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace spdy {
@@ -108,7 +108,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
                      const NetLogWithSource& net_log,
                      bool send_request_headers_automatically,
                      BidirectionalStreamImpl::Delegate* delegate,
-                     std::unique_ptr<base::Timer> timer,
+                     std::unique_ptr<base::OneShotTimer> timer,
                      const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Sends request headers to server.

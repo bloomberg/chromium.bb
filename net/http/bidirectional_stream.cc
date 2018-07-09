@@ -73,14 +73,14 @@ BidirectionalStream::BidirectionalStream(
                           session,
                           send_request_headers_automatically,
                           delegate,
-                          std::make_unique<base::Timer>(false, false)) {}
+                          std::make_unique<base::OneShotTimer>()) {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
     bool send_request_headers_automatically,
     Delegate* delegate,
-    std::unique_ptr<base::Timer> timer)
+    std::unique_ptr<base::OneShotTimer> timer)
     : request_info_(std::move(request_info)),
       net_log_(NetLogWithSource::Make(session->net_log(),
                                       NetLogSourceType::BIDIRECTIONAL_STREAM)),

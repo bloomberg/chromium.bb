@@ -20,7 +20,7 @@
 #include "net/third_party/spdy/core/spdy_header_block.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace net {
@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
              const NetLogWithSource& net_log,
              bool send_request_headers_automatically,
              BidirectionalStreamImpl::Delegate* delegate,
-             std::unique_ptr<base::Timer> timer,
+             std::unique_ptr<base::OneShotTimer> timer,
              const NetworkTrafficAnnotationTag& traffic_annotation) override;
   void SendRequestHeaders() override;
   int ReadData(IOBuffer* buffer, int buffer_len) override;
