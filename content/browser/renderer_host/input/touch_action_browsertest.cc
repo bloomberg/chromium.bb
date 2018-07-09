@@ -292,6 +292,12 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
     params.anchor = touch_point;
     params.distances.push_back(-distance);
+    // Set the speed to very high so that there is one GSU only.
+    // It seems that when the speed is too high, it has a race with the timeout
+    // test.
+    if (jank_time != kLongJankTime) {
+      params.speed_in_pixels_s = 1000000;
+    }
 
     run_loop_ = std::make_unique<base::RunLoop>();
 
@@ -340,17 +346,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     int scroll_top = GetScrollTop();
     int scroll_left = GetScrollLeft();
 
-    // It is hard to know when would the synthetic gesture being completely
-    // processed, so just make sure that it scrolled at least 1px along the
-    // expected scroll direction.
-    if (expected_scroll_position_after_scroll.y() > 0)
-      EXPECT_GT(scroll_top, 1);
-    else
-      EXPECT_EQ(scroll_top, 0);
-    if (expected_scroll_position_after_scroll.x() > 0)
-      EXPECT_GT(scroll_left, 1);
-    else
-      EXPECT_EQ(scroll_left, 0);
+    // Expect it scrolled at least half of the expected distance.
+    EXPECT_LE(expected_scroll_position_after_scroll.y() / 2, scroll_top);
+    EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
   }
 
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
@@ -477,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtXAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 45), false, 10000,
+  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 20), false, 10000,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
@@ -491,16 +489,15 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtYAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(45, 45), false, 10000,
+  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(20, 45), false, 10000,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-// Flaky on all platforms.  http://crbug.com/851619
 IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
-                       DISABLED_PanXYAtAutoYOverlapAreaMainThreadJanky) {
+                       PanXYAtAutoYOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(45, 45), false, 10000,
+  DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(20, 45), false, 10000,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
@@ -515,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                        MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(125, 75), gfx::Vector2d(45, 45), false, 10000,
+  DoTouchScroll(gfx::Point(125, 75), gfx::Vector2d(45, 20), false, 10000,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
