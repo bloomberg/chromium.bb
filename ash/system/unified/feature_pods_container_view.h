@@ -25,6 +25,9 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   // horizontally placed.
   void SetExpandedAmount(double expanded_amount);
 
+  // Get height of the view when |expanded_amount| is set to 1.0.
+  int GetExpandedHeight() const;
+
   // Save and restore keyboard focus of a child feature pod button. If no button
   // has focus or no focus is saved, these methods are no-op.
   void SaveFocus();

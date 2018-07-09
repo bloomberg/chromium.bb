@@ -20,6 +20,7 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -88,6 +89,13 @@ void UnifiedSlidersContainerView::SetExpandedAmount(double expanded_amount) {
   UpdateOpacity();
 }
 
+int UnifiedSlidersContainerView::GetExpandedHeight() const {
+  int height = 0;
+  for (int i = 0; i < child_count(); ++i)
+    height += child_at(i)->GetHeightForWidth(kTrayMenuWidth);
+  return height;
+}
+
 void UnifiedSlidersContainerView::Layout() {
   int y = 0;
   for (int i = 0; i < child_count(); ++i) {
@@ -99,10 +107,7 @@ void UnifiedSlidersContainerView::Layout() {
 }
 
 gfx::Size UnifiedSlidersContainerView::CalculatePreferredSize() const {
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i)
-    height += child_at(i)->GetHeightForWidth(kTrayMenuWidth);
-  return gfx::Size(kTrayMenuWidth, height * expanded_amount_);
+  return gfx::Size(kTrayMenuWidth, GetExpandedHeight() * expanded_amount_);
 }
 
 void UnifiedSlidersContainerView::UpdateOpacity() {
@@ -127,7 +132,8 @@ void UnifiedSlidersContainerView::UpdateOpacity() {
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller,
     bool initially_expanded)
-    : controller_(controller),
+    : expanded_amount_(initially_expanded ? 1.0 : 0.0),
+      controller_(controller),
       message_center_view_(
           new UnifiedMessageCenterView(controller,
                                        message_center::MessageCenter::Get())),
@@ -164,7 +170,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   detailed_view_container_->SetVisible(false);
   AddChildView(detailed_view_container_);
 
-  top_shortcuts_view_->SetExpandedAmount(initially_expanded ? 1.0 : 0.0);
+  top_shortcuts_view_->SetExpandedAmount(expanded_amount_);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
@@ -218,13 +224,41 @@ void UnifiedSystemTrayView::RequestInitFocus() {
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
+  expanded_amount_ = expanded_amount;
+
   top_shortcuts_view_->SetExpandedAmount(expanded_amount);
   feature_pods_container_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
-  PreferredSizeChanged();
-  // It is possible that the ratio between |message_center_view_| and others
-  // can change while the bubble size remain unchanged.
+
+  if (!IsTransformEnabled()) {
+    PreferredSizeChanged();
+    // It is possible that the ratio between |message_center_view_| and others
+    // can change while the bubble size remain unchanged.
+    Layout();
+    return;
+  }
+
+  if (height() != GetExpandedHeight())
+    PreferredSizeChanged();
   Layout();
+}
+
+int UnifiedSystemTrayView::GetExpandedHeight() const {
+  return top_shortcuts_view_->GetPreferredSize().height() +
+         feature_pods_container_->GetExpandedHeight() +
+         sliders_container_->GetExpandedHeight() +
+         system_info_view_->GetPreferredSize().height();
+}
+
+int UnifiedSystemTrayView::GetCurrentHeight() const {
+  return GetPreferredSize().height();
+}
+
+bool UnifiedSystemTrayView::IsTransformEnabled() const {
+  // TODO(tetsui): Support animation by transform even when
+  // UnifiedMessageCenterview is visible.
+  return expanded_amount_ != 0.0 && expanded_amount_ != 1.0 &&
+         !message_center_view_->visible();
 }
 
 void UnifiedSystemTrayView::ShowClearAllAnimation() {

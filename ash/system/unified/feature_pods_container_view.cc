@@ -14,30 +14,6 @@ FeaturePodsContainerView::FeaturePodsContainerView(bool initially_expanded)
 
 FeaturePodsContainerView::~FeaturePodsContainerView() = default;
 
-gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
-  const int collapsed_height = 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
-                               kUnifiedFeaturePodCollapsedSize.height();
-
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
-
-  // floor(visible_count / kUnifiedFeaturePodItemsInRow)
-  int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
-                        kUnifiedFeaturePodItemsInRow;
-  const int expanded_height =
-      kUnifiedFeaturePodVerticalPadding +
-      (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
-          number_of_lines;
-
-  return gfx::Size(
-      kTrayMenuWidth,
-      static_cast<int>(collapsed_height * (1.0 - expanded_amount_) +
-                       expanded_height * expanded_amount_));
-}
-
 void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   if (expanded_amount_ == expanded_amount)
@@ -51,6 +27,21 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
   Layout();
+}
+
+int FeaturePodsContainerView::GetExpandedHeight() const {
+  int visible_count = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
+      ++visible_count;
+  }
+
+  // floor(visible_count / kUnifiedFeaturePodItemsInRow)
+  int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
+                        kUnifiedFeaturePodItemsInRow;
+  return kUnifiedFeaturePodVerticalPadding +
+         (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
+             number_of_lines;
 }
 
 void FeaturePodsContainerView::SaveFocus() {
@@ -67,6 +58,15 @@ void FeaturePodsContainerView::SaveFocus() {
 void FeaturePodsContainerView::RestoreFocus() {
   if (focused_button_)
     focused_button_->RequestFocus();
+}
+
+gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
+  const int collapsed_height = 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
+                               kUnifiedFeaturePodCollapsedSize.height();
+  return gfx::Size(
+      kTrayMenuWidth,
+      static_cast<int>(collapsed_height * (1.0 - expanded_amount_) +
+                       GetExpandedHeight() * expanded_amount_));
 }
 
 void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {

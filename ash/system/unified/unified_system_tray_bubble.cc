@@ -22,11 +22,46 @@ namespace {
 
 constexpr int kPaddingFromScreenTop = 8;
 
+// Container view of UnifiedSystemTrayView to return fake preferred size for
+// animation optimization. See UnifiedSystemTrayBubble::UpdateTransform().
+// The fake size is specific to the structure of TrayBubbleView, so it is better
+// to keep it separate from UnifiedSystemTrayView.
+class ContainerView : public views::View {
+ public:
+  explicit ContainerView(UnifiedSystemTrayView* unified_view)
+      : unified_view_(unified_view) {
+    AddChildView(unified_view);
+  }
+
+  ~ContainerView() override = default;
+
+  // views::View:
+  void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
+
+  gfx::Size CalculatePreferredSize() const override {
+    // If transform is used, always return the maximum height. Otherwise, return
+    // the actual height.
+    return gfx::Size(kTrayMenuWidth, unified_view_->IsTransformEnabled()
+                                         ? unified_view_->GetExpandedHeight()
+                                         : unified_view_->GetCurrentHeight());
+  }
+
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
+ private:
+  UnifiedSystemTrayView* const unified_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContainerView);
+};
+
 }  // namespace
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
-    : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model())),
+    : controller_(
+          std::make_unique<UnifiedSystemTrayController>(tray->model(), this)),
       tray_(tray) {
   if (show_by_click)
     time_shown_by_click_ = base::TimeTicks::Now();
@@ -53,7 +88,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
       std::make_unique<TimeToClickRecorder>(this, unified_view_);
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
-  bubble_view_->AddChildView(unified_view_);
+  bubble_view_->AddChildView(new ContainerView(unified_view_));
   bubble_view_->set_anchor_view_insets(
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
   bubble_view_->set_color(SK_ColorTRANSPARENT);
@@ -65,8 +100,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
   if (app_list::features::IsBackgroundBlurEnabled()) {
-    // ClientView's layer (See TrayBubbleView::InitializeAndShowBubble())
-    bubble_view_->layer()->parent()->SetBackgroundBlur(
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
 
@@ -129,6 +163,37 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   controller_->EnsureExpanded();
 }
 
+void UnifiedSystemTrayBubble::UpdateTransform() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+
+  if (!unified_view_->IsTransformEnabled()) {
+    unified_view_->SetTransform(gfx::Transform());
+    DestroyBlurLayerForAnimation();
+    SetFrameVisible(true);
+    return;
+  }
+
+  SetFrameVisible(false);
+
+  const int y_offset =
+      unified_view_->GetExpandedHeight() - unified_view_->GetCurrentHeight();
+
+  gfx::Transform transform;
+  transform.Translate(0, y_offset);
+  unified_view_->SetTransform(transform);
+
+  CreateBlurLayerForAnimation();
+
+  if (blur_layer_) {
+    gfx::Rect blur_bounds = bubble_widget_->client_view()->layer()->bounds();
+    blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
+    blur_layer_->layer()->SetBounds(blur_bounds);
+  }
+}
+
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
   return tray_;
 }
@@ -184,6 +249,47 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   bounds.set_x(bounds.x() - translation.x());
   bounds.set_y(bounds.y() - translation.y());
   bubble_view_->GetWidget()->GetNativeWindow()->SetBounds(bounds);
+}
+
+void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
+  if (!app_list::features::IsBackgroundBlurEnabled())
+    return;
+
+  if (blur_layer_)
+    return;
+
+  DCHECK(bubble_widget_);
+
+  bubble_widget_->client_view()->layer()->SetBackgroundBlur(0);
+
+  blur_layer_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorTRANSPARENT, 0));
+  blur_layer_->layer()->SetFillsBoundsOpaquely(false);
+
+  bubble_widget_->GetLayer()->Add(blur_layer_->layer());
+  bubble_widget_->GetLayer()->StackAtBottom(blur_layer_->layer());
+
+  blur_layer_->layer()->SetBounds(
+      bubble_widget_->client_view()->layer()->bounds());
+  blur_layer_->layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+}
+
+void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
+  if (!app_list::features::IsBackgroundBlurEnabled())
+    return;
+
+  if (!blur_layer_)
+    return;
+
+  blur_layer_.reset();
+
+  bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+      kUnifiedMenuBackgroundBlur);
+}
+
+void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
+  DCHECK(bubble_widget_);
+  bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
 }
 
 }  // namespace ash
