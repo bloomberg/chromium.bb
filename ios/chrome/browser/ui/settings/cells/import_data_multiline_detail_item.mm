@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -18,6 +19,31 @@ const CGFloat kHorizontalPadding = 16;
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 }  // namespace
+
+@implementation ImportDataMultilineDetailItem
+
+@synthesize accessoryType = _accessoryType;
+@synthesize text = _text;
+@synthesize detailText = _detailText;
+
+- (instancetype)initWithType:(NSInteger)type {
+  self = [super initWithType:type];
+  if (self) {
+    self.cellClass = [ImportDataMultilineDetailCell class];
+  }
+  return self;
+}
+
+#pragma mark CollectionViewItem
+
+- (void)configureCell:(ImportDataMultilineDetailCell*)cell {
+  [super configureCell:cell];
+  [cell cr_setAccessoryType:self.accessoryType];
+  cell.textLabel.text = self.text;
+  cell.detailTextLabel.text = self.detailText;
+}
+
+@end
 
 @implementation ImportDataMultilineDetailCell
 

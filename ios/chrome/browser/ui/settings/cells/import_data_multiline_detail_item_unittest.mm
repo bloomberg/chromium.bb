@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -20,12 +19,13 @@ using ImportDataMultilineDetailItemTest = PlatformTest;
 // Tests that the text and detail text are honoured after a call to
 // |configureCell:|.
 TEST_F(ImportDataMultilineDetailItemTest, ConfigureCell) {
-  SettingsDetailItem* item = [[SettingsDetailItem alloc] initWithType:0];
-  item.cellClass = [ImportDataMultilineDetailCell class];
+  ImportDataMultilineDetailItem* item =
+      [[ImportDataMultilineDetailItem alloc] initWithType:0];
   NSString* text = @"Test Text";
-  NSString* detailText = @"Test Detail Text that can span multiple lines. For "
-                         @"example, this line probably fits on three or four "
-                         @"lines.";
+  NSString* detailText =
+      @"Test Detail Text that can span multiple lines. For "
+      @"example, this line probably fits on three or four "
+      @"lines.";
 
   item.text = text;
   item.detailText = detailText;
