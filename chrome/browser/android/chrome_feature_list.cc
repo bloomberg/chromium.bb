@@ -137,7 +137,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsSingleAppUiSkip,
     &kWebVrAutopresentFromIntent,
-    &kWebVrCardboardSupport,
     &media::kCafMediaRouterImpl,
     &ntp_snippets::kArticleSuggestionsExpandableHeader,
     &ntp_snippets::kIncreasedVisibility,
@@ -388,9 +387,6 @@ const base::Feature kVrBrowsingTabsView{"VrBrowsingTabsView",
 
 const base::Feature kWebVrAutopresentFromIntent{
     "WebVrAutopresentFromIntent", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kWebVrCardboardSupport{"WebVrCardboardSupport",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean JNI_ChromeFeatureList_IsInitialized(
     JNIEnv* env,
