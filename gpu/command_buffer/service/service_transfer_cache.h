@@ -27,7 +27,8 @@ namespace gpu {
 // cache limits. If the cache exceeds its specified limits, unlocked transfer
 // cache entries may be deleted.
 class GPU_GLES2_EXPORT ServiceTransferCache
-    : public base::MemoryCoordinatorClient {
+    : public base::MemoryCoordinatorClient,
+      public base::trace_event::MemoryDumpProvider {
  public:
   ServiceTransferCache();
   ~ServiceTransferCache() override;
@@ -47,6 +48,10 @@ class GPU_GLES2_EXPORT ServiceTransferCache
   // base::MemoryCoordinatorClient implementation.
   void OnMemoryStateChange(base::MemoryState state) override;
   void OnPurgeMemory() override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Test-only functions:
   void SetCacheSizeLimitForTesting(size_t cache_size_limit) {
