@@ -120,6 +120,8 @@ const char kGSuiteSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.GSuiteSyncPasswordEntry";
 const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.GSuiteSyncPasswordEntry";
+const char kInterstitialActionByUserNavigationHistogram[] =
+    "PasswordProtection.InterstitialActionByUserNavigation";
 
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -158,6 +160,15 @@ void PasswordProtectionService::RecordWarningAction(
     WarningUIType ui_type,
     WarningAction action,
     ReusedPasswordType password_type) {
+  // |password_type| can be unknown if user directly navigates to
+  // chrome://reset-password page. In this case, do not record user action.
+  if (password_type == PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN &&
+      ui_type == INTERSTITIAL) {
+    base::UmaHistogramEnumeration(
+        "PasswordProtection.InterstitialActionByUserNavigation", action,
+        MAX_ACTION);
+    return;
+  }
   bool is_sign_in_password =
       password_type == PasswordReuseEvent::SIGN_IN_PASSWORD;
   bool is_gsuite_user = GetSyncAccountType() == PasswordReuseEvent::GSUITE;

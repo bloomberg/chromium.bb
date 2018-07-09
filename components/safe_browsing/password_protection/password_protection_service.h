@@ -65,6 +65,8 @@ extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
 extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
 extern const char kGSuiteSyncPasswordPageInfoHistogram[];
 extern const char kGSuiteSyncPasswordInterstitialHistogram[];
+extern const char kInterstitialActionByUserNavigationHistogram[];
+;
 
 using ReusedPasswordType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType;

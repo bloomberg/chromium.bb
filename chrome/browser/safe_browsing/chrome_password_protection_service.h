@@ -172,7 +172,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
   // returns an empty string.
-  std::string GetOrganizationName() const;
+  std::string GetOrganizationName(ReusedPasswordType password_type) const;
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected"
   // extension API for enterprise reporting.
