@@ -182,10 +182,12 @@ void RelocWriterWin32::PutNext(Reference ref) {
   --block_it;
   rva_t rva_hi_bits = image_.read<pe::RelocHeader>(*block_it).rva_hi;
   rva_t target_rva = target_offset_to_rva_.Convert(ref.target);
-  rva_t rva_lo_bits = target_rva - rva_hi_bits;
-  DCHECK_EQ(rva_lo_bits & 0xFFF, rva_lo_bits);
-  image_.write<uint16_t>(ref.location,
-                         (rva_lo_bits & 0xFFF) | (reloc_type_ << 12));
+  rva_t rva_lo_bits = (target_rva - rva_hi_bits) & 0xFFF;
+  if (target_rva != rva_hi_bits + rva_lo_bits) {
+    LOG(ERROR) << "Invalid RVA at " << AsHex<8>(ref.location) << ".";
+    return;
+  }
+  image_.write<uint16_t>(ref.location, rva_lo_bits | (reloc_type_ << 12));
 }
 
 }  // namespace zucchini
