@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
@@ -325,7 +324,6 @@ Response* Response::Create(ScriptState* script_state,
       return nullptr;
     }
     r->response_->ReplaceBodyStreamBuffer(body);
-    r->RefreshBody(script_state);
     if (!content_type.IsEmpty() &&
         !r->response_->HeaderList()->Has("Content-Type"))
       r->response_->HeaderList()->Append("Content-Type", content_type);
@@ -465,7 +463,6 @@ Response* Response::clone(ScriptState* script_state,
   FetchResponseData* response = response_->Clone(script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  RefreshBody(script_state);
   Headers* headers = Headers::Create(response->HeaderList());
   headers->SetGuard(headers_->GetGuard());
   return new Response(GetExecutionContext(), response, headers);
@@ -501,9 +498,7 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
 Response::Response(ExecutionContext* context,
                    FetchResponseData* response,
                    Headers* headers)
-    : Body(context), response_(response), headers_(headers) {
-  InstallBody();
-}
+    : Body(context), response_(response), headers_(headers) {}
 
 bool Response::HasBody() const {
   return response_->InternalBuffer();
@@ -537,27 +532,6 @@ String Response::InternalMIMEType() const {
 
 const Vector<KURL>& Response::InternalURLList() const {
   return response_->InternalURLList();
-}
-
-void Response::InstallBody() {
-  if (!InternalBodyBuffer())
-    return;
-  RefreshBody(InternalBodyBuffer()->GetScriptState());
-}
-
-void Response::RefreshBody(ScriptState* script_state) {
-  v8::Local<v8::Value> body_buffer = ToV8(InternalBodyBuffer(), script_state);
-  v8::Local<v8::Value> response = ToV8(this, script_state);
-  if (response.IsEmpty()) {
-    // |toV8| can return an empty handle when the worker is terminating.
-    // We don't want the renderer to crash in such cases.
-    // TODO(yhirano): Delete this block after the graceful shutdown
-    // mechanism is introduced.
-    return;
-  }
-  DCHECK(response->IsObject());
-  V8PrivateProperty::GetInternalBodyBuffer(script_state->GetIsolate())
-      .Set(response.As<v8::Object>(), body_buffer);
 }
 
 void Response::Trace(blink::Visitor* visitor) {

@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -21,7 +22,6 @@
 
 namespace blink {
 
-class BodyStreamBuffer;
 class ExceptionState;
 class FetchHeaderList;
 class SecurityOrigin;
@@ -143,7 +143,7 @@ class FetchRequestData final
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;
-  Member<BodyStreamBuffer> buffer_;
+  TraceWrapperMember<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
   bool keepalive_;
