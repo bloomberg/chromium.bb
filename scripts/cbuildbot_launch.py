@@ -447,6 +447,7 @@ def _main(argv):
   branchname = options.branch or 'master'
   root = options.buildroot
   buildroot = os.path.join(root, 'repository')
+  workspace = os.path.join(root, 'workspace')
   depot_tools_path = os.path.join(buildroot, constants.DEPOT_TOOLS_SUBPATH)
 
   metrics_fields = {
@@ -493,6 +494,7 @@ def _main(argv):
       if previous_build_state.is_valid():
         argv.append('--previous-build-state')
         argv.append(base64.b64encode(previous_build_state.to_json()))
+      argv.extend(['--workspace', workspace])
 
       result = Cbuildbot(buildroot, depot_tools_path, argv)
       s_fields['success'] = (result == 0)

@@ -204,6 +204,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '/root/repository/chromite/bin/cbuildbot',
             'config',
             '-r', '/root/repository',
+            '--workspace', '/root/workspace',
             '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
@@ -304,6 +305,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             'eyJzdGF0dXMiOiAiZmFpbCIsICJtYXN0ZXJfYnVpbGRfaWQiOiAxMjMxMjMxMj'
             'MsICJidWlsZF9udW1iZXIiOiAzMTMsICJidWlsZHJvb3RfbGF5b3V0IjogMiwg'
             'ImJyYW5jaCI6ICJicmFuY2gifQ==',
+            '--workspace', '/root/workspace',
             '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
