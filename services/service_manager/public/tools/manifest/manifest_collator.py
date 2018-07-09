@@ -13,6 +13,11 @@ import sys
 import urlparse
 
 
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir,
+    os.pardir, "build", "android", "gyp"))
+from util import build_utils
+
 # Keys which are completely overridden by manifest overlays
 _MANIFEST_OVERLAY_OVERRIDE_KEYS = [
   "display_name",
@@ -123,8 +128,8 @@ def main():
   for overlay_path in args.overlays:
     MergeManifestOverlay(parent, ParseJSONFile(overlay_path))
 
-  with open(args.output, "w") as output_file:
-    json.dump(parent, output_file, indent=2 if args.pretty else -1)
+  with build_utils.AtomicOutput(args.output) as f:
+    json.dump(parent, f, indent=2 if args.pretty else -1)
 
   # NOTE: We do the sanity check and possible failure *after* outputting the
   # aggregate manifest so it's easier to inspect erroneous output.
