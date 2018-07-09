@@ -355,14 +355,22 @@ int NativeViewAccessibilityBase::GetTableColCount() const {
   return 0;
 }
 
+std::vector<int32_t> NativeViewAccessibilityBase::GetColHeaderNodeIds() const {
+  return {};
+}
+
 std::vector<int32_t> NativeViewAccessibilityBase::GetColHeaderNodeIds(
     int32_t col_index) const {
-  return std::vector<int32_t>();
+  return {};
+}
+
+std::vector<int32_t> NativeViewAccessibilityBase::GetRowHeaderNodeIds() const {
+  return {};
 }
 
 std::vector<int32_t> NativeViewAccessibilityBase::GetRowHeaderNodeIds(
     int32_t row_index) const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 int32_t NativeViewAccessibilityBase::GetCellId(int32_t row_index,

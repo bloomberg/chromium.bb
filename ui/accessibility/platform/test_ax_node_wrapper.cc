@@ -222,6 +222,20 @@ int TestAXNodeWrapper::GetTableColCount() const {
   return table_info->col_count;
 }
 
+std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
+  ui::AXTableInfo* table_info = tree_->GetTableInfo(node_);
+  if (!table_info)
+    return std::vector<int32_t>();
+
+  std::vector<std::vector<int32_t>> headers = table_info->col_headers;
+  std::vector<int32_t> all_ids;
+  for (const auto col_ids : headers) {
+    all_ids.insert(all_ids.end(), col_ids.begin(), col_ids.end());
+  }
+
+  return all_ids;
+}
+
 std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
     int32_t col_index) const {
   AXTableInfo* table_info = tree_->GetTableInfo(node_);
@@ -232,6 +246,20 @@ std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
     return std::vector<int32_t>();
 
   return table_info->col_headers[col_index];
+}
+
+std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
+  ui::AXTableInfo* table_info = tree_->GetTableInfo(node_);
+  if (!table_info)
+    return std::vector<int32_t>();
+
+  std::vector<std::vector<int32_t>> headers = table_info->row_headers;
+  std::vector<int32_t> all_ids;
+  for (const auto col_ids : headers) {
+    all_ids.insert(all_ids.end(), col_ids.begin(), col_ids.end());
+  }
+
+  return all_ids;
 }
 
 std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(

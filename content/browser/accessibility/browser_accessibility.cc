@@ -979,26 +979,54 @@ int BrowserAccessibility::GetTableColCount() const {
   return table_info->col_count;
 }
 
+std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
+  ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
+  if (!table_info)
+    return {};
+
+  std::vector<std::vector<int32_t>> headers = table_info->col_headers;
+  std::vector<int32_t> all_ids;
+  for (const auto& col_ids : headers) {
+    all_ids.insert(all_ids.end(), col_ids.begin(), col_ids.end());
+  }
+
+  return all_ids;
+}
+
 std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds(
     int32_t col_index) const {
   ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
   if (!table_info)
-    return std::vector<int32_t>();
+    return {};
 
   if (col_index < 0 || col_index >= table_info->col_count)
-    return std::vector<int32_t>();
+    return {};
 
   return table_info->col_headers[col_index];
+}
+
+std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds() const {
+  ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
+  if (!table_info)
+    return {};
+
+  std::vector<std::vector<int32_t>> headers = table_info->row_headers;
+  std::vector<int32_t> all_ids;
+  for (const auto& col_ids : headers) {
+    all_ids.insert(all_ids.end(), col_ids.begin(), col_ids.end());
+  }
+
+  return all_ids;
 }
 
 std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
     int32_t row_index) const {
   ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
   if (!table_info)
-    return std::vector<int32_t>();
+    return {};
 
   if (row_index < 0 || row_index >= table_info->row_count)
-    return std::vector<int32_t>();
+    return {};
 
   return table_info->row_headers[row_index];
 }
