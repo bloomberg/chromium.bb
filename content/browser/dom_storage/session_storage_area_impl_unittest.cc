@@ -360,4 +360,31 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   ss_leveldb_impl2 = nullptr;
 }
 
+TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
+      SessionStorageDataMap::Create(
+          &listener_,
+          metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
+              ->second[test_origin1_],
+          leveldb_database_.get()),
+      GetRegisterNewAreaMapCallback());
+
+  base::RunLoop loop;
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+      .WillOnce(base::test::RunClosure(loop.QuitClosure()));
+  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+  ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
+  loop.Run();
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+
+  ss_leveldb_impl1 = nullptr;
+}
+
 }  // namespace content

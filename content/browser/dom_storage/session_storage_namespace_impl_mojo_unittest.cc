@@ -407,6 +407,29 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
   namespaces_.clear();
 }
 
+TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginDataWithoutBinding) {
+  SessionStorageNamespaceImplMojo* namespace_impl =
+      CreateSessionStorageNamespaceImplMojo(test_namespace_id1_);
+
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  namespace_impl->PopulateFromMetadata(
+      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
+      std::map<std::vector<uint8_t>, SessionStorageDataMap*>());
+
+  base::RunLoop loop;
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+      .WillOnce(base::test::RunClosure(loop.QuitClosure()));
+  namespace_impl->RemoveOriginData(test_origin1_);
+  loop.Run();
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+  namespaces_.clear();
+}
+
 TEST_F(SessionStorageNamespaceImplMojoTest, ProcessLockedToOtherOrigin) {
   // Tries to open an area with a process that is locked to a different origin
   // and verifies the bad message callback.
