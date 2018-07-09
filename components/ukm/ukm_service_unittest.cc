@@ -222,6 +222,27 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
 }
 
+TEST_F(UkmServiceTest, Purge) {
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
+
+  // Record some data
+  auto id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  TestEvent1(id).Record(&service);
+
+  // Purge should delete data, so there shouldn't be anything left to upload.
+  service.Purge();
+  service.Flush();
+  EXPECT_EQ(0, GetPersistedLogCount());
+}
+
 TEST_F(UkmServiceTest, SourceSerialization) {
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -557,6 +578,7 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
   task_runner_->RunUntilIdle();
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
+
   auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
   // Should init, generate a log, and start an upload.

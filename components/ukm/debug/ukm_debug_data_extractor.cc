@@ -62,11 +62,11 @@ std::string UkmDebugDataExtractor::GetHTMLData(UkmService* ukm_service) {
 
     const auto& decode_map = ukm_service->decode_map_;
     std::map<SourceId, SourceData> source_data;
-    for (const auto& kv : ukm_service->sources_) {
+    for (const auto& kv : ukm_service->recordings_.sources) {
       source_data[kv.first].source = kv.second.get();
     }
 
-    for (const auto& v : ukm_service->entries_) {
+    for (const auto& v : ukm_service->recordings_.entries) {
       source_data[v->source_id].entries.push_back(v.get());
     }
 
