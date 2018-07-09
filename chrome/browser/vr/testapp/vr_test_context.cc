@@ -245,10 +245,6 @@ void VrTestContext::HandleInput(ui::Event* event) {
         ui_->OnWebVrFrameAvailable();
         break;
       }
-      case ui::DomCode::US_E:
-        model_->experimental_features_enabled =
-            !model_->experimental_features_enabled;
-        break;
       case ui::DomCode::US_O:
         CycleOrigin();
         model_->can_navigate_back = !model_->can_navigate_back;

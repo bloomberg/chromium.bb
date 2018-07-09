@@ -449,10 +449,6 @@ const base::Feature kV8Orinoco{"V8Orinoco", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether editing web input fields is enabled in VR.
-const base::Feature kVrWebInputEditing{"VrWebInputEditing",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable WebAssembly structured cloning.
 // http://webassembly.org/
 const base::Feature kWebAssembly{"WebAssembly",
