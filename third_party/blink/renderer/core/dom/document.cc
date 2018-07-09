@@ -137,7 +137,6 @@
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/history.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -1123,10 +1122,6 @@ ScriptValue Document::registerElement(ScriptState* script_state,
                                       const ElementRegistrationOptions& options,
                                       ExceptionState& exception_state,
                                       V0CustomElement::NameSet valid_names) {
-  HostsUsingFeatures::CountMainWorldOnly(
-      script_state, *this,
-      HostsUsingFeatures::Feature::kDocumentRegisterElement);
-
   if (!RegistrationContext()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

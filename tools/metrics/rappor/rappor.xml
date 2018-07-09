@@ -2498,22 +2498,6 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="WebComponents.DocumentRegisterElement"
-    type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The host of a URL that used Document::RegisterElement().
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="WebComponents.ElementCreateShadowRoot"
-    type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The host of a URL that used Element::CreateShadowRoot().
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="WebComponents.EventPath" type="ETLD_PLUS_ONE">
   <owner>kojii@chromium.org</owner>
   <summary>
