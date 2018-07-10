@@ -12,6 +12,7 @@
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
@@ -26,7 +27,7 @@
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style">
+    <style include="iron-flex cr-shared-style cr-icons action-link md-select paper-button-style">
       :host {
         --iron-icon-fill-color: var(--google-grey-refresh-700);
         display: block;
@@ -123,6 +124,11 @@
         color: var(--paper-grey-600);
       }
 
+      .mid-section-header {
+        color: var(--cr-primary-text-color);
+        margin-top: 12px;
+      }
+
       .actionable {
         cursor: pointer;
       }
@@ -158,6 +164,12 @@
       ul {
         -webkit-padding-start: 20px;
         margin: 0;
+      }
+
+      #runtime-host-permissions-mode {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
       }
 
       #options-section .control-line:first-child {
@@ -310,11 +322,13 @@
         <div class="section block">
           <div class="section-title">$i18n{itemPermissions}</div>
           <div class="section-content">
-            <span id="no-permissions" hidden="[[data.permissions.length]]">
+            <span id="no-permissions" hidden$="[[hasPermissions_(data.*)]]">
               $i18n{itemPermissionsEmpty}
             </span>
-            <ul id="permissions-list" hidden="[[!data.permissions.length]]">
-              <template is="dom-repeat" items="[[data.permissions]]">
+            <ul id="permissions-list"
+                hidden$="[[!data.permissions.simplePermissions.length]]">
+              <template is="dom-repeat"
+                  items="[[data.permissions.simplePermissions]]">
                 <li>
                   [[item.message]]
                   <ul hidden="[[!item.submessages.length]]">
@@ -325,6 +339,37 @@
                 </li>
               </template>
             </ul>
+            <template is="dom-if" if="[[showRuntimeHostPermissions_(data.*)]]">
+              <div id="runtime-host-permissions">
+                <div id="runtime-host-permissions-mode">
+                  <div class="mid-section-header">
+                    $i18n{itemHostPermissionsHeading}
+                  </div>
+                  <select id="host-access" class="md-select"
+                      value="[[data.permissions.hostAccess]]"
+                      on-change="onHostAccessChanged_">
+                    <option value$="[[HostAccess_.ON_CLICK]]">
+                      $i18n{itemHostAccessOnClick}
+                    </option>
+                    <option value$="[[HostAccess_.ON_SPECIFIC_SITES]]">
+                      $i18n{itemHostAccessOnSpecificSites}
+                    </option>
+                    <option value$="[[HostAccess_.ON_ALL_SITES]]">
+                      $i18n{itemHostAccessOnAllSites}
+                    </option>
+                  </select>
+                </div>
+                <template is="dom-if" if="[[showSpecificSites_(data.*)]]">
+                  <div class="mid-section-header">$i18n{itemAllowedHosts}</div>
+                  <ul id="runtime-hosts">
+                    <template is="dom-repeat"
+                        items="[[data.permissions.runtimeHostPermissions]]">
+                      <li>[[item]]</li>
+                    </template>
+                  </ul>
+                </template>
+              </div>
+            </template>
           </div>
         </div>
         <template is="dom-if"
@@ -359,13 +404,6 @@
                   checked="[[data.fileAccess.isActive]]"
                   on-change="onAllowOnFileUrlsChange_">
                 <span>$i18n{itemAllowOnFileUrls}</span>
-              </extensions-toggle-row>
-            </template>
-            <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
-              <extensions-toggle-row id="allow-on-all-sites"
-                  checked="[[data.runOnAllUrls.isActive]]"
-                  on-change="onAllowOnAllSitesChange_">
-                <span>$i18n{itemAllowOnAllSites}</span>
               </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.errorCollection.isEnabled]]">

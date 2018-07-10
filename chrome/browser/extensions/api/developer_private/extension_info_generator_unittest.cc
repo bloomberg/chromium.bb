@@ -38,6 +38,7 @@
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -277,11 +278,11 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->incognito_access.is_active);
   PermissionMessages messages =
       extension->permissions_data()->GetPermissionMessages();
-  ASSERT_EQ(messages.size(), info->permissions.size());
+  ASSERT_EQ(messages.size(), info->permissions.simple_permissions.size());
   size_t i = 0;
   for (const PermissionMessage& message : messages) {
     const api::developer_private::Permission& info_permission =
-        info->permissions[i];
+        info->permissions.simple_permissions[i];
     EXPECT_EQ(message.message(), base::UTF8ToUTF16(info_permission.message));
     const std::vector<base::string16>& submessages = message.submessages();
     ASSERT_EQ(submessages.size(), info_permission.submessages.size());
@@ -291,6 +292,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
     }
     ++i;
   }
+  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
+
   ASSERT_EQ(2u, info->runtime_errors.size());
   const api::developer_private::RuntimeError& runtime_error =
       info->runtime_errors[0];
@@ -388,48 +392,69 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
                                      "bjafgdebaacbbbecmhlhpofkepfkgcpa.json"));
 }
 
-// Test that the all_urls checkbox only shows up for extensions that want all
-// urls, and only when the switch is on.
-TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
+// Tests the generation of the runtime host permissions entries.
+TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
   // Start with the switch enabled.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
 
-  // Two extensions - one with all urls, one without.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
       "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
       Manifest::INTERNAL);
-  scoped_refptr<const Extension> no_urls_extension =
-      CreateExtension("no urls", ListBuilder().Build(), Manifest::INTERNAL);
 
   std::unique_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
 
-  // The extension should want all urls, and have it currently granted.
-  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
-  EXPECT_TRUE(info->run_on_all_urls.is_active);
+  // The extension should be set to run on all sites.
+  EXPECT_EQ(developer::HOST_ACCESS_ON_ALL_SITES, info->permissions.host_access);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
+  // With runtime host permissions, no host permissions are added to
+  // |simple_permissions|.
+  EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
 
-  // Revoke the all urls permission.
+  // Withholding host permissions should result in the extension being set to
+  // run on click.
   ScriptingPermissionsModifier permissions_modifier(profile(),
                                                     all_urls_extension);
   permissions_modifier.SetWithholdHostPermissions(true);
-
-  // Now the extension want all urls, but not have it granted.
   info = GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
-  EXPECT_FALSE(info->run_on_all_urls.is_active);
+  EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK, info->permissions.host_access);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
+  EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
 
-  // The other extension should neither want nor have all urls.
+  // Granting a host permission should set the extension to run on specific
+  // sites, and those sites should be in the runtime_host_permissions set.
+  permissions_modifier.GrantHostPermission(GURL("https://example.com"));
+  info = GenerateExtensionInfo(all_urls_extension->id());
+  EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
+            info->permissions.host_access);
+  ASSERT_TRUE(info->permissions.runtime_host_permissions);
+  EXPECT_THAT(*info->permissions.runtime_host_permissions,
+              testing::UnorderedElementsAre("example.com"));
+  EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
+
+  // An extension that doesn't request any host permissions should not have
+  // runtime access controls.
+  scoped_refptr<const Extension> no_urls_extension =
+      CreateExtension("no urls", ListBuilder().Build(), Manifest::INTERNAL);
   info = GenerateExtensionInfo(no_urls_extension->id());
-  EXPECT_FALSE(info->run_on_all_urls.is_enabled);
-  EXPECT_FALSE(info->run_on_all_urls.is_active);
+  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
+}
 
-  // Turn off the switch. With the switch off, the run_on_all_urls control
-  // should never be enabled.
-  scoped_feature_list.reset();
-  info = GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_FALSE(info->run_on_all_urls.is_enabled);
-  EXPECT_FALSE(info->run_on_all_urls.is_active);
+TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
+  // Without the runtime host permissions feature enabled, the runtime host
+  // permissions entry should always be empty.
+  scoped_refptr<const Extension> all_urls_extension = CreateExtension(
+      "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
+      Manifest::INTERNAL);
+  std::unique_ptr<developer::ExtensionInfo> info =
+      GenerateExtensionInfo(all_urls_extension->id());
+  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
+  ASSERT_EQ(1u, info->permissions.simple_permissions.size());
+  EXPECT_EQ("Read and change all your data on the websites you visit",
+            info->permissions.simple_permissions[0].message);
 }
 
 // Test that file:// access checkbox does not show up when the user can't

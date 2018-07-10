@@ -29,10 +29,6 @@
    "mustRemainInstalled": false,
    "name": "My extension 3",
    "offlineEnabled": false,
-   "runOnAllUrls": {
-      "isActive": false,
-      "isEnabled": false
-   },
    "runtimeErrors": [  ],
    "runtimeWarnings": [  ],
    "state": "ENABLED",

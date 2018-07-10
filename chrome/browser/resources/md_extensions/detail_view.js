@@ -31,6 +31,15 @@ cr.define('extensions', function() {
 
       /** Whether "allow in incognito" option should be shown. */
       incognitoAvailable: Boolean,
+
+      /**
+       * Proxying the enum to be used easily by the html template.
+       * @private
+       */
+      HostAccess_: {
+        type: Object,
+        value: chrome.developerPrivate.HostAccess,
+      },
     },
 
     observers: [
@@ -73,6 +82,22 @@ cr.define('extensions', function() {
     /** @private */
     onCloseButtonTap_: function() {
       extensions.navigation.navigateTo({page: Page.LIST});
+    },
+
+    /**
+     * @param {!Event} event
+     * @private
+     */
+    onHostAccessChanged_: function(event) {
+      const select = /** @type {!HTMLSelectElement} */ (event.target);
+      const access =
+          /** @type {chrome.developerPrivate.HostAccess} */ (select.value);
+      this.delegate.setItemHostAccess(this.data.id, access);
+      // Force the UI to update (in order to potentially hide or show the
+      // specific runtime hosts).
+      // TODO(devlin): Perhaps this should be handled by the backend updating
+      // and sending an onItemStateChanged event?
+      this.set('data.permissions.hostAccess', access);
     },
 
     /**
@@ -161,8 +186,7 @@ cr.define('extensions', function() {
      */
     shouldShowOptionsSection_: function() {
       return this.data.incognitoAccess.isEnabled ||
-          this.data.fileAccess.isEnabled || this.data.runOnAllUrls.isEnabled ||
-          this.data.errorCollection.isEnabled;
+          this.data.fileAccess.isEnabled || this.data.errorCollection.isEnabled;
     },
 
     /**
@@ -227,12 +251,6 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onAllowOnAllSitesChange_: function() {
-      this.delegate.setItemAllowedOnAllSites(
-          this.data.id, this.$$('#allow-on-all-sites').checked);
-    },
-
-    /** @private */
     onCollectErrorsChange_: function() {
       this.delegate.setItemCollectsErrors(
           this.data.id, this.$$('#collect-errors').checked);
@@ -282,6 +300,33 @@ cr.define('extensions', function() {
         default:
           return '';
       }
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    hasPermissions_: function() {
+      return this.data.permissions.simplePermissions.length > 0 ||
+          !!this.data.permissions.hostAccess;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    showRuntimeHostPermissions_: function() {
+      return !!this.data.permissions.hostAccess;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    showSpecificSites_: function() {
+      return this.data.permissions &&
+          this.data.permissions.hostAccess ==
+          chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
     },
   });
 

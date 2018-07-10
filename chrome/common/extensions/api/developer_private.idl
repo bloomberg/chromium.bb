@@ -164,6 +164,12 @@ namespace developerPrivate {
     SUPERVISED_USER_CUSTODIAN
   };
 
+  enum HostAccess {
+    ON_CLICK,
+    ON_SPECIFIC_SITES,
+    ON_ALL_SITES
+  };
+
   dictionary ControlledInfo {
     ControllerType type;
     DOMString text;
@@ -186,6 +192,18 @@ namespace developerPrivate {
   dictionary Permission {
     DOMString message;
     DOMString[] submessages;
+  };
+
+  dictionary Permissions {
+    Permission[] simplePermissions;
+
+    // Only populated for extensions affected by the runtime host
+    // permissions feature.
+    HostAccess? hostAccess;
+
+    // Only populated for extensions affected by the runtime host
+    // permissions feature and |hostAccess| is equal to ON_SPECIFIC_SITES.
+    DOMString[]? runtimeHostPermissions;
   };
 
   dictionary ExtensionInfo {
@@ -212,9 +230,8 @@ namespace developerPrivate {
     boolean offlineEnabled;
     OptionsPage? optionsPage;
     DOMString? path;
-    Permission[] permissions;
+    Permissions permissions;
     DOMString? prettifiedPath;
-    AccessModifier runOnAllUrls;
     RuntimeError[] runtimeErrors;
     DOMString[] runtimeWarnings;
     ExtensionState state;
@@ -282,7 +299,7 @@ namespace developerPrivate {
     boolean? fileAccess;
     boolean? incognitoAccess;
     boolean? errorCollection;
-    boolean? runOnAllUrls;
+    HostAccess? hostAccess;
   };
 
   dictionary ProfileConfigurationUpdate {

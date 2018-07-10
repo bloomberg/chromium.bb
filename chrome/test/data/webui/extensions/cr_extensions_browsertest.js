@@ -232,6 +232,19 @@ TEST_F('CrExtensionsDetailViewTest', 'Warnings', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.Warnings);
 });
 
+TEST_F(
+    'CrExtensionsDetailViewTest', 'RuntimeHostPermissionsDisplay', function() {
+      this.runMochaTest(
+          extension_detail_view_tests.TestNames.RuntimeHostPermissionsDisplay);
+    });
+
+TEST_F(
+    'CrExtensionsDetailViewTest', 'RuntimeHostPermissionsSelection',
+    function() {
+      this.runMochaTest(extension_detail_view_tests.TestNames
+                            .RuntimeHostPermissionsSelection);
+    });
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 

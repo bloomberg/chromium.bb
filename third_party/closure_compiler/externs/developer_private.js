@@ -224,6 +224,16 @@ chrome.developerPrivate.ControllerType = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-HostAccess
+ */
+chrome.developerPrivate.HostAccess = {
+  ON_CLICK: 'ON_CLICK',
+  ON_SPECIFIC_SITES: 'ON_SPECIFIC_SITES',
+  ON_ALL_SITES: 'ON_ALL_SITES',
+};
+
+/**
  * @typedef {{
  *   type: !chrome.developerPrivate.ControllerType,
  *   text: string
@@ -261,6 +271,16 @@ chrome.developerPrivate.Permission;
 
 /**
  * @typedef {{
+ *   simplePermissions: !Array<!chrome.developerPrivate.Permission>,
+ *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined),
+ *   runtimeHostPermissions: (!Array<string>|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-Permissions
+ */
+chrome.developerPrivate.Permissions;
+
+/**
+ * @typedef {{
  *   blacklistText: (string|undefined),
  *   commands: !Array<!chrome.developerPrivate.Command>,
  *   controlledInfo: (!chrome.developerPrivate.ControlledInfo|undefined),
@@ -284,9 +304,8 @@ chrome.developerPrivate.Permission;
  *   offlineEnabled: boolean,
  *   optionsPage: (!chrome.developerPrivate.OptionsPage|undefined),
  *   path: (string|undefined),
- *   permissions: !Array<!chrome.developerPrivate.Permission>,
+ *   permissions: !chrome.developerPrivate.Permissions,
  *   prettifiedPath: (string|undefined),
- *   runOnAllUrls: !chrome.developerPrivate.AccessModifier,
  *   runtimeErrors: !Array<!chrome.developerPrivate.RuntimeError>,
  *   runtimeWarnings: !Array<string>,
  *   state: !chrome.developerPrivate.ExtensionState,
@@ -359,7 +378,7 @@ chrome.developerPrivate.GetExtensionsInfoOptions;
  *   fileAccess: (boolean|undefined),
  *   incognitoAccess: (boolean|undefined),
  *   errorCollection: (boolean|undefined),
- *   runOnAllUrls: (boolean|undefined)
+ *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined)
  * }}
  */
 chrome.developerPrivate.ExtensionConfigurationUpdate;

@@ -179,10 +179,10 @@ cr.define('extensions', function() {
     }
 
     /** @override */
-    setItemAllowedOnAllSites(id, isAllowedOnAllSites) {
+    setItemHostAccess(id, hostAccess) {
       chrome.developerPrivate.updateExtensionConfiguration({
         extensionId: id,
-        runOnAllUrls: isAllowedOnAllSites,
+        hostAccess: hostAccess,
       });
     }
 
