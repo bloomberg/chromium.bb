@@ -181,6 +181,45 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// EncircledImageSource:
+
+class EncircledImageSource : public gfx::CanvasImageSource {
+ public:
+  EncircledImageSource(const int radius,
+                       const SkColor color,
+                       const gfx::ImageSkia& image);
+
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override;
+
+ private:
+  const int radius_;
+  const SkColor color_;
+  const gfx::ImageSkia image_;
+
+  DISALLOW_COPY_AND_ASSIGN(EncircledImageSource);
+};
+
+EncircledImageSource::EncircledImageSource(const int radius,
+                                           const SkColor color,
+                                           const gfx::ImageSkia& image)
+    : gfx::CanvasImageSource(gfx::Size(radius * 2, radius * 2), false),
+      radius_(radius),
+      color_(color),
+      image_(image) {}
+
+void EncircledImageSource::Draw(gfx::Canvas* canvas) {
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setColor(color_);
+  canvas->DrawCircle(gfx::Point(radius_, radius_), radius_, flags);
+  const int x = radius_ - image_.width() / 2;
+  const int y = radius_ - image_.height() / 2;
+  canvas->DrawImageInt(image_, x, y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // OmniboxImageView:
 
 class OmniboxImageView : public views::ImageView {
@@ -335,8 +374,10 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           break;
       }
       if (vector_icon) {
-        image_view_->SetImage(gfx::CreateVectorIcon(
-            *vector_icon, kNewAnswerImageSize, gfx::kGoogleBlue600));
+        const auto& icon = gfx::CreateVectorIcon(*vector_icon, SK_ColorWHITE);
+        image_view_->SetImage(
+            gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
+                kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
       } else if (idr_image) {
         image_view_->SetImage(
             ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
