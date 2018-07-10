@@ -65,10 +65,6 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   BOOL eventHandled_;
   BOOL isRedispatchingKeyEvent_;
 
-  // If CommandDispatcher handles a keyEquivalent: [e.g. cmd + w], then it
-  // should suppress future key-up events, e.g. [cmd + w (key up)].
-  BOOL suppressEventsUntilKeyDown_;
-
   NSWindow<CommandDispatchingWindow>* owner_;  // Weak, owns us.
 }
 
@@ -97,7 +93,9 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 // |delegate_| may be nil in this method. Rather than adding nil checks to every
 // call, we rely on the fact that method calls to nil return nil, and that nil
 // == ui::PerformKeyEquivalentResult::kUnhandled;
-- (BOOL)doPerformKeyEquivalent:(NSEvent*)event {
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  DCHECK_EQ(NSKeyDown, [event type]);
+
   // If the event is being redispatched, then this is the second time
   // performKeyEquivalent: is being called on the event. The first time, a
   // WebContents was firstResponder and claimed to have handled the event [but
@@ -149,17 +147,6 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // Allow commands to "bubble up" to CommandDispatchers in parent windows, if
   // they were not handled here.
   return [[self bubbleParent] performKeyEquivalent:event];
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent*)event {
-  DCHECK_EQ(NSKeyDown, [event type]);
-  suppressEventsUntilKeyDown_ = NO;
-
-  BOOL consumed = [self doPerformKeyEquivalent:event];
-  if (consumed)
-    suppressEventsUntilKeyDown_ = YES;
-
-  return consumed;
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
@@ -241,18 +228,6 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
     // If we get here, then the event was not handled by NSApplication.
     eventHandled_ = NO;
     // Return YES to stop native -sendEvent handling.
-    return YES;
-  }
-
-  // This occurs after redispatchingEvent_, since we want a physical
-  // key-press from the user to reset this.
-  if ([event type] == NSKeyDown)
-    suppressEventsUntilKeyDown_ = NO;
-
-  // If CommandDispatcher handled a keyEquivalent: [e.g. cmd + w], then it
-  // should suppress future key-up events, e.g. [cmd + w (key up)].
-  if (suppressEventsUntilKeyDown_ &&
-      ([event type] == NSKeyUp || [event type] == NSFlagsChanged)) {
     return YES;
   }
 
