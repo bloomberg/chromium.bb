@@ -313,6 +313,16 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   }
 
   DCHECK(layer_tree_view);
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
+      render_thread->GetMediaThreadTaskRunner();
+
+  if (!media_task_runner) {
+    // If the media thread failed to start, we will receive a null task runner.
+    // Fail the creation by returning null, and let callers handle the error.
+    // See https://crbug.com/775393.
+    return nullptr;
+  }
+
   std::unique_ptr<media::WebMediaPlayerParams> params(
       new media::WebMediaPlayerParams(
           std::move(media_log),
@@ -320,7 +330,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
                               base::Unretained(GetContentClient()->renderer()),
                               static_cast<RenderFrame*>(render_frame_),
                               GetWebMediaPlayerDelegate()->has_played_media()),
-          audio_renderer_sink, render_thread->GetMediaThreadTaskRunner(),
+          audio_renderer_sink, media_task_runner,
           render_thread->GetWorkerTaskRunner(),
           render_thread->compositor_task_runner(),
           video_frame_compositor_task_runner,
