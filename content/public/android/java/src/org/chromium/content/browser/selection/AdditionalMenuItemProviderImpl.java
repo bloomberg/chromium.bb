@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.RemoteAction;
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,8 +17,6 @@ import android.view.textclassifier.TextClassification;
 
 import org.chromium.base.Log;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,14 +35,6 @@ public class AdditionalMenuItemProviderImpl implements AdditionalMenuItemProvide
 
     // Record MenuItem OnClickListener pair we added to menu.
     private final Map<MenuItem, OnClickListener> mAssistClickHandlers = new HashMap<>();
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = {IntentType.UNSUPPORTED, IntentType.ACTIVITY, IntentType.SERVICE})
-    private @interface IntentType {
-        int UNSUPPORTED = -1;
-        int ACTIVITY = 0;
-        int SERVICE = 1;
-    }
 
     @Override
     public void addMenuItems(Context context, Menu menu, TextClassification classification) {
