@@ -7,7 +7,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.chrome.tests">
 
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23" />
+    <uses-sdk android:minSdkVersion="{{min_sdk_version}}" android:targetSdkVersion="{{target_sdk_version}}" />
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="ChromePublicTest">
+        android:label="{% block application_name %}ChromePublicTest{% endblock %}">
 
         <uses-library android:name="android.test.runner" />
 

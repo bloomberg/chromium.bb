@@ -210,6 +210,18 @@ public class TestFramework {
     }
 
     /**
+     * Helper function to make sure that the JavaScript test harness did not detect any failures.
+     * Similar to endTest, but does not fail if the test is still detected as running. This is
+     * useful because not all tests make use of the test harness' test/assert features (particularly
+     * simple enter/exit tests), but may still want to ensure that no unexpected JavaScript errors
+     * were encountered.
+     * @param webContents The Webcontents for the tab to check for failures in.
+     */
+    public static void assertNoJavaScriptErrors(WebContents webContents) {
+        Assert.assertNotEquals(checkTestStatus(webContents), STATUS_FAILED);
+    }
+
+    /**
      * Polls the provided JavaScript boolean until the timeout is reached or
      * the boolean is true.
      * @param boolName The name of the JavaScript boolean or expression to poll.
