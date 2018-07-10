@@ -155,7 +155,12 @@ public class VrShellImpl
         mCompositorView.replaceSurfaceManagerForVr(
                 mVrCompositorSurfaceManager, mContentVrWindowAndroid);
 
-        if (mVrBrowsingEnabled) injectVrRootView();
+        if (mVrBrowsingEnabled) {
+            injectVrRootView();
+
+            // Hide FindInPage toolbar.
+            mActivity.getFindToolbarManager().hideToolbar();
+        }
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
         // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
