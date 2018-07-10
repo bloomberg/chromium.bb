@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All Rights Reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,11 @@ struct RegistryKey {
   array<uint16> value;
 };
 
+struct ExtensionId {
+  // A 32-character extension ID.
+  array<uint16> value;
+};
+
 // Service provided by Chrome to prompt the user to start a cleanup if the
 // Chrome Cleanup Tool detects unwanted software on the system.
 interface ChromePrompt {
@@ -45,9 +50,12 @@ interface ChromePrompt {
   //        be deleted by the Chrome Cleanup Tool.
   //  - registry_keys: list of fully-qualified paths of the registry keys that
   //        will be changed or deleted by the Chrome Cleanup Tool.
+  //  - extension_ids: list of IDs of extensions that will be removed by the
+  //        Chrome Cleanup Tool.
   // Returns:
   //  - prompt_acceptance: indicates if the user accepted the prompt.
   PromptUser(array<FilePath> files_to_delete,
-             [MinVersion=1] array<RegistryKey>? registry_keys)
+             [MinVersion=1] array<RegistryKey>? registry_keys,
+             [MinVersion=2] array<ExtensionId>? extension_ids)
       => (PromptAcceptance prompt_acceptance);
 };

@@ -34,6 +34,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
   void PromptUser(
       const std::vector<base::FilePath>& files_to_delete,
       const base::Optional<std::vector<base::string16>>& registry_keys,
+      const base::Optional<std::vector<base::string16>>& extension_ids,
       chrome_cleaner::mojom::ChromePrompt::PromptUserCallback callback)
       override;
 

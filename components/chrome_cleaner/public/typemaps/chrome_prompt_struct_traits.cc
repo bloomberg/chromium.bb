@@ -69,4 +69,34 @@ bool StructTraits<chrome_cleaner::mojom::RegistryKeyDataView, base::string16>::
 #endif
 }
 
+// static
+base::span<const uint16_t>
+StructTraits<chrome_cleaner::mojom::ExtensionIdDataView, base::string16>::value(
+    const base::string16& extension_id) {
+#if defined(OS_WIN)
+  return base::make_span(reinterpret_cast<const uint16_t*>(extension_id.data()),
+                         extension_id.size());
+#else
+  NOTREACHED();
+  return base::span<const uint16_t>();
+#endif
+}
+
+// static
+bool StructTraits<chrome_cleaner::mojom::ExtensionIdDataView, base::string16>::
+    Read(chrome_cleaner::mojom::ExtensionIdDataView extension_id_view,
+         base::string16* out) {
+#if defined(OS_WIN)
+  ArrayDataView<uint16_t> view;
+  extension_id_view.GetValueDataView(&view);
+  base::string16 extension_id = base::string16(
+      reinterpret_cast<const base::char16*>(view.data()), view.size());
+  *out = std::move(extension_id);
+  return true;
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
 }  // namespace mojo
