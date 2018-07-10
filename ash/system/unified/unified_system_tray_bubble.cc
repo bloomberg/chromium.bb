@@ -80,8 +80,14 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.close_on_deactivate = false;
 
   bubble_view_ = new views::TrayBubbleView(init_params);
-  int max_height = tray->shelf()->GetUserWorkAreaBounds().height() -
-                   kPaddingFromScreenTop -
+
+  // TODO(yamaguchi): Reconsider this formula. The y-position of the top edge
+  // still differes by few pixels between the horizontal and vertical shelf
+  // modes.
+  int free_space_height_above_anchor =
+      tray->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen().y() -
+      tray->shelf()->GetUserWorkAreaBounds().y();
+  int max_height = free_space_height_above_anchor - kPaddingFromScreenTop -
                    bubble_view_->GetBorderInsets().height();
   unified_view_ = controller_->CreateView();
   time_to_click_recorder_ =
