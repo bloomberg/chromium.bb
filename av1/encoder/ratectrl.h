@@ -34,6 +34,12 @@ extern "C" {
 #define USE_SYMM_MULTI_LAYER 0
 #endif
 
+#if USE_SYMM_MULTI_LAYER
+#define MATCH_OLD_BITRATE 1
+#else
+#define MATCH_OLD_BITRATE 0
+#endif
+
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
