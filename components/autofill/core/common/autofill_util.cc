@@ -202,8 +202,11 @@ bool SanitizedFieldIsEmpty(const base::string16& value) {
 }
 
 bool ShouldAutoselectFirstSuggestionOnArrowDown() {
-  // TODO(https://crbug.com/848427): Enable this on desktop.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  return true;
+#else
   return false;
+#endif
 }
 
 }  // namespace autofill

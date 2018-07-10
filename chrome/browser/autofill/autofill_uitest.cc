@@ -200,11 +200,12 @@ void AutofillUiTest::SendKeyToPopup(ui::DomKey key) {
 
 void AutofillUiTest::SendKeyToPopupAndWait(
     ui::DomKey key,
-    std::list<ObservedUiEvents> expected_events) {
+    std::list<ObservedUiEvents> expected_events,
+    content::RenderWidgetHost* widget) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
   SendKeyToPopupAndWait(key, code, key_code, std::move(expected_events),
-                        GetRenderViewHost()->GetWidget());
+                        widget ? widget : GetRenderViewHost()->GetWidget());
 }
 
 void AutofillUiTest::SendKeyToPopupAndWait(

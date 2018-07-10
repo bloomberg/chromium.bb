@@ -68,14 +68,17 @@ class AutofillUiTest : public InProcessBrowserTest {
                    const int attempts = 1);
   bool ShowAutofillSuggestion(const std::string& focus_element_xpath);
 
+  void SendKeyToPage(ui::DomKey key);
   void SendKeyToPageAndWait(ui::DomKey key,
                             std::list<ObservedUiEvents> expected_events);
   void SendKeyToPageAndWait(ui::DomKey key,
                             ui::DomCode code,
                             ui::KeyboardCode key_code,
                             std::list<ObservedUiEvents> expected_events);
+  // Send key to the render host view's widget if |widget| is null.
   void SendKeyToPopupAndWait(ui::DomKey key,
-                             std::list<ObservedUiEvents> expected_events);
+                             std::list<ObservedUiEvents> expected_events,
+                             content::RenderWidgetHost* widget = nullptr);
   void SendKeyToPopupAndWait(ui::DomKey key,
                              ui::DomCode code,
                              ui::KeyboardCode key_code,
@@ -95,7 +98,6 @@ class AutofillUiTest : public InProcessBrowserTest {
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink();
 
  private:
-  void SendKeyToPage(ui::DomKey key);
   void SendKeyToPopup(ui::DomKey key);
 
   AutofillManagerTestDelegateImpl test_delegate_;
