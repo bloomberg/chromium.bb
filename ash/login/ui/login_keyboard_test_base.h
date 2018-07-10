@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/test/ash_test_base.h"
 
 namespace keyboard {
@@ -47,6 +48,9 @@ class LoginKeyboardTestBase : public AshTestBase {
   // Loads the number of test users specified by |count|.
   void LoadUsers(int count);
 
+  // Loads the number of test public account users specified by |count|.
+  void LoadPublicAccountUsers(int count);
+
   // Loads user with the specified |email|.
   void LoadUser(const std::string& email);
 
@@ -57,6 +61,7 @@ class LoginKeyboardTestBase : public AshTestBase {
  private:
   keyboard::KeyboardController* keyboard_controller_ = nullptr;
   LoginScreenController* login_controller_ = nullptr;
+  std::vector<mojom::LoginUserInfoPtr> users_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginKeyboardTestBase);
 };

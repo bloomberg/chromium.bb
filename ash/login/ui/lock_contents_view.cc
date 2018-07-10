@@ -13,7 +13,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
-#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
@@ -25,6 +24,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -329,6 +329,74 @@ LockContentsView::~LockContentsView() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+}
+
+void LockContentsView::FocusNextUser() {
+  if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
+    if (opt_secondary_big_view_) {
+      SwapActiveAuthBetweenPrimaryAndSecondary(false /*is_primary*/);
+      opt_secondary_big_view_->RequestFocus();
+    } else if (users_list_) {
+      users_list_->user_view_at(0)->RequestFocus();
+    }
+    return;
+  }
+
+  if (opt_secondary_big_view_ &&
+      login_views_utils::HasFocusInAnyChildView(opt_secondary_big_view_)) {
+    SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+    primary_big_view_->RequestFocus();
+    return;
+  }
+
+  for (int i = 0; i < users_list_->user_count(); ++i) {
+    LoginUserView* user_view = users_list_->user_view_at(i);
+    if (!login_views_utils::HasFocusInAnyChildView(user_view))
+      continue;
+
+    if (i == users_list_->user_count() - 1) {
+      SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+      primary_big_view_->RequestFocus();
+      return;
+    }
+
+    user_view->GetNextFocusableView()->RequestFocus();
+    return;
+  }
+}
+
+void LockContentsView::FocusPreviousUser() {
+  if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
+    if (users_list_) {
+      users_list_->user_view_at(users_list_->user_count() - 1)->RequestFocus();
+    } else if (opt_secondary_big_view_) {
+      SwapActiveAuthBetweenPrimaryAndSecondary(false /*is_primary*/);
+      opt_secondary_big_view_->RequestFocus();
+    }
+    return;
+  }
+
+  if (opt_secondary_big_view_ &&
+      login_views_utils::HasFocusInAnyChildView(opt_secondary_big_view_)) {
+    SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+    primary_big_view_->RequestFocus();
+    return;
+  }
+
+  for (int i = 0; i < users_list_->user_count(); ++i) {
+    LoginUserView* user_view = users_list_->user_view_at(i);
+    if (!login_views_utils::HasFocusInAnyChildView(user_view))
+      continue;
+
+    if (i == 0) {
+      SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+      primary_big_view_->RequestFocus();
+      return;
+    }
+
+    user_view->GetPreviousFocusableView()->RequestFocus();
+    return;
+  }
 }
 
 void LockContentsView::Layout() {
@@ -882,7 +950,7 @@ void LockContentsView::CreateHighDensityLayout(
 }
 
 void LockContentsView::DoLayout() {
-  bool landscape = login_layout_util::ShouldShowLandscape(GetWidget());
+  bool landscape = login_views_utils::ShouldShowLandscape(GetWidget());
   for (auto& action : rotation_actions_)
     action.Run(landscape);
 
@@ -925,7 +993,7 @@ views::View* LockContentsView::MakeOrientationViewWithWidths(int landscape,
 }
 
 void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
-  on_rotate.Run(login_layout_util::ShouldShowLandscape(GetWidget()));
+  on_rotate.Run(login_views_utils::ShouldShowLandscape(GetWidget()));
   rotation_actions_.push_back(on_rotate);
 }
 
@@ -1069,6 +1137,9 @@ void LockContentsView::OnBigUserChanged() {
   // sure the detachable base pairing error is updated if needed.
   OnDetachableBasePairingStatusChanged(
       detachable_base_model_->GetPairingStatus());
+
+  if (!detachable_base_error_bubble_->IsVisible())
+    CurrentBigUserView()->RequestFocus();
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
@@ -1362,6 +1433,10 @@ void LockContentsView::RegisterAccelerators() {
   // TODO: Add more accelerators that are applicable to login screen.
   accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
       AcceleratorAction::kShowFeedback;
+  accel_map_[ui::Accelerator(ui::VKEY_RIGHT, 0)] =
+      AcceleratorAction::kFocusNextUser;
+  accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
+      AcceleratorAction::kFocusPreviousUser;
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
@@ -1372,6 +1447,12 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
   switch (action) {
     case AcceleratorAction::kShowFeedback:
       Shell::Get()->login_screen_controller()->ShowFeedback();
+      return;
+    case AcceleratorAction::kFocusNextUser:
+      FocusNextUser();
+      return;
+    case AcceleratorAction::kFocusPreviousUser:
+      FocusPreviousUser();
       return;
     default:
       NOTREACHED();
