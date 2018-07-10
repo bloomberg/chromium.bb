@@ -127,6 +127,10 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   RescheduleTimer();
 }
 
+void MessagePumpForUI::EnableWmQuit() {
+  enable_wm_quit_ = true;
+}
+
 //-----------------------------------------------------------------------------
 // MessagePumpForUI private:
 
@@ -350,9 +354,17 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   TRACE_EVENT1("base,toplevel", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
   if (WM_QUIT == msg.message) {
+    if (enable_wm_quit_) {
+      // Repost the QUIT message so that it will be retrieved by the primary
+      // GetMessage() loop.
+      state_->should_quit = true;
+      PostQuitMessage(static_cast<int>(msg.wParam));
+      return false;
+    }
+
     // WM_QUIT is the standard way to exit a GetMessage() loop. Our MessageLoop
     // has its own quit mechanism, so WM_QUIT is unexpected and should be
-    // ignored.
+    // ignored when |enable_wm_quit_| is set to false.
     UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem",
                               RECEIVED_WM_QUIT_ERROR, MESSAGE_LOOP_PROBLEM_MAX);
     return true;
