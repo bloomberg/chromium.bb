@@ -8568,6 +8568,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING" desc="Extra tool tip text, when tab is playing a video in Picture-in-Picture.">
         This tab is playing a video in Picture-in-Picture.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is caturing desktop contents.">
+        This tab is sharing your desktop content.
+      </message>
 
       <!-- Tab accessibility labels -->
       <message name="IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT" desc="Accessibility label text, when the tab is recording media. Example: 'Google Hangouts - Camera or microphone recording'">
@@ -8596,6 +8599,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_AX_LABEL_CRASHED_FORMAT" desc="Accessibility label text, when a tab has crashed. Example: 'Google Search - Crashed'">
         <ph name="WINDOW_TITLE">$1<ex>Google Search</ex></ph> - Crashed
+      </message>
+      <message name="IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT" desc="Accessibility label text, when the tab is capturing and sharing desktop content using screen sharing. Example: 'Google Hangouts - Desktop content shared'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Desktop content shared
       </message>
 
       <!-- ProcessSingleton -->

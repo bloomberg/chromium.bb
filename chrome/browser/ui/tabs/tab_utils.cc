@@ -162,6 +162,12 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
   if (indicator.get()) {
+    // Currently we only show the icon and tooltip of the highest-priority
+    // alert on a tab.
+    // TODO(crbug.com/861961): To show the icon of the highest-priority alert
+    // with tooltip that notes all the states in play.
+    if (indicator->IsCapturingDesktop(contents))
+      return TabAlertState::DESKTOP_CAPTURING;
     if (indicator->IsBeingMirrored(contents))
       return TabAlertState::TAB_CAPTURING;
     if (indicator->IsCapturingUserMedia(contents))
@@ -209,6 +215,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                    : &kTabAudioMutingIcon;
       break;
     case TabAlertState::MEDIA_RECORDING:
+    case TabAlertState::DESKTOP_CAPTURING:
       icon = &kTabMediaRecordingIcon;
       break;
     case TabAlertState::TAB_CAPTURING:
@@ -249,6 +256,7 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::PIP_PLAYING:
+    case TabAlertState::DESKTOP_CAPTURING:
       return GetTabAlertIndicatorImage(alert_state, button_color);
   }
   NOTREACHED();
@@ -258,7 +266,8 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
 std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
     TabAlertState alert_state) {
   if (alert_state == TabAlertState::MEDIA_RECORDING ||
-      alert_state == TabAlertState::TAB_CAPTURING) {
+      alert_state == TabAlertState::TAB_CAPTURING ||
+      alert_state == TabAlertState::DESKTOP_CAPTURING) {
     return TabRecordingIndicatorAnimation::Create();
   }
 
@@ -314,6 +323,10 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
       result.append(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING));
       break;
+    case TabAlertState::DESKTOP_CAPTURING:
+      result.append(l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING));
+      break;
     case TabAlertState::NONE:
       NOTREACHED();
       break;
@@ -358,6 +371,10 @@ base::string16 AssembleTabAccessibilityLabel(const base::string16& title,
     case TabAlertState::PIP_PLAYING:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT,
                                         title);
+
+    case TabAlertState::DESKTOP_CAPTURING:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);
     case TabAlertState::NONE:
       return title;
   }
@@ -382,6 +399,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
+    case TabAlertState::DESKTOP_CAPTURING:
       // The new Audio Service implements muting separately from the tab audio
       // capture infrastructure; so the mute state can be toggled independently
       // at all times.

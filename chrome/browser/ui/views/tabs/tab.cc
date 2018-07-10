@@ -958,6 +958,7 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
                                       ThemeProperties::COLOR_TAB_ALERT_AUDIO)
                                 : button_color_;
     case TabAlertState::MEDIA_RECORDING:
+    case TabAlertState::DESKTOP_CAPTURING:
       return theme_provider->GetColor(
           ThemeProperties::COLOR_TAB_ALERT_RECORDING);
     case TabAlertState::TAB_CAPTURING:
