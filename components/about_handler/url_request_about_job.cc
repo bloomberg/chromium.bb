@@ -26,8 +26,8 @@ void URLRequestAboutJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestAboutJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestAboutJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestAboutJob::Kill() {
