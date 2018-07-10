@@ -48,10 +48,6 @@ class SVGImage;
 // See LayoutImageResource that holds this image.
 class CORE_EXPORT LayoutImage : public LayoutReplaced {
  public:
-  // These are the paddings to use when displaying either alt text or an image.
-  static const unsigned short kPaddingWidth = 4;
-  static const unsigned short kPaddingHeight = 4;
-
   LayoutImage(Element*);
   ~LayoutImage() override;
 
