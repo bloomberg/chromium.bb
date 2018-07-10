@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_names.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -231,15 +232,7 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     const cryptauth::RemoteDeviceRefList& remote_devices) {
   // When EasyUnlock is enabled, only one EasyUnlock host should exist.
-  // If |remote_devices| is empty, that means the caller of this method didn't
-  // verify that EasyUnlock is enabled, as it should have. |remote_devices|
-  // should never be longer than 1.
-  DCHECK(!remote_devices.empty());
-  if (remote_devices.size() != 1u) {
-    PA_LOG(ERROR) << "Expected only one unlock key, found "
-                  << remote_devices.size();
-    return;
-  }
+  DCHECK(remote_devices.size() == 1u);
 
   SetProximityAuthDevices(
       GetAccountId(), remote_devices,
@@ -247,7 +240,9 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
           ? device_sync_client_->GetLocalDeviceMetadata()
           : base::nullopt);
 
-  // EasyUnlockServiceSignin accesses this list.
+  // We need to store a copy of |local_and_remote_devices| in the TPM, so it can
+  // be retrieved on the sign-in screen when a user session has not been started
+  // yet.
   // If |chromeos::features::kMultiDeviceApi| is enabled, it will expect a final
   // size of 2 (the one remote device, and the local device).
   // If |chromeos::features::kMultiDeviceApi| is disabled, it will expect a
@@ -262,10 +257,6 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
         *device_sync_client_->GetLocalDeviceMetadata());
   }
 
-  // We need to store a copy of |local_and_remote_devices| in the TPM, so it can
-  // be retrieved on the sign-in screen when a user session has not been started
-  // yet.
-  // These same constants are used in EasyUnlockKeyManager.
   std::unique_ptr<base::ListValue> device_list(new base::ListValue());
   for (const auto& device : local_and_remote_devices) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -277,24 +268,27 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                           &b64_psk);
 
-    dict->SetString("name", device.name());
-    dict->SetString("psk", b64_psk);
+    dict->SetString(key_names::kKeyPsk, b64_psk);
 
     // TODO(jhawkins): Remove the bluetoothAddress field from this proto.
-    dict->SetString("bluetoothAddress", std::string());
+    dict->SetString(key_names::kKeyBluetoothAddress, std::string());
 
     if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-      dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
-                                      gaia::CanonicalizeEmail(
-                                          GetAccountId().GetUserEmail()));
+      dict->SetString(
+          key_names::kKeyPermitPermitId,
+          base::StringPrintf(
+              key_names::kPermitPermitIdFormat,
+              gaia::CanonicalizeEmail(GetAccountId().GetUserEmail()).c_str()));
     } else {
-      dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
-                                      proximity_auth_client()->GetAccountId());
+      dict->SetString(
+          key_names::kKeyPermitPermitId,
+          base::StringPrintf(key_names::kPermitPermitIdFormat,
+                             proximity_auth_client()->GetAccountId().c_str()));
     }
 
-    dict->SetString("permitRecord.id", b64_public_key);
-    dict->SetString("permitRecord.type", "license");
-    dict->SetString("permitRecord.data", b64_public_key);
+    dict->SetString(key_names::kKeyPermitId, b64_public_key);
+    dict->SetString(key_names::kKeyPermitType, key_names::kPermitTypeLicence);
+    dict->SetString(key_names::kKeyPermitData, b64_public_key);
 
     std::unique_ptr<base::ListValue> beacon_seed_list(new base::ListValue());
     for (const auto& beacon_seed : device.beacon_seeds()) {
@@ -308,10 +302,11 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     std::string serialized_beacon_seeds;
     JSONStringValueSerializer serializer(&serialized_beacon_seeds);
     serializer.Serialize(*beacon_seed_list);
-    dict->SetString("serializedBeaconSeeds", serialized_beacon_seeds);
+    dict->SetString(key_names::kKeySerializedBeaconSeeds,
+                    serialized_beacon_seeds);
 
     // This differentiates the local device from the remote device.
-    dict->SetBoolean("unlockKey", device.unlock_key());
+    dict->SetBoolean(key_names::kKeyUnlockKey, device.unlock_key());
 
     device_list->Append(std::move(dict));
   }
@@ -625,7 +620,8 @@ void EasyUnlockServiceRegular::OnReady() {
 }
 
 void EasyUnlockServiceRegular::OnEnrollmentFinished() {
-  // If the local device has been updated, reload devices.
+  // The local device may be ready for the first time, or it may have been
+  // updated, so reload devices.
   LoadRemoteDevices();
 }
 

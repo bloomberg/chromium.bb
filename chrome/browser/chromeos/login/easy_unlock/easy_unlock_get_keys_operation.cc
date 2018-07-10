@@ -138,10 +138,12 @@ void EasyUnlockGetKeysOperation::OnGetKeyData(
       // fields for persistence -- the number field is used to store this
       // boolean. The boolean was stored as either a 1 or 0 in as an int64_t.
       // Cast it back to bool here.
-      if (entry.number)
+      if (entry.number) {
+        DCHECK(*entry.number == 0 || *entry.number == 1);
         device.unlock_key = static_cast<bool>(*entry.number);
-      else
+      } else {
         NOTREACHED();
+      }
     } else {
       PA_LOG(WARNING) << "Unknown EasyUnlock key data entry, name="
                       << entry.name;
