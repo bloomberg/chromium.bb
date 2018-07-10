@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1875 tests; 1873 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1943 tests; 1941 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Test Suite: HTML
 PASS Document supports querySelector
 PASS Document supports querySelectorAll
@@ -321,6 +321,74 @@ PASS In-document Element.querySelector: Invalid namespace: $|div
 PASS In-document Element.querySelectorAll: Invalid namespace: $|div
 PASS In-document Element.querySelector: Relative selector: >*
 PASS In-document Element.querySelectorAll: Relative selector: >*
+PASS Empty Element.querySelector: Empty String: 
+PASS Empty Element.querySelectorAll: Empty String: 
+PASS Empty Element.querySelector: Invalid character: [
+PASS Empty Element.querySelectorAll: Invalid character: [
+PASS Empty Element.querySelector: Invalid character: ]
+PASS Empty Element.querySelectorAll: Invalid character: ]
+PASS Empty Element.querySelector: Invalid character: (
+PASS Empty Element.querySelectorAll: Invalid character: (
+PASS Empty Element.querySelector: Invalid character: )
+PASS Empty Element.querySelectorAll: Invalid character: )
+PASS Empty Element.querySelector: Invalid character: {
+PASS Empty Element.querySelectorAll: Invalid character: {
+PASS Empty Element.querySelector: Invalid character: }
+PASS Empty Element.querySelectorAll: Invalid character: }
+PASS Empty Element.querySelector: Invalid character: <
+PASS Empty Element.querySelectorAll: Invalid character: <
+PASS Empty Element.querySelector: Invalid character: >
+PASS Empty Element.querySelectorAll: Invalid character: >
+PASS Empty Element.querySelector: Invalid ID: #
+PASS Empty Element.querySelectorAll: Invalid ID: #
+PASS Empty Element.querySelector: Invalid group of selectors: div,
+PASS Empty Element.querySelectorAll: Invalid group of selectors: div,
+PASS Empty Element.querySelector: Invalid class: .
+PASS Empty Element.querySelectorAll: Invalid class: .
+PASS Empty Element.querySelector: Invalid class: .5cm
+PASS Empty Element.querySelectorAll: Invalid class: .5cm
+PASS Empty Element.querySelector: Invalid class: ..test
+PASS Empty Element.querySelectorAll: Invalid class: ..test
+PASS Empty Element.querySelector: Invalid class: .foo..quux
+PASS Empty Element.querySelectorAll: Invalid class: .foo..quux
+PASS Empty Element.querySelector: Invalid class: .bar.
+PASS Empty Element.querySelectorAll: Invalid class: .bar.
+PASS Empty Element.querySelector: Invalid combinator: div & address, p
+PASS Empty Element.querySelectorAll: Invalid combinator: div & address, p
+PASS Empty Element.querySelector: Invalid combinator: div ++ address, p
+PASS Empty Element.querySelectorAll: Invalid combinator: div ++ address, p
+PASS Empty Element.querySelector: Invalid combinator: div ~~ address, p
+PASS Empty Element.querySelectorAll: Invalid combinator: div ~~ address, p
+PASS Empty Element.querySelector: Invalid [att=value] selector: [*=test]
+PASS Empty Element.querySelectorAll: Invalid [att=value] selector: [*=test]
+PASS Empty Element.querySelector: Invalid [att=value] selector: [*|*=test]
+PASS Empty Element.querySelectorAll: Invalid [att=value] selector: [*|*=test]
+PASS Empty Element.querySelector: Invalid [att=value] selector: [class= space unquoted ]
+PASS Empty Element.querySelectorAll: Invalid [att=value] selector: [class= space unquoted ]
+PASS Empty Element.querySelector: Unknown pseudo-class: div:example
+PASS Empty Element.querySelectorAll: Unknown pseudo-class: div:example
+PASS Empty Element.querySelector: Unknown pseudo-class: :example
+PASS Empty Element.querySelectorAll: Unknown pseudo-class: :example
+PASS Empty Element.querySelector: Unknown pseudo-class: div:linkexample
+PASS Empty Element.querySelectorAll: Unknown pseudo-class: div:linkexample
+PASS Empty Element.querySelector: Unknown pseudo-element: div::example
+PASS Empty Element.querySelectorAll: Unknown pseudo-element: div::example
+PASS Empty Element.querySelector: Unknown pseudo-element: ::example
+PASS Empty Element.querySelectorAll: Unknown pseudo-element: ::example
+PASS Empty Element.querySelector: Invalid pseudo-element: :::before
+PASS Empty Element.querySelectorAll: Invalid pseudo-element: :::before
+PASS Empty Element.querySelector: Invalid pseudo-element: :: before
+PASS Empty Element.querySelectorAll: Invalid pseudo-element: :: before
+PASS Empty Element.querySelector: Undeclared namespace: ns|div
+PASS Empty Element.querySelectorAll: Undeclared namespace: ns|div
+PASS Empty Element.querySelector: Undeclared namespace: :not(ns|div)
+PASS Empty Element.querySelectorAll: Undeclared namespace: :not(ns|div)
+PASS Empty Element.querySelector: Invalid namespace: ^|div
+PASS Empty Element.querySelectorAll: Invalid namespace: ^|div
+PASS Empty Element.querySelector: Invalid namespace: $|div
+PASS Empty Element.querySelectorAll: Invalid namespace: $|div
+PASS Empty Element.querySelector: Relative selector: >*
+PASS Empty Element.querySelectorAll: Relative selector: >*
 PASS Document.querySelectorAll: Type selector, matching html element: html
 PASS Document.querySelector: Type selector, matching html element: html
 PASS Document.querySelectorAll: Type selector, matching body element: body

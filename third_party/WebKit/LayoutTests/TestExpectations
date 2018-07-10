@@ -4602,7 +4602,6 @@ crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.h
 crbug.com/856601 [ Linux ] external/wpt/FileAPI/idlharness.worker.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/bluetooth/idl/idlharness.tentative.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Timeout Pass ]
-crbug.com/856601 [ Linux ] external/wpt/mediacapture-streams/MediaDevices-IDL-enumerateDevices.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/page-visibility/idlharness.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/web-animations/interfaces/Animation/idlharness.html [ Timeout Pass ]

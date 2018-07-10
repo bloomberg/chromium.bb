@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS idlharness
 PASS WebUSB IDL test
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
@@ -312,6 +313,7 @@ PASS USBEndpoint interface: usbEndpoint must inherit property "type" with the pr
 PASS USBEndpoint interface: usbEndpoint must inherit property "packetSize" with the proper type
 PASS USBPermissionResult interface: existence and properties of interface object
 PASS Navigator interface: existence and properties of interface object
+FAIL Navigator interface: navigator must not have property "usb" assert_false: expected false got true
 PASS WorkerNavigator interface: attribute usb
 PASS Unscopable handled correctly for usb property on WorkerNavigator
 PASS WorkerNavigator interface: navigator must inherit property "usb" with the proper type
