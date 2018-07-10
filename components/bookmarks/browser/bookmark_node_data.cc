@@ -162,6 +162,12 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
          clipboard_type == ui::CLIPBOARD_TYPE_SELECTION);
   ui::ScopedClipboardWriter scw(clipboard_type);
 
+#if defined(OS_WIN)
+  const base::string16 kEOL(L"\r\n");
+#else
+  const base::string16 kEOL = base::ASCIIToUTF16("\n");
+#endif
+
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (has_single_url()) {
@@ -185,7 +191,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
     // and folders.
     base::string16 text;
     for (size_t i = 0; i < size(); i++) {
-      text += i == 0 ? base::ASCIIToUTF16("") : base::ASCIIToUTF16("\n");
+      text += i == 0 ? base::ASCIIToUTF16("") : kEOL;
       if (!elements[i].is_url) {
         // Then it's a folder. Only copy the name of the folder.
         const base::string16 title = elements[i].title;

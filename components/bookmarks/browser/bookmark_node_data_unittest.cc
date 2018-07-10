@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -310,7 +311,11 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
 
   // Now read the data back in.
   base::string16 combined_text;
+#if defined(OS_WIN)
+  base::string16 new_line = base::ASCIIToUTF16("\r\n");
+#else
   base::string16 new_line = base::ASCIIToUTF16("\n");
+#endif
   combined_text = base::UTF8ToUTF16(url.spec()) + new_line
     + base::UTF8ToUTF16(url2.spec());
   base::string16 clipboard_result;
@@ -369,7 +374,11 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
 
   // Now read the data back in.
   base::string16 combined_text;
+#if defined(OS_WIN)
+  base::string16 new_line = base::ASCIIToUTF16("\r\n");
+#else
   base::string16 new_line = base::ASCIIToUTF16("\n");
+#endif
   base::string16 folder_title = ASCIIToUTF16("g1");
   combined_text = base::ASCIIToUTF16(url.spec()) + new_line + folder_title;
   base::string16 clipboard_result;
