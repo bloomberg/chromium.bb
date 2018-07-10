@@ -8,7 +8,7 @@
   await TestRunner.loadModule('sdk_test_runner');
   await TestRunner.showPanel('sources');
 
-  SDK.targetManager.mainTarget().markAsNodeJS();
+  SDK.targetManager.mainTarget().markAsNodeJSForTest();
   SourcesTestRunner.startDebuggerTest();
 
   var debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
