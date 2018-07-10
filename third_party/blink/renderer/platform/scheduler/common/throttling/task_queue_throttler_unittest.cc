@@ -29,6 +29,7 @@ namespace task_queue_throttler_unittest {
 
 using base::TimeDelta;
 using base::TimeTicks;
+using base::TestMockTimeTaskRunner;
 using base::sequence_manager::LazyNow;
 using base::sequence_manager::TaskQueue;
 using testing::ElementsAre;
@@ -41,26 +42,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
       std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(manager), initial_virtual_time) {}
-};
-
-class TestTaskRunner : public base::TestMockTimeTaskRunner {
- public:
-  TestTaskRunner()
-      : base::TestMockTimeTaskRunner(TestTaskRunner::Type::kBoundToThread) {}
-  ~TestTaskRunner() override = default;
-
-  void SetAutoAdvanceInterval(TimeDelta interval) {
-    advance_interval_ = interval;
-  }
-
- protected:
-  void OnAfterTaskRun() override {
-    if (!advance_interval_.is_zero())
-      AdvanceMockTickClock(advance_interval_);
-  }
-
- private:
-  TimeDelta advance_interval_;
 };
 
 void NopTask() {}
@@ -78,17 +59,17 @@ void RunTenTimesTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
 
 class TaskQueueThrottlerTest : public testing::Test {
  public:
-  TaskQueueThrottlerTest() = default;
+  TaskQueueThrottlerTest()
+      : test_task_runner_(base::MakeRefCounted<TestMockTimeTaskRunner>()) {}
   ~TaskQueueThrottlerTest() override = default;
 
   void SetUp() override {
-    test_task_runner_ = base::MakeRefCounted<TestTaskRunner>();
     // A null clock triggers some assertions.
     test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(5));
 
     scheduler_.reset(new MainThreadSchedulerImplForTest(
         base::sequence_manager::SequenceManagerForTest::Create(
-            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
+            nullptr, test_task_runner_, GetTickClock()),
         base::nullopt));
     scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(TimeDelta());
     task_queue_throttler_ = scheduler_->task_queue_throttler();
@@ -131,7 +112,11 @@ class TaskQueueThrottlerTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<TestTaskRunner> test_task_runner_;
+  virtual const base::TickClock* GetTickClock() const {
+    return test_task_runner_->GetMockTickClock();
+  }
+
+  scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   scoped_refptr<TaskQueue> timer_queue_;
   TaskQueueThrottler* task_queue_throttler_;  // NOT OWNED
@@ -140,23 +125,50 @@ class TaskQueueThrottlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerTest);
 };
 
+// Advances mock clock every time we call NowTicks() from the scheduler.
+class AutoAdvancingProxyClock : public base::TickClock {
+ public:
+  AutoAdvancingProxyClock(scoped_refptr<TestMockTimeTaskRunner> task_runner)
+      : task_runner_(task_runner) {}
+  ~AutoAdvancingProxyClock() override = default;
+
+  void SetAutoAdvanceInterval(TimeDelta interval) {
+    advance_interval_ = interval;
+  }
+
+  TimeTicks NowTicks() const override {
+    if (!advance_interval_.is_zero())
+      task_runner_->AdvanceMockTickClock(advance_interval_);
+    return task_runner_->NowTicks();
+  }
+
+ private:
+  scoped_refptr<TestMockTimeTaskRunner> task_runner_;
+  TimeDelta advance_interval_;
+};
+
 class TaskQueueThrottlerWithAutoAdvancingTimeTest
     : public TaskQueueThrottlerTest,
       public testing::WithParamInterface<bool> {
  public:
-  TaskQueueThrottlerWithAutoAdvancingTimeTest() = default;
+  TaskQueueThrottlerWithAutoAdvancingTimeTest()
+      : proxy_clock_(test_task_runner_) {}
   ~TaskQueueThrottlerWithAutoAdvancingTimeTest() override = default;
 
   void SetUp() override {
     TaskQueueThrottlerTest::SetUp();
     if (GetParam()) {
       // Will advance the time by this value after running each task.
-      test_task_runner_->SetAutoAdvanceInterval(
-          TimeDelta::FromMicroseconds(50));
+      proxy_clock_.SetAutoAdvanceInterval(TimeDelta::FromMicroseconds(10));
     }
   }
 
+ protected:
+  const base::TickClock* GetTickClock() const override { return &proxy_clock_; }
+
  private:
+  AutoAdvancingProxyClock proxy_clock_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerWithAutoAdvancingTimeTest);
 };
 
@@ -234,13 +246,13 @@ TimeTicks RoundTimeToMilliseconds(TimeTicks time) {
 }
 
 void TestTask(std::vector<TimeTicks>* run_times,
-              scoped_refptr<TestTaskRunner> task_runner) {
+              scoped_refptr<TestMockTimeTaskRunner> task_runner) {
   run_times->push_back(RoundTimeToMilliseconds(task_runner->NowTicks()));
   // FIXME No auto-advancing
 }
 
 void ExpensiveTestTask(std::vector<TimeTicks>* run_times,
-                       scoped_refptr<TestTaskRunner> task_runner) {
+                       scoped_refptr<TestMockTimeTaskRunner> task_runner) {
   run_times->push_back(RoundTimeToMilliseconds(task_runner->NowTicks()));
   task_runner->AdvanceMockTickClock(TimeDelta::FromMilliseconds(250));
   // FIXME No auto-advancing
@@ -1126,7 +1138,7 @@ namespace {
 
 void RunChainedTask(std::deque<TimeDelta> task_durations,
                     scoped_refptr<TaskQueue> queue,
-                    scoped_refptr<TestTaskRunner> task_runner,
+                    scoped_refptr<TestMockTimeTaskRunner> task_runner,
                     std::vector<TimeTicks>* run_times,
                     TimeDelta delay) {
   if (task_durations.empty())
