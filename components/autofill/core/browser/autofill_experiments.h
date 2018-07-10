@@ -27,7 +27,6 @@ extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
-extern const base::Feature kAutofillCreditCardBankNameDisplay;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillExpandedPopupViews;
@@ -76,9 +75,6 @@ bool OfferStoreUnmaskedCards();
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
-
-// Returns whether Autofill credit card bank name display experiment is enabled.
-bool IsAutofillCreditCardBankNameDisplayExperimentEnabled();
 
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the

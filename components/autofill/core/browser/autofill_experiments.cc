@@ -34,8 +34,6 @@ const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardBankNameDisplay{
-    "AutofillCreditCardBankNameDisplay", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedAddresses{
@@ -99,10 +97,6 @@ bool IsAutofillCreditCardAssistEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
 #endif
-}
-
-bool IsAutofillCreditCardBankNameDisplayExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillCreditCardBankNameDisplay);
 }
 
 bool OfferStoreUnmaskedCards() {
