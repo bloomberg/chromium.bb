@@ -60,7 +60,6 @@ WindowHangMonitor::WindowHangMonitor(base::TimeDelta ping_interval,
     : callback_(callback),
       ping_interval_(ping_interval),
       hang_timeout_(timeout),
-      timer_(false /* don't retain user task */, false /* don't repeat */),
       outstanding_ping_(nullptr) {
 }
 

@@ -231,7 +231,7 @@ void HttpBridge::MakeAsynchronousPost() {
   // on, and on which the url fetcher lives).
   DCHECK(!fetch_state_.http_request_timeout_timer);
   fetch_state_.http_request_timeout_timer =
-      std::make_unique<base::Timer>(false, false);
+      std::make_unique<base::OneShotTimer>();
   fetch_state_.http_request_timeout_timer->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
       base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
@@ -342,10 +342,10 @@ void HttpBridge::Abort() {
 }
 
 void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher,
-                                             base::Timer* fetch_timer) {
+                                             base::OneShotTimer* fetch_timer) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-    delete fetch_timer;
+  delete fetch_timer;
   delete fetcher;
 }
 

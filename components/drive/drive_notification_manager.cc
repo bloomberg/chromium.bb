@@ -32,7 +32,6 @@ DriveNotificationManager::DriveNotificationManager(
       push_notification_registered_(false),
       push_notification_enabled_(false),
       observers_notified_(false),
-      polling_timer_(true /* retain_user_task */, false /* is_repeating */),
       weak_ptr_factory_(this) {
   DCHECK(invalidation_service_);
   RegisterDriveNotifications();

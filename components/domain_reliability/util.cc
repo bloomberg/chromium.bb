@@ -211,9 +211,7 @@ namespace {
 
 class ActualTimer : public MockableTime::Timer {
  public:
-  // Initialize base timer with retain_user_info and is_repeating false.
-  ActualTimer() : base_timer_(false, false) {}
-
+  ActualTimer() {}
   ~ActualTimer() override {}
 
   // MockableTime::Timer implementation:
@@ -228,7 +226,7 @@ class ActualTimer : public MockableTime::Timer {
   bool IsRunning() override { return base_timer_.IsRunning(); }
 
  private:
-  base::Timer base_timer_;
+  base::OneShotTimer base_timer_;
 };
 
 }  // namespace

@@ -161,7 +161,7 @@ BrowsingHistoryService::BrowsingHistoryService(
     BrowsingHistoryDriver* driver,
     HistoryService* local_history,
     syncer::SyncService* sync_service,
-    std::unique_ptr<base::Timer> web_history_timer)
+    std::unique_ptr<base::OneShotTimer> web_history_timer)
     : web_history_timer_(std::move(web_history_timer)),
       history_service_observer_(this),
       web_history_service_observer_(this),

@@ -174,7 +174,7 @@ void VisitedLinkEventListener::Reset(bool invalidate_hashes) {
 }
 
 void VisitedLinkEventListener::SetCoalesceTimerForTest(
-    base::Timer* coalesce_timer_override) {
+    base::OneShotTimer* coalesce_timer_override) {
   coalesce_timer_ = coalesce_timer_override;
 }
 

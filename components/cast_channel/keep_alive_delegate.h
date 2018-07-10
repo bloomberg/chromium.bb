@@ -40,8 +40,9 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   ~KeepAliveDelegate() override;
 
-  void SetTimersForTest(std::unique_ptr<base::Timer> injected_ping_timer,
-                        std::unique_ptr<base::Timer> injected_liveness_timer);
+  void SetTimersForTest(
+      std::unique_ptr<base::RetainingOneShotTimer> injected_ping_timer,
+      std::unique_ptr<base::RetainingOneShotTimer> injected_liveness_timer);
 
   // CastTransport::Delegate implementation.
   void Start() override;
@@ -87,10 +88,10 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   base::TimeDelta ping_interval_;
 
   // Fired when |ping_interval_| is exceeded or when triggered by test code.
-  std::unique_ptr<base::Timer> ping_timer_;
+  std::unique_ptr<base::RetainingOneShotTimer> ping_timer_;
 
   // Fired when |liveness_timer_| is exceeded.
-  std::unique_ptr<base::Timer> liveness_timer_;
+  std::unique_ptr<base::RetainingOneShotTimer> liveness_timer_;
 
   // The PING message to send over the wire.
   const CastMessage ping_message_;

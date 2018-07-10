@@ -328,7 +328,7 @@ class CastSocketImpl : public CastSocket {
   // Runs the external connection callback and resets it.
   void DoConnectCallback();
 
-  virtual base::Timer* GetTimer();
+  virtual base::OneShotTimer* GetTimer();
 
   void SetConnectState(ConnectionState connect_state);
   void SetReadyState(ReadyState ready_state);
@@ -378,7 +378,7 @@ class CastSocketImpl : public CastSocket {
   base::CancelableClosure connect_timeout_callback_;
 
   // Timer invoked when the connection has timed out.
-  std::unique_ptr<base::Timer> connect_timeout_timer_;
+  std::unique_ptr<base::OneShotTimer> connect_timeout_timer_;
 
   // Set when a timeout is triggered and the connection process has
   // canceled.

@@ -174,7 +174,7 @@ class TestBrowsingHistoryService : public BrowsingHistoryService {
   TestBrowsingHistoryService(BrowsingHistoryDriver* driver,
                              HistoryService* local_history,
                              syncer::SyncService* sync_service,
-                             std::unique_ptr<base::Timer> timer)
+                             std::unique_ptr<base::OneShotTimer> timer)
       : BrowsingHistoryService(driver,
                                local_history,
                                sync_service,

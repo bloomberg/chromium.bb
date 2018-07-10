@@ -95,7 +95,7 @@ class WindowHangMonitor {
   base::TimeDelta hang_timeout_;
 
   // The timer used to schedule polls.
-  base::Timer timer_;
+  base::OneShotTimer timer_;
 
   // Non-null when there is an outstanding ping.
   // This is intentionally leaked when a hang is detected.

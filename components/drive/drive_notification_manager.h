@@ -83,7 +83,7 @@ class DriveNotificationManager : public KeyedService,
 
   // The timer is used for polling based notification. XMPP should usually be
   // used but notification is done per polling when XMPP is not working.
-  base::Timer polling_timer_;
+  base::OneShotTimer polling_timer_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

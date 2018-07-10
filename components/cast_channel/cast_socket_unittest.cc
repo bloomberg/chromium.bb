@@ -178,7 +178,7 @@ class TestCastSocketBase : public CastSocketImpl {
     return verify_challenge_result_;
   }
 
-  base::Timer* GetTimer() override { return mock_timer_.get(); }
+  base::OneShotTimer* GetTimer() override { return mock_timer_.get(); }
 
   net::IPEndPoint ip_;
   // Simulated result of peer cert extraction.
