@@ -407,13 +407,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
 };
 
-#if defined(OS_MACOSX)
-// TODO(crbug.com/844487): Fix this test on Mac.
-#define MAYBE_Test DISABLED_Test
-#else
-#define MAYBE_Test Test
-#endif
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, MAYBE_Test) {
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
   WaitForPolicyRegisterFinished();
 
   EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"

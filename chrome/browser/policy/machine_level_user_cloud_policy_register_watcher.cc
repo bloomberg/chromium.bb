@@ -82,6 +82,10 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
   return RegisterResult::kQuitDueToFailure;
 }
 
+bool MachineLevelUserCloudPolicyRegisterWatcher::IsDialogShowing() {
+  return dialog_ && dialog_->IsShowing();
+}
+
 void MachineLevelUserCloudPolicyRegisterWatcher::
     SetDialogCreationCallbackForTesting(DialogCreationCallback callback) {
   dialog_creation_callback_ = std::move(callback);
