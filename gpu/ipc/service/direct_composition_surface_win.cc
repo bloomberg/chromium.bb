@@ -103,27 +103,47 @@ class ScopedReleaseKeyedMutex {
   DISALLOW_COPY_AND_ASSIGN(ScopedReleaseKeyedMutex);
 };
 
+struct OverlaySupportInfo {
+  DXGI_FORMAT dxgi_format;
+  OverlayFormat overlay_format;
+  UINT flags;
+};
+
+bool g_overlay_support_initialized = false;
+
+// These are for YUY2 overlays.
+bool g_supports_overlays = false;
+bool g_supports_scaled_overlays = true;
 gfx::Size g_overlay_monitor_size;
 
-bool g_supports_scaled_overlays = true;
+OverlaySupportInfo g_overlay_support_info[] = {
+    {DXGI_FORMAT_B8G8R8A8_UNORM, OverlayFormat::BGRA, 0},
+    {DXGI_FORMAT_YUY2, OverlayFormat::YUY2, 0},
+    {DXGI_FORMAT_NV12, OverlayFormat::NV12, 0},
+};
 
 // This is the raw support info, which shouldn't depend on field trial state, or
 // command line flags.
-bool HardwareSupportsOverlays() {
+void InitializeHardwareOverlaySupport() {
+  if (g_overlay_support_initialized)
+    return;
+
+  g_overlay_support_initialized = true;
+
   if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
-    return false;
+    return;
 
   // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
   // be assigned to non-UWP apps.
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
-    return false;
+    return;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device) {
     DLOG(ERROR) << "Not using overlays because failed to retrieve D3D11 device "
                    "from ANGLE";
-    return false;
+    return;
   }
 
   // This can fail if the D3D device is "Microsoft Basic Display Adapter".
@@ -131,7 +151,7 @@ bool HardwareSupportsOverlays() {
   if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
     DLOG(ERROR) << "Not using overlays because failed to retrieve video device "
                    "from D3D11 device";
-    return false;
+    return;
   }
   DCHECK(video_device);
 
@@ -153,31 +173,42 @@ bool HardwareSupportsOverlays() {
       continue;
     DCHECK(output3);
 
-    UINT flags = 0;
-    if (FAILED(output3->CheckOverlaySupport(DXGI_FORMAT_YUY2,
-                                            d3d11_device.Get(), &flags)))
-      continue;
-
-    base::UmaHistogramSparse("GPU.DirectComposition.OverlaySupportFlags",
-                             flags);
-
-    // Some new Intel drivers only claim to support unscaled overlays, but
-    // scaled overlays still work. Even when scaled overlays aren't actually
-    // supported, presentation using the overlay path should be relatively
-    // efficient.
-    if (flags & (DXGI_OVERLAY_SUPPORT_FLAG_SCALING |
-                 DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)) {
-      DXGI_OUTPUT_DESC monitor_desc = {};
-      if (FAILED(output3->GetDesc(&monitor_desc)))
+    for (auto& info : g_overlay_support_info) {
+      if (FAILED(output3->CheckOverlaySupport(
+              info.dxgi_format, d3d11_device.Get(), &info.flags))) {
         continue;
-      g_overlay_monitor_size =
-          gfx::Rect(monitor_desc.DesktopCoordinates).size();
-      g_supports_scaled_overlays =
-          !!(flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
-      return true;
+      }
+      // Some new Intel drivers only claim to support unscaled overlays, but
+      // scaled overlays still work. Even when scaled overlays aren't actually
+      // supported, presentation using the overlay path should be relatively
+      // efficient.
+      if (info.dxgi_format == DXGI_FORMAT_YUY2 &&
+          (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
+                         DXGI_OVERLAY_SUPPORT_FLAG_SCALING))) {
+        g_supports_overlays = true;
+        g_supports_scaled_overlays =
+            !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
+
+        DXGI_OUTPUT_DESC monitor_desc = {};
+        if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
+          g_overlay_monitor_size =
+              gfx::Rect(monitor_desc.DesktopCoordinates).size();
+        }
+      }
     }
+    if (g_supports_overlays)
+      break;
   }
-  return false;
+
+  for (const auto& info : g_overlay_support_info) {
+    const std::string kOverlaySupportFlagsUmaPrefix =
+        "GPU.DirectComposition.OverlaySupportFlags.";
+    base::UmaHistogramSparse(kOverlaySupportFlagsUmaPrefix +
+                                 OverlayFormatToString(info.overlay_format),
+                             info.flags);
+  }
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
+                        g_supports_overlays);
 }
 
 bool CreateSurfaceHandleHelper(HANDLE* handle) {
@@ -1247,15 +1278,7 @@ DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
 
 // static
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
-  static bool initialized = false;
-  static bool overlays_supported = false;
-
-  if (!initialized) {
-    initialized = true;
-    overlays_supported = HardwareSupportsOverlays();
-    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
-                          overlays_supported);
-  }
+  InitializeHardwareOverlaySupport();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
@@ -1264,9 +1287,28 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
     return true;
 
   return base::FeatureList::IsEnabled(features::kDirectCompositionOverlays) &&
-         overlays_supported;
+         g_supports_overlays;
 }
 
+// static
+OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
+  InitializeHardwareOverlaySupport();
+
+  OverlayCapabilities capabilities;
+  for (const auto& info : g_overlay_support_info) {
+    if (info.flags) {
+      OverlayCapability cap;
+      cap.format = info.overlay_format;
+      cap.is_scaling_supported =
+          !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
+      capabilities.push_back(cap);
+    }
+  }
+
+  return capabilities;
+}
+
+// static
 void DirectCompositionSurfaceWin::EnableScaledOverlaysForTesting() {
   g_supports_scaled_overlays = true;
 }

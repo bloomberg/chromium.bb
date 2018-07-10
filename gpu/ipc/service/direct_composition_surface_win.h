@@ -12,6 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/child_window_win.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -38,6 +39,9 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns true if there's an output on the current adapter that can
   // use overlays.
   static bool AreOverlaysSupported();
+
+  // Returns a list of supported overlay formats for GPUInfo.
+  static OverlayCapabilities GetOverlayCapabilities();
 
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
