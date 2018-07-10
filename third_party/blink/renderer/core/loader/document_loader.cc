@@ -980,10 +980,6 @@ void DocumentLoader::DidCommitNavigation(
         kWebLoadingBehaviorServiceWorkerControlled);
   }
 
-  // Links with media values need more information (like viewport information).
-  // This happens after the first chunk is parsed in HTMLDocumentParser.
-  DispatchLinkHeaderPreloads(nullptr, LinkLoader::kOnlyLoadNonMedia);
-
   Document* document = frame_->GetDocument();
   InteractiveDetector* interactive_detector =
       InteractiveDetector::From(*document);
@@ -992,7 +988,14 @@ void DocumentLoader::DidCommitNavigation(
 
   TRACE_EVENT1("devtools.timeline", "CommitLoad", "data",
                InspectorCommitLoadEvent::Data(frame_));
+
+  // Needs to run before dispatching preloads, as it may evict the memory cache.
   probe::didCommitLoad(frame_, this);
+
+  // Links with media values need more information (like viewport information).
+  // This happens after the first chunk is parsed in HTMLDocumentParser.
+  DispatchLinkHeaderPreloads(nullptr, LinkLoader::kOnlyLoadNonMedia);
+
   frame_->GetPage()->DidCommitLoad(frame_);
 
   // Report legacy Symantec certificates after Page::DidCommitLoad, because the
