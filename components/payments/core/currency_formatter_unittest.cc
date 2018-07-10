@@ -41,7 +41,7 @@ TEST_P(PaymentsCurrencyFormatterTest, IsValidCurrencyFormat) {
 
   // Convenience so the test cases can use regular spaces.
   const base::string16 kSpace(base::ASCIIToUTF16(" "));
-  const base::string16 kNonBreakingSpace(base::UTF8ToUTF16("\xC2\xA0"));
+  const base::string16 kNonBreakingSpace(base::UTF8ToUTF16(u8"\u00a0"));
   base::string16 converted;
   base::ReplaceChars(base::UTF8ToUTF16(GetParam().expected_amount), kSpace,
                      kNonBreakingSpace, &converted);
@@ -69,7 +69,7 @@ INSTANTIATE_TEST_CASE_P(
         TestCase("55.00", "USD", "en_AU", "55.00", "USD"),
         TestCase("55.00", "CAD", "en_AU", "55.00", "CAD"),
         TestCase("55.00", "JPY", "en_AU", "55", "JPY"),
-        TestCase("55.00", "RUB", "en_AU", "55.00", "RUB"),
+        TestCase("-55.00", "USD", "en_AU", "-55.00", "USD"),
 
         TestCase("55.5", "USD", "en_US", "$55.50", "USD"),
         TestCase("55", "USD", "en_US", "$55.00", "USD"),
@@ -120,8 +120,8 @@ INSTANTIATE_TEST_CASE_P(
 
         // Edge cases.
         TestCase("", "", "", "", ""),
-        TestCase("-1", "", "", "- 1.00", ""),
-        TestCase("-1.1255", "", "", "- 1.1255", ""),
+        TestCase("-1", "", "", "-1.00", ""),
+        TestCase("-1.1255", "", "", "-1.1255", ""),
 
         // Handles big numbers.
         TestCase(

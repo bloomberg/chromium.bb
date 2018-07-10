@@ -121,7 +121,9 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_EmojiModifier) {
   EXPECT_TRUE(IsGraphemeBreak(kEBaseGAZ, kEBase));
   EXPECT_TRUE(IsGraphemeBreak(kEBase, kEBaseGAZ));
   EXPECT_TRUE(IsGraphemeBreak(kEBaseGAZ, kEBaseGAZ));
-  EXPECT_TRUE(IsGraphemeBreak(kEModifier, kEModifier));
+  // EModifier is absorbed into Extend and there is NO break
+  // before Extend per GB 9.
+  EXPECT_FALSE(IsGraphemeBreak(kEModifier, kEModifier));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_ZWJSequecne) {

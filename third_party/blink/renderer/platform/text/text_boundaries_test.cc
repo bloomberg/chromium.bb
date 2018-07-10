@@ -151,19 +151,21 @@ TEST_F(TextBoundariesTest, ForwardPunctuations) {
   EXPECT_EQ("abc^,|,", TryFindWordForward("abc|,,"));
 }
 
+// A sequence of whitespaces is treated as a single word.
+// See http://unicode.org/reports/tr29/#WB3d .
 TEST_F(TextBoundariesTest, ForwardWhitespaces) {
-  EXPECT_EQ("^ | abc  def  ", TryFindWordForward("|  abc  def  "));
-  EXPECT_EQ(" ^ |abc  def  ", TryFindWordForward(" | abc  def  "));
+  EXPECT_EQ("^  |abc  def  ", TryFindWordForward("|  abc  def  "));
+  EXPECT_EQ("^  |abc  def  ", TryFindWordForward(" | abc  def  "));
   EXPECT_EQ("  ^abc|  def  ", TryFindWordForward("  |abc  def  "));
   EXPECT_EQ("  ^abc|  def  ", TryFindWordForward("  a|bc  def  "));
   EXPECT_EQ("  ^abc|  def  ", TryFindWordForward("  ab|c  def  "));
-  EXPECT_EQ("  abc^ | def  ", TryFindWordForward("  abc|  def  "));
-  EXPECT_EQ("  abc ^ |def  ", TryFindWordForward("  abc | def  "));
+  EXPECT_EQ("  abc^  |def  ", TryFindWordForward("  abc|  def  "));
+  EXPECT_EQ("  abc^  |def  ", TryFindWordForward("  abc | def  "));
   EXPECT_EQ("  abc  ^def|  ", TryFindWordForward("  abc  |def  "));
   EXPECT_EQ("  abc  ^def|  ", TryFindWordForward("  abc  d|ef  "));
   EXPECT_EQ("  abc  ^def|  ", TryFindWordForward("  abc  de|f  "));
-  EXPECT_EQ("  abc  def^ | ", TryFindWordForward("  abc  def|  "));
-  EXPECT_EQ("  abc  def ^ |", TryFindWordForward("  abc  def | "));
+  EXPECT_EQ("  abc  def^  |", TryFindWordForward("  abc  def|  "));
+  EXPECT_EQ("  abc  def^  |", TryFindWordForward("  abc  def | "));
   EXPECT_EQ("  abc  def  ^|", TryFindWordForward("  abc  def  |"))
       << "No word after |";
 }

@@ -13,16 +13,6 @@ namespace blink {
 
 namespace {
 
-// Returns true if the code point has E_Basae_GAZ grapheme break property.
-// See
-// http://www.unicode.org/Public/9.0.0/ucd/auxiliary/GraphemeBreakProperty-9.0.0d18.txt
-bool IsEBaseGAZ(uint32_t code_point) {
-  return code_point == WTF::Unicode::kBoyCharacter ||
-         code_point == WTF::Unicode::kGirlCharacter ||
-         code_point == WTF::Unicode::kManCharacter ||
-         code_point == WTF::Unicode::kWomanCharacter;
-}
-
 // The list of code points which has Indic_Syllabic_Category=Virama property.
 // Must be sorted.
 // See http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
@@ -48,8 +38,6 @@ bool IsIndicSyllabicCategoryVirama(uint32_t code_point) {
 bool IsGraphemeBreak(UChar32 prev_code_point, UChar32 next_code_point) {
   // The following breaking rules come from Unicode Standard Annex #29 on
   // Unicode Text Segmaentation. See http://www.unicode.org/reports/tr29/
-  // Note that some of rules are in proposal.
-  // Also see http://www.unicode.org/reports/tr29/proposed.html
   int prev_prop =
       u_getIntPropertyValue(prev_code_point, UCHAR_GRAPHEME_CLUSTER_BREAK);
   int next_prop =
@@ -113,16 +101,13 @@ bool IsGraphemeBreak(UChar32 prev_code_point, UChar32 next_code_point) {
           U_OTHER_LETTER)
     return false;
 
-  // Proposed Rule GB10, (E_Base | EBG) x E_Modifier
-  if ((Character::IsEmojiModifierBase(prev_code_point) ||
-       IsEBaseGAZ(prev_code_point)) &&
-      Character::IsModifier(next_code_point))
-    return false;
-
-  // Proposed Rule GB11, ZWJ x Emoji
+  // GB11, ZWJ x Emoji
   if (prev_code_point == kZeroWidthJoinerCharacter &&
       (Character::IsEmoji(next_code_point)))
     return false;
+
+  // GB12 for RI(Regional Indicator) is handled elsewhere because it requires
+  // counting the number of consecutive RIs.
 
   // Rule GB999 any ÷ any
   return true;

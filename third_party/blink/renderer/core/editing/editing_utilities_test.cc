@@ -435,7 +435,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
 
   // Break other Hangul syllable combination. See test of GB999.
 
-  // GB8a: Don't break between regional indicator if there are even numbered
+  // GB12: Don't break between regional indicator if there are even numbered
   // regional indicator symbols before.
   // U+1F1FA is REGIONAL INDICATOR SYMBOL LETTER U.
   // U+1F1F8 is REGIONAL INDICATOR SYMBOL LETTER S.
@@ -571,8 +571,12 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(5, NextGraphemeBoundaryOf(*node, 4));
 
   // GB10: Do not break within emoji modifier.
-  // U+1F385(FATHER CHRISTMAS) has E_Base property.
-  // U+1F3FB(EMOJI MODIFIER FITZPATRICK TYPE-1-2) has E_Modifier property.
+  // GB10 is deleted in Unicode 11, but it's subsumed by GB9 by
+  // extending the definition of Extend to include E_Base, E_Modifier,
+  // etc. E_Base, E_Modifier and E_Base_GAZ are obsolete.
+  // U+1F385(FATHER CHRISTMAS) used to have E_Base property.
+  // U+1F3FB(EMOJI MODIFIER FITZPATRICK TYPE-1-2) used to have
+  // E_Modifier property.
   SetBodyContent(
       "<p id='target'>a&#x1F385;&#x1F3FB;b</p>");  // E_Base x E_Modifier
   node = GetDocument().getElementById("target")->firstChild();
@@ -582,7 +586,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(1, NextGraphemeBoundaryOf(*node, 0));
   EXPECT_EQ(5, NextGraphemeBoundaryOf(*node, 1));
   EXPECT_EQ(6, NextGraphemeBoundaryOf(*node, 5));
-  // U+1F466(BOY) has EBG property.
+  // U+1F466(BOY) used to have EBG property, but now has Extend property.
   SetBodyContent(
       "<p id='target'>a&#x1F466;&#x1F3FB;b</p>");  // EBG x E_Modifier
   node = GetDocument().getElementById("target")->firstChild();
@@ -594,7 +598,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(6, NextGraphemeBoundaryOf(*node, 5));
 
   // GB11: Do not break within ZWJ emoji sequence.
-  // U+2764(HEAVY BLACK HEART) has Glue_After_Zwj property.
+  // U+2764(HEAVY BLACK HEART) has Extended_Pictographic=True.
+  // So does U+1F466.
   SetBodyContent(
       "<p id='target'>a&#x200D;&#x2764;b</p>");  // ZWJ x Glue_After_Zwj
   node = GetDocument().getElementById("target")->firstChild();
@@ -609,10 +614,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(4, NextGraphemeBoundaryOf(*node, 0));
   EXPECT_EQ(5, NextGraphemeBoundaryOf(*node, 4));
 
-  // Not only Glue_After_ZWJ or EBG but also other emoji shouldn't break
-  // before ZWJ.
-  // U+1F5FA(WORLD MAP) doesn't have either Glue_After_Zwj or EBG but has
-  // Emoji property.
+  // U+1F5FA(World Map) has Extended_Pictographic=True.
   SetBodyContent("<p id='target'>&#x200D;&#x1F5FA;</p>");
   node = GetDocument().getElementById("target")->firstChild();
   EXPECT_EQ(0, PreviousGraphemeBoundaryOf(*node, 3));
@@ -681,17 +683,16 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(1, PreviousGraphemeBoundaryOf(*node, 2));
   EXPECT_EQ(1, NextGraphemeBoundaryOf(*node, 0));
 
-  // For GB10, if base emoji character is not E_Base or EBG, break happens
-  // before E_Modifier.
+  // Per GB8, do not break before Extended|ZWJ. E_Modifier is obsolete
+  // in Unicode 11 and is now a part of Extended.
   SetBodyContent("<p id='target'>a&#x1F3FB;</p>");
   node = GetDocument().getElementById("target")->firstChild();
-  EXPECT_EQ(1, PreviousGraphemeBoundaryOf(*node, 3));
-  EXPECT_EQ(1, NextGraphemeBoundaryOf(*node, 0));
-  // U+1F5FA(WORLD MAP) doesn't have either E_Base or EBG property.
+  EXPECT_EQ(0, PreviousGraphemeBoundaryOf(*node, 3));
+  EXPECT_EQ(3, NextGraphemeBoundaryOf(*node, 0));
   SetBodyContent("<p id='target'>&#x1F5FA;&#x1F3FB;</p>");
   node = GetDocument().getElementById("target")->firstChild();
-  EXPECT_EQ(2, PreviousGraphemeBoundaryOf(*node, 4));
-  EXPECT_EQ(2, NextGraphemeBoundaryOf(*node, 0));
+  EXPECT_EQ(0, PreviousGraphemeBoundaryOf(*node, 4));
+  EXPECT_EQ(4, NextGraphemeBoundaryOf(*node, 0));
 
   // For GB11, if trailing character is not Glue_After_Zwj or EBG, break happens
   // after ZWJ.

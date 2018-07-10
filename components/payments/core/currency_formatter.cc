@@ -115,6 +115,16 @@ base::string16 CurrencyFormatter::Format(const std::string& amount) {
   output.findAndReplace(tmp_currency_code, "");
   tmp_currency_code.truncate(1);
   output.findAndReplace(tmp_currency_code, "");
+
+  // In some locales, "-" sign comes before 3-letter currency code followed by
+  // a space and the amount, removing currency code leaves a space between '-'
+  // and the amount. e.g. In en-AU, -4.56 (USD) is formatted as '-USD 4.56'.
+  // This change is a temporary work-around for updating ICU to 62.1/CLDR 33.1.
+  // A rather peculiar requirement/behavior of CurrencyFormatter needs to be
+  // reviewed. See  https://crbug.com/856113 .
+  output.findAndReplace("- ", "-");
+  output.findAndReplace(icu::UnicodeString::fromUTF8(u8"-\u00a0"), "-");
+
   // Trims any unicode whitespace (including non-breaking space).
   if (u_isUWhiteSpace(output[0])) {
     output.remove(0, 1);
