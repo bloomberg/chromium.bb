@@ -181,11 +181,6 @@ NSColor* ThemeService::GetNSImageColorNamed(int id, bool incognito) const {
   return image_color;
 }
 
-bool ThemeService::HasCustomColor(int id) const {
-  SkColor color;
-  return theme_supplier_ && theme_supplier_->GetColor(id, &color);
-}
-
 NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -358,10 +353,6 @@ bool ThemeService::BrowserThemeProvider::InIncognitoMode() const {
 
 bool ThemeService::BrowserThemeProvider::UsingSystemTheme() const {
   return theme_service_.UsingSystemTheme();
-}
-
-bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
-  return theme_service_.HasCustomColor(id);
 }
 
 NSImage* ThemeService::BrowserThemeProvider::GetNSImageNamed(int id) const {

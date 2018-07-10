@@ -39,6 +39,10 @@ bool DefaultThemeProvider::HasCustomImage(int id) const {
   return false;
 }
 
+bool DefaultThemeProvider::HasCustomColor(int id) const {
+  return false;
+}
+
 base::RefCountedMemory* DefaultThemeProvider::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {

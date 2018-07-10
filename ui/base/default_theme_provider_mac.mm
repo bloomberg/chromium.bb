@@ -18,10 +18,6 @@ bool DefaultThemeProvider::InIncognitoMode() const {
   return false;
 }
 
-bool DefaultThemeProvider::HasCustomColor(int id) const {
-  return false;
-}
-
 NSImage* DefaultThemeProvider::GetNSImageNamed(int id) const {
  return ResourceBundle::GetSharedInstance().
      GetNativeImageNamed(id).ToNSImage();
