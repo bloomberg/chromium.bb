@@ -342,8 +342,8 @@
 
       </neon-animatable>
       <template is="dom-if" route-path="/syncSetup"
-          no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus,
-              unifiedConsentEnabled_)]]">
+          no-search="[[!isAdvancedSyncSettingsVisible_(
+              syncStatus, unifiedConsentEnabled_)]]">
         <settings-subpage
             associated-control="[[$$('#sync-status')]]"
             page-title="$i18n{syncPageTitle}"
