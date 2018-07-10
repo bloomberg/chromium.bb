@@ -47,7 +47,7 @@ IdentityManager::~IdentityManager() {
   token_service_->set_diagnostics_client(nullptr);
 }
 
-AccountInfo IdentityManager::GetPrimaryAccountInfo() {
+AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
 #if defined(OS_CHROMEOS)
   // On ChromeOS in production, the authenticated account is set very early in
   // startup and never changed. Hence, the information held by the
@@ -92,11 +92,11 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
   return primary_account_info_;
 }
 
-bool IdentityManager::HasPrimaryAccount() {
+bool IdentityManager::HasPrimaryAccount() const {
   return !primary_account_info_.account_id.empty();
 }
 
-std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() {
+std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   // TODO(blundell): It seems wasteful to construct this vector every time this
   // method is called, but it also seems bad to maintain the vector as an ivar
   // along the map.
@@ -111,11 +111,11 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() {
 }
 
 bool IdentityManager::HasAccountWithRefreshToken(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   return base::ContainsKey(accounts_with_refresh_tokens_, account_id);
 }
 
-bool IdentityManager::HasPrimaryAccountWithRefreshToken() {
+bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
   return HasAccountWithRefreshToken(GetPrimaryAccountInfo().account_id);
 }
 
