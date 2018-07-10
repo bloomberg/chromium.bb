@@ -32,6 +32,7 @@ public class SigninExpandablePreferenceGroup extends ExpandablePreferenceGroup {
 
     @Override
     public boolean addPreference(Preference preference) {
+        if (mAllPreferences.contains(preference)) return true;
         mAllPreferences.add(preference);
         if (!isExpanded()) return true;
         return addPreferenceInternal(preference);
