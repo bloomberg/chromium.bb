@@ -4595,9 +4595,5 @@ crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Ti
 crbug.com/856601 [ Linux ] external/wpt/web-animations/interfaces/Animation/idlharness.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] http/tests/event-timing/event-timing-retrievability.html [ Timeout Pass ]
 
-# Sheriff 2018-07-10
-# Test flaking on Linux Trusty Leak
-crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Failure Pass ]
-
 # Test timeouts on mac_chromium_rel_ng
 crbug.com/862215 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Timeout Pass ]
