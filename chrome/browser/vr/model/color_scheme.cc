@@ -146,6 +146,8 @@ void InitializeColorSchemes() {
   normal_scheme.controller_label_callout = SK_ColorWHITE;
   normal_scheme.controller_button = 0xFFEFEFEF;
   normal_scheme.controller_button_down = 0xFF2979FF;
+  normal_scheme.controller_battery_full = 0xFFEFEFEF;
+  normal_scheme.controller_battery_empty = 0xCCB3B3B3;
 
   normal_scheme.reposition_label = SK_ColorWHITE;
   normal_scheme.reposition_label_background = 0xAA333333;

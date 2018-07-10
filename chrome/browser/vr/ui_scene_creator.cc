@@ -658,6 +658,38 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
                    VectorIcon, home_button.get(), SetColor));
   controller->AddChild(std::move(home_button));
 
+  auto battery_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  battery_layout->set_margin(kControllerBatteryDotMargin);
+  battery_layout->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  battery_layout->SetTranslate(0.0f, 0.0f, kControllerBatteryDotZ);
+
+  for (int i = 0; i < kControllerBatteryDotCount; ++i) {
+    auto battery_dot =
+        Create<Rect>(static_cast<UiElementName>(kControllerBatteryDot0 + i),
+                     kPhaseForeground);
+    battery_dot->SetSize(kControllerBatteryDotSize, kControllerBatteryDotSize);
+    battery_dot->set_corner_radius(kControllerBatteryDotSize / 2);
+
+    battery_dot->AddBinding(std::make_unique<Binding<SkColor>>(
+        VR_BIND_LAMBDA(
+            [](Model* model, int index) {
+              return model->controller.battery_level > index
+                         ? model->color_scheme().controller_battery_full
+                         : model->color_scheme().controller_battery_empty;
+            },
+            base::Unretained(model), i),
+        VR_BIND_LAMBDA(
+            [](Rect* battery_dot, const SkColor& value) {
+              battery_dot->SetColor(value);
+            },
+            base::Unretained(battery_dot.get()))));
+
+    battery_layout->AddChild(std::move(battery_dot));
+  }
+
+  controller->AddChild(std::move(battery_layout));
+
   return controller;
 }
 

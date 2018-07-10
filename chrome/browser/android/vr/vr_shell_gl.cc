@@ -1286,6 +1286,7 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.last_touch_timestamp = controller_->GetLastTouchTimestamp();
   controller_model.last_button_timestamp =
       controller_->GetLastButtonTimestamp();
+  controller_model.battery_level = controller_->GetBatteryLevel();
 
   if (!test_controller_model_queue_.empty()) {
     cached_test_controller_model_ = test_controller_model_queue_.front();

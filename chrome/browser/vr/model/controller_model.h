@@ -40,6 +40,7 @@ struct VR_EXPORT ControllerModel {
   base::TimeTicks last_orientation_timestamp;
   base::TimeTicks last_touch_timestamp;
   base::TimeTicks last_button_timestamp;
+  int battery_level = 0;
 };
 
 }  // namespace vr

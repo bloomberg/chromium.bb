@@ -142,6 +142,11 @@ enum UiElementName {
   kControllerTouchpadButton,
   kControllerAppButton,
   kControllerHomeButton,
+  kControllerBatteryDot0,
+  kControllerBatteryDot1,
+  kControllerBatteryDot2,
+  kControllerBatteryDot3,
+  kControllerBatteryDot4,
   kContentRepositionHitPlane,
   kContentRepositionVisibilityToggle,
 
