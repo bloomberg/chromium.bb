@@ -110,8 +110,8 @@ bool GeneralizedTimeToBaseTime(const der::GeneralizedTime& generalized,
 
 // Sets |value| to the Value from a DER Sequence Tag-Length-Value and return
 // true, or return false if the TLV was not a valid DER Sequence.
-WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
-                                         der::Input* value) {
+WARN_UNUSED_RESULT bool ParseSequenceValue(const der::Input& tlv,
+                                           der::Input* value) {
   der::Parser parser(tlv);
   return parser.ReadTag(der::kSequence, value) && !parser.HasMore();
 }
@@ -136,7 +136,7 @@ bool GetNormalizedCertIssuer(CRYPTO_BUFFER* cert,
     return false;
 
   der::Input issuer_value;
-  if (!GetSequenceValue(tbs.issuer_tlv, &issuer_value))
+  if (!ParseSequenceValue(tbs.issuer_tlv, &issuer_value))
     return false;
 
   CertErrors errors;
@@ -461,7 +461,7 @@ bool X509Certificate::IsIssuedByEncoded(
   for (const auto& raw_issuer : valid_issuers) {
     der::Input issuer_value;
     std::string normalized_issuer;
-    if (!GetSequenceValue(der::Input(&raw_issuer), &issuer_value) ||
+    if (!ParseSequenceValue(der::Input(&raw_issuer), &issuer_value) ||
         !NormalizeName(issuer_value, &normalized_issuer, &errors)) {
       continue;
     }
@@ -793,13 +793,13 @@ bool X509Certificate::IsSelfSigned(const CRYPTO_BUFFER* cert_buffer) {
   der::Input subject_value;
   CertErrors errors;
   std::string normalized_subject;
-  if (!GetSequenceValue(tbs.subject_tlv, &subject_value) ||
+  if (!ParseSequenceValue(tbs.subject_tlv, &subject_value) ||
       !NormalizeName(subject_value, &normalized_subject, &errors)) {
     return false;
   }
   der::Input issuer_value;
   std::string normalized_issuer;
-  if (!GetSequenceValue(tbs.issuer_tlv, &issuer_value) ||
+  if (!ParseSequenceValue(tbs.issuer_tlv, &issuer_value) ||
       !NormalizeName(issuer_value, &normalized_issuer, &errors)) {
     return false;
   }
