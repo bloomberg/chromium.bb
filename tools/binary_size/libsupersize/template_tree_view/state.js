@@ -35,7 +35,91 @@ const dom = {
     while (parent.firstChild) parent.removeChild(parent.firstChild);
     if (newChild != null) parent.appendChild(newChild);
   },
+  /**
+   * Builds a text element in a single statement.
+   * @param {string} tagName Type of the element, such as "span".
+   * @param {string} text Text content for the element.
+   * @param {string} [className] Class to apply to the element.
+   */
+  textElement(tagName, text, className) {
+    const element = document.createElement(tagName);
+    element.textContent = text;
+    if (className) element.className = className;
+    return element;
+  },
 };
+
+/**
+ * We use a worker to keep large tree creation logic off the UI thread.
+ * This class is used to interact with the worker.
+ */
+class TreeWorker {
+  constructor(url) {
+    this._worker = new Worker(url);
+    /** ID counter used by `waitForResponse` */
+    this._requestId = 1;
+
+    /** @type {(data: TreeProgress) => void | null} callback for `loadTree` */
+    this._loadTreeCallback = null;
+
+    this._worker.addEventListener('message', event => {
+      if (event.data.id === 0) {
+        if (!this._loadTreeCallback) {
+          throw new Error('Got response to loadTree before listener was set');
+        }
+        this._loadTreeCallback(event.data);
+      }
+    });
+  }
+
+  /**
+   * Get data for a node with `idPath`. Loads information about the node and its
+   * direct children. Deeper children can be loaded by calling this function
+   * again.
+   * @param {string} idPath Path of the node to find
+   * @returns {Promise<TreeNode | null>}
+   */
+  openNode(idPath) {
+    const id = ++this._requestId;
+    return new Promise((resolve, reject) => {
+      const handleResponse = event => {
+        if (event.data.id === id) {
+          this._worker.removeEventListener('message', handleResponse);
+          if (event.data.error) {
+            reject(event.data.error);
+          } else {
+            resolve(event.data.result);
+          }
+        }
+      };
+
+      this._worker.addEventListener('message', handleResponse);
+      this._worker.postMessage({id, action: 'open', data: idPath});
+    });
+  }
+
+  /**
+   * Set callback used after `loadTree` is first called.
+   * @param {(data: TreeProgress) => void} callback Called when the worker
+   * has some data to display. Complete when `progress` is 1.
+   */
+  setOnLoadHandler(callback) {
+    this._loadTreeCallback = callback;
+  }
+
+  /**
+   * Loads the tree data given on a worker thread and replaces the tree view in
+   * the UI once complete. Uses query string as state for the options.
+   * Use `onProgress` before calling `loadTree`.
+   */
+  loadTree() {
+    this._worker.postMessage({
+      id: 0,
+      action: 'load',
+      data: location.search.slice(1),
+    });
+  }
+}
 
 /** Build utilities for working with the state. */
 function _initState() {
@@ -132,6 +216,15 @@ function _initState() {
 function _startListeners() {
   const _SHOW_OPTIONS_STORAGE_KEY = 'show-options';
 
+  /** @type {HTMLSpanElement} */
+  const sizeHeader = document.getElementById('size-header');
+  /** @type {HTMLFieldSetElement} */
+  const typesFilterContainer = document.getElementById('types-filter');
+  /** @type {HTMLInputElement} */
+  const methodCountInput = form.elements.namedItem('method_count');
+  /** @type {HTMLFieldSetElement} */
+  const byteunit = form.elements.namedItem('byteunit');
+
   /**
    * The settings dialog on the side can be toggled on and off by elements with
    * a 'toggle-options' class.
@@ -151,22 +244,79 @@ function _startListeners() {
    * Disable some fields when method_count is set
    */
   function setMethodCountModeUI() {
-    const sizeHeader = document.getElementById('size-header');
-    const typesFilterContainer = document.getElementById('types-filter');
-    if (form.method_count.checked) {
-      sizeHeader.textContent = 'Methods';
-      form.byteunit.setAttribute('disabled', '');
+    if (methodCountInput.checked) {
+      byteunit.setAttribute('disabled', '');
       typesFilterContainer.setAttribute('disabled', '');
     } else {
-      sizeHeader.textContent = sizeHeader.dataset.value;
-      form.byteunit.removeAttribute('disabled', '');
+      byteunit.removeAttribute('disabled');
       typesFilterContainer.removeAttribute('disabled');
     }
   }
   setMethodCountModeUI();
-  form.method_count.addEventListener('change', setMethodCountModeUI);
+  methodCountInput.addEventListener('change', setMethodCountModeUI);
+}
+
+function _makeIconTemplateGetter() {
+  const _icons = document.getElementById('icons');
+
+  /**
+   * @type {{[type:string]: SVGSVGElement}} Icon elements
+   * that correspond to each symbol type.
+   */
+  const symbolIcons = {
+    D: _icons.querySelector('.foldericon'),
+    C: _icons.querySelector('.componenticon'),
+    F: _icons.querySelector('.fileicon'),
+    b: _icons.querySelector('.bssicon'),
+    d: _icons.querySelector('.dataicon'),
+    r: _icons.querySelector('.readonlyicon'),
+    t: _icons.querySelector('.codeicon'),
+    v: _icons.querySelector('.vtableicon'),
+    '*': _icons.querySelector('.generatedicon'),
+    x: _icons.querySelector('.dexicon'),
+    m: _icons.querySelector('.dexmethodicon'),
+    p: _icons.querySelector('.localpakicon'),
+    P: _icons.querySelector('.nonlocalpakicon'),
+    o: _icons.querySelector('.othericon'), // used as default icon
+  };
+
+  /** @type {Map<string, {color:string,description:string}>} */
+  const iconInfoCache = new Map();
+
+  /**
+   * Returns the SVG icon template element corresponding to the given type.
+   * @param {string} type Symbol type character.
+   * @param {boolean} readonly If true, the original template is returned.
+   * If false, a copy is returned that can be modified.
+   * @returns {SVGSVGElement}
+   */
+  function getIconTemplate(type, readonly = false) {
+    const iconTemplate = symbolIcons[type] || symbolIcons.o;
+    return readonly ? iconTemplate : iconTemplate.cloneNode(true);
+  }
+
+  /**
+   * Returns style info about SVG icon template element corresponding to the
+   * given type.
+   * @param {string} type Symbol type character.
+   */
+  function getIconStyle(type) {
+    let info = iconInfoCache.get(type);
+    if (info == null) {
+      const icon = getIconTemplate(type, true);
+      info = {
+        color: icon.getAttribute('fill'),
+        description: icon.querySelector('title').textContent,
+      };
+      iconInfoCache.set(type, info);
+    }
+    return info;
+  }
+
+  return {getIconTemplate, getIconStyle};
 }
 
 /** Utilities for working with the state */
 const state = _initState();
+const {getIconTemplate, getIconStyle} = _makeIconTemplateGetter();
 _startListeners();

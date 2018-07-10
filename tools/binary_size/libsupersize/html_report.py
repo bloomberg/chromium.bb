@@ -4,6 +4,7 @@
 
 """Creates an html report that allows you to view binary size by component."""
 
+import codecs
 import json
 import logging
 import os
@@ -56,9 +57,7 @@ _SYMBOL_TYPE_DESCRIPTIONS = {
 # Capture one of: "::", "../", "./", "/", "#"
 _SPECIAL_CHAR_REGEX = re.compile(r'(::|(?:\.*\/)+|#)')
 # Insert zero-width space after capture group
-_ZERO_WIDTH_SPACE = r'\1\u200b'
-# Capture mustache variables (ie: "{{name}}")
-_MUSTACHE_VAR_REGEX = re.compile(r'{{(\w+)}}')
+_ZERO_WIDTH_SPACE = u'\\1\u200b'
 
 # The display name of the bucket where we put symbols without path.
 _NAME_SMALL_SYMBOL_BUCKET = '(Other)'
@@ -238,6 +237,7 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   """
   file_nodes = {}
   components = IndexedSet()
+  total_size = 0
 
   # Build a container for symbols smaller than min_symbol_size
   small_symbols = {}
@@ -255,9 +255,11 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   # and add all the file buckets into file_nodes
   for symbol in symbols:
     symbol_type = _GetSymbolType(symbol)
+    total_size += symbol.pss
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
+
     if abs(symbol_size) >= min_symbol_size or symbol_type == 'm':
       path = symbol.source_path or symbol.object_path
       file_node = file_nodes.get(path)
@@ -296,10 +298,11 @@ def _MakeTreeViewList(symbols, min_symbol_size):
 
       small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol_size
 
-  return {
-    'file_nodes': list(file_nodes.values()),
+  meta = {
     'components': components.value_list,
+    'total': total_size,
   }
+  return meta, file_nodes.values()
 
 
 def _MakeDirIfDoesNotExist(rel_path):
@@ -324,7 +327,7 @@ def _CopyTemplateFiles(template_src, dest_dir):
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), dest_dir)
 
 
-def _CopyTreeViewTemplateFiles(template_src, dest_dir, **kwargs):
+def _CopyTreeViewTemplateFiles(template_src, dest_dir):
   """Copy and format template files for the tree view UI.
 
   The index.html file uses basic mustache syntax to denote where strings
@@ -340,20 +343,14 @@ def _CopyTreeViewTemplateFiles(template_src, dest_dir, **kwargs):
     KeyError: thrown if a variable tag does not have a corresponding kwarg.
   """
   _MakeDirIfDoesNotExist(dest_dir)
+  shutil.copy(os.path.join(template_src, 'index.html'), dest_dir)
   shutil.copy(os.path.join(template_src, 'options.css'), dest_dir)
   shutil.copy(os.path.join(template_src, 'infocard.css'), dest_dir)
+  shutil.copy(os.path.join(template_src, 'shared.js'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
-
-  with open(os.path.join(dest_dir, 'index.html'), 'w') as out_html, \
-        open(os.path.join(template_src, 'index.html'), 'r') as in_html:
-    html_text = _MUSTACHE_VAR_REGEX.sub(lambda m: kwargs[m.group(1)],
-                                        in_html.read())
-    out_html.write(html_text)
-
-  with open(os.path.join(dest_dir, 'tree.js'), 'w') as out_js, \
-        open(os.path.join(template_src, 'ui.js'), 'r') as ui, \
-        open(os.path.join(template_src, 'tree-worker.js'), 'r') as worker:
-    out_js.write(ui.read().replace('--INSERT_WORKER_CODE--', worker.read()))
+  shutil.copy(os.path.join(template_src, 'infocard-ui.js'), dest_dir)
+  shutil.copy(os.path.join(template_src, 'tree-ui.js'), dest_dir)
+  shutil.copy(os.path.join(template_src, 'tree-worker.js'), dest_dir)
 
 
 def AddArguments(parser):
@@ -400,21 +397,25 @@ def Run(args, parser):
     symbols = symbols.WhereInSection('b').Inverted()
 
   if args.tree_view_ui:
-    size_header = 'Delta size' if args.diff_with else 'Size'
-
     template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
-    _CopyTreeViewTemplateFiles(template_src, args.report_dir,
-                               size_header=size_header)
+    _CopyTreeViewTemplateFiles(template_src, args.report_dir)
     logging.info('Creating JSON objects')
-    tree_root = _MakeTreeViewList(symbols, args.min_symbol_size)
+    meta, tree_nodes = _MakeTreeViewList(symbols, args.min_symbol_size)
+    meta['diff_mode'] = args.diff_with
 
     logging.info('Serializing JSON')
-    with open(os.path.join(args.report_dir, 'data.js'), 'w') as out_file:
-      out_file.write('var tree_data=`')
+    # Write newline-delimited JSON file
+    data_file_path = os.path.join(args.report_dir, 'data.ndjson')
+    with codecs.open(data_file_path, 'w', encoding='utf-8') as out_file:
       # Use separators without whitespace to get a smaller file.
-      json.dump(tree_root, out_file, ensure_ascii=False, check_circular=False,
+      json.dump(meta, out_file, ensure_ascii=False, check_circular=False,
                 separators=(',', ':'))
-      out_file.write('`')
+      out_file.write('\n')
+
+      for tree_node in tree_nodes:
+        json.dump(tree_node, out_file, ensure_ascii=False, check_circular=False,
+                  separators=(',', ':'))
+        out_file.write('\n')
   else:
     # Copy report boilerplate into output directory. This also proves that the
     # output directory is safe for writing, so there should be no problems
