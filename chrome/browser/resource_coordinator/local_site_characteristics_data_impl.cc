@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -156,7 +157,7 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       loaded_tabs_in_background_count_(0U),
       database_(database),
       delegate_(delegate),
-      safe_to_write_to_db_(false),
+      fully_initialized_(false),
       is_dirty_(false),
       weak_factory_(this) {
   DCHECK(database_);
@@ -182,7 +183,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
 
   // TODO(sebmarchand): Some data might be lost here if the read operation has
   // not completed, add some metrics to measure if this is really an issue.
-  if (is_dirty_ && safe_to_write_to_db_) {
+  if (is_dirty_ && fully_initialized_) {
     DCHECK(site_characteristics_.IsInitialized());
     database_->WriteSiteCharacteristicsIntoDB(origin_, site_characteristics_);
   }
@@ -272,13 +273,17 @@ void LocalSiteCharacteristicsDataImpl::
   }
 
   // This object is now in a valid state and can be written in the database.
-  safe_to_write_to_db_ = true;
+  fully_initialized_ = true;
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
     const SiteCharacteristicsFeatureProto& feature_proto,
     const base::TimeDelta min_obs_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "ResourceCoordinator.LocalDB.ReadHasCompletedBeforeQuery",
+      fully_initialized_);
 
   if (!feature_proto.IsInitialized())
     return SiteFeatureUsage::kSiteFeatureUsageUnknown;
@@ -376,7 +381,7 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     InitWithDefaultValues(true /* only_init_uninitialized_fields */);
   }
 
-  safe_to_write_to_db_ = true;
+  fully_initialized_ = true;
   DCHECK(site_characteristics_.IsInitialized());
 }
 
