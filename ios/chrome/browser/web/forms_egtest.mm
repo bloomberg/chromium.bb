@@ -27,6 +27,7 @@
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/public/test/url_test_util.h"
+#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -283,7 +284,12 @@ id<GREYMatcher> GoButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:historyItem] performAction:grey_tap()];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  [self confirmResendWarning];
+  // Back-forward navigation with WKBasedNavigationManager is served from
+  // WKWebView's app-cache, so it won't trigger repost warning.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [self confirmResendWarning];
+  }
+
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];

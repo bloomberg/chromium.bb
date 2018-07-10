@@ -4231,8 +4231,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // forward navigation. So this is the first point where a form repost would
     // be detected. Display the confirmation dialog.
     if ([action.request.HTTPMethod isEqual:@"POST"] &&
-        (action.navigationType == WKNavigationTypeFormResubmitted ||
-         action.navigationType == WKNavigationTypeBackForward)) {
+        (action.navigationType == WKNavigationTypeFormResubmitted)) {
       _webStateImpl->ShowRepostFormWarningDialog(
           base::BindOnce(^(bool shouldContinue) {
             if (shouldContinue) {
