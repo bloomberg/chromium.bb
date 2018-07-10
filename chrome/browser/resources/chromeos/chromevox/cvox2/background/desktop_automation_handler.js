@@ -63,6 +63,8 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(EventType.CHILDREN_CHANGED, this.onChildrenChanged);
   this.addListener_(
       EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
+  this.addListener_(
+      EventType.DOCUMENT_TITLE_CHANGED, this.onDocumentTitleChanged);
   this.addListener_(EventType.EXPANDED_CHANGED, this.onEventIfInRange);
   this.addListener_(EventType.FOCUS, this.onFocus);
   this.addListener_(EventType.HOVER, this.onHover);
@@ -339,6 +341,16 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Non-editable selections are handled in |Background|.
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onDocumentTitleChanged: function(evt) {
+    var t = evt.target;
+    var output = new Output();
+    output.format('$name', t);
+    output.go();
   },
 
   /**

@@ -33,6 +33,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_CLICKED;
     case ax::mojom::Event::kDocumentSelectionChanged:
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
+    case ax::mojom::Event::kDocumentTitleChanged:
+      return api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED;
     case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
@@ -134,6 +136,8 @@ api::automation::EventType ToAutomationEvent(
       return api::automation::EVENT_TYPE_CHILDRENCHANGED;
     case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED:
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+      return api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       return api::automation::EVENT_TYPE_INVALIDSTATUSCHANGED;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
@@ -158,7 +162,6 @@ api::automation::EventType ToAutomationEvent(
     // Map these into generic attribute changes (not necessarily aria related,
     // but mapping for backward compat).
     case ui::AXEventGenerator::Event::COLLAPSED:
-    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
     case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::NAME_CHANGED:
@@ -313,6 +316,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED:
     case api::automation::EVENT_TYPE_CHECKEDSTATECHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
+    case api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
     case api::automation::EVENT_TYPE_INVALIDSTATUSCHANGED:
     case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:

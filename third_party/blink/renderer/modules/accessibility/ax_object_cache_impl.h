@@ -65,6 +65,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     kAXChildrenChanged,
     kAXClicked,
     kAXDocumentSelectionChanged,
+    kAXDocumentTitleChanged,
     kAXExpandedChanged,
     kAXFocusedUIElementChanged,
     kAXHide,
@@ -129,6 +130,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // changed.
   void TextChanged(LayoutObject*) override;
   void TextChanged(AXObject*, Node* optional_node = nullptr);
+  void DocumentTitleChanged() override;
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   void UpdateCacheAfterNodeIsAttached(Node*) override;

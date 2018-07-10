@@ -1600,6 +1600,9 @@ void Document::UpdateTitle(const String& title) {
   if (!frame_ || old_title == title_)
     return;
   DispatchDidReceiveTitle();
+
+  if (AXObjectCache* cache = GetOrCreateAXObjectCache())
+    cache->DocumentTitleChanged();
 }
 
 void Document::DispatchDidReceiveTitle() {

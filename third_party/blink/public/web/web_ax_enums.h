@@ -45,6 +45,7 @@ enum WebAXEvent {
   kWebAXEventChildrenChanged,
   kWebAXEventClicked,
   kWebAXEventDocumentSelectionChanged,
+  kWebAXEventDocumentTitleChanged,
   kWebAXEventExpandedChanged,
   kWebAXEventFocus,
   kWebAXEventHide,

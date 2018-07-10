@@ -683,6 +683,10 @@ void AXObjectCacheImpl::TextChanged(AXObject* obj,
   PostNotification(obj, AXObjectCacheImpl::kAXTextChanged);
 }
 
+void AXObjectCacheImpl::DocumentTitleChanged() {
+  PostNotification(Root(), AXObjectCacheImpl::kAXDocumentTitleChanged);
+}
+
 void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
   // Calling get() will update the AX object if we had an AXNodeObject but now
   // we need an AXLayoutObject, because it was reparented to a location outside
@@ -1357,6 +1361,8 @@ STATIC_ASSERT_ENUM(kWebAXEventChildrenChanged,
 STATIC_ASSERT_ENUM(kWebAXEventClicked, AXObjectCacheImpl::kAXClicked);
 STATIC_ASSERT_ENUM(kWebAXEventDocumentSelectionChanged,
                    AXObjectCacheImpl::kAXDocumentSelectionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventDocumentTitleChanged,
+                   AXObjectCacheImpl::kAXDocumentTitleChanged);
 STATIC_ASSERT_ENUM(kWebAXEventExpandedChanged,
                    AXObjectCacheImpl::kAXExpandedChanged);
 STATIC_ASSERT_ENUM(kWebAXEventFocus,

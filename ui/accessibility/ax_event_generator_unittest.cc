@@ -642,16 +642,18 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
 TEST(AXEventGeneratorTest, NameChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
-  initial_state.nodes.resize(1);
+  initial_state.nodes.resize(2);
   initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
   AXTree tree(initial_state);
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kName,
+  update.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kName,
                                      "Hello");
   EXPECT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("NAME_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ("NAME_CHANGED on 2", DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, DescriptionChanged) {

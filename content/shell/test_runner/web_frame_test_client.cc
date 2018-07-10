@@ -251,6 +251,9 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
     case blink::kWebAXEventDocumentSelectionChanged:
       event_name = "DocumentSelectionChanged";
       break;
+    case blink::kWebAXEventDocumentTitleChanged:
+      event_name = "DocumentTitleChanged";
+      break;
     case blink::kWebAXEventFocus:
       event_name = "Focus";
       break;

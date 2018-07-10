@@ -80,6 +80,7 @@ class CORE_EXPORT AXObjectCache
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   virtual void TextChanged(LayoutObject*) = 0;
+  virtual void DocumentTitleChanged() = 0;
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   virtual void UpdateCacheAfterNodeIsAttached(Node*) = 0;
