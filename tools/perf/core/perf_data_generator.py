@@ -1436,4 +1436,5 @@ def main(args):
   else:
     load_and_update_new_recipe_fyi_json(fyi_waterfall_file)
     update_all_tests(get_waterfall_config(), waterfall_file)
+    update_benchmark_csv(benchmark_file)
   return 0
