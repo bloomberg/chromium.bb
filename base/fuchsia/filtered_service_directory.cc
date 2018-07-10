@@ -55,8 +55,8 @@ zx::channel FilteredServiceDirectory::ConnectClient() {
 void FilteredServiceDirectory::HandleRequest(const char* service_name,
                                              zx::channel channel) {
   component_context_->ConnectToService(
-      FidlInterfaceRequest::CreateFromChannelUnsafe(
-          service_name, base::ScopedZxHandle(channel.release())));
+      FidlInterfaceRequest::CreateFromChannelUnsafe(service_name,
+                                                    std::move(channel)));
 }
 
 }  // namespace fuchsia

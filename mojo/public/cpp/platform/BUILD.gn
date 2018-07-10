@@ -40,7 +40,10 @@ component("platform") {
 
   if (is_fuchsia) {
     sources += [ "named_platform_channel_fuchsia.cc" ]
-    public_deps += [ "//third_party/fuchsia-sdk:fdio" ]
+    public_deps += [
+      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk:zx",
+    ]
   }
 
   defines = [ "IS_MOJO_CPP_PLATFORM_IMPL" ]

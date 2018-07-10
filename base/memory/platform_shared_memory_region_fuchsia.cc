@@ -22,7 +22,7 @@ static constexpr int kNoWriteOrExec =
 
 // static
 PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
-    ScopedZxHandle handle,
+    zx::vmo handle,
     Mode mode,
     size_t size,
     const UnguessableToken& guid) {
@@ -56,9 +56,8 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() const {
   CHECK_NE(mode_, Mode::kWritable)
       << "Duplicating a writable shared memory region is prohibited";
 
-  ScopedZxHandle duped_handle;
-  zx_status_t status = zx_handle_duplicate(handle_.get(), ZX_RIGHT_SAME_RIGHTS,
-                                           duped_handle.receive());
+  zx::vmo duped_handle;
+  zx_status_t status = handle_.duplicate(ZX_RIGHT_SAME_RIGHTS, &duped_handle);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
     return {};
@@ -75,17 +74,12 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly() {
   CHECK_EQ(mode_, Mode::kWritable)
       << "Only writable shared memory region can be converted to read-only";
 
-  ScopedZxHandle old_handle(handle_.release());
-  ScopedZxHandle new_handle;
-  zx_status_t status =
-      zx_handle_replace(old_handle.get(), kNoWriteOrExec, new_handle.receive());
+  zx_status_t status = handle_.replace(kNoWriteOrExec, &handle_);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_handle_replace";
     return false;
   }
-  ignore_result(old_handle.release());
 
-  handle_ = std::move(new_handle);
   mode_ = Mode::kReadOnly;
   return true;
 }
@@ -133,21 +127,19 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   CHECK_NE(mode, Mode::kReadOnly) << "Creating a region in read-only mode will "
                                      "lead to this region being non-modifiable";
 
-  ScopedZxHandle vmo;
-  zx_status_t status = zx_vmo_create(rounded_size, 0, vmo.receive());
+  zx::vmo vmo;
+  zx_status_t status = zx::vmo::create(rounded_size, 0, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return {};
   }
 
   const int kNoExecFlags = ZX_DEFAULT_VMO_RIGHTS & ~ZX_RIGHT_EXECUTE;
-  ScopedZxHandle old_vmo(std::move(vmo));
-  status = zx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
+  status = vmo.replace(kNoExecFlags, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_handle_replace";
     return {};
   }
-  ignore_result(old_vmo.release());
 
   return PlatformSharedMemoryRegion(std::move(vmo), mode, size,
                                     UnguessableToken::Create());
@@ -180,7 +172,7 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
 }
 
 PlatformSharedMemoryRegion::PlatformSharedMemoryRegion(
-    ScopedZxHandle handle,
+    zx::vmo handle,
     Mode mode,
     size_t size,
     const UnguessableToken& guid)

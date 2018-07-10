@@ -11,6 +11,7 @@
 
 #include "base/format_macros.h"
 #include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"

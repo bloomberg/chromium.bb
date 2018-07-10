@@ -8,6 +8,7 @@
 #include <lib/zx/channel.h>
 #include <utility>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/no_destructor.h"
 
 namespace base {

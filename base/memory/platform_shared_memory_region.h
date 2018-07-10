@@ -17,7 +17,7 @@
 #include <mach/mach.h>
 #include "base/mac/scoped_mach_port.h"
 #elif defined(OS_FUCHSIA)
-#include "base/fuchsia/scoped_zx_handle.h"
+#include <lib/zx/vmo.h>
 #elif defined(OS_WIN)
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
@@ -31,7 +31,7 @@ namespace base {
 namespace subtle {
 
 #if defined(OS_POSIX) && (!defined(OS_MACOSX) || defined(OS_IOS)) && \
-    !defined(OS_FUCHSIA) && !defined(OS_ANDROID)
+    !defined(OS_ANDROID)
 // Helper structs to keep two descriptors on POSIX. It's needed to support
 // ConvertToReadOnly().
 struct BASE_EXPORT FDPair {
@@ -97,7 +97,7 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
   using ScopedPlatformHandle = mac::ScopedMachSendRight;
 #elif defined(OS_FUCHSIA)
   using PlatformHandle = zx_handle_t;
-  using ScopedPlatformHandle = ScopedZxHandle;
+  using ScopedPlatformHandle = zx::vmo;
 #elif defined(OS_WIN)
   using PlatformHandle = HANDLE;
   using ScopedPlatformHandle = win::ScopedHandle;

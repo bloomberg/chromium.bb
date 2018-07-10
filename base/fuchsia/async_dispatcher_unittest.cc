@@ -7,9 +7,9 @@
 #include <lib/async/default.h>
 #include <lib/async/task.h>
 #include <lib/async/wait.h>
+#include <lib/zx/socket.h>
 
 #include "base/callback.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,8 +98,7 @@ class AsyncDispatcherTest : public testing::Test {
     async_ = async_get_default();
     EXPECT_TRUE(async_);
 
-    EXPECT_EQ(zx_socket_create(ZX_SOCKET_DATAGRAM, socket1_.receive(),
-                               socket2_.receive()),
+    EXPECT_EQ(zx::socket::create(ZX_SOCKET_DATAGRAM, &socket1_, &socket2_),
               ZX_OK);
   }
 
@@ -120,8 +119,8 @@ class AsyncDispatcherTest : public testing::Test {
 
   async_t* async_ = nullptr;
 
-  base::ScopedZxHandle socket1_;
-  base::ScopedZxHandle socket2_;
+  zx::socket socket1_;
+  zx::socket socket2_;
 };
 
 TEST_F(AsyncDispatcherTest, PostTask) {
@@ -179,8 +178,8 @@ TEST_F(AsyncDispatcherTest, Wait) {
   EXPECT_EQ(wait.num_calls, 0);
 
   char byte = 0;
-  EXPECT_EQ(zx_socket_write(socket2_.get(), /*options=*/0, &byte, sizeof(byte),
-                            /*actual=*/nullptr),
+  EXPECT_EQ(socket2_.write(/*options=*/0, &byte, sizeof(byte),
+                           /*actual=*/nullptr),
             ZX_OK);
 
   zx_status_t status = dispatcher_->DispatchOrWaitUntil(
@@ -196,8 +195,8 @@ TEST_F(AsyncDispatcherTest, CancelWait) {
   EXPECT_EQ(async_begin_wait(async_, &wait), ZX_OK);
 
   char byte = 0;
-  EXPECT_EQ(zx_socket_write(socket2_.get(), /*options=*/0, &byte, sizeof(byte),
-                            /*actual=*/nullptr),
+  EXPECT_EQ(socket2_.write(/*options=*/0, &byte, sizeof(byte),
+                           /*actual=*/nullptr),
             ZX_OK);
 
   EXPECT_EQ(async_cancel_wait(async_, &wait), ZX_OK);

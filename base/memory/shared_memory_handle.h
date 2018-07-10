@@ -19,9 +19,11 @@
 #include "base/file_descriptor_posix.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
 #include <sys/types.h>
 #include "base/file_descriptor_posix.h"
+#elif defined(OS_FUCHSIA)
+#include <zircon/types.h>
 #endif
 
 namespace base {

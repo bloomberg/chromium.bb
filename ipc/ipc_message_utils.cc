@@ -893,7 +893,7 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
   HandleWin handle_win(h.Take());
   WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
-  base::ScopedZxHandle h = const_cast<param_type&>(p).PassPlatformHandle();
+  zx::handle h = const_cast<param_type&>(p).PassPlatformHandle();
   HandleFuchsia handle_fuchsia(h.release());
   WriteParam(m, handle_fuchsia);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
@@ -949,7 +949,7 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
   if (!ReadParam(m, iter, &handle_fuchsia))
     return false;
   *r = base::subtle::PlatformSharedMemoryRegion::Take(
-      base::ScopedZxHandle(handle_fuchsia.get_handle()), mode, size, guid);
+      zx::vmo(handle_fuchsia.get_handle()), mode, size, guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   MachPortMac mach_port_mac;
   if (!ReadParam(m, iter, &mach_port_mac))

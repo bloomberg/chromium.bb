@@ -199,14 +199,14 @@ Process LaunchProcess(const std::vector<std::string>& argv,
         FdioSpawnActionCloneFd(src_target.first, src_target.second));
   }
 
-  ScopedZxHandle process_handle;
+  zx::process process_handle;
   // fdio_spawn_etc() will write a null-terminated scring to |error_message| in
   // case of failure, so we avoid unnecessarily initializing it here.
   char error_message[FDIO_SPAWN_ERR_MSG_MAX_LENGTH];
   zx_status_t status = fdio_spawn_etc(
       job->get(), spawn_flags, argv_cstr[0], argv_cstr.data(),
       new_environ.get(), spawn_actions.size(), spawn_actions.data(),
-      process_handle.receive(), error_message);
+      process_handle.reset_and_get_address(), error_message);
 
   // fdio_spawn_etc() will close all handles specified in add-handle actions,
   // regardless of whether it succeeds or fails, so release our copies.
