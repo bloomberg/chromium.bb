@@ -178,8 +178,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 
-  // Callback for DiceAccountsMenu.
+  // Callbacks for DiceAccountsMenu.
   void EnableSync(const base::Optional<AccountInfo>& account);
+  void SignOutAllWebAccounts();
 
   // Methods to keep track of the number of times the Dice sign-in promo has
   // been shown.

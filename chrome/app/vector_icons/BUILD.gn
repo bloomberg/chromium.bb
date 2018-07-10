@@ -87,6 +87,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "sensors.icon",
     "settings.icon",
     "signin_button_drop_down_arrow.icon",
+    "sign_out.icon",
     "smartphone.icon",
     "speaker.icon",
     "speaker_group.icon",

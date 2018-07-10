@@ -6,11 +6,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
@@ -21,6 +24,9 @@ constexpr int kProfilesAvatarIconSize = 16;
 
 // Used to identify the "Use another account" button.
 constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
+
+// Used to identify the "Sign out" button.
+constexpr int kSignOutCmdId = std::numeric_limits<int>::max() - 1;
 
 // Anchor inset used to position the accounts menu.
 constexpr int kAnchorInset = 8;
@@ -70,6 +76,11 @@ void DiceAccountsMenu::Show(views::View* anchor_view,
 
 DiceAccountsMenu::~DiceAccountsMenu() {}
 
+void DiceAccountsMenu::SetSignOutButtonCallback(
+    base::OnceClosure signout_callback) {
+  signout_callback_ = std::move(signout_callback);
+}
+
 views::MenuItemView* DiceAccountsMenu::BuildMenu() {
   views::MenuItemView* menu = new views::MenuItemView(this);
   gfx::Image default_icon =
@@ -88,12 +99,20 @@ views::MenuItemView* DiceAccountsMenu::BuildMenu() {
         SizeAndCircleIcon(icons_[idx].IsEmpty() ? default_icon : icons_[idx]));
     item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
   }
-  // Add the "Use another account" button at the bottom.
+  // Add the "Use another account" button.
   views::MenuItemView* item = menu->AppendMenuItemWithIcon(
       kUseAnotherAccountCmdId,
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON),
       SizeAndCircleIcon(default_icon));
   item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
+  if (!signout_callback_.is_null()) {
+    // Add the "Sign out" button.
+    item = menu->AppendMenuItemWithIcon(
+        kSignOutCmdId, l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
+        gfx::CreateVectorIcon(kSignOutIcon, kProfilesAvatarIconSize,
+                              gfx::kGoogleGrey600));
+    item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
+  }
 #if !defined(OS_MACOSX)
   // Add spacing at bottom.
   menu->AppendMenuItemImpl(
@@ -107,7 +126,11 @@ views::MenuItemView* DiceAccountsMenu::BuildMenu() {
 
 void DiceAccountsMenu::ExecuteCommand(int id) {
   DCHECK((0 <= id && static_cast<size_t>(id) < accounts_.size()) ||
-         id == kUseAnotherAccountCmdId);
+         id == kUseAnotherAccountCmdId || id == kSignOutCmdId);
+  if (id == kSignOutCmdId) {
+    std::move(signout_callback_).Run();
+    return;
+  }
   base::Optional<AccountInfo> account;
   if (id != kUseAnotherAccountCmdId)
     account = accounts_[id];
