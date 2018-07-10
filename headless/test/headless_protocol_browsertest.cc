@@ -10,13 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
-#include "components/viz/common/features.h"
-#include "components/viz/common/switches.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -179,45 +174,10 @@ class HeadlessProtocolBrowserTest
     builder.SetHostResolverRules("MAP *.test 127.0.0.1");
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
-    // The following switches are recommended for BeginFrameControl required by
-    // compositor tests, see https://goo.gl/3zHXhB for details
-    static const char* const compositor_switches[] = {
-        // We control BeginFrames ourselves and need all compositing stages to
-        // run.
-        switches::kRunAllCompositorStagesBeforeDraw,
-        switches::kDisableNewContentRenderingTimeout,
-
-        // Animtion-only BeginFrames are only supported when updates from the
-        // impl-thread are disabled, see go/headless-rendering.
-        cc::switches::kDisableThreadedAnimation,
-        cc::switches::kDisableCheckerImaging,
-        switches::kDisableThreadedScrolling,
-
-        // Ensure that image animations don't resync their animation timestamps
-        // when looping back around.
-        switches::kDisableImageAnimationResync,
-    };
-
-    for (auto* compositor_switch : compositor_switches) {
-      command_line->AppendSwitch(compositor_switch);
-    }
-
-    // In surface synchronization, child surface IDs are allocated by
-    // parents and new CompositorFrames only activate once all their child
-    // surfaces exist. In --run-all-compositor-stages-before-draw mode, this
-    // means that child surface initialization and resize fully propagates
-    // within a single BeginFrame.
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableSurfaceSynchronization);
-  }
-
  protected:
   bool test_finished_ = false;
   std::string test_folder_;
   std::string script_name_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 #define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)             \
