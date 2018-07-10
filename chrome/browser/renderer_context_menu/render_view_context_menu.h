@@ -137,6 +137,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendDevtoolsForUnpackedExtensions();
   void AppendLinkItems();
   void AppendOpenWithLinkItems();
+  void AppendSmartSelectionActionItems();
   void AppendOpenInBookmarkAppLinkItems();
   void AppendImageItems();
   void AppendAudioItems();
@@ -243,6 +244,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 #if defined(OS_CHROMEOS)
   // An observer that handles "Open with <app>" items.
   std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
+  // An observer that handles smart text selection action items.
+  std::unique_ptr<RenderViewContextMenuObserver>
+      start_smart_selection_action_menu_observer_;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

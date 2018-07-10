@@ -202,6 +202,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Adds a separator to this menu
   void AppendSeparator();
 
+  // Adds a separator to this menu at the specified position.
+  void AddSeparatorAt(int index);
+
   // Appends a menu item with an icon. This is for the menu item which
   // needs an icon. Calling this function forces the Menu class to draw
   // the menu, instead of relying on Windows.

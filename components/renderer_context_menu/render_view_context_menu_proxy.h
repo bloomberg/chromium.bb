@@ -97,6 +97,9 @@ class RenderViewContextMenuProxy {
   // Update the icon of the specified context-menu item.
   virtual void UpdateMenuIcon(int command_id, const gfx::Image& image) = 0;
 
+  // Add a separator below the specified context-menu item.
+  virtual void AddSeparatorBelowMenuItem(int command_id) = 0;
+
   // Add spell check service item to the context menu.
   virtual void AddSpellCheckServiceItem(bool is_checked) = 0;
 

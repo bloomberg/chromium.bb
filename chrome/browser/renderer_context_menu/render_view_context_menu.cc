@@ -174,7 +174,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_pin_type.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
+#include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
 #endif
 
 using base::UserMetricsAction;
@@ -341,10 +343,11 @@ const struct UmaEnumCommandIdPair {
     {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
     {91, -1, IDC_CONTENT_CONTEXT_PICTUREINPICTURE},
     {92, -1, IDC_CONTENT_CONTEXT_EMOJI},
+    {93, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {93, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {94, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -742,6 +745,17 @@ void RenderViewContextMenu::InitMenu() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
+  bool supports_smart_text_selection = content_type_->SupportsGroup(
+      ContextMenuContentType::ITEM_GROUP_SMART_SELECTION);
+#if defined(OS_CHROMEOS)
+  supports_smart_text_selection &=
+      arc::IsArcPlayStoreEnabledForProfile(GetProfile());
+#else
+  supports_smart_text_selection = false;
+#endif  // defined(OS_CHROMEOS)
+  if (supports_smart_text_selection)
+    AppendSmartSelectionActionItems();
+
   bool media_image = content_type_->SupportsGroup(
       ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
   if (media_image)
@@ -781,6 +795,11 @@ void RenderViewContextMenu::InitMenu() {
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
+    // If smart text selection is supported, then a separator will be added
+    // below the suggested action item asynchronously, so there's no need to
+    // add another one here.
+    if (menu_model_.GetItemCount() && !supports_smart_text_selection)
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendCopyItem();
   }
 
@@ -1139,6 +1158,15 @@ void RenderViewContextMenu::AppendOpenWithLinkItems() {
 #endif
 }
 
+void RenderViewContextMenu::AppendSmartSelectionActionItems() {
+#if defined(OS_CHROMEOS)
+  start_smart_selection_action_menu_observer_ =
+      std::make_unique<arc::StartSmartSelectionActionMenu>(this);
+  observers_.AddObserver(start_smart_selection_action_menu_observer_.get());
+  start_smart_selection_action_menu_observer_->InitMenu(params_);
+#endif
+}
+
 void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
   const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
       browser_context_, params_.link_url);
@@ -1325,8 +1353,6 @@ void RenderViewContextMenu::AppendExitFullscreenItem() {
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
-  if (menu_model_.GetItemCount())
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
                                   IDS_CONTENT_CONTEXT_COPY);
 }
@@ -1762,6 +1788,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_EMOJI:
       return params_.is_editable;
+
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION:
+      return true;
 
     default:
       NOTREACHED();

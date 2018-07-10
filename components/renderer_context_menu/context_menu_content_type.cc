@@ -104,6 +104,9 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
     case ITEM_GROUP_LINK:
       return has_link;
 
+    case ITEM_GROUP_SMART_SELECTION:
+      return has_selection && !has_link;
+
     case ITEM_GROUP_MEDIA_IMAGE:
       return params_.media_type == WebContextMenuData::kMediaTypeImage;
 

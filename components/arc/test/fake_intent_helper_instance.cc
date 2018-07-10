@@ -123,6 +123,11 @@ void FakeIntentHelperInstance::SendBroadcast(const std::string& action,
   broadcasts_.emplace_back(action, package_name, cls, extras);
 }
 
+void FakeIntentHelperInstance::ClassifySelection(
+    const std::string& text,
+    ::arc::mojom::ScaleFactor scale_factor,
+    ClassifySelectionCallback callback) {}
+
 std::vector<FakeIntentHelperInstance::Broadcast>
 FakeIntentHelperInstance::GetBroadcastsForAction(
     const std::string& action) const {

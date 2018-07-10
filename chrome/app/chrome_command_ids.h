@@ -358,6 +358,9 @@
 #define IDC_OPEN_LINK_IN_PROFILE_FIRST 52300
 #define IDC_OPEN_LINK_IN_PROFILE_LAST  52399
 
+// Start smart text selection action
+#define IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION 52400
+
 // NOTE: The last valid command value is 57343 (0xDFFF)
 // See http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx
 

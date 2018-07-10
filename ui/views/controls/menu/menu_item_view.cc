@@ -332,6 +332,14 @@ void MenuItemView::AppendSeparator() {
                      ui::NORMAL_SEPARATOR);
 }
 
+void MenuItemView::AddSeparatorAt(int index) {
+  AddMenuItemAt(index, /*item_id=*/0, /*label=*/base::string16(),
+                /*sub_label=*/base::string16(),
+                /*minor_text=*/base::string16(), /*minor_icon=*/nullptr,
+                /*icon=*/gfx::ImageSkia(), /*type=*/SEPARATOR,
+                /*separator_style=*/ui::NORMAL_SEPARATOR);
+}
+
 MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
                                                    const base::string16& label,
                                                    const gfx::ImageSkia& icon) {
