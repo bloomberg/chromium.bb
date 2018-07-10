@@ -18,14 +18,14 @@ class MockProducer : public mojom::Producer {
   ~MockProducer() override;
 
   // Use forwarding method to work around gmock not supporting move-only types.
-  void OnNewBufferHandle(int32_t buffer_id,
-                         mojo::ScopedSharedBufferHandle buffer_handle,
-                         OnNewBufferHandleCallback callback) override;
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle,
+                   OnNewBufferCallback callback) override;
 
-  MOCK_METHOD3(DoOnNewBufferHandle,
+  MOCK_METHOD3(DoOnNewBuffer,
                void(int32_t,
-                    mojo::ScopedSharedBufferHandle*,
-                    OnNewBufferHandleCallback& callback));
+                    media::mojom::VideoBufferHandlePtr*,
+                    OnNewBufferCallback& callback));
   MOCK_METHOD1(OnBufferRetired, void(int32_t));
 
  private:

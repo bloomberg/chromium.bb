@@ -4,10 +4,12 @@
 
 module video_capture.mojom;
 
+import "media/capture/mojom/video_capture_types.mojom";
+
 // An interface for providing buffer info updates to the producer of
 // video frames for the associated |VirtualDevice| interface.
 interface Producer {
-  OnNewBufferHandle(int32 buffer_id, handle<shared_buffer> buffer_handle)
+  OnNewBuffer(int32 buffer_id, media.mojom.VideoBufferHandle buffer_handle)
       => ();
   OnBufferRetired(int32 buffer_id);
 };

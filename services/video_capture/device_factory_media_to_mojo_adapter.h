@@ -38,6 +38,7 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojom::ProducerPtr producer,
+      bool send_buffer_handles_to_producer_as_raw_file_descriptors,
       mojom::SharedMemoryVirtualDeviceRequest virtual_device) override;
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,

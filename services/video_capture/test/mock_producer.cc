@@ -11,11 +11,10 @@ MockProducer::MockProducer(mojom::ProducerRequest request)
 
 MockProducer::~MockProducer() = default;
 
-void MockProducer::OnNewBufferHandle(
-    int32_t buffer_id,
-    mojo::ScopedSharedBufferHandle buffer_handle,
-    OnNewBufferHandleCallback callback) {
-  DoOnNewBufferHandle(buffer_id, &buffer_handle, callback);
+void MockProducer::OnNewBuffer(int32_t buffer_id,
+                               media::mojom::VideoBufferHandlePtr buffer_handle,
+                               OnNewBufferCallback callback) {
+  DoOnNewBuffer(buffer_id, &buffer_handle, callback);
 }
 
 }  // namespace video_capture

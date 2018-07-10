@@ -40,7 +40,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
       int buffer_id) override;
-  uint32_t GetMemorySizeInBytes(int buffer_id) override;
+  mojom::SharedMemoryViaRawFileDescriptorPtr
+  CreateSharedMemoryViaRawFileDescriptorStruct(int buffer_id) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,

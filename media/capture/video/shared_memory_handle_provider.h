@@ -43,11 +43,12 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
                                            uint32_t memory_size_in_bytes);
 #endif  // defined(OS_LINUX)
 
+  uint32_t GetMemorySizeInBytes();
+
   // Implementation of Buffer::HandleProvider:
   mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
       bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
-  uint32_t GetMemorySizeInBytes() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override;
 

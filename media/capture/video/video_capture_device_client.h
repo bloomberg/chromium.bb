@@ -101,9 +101,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                  base::TimeDelta timestamp,
                                  int frame_feedback_id);
 
-  mojom::SharedMemoryViaRawFileDescriptorPtr
-  CreateSharedMemoryViaRawFileDescriptorStruct(int buffer_id);
-
   const VideoCaptureBufferType target_buffer_type_;
 
   // The receiver to which we post events.

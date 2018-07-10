@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/capture/capture_export.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/size.h"
@@ -50,7 +51,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
       int buffer_id) = 0;
 
-  virtual uint32_t GetMemorySizeInBytes(int buffer_id) = 0;
+  virtual mojom::SharedMemoryViaRawFileDescriptorPtr
+  CreateSharedMemoryViaRawFileDescriptorStruct(int buffer_id) = 0;
 
   // Try and obtain a read/write access to the buffer.
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(

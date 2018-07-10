@@ -21,7 +21,8 @@ class SharedMemoryVirtualDeviceMojoAdapter
  public:
   SharedMemoryVirtualDeviceMojoAdapter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref,
-      mojom::ProducerPtr producer);
+      mojom::ProducerPtr producer,
+      bool send_buffer_handles_to_producer_as_raw_file_descriptors = false);
   ~SharedMemoryVirtualDeviceMojoAdapter() override;
 
   // mojom::SharedMemoryVirtualDevice implementation.
@@ -57,6 +58,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   mojom::ReceiverPtr receiver_;
   mojom::ProducerPtr producer_;
+  const bool send_buffer_handles_to_producer_as_raw_file_descriptors_;
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
   std::vector<int> known_buffer_ids_;
   SEQUENCE_CHECKER(sequence_checker_);
