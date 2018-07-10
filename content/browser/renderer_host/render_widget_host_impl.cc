@@ -782,13 +782,10 @@ bool RenderWidgetHostImpl::GetVisualProperties(
         delegate_->IsFullscreenForCurrentTab();
     visual_properties->display_mode = delegate_->GetDisplayMode(this);
     visual_properties->zoom_level = delegate_->GetPendingPageZoomLevel();
-    visual_properties->uses_temporary_zoom =
-        delegate_->UsesTemporaryZoomLevel();
   } else {
     visual_properties->is_fullscreen_granted = false;
     visual_properties->display_mode = blink::kWebDisplayModeBrowser;
     visual_properties->zoom_level = 0;
-    visual_properties->uses_temporary_zoom = false;
   }
 
   visual_properties->auto_resize_enabled = auto_resize_enabled_;
@@ -861,9 +858,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
 
   const bool zoom_changed =
       !old_visual_properties_ ||
-      old_visual_properties_->zoom_level != visual_properties->zoom_level ||
-      old_visual_properties_->uses_temporary_zoom !=
-          visual_properties->uses_temporary_zoom;
+      old_visual_properties_->zoom_level != visual_properties->zoom_level;
 
   bool dirty =
       zoom_changed || size_changed || parent_local_surface_id_changed ||

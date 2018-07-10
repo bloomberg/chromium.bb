@@ -70,11 +70,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // which is tracked at the level of the page.
   virtual double GetPendingPageZoomLevel() const;
 
-  // Returns whether temporary zoom level is in use or not from HostZoomMap.
-  // Zoom level of a page is fixed and all requests to change it should be
-  // ignored while temporary zoom is active.
-  virtual bool UsesTemporaryZoomLevel() const;
-
   // The RenderWidgetHost lost the focus.
   virtual void RenderWidgetLostFocus(
       RenderWidgetHostImpl* render_widget_host) {}

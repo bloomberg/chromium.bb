@@ -2918,17 +2918,12 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                          static_cast<uint32_t>(offset), range));
 }
 
-void RenderFrameImpl::SetZoomLevel(bool uses_temporary_zoom,
-                                   double zoom_level) {
-  render_view_->UpdateZoomLevel(uses_temporary_zoom, zoom_level);
+void RenderFrameImpl::SetZoomLevel(double zoom_level) {
+  render_view_->UpdateZoomLevel(zoom_level);
 }
 
 double RenderFrameImpl::GetZoomLevel() const {
   return render_view_->page_zoom_level();
-}
-
-bool RenderFrameImpl::UsesTemporaryZoom() const {
-  return render_view_->uses_temporary_zoom_level();
 }
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,

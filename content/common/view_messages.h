@@ -170,7 +170,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
-  IPC_STRUCT_TRAITS_MEMBER(uses_temporary_zoom)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)

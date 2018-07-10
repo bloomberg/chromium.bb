@@ -334,9 +334,7 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
   if ((last_received_local_frame_size_ != visual_properties.local_frame_size ||
        screen_info_ != visual_properties.screen_info ||
        capture_sequence_number() != visual_properties.capture_sequence_number ||
-       last_received_zoom_level_ != visual_properties.zoom_level ||
-       last_received_uses_temporary_zoom_ !=
-           visual_properties.uses_temporary_zoom) &&
+       last_received_zoom_level_ != visual_properties.zoom_level) &&
       local_surface_id_ == surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
@@ -345,7 +343,6 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
   }
 
   last_received_zoom_level_ = visual_properties.zoom_level;
-  last_received_uses_temporary_zoom_ = visual_properties.uses_temporary_zoom;
   last_received_local_frame_size_ = visual_properties.local_frame_size;
   SynchronizeVisualProperties(surface_id, visual_properties);
 }

@@ -232,13 +232,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                const gfx::Range& range) = 0;
 
   // Notifies the frame's RenderView that the zoom has changed.
-  virtual void SetZoomLevel(bool uses_temporary_zoom, double zoom_level) = 0;
+  virtual void SetZoomLevel(double zoom_level) = 0;
 
   // Returns the page's zoom level from the frame's RenderView.
   virtual double GetZoomLevel() const = 0;
-
-  // Return true if the frame's RenderView is using a temporary zoom level.
-  virtual bool UsesTemporaryZoom() const = 0;
 
   // Adds |message| to the DevTools console.
   virtual void AddMessageToConsole(ConsoleMessageLevel level,

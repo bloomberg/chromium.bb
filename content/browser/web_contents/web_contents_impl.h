@@ -692,7 +692,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() const override;
-  bool UsesTemporaryZoomLevel() const override;
 #endif  // !defined(OS_ANDROID)
 
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
