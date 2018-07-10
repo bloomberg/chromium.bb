@@ -75,6 +75,7 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
 
 void PictureInPictureWindowControllerImpl::ClickCustomControl() {
   DCHECK(window_);
+  DCHECK(media_player_id_.has_value());
 
   media_player_id_->first->Send(
       new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
@@ -145,11 +146,19 @@ WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
-    bool is_playing) {
+    bool is_playing,
+    bool reached_end_of_stream) {
   if (!window_)
     return;
 
-  window_->UpdatePlayPauseControlsIcon(is_playing);
+  if (reached_end_of_stream) {
+    media_player_id_.reset();
+    window_->SetPlaybackState(OverlayWindow::PlaybackState::kNoVideo);
+    return;
+  }
+
+  window_->SetPlaybackState(is_playing ? OverlayWindow::PlaybackState::kPlaying
+                                       : OverlayWindow::PlaybackState::kPaused);
 }
 
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
@@ -161,8 +170,10 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
     return false;
   }
 
-  media_player_id_->first->Send(new MediaPlayerDelegateMsg_Play(
-      media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  if (media_player_id_.has_value()) {
+    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Play(
+        media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  }
   return true;
 }
 
@@ -174,9 +185,11 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
         media_player_id_->first->GetRoutingID(), media_player_id_->second));
   }
 
-  media_player_id_->first->Send(
-      new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-          media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  if (media_player_id_.has_value()) {
+    media_player_id_->first->Send(
+        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+            media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  }
 }
 
 }  // namespace content

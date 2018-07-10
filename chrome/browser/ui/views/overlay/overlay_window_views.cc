@@ -131,6 +131,7 @@ OverlayWindowViews::OverlayWindowViews(
     : controller_(controller),
       close_button_size_(gfx::Size()),
       play_pause_button_size_(gfx::Size()),
+      window_background_view_(new views::View()),
       video_view_(new views::View()),
       controls_background_view_(new views::View()),
       close_controls_view_(new views::ImageButton(nullptr)),
@@ -206,6 +207,11 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 }
 
 void OverlayWindowViews::SetUpViews() {
+  // views::View that is displayed when video is hidden. ----------------------
+  window_background_view_->SetSize(GetBounds().size());
+  window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
+
   // views::View that slightly darkens the video so the media controls appear
   // more prominently. This is especially important in cases with a very light
   // background. --------------------------------------------------------------
@@ -394,8 +400,27 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   SetBounds(CalculateAndUpdateWindowBounds());
 }
 
-void OverlayWindowViews::UpdatePlayPauseControlsIcon(bool is_playing) {
-  play_pause_controls_view_->SetToggled(is_playing);
+void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
+  switch (playback_state) {
+    case kPlaying:
+      play_pause_controls_view_->SetToggled(true);
+      play_pause_controls_view_->SetVisible(true);
+      video_view_->SetVisible(true);
+      break;
+    case kPaused:
+      play_pause_controls_view_->SetToggled(false);
+      play_pause_controls_view_->SetVisible(true);
+      video_view_->SetVisible(true);
+      break;
+    case kNoVideo:
+      play_pause_controls_view_->SetVisible(false);
+      video_view_->SetVisible(false);
+      break;
+  }
+}
+
+ui::Layer* OverlayWindowViews::GetWindowBackgroundLayer() {
+  return window_background_view_->layer();
 }
 
 ui::Layer* OverlayWindowViews::GetVideoLayer() {

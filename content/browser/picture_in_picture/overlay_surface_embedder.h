@@ -37,6 +37,7 @@ class OverlaySurfaceEmbedder {
 
   // Owned by the OverlayWindow implementation.
   // These are set in AddControlsLayer(), which is called in the constructor.
+  ui::Layer* window_background_layer_ = nullptr;
   ui::Layer* video_layer_ = nullptr;
   ui::Layer* controls_background_layer_ = nullptr;
   ui::Layer* close_controls_layer_ = nullptr;
