@@ -510,8 +510,6 @@ crbug.com/591099 fast/css-grid-layout/grid-self-baseline-vertical-rl-06.html [ F
 crbug.com/591099 fast/css-grid-layout/grid-self-baseline-vertical-rl-07.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/maximize-tracks-definite-indefinite-width.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/percent-padding-margin-resolution-grid-item.html [ Failure ]
-crbug.com/591099 fast/css-intrinsic-dimensions/fillavailable-minmax-content-inlinesize-contribution-nonreplaced-blocks.html [ Failure ]
-crbug.com/591099 fast/css-intrinsic-dimensions/fitcontent-minmax-content-inlinesize-contribution-nonreplaced-blocks.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/fixed-height-stf-img-block-child-percent-height.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/fixed-height-stf-img-inline-child-percent-height.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/height-positioned.html [ Failure ]

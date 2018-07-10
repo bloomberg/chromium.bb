@@ -282,7 +282,9 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   Length inline_size = writing_mode == WritingMode::kHorizontalTb
                            ? style.Width()
                            : style.Height();
-  if (inline_size.IsAuto() || inline_size.IsPercentOrCalc()) {
+  if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
+      inline_size.GetType() == kFillAvailable ||
+      inline_size.GetType() == kFitContent) {
     CHECK(min_and_max.has_value());
     computed_sizes = *min_and_max;
   } else {
