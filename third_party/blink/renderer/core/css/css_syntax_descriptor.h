@@ -26,6 +26,7 @@ enum class CSSSyntaxType {
   kAngle,
   kTime,
   kResolution,
+  kTransformFunction,
   kTransformList,
   kCustomIdent,
 };

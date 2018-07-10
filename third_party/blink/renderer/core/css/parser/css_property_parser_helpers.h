@@ -200,6 +200,7 @@ CSSValueList* ConsumeCommaSeparatedList(Func callback,
   return list;
 }
 
+CSSValue* ConsumeTransformValue(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeTransformList(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange&,
                                     const CSSParserContext&);

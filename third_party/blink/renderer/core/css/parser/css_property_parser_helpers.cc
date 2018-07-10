@@ -1637,6 +1637,13 @@ void AddProperty(CSSPropertyID resolved_property,
       shorthand_index, implicit == IsImplicitProperty::kImplicit));
 }
 
+CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  bool use_legacy_parsing = false;
+  return CSSParsingUtils::ConsumeTransformValue(range, context,
+                                                use_legacy_parsing);
+}
+
 CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
   return CSSParsingUtils::ConsumeTransformList(range, context,

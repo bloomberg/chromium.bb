@@ -54,6 +54,8 @@ CSSSyntaxType ParseSyntaxType(String type) {
     return CSSSyntaxType::kTime;
   if (type == "resolution")
     return CSSSyntaxType::kResolution;
+  if (type == "transform-function")
+    return CSSSyntaxType::kTransformFunction;
   if (type == "transform-list")
     return CSSSyntaxType::kTransformList;
   if (type == "custom-ident")
@@ -179,6 +181,8 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
       return ConsumeTime(range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kResolution:
       return ConsumeResolution(range);
+    case CSSSyntaxType::kTransformFunction:
+      return ConsumeTransformValue(range, *context);
     case CSSSyntaxType::kTransformList:
       return ConsumeTransformList(range, *context);
     case CSSSyntaxType::kCustomIdent:
