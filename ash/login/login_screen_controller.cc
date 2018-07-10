@@ -83,8 +83,9 @@ void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              OnAuthenticateCallback callback) {
   // It is an error to call this function while an authentication is in
   // progress.
-  LOG_IF(ERROR, !IsAuthenticating())
-      << "Authentication stage is " << static_cast<int>(authentication_stage_);
+  LOG_IF(ERROR, IsAuthenticating())
+      << "Duplicate authentication attempt; current authentication stage is "
+      << static_cast<int>(authentication_stage_);
   CHECK(!IsAuthenticating());
 
   if (!login_screen_client_) {

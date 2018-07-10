@@ -14,6 +14,9 @@ namespace ash {
 
 enum class AuthTarget { kPrimary, kSecondary };
 
+// Converts |target| to a string for usage in logging.
+const char* AuthTargetToString(AuthTarget target);
+
 // Helpers for constructing TestApi instances.
 LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view);
 LoginAuthUserView::TestApi MakeLoginAuthTestApi(LockContentsView* view,

@@ -7,6 +7,21 @@
 #include "base/strings/string_split.h"
 
 namespace ash {
+namespace {
+constexpr char kPrimaryName[] = "primary";
+constexpr char kSecondaryName[] = "secondary";
+}  // namespace
+
+const char* AuthTargetToString(AuthTarget target) {
+  switch (target) {
+    case AuthTarget::kPrimary:
+      return kPrimaryName;
+    case AuthTarget::kSecondary:
+      return kSecondaryName;
+  }
+  NOTREACHED();
+  return "";
+}
 
 LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view) {
   return LockContentsView::TestApi(view);
