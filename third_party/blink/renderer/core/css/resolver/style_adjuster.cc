@@ -694,6 +694,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
         style.SetForceLegacyLayout(true);
       }
     }
+    if (!style.ForceLegacyLayout()) {
+      // The custom container is laid out by the legacy engine. Its children may
+      // not establish new formatting contexts, so we need to protect against
+      // re-entering LayoutNG there.
+      if (style.Display() == EDisplay::kLayoutCustom ||
+          style.Display() == EDisplay::kInlineLayoutCustom)
+        style.SetForceLegacyLayout(true);
+    }
   }
 
   // If intrinsically sized images or videos are disallowed by feature policy,
