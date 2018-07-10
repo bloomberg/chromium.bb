@@ -58,7 +58,8 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM)
 
 
-@benchmark.Info(emails=['charliea@chromium.org', 'nednguyen@chromium.org'])
+@benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
+                        'tdresser@chromium.org'])
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
   PLATFORM = 'desktop'
@@ -69,8 +70,8 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
     return 'system_health.common_desktop'
 
 
-@benchmark.Info(emails=['charliea@chromium.org', 'nednguyen@chromium.org',
-                         'perezju@chromium.org'])
+@benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
+                        'tdresser@chromium.org', 'perezju@chromium.org'])
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
   PLATFORM = 'mobile'
