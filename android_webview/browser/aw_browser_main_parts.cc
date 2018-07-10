@@ -15,7 +15,7 @@
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"

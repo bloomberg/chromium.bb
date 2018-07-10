@@ -9,7 +9,7 @@
 
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
-#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
