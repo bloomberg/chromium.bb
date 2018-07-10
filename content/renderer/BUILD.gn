@@ -727,7 +727,6 @@ target(link_target_type, "renderer") {
     "//third_party/opus",
     "//third_party/webrtc/api:libjingle_logging_api",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
-    "//third_party/webrtc/api:optional",
     "//third_party/webrtc/api:rtc_stats_api",
     "//third_party/webrtc/api/audio:aec3_factory",
     "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
