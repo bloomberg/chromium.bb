@@ -51,11 +51,6 @@
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"  // nogncheck
-#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
-#endif
-
 namespace headless {
 
 namespace {
@@ -170,10 +165,6 @@ void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   (*services)[printing::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "PDF Compositor Service");
-#endif
-#if defined(OS_LINUX)
-  (*services)[font_service::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Font Service");
 #endif
 }
 

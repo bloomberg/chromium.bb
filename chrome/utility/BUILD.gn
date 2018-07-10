@@ -153,8 +153,6 @@ static_library("utility") {
       "//ash/components/tap_visualizer:lib",
       "//ash/components/tap_visualizer/public/mojom",
       "//chrome/services/file_util:lib",
-      "//components/services/font:lib",
-      "//components/services/font/public/interfaces",
       "//services/ui:lib",
       "//services/ui/public/interfaces",
     ]
@@ -198,10 +196,6 @@ static_library("utility") {
 
   if (is_android || enable_extensions) {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
-  }
-
-  if (is_linux && !is_android) {
-    deps += [ "//components/services/font:lib" ]
   }
 }
 

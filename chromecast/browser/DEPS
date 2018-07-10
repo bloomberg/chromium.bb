@@ -16,7 +16,6 @@ include_rules = [
   "+components/prefs",
   "+components/pref_registry",
   "+components/proxy_config",
-  "+components/services/font",
   "+components/storage_monitor",
   "+components/user_prefs",
   "+components/version_info",

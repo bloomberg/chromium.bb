@@ -21,8 +21,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "components/services/font/font_service_app.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
 namespace {
@@ -86,11 +84,6 @@ std::unique_ptr<service_manager::Service> CreateTapVisualizerApp() {
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
-std::unique_ptr<service_manager::Service> CreateFontService() {
-  RecordMashServiceLaunch(MashService::kFont);
-  return std::make_unique<font_service::FontServiceApp>();
-}
-
 }  // namespace
 
 MashServiceFactory::MashServiceFactory() = default;
@@ -107,8 +100,6 @@ void MashServiceFactory::RegisterOutOfProcessServices(
                       &CreateShortcutViewerApp);
   RegisterMashService(services, tap_visualizer::mojom::kServiceName,
                       &CreateTapVisualizerApp);
-  RegisterMashService(services, font_service::mojom::kServiceName,
-                      &CreateFontService);
 
   keyboard_shortcut_viewer::ShortcutViewerApplication::RegisterForTraceEvents();
 }
