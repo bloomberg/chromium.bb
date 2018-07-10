@@ -25,6 +25,14 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     "AllowContentInitiatedDataUrlNavigations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Accepts Origin-Signed HTTP Exchanges to be signed with certificates
+// that do not have CanSignHttpExchangesDraft extension.
+// TODO(https://crbug.com/862003): Remove when certificates with
+// CanSignHttpExchangesDraft extension are available from trusted CAs.
+const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
+    "AllowSignedHTTPExchangeCertsWithoutExtension",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables asm.js to WebAssembly V8 backend.
 // http://asmjs.org/spec/latest/
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",

@@ -18,16 +18,19 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/filter/source_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_config.h"
@@ -331,6 +334,19 @@ void SignedExchangeHandler::OnCertReceived(
     OnCertVerifyComplete(result);
 }
 
+bool SignedExchangeHandler::CheckCertExtension(
+    const net::X509Certificate* verified_cert) {
+  if (base::FeatureList::IsEnabled(
+          features::kAllowSignedHTTPExchangeCertsWithoutExtension))
+    return true;
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 6.2. Validate that main-certificate has the CanSignHttpExchanges
+  // extension (Section 4.2). [spec text]
+  return net::asn1::HasCanSignHttpExchangesDraftExtension(
+      net::x509_util::CryptoBufferAsStringPiece(verified_cert->cert_buffer()));
+}
+
 bool SignedExchangeHandler::CheckOCSPStatus(
     const net::OCSPVerifyResult& ocsp_result) {
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
@@ -444,6 +460,18 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
         devtools_proxy_.get(),
         base::StringPrintf("Certificate verification error: %s",
                            net::ErrorToShortString(result).c_str()),
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+    return;
+  }
+
+  if (!CheckCertExtension(cert_verify_result_.verified_cert.get())) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
+        "this error for testing, enable "
+        "chrome://flags/#allow-sxg-certs-without-extension.",
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);

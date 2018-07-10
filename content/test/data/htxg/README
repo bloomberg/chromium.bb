@@ -23,12 +23,21 @@ openssl x509 -req -days 360 -in prime256v1-sha256.csr \
   -out prime256v1-sha256.public.pem -set_serial 1 \
   -extfile x509.ext
 
+openssl x509 -req -days 360 -in prime256v1-sha256.csr \
+  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
+  -out prime256v1-sha256-noext.public.pem -set_serial 1
+
 # Make dummy OCSP and SCT data for cbor certificate chains.
 echo -n OCSP >/tmp/ocsp; echo -n SCT >/tmp/sct
 
 # Generate the certificate chain of "*.example.org".
 gen-certurl -pem prime256v1-sha256.public.pem \
   -ocsp /tmp/ocsp -sct /tmp/sct > test.example.org.public.pem.cbor
+
+# Generate the certificate chain of "*.example.org", without
+# CanSignHttpExchangesDraft extension.
+gen-certurl -pem prime256v1-sha256-noext.public.pem \
+  -ocsp /tmp/ocsp -sct /tmp/sct > test.example.org-noext.public.pem.cbor
 
 # Generate the signed exchange file.
 gen-signedexchange \
@@ -41,6 +50,19 @@ gen-signedexchange \
   -privateKey prime256v1.key \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_test.htxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file with noext certificate
+gen-signedexchange \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256-noext.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date 2018-03-12T05:53:20Z \
+  -o test.example.org_noext_test.htxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with invalid URL.
