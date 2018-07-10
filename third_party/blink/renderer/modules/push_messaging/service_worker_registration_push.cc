@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/service_worker_registration_push.h"
 
 #include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 
 namespace blink {
 

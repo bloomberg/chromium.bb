@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_content_settings_proxy.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_content_settings_proxy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {

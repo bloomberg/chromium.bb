@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/background_sync/service_worker_registration_sync.h"
 
 #include "third_party/blink/renderer/modules/background_sync/sync_manager.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 
 namespace blink {
 
