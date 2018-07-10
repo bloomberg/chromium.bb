@@ -94,18 +94,6 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
 class CORE_EXPORT ThreadableLoader
     : public GarbageCollectedFinalized<ThreadableLoader> {
  public:
-  enum class ModuleId {
-    kFetchManager,
-    kWorkerClassicScriptLoader,
-    kXmlHttpRequest,
-    kBackgroundFetchIconLoader,
-    kEventSource,
-    kNotificationImageLoader,
-    kWebAssociatedUrlLoader,
-    kWorkerThreadableLoader,
-    kSync,
-    kTest,
-  };
   static void LoadResourceSynchronously(ExecutionContext&,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
@@ -143,8 +131,7 @@ class CORE_EXPORT ThreadableLoader
   // also for cancellation happened inside the loader.)
   //
   // ThreadableLoaderClient methods may call cancel().
-  static ThreadableLoader* Create(ModuleId,
-                                  ExecutionContext&,
+  static ThreadableLoader* Create(ExecutionContext&,
                                   ThreadableLoaderClient*,
                                   const ThreadableLoaderOptions&,
                                   const ResourceLoaderOptions&);

@@ -1124,9 +1124,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     // TODO(yhirano): Turn this CHECK into DCHECK: see https://crbug.com/570946.
     CHECK(!loader_);
     DCHECK(send_flag_);
-    loader_ = ThreadableLoader::Create(
-        ThreadableLoader::ModuleId::kXmlHttpRequest, execution_context, this,
-        options, resource_loader_options);
+    loader_ = ThreadableLoader::Create(execution_context, this, options,
+                                       resource_loader_options);
     loader_->Start(request);
 
     return;

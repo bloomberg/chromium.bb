@@ -119,8 +119,7 @@ void WorkerClassicScriptLoader::LoadAsynchronously(
   scoped_refptr<WorkerClassicScriptLoader> protect(this);
   need_to_cancel_ = true;
   threadable_loader_ = ThreadableLoader::Create(
-      ThreadableLoader::ModuleId::kWorkerClassicScriptLoader, execution_context,
-      this, options, resource_loader_options);
+      execution_context, this, options, resource_loader_options);
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();
