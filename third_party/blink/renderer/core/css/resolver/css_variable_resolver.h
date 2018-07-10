@@ -48,6 +48,14 @@ class CSSVariableResolver {
   void ComputeRegisteredVariables();
 
  private:
+  struct Result {
+    STACK_ALLOCATED();
+
+    Vector<CSSParserToken> tokens;
+    Vector<String> backing_strings;
+    bool is_animation_tainted = false;
+  };
+
   const CSSValue* ResolvePendingSubstitutions(
       CSSPropertyID,
       const CSSPendingSubstitutionValue&,
@@ -62,23 +70,17 @@ class CSSVariableResolver {
   // Resolves a range which may contain var() or env() references.
   bool ResolveTokenRange(CSSParserTokenRange,
                          bool disallow_animation_tainted,
-                         Vector<CSSParserToken>& result,
-                         Vector<String>& result_backing_strings,
-                         bool& result_is_animation_tainted);
+                         Result&);
   // Resolves the fallback (if present) of a var() or env() reference, starting
   // from the comma.
   bool ResolveFallback(CSSParserTokenRange,
                        bool disallow_animation_tainted,
-                       Vector<CSSParserToken>& result,
-                       Vector<String>& result_backing_strings,
-                       bool& result_is_animation_tainted);
+                       Result&);
   // Resolves the contents of a var() or env() reference.
   bool ResolveVariableReference(CSSParserTokenRange,
                                 bool disallow_animation_tainted,
-                                Vector<CSSParserToken>& result,
-                                Vector<String>& result_backing_strings,
-                                bool& result_is_animation_tainted,
-                                bool is_env_variable);
+                                bool is_env_variable,
+                                Result&);
 
   // These return null if the custom property is invalid.
 
