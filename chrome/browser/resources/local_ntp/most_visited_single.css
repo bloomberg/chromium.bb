@@ -458,8 +458,9 @@ body.dark-theme .md-tile:active .md-menu::after {
 }
 
 .md-favicon img {
-  height: 100%;
-  width: 100%;
+  /* Icons returned by the NTP Icon Source are always of this size. */
+  height: var(--md-icon-size);
+  width: var(--md-icon-size);
 }
 
 .md-fallback-background {
