@@ -57,13 +57,13 @@ CSSParserToken ResolveUrl(const CSSParserToken& token,
 }  // namespace
 
 bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
-                                          bool disallow_animation_tainted,
+                                          const Options& options,
                                           Result& result) {
   if (range.AtEnd())
     return false;
   DCHECK_EQ(range.Peek().GetType(), kCommaToken);
   range.Consume();
-  return ResolveTokenRange(range, disallow_animation_tainted, result);
+  return ResolveTokenRange(range, options, result);
 }
 
 CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
@@ -127,14 +127,12 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     bool& cycle_detected) {
   DCHECK(variable_data.NeedsVariableResolution() || resolve_urls);
 
-  bool disallow_animation_tainted = false;
   Result result;
   result.is_animation_tainted = variable_data.IsAnimationTainted();
   result.backing_strings.AppendVector(variable_data.BackingStrings());
   DCHECK(!variables_seen_.Contains(name));
   variables_seen_.insert(name);
-  bool success = ResolveTokenRange(variable_data.Tokens(),
-                                   disallow_animation_tainted, result);
+  bool success = ResolveTokenRange(variable_data.Tokens(), Options(), result);
   variables_seen_.erase(name);
 
   if (!success || !cycle_start_points_.IsEmpty()) {
@@ -183,11 +181,10 @@ bool CSSVariableResolver::ShouldResolveRelativeUrls(
   return registration ? registration->Syntax().HasUrlSyntax() : false;
 }
 
-bool CSSVariableResolver::ResolveVariableReference(
-    CSSParserTokenRange range,
-    bool disallow_animation_tainted,
-    bool is_env_variable,
-    Result& result) {
+bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
+                                                   const Options& options,
+                                                   bool is_env_variable,
+                                                   Result& result) {
   range.ConsumeWhitespace();
   DCHECK_EQ(range.Peek().GetType(), kIdentToken);
   AtomicString variable_name =
@@ -211,11 +208,11 @@ bool CSSVariableResolver::ResolveVariableReference(
   CSSVariableData* variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name);
-  if (!variable_data ||
-      (disallow_animation_tainted && variable_data->IsAnimationTainted())) {
+  if (!variable_data || (options.disallow_animation_tainted &&
+                         variable_data->IsAnimationTainted())) {
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
-    return ResolveFallback(range, disallow_animation_tainted, result);
+    return ResolveFallback(range, options, result);
   }
 
   result.tokens.AppendVector(variable_data->Tokens());
@@ -224,7 +221,7 @@ bool CSSVariableResolver::ResolveVariableReference(
   result.is_animation_tainted |= variable_data->IsAnimationTainted();
 
   Result trash;
-  ResolveFallback(range, disallow_animation_tainted, trash);
+  ResolveFallback(range, options, trash);
   return true;
 }
 
@@ -242,16 +239,16 @@ CSSVariableData* CSSVariableResolver::ValueForEnvironmentVariable(
 }
 
 bool CSSVariableResolver::ResolveTokenRange(CSSParserTokenRange range,
-                                            bool disallow_animation_tainted,
+                                            const Options& options,
                                             Result& result) {
   bool success = true;
   while (!range.AtEnd()) {
     const CSSParserToken& token = range.Peek();
     if (token.FunctionId() == CSSValueVar ||
         token.FunctionId() == CSSValueEnv) {
-      success &= ResolveVariableReference(
-          range.ConsumeBlock(), disallow_animation_tainted,
-          token.FunctionId() == CSSValueEnv, result);
+      success &=
+          ResolveVariableReference(range.ConsumeBlock(), options,
+                                   token.FunctionId() == CSSValueEnv, result);
     } else {
       result.tokens.push_back(range.Consume());
     }
@@ -265,14 +262,17 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     bool disallow_animation_tainted) {
   DCHECK(!CSSProperty::Get(id).IsShorthand());
 
+  Options options;
+  options.disallow_animation_tainted = disallow_animation_tainted;
+
   if (value.IsPendingSubstitutionValue()) {
     return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
-                                       disallow_animation_tainted);
+                                       options);
   }
 
   if (value.IsVariableReferenceValue()) {
     return ResolveVariableReferences(id, ToCSSVariableReferenceValue(value),
-                                     disallow_animation_tainted);
+                                     options);
   }
 
   NOTREACHED();
@@ -282,11 +282,11 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     CSSPropertyID id,
     const CSSVariableReferenceValue& value,
-    bool disallow_animation_tainted) {
+    const Options& options) {
   Result result;
 
-  if (!ResolveTokenRange(value.VariableDataValue()->Tokens(),
-                         disallow_animation_tainted, result)) {
+  if (!ResolveTokenRange(value.VariableDataValue()->Tokens(), options,
+                         result)) {
     return cssvalue::CSSUnsetValue::Create();
   }
   const CSSValue* resolved_value = CSSPropertyParser::ParseSingleValue(
@@ -299,7 +299,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSPropertyID id,
     const CSSPendingSubstitutionValue& pending_value,
-    bool disallow_animation_tainted) {
+    const Options& options) {
   // Longhands from shorthand references follow this path.
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& property_cache =
       state_.ParsedPropertiesForPendingSubstitutionCache(pending_value);
@@ -313,7 +313,7 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
 
     Result result;
     if (ResolveTokenRange(shorthand_value->VariableDataValue()->Tokens(),
-                          disallow_animation_tainted, result)) {
+                          options, result)) {
       HeapVector<CSSPropertyValue, 256> parsed_properties;
 
       if (CSSPropertyParser::ParseValue(
