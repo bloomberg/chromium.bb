@@ -171,9 +171,8 @@ typedef struct AV1Decoder {
   int acct_enabled;
   Accounting accounting;
 #endif
-  size_t uncomp_hdr_size;  // Size of the uncompressed header
-  int tg_size;             // Number of tiles in the current tilegroup
-  int tg_start;            // First tile in the current tilegroup
+  int tg_size;   // Number of tiles in the current tilegroup
+  int tg_start;  // First tile in the current tilegroup
   int tg_size_bit_offset;
   int sequence_header_ready;
 #if CONFIG_INSPECTION

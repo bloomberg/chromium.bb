@@ -329,14 +329,15 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
 
+// On success, returns the frame header size. On failure, calls
+// aom_internal_error and does not return.
 static uint32_t read_frame_header_obu(AV1Decoder *pbi,
                                       struct aom_read_bit_buffer *rb,
                                       const uint8_t *data,
                                       const uint8_t **p_data_end,
                                       int trailing_bits_present) {
-  av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end,
-                                     trailing_bits_present);
-  return (uint32_t)(pbi->uncomp_hdr_size);
+  return av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end,
+                                            trailing_bits_present);
 }
 
 static int32_t read_tile_group_header(AV1Decoder *pbi,

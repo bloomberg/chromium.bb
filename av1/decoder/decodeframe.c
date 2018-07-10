@@ -4152,6 +4152,8 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   *cm->fc = cm->frame_contexts[existing_frame_idx];
 }
 
+// On success, returns 0. On failure, calls aom_internal_error and does not
+// return.
 static int read_uncompressed_header(AV1Decoder *pbi,
                                     struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4794,11 +4796,11 @@ void superres_post_decode(AV1Decoder *pbi) {
   unlock_buffer_pool(pool);
 }
 
-int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
-                                       struct aom_read_bit_buffer *rb,
-                                       const uint8_t *data,
-                                       const uint8_t **p_data_end,
-                                       int trailing_bits_present) {
+uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
+                                            struct aom_read_bit_buffer *rb,
+                                            const uint8_t *data,
+                                            const uint8_t **p_data_end,
+                                            int trailing_bits_present) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &pbi->mb;
@@ -4828,7 +4830,8 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     pbi->dec_tile_col = -1;
   }
 
-  pbi->uncomp_hdr_size = aom_rb_bytes_read(rb);
+  const uint32_t uncomp_hdr_size =
+      (uint32_t)aom_rb_bytes_read(rb);  // Size of the uncompressed header
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
   if (av1_allow_intrabc(cm)) {
@@ -4839,7 +4842,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 
   if (cm->show_existing_frame) {
     // showing a frame directly
-    *p_data_end = data + aom_rb_bytes_read(rb);
+    *p_data_end = data + uncomp_hdr_size;
     if (cm->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
@@ -4847,7 +4850,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Uninitialized entropy context.");
     }
-    return 0;
+    return uncomp_hdr_size;
   }
 
   cm->setup_mi(cm);
@@ -4868,7 +4871,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                        "Uninitialized entropy context.");
 
   xd->corrupted = 0;
-  return 0;
+  return uncomp_hdr_size;
 }
 
 // Once-per-frame initialization
