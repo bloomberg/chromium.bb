@@ -247,8 +247,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // A timer that puts a hard limit on the maximum time to wait for a policy
   // refresh.
-  base::Timer policy_refresh_timeout_{false /* retain_user_task */,
-                                      false /* is_repeating */};
+  base::OneShotTimer policy_refresh_timeout_;
 
   // The pref service to pass to the refresh scheduler on initialization.
   PrefService* local_state_;

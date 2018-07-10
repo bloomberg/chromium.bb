@@ -249,8 +249,7 @@ class AutoEnrollmentController::SystemClockSyncWaiter
   // or a timeout has been reached.
   std::vector<SystemClockSyncCallback> system_clock_sync_callbacks_;
 
-  base::Timer timeout_timer_{false /* retain_user_task */,
-                             false /* is_repeating */};
+  base::OneShotTimer timeout_timer_;
 
   base::WeakPtrFactory<SystemClockSyncWaiter> weak_ptr_factory_{this};
 
