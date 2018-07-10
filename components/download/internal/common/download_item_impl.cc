@@ -1443,17 +1443,14 @@ void DownloadItemImpl::Start(
     // DownloadCreateInfo with an intact DownloadSaveInfo.
     DCHECK(new_create_info.save_info);
 
-    int64_t offset = new_create_info.save_info->offset;
     std::unique_ptr<crypto::SecureHash> hash_state =
         new_create_info.save_info->hash_state
             ? new_create_info.save_info->hash_state->Clone()
             : nullptr;
 
-    destination_info_.received_bytes = offset;
     hash_state_ = std::move(hash_state);
     destination_info_.hash.clear();
     deferred_interrupt_reason_ = new_create_info.result;
-    received_slices_.clear();
     TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
     DetermineDownloadTarget();
     return;
