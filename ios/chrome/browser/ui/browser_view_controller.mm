@@ -222,7 +222,8 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
-#import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
+#import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
+#import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
@@ -1083,6 +1084,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     ActiveStateManager* active_state_manager =
         ActiveStateManager::FromBrowserState(_browserState);
     active_state_manager->SetActive(active);
+
+    if (IsUIRefreshPhase1Enabled()) {
+      TextToSpeechPlaybackControllerFactory::GetInstance()
+          ->GetForBrowserState(_browserState)
+          ->SetEnabled(_active);
+    }
   }
 
   [_model setWebUsageEnabled:active];
@@ -1391,6 +1398,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
   _fullscreenUIUpdater = nullptr;
   fullscreenController->SetWebStateList(nullptr);
+
+  TextToSpeechPlaybackControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(nullptr);
 
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
@@ -2061,6 +2072,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
   // Set the FullscreenController's WebStateList.
   controller->SetWebStateList(_model.webStateList);
+
+  // Set the TTS playback controller's WebStateList.
+  TextToSpeechPlaybackControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(_model.webStateList);
 
   // When starting the browser with an open tab, it is necessary to reset the
   // clipsToBounds property of the WKWebView so the page can bleed behind the
