@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -206,6 +208,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
   // BaseFetchContext overrides:
+  const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   bool AllowScriptFromSource(const KURL&) const override;
@@ -230,8 +234,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
 
-  ReferrerPolicy GetReferrerPolicy() const override;
-  String GetOutgoingReferrer() const override;
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
   base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
@@ -275,6 +277,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // Non-null only when detached.
   Member<const FrozenState> frozen_state_;
+
+  Member<FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace blink

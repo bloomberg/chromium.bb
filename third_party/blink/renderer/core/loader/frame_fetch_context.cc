@@ -226,10 +226,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
 
 struct FrameFetchContext::FrozenState final
     : GarbageCollectedFinalized<FrozenState> {
-  FrozenState(ReferrerPolicy referrer_policy,
-              const String& outgoing_referrer,
-              const KURL& url,
-              scoped_refptr<const SecurityOrigin> security_origin,
+  FrozenState(const KURL& url,
               scoped_refptr<const SecurityOrigin> parent_security_origin,
               const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
@@ -240,10 +237,7 @@ struct FrameFetchContext::FrozenState final
               const String& user_agent,
               bool is_main_frame,
               bool is_svg_image_chrome_client)
-      : referrer_policy(referrer_policy),
-        outgoing_referrer(outgoing_referrer),
-        url(url),
-        security_origin(std::move(security_origin)),
+      : url(url),
         parent_security_origin(std::move(parent_security_origin)),
         address_space(address_space),
         content_security_policy(content_security_policy),
@@ -255,10 +249,7 @@ struct FrameFetchContext::FrozenState final
         is_main_frame(is_main_frame),
         is_svg_image_chrome_client(is_svg_image_chrome_client) {}
 
-  const ReferrerPolicy referrer_policy;
-  const String outgoing_referrer;
   const KURL url;
-  const scoped_refptr<const SecurityOrigin> security_origin;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
   const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
@@ -298,6 +289,10 @@ FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
       document_(document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
+  if (document_) {
+    fetch_client_settings_object_ =
+        new FetchClientSettingsObjectImpl(*document_);
+  }
   DCHECK(GetFrame());
 }
 
@@ -306,6 +301,8 @@ void FrameFetchContext::ProvideDocumentToContext(FetchContext& context,
   DCHECK(document);
   CHECK(context.IsFrameFetchContext());
   static_cast<FrameFetchContext&>(context).document_ = document;
+  static_cast<FrameFetchContext&>(context).fetch_client_settings_object_ =
+      new FetchClientSettingsObjectImpl(*document);
 }
 
 FrameFetchContext::~FrameFetchContext() {
@@ -350,6 +347,12 @@ FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
   if (IsDetached())
     return nullptr;
   return GetFrame()->GetFrameScheduler();
+}
+
+const FetchClientSettingsObject*
+FrameFetchContext::GetFetchClientSettingsObject() const {
+  DCHECK(fetch_client_settings_object_);
+  return fetch_client_settings_object_.Get();
 }
 
 KURL FrameFetchContext::GetSiteForCookies() const {
@@ -880,9 +883,10 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
 }
 
 const SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
-  if (IsDetached())
-    return frozen_state_->security_origin.get();
-  return document_ ? document_->GetSecurityOrigin() : nullptr;
+  // This can be called before |fetch_client_settings_object_| is set.
+  if (!fetch_client_settings_object_)
+    return nullptr;
+  return fetch_client_settings_object_->GetSecurityOrigin();
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
@@ -1200,18 +1204,6 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
   return RuntimeEnabledFeatures::BlockCredentialedSubresourcesEnabled();
 }
 
-ReferrerPolicy FrameFetchContext::GetReferrerPolicy() const {
-  if (IsDetached())
-    return frozen_state_->referrer_policy;
-  return document_->GetReferrerPolicy();
-}
-
-String FrameFetchContext::GetOutgoingReferrer() const {
-  if (IsDetached())
-    return frozen_state_->outgoing_referrer;
-  return document_->OutgoingReferrer();
-}
-
 const KURL& FrameFetchContext::Url() const {
   if (IsDetached())
     return frozen_state_->url;
@@ -1418,20 +1410,22 @@ FetchContext* FrameFetchContext::Detach() {
 
   if (document_) {
     frozen_state_ = new FrozenState(
-        GetReferrerPolicy(), GetOutgoingReferrer(), Url(), GetSecurityOrigin(),
-        GetParentSecurityOrigin(), GetAddressSpace(),
+        Url(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(), GetRequestorOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
+    fetch_client_settings_object_ =
+        new FetchClientSettingsObjectSnapshot(*document_);
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
-        kReferrerPolicyDefault, String(), NullURL(), GetSecurityOrigin(),
-        GetParentSecurityOrigin(), GetAddressSpace(),
+        NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
         SecurityOrigin::CreateUniqueOpaque(), GetClientHintsPreferences(),
         GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
         IsSVGImageChromeClient());
+    fetch_client_settings_object_ = new FetchClientSettingsObjectSnapshot(
+        NullURL(), nullptr, kReferrerPolicyDefault, String());
   }
 
   // This is needed to break a reference cycle in which off-heap
@@ -1445,6 +1439,7 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(frozen_state_);
+  visitor->Trace(fetch_client_settings_object_);
   BaseFetchContext::Trace(visitor);
 }
 

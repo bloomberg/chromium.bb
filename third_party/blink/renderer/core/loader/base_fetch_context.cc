@@ -95,8 +95,10 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (!is_main_resource) {
     if (!request.DidSetHTTPReferrer()) {
       request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          GetReferrerPolicy(), request.Url(), GetOutgoingReferrer()));
-      request.SetHTTPOriginIfNeeded(GetSecurityOrigin());
+          GetFetchClientSettingsObject()->GetReferrerPolicy(), request.Url(),
+          GetFetchClientSettingsObject()->GetOutgoingReferrer()));
+      request.SetHTTPOriginIfNeeded(
+          GetFetchClientSettingsObject()->GetSecurityOrigin());
     } else {
       DCHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
                                                  request.Url(),

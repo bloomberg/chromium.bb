@@ -96,6 +96,8 @@ WorkerFetchContext::WorkerFetchContext(
       web_context_(std::move(web_context)),
       loading_task_runner_(
           global_scope_->GetTaskRunner(TaskType::kInternalLoading)),
+      fetch_client_settings_object_(
+          new FetchClientSettingsObjectImpl(*global_scope_)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   web_context_->InitializeOnWorkerThread();
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
@@ -104,6 +106,10 @@ WorkerFetchContext::WorkerFetchContext(
     subresource_filter_ =
         SubresourceFilter::Create(global_scope, std::move(web_filter));
   }
+}
+const FetchClientSettingsObject*
+WorkerFetchContext::GetFetchClientSettingsObject() const {
+  return fetch_client_settings_object_.Get();
 }
 
 KURL WorkerFetchContext::GetSiteForCookies() const {
@@ -198,14 +204,6 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
   return false;
 }
 
-ReferrerPolicy WorkerFetchContext::GetReferrerPolicy() const {
-  return global_scope_->GetReferrerPolicy();
-}
-
-String WorkerFetchContext::GetOutgoingReferrer() const {
-  return global_scope_->OutgoingReferrer();
-}
-
 const KURL& WorkerFetchContext::Url() const {
   return global_scope_->Url();
 }
@@ -233,7 +231,7 @@ void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
 }
 
 const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
-  return global_scope_->GetSecurityOrigin();
+  return GetFetchClientSettingsObject()->GetSecurityOrigin();
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
@@ -424,6 +422,7 @@ WorkerFetchContext::GetWorkerContentSettingsClient() const {
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
+  visitor->Trace(fetch_client_settings_object_);
   BaseFetchContext::Trace(visitor);
 }
 
