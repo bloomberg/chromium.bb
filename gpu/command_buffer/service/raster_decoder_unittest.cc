@@ -577,6 +577,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
   void OnDescheduleUntilFinished() override {}
   void OnRescheduleAfterFinished() override {}
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override {}
+  void ScheduleGrContextCleanup() override {}
 
   std::unique_ptr<RasterDecoder> CreateDecoder() {
     auto decoder = base::WrapUnique(

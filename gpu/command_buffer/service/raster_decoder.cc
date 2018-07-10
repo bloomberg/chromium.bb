@@ -1578,6 +1578,9 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
                << GetCommandName(command);
   }
 
+  if (supports_oop_raster_)
+    client_->ScheduleGrContextCleanup();
+
   return result;
 }
 

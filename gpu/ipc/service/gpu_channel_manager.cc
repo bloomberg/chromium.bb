@@ -294,6 +294,7 @@ void GpuChannelManager::OnBackgroundCleanup() {
     program_cache_->Trim(0u);
 
   if (raster_decoder_context_state_) {
+    gr_cache_controller_.reset();
     raster_decoder_context_state_->context_lost = true;
     raster_decoder_context_state_.reset();
   }
@@ -417,8 +418,18 @@ GpuChannelManager::GetRasterDecoderContextState(
         gpu_driver_bug_workarounds_);
   }
 
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    gr_cache_controller_.emplace(raster_decoder_context_state_.get(),
+                                 base::ThreadTaskRunnerHandle::Get());
+  }
+
   *result = ContextResult::kSuccess;
   return raster_decoder_context_state_;
+}
+
+void GpuChannelManager::ScheduleGrContextCleanup() {
+  if (gr_cache_controller_)
+    gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
 }  // namespace gpu

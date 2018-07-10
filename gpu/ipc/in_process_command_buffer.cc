@@ -431,6 +431,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                               use_virtualized_gl_context_);
     context_state->InitializeGrContext(workarounds);
 
+    if (base::ThreadTaskRunnerHandle::IsSet()) {
+      gr_cache_controller_.emplace(context_state.get(),
+                                   base::ThreadTaskRunnerHandle::Get());
+    }
+
     decoder_.reset(raster::RasterDecoder::Create(
         this, command_buffer_.get(), task_executor_->outputter(),
         context_group_.get(), std::move(context_state)));
@@ -539,6 +544,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     surface_->PrepareToDestroy(have_context);
 
   if (decoder_) {
+    gr_cache_controller_.reset();
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
@@ -1032,6 +1038,11 @@ void InProcessCommandBuffer::OnRescheduleAfterFinished() {
 void InProcessCommandBuffer::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
   pending_swap_completed_params_.push_back({swap_id, flags});
   pending_presented_params_.push_back({swap_id, flags});
+}
+
+void InProcessCommandBuffer::ScheduleGrContextCleanup() {
+  if (gr_cache_controller_)
+    gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(

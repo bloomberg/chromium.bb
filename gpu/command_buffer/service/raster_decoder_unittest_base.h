@@ -62,6 +62,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+  void ScheduleGrContextCleanup() override {}
 
   // Template to call glGenXXX functions.
   template <typename T>

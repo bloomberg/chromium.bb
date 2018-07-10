@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/gr_cache_controller.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
@@ -141,6 +142,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
       const ContextCreationAttribs& attribs,
       ContextResult* result);
+  void ScheduleGrContextCleanup();
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
@@ -209,6 +211,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   // order to avoid having the GpuChannelManager keep the lost context state
   // alive until all clients have recovered, we use a ref-counted object and
   // allow the decoders to manage its lifetime.
+  base::Optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<raster::RasterDecoderContextState>
       raster_decoder_context_state_;
 
