@@ -2328,7 +2328,7 @@ TEST_F(PasswordManagerTest, ProcessAutofillPredictions) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   // Check that Autofill predictions are converted to password related
   // predictions.

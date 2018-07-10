@@ -1896,6 +1896,27 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::
+    LogRepeatedServerTypePredictionRationalized(
+        const FormSignature form_signature,
+        const AutofillField& field,
+        ServerFieldType old_type) {
+  if (!CanLog())
+    return;
+
+  ukm::builders::Autofill_RepeatedServerTypePredictionRationalized(source_id_)
+      .SetFormSignature(HashFormSignature(form_signature))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
+      .SetFieldNewOverallType(static_cast<int>(field.Type().GetStorableType()))
+      .SetHeuristicType(static_cast<int>(field.heuristic_type()))
+      .SetHtmlFieldType(static_cast<int>(field.html_type()))
+      .SetHtmlFieldMode(static_cast<int>(field.html_mode()))
+      .SetServerType(static_cast<int>(field.server_type()))
+      .SetFieldOldOverallType(static_cast<int>(old_type))
+      .Record(ukm_recorder_);
+}
+
 int64_t AutofillMetrics::FormTypesToBitVector(
     const std::set<FormType>& form_types) {
   int64_t form_type_bv = 0;

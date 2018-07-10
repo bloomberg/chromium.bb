@@ -717,6 +717,13 @@ class AutofillMetrics {
                                                     const AutofillField& field,
                                                     bool is_skipped);
 
+    // Log the fields for which the autofill decided to rationalize the server
+    // type predictions due to repetition of the type.
+    void LogRepeatedServerTypePredictionRationalized(
+        const FormSignature form_signature,
+        const AutofillField& field,
+        ServerFieldType old_type);
+
    private:
     bool CanLog() const;
     int64_t MillisecondsSinceFormParsed(
