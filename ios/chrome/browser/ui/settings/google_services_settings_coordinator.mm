@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -12,12 +14,17 @@
 
 @interface GoogleServicesSettingsCoordinator ()<
     GoogleServicesSettingsViewControllerPresentationDelegate>
+
+// Google services settings mediator.
+@property(nonatomic, strong) GoogleServicesSettingsMediator* mediator;
+
 @end
 
 @implementation GoogleServicesSettingsCoordinator
 
 @synthesize delegate = _delegate;
 @synthesize viewController = _viewController;
+@synthesize mediator = _mediator;
 
 - (void)start {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
@@ -27,6 +34,11 @@
                    style:CollectionViewControllerStyleAppBar];
   controller.presentationDelegate = self;
   self.viewController = controller;
+  self.mediator = [[GoogleServicesSettingsMediator alloc] init];
+  self.mediator.consumer = controller;
+  self.mediator.authService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  controller.modelDelegate = self.mediator;
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
