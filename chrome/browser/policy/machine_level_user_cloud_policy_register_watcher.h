@@ -39,6 +39,9 @@ class MachineLevelUserCloudPolicyRegisterWatcher
   MachineLevelUserCloudPolicyController::RegisterResult
   WaitUntilCloudPolicyEnrollmentFinished();
 
+  // Returns whether the dialog is being displayed.
+  bool IsDialogShowing();
+
   void SetDialogCreationCallbackForTesting(DialogCreationCallback callback);
 
  private:

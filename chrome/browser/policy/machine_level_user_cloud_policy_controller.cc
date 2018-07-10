@@ -171,6 +171,11 @@ void MachineLevelUserCloudPolicyController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool MachineLevelUserCloudPolicyController::IsEnterpriseStartupDialogShowing() {
+  return policy_register_watcher_ &&
+         policy_register_watcher_->IsDialogShowing();
+}
+
 void MachineLevelUserCloudPolicyController::NotifyPolicyRegisterFinished(
     bool succeeded) {
   for (auto& observer : observers_) {

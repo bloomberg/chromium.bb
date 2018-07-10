@@ -67,6 +67,9 @@ class MachineLevelUserCloudPolicyController {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns whether the enterprise startup dialog is being diaplayed.
+  bool IsEnterpriseStartupDialogShowing();
+
  protected:
   void NotifyPolicyRegisterFinished(bool succeeded);
 
