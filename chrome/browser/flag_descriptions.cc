@@ -153,9 +153,9 @@ const char kBrowserTaskSchedulerDescription[] =
 
 const char kBundledConnectionHelpName[] = "Bundled Connection Help";
 const char kBundledConnectionHelpDescription[] =
-    "Enables or disables redirecting users who get an interstitial when "
-    "accessing https://support.google.com/chrome/answer/6098869 to local "
-    "connection help content.";
+    "Enables or disables redirection to local help content for users who get "
+    "an interstitial after clicking the 'Learn More' link on a previous "
+    "interstitial.";
 
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
