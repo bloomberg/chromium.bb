@@ -317,7 +317,7 @@ bool ResourceLoader::WillFollowRedirect(
       scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
       WebSecurityOrigin source_web_origin(source_origin.get());
       WrappedResourceRequest new_request_wrapper(*new_request);
-      base::Optional<network::mojom::CORSError> cors_error =
+      base::Optional<network::CORSErrorStatus> cors_error =
           WebCORS::HandleRedirect(
               source_web_origin, new_request_wrapper, redirect_response.Url(),
               redirect_response.HttpStatusCode(),
@@ -329,10 +329,8 @@ bool ResourceLoader::WillFollowRedirect(
         if (!unused_preload) {
           Context().AddErrorConsoleMessage(
               CORS::GetErrorString(CORS::ErrorParameter::Create(
-                  network::CORSErrorStatus(*cors_error),
-                  redirect_response.Url(), new_url,
-                  redirect_response.HttpStatusCode(),
-                  redirect_response.HttpHeaderFields(), *source_origin.get(),
+                  *cors_error, redirect_response.Url(), new_url,
+                  redirect_response.HttpStatusCode(), *source_origin.get(),
                   resource_->LastResourceRequest().GetRequestContext())),
               FetchContext::kJSSource);
         }
@@ -490,7 +488,7 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
           ? resource_->GetResponse()
           : response;
 
-  base::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
+  base::Optional<network::CORSErrorStatus> cors_error = CORS::CheckAccess(
       response_for_access_control.Url(),
       response_for_access_control.HttpStatusCode(),
       response_for_access_control.HttpHeaderFields(),
@@ -509,9 +507,8 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
   error_msg.Append(CORS::GetErrorString(CORS::ErrorParameter::Create(
-      network::CORSErrorStatus(*cors_error), initial_request.Url(), KURL(),
-      response_for_access_control.HttpStatusCode(),
-      response_for_access_control.HttpHeaderFields(), *source_origin,
+      *cors_error, initial_request.Url(), KURL(),
+      response_for_access_control.HttpStatusCode(), *source_origin,
       initial_request.GetRequestContext())));
 
   return CORSStatus::kFailed;

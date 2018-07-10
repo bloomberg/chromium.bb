@@ -1297,10 +1297,8 @@ void WebURLLoaderImpl::LoadSynchronously(
   const int error_code = sync_load_response.error_code;
   if (error_code != net::OK) {
     if (sync_load_response.cors_error) {
-      // TODO(toyoshim): Pass CORS error related headers here.
-      error =
-          WebURLError(network::CORSErrorStatus(*sync_load_response.cors_error),
-                      WebURLError::HasCopyInCache::kFalse, final_url);
+      error = WebURLError(*sync_load_response.cors_error,
+                          WebURLError::HasCopyInCache::kFalse, final_url);
     } else {
       // SyncResourceHandler returns ERR_ABORTED for CORS redirect errors,
       // so we treat the error as a web security violation.

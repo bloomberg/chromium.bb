@@ -124,11 +124,11 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     const ResourceResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
-    base::Optional<mojom::CORSError>* detected_error) {
-  DCHECK(detected_error);
+    base::Optional<CORSErrorStatus>* detected_error_status) {
+  DCHECK(detected_error_status);
 
   // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
-  *detected_error = CheckPreflightAccess(
+  *detected_error_status = CheckPreflightAccess(
       final_url, head.headers->response_code(),
       GetHeaderString(head.headers,
                       cors::header_names::kAccessControlAllowOrigin),
@@ -137,26 +137,33 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       original_request.fetch_credentials_mode,
       tainted ? url::Origin() : *original_request.request_initiator,
       false /* allow_file_origin */);
-  if (*detected_error)
+  if (*detected_error_status)
     return nullptr;
 
-  *detected_error = CheckPreflight(head.headers->response_code());
-  if (*detected_error)
+  base::Optional<mojom::CORSError> error;
+  error = CheckPreflight(head.headers->response_code());
+  if (error) {
+    *detected_error_status = CORSErrorStatus(*error);
     return nullptr;
+  }
 
   if (original_request.is_external_request) {
-    *detected_error = CheckExternalPreflight(GetHeaderString(
+    *detected_error_status = CheckExternalPreflight(GetHeaderString(
         head.headers, header_names::kAccessControlAllowExternal));
-    if (*detected_error)
+    if (*detected_error_status)
       return nullptr;
   }
 
-  return PreflightResult::Create(
+  auto result = PreflightResult::Create(
       original_request.fetch_credentials_mode,
       GetHeaderString(head.headers, header_names::kAccessControlAllowMethods),
       GetHeaderString(head.headers, header_names::kAccessControlAllowHeaders),
       GetHeaderString(head.headers, header_names::kAccessControlMaxAge),
-      detected_error);
+      &error);
+
+  if (error)
+    *detected_error_status = CORSErrorStatus(*error);
+  return result;
 }
 
 base::Optional<CORSErrorStatus> CheckPreflightResult(
@@ -285,19 +292,15 @@ class PreflightController::PreflightLoader final {
                             const ResourceResponseHead& head) {
     FinalizeLoader();
 
-    base::Optional<mojom::CORSError> detected_error;
-    std::unique_ptr<PreflightResult> result = CreatePreflightResult(
-        final_url, head, original_request_, tainted_, &detected_error);
-
     base::Optional<CORSErrorStatus> detected_error_status;
+    std::unique_ptr<PreflightResult> result = CreatePreflightResult(
+        final_url, head, original_request_, tainted_, &detected_error_status);
+
     if (result) {
       // Preflight succeeded. Check |original_request_| with |result|.
-      DCHECK(!detected_error);
+      DCHECK(!detected_error_status);
       detected_error_status =
           CheckPreflightResult(result.get(), original_request_);
-    } else {
-      DCHECK(detected_error);
-      detected_error_status = CORSErrorStatus(*detected_error);
     }
 
     // TODO(toyoshim): Check the spec if we cache |result| regardless of

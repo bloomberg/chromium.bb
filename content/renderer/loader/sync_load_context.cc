@@ -207,8 +207,7 @@ void SyncLoadContext::OnCompletedRequest(
   DCHECK(!Completed());
   response_->error_code = status.error_code;
   response_->extended_error_code = status.extended_error_code;
-  if (status.cors_error_status)
-    response_->cors_error = status.cors_error_status->cors_error;
+  response_->cors_error = status.cors_error_status;
   response_->info.encoded_data_length = status.encoded_data_length;
   response_->info.encoded_body_length = status.encoded_body_length;
   if (blob_response_started_ && !blob_finished_) {

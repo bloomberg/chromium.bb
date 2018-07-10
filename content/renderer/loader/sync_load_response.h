@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_CHILD_SYNC_LOAD_RESPONSE_H_
-#define CONTENT_RENDERER_CHILD_SYNC_LOAD_RESPONSE_H_
+#ifndef CONTENT_RENDERER_LOADER_SYNC_LOAD_RESPONSE_H_
+#define CONTENT_RENDERER_LOADER_SYNC_LOAD_RESPONSE_H_
 
 #include <string>
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/resource_response_info.h"
-#include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "url/gurl.h"
@@ -40,7 +40,7 @@ struct CONTENT_EXPORT SyncLoadResponse {
   int extended_error_code = 0;
 
   // Optional CORS error details.
-  base::Optional<network::mojom::CORSError> cors_error;
+  base::Optional<network::CORSErrorStatus> cors_error;
 
   // The final URL of the response.  This may differ from the request URL in
   // the case of a server redirect.
@@ -55,4 +55,4 @@ struct CONTENT_EXPORT SyncLoadResponse {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_CHILD_SYNC_LOAD_RESPONSE_H_
+#endif  // CONTENT_RENDERER_LOADER_SYNC_LOAD_RESPONSE_H_

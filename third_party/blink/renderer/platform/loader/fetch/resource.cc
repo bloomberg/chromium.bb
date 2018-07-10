@@ -405,12 +405,12 @@ AtomicString Resource::HttpContentType() const {
 
 bool Resource::PassesAccessControlCheck(
     const SecurityOrigin& security_origin) const {
-  base::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
+  base::Optional<network::CORSErrorStatus> cors_status = CORS::CheckAccess(
       GetResponse().Url(), GetResponse().HttpStatusCode(),
       GetResponse().HttpHeaderFields(),
       LastResourceRequest().GetFetchCredentialsMode(), security_origin);
 
-  return !cors_error;
+  return !cors_status;
 }
 
 bool Resource::MustRefetchDueToIntegrityMetadata(
