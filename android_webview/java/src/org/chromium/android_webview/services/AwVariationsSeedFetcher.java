@@ -12,10 +12,10 @@ import android.app.job.JobScheduler;
 import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 
 import org.chromium.android_webview.VariationsUtils;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.components.background_task_scheduler.TaskIds;
