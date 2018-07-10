@@ -6,29 +6,22 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_UTIL_H_
 
 #include "base/optional.h"
-#include "third_party/webrtc/api/optional.h"
 
 namespace content {
 
-template <typename T>
-base::Optional<T> ToBaseOptional(const absl::optional<T>& optional) {
-  return optional ? base::Optional<T>(*optional) : base::nullopt;
+template <typename OptionalT>
+base::Optional<typename OptionalT::value_type> ToBaseOptional(
+    const OptionalT& optional) {
+  return optional ? base::make_optional(*optional) : base::nullopt;
 }
 
-template <typename T>
-bool operator==(const base::Optional<T>& base_optional,
-                const absl::optional<T>& absl_optional) {
-  if (!base_optional)
-    return !absl_optional;
-  if (!absl_optional)
+template <typename OptionalT1, typename OptionalT2>
+bool OptionalEquals(const OptionalT1& lhs, const OptionalT2& rhs) {
+  if (!lhs)
+    return !rhs;
+  if (!rhs)
     return false;
-  return *base_optional == *absl_optional;
-}
-
-template <typename T>
-bool operator==(const absl::optional<T>& absl_optional,
-                const base::Optional<T>& base_optional) {
-  return base_optional == absl_optional;
+  return *lhs == *rhs;
 }
 
 }  // namespace content

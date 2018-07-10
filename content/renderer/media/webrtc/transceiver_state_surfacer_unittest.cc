@@ -157,12 +157,13 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
     }
     EXPECT_EQ(receiver_state->stream_ids(), receiver_stream_ids);
     // Inspect transceiver states.
-    EXPECT_TRUE(transceiver_state.mid() == webrtc_transceiver->mid());
+    EXPECT_TRUE(
+        OptionalEquals(transceiver_state.mid(), webrtc_transceiver->mid()));
     EXPECT_EQ(transceiver_state.stopped(), webrtc_transceiver->stopped());
     EXPECT_TRUE(transceiver_state.direction() ==
                 webrtc_transceiver->direction());
-    EXPECT_TRUE(transceiver_state.current_direction() ==
-                webrtc_transceiver->current_direction());
+    EXPECT_TRUE(OptionalEquals(transceiver_state.current_direction(),
+                               webrtc_transceiver->current_direction()));
   }
 
  private:
