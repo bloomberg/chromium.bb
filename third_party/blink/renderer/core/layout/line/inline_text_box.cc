@@ -655,10 +655,10 @@ LayoutUnit InlineTextBox::PositionForOffset(int offset) const {
   int from = !IsLeftToRightDirection() ? offset - start_ : 0;
   int to = !IsLeftToRightDirection() ? len_ : offset - start_;
   // FIXME: Do we need to add rightBearing here?
-  return LayoutUnit(
-      font.SelectionRectForText(ConstructTextRun(style_to_use),
-                                IntPoint(LogicalLeft().ToInt(), 0), 0, from, to)
-          .MaxX());
+  return LayoutUnit(font.SelectionRectForText(
+                            ConstructTextRun(style_to_use),
+                            FloatPoint(LogicalLeft().ToInt(), 0), 0, from, to)
+                        .MaxX());
 }
 
 bool InlineTextBox::ContainsCaretOffset(int offset) const {

@@ -56,7 +56,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetIsDrawable(true);
       RecordForeignLayer(
           context, layout_video_, DisplayItem::kForeignLayerVideo, layer,
-          pixel_snapped_rect.Location(), pixel_snapped_rect.Size());
+          FloatPoint(pixel_snapped_rect.Location()), pixel_snapped_rect.Size());
       return;
     }
   }

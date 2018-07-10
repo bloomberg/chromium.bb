@@ -46,7 +46,7 @@ namespace {
 FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
   FloatRect result = normalized;
   result.Scale(base.Width(), base.Height());
-  result.MoveBy(base.Location());
+  result.MoveBy(FloatPoint(base.Location()));
   return result;
 }
 }  // namespace

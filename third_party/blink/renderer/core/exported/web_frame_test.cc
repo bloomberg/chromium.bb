@@ -11842,7 +11842,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
 
   frame_view->LayoutViewport()->SetScrollOffset(
-      ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
+      ToFloatSize(FloatPoint(
+          WebView().FakePageScaleAnimationTargetPositionForTesting())),
       kProgrammaticScroll);
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
@@ -11870,7 +11871,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
       ->FrameWidget()
       ->ScrollFocusedEditableElementIntoView();
   frame_view->GetScrollableArea()->SetScrollOffset(
-      ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
+      ToFloatSize(FloatPoint(
+          WebView().FakePageScaleAnimationTargetPositionForTesting())),
       kProgrammaticScroll);
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
@@ -12044,7 +12046,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
     WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
     ScrollOffset new_offset = ToScrollOffset(
-        WebView().FakePageScaleAnimationTargetPositionForTesting());
+        FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
     float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
     visual_viewport.SetScale(new_scale);
     frame_view->GetScrollableArea()->SetScrollOffset(new_offset,
@@ -12063,8 +12065,8 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   {
     WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
-    IntPoint target_offset =
-        WebView().FakePageScaleAnimationTargetPositionForTesting();
+    FloatPoint target_offset(
+        WebView().FakePageScaleAnimationTargetPositionForTesting());
     float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
 
     EXPECT_FLOAT_EQ(0.5f, new_scale);

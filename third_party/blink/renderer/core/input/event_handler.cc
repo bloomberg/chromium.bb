@@ -229,7 +229,7 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(),
       frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
-          mouse_event_manager_->LastKnownMousePosition()),
+          FloatPoint(mouse_event_manager_->LastKnownMousePosition())),
       mouse_event_manager_->LastKnownMousePositionGlobal());
   mouse_event_manager_->InvalidateClick();
 }

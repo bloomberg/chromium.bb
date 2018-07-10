@@ -177,7 +177,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     // inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
                        DisplayItem::kForeignLayerPlugin, layer_,
-                       FrameRect().Location(), frame_rect_.Size());
+                       FloatPoint(FrameRect().Location()), frame_rect_.Size());
     return;
   }
 

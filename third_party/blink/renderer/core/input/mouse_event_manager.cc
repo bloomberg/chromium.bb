@@ -669,8 +669,8 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
         single_click) {
       svg_pan_ = true;
       frame_->GetDocument()->AccessSVGExtensions().StartPan(
-          frame_->View()->ConvertFromRootFrame(
-              FlooredIntPoint(event.Event().PositionInRootFrame())));
+          frame_->View()->ConvertFromRootFrame(FloatPoint(
+              FlooredIntPoint(event.Event().PositionInRootFrame()))));
       return WebInputEventResult::kHandledSystem;
     }
   }

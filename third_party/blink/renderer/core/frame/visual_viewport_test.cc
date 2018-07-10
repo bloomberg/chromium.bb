@@ -1570,17 +1570,18 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
   IntRect bounds = input_element->GetLayoutObject()->AbsoluteBoundingBoxRect();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  IntPoint scrollDelta(250, 400);
+  FloatPoint scrollDelta(250, 400);
   visual_viewport.SetScale(2);
   visual_viewport.SetLocation(scrollDelta);
 
   const IntRect bounds_in_viewport = input_element->BoundsInViewport();
   IntRect expectedBounds = bounds;
   expectedBounds.Scale(2.f);
-  IntPoint expectedScrollDelta = scrollDelta;
+  FloatPoint expectedScrollDelta = scrollDelta;
   expectedScrollDelta.Scale(2.f, 2.f);
 
-  EXPECT_EQ(IntPoint(expectedBounds.Location() - expectedScrollDelta),
+  EXPECT_EQ(RoundedIntPoint(FloatPoint(FloatPoint(expectedBounds.Location()) -
+                                       expectedScrollDelta)),
             bounds_in_viewport.Location());
   EXPECT_EQ(expectedBounds.Size(), bounds_in_viewport.Size());
 }

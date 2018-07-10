@@ -143,7 +143,7 @@ TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
   DataObject* object = DataObject::Create();
   object->SetURLAndTitle("https://www.example.com/index.html", "index");
   DragData data(
-      object, IntPoint(10, 10), IntPoint(10, 10),
+      object, FloatPoint(10, 10), FloatPoint(10, 10),
       static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink |
                                  kDragOperationMove));
 

@@ -65,7 +65,7 @@ FloatRect FEConvolveMatrix::MapEffect(const FloatRect& rect) const {
   if (!ParametersValid())
     return rect;
   FloatRect result = rect;
-  result.MoveBy(-target_offset_);
+  result.MoveBy(FloatPoint(-target_offset_));
   result.Expand(FloatSize(kernel_size_));
   return result;
 }

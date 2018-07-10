@@ -64,7 +64,7 @@ class PLATFORM_EXPORT FloatPoint {
  public:
   FloatPoint() : x_(0), y_(0) {}
   FloatPoint(float x, float y) : x_(x), y_(y) {}
-  FloatPoint(const IntPoint&);
+  explicit FloatPoint(const IntPoint&);
   explicit FloatPoint(const SkPoint&);
   explicit FloatPoint(const DoublePoint&);
   explicit FloatPoint(const LayoutPoint&);
