@@ -2232,17 +2232,21 @@ void TemplateURLService::MergeInSyncTemplateURL(
                                   false)) {
       std::string guid = conflicting_prepopulated_turl->sync_guid();
       if (conflicting_prepopulated_turl == default_search_provider_) {
-        // ApplyDefaultSearchChange() may change something that requires a
-        // notification, but if so, it will send out that notification, and we
-        // are not involved, thus we do not update |should_notify| here.
-        // TODO(crbug.com/788222): This will set
-        // prefs::kSyncedDefaultSearchProviderGUID, which is wrong if the pref
-        // points to a not-yet-synced search engine (i.e. the pref change was
-        // processed before the search engine addition).
-        ApplyDefaultSearchChange(&sync_turl->data(),
-                                 DefaultSearchManager::FROM_USER);
-        // ApplyDefaultSearchChange() already added a new TemplateURL from the
-        // given data if required, so don't add it again.
+        bool pref_matched =
+            prefs_->GetString(prefs::kSyncedDefaultSearchProviderGUID) ==
+            default_search_provider_->sync_guid();
+        // Update the existing engine in-place.
+        Update(default_search_provider_, TemplateURL(sync_turl->data()));
+        // If prefs::kSyncedDefaultSearchProviderGUID matched
+        // |default_search_provider_|'s GUID before, then update it to match its
+        // new GUID. If the pref didn't match before, then it probably refers to
+        // a new search engine from Sync which just hasn't been added locally
+        // yet, so leave it alone in that case.
+        if (pref_matched) {
+          prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID,
+                            default_search_provider_->sync_guid());
+        }
+
         should_add_sync_turl = false;
         merge_result->set_num_items_modified(
             merge_result->num_items_modified() + 1);
