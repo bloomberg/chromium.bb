@@ -839,6 +839,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_non_contained_absolute_position_descendant_;
   }
+  bool HasSelfPaintingLayerDescendant() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return has_self_painting_layer_descendant_;
+  }
 
   // Returns true if there is a descendant with blend-mode that is
   // not contained within another enclosing stacking context other
@@ -899,12 +903,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DidUpdateScrollsOverflow();
 
-  bool HasSelfPaintingLayerDescendant() const {
-    if (has_self_painting_layer_descendant_dirty_)
-      UpdateHasSelfPaintingLayerDescendant();
-    DCHECK(!has_self_painting_layer_descendant_dirty_);
-    return has_self_painting_layer_descendant_;
-  }
   LayoutRect PaintingExtent(const PaintLayer* root_layer,
                             const LayoutSize& sub_pixel_accumulation,
                             GlobalPaintFlags);
@@ -1104,8 +1102,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool HasOverflowControls() const;
 
-  void DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
-
   enum UpdateLayerPositionBehavior { AllLayers, OnlyStickyLayers };
   void UpdateLayerPositionRecursive(UpdateLayerPositionBehavior = AllLayers);
 
@@ -1252,13 +1248,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // overflow-only concept.
   unsigned is_self_painting_layer_ : 1;
 
-  // If have no self-painting descendants, we don't have to walk our children
-  // during painting. This can lead to significant savings, especially if the
-  // tree has lots of non-self-painting layers grouped together (e.g. table
-  // cells).
-  mutable unsigned has_self_painting_layer_descendant_ : 1;
-  mutable unsigned has_self_painting_layer_descendant_dirty_ : 1;
-
   const unsigned is_root_layer_ : 1;
 
   unsigned has_visible_content_ : 1;
@@ -1331,6 +1320,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned descendant_may_need_compositing_requirements_update_ : 1;
   unsigned needs_compositing_layer_assignment_ : 1;
   unsigned descendant_needs_compositing_layer_assignment_ : 1;
+
+  unsigned is_non_stacked_with_in_flow_self_painting_descendant_ : 1;
+  unsigned has_self_painting_layer_descendant_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 
