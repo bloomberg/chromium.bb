@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
-#define CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_ICON_SELECTOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_ICON_SELECTOR_H_
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 // Selects the square icon with the supported image MIME types and the specified
 // icon purpose that most closely matches the size constraints.
 // This follows very basic heuristics -- improvements are welcome.
-class CONTENT_EXPORT ManifestIconSelector {
+class BLINK_COMMON_EXPORT ManifestIconSelector {
  public:
   // Runs the algorithm to find the best matching icon in the icons listed in
   // the Manifest. Size is defined in pixels.
@@ -36,6 +35,6 @@ class CONTENT_EXPORT ManifestIconSelector {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ManifestIconSelector);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_ICON_SELECTOR_H_

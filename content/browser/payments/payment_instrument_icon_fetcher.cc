@@ -11,7 +11,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
-#include "content/public/browser/manifest_icon_selector.h"
+#include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -69,7 +69,7 @@ void DownloadBestMatchingIcon(
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
+  GURL icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (web_contents == nullptr || !icon_url.is_valid()) {

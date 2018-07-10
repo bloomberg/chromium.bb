@@ -10,13 +10,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
-#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -276,7 +276,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   // but not scale up.
   const int kPaymentAppIdealIconSize = 0xFFFF;
   const int kPaymentAppMinimumIconSize = 0;
-  GURL best_icon_url = content::ManifestIconSelector::FindBestMatchingIcon(
+  GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (!best_icon_url.is_valid()) {
