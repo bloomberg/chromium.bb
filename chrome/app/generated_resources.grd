@@ -9046,11 +9046,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </if>
 
     <!-- Web-modal dialog shown during Web Authenticaton API requests. -->
-    <message name="IDS_WEBAUTHN_DIALOG_TITLE" desc="Title of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
-      Verify your Security Key
+    <message name="IDS_WEBAUTHN_INITIAL_SHEET_TITLE" desc="Title of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
+    <ph name="APP_NAME">$1<ex>google.com</ex></ph> wants to verify your identity
     </message>
-    <message name="IDS_WEBAUTHN_DIALOG_DESCRIPTION" desc="Contents of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
-      The site wants to verify your Security Key for added security for your account.
+    <message name="IDS_WEBAUTHN_INITIAL_SHEET_DESCRIPTION" desc="Contents of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
+      Verifying your identity helps protect your private data
+    </message>
+    <message name="IDS_WEBAUTHN_INITIAL_SHEET_NEXT" desc="Contents of the button shown to let the user continue to register/verify his/her identity via using a security key.">
+      Continue
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE" desc="Title of the dialog shown when instructing the user to choose transport type to use to register/verfify using a security key.">
+    Verify your identity with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to choose transport type for the security key to be used by the Web Authentication API.">
+      Pick an option
     </message>
     <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Use a Security Key with the Web Authentication API over Bluetooth Low Energy.">
       Use your Security Key with Bluetooth
@@ -9091,7 +9100,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TRY_AGAIN" desc="Contents of the button shown to let the user restart the Bluetooth pairing process with Bluetooth powered on.">
       Try again
     </message>
-
     <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE" desc="Title of the dialog shown when preparing the user to pair Bluetooth security key.">
       Ready to pair your Security Key?
     </message>

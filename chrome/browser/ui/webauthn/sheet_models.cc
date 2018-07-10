@@ -75,22 +75,50 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
 // AuthenticatorInitialSheetModel ---------------------------------------------
 
 base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_TITLE);
+  // TODO(hongjunchoi): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_INITIAL_SHEET_TITLE,
+                                    application_name);
 }
 
 base::string16 AuthenticatorInitialSheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_DESCRIPTION);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INITIAL_SHEET_DESCRIPTION);
+}
+
+bool AuthenticatorInitialSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorInitialSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorInitialSheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INITIAL_SHEET_NEXT);
+}
+
+void AuthenticatorInitialSheetModel::OnAccept() {
+  // TODO(hongjunchoi): Check whether Bluetooth adapter is enabled and if it is,
+  // set current step to |kTransportSelection|.
+  dialog_model()->SetCurrentStep(
+      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivateOnRegister);
 }
 
 // AuthenticatorTransportSelectorSheetModel -----------------------------------
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_TITLE);
+  // TODO(hongjunchoi): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE,
+                                    application_name);
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepDescription()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_DESCRIPTION);
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION);
 }
 
 void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
