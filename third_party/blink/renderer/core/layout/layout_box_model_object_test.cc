@@ -1084,7 +1084,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   SetBodyInnerHTML(R"HTML(
     <style>
       .stacked { background: red; position: relative; height: 2000px; }
-      .non-stacked { all: inherit }
+      .non-stacked { overflow: auto }
     </style>
     <div style='height: 100px; backface-visibility: hidden'>
       <div id='target' class='stacked'></div>
@@ -1098,7 +1098,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
       target->Layer()->CompositingContainer();
   EXPECT_FALSE(target->StyleRef().IsStackingContext());
   EXPECT_TRUE(target->StyleRef().IsStacked());
-  EXPECT_FALSE(parent->StyleRef().IsStacked());
+  EXPECT_TRUE(parent->StyleRef().IsStacked());
   EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
 
   target_element->setAttribute(HTMLNames::classAttr, "non-stacked");

@@ -1515,7 +1515,7 @@ TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
   SetHtmlInnerHTML(R"HTML(
     <span id='span' style='opacity: 0.5'>
       <div id='floating' style='float: left; overflow: hidden'>
-        <div id='multicol' style='columns: 2'>A</div>
+        <div id='posrel' style='position: relative'>A</div>
       </div>
     </span>
   )HTML");
@@ -1525,17 +1525,17 @@ TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
           ->Layer();
   auto* span_layer = GetPaintLayerByElementId("span");
   auto* floating_layer = GetPaintLayerByElementId("floating");
-  auto* multicol_layer = GetPaintLayerByElementId("multicol");
+  auto* posrel_layer = GetPaintLayerByElementId("posrel");
   EXPECT_FALSE(html_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
   EXPECT_FALSE(floating_layer->NeedsRepaint());
-  EXPECT_FALSE(multicol_layer->NeedsRepaint());
+  EXPECT_FALSE(posrel_layer->NeedsRepaint());
 
-  multicol_layer->SetNeedsRepaint();
+  posrel_layer->SetNeedsRepaint();
   EXPECT_TRUE(html_layer->NeedsRepaint());
   EXPECT_TRUE(span_layer->NeedsRepaint());
-  EXPECT_TRUE(floating_layer->NeedsRepaint());
-  EXPECT_TRUE(multicol_layer->NeedsRepaint());
+  EXPECT_FALSE(floating_layer->NeedsRepaint());
+  EXPECT_TRUE(posrel_layer->NeedsRepaint());
 }
 
 }  // namespace blink

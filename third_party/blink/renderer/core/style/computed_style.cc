@@ -900,6 +900,12 @@ static bool HasPropertyThatCreatesStackingContext(
   return false;
 }
 
+bool ComputedStyle::IsStacked() const {
+  return IsStackingContext() || GetPosition() != EPosition::kStatic ||
+         BackfaceVisibility() == EBackfaceVisibility::kHidden ||
+         ShouldCompositeForCurrentAnimations();
+}
+
 void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
                                             bool is_in_top_layer,
                                             bool is_svg_stacking) {

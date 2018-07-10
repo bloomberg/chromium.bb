@@ -122,8 +122,8 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
-                                                       "position: relative");
+  GetDocument().getElementById("target")->setAttribute(
+      HTMLNames::styleAttr, "position: relative; z-index: 0");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
             target->GetCompositingReasons());
