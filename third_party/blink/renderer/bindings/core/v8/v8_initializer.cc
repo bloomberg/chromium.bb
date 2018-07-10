@@ -350,10 +350,13 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
   if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
     rejected_promises.HandlerAdded(data);
     return;
-  } else if (data.GetEvent() != v8::kPromiseRejectWithNoHandler) {
+  } else if (data.GetEvent() == v8::kPromiseRejectAfterResolved ||
+             data.GetEvent() == v8::kPromiseResolveAfterResolved) {
     // Ignore reject/resolve after resolved.
     return;
   }
+
+  DCHECK_EQ(v8::kPromiseRejectWithNoHandler, data.GetEvent());
 
   v8::Isolate* isolate = script_state->GetIsolate();
   ExecutionContext* context = ExecutionContext::From(script_state);
