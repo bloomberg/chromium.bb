@@ -642,6 +642,7 @@ enum CellType {
     [_loader webPageOrderedOpen:tab->virtual_url
                        referrer:web::Referrer()
                    inBackground:YES
+                    originPoint:CGPointZero
                        appendTo:kLastTab];
   }
 }

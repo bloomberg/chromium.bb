@@ -145,6 +145,7 @@ NSString* const kPageInfoWillHideNotification =
   [self.loader webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
                          referrer:web::Referrer()
                      inBackground:NO
+                      originPoint:CGPointZero
                          appendTo:kCurrentTab];
   [self hidePageInfo];
 }

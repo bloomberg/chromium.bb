@@ -345,6 +345,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
     [self.dispatcher webPageOrderedOpen:notificationPromo->url()
                                referrer:web::Referrer()
                            inBackground:NO
+                            originPoint:CGPointZero
                                appendTo:kCurrentTab];
     return;
   }
@@ -394,7 +395,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
                    withAction:disposition];
   }
 
-  [self openNewTabWithURL:item.URL incognito:incognito];
+  CGPoint cellCenter = [self cellCenterForItem:item];
+  [self openNewTabWithURL:item.URL incognito:incognito originPoint:cellCenter];
 }
 
 - (void)addItemToReadingList:(ContentSuggestionsItem*)item {
@@ -434,7 +436,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
                             incognito:(BOOL)incognito
                               atIndex:(NSInteger)index {
   [self logMostVisitedOpening:item atIndex:index];
-  [self openNewTabWithURL:item.URL incognito:incognito];
+  CGPoint cellCenter = [self cellCenterForItem:item];
+  [self openNewTabWithURL:item.URL incognito:incognito originPoint:cellCenter];
 }
 
 - (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
@@ -510,13 +513,31 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
 #pragma mark - Private
 
-// Opens the |URL| in a new tab |incognito| or not.
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
+// Returns the center of the cell associated with |item| in the window
+// coordinates. Returns CGPointZero is the cell isn't visible.
+- (CGPoint)cellCenterForItem:(CollectionViewItem<SuggestedContent>*)item {
+  NSIndexPath* indexPath = [self.suggestionsViewController.collectionViewModel
+      indexPathForItem:item];
+  if (!indexPath)
+    return CGPointZero;
+
+  UIView* cell = [self.suggestionsViewController.collectionView
+      cellForItemAtIndexPath:indexPath];
+  return [cell convertPoint:cell.center toView:nil];
+}
+
+// Opens the |URL| in a new tab |incognito| or not. |originPoint| is the origin
+// of the new tab animation if the tab is opened in background, in window
+// coordinates.
+- (void)openNewTabWithURL:(const GURL&)URL
+                incognito:(BOOL)incognito
+              originPoint:(CGPoint)originPoint {
   // Open the tab in background if it is non-incognito only.
   [self.dispatcher webPageOrderedOpen:URL
                              referrer:web::Referrer()
                           inIncognito:incognito
                          inBackground:!incognito
+                          originPoint:originPoint
                              appendTo:kCurrentTab];
 }
 

@@ -312,6 +312,7 @@
                               referrer:referrer
                            inIncognito:incognito
                           inBackground:NO
+                           originPoint:CGPointZero
                               appendTo:kLastTab];
   } else {
     web::NavigationManager::WebLoadParams params(loadURL);

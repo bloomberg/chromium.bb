@@ -907,6 +907,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                            referrer:web::Referrer()
                         inIncognito:NO
                        inBackground:NO
+                        originPoint:CGPointZero
                            appendTo:kLastTab];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
@@ -920,6 +921,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                            referrer:web::Referrer()
                         inIncognito:YES
                        inBackground:NO
+                        originPoint:CGPointZero
                            appendTo:kLastTab];
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];

@@ -3510,6 +3510,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   GURL imageUrl = params.src_url;
   bool isImage = imageUrl.is_valid();
   const GURL& lastCommittedURL = webState->GetLastCommittedURL();
+  CGPoint originPoint = [params.view convertPoint:params.location toView:nil];
 
   if (isLink) {
     if (link.SchemeIs(url::kJavaScriptScheme)) {
@@ -3537,6 +3538,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                             referrer:referrer
                          inIncognito:weakSelf.isOffTheRecord
                         inBackground:YES
+                         originPoint:originPoint
                             appendTo:kCurrentTab];
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -3550,6 +3552,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                               referrer:referrer
                            inIncognito:YES
                           inBackground:NO
+                           originPoint:CGPointZero
                               appendTo:kCurrentTab];
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -3611,6 +3614,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [weakSelf webPageOrderedOpen:imageUrl
                           referrer:referrer
                       inBackground:true
+                       originPoint:originPoint
                           appendTo:kCurrentTab];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -4384,6 +4388,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                     referrer:web::Referrer()
                  inIncognito:NO
                 inBackground:NO
+                 originPoint:CGPointZero
                     appendTo:kCurrentTab];
     return;
   }
@@ -4430,23 +4435,38 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)webPageOrderedOpen:(const GURL&)URL
                   referrer:(const web::Referrer&)referrer
               inBackground:(BOOL)inBackground
+               originPoint:(CGPoint)originPoint
                   appendTo:(OpenPosition)appendTo {
   Tab* adjacentTab = nil;
   if (appendTo == kCurrentTab)
     adjacentTab = [_model currentTab];
-  [_model insertTabWithURL:URL
-                  referrer:referrer
-                transition:ui::PAGE_TRANSITION_LINK
-                    opener:adjacentTab
-               openedByDOM:NO
-                   atIndex:TabModelConstants::kTabPositionAutomatically
-              inBackground:inBackground];
+
+  GURL capturedURL = URL;
+  web::Referrer capturedReferrer = referrer;
+  auto openTab = ^{
+    [_model insertTabWithURL:capturedURL
+                    referrer:capturedReferrer
+                  transition:ui::PAGE_TRANSITION_LINK
+                      opener:adjacentTab
+                 openedByDOM:NO
+                     atIndex:TabModelConstants::kTabPositionAutomatically
+                inBackground:inBackground];
+  };
+
+  if (!IsUIRefreshPhase1Enabled() || !inBackground ||
+      CGPointEqualToPoint(originPoint, CGPointZero)) {
+    openTab();
+  } else {
+    [self animateNewTabInBackgroundFromPoint:originPoint
+                              withCompletion:openTab];
+  }
 }
 
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
+               originPoint:(CGPoint)originPoint
                   appendTo:(OpenPosition)appendTo {
   // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
   // feature_engagement::Tracker based on |inIncognito|.
@@ -4456,6 +4476,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self webPageOrderedOpen:url
                     referrer:referrer
                 inBackground:inBackground
+                 originPoint:originPoint
                     appendTo:appendTo];
     return;
   }
@@ -4469,6 +4490,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
        inIncognito:inIncognito
       inBackground:inBackground
           appendTo:kLastTab];
+  command.originPoint = originPoint;
   [self.dispatcher openURL:command];
 }
 
@@ -4876,6 +4898,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self webPageOrderedOpen:helpUrl
                   referrer:web::Referrer()
               inBackground:NO
+               originPoint:CGPointZero
                   appendTo:kCurrentTab];
 }
 
@@ -5278,8 +5301,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       });
 }
 
+- (void)animateNewTabInBackgroundFromPoint:(CGPoint)originPoint
+                            withCompletion:(ProceduralBlock)completion {
+  // TODO(crbug.com/843576): Add animation.
+  completion();
+}
+
 - (void)animateNewTab:(Tab*)tab
     inBackgroundWithCompletion:(ProceduralBlock)completion {
+  // TODO(crbug.com/843576): Do not execute this method once the new animation
+  // is implemented.
+
   // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
   // snapshot before adding the views needed for the background animation.
   Tab* topTab = [_model currentTab];

@@ -567,6 +567,7 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                      referrer:web::Referrer()
                   inIncognito:inIncognito
                  inBackground:inBackground
+                  originPoint:CGPointZero
                      appendTo:kLastTab];
 }
 
