@@ -230,9 +230,10 @@ class LocalSiteCharacteristicsDataImpl
   // destroyed, it should outlive this object.
   OnDestroyDelegate* const delegate_;
 
-  // Indicates if this object is in a state where it can be written to the
-  // database without erasing some data.
-  bool safe_to_write_to_db_;
+  // Indicates if this object has been fully initialized, either because the
+  // read operation from the database has completed or because it has been
+  // cleared.
+  bool fully_initialized_;
 
   // Dirty bit, indicates if any of the fields in |site_characteristics_| has
   // changed since it has been initialized.
