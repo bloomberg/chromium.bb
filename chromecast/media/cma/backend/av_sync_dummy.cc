@@ -14,7 +14,7 @@ class AvSyncDummy : public AvSync {
   AvSyncDummy();
 
   // AvSync implementation:
-  void NotifyStart(int64_t timestamp) override;
+  void NotifyStart(int64_t timestamp, int64_t pts) override;
   void NotifyStop() override;
   void NotifyPause() override;
   void NotifyResume() override;
@@ -28,7 +28,7 @@ std::unique_ptr<AvSync> AvSync::Create(
 
 AvSyncDummy::AvSyncDummy() {}
 
-void AvSyncDummy::NotifyStart(int64_t timestamp) {}
+void AvSyncDummy::NotifyStart(int64_t timestamp, int64_t pts) {}
 
 void AvSyncDummy::NotifyStop() {}
 

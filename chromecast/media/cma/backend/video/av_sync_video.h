@@ -29,7 +29,7 @@ class AvSyncVideo : public AvSync {
   ~AvSyncVideo() override;
 
   // AvSync implementation:
-  void NotifyStart(int64_t timestamp) override;
+  void NotifyStart(int64_t timestamp, int64_t pts) override;
   void NotifyStop() override;
   void NotifyPause() override;
   void NotifyResume() override;
@@ -100,6 +100,7 @@ class AvSyncVideo : public AvSync {
   int64_t last_vpts_value_recorded_ = 0;
   int64_t last_correction_timestamp_us = INT64_MIN;
   int64_t playback_start_timestamp_us_ = INT64_MIN;
+  int64_t playback_start_pts_us_ = INT64_MIN;
 
   bool first_audio_pts_received_ = false;
   bool first_video_pts_received_ = false;
