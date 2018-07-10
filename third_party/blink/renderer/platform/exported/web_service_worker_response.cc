@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"

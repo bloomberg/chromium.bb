@@ -21,7 +21,7 @@
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_local_frame.h"

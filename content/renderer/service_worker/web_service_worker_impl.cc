@@ -11,7 +11,7 @@
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_proxy.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_proxy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 

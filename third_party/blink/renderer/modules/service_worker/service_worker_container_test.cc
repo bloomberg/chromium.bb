@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/service_worker/navigation_preload_callbacks.h"
 
-#include "third_party/blink/public/platform/modules/serviceworker/web_navigation_preload_state.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_navigation_preload_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/service_worker/navigation_preload_state.h"

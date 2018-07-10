@@ -15,7 +15,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
 #include "third_party/blink/public/web/web_frame.h"
 
 namespace blink {

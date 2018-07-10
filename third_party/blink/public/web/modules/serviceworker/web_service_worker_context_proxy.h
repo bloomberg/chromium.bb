@@ -33,8 +33,8 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/common/message_port/transferable_message.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 
 #include <memory>

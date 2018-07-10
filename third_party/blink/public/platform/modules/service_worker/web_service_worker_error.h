@@ -28,38 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_ERROR_H_
 
-#include "third_party/blink/public/common/message_port/transferable_message.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
-#include "third_party/blink/public/platform/web_vector.h"
-
-#include <memory>
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
-class WebServiceWorker;
+struct WebServiceWorkerError {
+  WebServiceWorkerError(mojom::ServiceWorkerErrorType error_type,
+                        const WebString& message)
+      : WebServiceWorkerError(error_type, message, WebString()) {}
 
-// See WebServiceWorkerProvider for full documentation.
-//
-// WebServiceWorkerProviderClient is implemented by ServiceWorkerContainer.
-// We probably wouldn't need this abstract class, except we also make a
-// MockServiceWorkerProviderClient for unit tests.
-class WebServiceWorkerProviderClient {
- public:
-  virtual ~WebServiceWorkerProviderClient() = default;
+  WebServiceWorkerError(mojom::ServiceWorkerErrorType error_type,
+                        const WebString& message,
+                        const WebString& unsanitized_message)
+      : error_type(error_type),
+        message(message),
+        unsanitized_message(unsanitized_message) {}
 
-  virtual void SetController(std::unique_ptr<WebServiceWorker::Handle>,
-                             bool should_notify_controller_change) = 0;
-
-  virtual void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
-                                    TransferableMessage) = 0;
-  virtual void CountFeature(mojom::WebFeature) = 0;
+  mojom::ServiceWorkerErrorType error_type;
+  // |message| can be used to populate an error that's exposed to JavaScript.
+  // For service worker APIs, typically a promise will reject with this error.
+  WebString message;
+  // |unsanitized_message| can be used to add a more detailed error to
+  // console or other logging that shouldn't be exposed to JavaScript.
+  WebString unsanitized_message;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
+#endif

@@ -6,8 +6,8 @@
 
 #include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"

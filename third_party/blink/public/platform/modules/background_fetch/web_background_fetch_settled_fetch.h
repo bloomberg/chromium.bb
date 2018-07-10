@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_SETTLED_FETCH_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_SETTLED_FETCH_H_
 
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {

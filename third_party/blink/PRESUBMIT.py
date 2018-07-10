@@ -39,7 +39,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
 
     # The list of files that we specifically want to allow including
     # -blink variant files (e.g. because it has #if INSIDE_BLINK).
-    allow_blink_files = [r'third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h']
+    allow_blink_files = [r'third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h']
 
     pattern = input_api.re.compile(r'#include\s+.+\.mojom(.*)\.h[>"]')
     public_folder = input_api.os_path.normpath('third_party/blink/public/')
