@@ -69,7 +69,13 @@ public abstract class Observable<T> {
      * @param <U> The activation data type of the other Observable.
      */
     public final <U> Observable<Both<T, U>> andThen(Observable<U> other) {
-        return new SequenceStateObserver<>(this, other).asObservable();
+        Controller<U> otherAfterThis = new Controller<>();
+        other.watch((U value) -> {
+            otherAfterThis.set(value);
+            return otherAfterThis::reset;
+        });
+        watch(ScopeFactories.onEnter(x -> otherAfterThis.reset()));
+        return and(otherAfterThis);
     }
 
     /**
@@ -113,33 +119,5 @@ public abstract class Observable<T> {
             return () -> opposite.set(Unit.unit());
         });
         return opposite;
-    }
-
-    // Owns a Controller that is activated only when the Observables are activated in order.
-    private static class SequenceStateObserver<A, B> {
-        private final Controller<Both<A, B>> mController = new Controller<>();
-        private A mA = null;
-
-        private SequenceStateObserver(Observable<A> stateA, Observable<B> stateB) {
-            stateA.watch((A a) -> {
-                mA = a;
-                return () -> {
-                    mA = null;
-                    mController.reset();
-                };
-            });
-            stateB.watch((B b) -> {
-                if (mA != null) {
-                    mController.set(Both.both(mA, b));
-                }
-                return () -> {
-                    mController.reset();
-                };
-            });
-        }
-
-        private Observable<Both<A, B>> asObservable() {
-            return mController;
-        }
     }
 }
