@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_ENCODING_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_ENCODING_DATA_H_
 
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
@@ -55,10 +54,6 @@ class DocumentEncodingData {
   bool was_detected_heuristically_;
   bool saw_decoding_error_;
 };
-
-template <>
-struct CrossThreadCopier<DocumentEncodingData>
-    : public CrossThreadCopierPassThrough<DocumentEncodingData> {};
 
 inline bool operator!=(const DocumentEncodingData& a,
                        const DocumentEncodingData& b) {
