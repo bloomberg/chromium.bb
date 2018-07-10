@@ -129,6 +129,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
 
   Result result;
   result.is_animation_tainted = variable_data.IsAnimationTainted();
+  result.has_font_units = variable_data.HasFontUnits();
+  result.has_root_font_units = variable_data.HasRootFontUnits();
   result.backing_strings.AppendVector(variable_data.BackingStrings());
   DCHECK(!variables_seen_.Contains(name));
   variables_seen_.insert(name);
@@ -147,12 +149,10 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
                         variable_data.BaseURL(), variable_data.Charset());
   }
 
-  // TODO(andruud): Actually provide real value for has[_root]_font_unit.
-  bool has_font_unit = false;
-  bool has_root_font_unit = false;
   return CSSVariableData::CreateResolved(
       result.tokens, std::move(result.backing_strings),
-      result.is_animation_tainted, has_font_unit, has_root_font_unit);
+      result.is_animation_tainted, result.has_font_units,
+      result.has_root_font_units);
 }
 
 void CSSVariableResolver::ResolveRelativeUrls(
@@ -184,6 +184,18 @@ bool CSSVariableResolver::ShouldResolveRelativeUrls(
   return registration ? registration->Syntax().HasUrlSyntax() : false;
 }
 
+bool CSSVariableResolver::IsVariableDisallowed(
+    const CSSVariableData& variable_data,
+    const Options& options,
+    const PropertyRegistration* registration) {
+  return (options.disallow_animation_tainted &&
+          variable_data.IsAnimationTainted()) ||
+         (registration && options.disallow_registered_font_units &&
+          variable_data.HasFontUnits()) ||
+         (registration && options.disallow_registered_root_font_units &&
+          variable_data.HasRootFontUnits());
+}
+
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
                                                    const Options& options,
                                                    bool is_env_variable,
@@ -211,8 +223,12 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   CSSVariableData* variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name);
-  if (!variable_data || (options.disallow_animation_tainted &&
-                         variable_data->IsAnimationTainted())) {
+
+  const PropertyRegistration* registration =
+      registry_ ? registry_->Registration(variable_name) : nullptr;
+
+  if (!variable_data ||
+      IsVariableDisallowed(*variable_data, options, registration)) {
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
     return ResolveFallback(range, options, result);
@@ -267,6 +283,14 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 
   Options options;
   options.disallow_animation_tainted = disallow_animation_tainted;
+
+  if (id == CSSPropertyFontSize) {
+    bool is_root =
+        state_.GetElement() &&
+        state_.GetElement() == state_.GetDocument().documentElement();
+    options.disallow_registered_font_units = true;
+    options.disallow_registered_root_font_units = is_root;
+  }
 
   if (value.IsPendingSubstitutionValue()) {
     return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
