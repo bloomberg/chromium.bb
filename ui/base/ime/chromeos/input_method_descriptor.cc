@@ -44,6 +44,10 @@ std::string InputMethodDescriptor::GetPreferredKeyboardLayout() const {
 }
 
 std::string InputMethodDescriptor::GetIndicator() const {
+  // Return the empty string for ARC IMEs.
+  if (extension_ime_util::IsArcIME(id_))
+    return std::string();
+
   // If indicator is empty, use the first two character in its preferred
   // keyboard layout or language code.
   if (indicator_.empty()) {
