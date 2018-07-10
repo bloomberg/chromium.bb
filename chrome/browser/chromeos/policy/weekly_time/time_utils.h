@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace policy {
 namespace weekly_time_utils {
@@ -20,6 +21,10 @@ namespace weekly_time_utils {
 // error.
 bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
                                 base::Clock* clock,
+                                int* offset);
+
+bool GetOffsetFromTimezoneToGmt(const icu::TimeZone& timezone,
+                                const base::Clock* clock,
                                 int* offset);
 
 // Convert time intervals from |timezone| to GMT timezone.

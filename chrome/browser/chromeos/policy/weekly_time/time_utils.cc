@@ -30,14 +30,21 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
     LOG(ERROR) << "Unsupported timezone: " << timezone;
     return false;
   }
+
+  return GetOffsetFromTimezoneToGmt(*zone, clock, offset);
+}
+
+bool GetOffsetFromTimezoneToGmt(const icu::TimeZone& timezone,
+                                const base::Clock* clock,
+                                int* offset) {
   // Time in milliseconds which is added to GMT to get local time.
-  int gmt_offset = zone->getRawOffset();
+  int gmt_offset = timezone.getRawOffset();
   // Time in milliseconds which is added to local standard time to get local
   // wall clock time.
-  int dst_offset = zone->getDSTSavings();
+  int dst_offset = timezone.getDSTSavings();
   UErrorCode status = U_ZERO_ERROR;
   std::unique_ptr<icu::GregorianCalendar> gregorian_calendar =
-      std::make_unique<icu::GregorianCalendar>(*zone, status);
+      std::make_unique<icu::GregorianCalendar>(timezone, status);
   if (U_FAILURE(status)) {
     LOG(ERROR) << "Gregorian calendar error = " << u_errorName(status);
     return false;
