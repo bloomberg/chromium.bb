@@ -241,8 +241,6 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeCrossProcessNavigation,
                        "emulation/virtual-time-cross-process-navigation.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeDetachFrame,
                        "emulation/virtual-time-detach-frame.js");
-HEADLESS_PROTOCOL_TEST(VirtualTimeErrorLoop,
-                       "emulation/virtual-time-error-loop.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeNoBlock404, "emulation/virtual-time-404.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeLocalStorage,
                        "emulation/virtual-time-local-storage.js");
@@ -261,6 +259,16 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeVideo, "emulation/virtual-time-video.js");
 // Flaky Test crbug.com/859382
 HEADLESS_PROTOCOL_TEST(DISABLED_VirtualTimeHistoryNavigation,
                        "emulation/virtual-time-history-navigation.js");
+
+// Failing on MacOS10.13 (dbg) crbug.com/859382
+#if defined(OS_MACOSX)
+#define MAYBE_VirtualTimeErrorLoop DISABLED_VirtualTimeErrorLoop
+#else
+#define MAYBE_VirtualTimeErrorLoop VirtualTimeErrorLoop
+#endif
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeErrorLoop,
+                       "emulation/virtual-time-error-loop.js");
+#undef MAYBE_VirtualTimeErrorLoop
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
