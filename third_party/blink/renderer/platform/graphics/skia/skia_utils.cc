@@ -85,10 +85,12 @@ SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
   if (blend_mode != BlendMode::kNormal) {
     if (static_cast<uint8_t>(blend_mode) >=
         SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
-      SkDEBUGF(
-          ("GraphicsContext::setPlatformCompositeOperation unknown "
-           "BlendMode %d\n",
-           blend_mode));
+#ifdef SK_DEBUG
+      SkDebugf(
+          "GraphicsContext::setPlatformCompositeOperation unknown "
+          "BlendMode %d\n",
+          blend_mode);
+#endif
       return SkBlendMode::kSrcOver;
     }
     return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
@@ -97,10 +99,12 @@ SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
   const CompositOpToSkBlendMode* table = kGMapCompositOpsToSkBlendMode;
   if (static_cast<uint8_t>(op) >=
       SK_ARRAY_COUNT(kGMapCompositOpsToSkBlendMode)) {
-    SkDEBUGF(
-        ("GraphicsContext::setPlatformCompositeOperation unknown "
-         "CompositeOperator %d\n",
-         op));
+#ifdef SK_DEBUG
+    SkDebugf(
+        "GraphicsContext::setPlatformCompositeOperation unknown "
+        "CompositeOperator %d\n",
+        op);
+#endif
     return SkBlendMode::kSrcOver;
   }
   SkASSERT(table[static_cast<uint8_t>(op)].composit_op == op);
@@ -110,10 +114,12 @@ SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
 SkBlendMode WebCoreBlendModeToSkBlendMode(BlendMode blend_mode) {
   if (static_cast<uint8_t>(blend_mode) >=
       SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
-    SkDEBUGF(
-        ("GraphicsContext::setPlatformCompositeOperation unknown "
-         "BlendMode %d\n",
-         blend_mode));
+#ifdef SK_DEBUG
+    SkDebugf(
+        "GraphicsContext::setPlatformCompositeOperation unknown "
+        "BlendMode %d\n",
+        blend_mode);
+#endif
     return SkBlendMode::kSrcOver;
   }
   return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
