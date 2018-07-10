@@ -232,6 +232,9 @@ void SigninManager::DoSignOut(
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  client_->RecreateSigninScopedDeviceId();
+#endif
   client_->SignOut();
 
   // Determine the duration the user was logged in and log that to UMA.

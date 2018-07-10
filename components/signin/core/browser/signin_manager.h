@@ -15,7 +15,10 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
 
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
+
 #include "components/signin/core/browser/signin_manager_base.h"
 
 #else
@@ -28,7 +31,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
