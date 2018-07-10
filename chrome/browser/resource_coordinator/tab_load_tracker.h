@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/process/kill.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
@@ -132,6 +133,8 @@ class TabLoadTracker {
   void DidReceiveResponse(content::WebContents* web_contents);
   void DidStopLoading(content::WebContents* web_contents);
   void DidFailLoad(content::WebContents* web_contents);
+  void RenderProcessGone(content::WebContents* web_contents,
+                         base::TerminationStatus status);
 
   // This is an analog of a PageSignalObserver function. This class is not
   // actually a PageSignalObserver, but these notifications are forwarded to it

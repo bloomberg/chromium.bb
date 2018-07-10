@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/process/kill.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,6 +41,7 @@ class ResourceCoordinatorTabHelper
                    const GURL& validated_url,
                    int error_code,
                    const base::string16& error_description) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
