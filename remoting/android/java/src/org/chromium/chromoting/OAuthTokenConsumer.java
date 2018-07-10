@@ -5,13 +5,13 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.chromoting.base.OAuthTokenFetcher;
 
 import java.io.IOException;

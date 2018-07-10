@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.asynctask.ShadowAsyncTask;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.Executor;
  * Tests for AsyncTaskRunner.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowAsyncTask.class})
 public class AsyncTaskRunnerTest {
     private static class TestExecutor implements Executor {
         private final List<Runnable> mTasks = new ArrayList<>();

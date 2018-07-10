@@ -4,9 +4,9 @@
 
 package org.chromium.ui.resources.async;
 
-import android.os.AsyncTask;
 import android.util.SparseArray;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.TraceEvent;
 import org.chromium.ui.resources.Resource;
 import org.chromium.ui.resources.ResourceLoader;

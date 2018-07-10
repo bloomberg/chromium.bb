@@ -4,8 +4,7 @@
 
 package org.chromium.chromecast.shell;
 
-import android.os.AsyncTask;
-
+import org.chromium.base.AsyncTask;
 import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Scope;
 import org.chromium.chromecast.base.Supplier;
@@ -15,8 +14,8 @@ import java.util.concurrent.Executor;
 /**
  * Runs a task on a worker thread, then run the callback with the result on the UI thread.
  *
- * This is a slightly less verbose way of doing asynchronous work than using android.os.AsyncTask
- * directly.
+ * This is a slightly less verbose way of doing asynchronous work than using
+ * org.chromium.base.AsyncTask directly.
  *
  * Since this implements Scope, a function that returns the result of doAsync() can easily be used
  * as a ScopeFactory in an Observable#watch() call, which can be used to cancel running tasks if

@@ -7,7 +7,6 @@ package org.chromium.content.browser.selection;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.LocaleList;
@@ -17,6 +16,7 @@ import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.ui.base.WindowAndroid;
 

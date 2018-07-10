@@ -8,7 +8,6 @@ import static org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
@@ -18,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.system.Os;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;

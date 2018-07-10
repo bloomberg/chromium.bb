@@ -5,10 +5,10 @@
 package org.chromium.ui.resources;
 
 import android.content.res.AssetManager;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;

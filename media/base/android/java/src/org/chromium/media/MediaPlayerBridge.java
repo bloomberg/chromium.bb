@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.TrackInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
@@ -17,6 +16,7 @@ import android.util.Base64InputStream;
 import android.view.Surface;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;

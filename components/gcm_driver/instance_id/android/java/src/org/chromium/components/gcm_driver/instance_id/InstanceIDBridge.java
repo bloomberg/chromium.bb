@@ -4,9 +4,9 @@
 
 package org.chromium.components.gcm_driver.instance_id;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 

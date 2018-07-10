@@ -7,7 +7,6 @@ package org.chromium.net;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
@@ -15,6 +14,7 @@ import android.os.Debug;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 
