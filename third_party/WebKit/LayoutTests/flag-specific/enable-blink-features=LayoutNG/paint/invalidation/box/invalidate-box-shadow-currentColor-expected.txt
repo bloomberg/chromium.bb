@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
           "rect": [8, 8, 29, 24],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Text'",
           "rect": [8, 8, 29, 19],
           "reason": "style change"
         }
@@ -32,11 +32,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Text'",
       "reason": "style change"
     }
   ]

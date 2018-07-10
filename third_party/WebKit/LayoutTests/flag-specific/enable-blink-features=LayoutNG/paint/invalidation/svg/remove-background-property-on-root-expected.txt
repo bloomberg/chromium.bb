@@ -23,7 +23,7 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [8, 8, 100, 100],
           "reason": "background"
         }
@@ -32,7 +32,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
       "reason": "background"
     },
     {

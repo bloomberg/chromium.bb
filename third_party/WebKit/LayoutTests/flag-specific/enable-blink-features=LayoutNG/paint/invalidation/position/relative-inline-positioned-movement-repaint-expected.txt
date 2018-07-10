@@ -33,15 +33,15 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline (relative positioned) DIV id='block'",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'When this layer moves it shouldn't generate a repaint rect.'",
       "reason": "geometry"
     }
   ]

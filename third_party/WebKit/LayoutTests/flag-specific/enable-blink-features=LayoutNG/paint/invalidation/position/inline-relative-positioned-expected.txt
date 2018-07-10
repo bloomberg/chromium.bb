@@ -18,22 +18,22 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
           "rect": [8, 88, 100, 100],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
-          "rect": [8, 88, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
           "rect": [8, 88, 100, 100],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'a'",
+          "rect": [8, 88, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'p'",
           "rect": [8, 88, 100, 100],
           "reason": "disappeared"
         }
@@ -42,19 +42,19 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline (relative positioned) SPAN",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'a'",
       "reason": "subtree"
     }
   ]

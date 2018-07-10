@@ -18,22 +18,22 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 200, 100, 100],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Target'",
           "rect": [100, 200, 41, 19],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Target'",
           "rect": [100, 100, 41, 19],
           "reason": "geometry"
         }
@@ -42,11 +42,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Target'",
       "reason": "geometry"
     }
   ]

@@ -18,22 +18,22 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
           "rect": [8, 68, 140, 20],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'JOCULAR'",
           "rect": [8, 68, 140, 20],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
           "rect": [8, 8, 140, 20],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'JOCULAR'",
           "rect": [8, 8, 140, 20],
           "reason": "disappeared"
         }
@@ -46,15 +46,15 @@
       "reason": "appeared"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='test'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'JOCULAR'",
       "reason": "subtree"
     }
   ]

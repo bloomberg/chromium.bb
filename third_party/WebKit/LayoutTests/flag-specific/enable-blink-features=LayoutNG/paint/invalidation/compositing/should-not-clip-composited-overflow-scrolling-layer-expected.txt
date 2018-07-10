@@ -34,7 +34,7 @@
       "bounds": [1000, 1000],
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
           "rect": [0, 0, 1000, 1000],
           "reason": "style change"
         }
@@ -93,7 +93,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
       "reason": "style change"
     }
   ]

@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'A\u00A0\u00A0B'",
           "rect": [33, 33, 100, 250],
           "reason": "style change"
         }
@@ -27,7 +27,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'A\u00A0\u00A0B'",
       "reason": "style change"
     }
   ]

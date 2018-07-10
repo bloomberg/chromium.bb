@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='outer'",
           "rect": [677, 537, 62, 37],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='outer'",
           "rect": [677, 531, 62, 37],
           "reason": "disappeared"
         },
@@ -278,42 +278,42 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 543, 40, 10],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 537, 40, 10],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 504, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 498, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 465, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 459, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 426, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 420, 40, 10],
           "reason": "disappeared"
         },
@@ -338,82 +338,82 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 177, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 171, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 99, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [701, 93, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [695, 60, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [695, 54, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [695, 21, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [695, 15, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [693, 138, 40, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [693, 132, 40, 10],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 375, 40, 10],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 369, 40, 10],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 336, 40, 10],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 330, 40, 10],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 297, 40, 10],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
           "rect": [690, 291, 40, 10],
           "reason": "geometry"
         },
@@ -448,122 +448,122 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [727, 101, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [727, 95, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [727, 62, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [727, 56, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [726, 377, 16, 16],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [726, 371, 16, 16],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [726, 338, 16, 16],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [726, 332, 16, 16],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 545, 16, 16],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 539, 16, 16],
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 506, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 500, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 467, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 461, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 428, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 422, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 179, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 173, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 140, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [725, 134, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [721, 23, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [721, 17, 16, 16],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [718, 299, 16, 16],
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'x'",
           "rect": [718, 293, 16, 16],
           "reason": "geometry"
         }
@@ -580,35 +580,15 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
@@ -620,35 +600,15 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
@@ -660,11 +620,51 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'x'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'x'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
@@ -740,15 +740,15 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "geometry"
     },
     {
@@ -760,19 +760,19 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
       "reason": "subtree"
     },
     {
@@ -792,31 +792,15 @@
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
@@ -828,11 +812,11 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
@@ -844,15 +828,31 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "LayoutNGBlockFlow DIV class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'x'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='outer'",
       "reason": "subtree"
     },
     {
@@ -860,11 +860,11 @@
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'x'",
       "reason": "subtree"
     }
   ]

@@ -33,12 +33,12 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 80, 40, 20],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 100, 39, 20],
           "reason": "selection"
         }
@@ -59,11 +59,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'lorem'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'ipsum'",
       "reason": "selection"
     }
   ]
@@ -103,22 +103,22 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 160, 40, 20],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 80, 40, 20],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 180, 39, 20],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 100, 39, 20],
           "reason": "selection"
         }
@@ -139,19 +139,19 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'lorem'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'ipsum'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'lorem'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'ipsum'",
       "reason": "selection"
     }
   ]

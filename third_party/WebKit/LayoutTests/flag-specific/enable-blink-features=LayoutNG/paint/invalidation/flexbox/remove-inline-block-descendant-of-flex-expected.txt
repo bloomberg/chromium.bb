@@ -18,34 +18,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inline-block-2' class='item'",
           "rect": [0, 200, 100, 100],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
-          "rect": [0, 100, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inline-block-1' class='item'",
           "rect": [0, 100, 100, 100],
           "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inline-block-2' class='item'",
+          "rect": [0, 100, 100, 100],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inline-block-2' class='item'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "subtree"
     }
   ]

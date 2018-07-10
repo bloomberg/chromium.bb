@@ -23,12 +23,12 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
           "reason": "disappeared"
         },
@@ -54,7 +54,7 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
       "reason": "subtree"
     },
     {
@@ -88,12 +88,12 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
           "reason": "disappeared"
         },
@@ -119,7 +119,7 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
       "reason": "subtree"
     },
     {
@@ -158,12 +158,12 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 250],
           "reason": "disappeared"
         },
@@ -194,7 +194,7 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
       "reason": "subtree"
     },
     {
@@ -233,12 +233,12 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
           "reason": "disappeared"
         },
@@ -264,7 +264,7 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
       "reason": "subtree"
     },
     {

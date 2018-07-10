@@ -33,27 +33,27 @@
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'findme'",
           "rect": [278, 40, 44, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'findme'",
           "rect": [264, 60, 44, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'findme'",
           "rect": [220, 60, 44, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'findme'",
           "rect": [89, 60, 44, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'findme'",
           "rect": [51, 80, 44, 19],
           "reason": "DocumentMarker change"
         }
@@ -62,23 +62,23 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'findme'",
       "reason": "DocumentMarker change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'findme'",
       "reason": "DocumentMarker change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'findme'",
       "reason": "DocumentMarker change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'findme'",
       "reason": "DocumentMarker change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'findme'",
       "reason": "DocumentMarker change"
     },
     {

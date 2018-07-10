@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'When you scroll down the red square should have no painting glitches.'",
           "rect": [8, 16, 447, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'When you scroll down the red square should have no painting glitches.'",
           "rect": [8, 16, 447, 19],
           "reason": "disappeared"
         },
@@ -55,15 +55,15 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'When you scroll down the red square should have no painting glitches.'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV class='right'",
       "reason": "subtree"
     },
     {

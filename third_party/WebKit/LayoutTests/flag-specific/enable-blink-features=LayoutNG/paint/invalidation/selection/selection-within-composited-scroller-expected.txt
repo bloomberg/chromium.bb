@@ -37,7 +37,7 @@
       "backgroundColor": "#D3D3D3",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'test'",
           "rect": [0, 610, 22, 20],
           "reason": "selection"
         }
@@ -82,7 +82,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'test'",
       "reason": "selection"
     }
   ]

@@ -38,12 +38,12 @@
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [330, 135, 4, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [330, 135, 4, 19],
           "reason": "disappeared"
         }
@@ -52,7 +52,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='em-units'",
       "reason": "subtree"
     },
     {
@@ -64,7 +64,7 @@
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' '",
       "reason": "subtree"
     },
     {

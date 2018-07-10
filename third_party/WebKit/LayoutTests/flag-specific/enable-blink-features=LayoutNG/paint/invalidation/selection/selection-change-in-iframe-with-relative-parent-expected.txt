@@ -18,42 +18,42 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Bazz'",
           "rect": [18, 238, 40, 10],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Bar'",
           "rect": [18, 218, 30, 10],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Foo'",
           "rect": [18, 198, 30, 10],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [58, 238, 10, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [48, 218, 10, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [48, 198, 10, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [18, 228, 10, 10],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [18, 208, 10, 10],
           "reason": "appeared"
         }
@@ -62,35 +62,35 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Foo'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Bar'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Bazz'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     }
   ]

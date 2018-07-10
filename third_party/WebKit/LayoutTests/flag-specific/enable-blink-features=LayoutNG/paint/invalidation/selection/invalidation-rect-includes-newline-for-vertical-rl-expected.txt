@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'xx'",
           "rect": [24, 8, 16, 48],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'y'",
           "rect": [8, 8, 16, 16],
           "reason": "selection"
         }
@@ -32,11 +32,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'xx'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'y'",
       "reason": "selection"
     }
   ]

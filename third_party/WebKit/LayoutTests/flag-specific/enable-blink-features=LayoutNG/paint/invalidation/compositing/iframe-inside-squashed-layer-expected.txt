@@ -34,12 +34,12 @@
       "bounds": [300, 655],
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'test1'",
           "rect": [8, 508, 29, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'test1'",
           "rect": [8, 508, 29, 19],
           "reason": "disappeared"
         },
@@ -77,11 +77,11 @@
       "reason": "scroll control"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'test1'",
       "reason": "subtree"
     }
   ]
