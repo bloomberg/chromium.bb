@@ -332,9 +332,9 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
   controller_connector_observer_.RemoveAll();
 
   if (status) {
+    blink::ServiceWorkerStatusCode value = status.value();
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
-                              status.value(),
-                              blink::ServiceWorkerStatusCode::kMax);
+                              value);
   }
 }
 

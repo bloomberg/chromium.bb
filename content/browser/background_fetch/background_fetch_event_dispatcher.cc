@@ -57,8 +57,7 @@ void RecordFailureResult(ServiceWorkerMetrics::EventType event,
       HistogramSuffixForEventType(event).c_str());
 
   // Used because the |histogram_name| is not a constant.
-  base::UmaHistogramEnumeration(histogram_name, service_worker_status,
-                                blink::ServiceWorkerStatusCode::kMax);
+  base::UmaHistogramEnumeration(histogram_name, service_worker_status);
 }
 
 }  // namespace

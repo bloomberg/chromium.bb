@@ -125,7 +125,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     bool called = false;
     blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
+        blink::ServiceWorkerStatusCode::kErrorFailed;
     context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         base::BindOnce(&SaveStatusCallback, &called, &status));

@@ -1408,7 +1408,8 @@ static void EmulateDispatchSyncEventCallback(
 TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   InitSyncEventTest();
   bool was_called = false;
-  blink::ServiceWorkerStatusCode code = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode code =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
@@ -1422,7 +1423,6 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
                                                         true);
 
   was_called = false;
-  code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
@@ -1435,7 +1435,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
   was_called = false;
-  code = blink::ServiceWorkerStatusCode::kMax;
+  code = blink::ServiceWorkerStatusCode::kOk;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
@@ -1445,7 +1445,6 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
   was_called = false;
-  code = blink::ServiceWorkerStatusCode::kMax;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));

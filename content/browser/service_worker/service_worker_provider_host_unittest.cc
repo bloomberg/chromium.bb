@@ -907,12 +907,12 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
   version1->script_cache_map()->SetResources(records);
   version1->SetMainScriptHttpResponseInfo(
       EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-  blink::ServiceWorkerStatusCode status;
+  base::Optional<blink::ServiceWorkerStatusCode> status;
   helper_->context()->storage()->StoreRegistration(
       registration1_.get(), version1.get(),
       CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   // Make the active worker the controller and give it an ongoing request. This
   // way when a waiting worker calls SkipWaiting(), activation won't trigger
@@ -920,7 +920,6 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
   provider_host1->AssociateRegistration(registration1_.get(), false);
   EXPECT_EQ(version1.get(), provider_host1->controller());
   // The worker must be running to have a request.
-  status = blink::ServiceWorkerStatusCode::kMax;
   version1->StartWorker(ServiceWorkerMetrics::EventType::PUSH,
                         base::DoNothing());
   base::RunLoop().RunUntilIdle();
