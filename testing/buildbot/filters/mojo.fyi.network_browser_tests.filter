@@ -195,8 +195,10 @@
 -ProcessManagerBrowserTest.CrossExtensionEmbeddingOfWebAccessibleResources
 
 # https://crbug.com/853256
--ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
--ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed
+-ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/0
+-ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/1
+-ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed/0
+-ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed/1
 
 # http://crbug.com/816684 Track Page Load Metrics.
 -AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricEmbedded
