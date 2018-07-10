@@ -14,7 +14,7 @@ namespace resource_coordinator {
 
 class IPCVolumeReporter : public CoordinationUnitGraphObserver {
  public:
-  IPCVolumeReporter(std::unique_ptr<base::Timer> timer);
+  IPCVolumeReporter(std::unique_ptr<base::OneShotTimer> timer);
   ~IPCVolumeReporter() override;
   // CoordinationUnitGraphObserver implementation.
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
@@ -35,12 +35,12 @@ class IPCVolumeReporter : public CoordinationUnitGraphObserver {
                               const mojom::Event event) override;
 
  protected:
-  base::Timer* timer() const { return timer_.get(); }
+  base::OneShotTimer* timer() const { return timer_.get(); }
 
  private:
   void ReportIPCVolume();
 
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   uint32_t frame_ipc_count_;
   uint32_t page_ipc_count_;
   uint32_t process_ipc_count_;

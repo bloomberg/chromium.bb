@@ -23,7 +23,7 @@ namespace resource_coordinator {
 
 const base::TimeDelta kReportInterval = base::TimeDelta::FromMinutes(1);
 
-IPCVolumeReporter::IPCVolumeReporter(std::unique_ptr<base::Timer> timer)
+IPCVolumeReporter::IPCVolumeReporter(std::unique_ptr<base::OneShotTimer> timer)
     : timer_(std::move(timer)),
       frame_ipc_count_(0),
       page_ipc_count_(0),

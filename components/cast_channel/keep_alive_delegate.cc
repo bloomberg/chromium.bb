@@ -40,8 +40,8 @@ KeepAliveDelegate::KeepAliveDelegate(
 KeepAliveDelegate::~KeepAliveDelegate() {}
 
 void KeepAliveDelegate::SetTimersForTest(
-    std::unique_ptr<base::Timer> injected_ping_timer,
-    std::unique_ptr<base::Timer> injected_liveness_timer) {
+    std::unique_ptr<base::RetainingOneShotTimer> injected_ping_timer,
+    std::unique_ptr<base::RetainingOneShotTimer> injected_liveness_timer) {
   ping_timer_ = std::move(injected_ping_timer);
   liveness_timer_ = std::move(injected_liveness_timer);
 }
@@ -56,10 +56,10 @@ void KeepAliveDelegate::Start() {
 
   // Use injected mock timers, if provided.
   if (!ping_timer_) {
-    ping_timer_.reset(new base::Timer(true, false));
+    ping_timer_.reset(new base::RetainingOneShotTimer());
   }
   if (!liveness_timer_) {
-    liveness_timer_.reset(new base::Timer(true, false));
+    liveness_timer_.reset(new base::RetainingOneShotTimer());
   }
 
   ping_timer_->Start(

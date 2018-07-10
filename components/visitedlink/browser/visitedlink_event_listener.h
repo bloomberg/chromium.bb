@@ -38,7 +38,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
 
   // Sets a custom timer to use for coalescing events for testing.
   // |coalesce_timer_override| must outlive this.
-  void SetCoalesceTimerForTest(base::Timer* coalesce_timer_override);
+  void SetCoalesceTimerForTest(base::OneShotTimer* coalesce_timer_override);
 
  private:
   void CommitVisitedLinks();
@@ -54,7 +54,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   base::OneShotTimer default_coalesce_timer_;
   // A pointer to either |default_coalesce_timer_| or to an override set using
   // SetCoalesceTimerForTest(). This does not own the timer.
-  base::Timer* coalesce_timer_;
+  base::OneShotTimer* coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;
 
   content::NotificationRegistrar registrar_;

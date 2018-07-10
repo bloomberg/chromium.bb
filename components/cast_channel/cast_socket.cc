@@ -623,7 +623,7 @@ void CastSocketImpl::CloseInternal() {
   SetReadyState(ReadyState::CLOSED);
 }
 
-base::Timer* CastSocketImpl::GetTimer() {
+base::OneShotTimer* CastSocketImpl::GetTimer() {
   return connect_timeout_timer_.get();
 }
 

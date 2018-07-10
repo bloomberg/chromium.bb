@@ -20,7 +20,7 @@
 
 namespace base {
 class TickClock;
-class Timer;
+class OneShotTimer;
 }
 
 namespace data_usage {
@@ -65,11 +65,12 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // over the timing of the TrafficStatsAmortizer and the byte counts returned
   // from TrafficStats. |traffic_stats_query_timer| must not be a repeating
   // timer.
-  TrafficStatsAmortizer(const base::TickClock* tick_clock,
-                        std::unique_ptr<base::Timer> traffic_stats_query_timer,
-                        const base::TimeDelta& traffic_stats_query_delay,
-                        const base::TimeDelta& max_amortization_delay,
-                        size_t max_data_use_buffer_size);
+  TrafficStatsAmortizer(
+      const base::TickClock* tick_clock,
+      std::unique_ptr<base::OneShotTimer> traffic_stats_query_timer,
+      const base::TimeDelta& traffic_stats_query_delay,
+      const base::TimeDelta& max_amortization_delay,
+      size_t max_data_use_buffer_size);
 
   // Queries the total transmitted and received bytes for the application from
   // TrafficStats. Stores the byte counts in |tx_bytes| and |rx_bytes|
@@ -103,7 +104,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // in rapid succession. This must not be a repeating timer.
   // |traffic_stats_query_timer_| is owned as a scoped_ptr so that fake timers
   // can be passed in for tests.
-  std::unique_ptr<base::Timer> traffic_stats_query_timer_;
+  std::unique_ptr<base::OneShotTimer> traffic_stats_query_timer_;
 
   // The delay between data usage being reported to the amortizer before
   // querying TrafficStats. Used with |traffic_stats_query_timer_|.

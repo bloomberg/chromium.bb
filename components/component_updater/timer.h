@@ -29,7 +29,7 @@ class Timer {
 
   base::ThreadChecker thread_checker_;
 
-  base::Timer timer_;
+  base::OneShotTimer timer_;
 
   base::TimeDelta delay_;
   base::Closure user_task_;

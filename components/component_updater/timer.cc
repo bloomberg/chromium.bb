@@ -9,8 +9,7 @@
 
 namespace component_updater {
 
-Timer::Timer() : timer_(false, false) {
-}
+Timer::Timer() {}
 
 Timer::~Timer() {
   DCHECK(thread_checker_.CalledOnValidThread());

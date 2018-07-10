@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
@@ -144,7 +145,7 @@ class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
  public:
   TestTrafficStatsAmortizer(
       const base::TickClock* tick_clock,
-      std::unique_ptr<base::Timer> traffic_stats_query_timer)
+      std::unique_ptr<base::OneShotTimer> traffic_stats_query_timer)
       : TrafficStatsAmortizer(tick_clock,
                               std::move(traffic_stats_query_timer),
                               kTrafficStatsQueryDelay,
@@ -186,8 +187,7 @@ class TrafficStatsAmortizerTest : public testing::Test {
  public:
   TrafficStatsAmortizerTest()
       : mock_timer_(new MockTimerWithTickClock(&test_tick_clock_)),
-        amortizer_(&test_tick_clock_,
-                   std::unique_ptr<base::Timer>(mock_timer_)),
+        amortizer_(&test_tick_clock_, base::WrapUnique(mock_timer_)),
         data_use_callback_call_count_(0) {}
 
   ~TrafficStatsAmortizerTest() override {
