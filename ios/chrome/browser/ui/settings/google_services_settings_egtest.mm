@@ -57,6 +57,8 @@ using chrome_test_util::SettingsDoneButton;
 // Tests if the Google Services settings contains only the non personalized
 // options when the user is not logged in.
 - (void)testServicesWhileSignedOut {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
   [self assertSyncPersonalizedServicesCollapsed:YES];
   [self assertNonPersonalizedServicesCollapsed:NO];
