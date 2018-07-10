@@ -7,7 +7,10 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/google_services_settings_consumer.h"
+
 @class GoogleServicesSettingsViewController;
+@protocol GoogleServicesSettingsViewControllerModelDelegate;
 
 // Delegate for presentation events related to
 // GoogleServicesSettingsViewController.
@@ -21,12 +24,15 @@
 
 // View controller to related to Google services settings.
 @interface GoogleServicesSettingsViewController
-    : SettingsRootCollectionViewController
+    : SettingsRootCollectionViewController<GoogleServicesSettingsConsumer>
 
 // Presentation delegate.
 @property(nonatomic, weak)
     id<GoogleServicesSettingsViewControllerPresentationDelegate>
         presentationDelegate;
+// Model delegate.
+@property(nonatomic, weak) id<GoogleServicesSettingsViewControllerModelDelegate>
+    modelDelegate;
 
 @end
 

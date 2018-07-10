@@ -4,6 +4,11 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -13,6 +18,7 @@
 
 @implementation GoogleServicesSettingsViewController
 
+@synthesize modelDelegate = _modelDelegate;
 @synthesize presentationDelegate = _presentationDelegate;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
@@ -26,12 +32,51 @@
   return self;
 }
 
+#pragma mark - CollectionViewController
+
+- (void)loadModel {
+  [super loadModel];
+  [self.modelDelegate googleServicesSettingsViewControllerLoadModel:self];
+}
+
+#pragma mark - UIViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self reloadData];
+}
+
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
   if (!parent) {
     [self.presentationDelegate
         googleServicesSettingsViewControllerDidRemove:self];
   }
+}
+
+#pragma mark - MDCCollectionViewStylingDelegate
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+  CGFloat width =
+      CGRectGetWidth(collectionView.bounds) - inset.left - inset.right;
+  return [item.cellClass cr_preferredHeightForWidth:width forItem:item];
+}
+
+#pragma mark - UICollectionViewDelegate
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHighlightItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView
+      shouldHighlightItemAtIndexPath:indexPath];
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  return ![item isKindOfClass:[SyncSwitchItem class]];
 }
 
 @end
