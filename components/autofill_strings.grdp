@@ -125,10 +125,6 @@
     Postal code
   </message>
 
-  <message name="IDS_AUTOFILL_SETTINGS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
-   Autofill settings
-  </message>
-
   <message name="IDS_AUTOFILL_MANAGE" desc="The text displayed at the bottom of the Autofill popup to allow the user to manage their Autofill preferences for addresses, credit cards, and passwords. Imperative. When the user clicks on it, opens the Autofill settings page." meaning="Manage addresses, credit cards and passwords in the user profile that can be used by Chrome Autofill.">
     Manage...
   </message>
@@ -143,10 +139,6 @@
 
   <message name="IDS_AUTOFILL_MANAGE_PASSWORDS" desc="The text displayed at the bottom of the Autofill popup to allow the user to manage passwords that can be used by Chrome Autofill. Imperative. When the user clicks on it, opens the Passwords section of the Settings page." meaning="Manage passwords in the user profile that can be used by Chrome Autofill.">
     Manage passwords...
-  </message>
-
-  <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">
-    settings
   </message>
 
   <message name="IDS_AUTOFILL_SCAN_CREDIT_CARD" desc="An item in the autofill popup that triggers a new credit card to be scanned using the camera on the device." formatter_data="android_java">

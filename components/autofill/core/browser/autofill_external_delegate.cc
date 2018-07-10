@@ -434,20 +434,14 @@ void AutofillExternalDelegate::InsertDataListValues(
 
 base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue()
     const {
-  if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews)) {
-    if (GetPopupType() == PopupType::kAddresses)
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
+  if (GetPopupType() == PopupType::kAddresses)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
 
-    if (GetPopupType() == PopupType::kCreditCards)
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS);
+  if (GetPopupType() == PopupType::kCreditCards)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS);
 
-    DCHECK_EQ(GetPopupType(), PopupType::kPersonalInformation);
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE);
-  }
-
-  return l10n_util::GetStringUTF16(
-      IsKeyboardAccessoryEnabled() ? IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION
-                                   : IDS_AUTOFILL_SETTINGS_POPUP);
+  DCHECK_EQ(GetPopupType(), PopupType::kPersonalInformation);
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE);
 }
 
 }  // namespace autofill
