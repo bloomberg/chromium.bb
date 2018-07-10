@@ -167,36 +167,36 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void SetEventListenerProperties(
       LocalFrame* frame,
-      WebEventListenerClass event_class,
-      WebEventListenerProperties properties) override {
+      cc::EventListenerClass event_class,
+      cc::EventListenerProperties properties) override {
     DCHECK(frame->IsMainFrame());
     WebWidgetClient* client = popup_->WidgetClient();
     if (WebLayerTreeView* layer_tree_view = popup_->layer_tree_view_) {
       layer_tree_view->SetEventListenerProperties(event_class, properties);
-      if (event_class == WebEventListenerClass::kTouchStartOrMove) {
+      if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
         client->HasTouchEventHandlers(
-            properties != WebEventListenerProperties::kNothing ||
-            EventListenerProperties(frame,
-                                    WebEventListenerClass::kTouchEndOrCancel) !=
-                WebEventListenerProperties::kNothing);
-      } else if (event_class == WebEventListenerClass::kTouchEndOrCancel) {
+            properties != cc::EventListenerProperties::kNone ||
+            EventListenerProperties(
+                frame, cc::EventListenerClass::kTouchEndOrCancel) !=
+                cc::EventListenerProperties::kNone);
+      } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
         client->HasTouchEventHandlers(
-            properties != WebEventListenerProperties::kNothing ||
-            EventListenerProperties(frame,
-                                    WebEventListenerClass::kTouchStartOrMove) !=
-                WebEventListenerProperties::kNothing);
+            properties != cc::EventListenerProperties::kNone ||
+            EventListenerProperties(
+                frame, cc::EventListenerClass::kTouchStartOrMove) !=
+                cc::EventListenerProperties::kNone);
       }
     } else {
       client->HasTouchEventHandlers(true);
     }
   }
-  WebEventListenerProperties EventListenerProperties(
+  cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
-      WebEventListenerClass event_class) const override {
+      cc::EventListenerClass event_class) const override {
     if (popup_->layer_tree_view_) {
       return popup_->layer_tree_view_->EventListenerProperties(event_class);
     }
-    return WebEventListenerProperties::kNothing;
+    return cc::EventListenerProperties::kNone;
   }
 
   void SetHasScrollEventHandlers(LocalFrame* frame,

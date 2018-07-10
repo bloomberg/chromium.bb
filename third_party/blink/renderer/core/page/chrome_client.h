@@ -26,9 +26,9 @@
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
+#include "cc/input/event_listener_properties.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
@@ -278,11 +278,11 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                                          const CompositedSelection&) {}
 
   virtual void SetEventListenerProperties(LocalFrame*,
-                                          WebEventListenerClass,
-                                          WebEventListenerProperties) = 0;
-  virtual WebEventListenerProperties EventListenerProperties(
+                                          cc::EventListenerClass,
+                                          cc::EventListenerProperties) = 0;
+  virtual cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
-      WebEventListenerClass) const = 0;
+      cc::EventListenerClass) const = 0;
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
   virtual void RequestUnbufferedInputEvents(LocalFrame*) = 0;

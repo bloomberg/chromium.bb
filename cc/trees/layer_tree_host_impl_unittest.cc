@@ -6278,7 +6278,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   // Kick off an animation to show the browser controls.
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, true);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, true);
   base::TimeTicks start_time = base::TimeTicks::Now();
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -10762,7 +10762,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -10837,7 +10837,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   host_impl_->SetViewportSize(gfx::Size(50, 100));
   host_impl_->active_tree()->set_browser_controls_shrink_blink_size(true);
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
 
   LayerImpl* viewport_layer = host_impl_->InnerViewportScrollLayer();
@@ -10879,7 +10879,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   host_impl_->SetViewportSize(gfx::Size(100, 200));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -10959,7 +10959,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   float initial_scroll_offset = 50;
   scroll_layer->layer_tree_impl()
       ->property_trees()
@@ -11037,7 +11037,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   float initial_scroll_offset = 50;
   scroll_layer->layer_tree_impl()
       ->property_trees()
@@ -11117,7 +11117,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      BOTH, SHOWN, false);
+      BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,

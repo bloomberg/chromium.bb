@@ -875,8 +875,9 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   if (!context.Init(false))
     return;
   context.web_view()->UpdateBrowserControlsState(
-      blink::kWebBrowserControlsBoth,
-      show ? blink::kWebBrowserControlsShown : blink::kWebBrowserControlsHidden,
+      cc::BrowserControlsState::kBoth,
+      show ? cc::BrowserControlsState::kShown
+           : cc::BrowserControlsState::kHidden,
       false);
 }
 

@@ -14,7 +14,7 @@ enum class EventListenerClass {
   kMouseWheel,
   // This value includes "touchend" and "touchcancel" events.
   kTouchEndOrCancel,
-  kNumClasses
+  kLast = kTouchEndOrCancel
 };
 
 enum class EventListenerProperties {
@@ -22,7 +22,7 @@ enum class EventListenerProperties {
   kPassive,
   kBlocking,
   kBlockingAndPassive,
-  kMax
+  kLast = kBlockingAndPassive
 };
 
 }  // namespace cc

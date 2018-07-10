@@ -641,8 +641,8 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
 
   // Setting permitted state should change the content offset to match the
   // constraint.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kShown,
+                                       cc::BrowserControlsState::kShown, false);
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
 
   // Only shown state is permitted so controls cannot hide
@@ -653,8 +653,9 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
 
   // Setting permitted state should change content offset to match the
   // constraint.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsHidden, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kHidden,
+                                       false);
   EXPECT_FLOAT_EQ(0, web_view->GetBrowserControls().ContentOffset());
 
   // Only hidden state is permitted so controls cannot show
@@ -664,8 +665,8 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Setting permitted state to "both" should not change content offset.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kBoth, false);
   EXPECT_FLOAT_EQ(0, web_view->GetBrowserControls().ContentOffset());
 
   // Both states are permitted so controls can either show or hide
@@ -682,27 +683,27 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Setting permitted state to "both" should not change an in-flight offset.
   VerticalScroll(20.f);
   EXPECT_FLOAT_EQ(20, web_view->GetBrowserControls().ContentOffset());
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kBoth, false);
   EXPECT_FLOAT_EQ(20, web_view->GetBrowserControls().ContentOffset());
 
   // An animated state change shouldn't cause a change to the content offset
   // since it'll be driven from the compositor.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsHidden, true);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kHidden, true);
   EXPECT_FLOAT_EQ(20, web_view->GetBrowserControls().ContentOffset());
 
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
-                                       kWebBrowserControlsShown, true);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kShown,
+                                       cc::BrowserControlsState::kShown, true);
   EXPECT_FLOAT_EQ(20, web_view->GetBrowserControls().ContentOffset());
 
   // Setting just the constraint should affect the content offset.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kBoth, false);
   EXPECT_FLOAT_EQ(0, web_view->GetBrowserControls().ContentOffset());
 
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kShown,
+                                       cc::BrowserControlsState::kBoth, false);
   EXPECT_FLOAT_EQ(50, web_view->GetBrowserControls().ContentOffset());
 }
 
@@ -712,8 +713,8 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("percent-height.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -755,8 +756,8 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("percent-height.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -773,8 +774,8 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
 
   // Now lock the controls in a hidden state. The layout and elements should
   // resize without a WebView::resize.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kBoth, false);
 
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
@@ -783,8 +784,8 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
 
   // Unlock the controls, the sizes should change even though the controls are
   // still hidden.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kBoth, false);
 
   EXPECT_FLOAT_EQ(150.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
@@ -792,8 +793,8 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 
   // Now lock the controls in a shown state.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kShown,
+                                       cc::BrowserControlsState::kBoth, false);
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
 
   EXPECT_FLOAT_EQ(150.f, abs_pos->getBoundingClientRect()->height());
@@ -803,8 +804,8 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
 
   // Shown -> Hidden
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsBoth, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kBoth, false);
 
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
@@ -813,15 +814,16 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
 
   // Go from Unlocked and showing, to locked and hidden but issue the resize
   // before the constraint update to check for race issues.
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
   ASSERT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
   web_view->UpdateAllLifecyclePhases();
 
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                       kWebBrowserControlsHidden, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                       cc::BrowserControlsState::kHidden,
+                                       false);
 
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
@@ -834,8 +836,8 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnits)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("vh-height.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -876,8 +878,8 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsWithScale)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("vh-height-width-800.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -926,8 +928,8 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsUseLayoutSize)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("vh-height-width-800-extra-wide.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -962,8 +964,8 @@ TEST_F(BrowserControlsTest,
   GetWebView()->SetDefaultPageScaleLimits(min_scale, 5);
   web_view->ResizeWithBrowserControls(WebSize(800, layout_viewport_height),
                                       browser_controls_height, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -1044,8 +1046,8 @@ TEST_F(BrowserControlsTest, MAYBE(ViewportUnitsWhenControlsLocked)) {
   // Initialize with the browser controls showing.
   WebViewImpl* web_view = Initialize("vh-height.html");
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
-                                       kWebBrowserControlsShown, false);
+  web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
+                                       cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
   web_view->UpdateAllLifecyclePhases();
 
@@ -1057,8 +1059,9 @@ TEST_F(BrowserControlsTest, MAYBE(ViewportUnitsWhenControlsLocked)) {
 
   // Lock the browser controls to hidden.
   {
-    web_view->UpdateBrowserControlsState(kWebBrowserControlsHidden,
-                                         kWebBrowserControlsHidden, false);
+    web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
+                                         cc::BrowserControlsState::kHidden,
+                                         false);
     web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
     web_view->UpdateAllLifecyclePhases();
 
@@ -1076,8 +1079,9 @@ TEST_F(BrowserControlsTest, MAYBE(ViewportUnitsWhenControlsLocked)) {
   // Lock the browser controls to shown. This should cause the vh units to
   // behave as usual by including the browser controls region in 100vh.
   {
-    web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
-                                         kWebBrowserControlsShown, false);
+    web_view->UpdateBrowserControlsState(cc::BrowserControlsState::kShown,
+                                         cc::BrowserControlsState::kShown,
+                                         false);
     web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
     web_view->UpdateAllLifecyclePhases();
 
@@ -1135,7 +1139,8 @@ TEST_F(BrowserControlsTest, MAYBE(GrowingHeightKeepsTopControlsHidden)) {
                                       false);
 
   web_view->GetBrowserControls().UpdateConstraintsAndState(
-      kWebBrowserControlsHidden, kWebBrowserControlsHidden, false);
+      cc::BrowserControlsState::kHidden, cc::BrowserControlsState::kHidden,
+      false);
 
   // As we expand the top controls height while hidden, the content offset
   // shouln't change.

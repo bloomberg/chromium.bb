@@ -150,8 +150,8 @@ WebPagePopup* WebViewFrameWidget::GetPagePopup() const {
 }
 
 void WebViewFrameWidget::UpdateBrowserControlsState(
-    WebBrowserControlsState constraints,
-    WebBrowserControlsState current,
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
     bool animate) {
   return web_view_->UpdateBrowserControlsState(constraints, current, animate);
 }

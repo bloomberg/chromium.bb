@@ -45,6 +45,7 @@ typedef struct CGPoint CGPoint;
 
 namespace gfx {
 class Point;
+class Vector2d;
 }
 
 namespace blink {
@@ -105,6 +106,9 @@ class PLATFORM_EXPORT IntPoint {
 #endif
 
   operator gfx::Point() const;
+  // IntPoint is used as an offset, but outside blink, the Vector2d type is used
+  // for offsets instead. Addition of Point+Vector2d gives an offseted Point.
+  explicit operator gfx::Vector2d() const;
 
   String ToString() const;
 

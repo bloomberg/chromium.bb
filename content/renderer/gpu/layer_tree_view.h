@@ -44,6 +44,7 @@ class UkmRecorderFactory;
 
 namespace gfx {
 class ColorSpace;
+class Size;
 }
 
 namespace ui {
@@ -119,15 +120,13 @@ class CONTENT_EXPORT LayerTreeView
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
-  blink::WebSize GetViewportSize() const override;
-  virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
-      const blink::WebFloatPoint& point) const;
+  gfx::Size GetViewportSize() const override;
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
-  void StartPageScaleAnimation(const blink::WebPoint& destination,
+  void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
@@ -143,15 +142,15 @@ class CONTENT_EXPORT LayerTreeView
   void SetDeferCommits(bool defer_commits) override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
-  void RegisterSelection(const blink::WebSelection& selection) override;
+  void RegisterSelection(const cc::LayerSelection& selection) override;
   void ClearSelection() override;
   void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) override;
   void ForceRecalculateRasterScales() override;
   void SetEventListenerProperties(
-      blink::WebEventListenerClass eventClass,
-      blink::WebEventListenerProperties properties) override;
-  blink::WebEventListenerProperties EventListenerProperties(
-      blink::WebEventListenerClass eventClass) const override;
+      cc::EventListenerClass eventClass,
+      cc::EventListenerProperties properties) override;
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass eventClass) const override;
   void SetHaveScrollEventHandlers(bool) override;
   bool HaveScrollEventHandlers() const override;
   int LayerTreeId() const override;
@@ -161,8 +160,8 @@ class CONTENT_EXPORT LayerTreeView
   void SetShowScrollBottleneckRects(bool show) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
 
-  void UpdateBrowserControlsState(blink::WebBrowserControlsState constraints,
-                                  blink::WebBrowserControlsState current,
+  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                  cc::BrowserControlsState current,
                                   bool animate) override;
   void SetBrowserControlsHeight(float top_height,
                                 float bottom_height,

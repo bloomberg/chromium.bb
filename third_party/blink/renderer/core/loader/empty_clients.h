@@ -198,12 +198,12 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                        LocalFrame* local_root) override;
 
   void SetEventListenerProperties(LocalFrame*,
-                                  WebEventListenerClass,
-                                  WebEventListenerProperties) override {}
-  WebEventListenerProperties EventListenerProperties(
+                                  cc::EventListenerClass,
+                                  cc::EventListenerProperties) override {}
+  cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
-      WebEventListenerClass event_class) const override {
-    return WebEventListenerProperties::kNothing;
+      cc::EventListenerClass event_class) const override {
+    return cc::EventListenerProperties::kNone;
   }
   void SetHasScrollEventHandlers(LocalFrame*, bool) override {}
   void SetNeedsLowLatencyInput(LocalFrame*, bool) override {}

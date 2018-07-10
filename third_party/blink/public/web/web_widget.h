@@ -33,8 +33,8 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/paint/paint_canvas.h"
-#include "third_party/blink/public/platform/web_browser_controls_state.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -226,8 +226,8 @@ class WebWidget {
   // Updates browser controls constraints and current state. Allows embedder to
   // control what are valid states for browser controls and if it should
   // animate.
-  virtual void UpdateBrowserControlsState(WebBrowserControlsState constraints,
-                                          WebBrowserControlsState current,
+  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                          cc::BrowserControlsState current,
                                           bool animate) {}
 
   // Called by client to request showing the context menu.

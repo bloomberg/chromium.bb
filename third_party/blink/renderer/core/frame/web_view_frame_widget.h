@@ -74,8 +74,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void WillCloseLayerTreeView() override;
   SkColor BackgroundColor() const override;
   WebPagePopup* GetPagePopup() const override;
-  void UpdateBrowserControlsState(WebBrowserControlsState constraints,
-                                  WebBrowserControlsState current,
+  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                  cc::BrowserControlsState current,
                                   bool animate) override;
   void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(SkColor) override;

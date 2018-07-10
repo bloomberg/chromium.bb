@@ -41,7 +41,7 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
       animation_start_value_(0.f),
       animation_stop_value_(0.f),
       animation_direction_(NO_ANIMATION),
-      permitted_state_(BOTH),
+      permitted_state_(BrowserControlsState::kBoth),
       accumulated_scroll_delta_(0.f),
       baseline_top_content_offset_(0.f),
       baseline_bottom_content_offset_(0.f),
@@ -87,18 +87,22 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
-  DCHECK(!(constraints == SHOWN && current == HIDDEN));
-  DCHECK(!(constraints == HIDDEN && current == SHOWN));
+  DCHECK(!(constraints == BrowserControlsState::kShown &&
+           current == BrowserControlsState::kHidden));
+  DCHECK(!(constraints == BrowserControlsState::kHidden &&
+           current == BrowserControlsState::kShown));
 
   permitted_state_ = constraints;
 
   // Don't do anything if it doesn't matter which state the controls are in.
-  if (constraints == BOTH && current == BOTH)
+  if (constraints == BrowserControlsState::kBoth &&
+      current == BrowserControlsState::kBoth)
     return;
 
   // Don't do anything if there is no change in offset.
   float final_shown_ratio = 1.f;
-  if (constraints == HIDDEN || current == HIDDEN)
+  if (constraints == BrowserControlsState::kHidden ||
+      current == BrowserControlsState::kHidden)
     final_shown_ratio = 0.f;
   if (final_shown_ratio == TopControlsShownRatio()) {
     ResetAnimations();
@@ -134,9 +138,10 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
   if (pinch_gesture_active_)
     return pending_delta;
 
-  if (permitted_state_ == SHOWN && pending_delta.y() > 0)
+  if (permitted_state_ == BrowserControlsState::kShown && pending_delta.y() > 0)
     return pending_delta;
-  else if (permitted_state_ == HIDDEN && pending_delta.y() < 0)
+  else if (permitted_state_ == BrowserControlsState::kHidden &&
+           pending_delta.y() < 0)
     return pending_delta;
 
   accumulated_scroll_delta_ += pending_delta.y();

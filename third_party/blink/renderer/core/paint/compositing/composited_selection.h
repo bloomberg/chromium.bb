@@ -40,8 +40,8 @@
 namespace blink {
 
 // The active selection region, containing compositing data for the selection
-// end points as well as metadata for the selection region.
-// See |WebSelection|.
+// end points as well as metadata for the selection region. Maps to a
+// cc::LayerSelection when the |type| is not kNoSelection.
 struct CompositedSelection {
   STACK_ALLOCATED();
   CompositedSelection() : type(kNoSelection) {}

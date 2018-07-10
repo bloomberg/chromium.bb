@@ -18,15 +18,15 @@ namespace blink {
 
 namespace {
 
-WebEventListenerProperties GetWebEventListenerProperties(bool has_blocking,
-                                                         bool has_passive) {
+cc::EventListenerProperties GetEventListenerProperties(bool has_blocking,
+                                                       bool has_passive) {
   if (has_blocking && has_passive)
-    return WebEventListenerProperties::kBlockingAndPassive;
+    return cc::EventListenerProperties::kBlockingAndPassive;
   if (has_blocking)
-    return WebEventListenerProperties::kBlocking;
+    return cc::EventListenerProperties::kBlocking;
   if (has_passive)
-    return WebEventListenerProperties::kPassive;
-  return WebEventListenerProperties::kNothing;
+    return cc::EventListenerProperties::kPassive;
+  return cc::EventListenerProperties::kNone;
 }
 
 LocalFrame* GetLocalFrameForTarget(EventTarget* target) {
@@ -250,9 +250,9 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
     case kWheelEventBlocking:
     case kWheelEventPassive:
       GetPage()->GetChromeClient().SetEventListenerProperties(
-          frame, WebEventListenerClass::kMouseWheel,
-          GetWebEventListenerProperties(HasEventHandlers(kWheelEventBlocking),
-                                        HasEventHandlers(kWheelEventPassive)));
+          frame, cc::EventListenerClass::kMouseWheel,
+          GetEventListenerProperties(HasEventHandlers(kWheelEventBlocking),
+                                     HasEventHandlers(kWheelEventPassive)));
       break;
     case kTouchStartOrMoveEventBlockingLowLatency:
       GetPage()->GetChromeClient().SetNeedsLowLatencyInput(frame,
@@ -263,8 +263,8 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
     case kTouchStartOrMoveEventPassive:
     case kPointerEvent:
       GetPage()->GetChromeClient().SetEventListenerProperties(
-          frame, WebEventListenerClass::kTouchStartOrMove,
-          GetWebEventListenerProperties(
+          frame, cc::EventListenerClass::kTouchStartOrMove,
+          GetEventListenerProperties(
               HasEventHandlers(kTouchAction) ||
                   HasEventHandlers(kTouchStartOrMoveEventBlocking) ||
                   HasEventHandlers(kTouchStartOrMoveEventBlockingLowLatency),
@@ -274,8 +274,8 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
     case kTouchEndOrCancelEventBlocking:
     case kTouchEndOrCancelEventPassive:
       GetPage()->GetChromeClient().SetEventListenerProperties(
-          frame, WebEventListenerClass::kTouchEndOrCancel,
-          GetWebEventListenerProperties(
+          frame, cc::EventListenerClass::kTouchEndOrCancel,
+          GetEventListenerProperties(
               HasEventHandlers(kTouchEndOrCancelEventBlocking),
               HasEventHandlers(kTouchEndOrCancelEventPassive)));
       break;

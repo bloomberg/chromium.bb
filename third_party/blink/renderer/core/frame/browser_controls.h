@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BROWSER_CONTROLS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BROWSER_CONTROLS_H_
 
-#include "third_party/blink/public/platform/web_browser_controls_state.h"
+#include "cc/input/browser_controls_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -45,8 +45,8 @@ class CORE_EXPORT BrowserControls final
   float ShownRatio() const { return shown_ratio_; }
   void SetShownRatio(float);
 
-  void UpdateConstraintsAndState(WebBrowserControlsState constraints,
-                                 WebBrowserControlsState current,
+  void UpdateConstraintsAndState(cc::BrowserControlsState constraints,
+                                 cc::BrowserControlsState current,
                                  bool animate);
 
   void ScrollBegin();
@@ -55,7 +55,7 @@ class CORE_EXPORT BrowserControls final
   // scroll amount.
   FloatSize ScrollBy(FloatSize scroll_delta);
 
-  WebBrowserControlsState PermittedState() const { return permitted_state_; }
+  cc::BrowserControlsState PermittedState() const { return permitted_state_; }
 
  private:
   explicit BrowserControls(const Page&);
@@ -89,7 +89,7 @@ class CORE_EXPORT BrowserControls final
   bool shrink_viewport_;
 
   // Constraints on the browser controls state
-  WebBrowserControlsState permitted_state_;
+  cc::BrowserControlsState permitted_state_;
 };
 }  // namespace blink
 

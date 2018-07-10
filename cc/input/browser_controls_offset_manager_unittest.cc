@@ -509,7 +509,8 @@ TEST(BrowserControlsOffsetManagerTest,
 TEST(BrowserControlsOffsetManagerTest, ScrollByWithZeroHeightControlsIsNoop) {
   MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
   BrowserControlsOffsetManager* manager = client.manager();
-  manager->UpdateBrowserControlsState(BOTH, BOTH, false);
+  manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
+                                      BrowserControlsState::kBoth, false);
 
   manager->ScrollBegin();
   gfx::Vector2dF pending = manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
@@ -579,11 +580,13 @@ TEST(BrowserControlsOffsetManagerTest,
   BrowserControlsOffsetManager* manager = client.manager();
   EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 
-  manager->UpdateBrowserControlsState(BOTH, HIDDEN, true);
+  manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
+                                      BrowserControlsState::kHidden, true);
   EXPECT_TRUE(manager->has_animation());
   EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 
-  manager->UpdateBrowserControlsState(BOTH, SHOWN, true);
+  manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
+                                      BrowserControlsState::kShown, true);
   EXPECT_FALSE(manager->has_animation());
   EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
 }

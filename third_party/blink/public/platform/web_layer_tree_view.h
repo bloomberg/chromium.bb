@@ -27,16 +27,15 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_TREE_VIEW_H_
 
 #include "base/callback.h"
+#include "cc/input/browser_controls_state.h"
+#include "cc/input/event_listener_properties.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "third_party/blink/public/platform/web_browser_controls_state.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_event_listener_properties.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -48,10 +47,12 @@ class AnimationHost;
 class PaintImage;
 }
 
-namespace blink {
+namespace gfx {
+class Size;
+class Vector2d;
+}  // namespace gfx
 
-struct WebPoint;
-class WebSelection;
+namespace blink {
 
 class WebLayerTreeView {
  public:
@@ -85,7 +86,7 @@ class WebLayerTreeView {
   // View properties ---------------------------------------------------
 
   // Viewport size is given in physical pixels.
-  virtual WebSize GetViewportSize() const { return WebSize(); }
+  virtual gfx::Size GetViewportSize() const = 0;
 
   // Sets the background color for the viewport.
   virtual void SetBackgroundColor(SkColor) {}
@@ -106,7 +107,7 @@ class WebLayerTreeView {
   // If useAnchor is true, destination is a point on the screen that will remain
   // fixed for the duration of the animation.
   // If useAnchor is false, destination is the final top-left scroll position.
-  virtual void StartPageScaleAnimation(const WebPoint& destination,
+  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec) {}
@@ -121,8 +122,8 @@ class WebLayerTreeView {
   virtual void SetBrowserControlsShownRatio(float) {}
 
   // Update browser controls permitted and current states
-  virtual void UpdateBrowserControlsState(WebBrowserControlsState constraints,
-                                          WebBrowserControlsState current,
+  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                          cc::BrowserControlsState current,
                                           bool animate) {}
 
   // Set browser controls height. If |shrink_viewport| is set to true, then
@@ -178,7 +179,7 @@ class WebLayerTreeView {
   virtual void ClearViewportLayers() {}
 
   // Used to update the active selection bounds.
-  virtual void RegisterSelection(const WebSelection&) {}
+  virtual void RegisterSelection(const cc::LayerSelection&) {}
   virtual void ClearSelection() {}
 
   // Mutations are plumbed back to the layer tree via the mutator client.
@@ -189,8 +190,8 @@ class WebLayerTreeView {
   virtual void ForceRecalculateRasterScales() {}
 
   // Input properties ---------------------------------------------------
-  virtual void SetEventListenerProperties(WebEventListenerClass,
-                                          WebEventListenerProperties) {}
+  virtual void SetEventListenerProperties(cc::EventListenerClass,
+                                          cc::EventListenerProperties) {}
   virtual void UpdateEventRectsForSubframeIfNecessary() {}
   virtual void SetHaveScrollEventHandlers(bool) {}
 
@@ -199,9 +200,9 @@ class WebLayerTreeView {
 
   // Debugging / dangerous ---------------------------------------------
 
-  virtual WebEventListenerProperties EventListenerProperties(
-      WebEventListenerClass) const {
-    return WebEventListenerProperties::kNothing;
+  virtual cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass) const {
+    return cc::EventListenerProperties::kNone;
   }
   virtual bool HaveScrollEventHandlers() const { return false; }
 

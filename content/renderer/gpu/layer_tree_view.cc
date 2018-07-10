@@ -42,7 +42,6 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/web_selection.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace base {
@@ -130,55 +129,6 @@ void ReportTimeSwapPromise::DidNotSwap(
 
 int64_t ReportTimeSwapPromise::TraceId() const {
   return 0;
-}
-
-gfx::SelectionBound::Type ConvertFromWebSelectionBoundType(
-    blink::WebSelectionBound::Type type) {
-  if (type == blink::WebSelectionBound::Type::kSelectionLeft)
-    return gfx::SelectionBound::Type::LEFT;
-  if (type == blink::WebSelectionBound::Type::kSelectionRight)
-    return gfx::SelectionBound::Type::RIGHT;
-  // if WebSelection is not a range (caret or none),
-  // The type of gfx::SelectionBound should be CENTER.
-  DCHECK_EQ(type, blink::WebSelectionBound::Type::kCaret);
-  return gfx::SelectionBound::Type::CENTER;
-}
-
-cc::LayerSelectionBound ConvertFromWebSelectionBound(
-    const blink::WebSelectionBound& bound) {
-  cc::LayerSelectionBound cc_bound;
-  DCHECK(bound.layer_id);
-
-  cc_bound.type = ConvertFromWebSelectionBoundType(bound.type);
-  cc_bound.layer_id = bound.layer_id;
-  cc_bound.edge_top = gfx::Point(bound.edge_top_in_layer);
-  cc_bound.edge_bottom = gfx::Point(bound.edge_bottom_in_layer);
-  cc_bound.hidden = bound.hidden;
-  return cc_bound;
-}
-
-cc::LayerSelection ConvertFromWebSelection(
-    const blink::WebSelection& web_selection) {
-  if (web_selection.IsNone())
-    return cc::LayerSelection();
-  cc::LayerSelection cc_selection;
-  cc_selection.start = ConvertFromWebSelectionBound(web_selection.Start());
-  cc_selection.end = ConvertFromWebSelectionBound(web_selection.end());
-  return cc_selection;
-}
-
-// Check cc::BrowserControlsState, and WebBrowserControlsState
-// are kept in sync.
-static_assert(int(blink::kWebBrowserControlsBoth) == int(cc::BOTH),
-              "mismatching enums: BOTH");
-static_assert(int(blink::kWebBrowserControlsHidden) == int(cc::HIDDEN),
-              "mismatching enums: HIDDEN");
-static_assert(int(blink::kWebBrowserControlsShown) == int(cc::SHOWN),
-              "mismatching enums: SHOWN");
-
-static cc::BrowserControlsState ConvertBrowserControlsState(
-    blink::WebBrowserControlsState state) {
-  return static_cast<cc::BrowserControlsState>(state);
 }
 
 }  // namespace
@@ -328,13 +278,8 @@ cc::AnimationHost* LayerTreeView::CompositorAnimationHost() {
   return animation_host_.get();
 }
 
-blink::WebSize LayerTreeView::GetViewportSize() const {
-  return blink::WebSize(layer_tree_host_->device_viewport_size());
-}
-
-blink::WebFloatPoint LayerTreeView::adjustEventPointForPinchZoom(
-    const blink::WebFloatPoint& point) const {
-  return point;
+gfx::Size LayerTreeView::GetViewportSize() const {
+  return layer_tree_host_->device_viewport_size();
 }
 
 void LayerTreeView::SetBackgroundColor(SkColor color) {
@@ -358,15 +303,14 @@ void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                 maximum);
 }
 
-void LayerTreeView::StartPageScaleAnimation(const blink::WebPoint& destination,
+void LayerTreeView::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                             bool use_anchor,
                                             float new_page_scale,
                                             double duration_sec) {
   base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
       duration_sec * base::Time::kMicrosecondsPerSecond);
-  layer_tree_host_->StartPageScaleAnimation(
-      gfx::Vector2d(destination.x, destination.y), use_anchor, new_page_scale,
-      duration);
+  layer_tree_host_->StartPageScaleAnimation(target_offset, use_anchor,
+                                            new_page_scale, duration);
 }
 
 bool LayerTreeView::HasPendingPageScaleAnimation() const {
@@ -401,13 +345,12 @@ void LayerTreeView::ClearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(cc::LayerTreeHost::ViewportLayers());
 }
 
-void LayerTreeView::RegisterSelection(const blink::WebSelection& selection) {
-  layer_tree_host_->RegisterSelection(ConvertFromWebSelection(selection));
+void LayerTreeView::RegisterSelection(const cc::LayerSelection& selection) {
+  layer_tree_host_->RegisterSelection(selection);
 }
 
 void LayerTreeView::ClearSelection() {
-  cc::LayerSelection empty_selection;
-  layer_tree_host_->RegisterSelection(empty_selection);
+  layer_tree_host_->RegisterSelection(cc::LayerSelection());
 }
 
 void LayerTreeView::SetMutatorClient(
@@ -420,45 +363,15 @@ void LayerTreeView::ForceRecalculateRasterScales() {
   layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
-static_assert(static_cast<cc::EventListenerClass>(
-                  blink::WebEventListenerClass::kTouchStartOrMove) ==
-                  cc::EventListenerClass::kTouchStartOrMove,
-              "EventListenerClass and WebEventListenerClass enums must match");
-static_assert(static_cast<cc::EventListenerClass>(
-                  blink::WebEventListenerClass::kMouseWheel) ==
-                  cc::EventListenerClass::kMouseWheel,
-              "EventListenerClass and WebEventListenerClass enums must match");
-
-static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::kNothing) ==
-                  cc::EventListenerProperties::kNone,
-              "EventListener and WebEventListener enums must match");
-static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::kPassive) ==
-                  cc::EventListenerProperties::kPassive,
-              "EventListener and WebEventListener enums must match");
-static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::kBlocking) ==
-                  cc::EventListenerProperties::kBlocking,
-              "EventListener and WebEventListener enums must match");
-static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::kBlockingAndPassive) ==
-                  cc::EventListenerProperties::kBlockingAndPassive,
-              "EventListener and WebEventListener enums must match");
-
 void LayerTreeView::SetEventListenerProperties(
-    blink::WebEventListenerClass eventClass,
-    blink::WebEventListenerProperties properties) {
-  layer_tree_host_->SetEventListenerProperties(
-      static_cast<cc::EventListenerClass>(eventClass),
-      static_cast<cc::EventListenerProperties>(properties));
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
+  layer_tree_host_->SetEventListenerProperties(event_class, properties);
 }
 
-blink::WebEventListenerProperties LayerTreeView::EventListenerProperties(
-    blink::WebEventListenerClass event_class) const {
-  return static_cast<blink::WebEventListenerProperties>(
-      layer_tree_host_->event_listener_properties(
-          static_cast<cc::EventListenerClass>(event_class)));
+cc::EventListenerProperties LayerTreeView::EventListenerProperties(
+    cc::EventListenerClass event_class) const {
+  return layer_tree_host_->event_listener_properties(event_class);
 }
 
 void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
@@ -624,12 +537,10 @@ void LayerTreeView::SetShowScrollBottleneckRects(bool show) {
 }
 
 void LayerTreeView::UpdateBrowserControlsState(
-    blink::WebBrowserControlsState constraints,
-    blink::WebBrowserControlsState current,
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
     bool animate) {
-  layer_tree_host_->UpdateBrowserControlsState(
-      ConvertBrowserControlsState(constraints),
-      ConvertBrowserControlsState(current), animate);
+  layer_tree_host_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
 void LayerTreeView::SetBrowserControlsHeight(float top_height,
