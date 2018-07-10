@@ -12,7 +12,6 @@
 #include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "headless/app/shell_navigation_request.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/page.h"
