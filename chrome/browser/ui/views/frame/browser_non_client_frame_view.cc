@@ -122,7 +122,9 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state) const {
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
-  if (MD::IsRefreshUi() && state == TAB_INACTIVE && ShouldPaintAsThemed()) {
+  if (MD::IsRefreshUi() && state == TAB_INACTIVE &&
+      !GetThemeProvider()->HasCustomColor(
+          ThemeProperties::COLOR_BACKGROUND_TAB_TEXT)) {
     return color_utils::IsDark(GetFrameColor()) ? SK_ColorWHITE
                                                 : gfx::kGoogleGrey800;
   }
