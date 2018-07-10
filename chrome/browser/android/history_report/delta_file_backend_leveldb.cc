@@ -8,10 +8,12 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
+#include "chrome/browser/android/history_report/usage_report_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -109,13 +111,20 @@ bool DeltaFileBackend::Init() {
     }
     status = leveldb_env::OpenDB(options, path, &db_);
   }
-  if (status.ok()) {
-    CHECK(db_);
-    return true;
+  if (!status.ok()) {
+    LOG(WARNING) << "Unable to open " << path_.value() << ": "
+                 << status.ToString();
+    return false;
   }
-  LOG(WARNING) << "Unable to open " << path_.value() << ": "
-               << status.ToString();
-  return false;
+  CHECK(db_);
+
+  UMA_HISTOGRAM_COUNTS_1M("Search.HistoryReport.DeltaFile.LevelDBEntries",
+                          usage_report_util::DatabaseEntries(db_.get()));
+
+  UMA_HISTOGRAM_COUNTS_1M("Search.HistoryReport.DeltaFile.LastSeqNo",
+                          GetLastSeqNo(db_.get()));
+
+  return true;
 }
 
 bool DeltaFileBackend::EnsureInitialized() {
