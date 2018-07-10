@@ -125,11 +125,14 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   if (width_in_pixels_ > 0) {
     canvas->Save();
-    float scale = canvas->UndoDeviceScaleFactor();
-    gfx::Rect rect = ScaleToEnclosingRect(GetPaintedBounds(), scale, scale);
-
-    rect.set_width(width_in_pixels_);
-    TileRoundRect(canvas, flags, rect, static_cast<int>(corner_radius * scale));
+    float layer_scale =
+        target_widget()->GetNativeWindow()->layer()->device_scale_factor();
+    float canvas_scale = canvas->UndoDeviceScaleFactor();
+    gfx::Rect rect =
+        ScaleToEnclosingRect(GetPaintedBounds(), canvas_scale, canvas_scale);
+    rect.set_width(width_in_pixels_ * canvas_scale / layer_scale);
+    TileRoundRect(canvas, flags, rect,
+                  static_cast<int>(corner_radius * canvas_scale));
     canvas->Restore();
   } else {
     TileRoundRect(canvas, flags, GetPaintedBounds(), corner_radius);
