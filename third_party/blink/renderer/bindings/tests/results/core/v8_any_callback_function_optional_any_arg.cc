@@ -11,6 +11,7 @@
 
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_any_callback_function_optional_any_arg.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"

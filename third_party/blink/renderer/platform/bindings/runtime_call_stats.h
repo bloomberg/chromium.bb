@@ -10,12 +10,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats_count_everything_buildflags.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
@@ -24,6 +22,8 @@ class TickClock;
 }
 
 namespace blink {
+
+class TracedValue;
 
 // A simple counter used to track total execution count & time for a particular
 // function/scope.
@@ -356,18 +356,8 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
 class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
  public:
   explicit RuntimeCallStatsScopedTracer(v8::Isolate* isolate) {
-    bool category_group_enabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(s_category_group_,
-                                       &category_group_enabled);
-    if (LIKELY(!category_group_enabled ||
-               !RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled()))
-      return;
-
-    RuntimeCallStats* stats = RuntimeCallStats::From(isolate);
-    if (!stats->InUse()) {
-      stats_ = stats;
-      AddBeginTraceEvent();
-    }
+    if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled()))
+      AddBeginTraceEventIfEnabled(isolate);
   }
 
   ~RuntimeCallStatsScopedTracer() {
@@ -376,7 +366,7 @@ class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
   }
 
  private:
-  void AddBeginTraceEvent();
+  void AddBeginTraceEventIfEnabled(v8::Isolate* isolate);
   void AddEndTraceEvent();
 
   static const char* const s_category_group_;

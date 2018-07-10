@@ -10,6 +10,7 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/array_buffer_or_array_buffer_view_or_dictionary.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
