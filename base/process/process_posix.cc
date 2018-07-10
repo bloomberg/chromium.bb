@@ -339,7 +339,7 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
 
-  int local_exit_code;
+  int local_exit_code = 0;
   bool exited = WaitForExitWithTimeoutImpl(Handle(), &local_exit_code, timeout);
   if (exited) {
     Exited(local_exit_code);
