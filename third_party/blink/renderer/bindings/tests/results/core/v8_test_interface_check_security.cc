@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -308,34 +309,88 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
 static void doNotCheckSecurityVoidOverloadMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
 
-  impl->doNotCheckSecurityVoidOverloadMethod();
+  V8StringResource<> argument1;
+  V8StringResource<> argument2;
+  argument1 = info[0];
+  if (!argument1.Prepare())
+    return;
+
+  argument2 = info[1];
+  if (!argument2.Prepare())
+    return;
+
+  impl->doNotCheckSecurityVoidOverloadMethod(argument1, argument2);
 }
 
 static void doNotCheckSecurityVoidOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityVoidOverloadMethod");
+
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
 
-  V8StringResource<> argument;
-  argument = info[0];
-  if (!argument.Prepare())
+  V8StringResource<> argument1;
+  int32_t argument2;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  argument1 = info[0];
+  if (!argument1.Prepare())
     return;
 
-  impl->doNotCheckSecurityVoidOverloadMethod(argument);
+  if (UNLIKELY(numArgsPassed <= 1)) {
+    impl->doNotCheckSecurityVoidOverloadMethod(argument1);
+    return;
+  }
+  argument2 = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[1], exceptionState, kNormalConversion);
+  if (exceptionState.HadException())
+    return;
+
+  impl->doNotCheckSecurityVoidOverloadMethod(argument1, argument2);
+}
+
+static int doNotCheckSecurityVoidOverloadMethodMethodLength() {
+  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+    return 1;
+  }
+  return 2;
 }
 
 static void doNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
 
-  switch (std::min(1, info.Length())) {
-    case 0:
+  switch (std::min(2, info.Length())) {
+    case 1:
+      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+        if (true) {
+          doNotCheckSecurityVoidOverloadMethod2Method(info);
+          return;
+        }
+      }
+      break;
+    case 2:
+      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+        if (info[1]->IsUndefined()) {
+          doNotCheckSecurityVoidOverloadMethod2Method(info);
+          return;
+        }
+      }
+      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+        if (info[1]->IsNumber()) {
+          doNotCheckSecurityVoidOverloadMethod2Method(info);
+          return;
+        }
+      }
       if (true) {
         doNotCheckSecurityVoidOverloadMethod1Method(info);
         return;
       }
-      break;
-    case 1:
-      if (true) {
-        doNotCheckSecurityVoidOverloadMethod2Method(info);
-        return;
+      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+        if (true) {
+          doNotCheckSecurityVoidOverloadMethod2Method(info);
+          return;
+        }
       }
       break;
     default:
@@ -344,6 +399,10 @@ static void doNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityVoidOverloadMethod");
   if (isArityError) {
+    if (info.Length() < TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidOverloadMethodMethodLength()) {
+      exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidOverloadMethodMethodLength(), info.Length()));
+      return;
+    }
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
 }
@@ -355,7 +414,7 @@ static void doNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8:
   v8::Local<v8::FunctionTemplate> interfaceTemplate = data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapperTypeInfo);
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
 
-  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, V8TestInterfaceCheckSecurity::doNotCheckSecurityVoidOverloadMethodMethodCallback, V8Undefined(), signature, 0);
+  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, V8TestInterfaceCheckSecurity::doNotCheckSecurityVoidOverloadMethodMethodCallback, V8Undefined(), signature, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidOverloadMethodMethodLength());
   // Return the function by default, unless the user script has overwritten it.
   V8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
