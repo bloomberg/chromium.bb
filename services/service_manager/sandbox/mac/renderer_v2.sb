@@ -21,8 +21,10 @@
 ; Reads of signed Mach-O blobs created by the CVMS server.
 ; https://crbug.com/850021
 (if (>= os-version 1014)
-  (allow file-read-data
-    (prefix "/private/tmp/cvmsCodeSignObj")))
+  (allow file-read*
+    (extension "com.apple.cvms.kernel")
+    (prefix "/private/tmp/cvmsCodeSignObj")
+    (subpath "/private/var/db/CVMS")))
 
 (allow file-write-data
   (require-all
