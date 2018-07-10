@@ -66,7 +66,8 @@ log () {
   fi
 }
 
-DEFAULT_PULL_LIBS_DIR=/tmp/$USER-adb-gdb-libs
+DEFAULT_PULL_LIBS_DIR="/tmp/adb-gdb-support-$USER"
+IDE_DIR="$DEFAULT_PULL_LIBS_DIR"
 
 # NOTE: Allow wrapper scripts to set various default through ADB_GDB_XXX
 # environment variables. This is only for cosmetic reasons, i.e. to
@@ -77,11 +78,11 @@ PROGNAME=${ADB_GDB_PROGNAME:-$(basename "$0")}
 
 ADB=
 ANNOTATE=
-FORCE=
 CGDB=
 GDBINIT=
 GDBSERVER=
 HELP=
+IDE=
 NDK_DIR=
 NO_PULL_LIBS=
 PACKAGE_NAME=
@@ -109,9 +110,6 @@ for opt; do
     --annotate=3)
       ANNOTATE=$optarg
       ;;
-    --force)
-      FORCE=true
-      ;;
     --gdbserver=*)
       GDBSERVER=$optarg
       ;;
@@ -120,6 +118,9 @@ for opt; do
       ;;
     --help|-h|-?)
       HELP=true
+      ;;
+    --ide)
+      IDE=true
       ;;
     --ndk-dir=*)
       NDK_DIR=$optarg
@@ -275,7 +276,6 @@ Valid options:
   --package-name=<name> Specify package name (alternative to 1st argument).
   --program-name=<name> Specify program name (cosmetic only).
   --pid=<pid>           Specify application process pid.
-  --force               Kill any previous debugging session, if any.
   --attach-delay=<num>  Seconds to wait for gdbserver to attach to the
                         remote process before starting gdb. Default 1.
                         <num> may be a float if your sleep(1) supports it.
@@ -288,6 +288,7 @@ Valid options:
   --adb=<file>          Specify host ADB binary.
   --device=<file>       ADB device serial to use (-s flag).
   --port=<port>         Specify the tcp port to use.
+  --ide                 Forward gdb port, but do not enter gdb console.
 
   --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
                         run by this script. This can be useful to use
@@ -319,7 +320,7 @@ if [[ -z "$SYMBOL_DIR" && -z "$CHROMIUM_OUTPUT_DIR" ]]; then
 fi
 
 if ls *.so >/dev/null 2>&1; then
-  panic ".so files found in your working directory. These will conflict with " \
+  panic ".so files found in your working directory. These will conflict with" \
       "library lookup logic. Change your working directory and try again."
 fi
 
@@ -689,18 +690,6 @@ mkdir -p "$TMPDIR" && rm -rf "$TMPDIR"/*
 
 GDBSERVER_PIDFILE="$TMPDIR"/gdbserver-$TMP_ID.pid
 
-# If --force is specified, try to kill any gdbserver process started by the
-# same user on the device. Normally, these are killed automatically by the
-# script on exit, but there are a few corner cases where this would still
-# be needed.
-if [ "$FORCE" ]; then
-  GDBSERVER_PIDS=$(adb_shell ps | awk '$9 ~ /gdbserver/ { print $2; }')
-  for GDB_PID in $GDBSERVER_PIDS; do
-    log "Killing previous gdbserver (PID=$GDB_PID)"
-    adb_shell kill -9 $GDB_PID
-  done
-fi
-
 # Return the timestamp of a given file, as number of seconds since epoch.
 # $1: file path
 # Out: file timestamp
@@ -722,6 +711,9 @@ get_build_fingerprint_from () {
 
 
 ORG_PULL_LIBS_DIR=$PULL_LIBS_DIR
+if [[ -n "$ANDROID_SERIAL" ]]; then
+  DEFAULT_PULL_LIBS_DIR="$DEFAULT_PULL_LIBS_DIR/$ANDROID_SERIAL"
+fi
 PULL_LIBS_DIR=${PULL_LIBS_DIR:-$DEFAULT_PULL_LIBS_DIR}
 
 HOST_FINGERPRINT=
@@ -886,7 +878,7 @@ case $TARGET_ARCH in
 esac
 
 # Default to app_process if bit-width specific process isn't found.
-adb_shell ls /system/bin/$GDBEXEC
+adb_shell ls /system/bin/$GDBEXEC > /dev/null
 if [ $? != 0 ]; then
     GDBEXEC=app_process
 fi
@@ -894,7 +886,7 @@ fi
 # Detect AddressSanitizer setup on the device. In that case app_process is a
 # script, and the real executable is app_process.real.
 GDBEXEC_ASAN=app_process.real
-adb_shell ls /system/bin/$GDBEXEC_ASAN
+adb_shell ls /system/bin/$GDBEXEC_ASAN > /dev/null
 if [ $? == 0 ]; then
     GDBEXEC=$GDBEXEC_ASAN
 fi
@@ -917,37 +909,49 @@ host:localhost:$HOST_PORT to device:$TARGET_DOMAIN_SOCKET"
 # program as root, which requires of course root privileges.
 # Maybe we should add a --root option to enable this?
 #
-log "Starting gdbserver in the background:"
-GDBSERVER_LOG=$TMPDIR/gdbserver-$TMP_ID.log
-log "adb shell $COMMAND_PREFIX $TARGET_GDBSERVER \
-  --once +$TARGET_DOMAIN_SOCKET \
-  --attach $PID $COMMAND_SUFFIX"
-"$ADB" shell $COMMAND_PREFIX $TARGET_GDBSERVER \
-  --once +$TARGET_DOMAIN_SOCKET \
-  --attach $PID $COMMAND_SUFFIX > $GDBSERVER_LOG 2>&1 &
-GDBSERVER_PID=$!
-echo "$GDBSERVER_PID" > $GDBSERVER_PIDFILE
-log "background job pid: $GDBSERVER_PID"
 
-# Sleep to allow gdbserver to attach to the remote process and be
-# ready to connect to.
-log "Sleeping ${ATTACH_DELAY}s to ensure gdbserver is alive"
-sleep "$ATTACH_DELAY"
-log "Job control: $(jobs -l)"
-STATE=$(jobs -l | awk '$2 == "'$GDBSERVER_PID'" { print $3; }')
-if [ "$STATE" != "Running" ]; then
-  echo "ERROR: GDBServer either failed to run or attach to PID $PID!"
-  echo "Here is the output from gdbserver (also try --verbose for more):"
-  echo "===== gdbserver.log start ====="
-  cat $GDBSERVER_LOG
-  echo ="===== gdbserver.log end ======"
-  exit 1
-fi
+for i in 1 2; do
+  log "Starting gdbserver in the background:"
+  GDBSERVER_LOG=$TMPDIR/gdbserver-$TMP_ID.log
+  log "adb shell $COMMAND_PREFIX $TARGET_GDBSERVER \
+    --once +$TARGET_DOMAIN_SOCKET \
+    --attach $PID $COMMAND_SUFFIX"
+  "$ADB" shell $COMMAND_PREFIX $TARGET_GDBSERVER \
+    --once +$TARGET_DOMAIN_SOCKET \
+    --attach $PID $COMMAND_SUFFIX > $GDBSERVER_LOG 2>&1 &
+  GDBSERVER_PID=$!
+  echo "$GDBSERVER_PID" > $GDBSERVER_PIDFILE
+  log "background job pid: $GDBSERVER_PID"
+
+  # Sleep to allow gdbserver to attach to the remote process and be
+  # ready to connect to.
+  log "Sleeping ${ATTACH_DELAY}s to ensure gdbserver is alive"
+  sleep "$ATTACH_DELAY"
+  log "Job control: $(jobs -l)"
+  STATE=$(jobs -l | awk '$2 == "'$GDBSERVER_PID'" { print $3; }')
+  if [ "$STATE" != "Running" ]; then
+    pid_msg=$(grep "is already traced by process" $GDBSERVER_LOG 2>/dev/null)
+    if [[ -n "$pid_msg" ]]; then
+      old_pid=${pid_msg##* }
+      old_pid=${old_pid//[$'\r\n']}  # Trim trailing \r.
+      echo "Killing previous gdb server process (pid=$old_pid)"
+      adb_shell $COMMAND_PREFIX kill -9 $old_pid
+      continue
+    fi
+    echo "ERROR: GDBServer either failed to run or attach to PID $PID!"
+    echo "Here is the output from gdbserver (also try --verbose for more):"
+    echo "===== gdbserver.log start ====="
+    cat $GDBSERVER_LOG
+    echo ="===== gdbserver.log end ======"
+    exit 1
+  fi
+  break
+done
 
 # Generate a file containing useful GDB initialization commands
 readonly COMMANDS=$TMPDIR/gdb.init
 log "Generating GDB initialization commands file: $COMMANDS"
-cat > $COMMANDS <<EOF
+cat > "$COMMANDS" <<EOF
 set print pretty 1
 python
 import sys
@@ -961,7 +965,11 @@ file $TMPDIR/$GDBEXEC
 directory $CHROMIUM_SRC
 set solib-absolute-prefix $PULL_LIBS_DIR
 set solib-search-path $SOLIB_DIRS:$PULL_LIBS_DIR:$SYMBOL_DIR
-echo Attaching and reading symbols, this may take a while.."
+EOF
+
+if [[ -z "$IDE" ]]; then
+  cat >> "$COMMANDS" <<EOF
+echo Attaching and reading symbols, this may take a couple minutes..."
 python
 # Copied from ndk-gdb.py:
 def target_remote_with_retry(target, timeout_seconds):
@@ -982,21 +990,45 @@ def target_remote_with_retry(target, timeout_seconds):
 target_remote_with_retry(':$HOST_PORT', 5)
 end
 EOF
+fi
 
 if [ "$GDBINIT" ]; then
-  cat "$GDBINIT" >> $COMMANDS
+  cat "$GDBINIT" >> "$COMMANDS"
 fi
 
 if [ "$VERBOSE" -gt 0 ]; then
   echo "### START $COMMANDS"
-  cat $COMMANDS
+  cat "$COMMANDS"
   echo "### END $COMMANDS"
 fi
 
-log "Launching gdb client: $GDB $GDB_ARGS -x $COMMANDS"
-if [ "$CGDB" ]; then
-  $CGDB -d $GDB -- $GDB_ARGS -x $COMMANDS
+if [ "$IDE" ]; then
+  mkdir -p "$IDE_DIR"
+  SYM_GDB="$IDE_DIR/gdb"
+  SYM_EXE="$IDE_DIR/app_process"
+  SYM_INIT="$IDE_DIR/gdbinit"
+  ln -sf "$TMPDIR/$GDBEXEC" "$SYM_EXE"
+  ln -sf "$COMMANDS" "$SYM_INIT"
+  # gdb doesn't work when symlinked, so create a wrapper.
+  echo
+  cat > $SYM_GDB <<EOF
+#!/bin/sh
+exec $GDB "\$@"
+EOF
+  chmod u+x $SYM_GDB
+
+  echo "GDB server listening on: localhost:$PORT"
+  echo "GDB wrapper script: $SYM_GDB"
+  echo "App executable: $SYM_EXE"
+  echo "gdbinit: $SYM_INIT"
+  echo "Showing gdbserver logs. Press Ctrl-C to disconnect."
+  tail -f "$GDBSERVER_LOG"
 else
-  $GDB $GDB_ARGS -x $COMMANDS
+  log "Launching gdb client: $GDB $GDB_ARGS -x $COMMANDS"
+  echo "Server log: $GDBSERVER_LOG"
+  if [ "$CGDB" ]; then
+    $CGDB -d $GDB -- $GDB_ARGS -x "$COMMANDS"
+  else
+    $GDB $GDB_ARGS -x "$COMMANDS"
+  fi
 fi
-rm -f "$GDBSERVER_PIDFILE"
