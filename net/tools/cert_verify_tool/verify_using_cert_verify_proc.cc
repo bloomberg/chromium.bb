@@ -61,8 +61,7 @@ std::string SubjectFromX509Certificate(const net::X509Certificate* cert) {
 // Returns a textual representation of the Subject of |cert_handle|.
 std::string SubjectFromCryptoBuffer(CRYPTO_BUFFER* cert_handle) {
   scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBuffer(
-          net::x509_util::DupCryptoBuffer(cert_handle), {});
+      net::X509Certificate::CreateFromBuffer(bssl::UpRef(cert_handle), {});
   if (!cert)
     return std::string();
   return SubjectFromX509Certificate(cert.get());

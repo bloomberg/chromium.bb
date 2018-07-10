@@ -93,21 +93,17 @@ TEST_F(CachingCertVerifierTest, DifferentCACerts) {
   ASSERT_TRUE(intermediate_cert2);
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(intermediate_cert1->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(intermediate_cert1->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain1 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(server_cert->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(cert_chain1);
 
   intermediates.clear();
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(intermediate_cert2->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(intermediate_cert2->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain2 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(server_cert->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(cert_chain2);
 
   int error;

@@ -137,8 +137,7 @@ bool IsIssuedByInKeychain(const std::vector<std::string>& valid_issuers,
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_buffers;
   intermediate_buffers.reserve(new_cert->intermediate_buffers().size());
   for (const auto& intermediate : new_cert->intermediate_buffers()) {
-    intermediate_buffers.push_back(
-        x509_util::DupCryptoBuffer(intermediate.get()));
+    intermediate_buffers.push_back(bssl::UpRef(intermediate.get()));
   }
   identity->SetIntermediates(std::move(intermediate_buffers));
   return true;

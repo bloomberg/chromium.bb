@@ -276,14 +276,14 @@ TEST(X509CertificateTest, InvalidPrintableStringIsUtf8) {
       x509_util::CreateCryptoBuffer(cert_der);
   ASSERT_TRUE(cert_handle);
 
-  EXPECT_FALSE(X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(cert_handle.get()), {}));
+  EXPECT_FALSE(
+      X509Certificate::CreateFromBuffer(bssl::UpRef(cert_handle.get()), {}));
 
   X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   scoped_refptr<X509Certificate> cert =
       X509Certificate::CreateFromBufferUnsafeOptions(
-          x509_util::DupCryptoBuffer(cert_handle.get()), {}, options);
+          bssl::UpRef(cert_handle.get()), {}, options);
 
   const CertPrincipal& subject = cert->subject();
   EXPECT_EQ("Foo@#_ Clïênt Cërt", subject.common_name);
@@ -468,29 +468,24 @@ TEST(X509CertificateTest, CAFingerprints) {
   ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2.get());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(intermediate_cert1->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(intermediate_cert1->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain1 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(server_cert->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(cert_chain1);
 
   intermediates.clear();
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(intermediate_cert2->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(intermediate_cert2->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain2 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(server_cert->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(cert_chain2);
 
   // No intermediate CA certicates.
   intermediates.clear();
   scoped_refptr<X509Certificate> cert_chain3 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(server_cert->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(cert_chain3);
 
   SHA256HashValue cert_chain1_chain_fingerprint_256 = {
@@ -728,17 +723,15 @@ TEST(X509CertificateTest, IntermediateCertificates) {
   google_handle = X509Certificate::CreateCertBufferFromBytes(
       reinterpret_cast<const char*>(google_der), sizeof(google_der));
   scoped_refptr<X509Certificate> cert1;
-  cert1 = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(google_handle.get()), {});
+  cert1 =
+      X509Certificate::CreateFromBuffer(bssl::UpRef(google_handle.get()), {});
   ASSERT_TRUE(cert1);
   EXPECT_EQ(0u, cert1->intermediate_buffers().size());
 
   // Create object with 2 intermediates:
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates2;
-  intermediates2.push_back(
-      x509_util::DupCryptoBuffer(webkit_cert->cert_buffer()));
-  intermediates2.push_back(
-      x509_util::DupCryptoBuffer(thawte_cert->cert_buffer()));
+  intermediates2.push_back(bssl::UpRef(webkit_cert->cert_buffer()));
+  intermediates2.push_back(bssl::UpRef(thawte_cert->cert_buffer()));
   scoped_refptr<X509Certificate> cert2;
   cert2 = X509Certificate::CreateFromBuffer(std::move(google_handle),
                                             std::move(intermediates2));
@@ -768,11 +761,10 @@ TEST(X509CertificateTest, Equals) {
   EXPECT_FALSE(certs[0]->EqualsIncludingChain(certs[1].get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates1;
-  intermediates1.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates1.push_back(bssl::UpRef(certs[1]->cert_buffer()));
   scoped_refptr<X509Certificate> cert0_with_intermediate =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates1));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates1));
   ASSERT_TRUE(cert0_with_intermediate);
 
   // Comparing X509Certificate with one intermediate to X509Certificate with no
@@ -783,11 +775,10 @@ TEST(X509CertificateTest, Equals) {
   EXPECT_FALSE(cert0_with_intermediate->EqualsIncludingChain(certs[0].get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates2;
-  intermediates2.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates2.push_back(bssl::UpRef(certs[2]->cert_buffer()));
   scoped_refptr<X509Certificate> cert0_with_intermediate2 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates1));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates1));
   ASSERT_TRUE(cert0_with_intermediate2);
 
   // Comparing X509Certificate with one intermediate to X509Certificate with
@@ -802,25 +793,19 @@ TEST(X509CertificateTest, Equals) {
       cert0_with_intermediate2.get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates12;
-  intermediates12.push_back(
-      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  intermediates12.push_back(
-      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates12.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  intermediates12.push_back(bssl::UpRef(certs[2]->cert_buffer()));
   scoped_refptr<X509Certificate> cert0_with_intermediates12 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates12));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates12));
   ASSERT_TRUE(cert0_with_intermediates12);
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates21;
-  intermediates21.push_back(
-      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
-  intermediates21.push_back(
-      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates21.push_back(bssl::UpRef(certs[2]->cert_buffer()));
+  intermediates21.push_back(bssl::UpRef(certs[1]->cert_buffer()));
   scoped_refptr<X509Certificate> cert0_with_intermediates21 =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates21));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates21));
   ASSERT_TRUE(cert0_with_intermediates21);
 
   // Comparing X509Certificate with two intermediates to X509Certificate with
@@ -835,14 +820,11 @@ TEST(X509CertificateTest, Equals) {
       cert0_with_intermediates21.get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates12b;
-  intermediates12b.push_back(
-      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  intermediates12b.push_back(
-      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates12b.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  intermediates12b.push_back(bssl::UpRef(certs[2]->cert_buffer()));
   scoped_refptr<X509Certificate> cert0_with_intermediates12b =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates12b));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates12b));
   ASSERT_TRUE(cert0_with_intermediates12b);
 
   // Comparing X509Certificate with two intermediates to X509Certificate with
@@ -951,11 +933,9 @@ TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
                              sizeof(kPolicyRootDN));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(policy_chain[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(policy_chain[1]->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(policy_chain[0]->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(policy_chain[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert_chain);
 
   std::vector<std::string> issuers;

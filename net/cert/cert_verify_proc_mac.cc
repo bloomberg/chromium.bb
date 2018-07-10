@@ -312,7 +312,7 @@ void GetCandidateEVPolicy(const X509Certificate* cert_input,
   ev_policy_oid->clear();
 
   scoped_refptr<ParsedCertificate> cert(ParsedCertificate::Create(
-      x509_util::DupCryptoBuffer(cert_input->cert_buffer()), {}, nullptr));
+      bssl::UpRef(cert_input->cert_buffer()), {}, nullptr));
   if (!cert)
     return;
 
@@ -354,8 +354,8 @@ bool CheckCertChainEV(const X509Certificate* cert,
   // or AnyPolicy.
   for (size_t i = 0; i < cert_chain.size() - 1; ++i) {
     scoped_refptr<ParsedCertificate> intermediate_cert(
-        ParsedCertificate::Create(
-            x509_util::DupCryptoBuffer(cert_chain[i].get()), {}, nullptr));
+        ParsedCertificate::Create(bssl::UpRef(cert_chain[i].get()), {},
+                                  nullptr));
     if (!intermediate_cert)
       return false;
     if (!HasPolicyOrAnyPolicy(intermediate_cert.get(), ev_policy_oid))

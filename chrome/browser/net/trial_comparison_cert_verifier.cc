@@ -125,7 +125,7 @@ scoped_refptr<net::ParsedCertificate> ParsedCertificateFromBuffer(
     CRYPTO_BUFFER* cert_handle,
     net::CertErrors* errors) {
   return net::ParsedCertificate::Create(
-      net::x509_util::DupCryptoBuffer(cert_handle),
+      bssl::UpRef(cert_handle),
       net::x509_util::DefaultParseCertificateOptions(), errors);
 }
 

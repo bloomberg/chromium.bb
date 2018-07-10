@@ -305,12 +305,10 @@ TEST_F(ChromeRequireCTDelegateTest, SupportsOrgRestrictions) {
       hashes.push_back(std::move(intermediate_hash));
 
       std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-      intermediates.push_back(
-          net::x509_util::DupCryptoBuffer(intermediate->cert_buffer()));
+      intermediates.push_back(bssl::UpRef(intermediate->cert_buffer()));
 
       leaf = net::X509Certificate::CreateFromBuffer(
-          net::x509_util::DupCryptoBuffer(leaf->cert_buffer()),
-          std::move(intermediates));
+          bssl::UpRef(leaf->cert_buffer()), std::move(intermediates));
     }
     delegate.UpdateCTPolicies({}, {}, {}, {});
 

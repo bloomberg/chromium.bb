@@ -128,12 +128,10 @@ CreateMockRequestWithInvalidCertificate() {
     r = ReadTestCert(files[i], &intermediate);
     if (!r)
       return r;
-    intermediate_buffers.push_back(
-        x509_util::DupCryptoBuffer(intermediate->cert_buffer()));
+    intermediate_buffers.push_back(bssl::UpRef(intermediate->cert_buffer()));
   }
-  *result = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(leaf->cert_buffer()),
-      std::move(intermediate_buffers));
+  *result = X509Certificate::CreateFromBuffer(bssl::UpRef(leaf->cert_buffer()),
+                                              std::move(intermediate_buffers));
   return ::testing::AssertionSuccess();
 }
 
