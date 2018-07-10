@@ -29,6 +29,7 @@
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/install_static/install_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -75,6 +76,16 @@ void GetModulePath(HMODULE module_handle, base::FilePath* module_path) {
   ASSERT_LT(length, static_cast<DWORD>(MAX_PATH));
 
   *module_path = base::FilePath(buffer);
+}
+
+// Returns true if the cache path registry key value exists.
+bool RegistryKeyExists() {
+  base::win::RegKey reg_key(HKEY_CURRENT_USER,
+                            install_static::GetRegistryPath()
+                                .append(third_party_dlls::kThirdPartyRegKeyName)
+                                .c_str(),
+                            KEY_READ);
+  return reg_key.HasValue(third_party_dlls::kBlFilePathRegValue);
 }
 
 }  // namespace
@@ -194,6 +205,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
   RunUntilIdle();
   EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
   EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
 
   // Check the cache.
   third_party_dlls::PackedListMetadata metadata;
@@ -234,6 +246,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
   RunUntilIdle();
   EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
   EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
 
   // Check the cache.
   third_party_dlls::PackedListMetadata metadata;
@@ -260,6 +273,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
   RunUntilIdle();
   EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
   EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
 
   // Check the cache.
   third_party_dlls::PackedListMetadata metadata;
@@ -295,6 +309,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   RunUntilIdle();
   EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
   EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
 
   // Check the cache.
   third_party_dlls::PackedListMetadata metadata;
@@ -338,4 +353,5 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, NewModulesBlockedOnly) {
   FastForwardBy(ModuleBlacklistCacheUpdater::kUpdateTimerDuration);
   EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
   EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
 }

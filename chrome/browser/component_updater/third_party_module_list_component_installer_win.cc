@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 
@@ -93,15 +94,7 @@ bool ThirdPartyModuleListComponentInstallerPolicy::VerifyInstallation(
 
 base::FilePath
 ThirdPartyModuleListComponentInstallerPolicy::GetRelativeInstallDir() const {
-  static constexpr base::FilePath::CharType kRelativeModuleListInstallDir[] =
-      FILE_PATH_LITERAL("ThirdPartyModuleList")
-#ifdef _WIN64
-          FILE_PATH_LITERAL("64");
-#else
-          FILE_PATH_LITERAL("32");
-#endif
-
-  return base::FilePath(kRelativeModuleListInstallDir);
+  return base::FilePath(kModuleListComponentRelativePath);
 }
 
 void ThirdPartyModuleListComponentInstallerPolicy::GetHash(

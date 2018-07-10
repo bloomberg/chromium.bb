@@ -10,8 +10,9 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
+
 namespace base {
-class FilePath;
 class Time;
 struct MD5Digest;
 }  // namespace base
@@ -22,6 +23,10 @@ struct PackedListModule;
 }  // namespace third_party_dlls
 
 class ModuleListFilter;
+
+// The relative path of the expected module list file inside of an installation
+// of this component.
+extern const base::FilePath::CharType kModuleListComponentRelativePath[];
 
 // Returns the time date stamp to be used in the module blacklist cache.
 // Represents the number of hours between |time| and the Windows epoch
