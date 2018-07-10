@@ -961,6 +961,15 @@
       },
     },
   },
+  'context_lost_tests': {
+    'modifications': {
+      'Mac FYI GPU ASAN Release': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
+  },
   'crashpad_tests': {
     'remove_from': [
       # chromium.clang
