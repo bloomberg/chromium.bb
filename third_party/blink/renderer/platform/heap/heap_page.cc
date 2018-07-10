@@ -1552,20 +1552,23 @@ void NormalPage::PoisonUnmarkedObjects() {
 
 void NormalPage::VerifyObjectStartBitmapIsConsistentWithPayload() {
 #if DCHECK_IS_ON()
-  Address current_allocation_point =
-      ArenaForNormalPage()->CurrentAllocationPoint();
-  DCHECK(!current_allocation_point ||
-         (PageFromObject(current_allocation_point) != this));
-
   HeapObjectHeader* current_header =
       reinterpret_cast<HeapObjectHeader*>(Payload());
-  object_start_bit_map()->Iterate([&current_header](Address object_address) {
+  object_start_bit_map()->Iterate([this,
+                                   &current_header](Address object_address) {
     const HeapObjectHeader* object_header =
         reinterpret_cast<HeapObjectHeader*>(object_address);
     DCHECK_EQ(object_header, current_header);
     DCHECK(object_header->IsValidOrZapped());
     current_header = reinterpret_cast<HeapObjectHeader*>(object_address +
                                                          object_header->size());
+    // Skip over allocation area.
+    if (reinterpret_cast<Address>(current_header) ==
+        ArenaForNormalPage()->CurrentAllocationPoint()) {
+      current_header = reinterpret_cast<HeapObjectHeader*>(
+          ArenaForNormalPage()->CurrentAllocationPoint() +
+          ArenaForNormalPage()->RemainingAllocationSize());
+    }
   });
 #endif  // DCHECK_IS_ON()
 }
