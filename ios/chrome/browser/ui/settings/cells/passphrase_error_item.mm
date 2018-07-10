@@ -6,6 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -54,7 +56,6 @@ const CGFloat kHorizontalPadding = 16;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette cr_redPalette] tint500];
     [contentView addSubview:_textLabel];
 
@@ -62,6 +63,13 @@ const CGFloat kHorizontalPadding = 16;
     _errorImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _errorImageView.image = [UIImage imageNamed:@"encryption_error"];
     [contentView addSubview:_errorImageView];
+
+    // Fonts and colors vary based on the UI reboot experiment.
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    } else {
+      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    }
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[
