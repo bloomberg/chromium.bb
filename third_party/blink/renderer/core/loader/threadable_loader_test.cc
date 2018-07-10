@@ -195,7 +195,6 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
     loader_ = DocumentThreadableLoader::Create(
-        ThreadableLoader::ModuleId::kTest,
         *ThreadableLoadingContext::Create(GetDocument()), client, options,
         resource_loader_options);
   }
@@ -395,8 +394,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     // isWorkerGlobalScope().
     DCHECK(worker_thread_->GlobalScope()->IsWorkerGlobalScope());
 
-    loader_ = ThreadableLoader::Create(ThreadableLoader::ModuleId::kTest,
-                                       *worker_thread_->GlobalScope(), client,
+    loader_ = ThreadableLoader::Create(*worker_thread_->GlobalScope(), client,
                                        options, resource_loader_options);
     DCHECK(loader_);
     event->Signal();

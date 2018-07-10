@@ -85,10 +85,9 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());
 
-  threadable_loader_ = ThreadableLoader::Create(
-      ThreadableLoader::ModuleId::kBackgroundFetchIconLoader,
-      *execution_context, this, threadable_loader_options,
-      resource_loader_options);
+  threadable_loader_ = ThreadableLoader::Create(*execution_context, this,
+                                                threadable_loader_options,
+                                                resource_loader_options);
 
   threadable_loader_->Start(resource_request);
 }

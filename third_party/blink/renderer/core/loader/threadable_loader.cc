@@ -38,7 +38,6 @@
 namespace blink {
 
 ThreadableLoader* ThreadableLoader::Create(
-    ModuleId id,
     ExecutionContext& context,
     ThreadableLoaderClient* client,
     const ThreadableLoaderOptions& options,
@@ -47,7 +46,7 @@ ThreadableLoader* ThreadableLoader::Create(
   if (context.IsWorkerGlobalScope())
     ToWorkerGlobalScope(&context)->EnsureFetcher();
   return DocumentThreadableLoader::Create(
-      id, *ThreadableLoadingContext::Create(context), client, options,
+      *ThreadableLoadingContext::Create(context), client, options,
       resource_loader_options);
 }
 

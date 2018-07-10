@@ -160,8 +160,7 @@ void EventSource::Connect() {
   probe::willSendEventSourceRequest(&execution_context, this);
   // probe::documentThreadableLoaderStartedLoadingForClient
   // will be called synchronously.
-  loader_ = ThreadableLoader::Create(ThreadableLoader::ModuleId::kEventSource,
-                                     execution_context, this, options,
+  loader_ = ThreadableLoader::Create(execution_context, this, options,
                                      resource_loader_options);
   loader_->Start(request);
 }
