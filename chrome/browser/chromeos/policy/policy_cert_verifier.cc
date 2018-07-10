@@ -36,8 +36,7 @@ void CompleteAndSignalAnchorUse(const base::Closure& anchor_used_callback,
                                 int error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MaybeSignalAnchorUse(error, anchor_used_callback, *verify_result);
-  if (completion_callback)
-    std::move(completion_callback).Run(error);
+  std::move(completion_callback).Run(error);
 }
 
 }  // namespace
@@ -77,6 +76,7 @@ int PolicyCertVerifier::Verify(const RequestParams& params,
                                const net::NetLogWithSource& net_log) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(delegate_);
+  DCHECK(completion_callback);
   net::CompletionOnceCallback wrapped_callback =
       base::BindOnce(&CompleteAndSignalAnchorUse, anchor_used_callback_,
                      std::move(completion_callback), verify_result);
