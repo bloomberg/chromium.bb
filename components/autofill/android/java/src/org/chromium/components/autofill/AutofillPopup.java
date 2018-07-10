@@ -29,13 +29,6 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         AdapterView.OnItemLongClickListener, PopupWindow.OnDismissListener {
 
     /**
-     * The constant used to specify a separator in a list of Autofill suggestions.
-     * Has to be kept in sync with {@code POPUP_ITEM_ID_SEPARATOR} enum in
-     * components/autofill/core/browser/popup_item_ids.h
-     */
-    private static final int ITEM_ID_SEPARATOR_ENTRY = -3;
-
-    /**
      * We post a delayed runnable to clear accessibility focus from the autofill popup's list view
      * when we receive a {@code TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED} event because we receive a
      * {@code TYPE_VIEW_ACCESSIBILITY_FOCUSED} for the same list view if user navigates to a
@@ -86,7 +79,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         HashSet<Integer> separators = new HashSet<Integer>();
         for (int i = 0; i < suggestions.length; i++) {
             int itemId = suggestions[i].getSuggestionId();
-            if (itemId == ITEM_ID_SEPARATOR_ENTRY) {
+            if (itemId == PopupItemId.ITEM_ID_SEPARATOR) {
                 separators.add(cleanedData.size());
             } else {
                 cleanedData.add(suggestions[i]);
