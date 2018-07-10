@@ -86,7 +86,8 @@ DefaultGpuHost::DefaultGpuHost(
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::ServerGpuMemoryBufferManager>(
           gpu_service_.get(), next_client_id_++,
-          std::make_unique<gpu::GpuMemoryBufferSupport>());
+          std::make_unique<gpu::GpuMemoryBufferSupport>(),
+          main_thread_task_runner_);
 }
 
 DefaultGpuHost::~DefaultGpuHost() {

@@ -28,16 +28,19 @@ class GpuService;
 
 // This GpuMemoryBufferManager implementation is for [de]allocating gpu memory
 // from the gpu process over the mojom.GpuService api.
-// Note that |CreateGpuMemoryBuffer()| can be called on any thread. All the rest
-// of the functions must be called on the thread this object is created on.
 class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
+  // All function of ServerGpuMemoryBufferManager must be called the thread
+  // associated with |task_runner|, other than the constructor and the
+  // gpu::GpuMemoryBufferManager implementation (which can be called from any
+  // thread).
   ServerGpuMemoryBufferManager(
       mojom::GpuService* gpu_service,
       int client_id,
-      std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support);
+      std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ServerGpuMemoryBufferManager() override;
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

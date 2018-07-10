@@ -220,12 +220,6 @@ class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
     return buffer;
   }
 
-  // ::testing::Test:
-  void SetUp() override {
-  }
-
-  void TearDown() override {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManagerTest);
 };
@@ -257,16 +251,16 @@ TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(true);
   ServerGpuMemoryBufferManager manager(&gpu_service, 1,
-                                       std::move(gpu_memory_buffer_support));
+                                       std::move(gpu_memory_buffer_support),
+                                       base::ThreadTaskRunnerHandle::Get());
 
   const auto buffer_id = static_cast<gfx::GpuMemoryBufferId>(1);
   const int client_id = 2;
   const gfx::Size size(10, 20);
   const gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   const gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
-  manager.AllocateGpuMemoryBuffer(
-      buffer_id, client_id, size, format, usage, gpu::kNullSurfaceHandle,
-      base::BindOnce([](gfx::GpuMemoryBufferHandle handle) {}));
+  manager.AllocateGpuMemoryBuffer(buffer_id, client_id, size, format, usage,
+                                  gpu::kNullSurfaceHandle, base::DoNothing());
   EXPECT_TRUE(gpu_service.HasAllocationRequest(buffer_id, client_id));
   EXPECT_FALSE(gpu_service.HasDestructionRequest(buffer_id, client_id));
 
@@ -288,7 +282,8 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
   ServerGpuMemoryBufferManager manager(&gpu_service, 1,
-                                       std::move(gpu_memory_buffer_support));
+                                       std::move(gpu_memory_buffer_support),
+                                       base::ThreadTaskRunnerHandle::Get());
   const auto buffer_id = static_cast<gfx::GpuMemoryBufferId>(1);
   const int client_id = 2;
   // SCANOUT cannot be used if native gpu memory buffer is not supported.
@@ -335,7 +330,8 @@ TEST_F(ServerGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
   ServerGpuMemoryBufferManager manager(&gpu_service, 1,
-                                       std::move(gpu_memory_buffer_support));
+                                       std::move(gpu_memory_buffer_support),
+                                       base::ThreadTaskRunnerHandle::Get());
   auto buffer = AllocateGpuMemoryBufferSync(&manager);
   EXPECT_TRUE(buffer);
   buffer.reset();
@@ -346,7 +342,8 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
   ServerGpuMemoryBufferManager manager(&gpu_service, 1,
-                                       std::move(gpu_memory_buffer_support));
+                                       std::move(gpu_memory_buffer_support),
+                                       base::ThreadTaskRunnerHandle::Get());
   auto buffer = AllocateGpuMemoryBufferSync(&manager);
   EXPECT_TRUE(buffer);
   // Destroy the buffer in a different thread.
