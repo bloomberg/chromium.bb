@@ -345,6 +345,7 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
     std::unique_ptr<FeaturePodControllerBase> controller) {
   DCHECK(unified_view_);
   FeaturePodButton* button = controller->CreateButton();
+  button->SetExpandedAmount(IsExpanded() ? 1.0 : 0.0);
 
   // Record DefaultView.VisibleRows UMA.
   SystemTrayItemUmaType uma_type = controller->GetUmaType();
