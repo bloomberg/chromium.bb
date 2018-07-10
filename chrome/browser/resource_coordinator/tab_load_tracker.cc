@@ -161,6 +161,31 @@ void TabLoadTracker::DidFailLoad(content::WebContents* web_contents) {
   MaybeTransitionToLoaded(web_contents);
 }
 
+void TabLoadTracker::RenderProcessGone(content::WebContents* web_contents,
+                                       base::TerminationStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Don't bother tracking the UNLOADED state change for normal renderer
+  // shutdown, the |web_contents| will be untracked shortly.
+  if (status ==
+          base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION ||
+      status == base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING) {
+    return;
+  }
+  // We reach here when a tab crashes, i.e. it's main frame renderer dies
+  // unexpectedly (sad tab). In this case there is still an associated
+  // WebContents, but it is not backed by a renderer. The renderer could have
+  // died because of a crash (e.g. bugs, compromised renderer) or been killed by
+  // the OS (e.g. OOM on Android). Note: discarded tabs may reach this method,
+  // but exit early because of |status|.
+  auto it = tabs_.find(web_contents);
+  DCHECK(it != tabs_.end());
+  // The tab could already be UNLOADED if it hasn't yet started loading. This
+  // can happen if the renderer crashes between the UNLOADED and LOADING states.
+  if (it->second.loading_state == UNLOADED)
+    return;
+  TransitionState(it, UNLOADED, true);
+}
+
 void TabLoadTracker::OnPageAlmostIdle(content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
@@ -223,8 +248,10 @@ void TabLoadTracker::TransitionState(TabMap::iterator it,
         break;
       }
 
-      case UNLOADED:  // It never makes sense to transition to UNLOADED.
-        NOTREACHED();
+      case UNLOADED: {
+        DCHECK_NE(UNLOADED, it->second.loading_state);
+        break;
+      }
     }
   }
 #endif

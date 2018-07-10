@@ -102,6 +102,11 @@ void ResourceCoordinatorTabHelper::DidFailLoad(
   TabLoadTracker::Get()->DidFailLoad(web_contents());
 }
 
+void ResourceCoordinatorTabHelper::RenderProcessGone(
+    base::TerminationStatus status) {
+  TabLoadTracker::Get()->RenderProcessGone(web_contents(), status);
+}
+
 void ResourceCoordinatorTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
   if (page_resource_coordinator_) {

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 
+#include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,6 +31,7 @@ class TestTabLoadTracker : public TabLoadTracker {
   using TabLoadTracker::DidReceiveResponse;
   using TabLoadTracker::DidStopLoading;
   using TabLoadTracker::DidFailLoad;
+  using TabLoadTracker::RenderProcessGone;
   using TabLoadTracker::OnPageAlmostIdle;
   using TabLoadTracker::DetermineLoadingState;
 
@@ -86,6 +89,9 @@ class TestWebContentsObserver : public content::WebContentsObserver {
                    int error_code,
                    const base::string16& error_description) override {
     tracker_->DidFailLoad(web_contents());
+  }
+  void RenderProcessGone(base::TerminationStatus status) override {
+    tracker_->RenderProcessGone(web_contents(), status);
   }
 
  private:
@@ -246,6 +252,18 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   tester1->TestDidFailLoadWithError(GURL("http://baz.com"), 500,
                                     base::UTF8ToUTF16("server error"));
   ExpectTabCounts(3, 0, 0, 3);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  // Crash the render process corresponding to the main frame of a tab. This
+  // should cause the tab to transition to the UNLOADED state.
+  EXPECT_CALL(observer(),
+              OnLoadingStateChange(contents1(), LoadingState::LOADED,
+                                   LoadingState::UNLOADED));
+  content::MockRenderProcessHost* rph =
+      static_cast<content::MockRenderProcessHost*>(
+          contents1()->GetMainFrame()->GetProcess());
+  rph->SimulateCrash();
+  ExpectTabCounts(3, 1, 0, 2);
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
