@@ -962,9 +962,9 @@ void TaskQueueImpl::SetOnTaskStartedHandler(
 }
 
 void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
-                                  TimeTicks start) {
+                                  const TaskQueue::TaskTiming& task_timing) {
   if (!main_thread_only().on_task_started_handler.is_null())
-    main_thread_only().on_task_started_handler.Run(task, start);
+    main_thread_only().on_task_started_handler.Run(task, task_timing);
 }
 
 void TaskQueueImpl::SetOnTaskCompletedHandler(
@@ -973,13 +973,9 @@ void TaskQueueImpl::SetOnTaskCompletedHandler(
 }
 
 void TaskQueueImpl::OnTaskCompleted(const TaskQueue::Task& task,
-                                    TimeTicks start,
-                                    TimeTicks end,
-                                    Optional<TimeDelta> thread_time) {
-  if (!main_thread_only().on_task_completed_handler.is_null()) {
-    main_thread_only().on_task_completed_handler.Run(task, start, end,
-                                                     thread_time);
-  }
+                                    const TaskQueue::TaskTiming& task_timing) {
+  if (!main_thread_only().on_task_completed_handler.is_null())
+    main_thread_only().on_task_completed_handler.Run(task, task_timing);
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {

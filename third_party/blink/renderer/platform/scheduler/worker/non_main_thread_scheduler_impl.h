@@ -43,9 +43,7 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
   virtual void OnTaskCompleted(
       NonMainThreadTaskQueue* worker_task_queue,
       const base::sequence_manager::TaskQueue::Task& task,
-      base::TimeTicks start,
-      base::TimeTicks end,
-      base::Optional<base::TimeDelta> thread_time) = 0;
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing) = 0;
 
   // ThreadSchedulerImpl:
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;

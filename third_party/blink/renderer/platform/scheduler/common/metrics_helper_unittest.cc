@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/fake_task.h"
 
 using base::sequence_manager::TaskQueue;
 
@@ -14,6 +15,9 @@ namespace blink {
 namespace scheduler {
 
 namespace {
+
+using base::sequence_manager::FakeTask;
+using base::sequence_manager::FakeTaskTiming;
 
 class MetricsHelperForTest : public MetricsHelper {
  public:
@@ -33,25 +37,28 @@ TEST(MetricsHelperTest, TaskDurationPerThreadType) {
   MetricsHelperForTest compositor_metrics(WebThreadType::kCompositorThread);
   MetricsHelperForTest worker_metrics(WebThreadType::kUnspecifiedWorkerThread);
 
-  TaskQueue::Task fake_task(
-      (TaskQueue::PostedTask(base::OnceClosure(), base::Location())),
-      base::TimeTicks());
-
   main_thread_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(50),
-      base::TimeDelta::FromSeconds(15));
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+                     base::TimeTicks() + base::TimeDelta::FromSeconds(50),
+                     base::ThreadTicks(),
+                     base::ThreadTicks() + base::TimeDelta::FromSeconds(15)));
   compositor_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(80),
-      base::TimeDelta::FromSeconds(5));
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+                     base::TimeTicks() + base::TimeDelta::FromSeconds(80),
+                     base::ThreadTicks(),
+                     base::ThreadTicks() + base::TimeDelta::FromSeconds(5)));
   compositor_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(100),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(200), base::nullopt);
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks() + base::TimeDelta::FromSeconds(100),
+                     base::TimeTicks() + base::TimeDelta::FromSeconds(200)));
   worker_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(125),
-      base::TimeDelta::FromSeconds(25));
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+                     base::TimeTicks() + base::TimeDelta::FromSeconds(125),
+                     base::ThreadTicks(),
+                     base::ThreadTicks() + base::TimeDelta::FromSeconds(25)));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(

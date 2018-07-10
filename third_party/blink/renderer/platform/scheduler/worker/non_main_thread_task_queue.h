@@ -23,10 +23,9 @@ class PLATFORM_EXPORT NonMainThreadTaskQueue
       NonMainThreadSchedulerImpl* non_main_thread_scheduler);
   ~NonMainThreadTaskQueue() override;
 
-  void OnTaskCompleted(const base::sequence_manager::TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end,
-                       base::Optional<base::TimeDelta> thread_time);
+  void OnTaskCompleted(
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
  private:
   // Not owned.

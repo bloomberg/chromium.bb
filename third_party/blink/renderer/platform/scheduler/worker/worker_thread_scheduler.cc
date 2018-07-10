@@ -214,14 +214,13 @@ void WorkerThreadScheduler::InitImpl() {
 void WorkerThreadScheduler::OnTaskCompleted(
     NonMainThreadTaskQueue* worker_task_queue,
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time) {
-  worker_metrics_helper_.RecordTaskMetrics(worker_task_queue, task, start, end,
-                                           thread_time);
+    const TaskQueue::TaskTiming& task_timing) {
+  worker_metrics_helper_.RecordTaskMetrics(worker_task_queue, task,
+                                           task_timing);
 
   if (task_queue_throttler_) {
-    task_queue_throttler_->OnTaskRunTimeReported(worker_task_queue, start, end);
+    task_queue_throttler_->OnTaskRunTimeReported(
+        worker_task_queue, task_timing.start_time(), task_timing.end_time());
   }
 }
 

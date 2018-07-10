@@ -177,13 +177,13 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
 
-  void OnTaskStarted(const base::sequence_manager::TaskQueue::Task& task,
-                     base::TimeTicks start);
+  void OnTaskStarted(
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
-  void OnTaskCompleted(const base::sequence_manager::TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end,
-                       base::Optional<base::TimeDelta> thread_time);
+  void OnTaskCompleted(
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void DetachFromMainThreadScheduler();
 

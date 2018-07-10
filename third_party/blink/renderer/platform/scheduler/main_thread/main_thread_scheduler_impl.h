@@ -331,15 +331,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
-  void OnTaskStarted(MainThreadTaskQueue* queue,
-                     const base::sequence_manager::TaskQueue::Task& task,
-                     base::TimeTicks start);
+  void OnTaskStarted(
+      MainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
-  void OnTaskCompleted(MainThreadTaskQueue* queue,
-                       const base::sequence_manager::TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end,
-                       base::Optional<base::TimeDelta> thread_time);
+  void OnTaskCompleted(
+      MainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   bool IsAudioPlaying() const;
 
@@ -699,19 +699,17 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Probabilistically record all task metadata for the current task.
   // If task belongs to a per-frame queue, this task is attributed to
   // a particular Page, otherwise it's attributed to all Pages in the process.
-  void RecordTaskUkm(MainThreadTaskQueue* queue,
-                     const base::sequence_manager::TaskQueue::Task& task,
-                     base::TimeTicks start,
-                     base::TimeTicks end,
-                     base::Optional<base::TimeDelta> thread_time);
+  void RecordTaskUkm(
+      MainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
-  void RecordTaskUkmImpl(MainThreadTaskQueue* queue,
-                         const base::sequence_manager::TaskQueue::Task& task,
-                         base::TimeTicks start,
-                         base::TimeTicks end,
-                         base::Optional<base::TimeDelta> thread_time,
-                         PageSchedulerImpl* page_scheduler,
-                         size_t page_schedulers_to_attribute);
+  void RecordTaskUkmImpl(
+      MainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
+      PageSchedulerImpl* page_scheduler,
+      size_t page_schedulers_to_attribute);
 
   void InitWakeUpBudgetPoolIfNeeded();
 

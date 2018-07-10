@@ -18,6 +18,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/fake_task.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
@@ -26,6 +27,8 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
+using base::sequence_manager::FakeTask;
+using base::sequence_manager::FakeTaskTiming;
 using testing::ElementsAre;
 using VirtualTimePolicy = blink::PageScheduler::VirtualTimePolicy;
 
@@ -782,18 +785,17 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
       VirtualTimePolicy::kDeterministicLoading);
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  TaskQueue::Task task{
-      TaskQueue::PostedTask(base::OnceClosure(), base::Location()),
-      base::TimeTicks()};
-  scheduler_->OnTaskStarted(nullptr, task, base::TimeTicks());
+  scheduler_->OnTaskStarted(
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks(), base::TimeTicks()));
   scheduler_->OnBeginNestedRunLoop();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   scheduler_->OnExitNestedRunLoop();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
-  scheduler_->OnTaskCompleted(nullptr, task, base::TimeTicks(),
-                              scheduler_->real_time_domain()->Now(),
-                              base::nullopt);
+  scheduler_->OnTaskCompleted(
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks(), scheduler_->real_time_domain()->Now()));
 }
 
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
@@ -992,10 +994,9 @@ TEST_F(PageSchedulerImplTest,
   page_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
 
-  TaskQueue::Task task{
-      TaskQueue::PostedTask(base::OnceClosure(), base::Location()),
-      base::TimeTicks()};
-  scheduler_->OnTaskStarted(nullptr, task, base::TimeTicks());
+  scheduler_->OnTaskStarted(
+      nullptr, FakeTask(),
+      FakeTaskTiming(base::TimeTicks(), base::TimeTicks()));
   scheduler_->OnBeginNestedRunLoop();
 
   int count = 0;

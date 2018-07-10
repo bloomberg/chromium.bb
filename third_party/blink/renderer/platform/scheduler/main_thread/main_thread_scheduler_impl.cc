@@ -2493,15 +2493,16 @@ void MainThreadSchedulerImpl::BroadcastIntervention(
     page_scheduler->ReportIntervention(message);
 }
 
-void MainThreadSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
-                                            const TaskQueue::Task& task,
-                                            base::TimeTicks start) {
+void MainThreadSchedulerImpl::OnTaskStarted(
+    MainThreadTaskQueue* queue,
+    const TaskQueue::Task& task,
+    const TaskQueue::TaskTiming& task_timing) {
   main_thread_only().running_queues.push(queue);
-  queueing_time_estimator_.OnExecutionStarted(start, queue);
+  queueing_time_estimator_.OnExecutionStarted(task_timing.start_time(), queue);
   if (main_thread_only().nested_runloop)
     return;
 
-  main_thread_only().current_task_start_time = start;
+  main_thread_only().current_task_start_time = task_timing.start_time();
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
       static_cast<TaskType>(task.task_type()),
       queue
@@ -2517,44 +2518,41 @@ void MainThreadSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
 void MainThreadSchedulerImpl::OnTaskCompleted(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time) {
-  DCHECK_LE(start, end);
+    const TaskQueue::TaskTiming& task_timing) {
+  DCHECK_LE(task_timing.start_time(), task_timing.end_time());
   DCHECK(!main_thread_only().running_queues.empty());
   DCHECK(!queue || main_thread_only().running_queues.top().get() == queue);
   main_thread_only().running_queues.pop();
-  queueing_time_estimator_.OnExecutionStopped(end);
+  queueing_time_estimator_.OnExecutionStopped(task_timing.end_time());
   if (main_thread_only().nested_runloop)
     return;
 
-  if (queue)
-    task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
+  if (queue) {
+    task_queue_throttler()->OnTaskRunTimeReported(
+        queue, task_timing.start_time(), task_timing.end_time());
+  }
 
   main_thread_only().compositing_experiment.OnTaskCompleted(queue);
 
   // TODO(altimin): Per-page metrics should also be considered.
-  main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end,
-                                                      thread_time);
+  main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, task_timing);
   main_thread_only().task_description_for_tracing = base::nullopt;
 
   // Unset the state of |task_priority_for_tracing|.
   main_thread_only().task_priority_for_tracing = base::nullopt;
 
-  RecordTaskUkm(queue, task, start, end, thread_time);
+  RecordTaskUkm(queue, task, task_timing);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time) {
-  if (!ShouldRecordTaskUkm(thread_time.has_value()))
+    const TaskQueue::TaskTiming& task_timing) {
+  if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
 
   if (queue && queue->GetFrameScheduler()) {
-    RecordTaskUkmImpl(queue, task, start, end, thread_time,
+    RecordTaskUkmImpl(queue, task, task_timing,
                       static_cast<PageSchedulerImpl*>(
                           queue->GetFrameScheduler()->GetPageScheduler()),
                       1);
@@ -2562,7 +2560,7 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
   }
 
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    RecordTaskUkmImpl(queue, task, start, end, thread_time, page_scheduler,
+    RecordTaskUkmImpl(queue, task, task_timing, page_scheduler,
                       main_thread_only().page_schedulers.size());
   }
 }
@@ -2570,9 +2568,7 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
 void MainThreadSchedulerImpl::RecordTaskUkmImpl(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time,
+    const TaskQueue::TaskTiming& task_timing,
     PageSchedulerImpl* page_scheduler,
     size_t page_schedulers_to_attribute) {
   // Skip tasks which have deleted the page scheduler.
@@ -2598,11 +2594,12 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
       queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kDetached));
   builder.SetFrameStatus(static_cast<int>(
       GetFrameStatus(queue ? queue->GetFrameScheduler() : nullptr)));
-  builder.SetTaskDuration((end - start).InMicroseconds());
+  builder.SetTaskDuration(task_timing.wall_duration().InMicroseconds());
 
   if (main_thread_only().renderer_backgrounded) {
     base::TimeDelta time_since_backgrounded =
-        (end - main_thread_only().background_status_changed_at);
+        (task_timing.end_time() -
+         main_thread_only().background_status_changed_at);
 
     // Trade off for privacy: Round to seconds for times below 10 minutes and
     // minutes afterwards.
@@ -2617,8 +2614,8 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
     builder.SetSecondsSinceBackgrounded(seconds_since_backgrounded);
   }
 
-  if (thread_time) {
-    builder.SetTaskCPUDuration(thread_time->InMicroseconds());
+  if (task_timing.has_thread_time()) {
+    builder.SetTaskCPUDuration(task_timing.thread_duration().InMicroseconds());
   }
 
   builder.Record(ukm_recorder);

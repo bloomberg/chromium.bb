@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/fake_task.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -19,6 +20,8 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
+using base::sequence_manager::FakeTask;
+using base::sequence_manager::FakeTaskTiming;
 
 namespace blink {
 namespace scheduler {
@@ -88,11 +91,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
           new MainThreadTaskQueueForTest(queue_type));
     }
 
-    // Pass an empty task for recording.
-    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
-    TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
-    metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
-                                       start + duration, base::nullopt);
+    metrics_helper_->RecordTaskMetrics(queue.get(), FakeTask(),
+                                       FakeTaskTiming(start, start + duration));
   }
 
   void RunTask(FrameSchedulerImpl* scheduler,
@@ -103,11 +103,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     queue->SetFrameSchedulerForTest(scheduler);
-    // Pass an empty task for recording.
-    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
-    TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
-    metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
-                                       start + duration, base::nullopt);
+    metrics_helper_->RecordTaskMetrics(queue.get(), FakeTask(),
+                                       FakeTaskTiming(start, start + duration));
   }
 
   void RunTask(UseCase use_case,
@@ -118,11 +115,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     scheduler_->SetCurrentUseCaseForTest(use_case);
-    // Pass an empty task for recording.
-    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
-    TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
-    metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
-                                       start + duration, base::nullopt);
+    metrics_helper_->RecordTaskMetrics(queue.get(), FakeTask(),
+                                       FakeTaskTiming(start, start + duration));
   }
 
   base::TimeTicks Milliseconds(int milliseconds) {

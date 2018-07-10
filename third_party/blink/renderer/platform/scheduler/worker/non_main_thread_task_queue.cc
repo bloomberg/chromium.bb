@@ -29,13 +29,10 @@ NonMainThreadTaskQueue::~NonMainThreadTaskQueue() = default;
 
 void NonMainThreadTaskQueue::OnTaskCompleted(
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time) {
+    const TaskQueue::TaskTiming& task_timing) {
   // |non_main_thread_scheduler_| can be nullptr in tests.
   if (non_main_thread_scheduler_) {
-    non_main_thread_scheduler_->OnTaskCompleted(this, task, start, end,
-                                                thread_time);
+    non_main_thread_scheduler_->OnTaskCompleted(this, task, task_timing);
   }
 }
 

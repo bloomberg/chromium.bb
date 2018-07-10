@@ -125,20 +125,18 @@ MainThreadTaskQueue::MainThreadTaskQueue(
 
 MainThreadTaskQueue::~MainThreadTaskQueue() = default;
 
-void MainThreadTaskQueue::OnTaskStarted(const TaskQueue::Task& task,
-                                        base::TimeTicks start) {
+void MainThreadTaskQueue::OnTaskStarted(
+    const TaskQueue::Task& task,
+    const TaskQueue::TaskTiming& task_timing) {
   if (main_thread_scheduler_)
-    main_thread_scheduler_->OnTaskStarted(this, task, start);
+    main_thread_scheduler_->OnTaskStarted(this, task, task_timing);
 }
 
 void MainThreadTaskQueue::OnTaskCompleted(
     const TaskQueue::Task& task,
-    base::TimeTicks start,
-    base::TimeTicks end,
-    base::Optional<base::TimeDelta> thread_time) {
+    const TaskQueue::TaskTiming& task_timing) {
   if (main_thread_scheduler_) {
-    main_thread_scheduler_->OnTaskCompleted(this, task, start, end,
-                                            thread_time);
+    main_thread_scheduler_->OnTaskCompleted(this, task, task_timing);
   }
 }
 
