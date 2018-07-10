@@ -241,10 +241,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
 
-  // Used for identifying which frames need to navigate.
-  using FrameLoadVector =
-      std::vector<std::pair<FrameTreeNode*, FrameNavigationEntry*>>;
-
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
   class CONTENT_EXPORT TimeSmoother {
@@ -259,19 +255,19 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     base::Time high_water_mark_;
   };
 
-  // Identifies which frames need to be navigated for the pending
-  // NavigationEntry and instructs their Navigator to navigate them.  Returns
-  // whether any frame successfully started a navigation.
-  bool NavigateToPendingEntryInternal(
-      ReloadType reload_type,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
+  // Starts a navigation to an already existing pending NavigationEntry.
+  void NavigateToExistingPendingEntry(ReloadType reload_type);
 
-  // Recursively identifies which frames need to be navigated for the pending
-  // NavigationEntry, starting at |frame| and exploring its children.  Only used
-  // in --site-per-process.
-  void FindFramesToNavigate(FrameTreeNode* frame,
-                            FrameLoadVector* sameDocumentLoads,
-                            FrameLoadVector* differentDocumentLoads);
+  // Recursively identifies which frames need to be navigated for a navigation
+  // to |pending_entry_|, starting at |frame| and exploring its children.
+  // |same_document_loads| and |different_document_loads| will be filled with
+  // the NavigationRequests needed to navigate to |pending_entry_|.
+  void FindFramesToNavigate(
+      FrameTreeNode* frame,
+      ReloadType reload_type,
+      std::vector<std::unique_ptr<NavigationRequest>>* same_document_loads,
+      std::vector<std::unique_ptr<NavigationRequest>>*
+          different_document_loads);
 
   // Starts a new navigation based on |load_params|, that doesn't correspond to
   // an exisiting NavigationEntry.
@@ -346,11 +342,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
-
-  // Actually issues the navigation held in pending_entry.
-  void NavigateToPendingEntry(
-      ReloadType reload_type,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
