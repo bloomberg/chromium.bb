@@ -99,10 +99,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenOnlyOnSyncFocus) {
   ClickElementWithId(web_contents, "sync");
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
 
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::LOADING_EXTENSION);
-
-  EXPECT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ClickElementWithId(web_contents, "blur");
   ASSERT_TRUE(keyboard::WaitUntilHidden());
