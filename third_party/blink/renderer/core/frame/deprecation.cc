@@ -585,12 +585,15 @@ namespace blink {
 
 Deprecation::Deprecation() : mute_count_(0) {
   css_property_deprecation_bits_.EnsureSize(numCSSPropertyIDs);
+  features_deprecation_bits_.EnsureSize(
+      static_cast<int>(WebFeature::kNumberOfFeatures));
 }
 
 Deprecation::~Deprecation() = default;
 
 void Deprecation::ClearSuppression() {
   css_property_deprecation_bits_.ClearAll();
+  features_deprecation_bits_.ClearAll();
 }
 
 void Deprecation::MuteForInspector() {
@@ -609,6 +612,14 @@ void Deprecation::Suppress(CSSPropertyID unresolved_property) {
 bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
   return css_property_deprecation_bits_.QuickGet(unresolved_property);
+}
+
+void Deprecation::SetReported(WebFeature feature) {
+  features_deprecation_bits_.QuickSet(static_cast<int>(feature));
+}
+
+bool Deprecation::GetReported(WebFeature feature) const {
+  return features_deprecation_bits_.QuickGet(static_cast<int>(feature));
 }
 
 void Deprecation::WarnOnDeprecatedProperties(
@@ -635,18 +646,16 @@ String Deprecation::DeprecationMessage(CSSPropertyID unresolved_property) {
   return g_empty_string;
 }
 
+// TODO(loonybear): Replace CountDeprecation(LocalFrame*) by CountDeprecation(
+// DocumentLoader*) eventually.
 void Deprecation::CountDeprecation(const LocalFrame* frame,
                                    WebFeature feature) {
   if (!frame)
     return;
-  Page* page = frame->GetPage();
-  if (!page || page->GetDeprecation().mute_count_)
-    return;
-
-  if (!page->GetUseCounter().HasRecordedMeasurement(feature)) {
-    page->GetUseCounter().RecordMeasurement(feature, *frame);
-    GenerateReport(frame, feature);
-  }
+  DocumentLoader* loader = frame->GetDocument()
+                               ? frame->GetDocument()->Loader()
+                               : frame->Loader().GetProvisionalDocumentLoader();
+  Deprecation::CountDeprecation(loader, feature);
 }
 
 void Deprecation::CountDeprecation(ExecutionContext* context,
@@ -663,7 +672,23 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
 
 void Deprecation::CountDeprecation(const Document& document,
                                    WebFeature feature) {
-  Deprecation::CountDeprecation(document.GetFrame(), feature);
+  Deprecation::CountDeprecation(document.Loader(), feature);
+}
+
+void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
+  if (!loader)
+    return;
+  LocalFrame* frame = loader->GetFrame();
+  if (!frame)
+    return;
+  Page* page = frame->GetPage();
+  if (!loader || !page || page->GetDeprecation().mute_count_ ||
+      page->GetDeprecation().GetReported(feature))
+    return;
+
+  page->GetDeprecation().SetReported(feature);
+  UseCounter::Count(loader, feature);
+  GenerateReport(frame, feature);
 }
 
 void Deprecation::CountDeprecationCrossOriginIframe(const LocalFrame* frame,

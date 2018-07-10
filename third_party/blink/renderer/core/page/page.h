@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -193,7 +192,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   Settings& GetSettings() const { return *settings_; }
 
-  UseCounter& GetUseCounter() { return use_counter_; }
   Deprecation& GetDeprecation() { return deprecation_; }
   HostsUsingFeatures& GetHostsUsingFeatures() { return hosts_using_features_; }
 
@@ -370,7 +368,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   Member<ValidationMessageClient> validation_message_client_;
 
-  UseCounter use_counter_;
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
   WebWindowFeatures window_features_;

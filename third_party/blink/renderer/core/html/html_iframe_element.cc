@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
-#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/policy/iframe_policy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -207,8 +207,8 @@ void HTMLIFrameElement::ParseAttribute(
     // proper solution.
     // To avoid polluting the console, this is being recorded only once per
     // page.
-    if (name == "gesture" && value == "media" && GetDocument().GetPage() &&
-        !GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+    if (name == "gesture" && value == "media" && GetDocument().Loader() &&
+        !GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);

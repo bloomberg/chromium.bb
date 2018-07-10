@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -106,33 +106,33 @@ INSTANTIATE_TEST_CASE_P(WindowProperties,
 
 TEST_P(BindingSecurityCounterTest, CrossOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());
-  EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccess));
-  EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::SameOrigin, GetParam());
-  EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccess));
-  EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, CrossOriginFrame) {
   LoadFrameAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());
-  EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccess));
-  EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginFrame) {
   LoadFrameAndAccessProperty(OriginDisposition::SameOrigin, GetParam());
-  EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccess));
-  EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 

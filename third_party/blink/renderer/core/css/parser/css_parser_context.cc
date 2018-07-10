@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
@@ -227,8 +228,8 @@ void CSSParserContext::CountDeprecation(WebFeature feature) const {
 }
 
 void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
-  if (IsUseCounterRecordingEnabled() && document_->GetPage()) {
-    UseCounter* use_counter = &document_->GetPage()->GetUseCounter();
+  if (IsUseCounterRecordingEnabled() && document_->Loader()) {
+    UseCounter* use_counter = &document_->Loader()->GetUseCounter();
     if (use_counter)
       use_counter->Count(mode, property, document_->GetFrame());
   }

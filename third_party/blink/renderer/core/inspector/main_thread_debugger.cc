@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/timing/memory_info.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
@@ -253,18 +254,22 @@ void MainThreadDebugger::quitMessageLoopOnPause() {
 
 void MainThreadDebugger::muteMetrics(int context_group_id) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
-  if (frame && frame->GetPage()) {
-    frame->GetPage()->GetUseCounter().MuteForInspector();
+  if (!frame)
+    return;
+  if (frame->GetDocument() && frame->GetDocument()->Loader())
+    frame->GetDocument()->Loader()->GetUseCounter().MuteForInspector();
+  if (frame->GetPage())
     frame->GetPage()->GetDeprecation().MuteForInspector();
-  }
 }
 
 void MainThreadDebugger::unmuteMetrics(int context_group_id) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
-  if (frame && frame->GetPage()) {
-    frame->GetPage()->GetUseCounter().UnmuteForInspector();
+  if (!frame)
+    return;
+  if (frame->GetDocument() && frame->GetDocument()->Loader())
+    frame->GetDocument()->Loader()->GetUseCounter().UnmuteForInspector();
+  if (frame->GetPage())
     frame->GetPage()->GetDeprecation().UnmuteForInspector();
-  }
 }
 
 v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(

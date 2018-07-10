@@ -40,6 +40,7 @@ namespace blink {
 
 class CSSStyleSheet;
 class Document;
+class DocumentLoader;
 class EnumerationHistogram;
 class ExecutionContext;
 class LocalFrame;
@@ -79,7 +80,9 @@ class CORE_EXPORT UseCounter {
     kDisabledContext
   };
 
-  UseCounter(Context = kDefaultContext);
+  enum CommitState { kPreCommit, kCommited };
+
+  UseCounter(Context = kDefaultContext, CommitState = kPreCommit);
 
   // An interface to observe UseCounter changes. Note that this is never
   // notified when the counter is disabled by |m_muteCount| or when |m_context|
@@ -95,7 +98,11 @@ class CORE_EXPORT UseCounter {
   };
 
   // "count" sets the bit for this feature to 1. Repeated calls are ignored.
+  // Count(const LocalFrame*) is being deprecated since during a navigation it
+  // may pick the wrong DocumentLoader (will guess and avoid using the
+  // provisional document loader when both loaders are present).
   static void Count(const LocalFrame*, WebFeature);
+  static void Count(DocumentLoader*, WebFeature);
   static void Count(const Document&, WebFeature);
   static void Count(ExecutionContext*, WebFeature);
 
@@ -135,6 +142,10 @@ class CORE_EXPORT UseCounter {
   void UnmuteForInspector();
 
   void RecordMeasurement(WebFeature, const LocalFrame&);
+  void ReportAndTraceMeasurementByFeatureId(int, const LocalFrame&);
+  void ReportAndTraceMeasurementByCSSSampleId(int,
+                                              const LocalFrame*,
+                                              bool /*is_animated*/);
 
   // Return whether the feature has been seen since the last page load
   // (except when muted).  Does include features seen in documents which have
@@ -170,8 +181,13 @@ class CORE_EXPORT UseCounter {
   // The scope represented by this UseCounter instance, which must be fixed for
   // the duration of a page but can change when a new page is loaded.
   Context context_;
+  // CommitState tracks whether navigation has commited. Prior to commit,
+  // UseCounters are logged locally and delivered to the browser only once the
+  // document has been commited (eg. to ensure never logging a feature that has
+  // no corresponding PageVisits).
+  CommitState commit_state_;
 
-  // Track what features/properties have been reported to the histograms.
+  // Track what features/properties have been recorded.
   BitVector features_recorded_;
   BitVector css_recorded_;
   BitVector animated_css_recorded_;

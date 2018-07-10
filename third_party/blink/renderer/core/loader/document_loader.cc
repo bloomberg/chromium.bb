@@ -133,7 +133,10 @@ DocumentLoader::DocumentLoader(
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
-      user_activated_(false) {
+      user_activated_(false),
+      use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
+                       ? UseCounter::kSVGImageContext
+                       : UseCounter::kDefaultContext) {
   DCHECK(frame_);
 
   // The document URL needs to be added to the head of the list as that is
@@ -174,6 +177,7 @@ void DocumentLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_load_timing_);
   visitor->Trace(application_cache_host_);
   visitor->Trace(content_security_policy_);
+  visitor->Trace(use_counter_);
   RawResourceClient::Trace(visitor);
 }
 
@@ -645,8 +649,11 @@ void DocumentLoader::ResponseReceived(
 
   DCHECK(!frame_->GetPage()->Paused());
 
+  // Pre-commit state, count usage the use counter associated with "this"
+  // (provisional document loader) instead of frame_'s document loader.
   if (response.DidServiceWorkerNavigationPreload())
-    UseCounter::Count(frame_, WebFeature::kServiceWorkerNavigationPreload);
+    UseCounter::Count(this, WebFeature::kServiceWorkerNavigationPreload);
+
   response_ = response;
 
   if (IsArchiveMIMEType(response_.MimeType()) &&
@@ -997,14 +1004,15 @@ void DocumentLoader::DidCommitNavigation(
   DispatchLinkHeaderPreloads(nullptr, LinkLoader::kOnlyLoadNonMedia);
 
   frame_->GetPage()->DidCommitLoad(frame_);
+  GetUseCounter().DidCommitLoad(frame_);
 
   // Report legacy Symantec certificates after Page::DidCommitLoad, because the
   // latter clears the console.
   if (response_.IsLegacySymantecCert()) {
     UseCounter::Count(
-        frame_, frame_->Tree().Parent()
-                    ? WebFeature::kLegacySymantecCertInSubframeMainResource
-                    : WebFeature::kLegacySymantecCertMainFrameResource);
+        this, frame_->Tree().Parent()
+                  ? WebFeature::kLegacySymantecCertInSubframeMainResource
+                  : WebFeature::kLegacySymantecCertMainFrameResource);
     GetLocalFrameClient().ReportLegacySymantecCert(response_.Url(),
                                                    false /* did_fail */);
   }

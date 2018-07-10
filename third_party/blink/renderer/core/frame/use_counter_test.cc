@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_test_helper.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -50,14 +51,16 @@ class UseCounterTest : public testing::Test {
   Document& GetDocument() { return dummy_->GetDocument(); }
 
   template <typename T>
-  void HistogramBasicTest(const std::string& histogram,
-                          T item,
-                          T second_item,
-                          std::function<bool(T)> counted,
-                          std::function<void(T)> count,
-                          std::function<int(T)> histogram_map,
-                          std::function<void(LocalFrame*)> did_commit_load,
-                          const std::string& url);
+  void HistogramBasicTest(
+      const std::string& histogram,
+      T item,
+      T second_item,
+      std::function<bool(T, UseCounter&)> counted,
+      std::function<void(T, UseCounter&)> count,
+      std::function<int(T)> histogram_map,
+      std::function<void(LocalFrame*, UseCounter&)> did_commit_load,
+      const std::string& url,
+      UseCounter::Context context = UseCounter::kDefaultContext);
   std::unique_ptr<DummyPageHolder> dummy_;
   HistogramTester histogram_tester_;
 };
@@ -67,77 +70,84 @@ void UseCounterTest::HistogramBasicTest(
     const std::string& histogram,
     T item,
     T second_item,
-    std::function<bool(T)> counted,
-    std::function<void(T)> count,
+    std::function<bool(T, UseCounter&)> counted,
+    std::function<void(T, UseCounter&)> count,
     std::function<int(T)> histogram_map,
-    std::function<void(LocalFrame*)> did_commit_load,
-    const std::string& url) {
+    std::function<void(LocalFrame*, UseCounter&)> did_commit_load,
+    const std::string& url,
+    UseCounter::Context context) {
   int page_visits_bucket = GetPageVisitsBucketforHistogram(histogram);
 
+  UseCounter use_counter0(context, UseCounter::kCommited);
+
   // Test recording a single (arbitrary) counter
-  EXPECT_FALSE(counted(item));
-  count(item);
-  EXPECT_TRUE(counted(item));
+  EXPECT_FALSE(counted(item, use_counter0));
+  count(item, use_counter0);
+  EXPECT_TRUE(counted(item, use_counter0));
   histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
   // Test that repeated measurements have no effect
-  count(item);
+  count(item, use_counter0);
   histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
 
   // Test recording a different sample
-  EXPECT_FALSE(counted(second_item));
-  count(second_item);
-  EXPECT_TRUE(counted(second_item));
+  EXPECT_FALSE(counted(second_item, use_counter0));
+  count(second_item, use_counter0);
+  EXPECT_TRUE(counted(second_item, use_counter0));
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
   histogram_tester_.ExpectTotalCount(histogram, 2);
 
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
+  UseCounter use_counter1(context);
   SetURL(URLTestHelpers::ToKURL(url));
-  did_commit_load(GetFrame());
+  did_commit_load(GetFrame(), use_counter1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
   histogram_tester_.ExpectBucketCount(histogram, page_visits_bucket, 1);
   histogram_tester_.ExpectTotalCount(histogram, 3);
 
   // Now a repeat measurement should get recorded again, exactly once
-  EXPECT_FALSE(counted(item));
-  count(item);
-  count(item);
-  EXPECT_TRUE(counted(item));
+  EXPECT_FALSE(counted(item, use_counter1));
+  count(item, use_counter1);
+  count(item, use_counter1);
+  EXPECT_TRUE(counted(item, use_counter1));
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 2);
   histogram_tester_.ExpectTotalCount(histogram, 4);
 }
 
 TEST_F(UseCounterTest, RecordingExtensions) {
-  UseCounter use_counter(UseCounter::kExtensionContext);
   HistogramBasicTest<WebFeature>(
       kExtensionFeaturesHistogramName, WebFeature::kFetch,
       WebFeature::kFetchBodyStream,
-      [&](WebFeature feature) -> bool {
+      [&](WebFeature feature, UseCounter& use_counter) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
-      [&](WebFeature feature) {
+      [&](WebFeature feature, UseCounter& use_counter) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); },
-      kExtensionUrl);
+      [&](LocalFrame* frame, UseCounter& use_counter) {
+        use_counter.DidCommitLoad(frame);
+      },
+      kExtensionUrl, UseCounter::kExtensionContext);
 }
 
 TEST_F(UseCounterTest, SVGImageContextFeatures) {
-  UseCounter use_counter(UseCounter::kSVGImageContext);
   HistogramBasicTest<WebFeature>(
       kSVGFeaturesHistogramName, WebFeature::kSVGSMILAdditiveAnimation,
       WebFeature::kSVGSMILAnimationElementTiming,
-      [&](WebFeature feature) -> bool {
+      [&](WebFeature feature, UseCounter& use_counter) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
-      [&](WebFeature feature) {
+      [&](WebFeature feature, UseCounter& use_counter) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
+      [&](LocalFrame* frame, UseCounter& use_counter) {
+        use_counter.DidCommitLoad(frame);
+      },
+      kSvgUrl, UseCounter::kSVGImageContext);
 }
 
 TEST_F(UseCounterTest, CSSSelectorPseudoIS) {
@@ -316,7 +326,7 @@ class DeprecationTest : public testing::Test {
   DeprecationTest()
       : dummy_(DummyPageHolder::Create()),
         deprecation_(dummy_->GetPage().GetDeprecation()),
-        use_counter_(dummy_->GetPage().GetUseCounter()) {
+        use_counter_(dummy_->GetDocument().Loader()->GetUseCounter()) {
     Page::InsertOrdinaryPageForTesting(&dummy_->GetPage());
   }
 

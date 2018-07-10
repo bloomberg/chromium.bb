@@ -3325,13 +3325,13 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  Page* page = document->GetPage();
-  if (!page) {
+  DocumentLoader* loader = document->Loader();
+  if (!loader) {
     resolver->Reject();
     return promise;
   }
 
-  page->GetUseCounter().AddObserver(new UseCounterObserverImpl(
+  loader->GetUseCounter().AddObserver(new UseCounterObserverImpl(
       resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }

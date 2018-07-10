@@ -125,18 +125,21 @@ enum class ResourceType { kIsMainResource, kIsNotMainResource };
 void MaybeRecordCTPolicyComplianceUseCounter(
     LocalFrame* frame,
     Resource::Type resource_type,
-    ResourceResponse::CTPolicyCompliance compliance) {
+    ResourceResponse::CTPolicyCompliance compliance,
+    DocumentLoader* loader) {
   if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
     return;
   // Exclude main-frame navigation requests; those are tracked elsewhere.
   if (!frame->Tree().Parent() && resource_type == Resource::kMainResource)
     return;
-  UseCounter::Count(
-      frame,
-      frame->Tree().Parent()
-          ? WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe
-          : WebFeature::
-                kCertificateTransparencyNonCompliantSubresourceInMainFrame);
+  if (loader) {
+    loader->GetUseCounter().Count(
+        frame->Tree().Parent()
+            ? WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe
+            : WebFeature::
+                  kCertificateTransparencyNonCompliantSubresourceInMainFrame,
+        frame);
+  }
 }
 
 void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
@@ -555,7 +558,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   DCHECK(resource);
 
   MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
-                                          response.GetCTPolicyCompliance());
+                                          response.GetCTPolicyCompliance(),
+                                          MasterDocumentLoader());
 
   if (response_type == ResourceResponseType::kFromMemoryCache) {
     // Note: probe::willSendRequest needs to precede before this probe method.
@@ -679,16 +683,19 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   if (IsDetached())
     return;
 
-  if (NetworkUtils::IsCertificateTransparencyRequiredError(error.ErrorCode())) {
-    UseCounter::Count(
-        GetFrame()->GetDocument(),
-        WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
-  }
+  if (DocumentLoader* loader = MasterDocumentLoader()) {
+    if (NetworkUtils::IsCertificateTransparencyRequiredError(
+            error.ErrorCode())) {
+      loader->GetUseCounter().Count(
+          WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
+          GetFrame());
+    }
 
-  if (NetworkUtils::IsLegacySymantecCertError(error.ErrorCode())) {
-    UseCounter::Count(GetFrame()->GetDocument(),
-                      WebFeature::kDistrustedLegacySymantecSubresource);
-    GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
+    if (NetworkUtils::IsLegacySymantecCertError(error.ErrorCode())) {
+      loader->GetUseCounter().Count(
+          WebFeature::kDistrustedLegacySymantecSubresource, GetFrame());
+      GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
+    }
   }
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
@@ -1111,7 +1118,8 @@ bool FrameFetchContext::IsSVGImageChromeClient() const {
 void FrameFetchContext::CountUsage(WebFeature feature) const {
   if (IsDetached())
     return;
-  UseCounter::Count(GetFrame(), feature);
+  if (DocumentLoader* loader = MasterDocumentLoader())
+    loader->GetUseCounter().Count(feature, GetFrame());
 }
 
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {

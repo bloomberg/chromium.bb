@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -268,6 +269,7 @@ class CORE_EXPORT DocumentLoader
                                base::TimeTicks redirect_start_time,
                                base::TimeTicks redirect_end_time,
                                base::TimeTicks fetch_start_time);
+  UseCounter& GetUseCounter() { return use_counter_; }
 
  protected:
   DocumentLoader(LocalFrame*,
@@ -419,6 +421,12 @@ class CORE_EXPORT DocumentLoader
 
   // Whether this load request comes from a user activation.
   bool user_activated_;
+  // This UseCounter tracks feature usage associated with the lifetime of the
+  // document load. Features recorded prior to commit will be recorded locally.
+  // Once commited, feature usage will be piped to the browser side page load
+  // metrics that aggregates usage from frames to one page load and report
+  // feature usage to UMA histograms per page load.
+  UseCounter use_counter_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);
