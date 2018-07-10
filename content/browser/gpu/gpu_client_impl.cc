@@ -18,18 +18,23 @@ namespace content {
 std::unique_ptr<GpuClient, BrowserThread::DeleteOnIOThread> GpuClient::Create(
     ui::mojom::GpuRequest request,
     ConnectionErrorHandlerClosure connection_error_handler) {
+  const int client_id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
+  const uint64_t client_tracing_id =
+      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(client_id);
   std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client(
-      new GpuClientImpl(ChildProcessHostImpl::GenerateChildProcessUniqueId()));
+      new GpuClientImpl(client_id, client_tracing_id));
   gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
   gpu_client->Add(std::move(request));
   return gpu_client;
 }
 
-GpuClientImpl::GpuClientImpl(int client_id)
-    : client_id_(client_id), weak_factory_(this) {
+GpuClientImpl::GpuClientImpl(int client_id, uint64_t client_tracing_id)
+    : client_id_(client_id),
+      client_tracing_id_(client_tracing_id),
+      weak_factory_(this) {
   gpu_bindings_.set_connection_error_handler(
-      base::Bind(&GpuClientImpl::OnError, base::Unretained(this),
-                 ErrorReason::kConnectionLost));
+      base::BindRepeating(&GpuClientImpl::OnError, base::Unretained(this),
+                          ErrorReason::kConnectionLost));
 }
 
 GpuClientImpl::~GpuClientImpl() {
@@ -145,11 +150,10 @@ void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   bool allow_view_command_buffers = false;
   bool allow_real_time_streams = false;
   host->EstablishGpuChannel(
-      client_id_,
-      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(client_id_),
-      preempts, allow_view_command_buffers, allow_real_time_streams,
-      base::Bind(&GpuClientImpl::OnEstablishGpuChannel,
-                 weak_factory_.GetWeakPtr()));
+      client_id_, client_tracing_id_, preempts, allow_view_command_buffers,
+      allow_real_time_streams,
+      base::BindRepeating(&GpuClientImpl::OnEstablishGpuChannel,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void GpuClientImpl::CreateJpegDecodeAccelerator(

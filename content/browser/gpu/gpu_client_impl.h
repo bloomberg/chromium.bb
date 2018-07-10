@@ -17,7 +17,7 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
                       public ui::mojom::Gpu,
                       public GpuClient {
  public:
-  explicit GpuClientImpl(int render_process_id);
+  GpuClientImpl(int client_id, uint64_t client_tracing_id);
   ~GpuClientImpl() override;
 
   void Add(ui::mojom::GpuRequest request);
@@ -65,6 +65,7 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
   void ClearCallback();
 
   const int client_id_;
+  const uint64_t client_tracing_id_;
   mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>
       gpu_memory_buffer_factory_bindings_;
   mojo::BindingSet<ui::mojom::Gpu> gpu_bindings_;
