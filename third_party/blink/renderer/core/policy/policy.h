@@ -40,7 +40,7 @@ class CORE_EXPORT Policy : public ScriptWrappable {
   // changed.
   virtual void UpdateContainerPolicy(
       const ParsedFeaturePolicy& container_policy = {},
-      scoped_refptr<const SecurityOrigin> src_origin = nullptr) {}
+      scoped_refptr<const SecurityOrigin> src_origin = nullptr);
 
   void Trace(blink::Visitor*) override;
 

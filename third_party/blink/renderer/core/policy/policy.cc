@@ -78,4 +78,8 @@ void Policy::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
+void Policy::UpdateContainerPolicy(
+    const ParsedFeaturePolicy& container_policy,
+    scoped_refptr<const SecurityOrigin> src_origin) {}
+
 }  // namespace blink

@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class ComputedStyle;
+
 // This class has the same behaviour as the ComputedStylePropertyMap, except it
 // only contains the properties given to the constructor.
 //
