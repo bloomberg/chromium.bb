@@ -134,20 +134,12 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
                                          CSSValueInlineBlock);
     place_holder->SetInlineStyleProperty(CSSPropertyPointerEvents,
                                          CSSValueNone);
-    CSSPrimitiveValue::UnitType unit =
-        new_style->Height().IsPercent()
-            ? CSSPrimitiveValue::UnitType::kPercentage
-            : CSSPrimitiveValue::UnitType::kPixels;
-
-    // The width and height reported by computed style are zoomed, but when
-    // setting the width and height CSS properties we want pre-zoomed sizes.
-    float scale_factor = unit == CSSPrimitiveValue::UnitType::kPixels
-                             ? new_style->EffectiveZoom()
-                             : 1.0f;
     place_holder->SetInlineStyleProperty(
-        CSSPropertyHeight, new_style->Height().Value() / scale_factor, unit);
+        CSSPropertyHeight,
+        *CSSValue::Create(new_style->Height(), new_style->EffectiveZoom()));
     place_holder->SetInlineStyleProperty(
-        CSSPropertyWidth, new_style->Width().Value() / scale_factor, unit);
+        CSSPropertyWidth,
+        *CSSValue::Create(new_style->Width(), new_style->EffectiveZoom()));
 
     // 16px for the image and 2px for its top/left border/padding offset.
     int pixels_for_alt_image = 18;
