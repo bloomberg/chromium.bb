@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_H_
 
 #include "base/optional.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -23,14 +24,14 @@ namespace CORS {
 // Thin wrapper functions below are for calling ::network::cors functions from
 // Blink core. Once Out-of-renderer CORS is enabled, following functions will
 // be removed.
-PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckAccess(
+PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckAccess(
     const KURL&,
     const int response_status_code,
     const HTTPHeaderMap&,
     network::mojom::FetchCredentialsMode,
     const SecurityOrigin&);
 
-PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflightAccess(
+PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckPreflightAccess(
     const KURL&,
     const int response_status_code,
     const HTTPHeaderMap&,
@@ -43,8 +44,8 @@ PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckRedirectLocation(
 PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflight(
     const int preflight_response_status_code);
 
-PLATFORM_EXPORT base::Optional<network::mojom::CORSError>
-CheckExternalPreflight(const HTTPHeaderMap&);
+PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckExternalPreflight(
+    const HTTPHeaderMap&);
 
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 

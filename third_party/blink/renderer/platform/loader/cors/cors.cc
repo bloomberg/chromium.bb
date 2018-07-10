@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
@@ -68,7 +70,7 @@ std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
 
 namespace CORS {
 
-base::Optional<network::mojom::CORSError> CheckAccess(
+base::Optional<network::CORSErrorStatus> CheckAccess(
     const KURL& response_url,
     const int response_status_code,
     const HTTPHeaderMap& response_header,
@@ -85,7 +87,7 @@ base::Optional<network::mojom::CORSError> CheckAccess(
       !privilege->block_local_access_from_local_origin_);
 }
 
-base::Optional<network::mojom::CORSError> CheckPreflightAccess(
+base::Optional<network::CORSErrorStatus> CheckPreflightAccess(
     const KURL& response_url,
     const int response_status_code,
     const HTTPHeaderMap& response_header,
@@ -121,7 +123,7 @@ base::Optional<network::mojom::CORSError> CheckPreflight(
   return network::cors::CheckPreflight(preflight_response_status_code);
 }
 
-base::Optional<network::mojom::CORSError> CheckExternalPreflight(
+base::Optional<network::CORSErrorStatus> CheckExternalPreflight(
     const HTTPHeaderMap& response_header) {
   return network::cors::CheckExternalPreflight(GetHeaderValue(
       response_header, HTTPNames::Access_Control_Allow_External));

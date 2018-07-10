@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <set>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -128,7 +129,7 @@ const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
 }  // namespace header_names
 
 // See https://fetch.spec.whatwg.org/#cors-check.
-base::Optional<mojom::CORSError> CheckAccess(
+base::Optional<CORSErrorStatus> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
@@ -139,7 +140,7 @@ base::Optional<mojom::CORSError> CheckAccess(
   // TODO(toyoshim): This response status code check should not be needed. We
   // have another status code check after a CheckAccess() call if it is needed.
   if (!response_status_code)
-    return mojom::CORSError::kInvalidResponse;
+    return CORSErrorStatus(mojom::CORSError::kInvalidResponse);
 
   if (allow_origin_header == kAsterisk) {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
@@ -155,9 +156,9 @@ base::Optional<mojom::CORSError> CheckAccess(
     // browser process or network service, this check won't be needed any more
     // because it is always for network requests there.
     if (response_url.SchemeIsHTTPOrHTTPS())
-      return mojom::CORSError::kWildcardOriginNotAllowed;
+      return CORSErrorStatus(mojom::CORSError::kWildcardOriginNotAllowed);
   } else if (!allow_origin_header) {
-    return mojom::CORSError::kMissingAllowOriginHeader;
+    return CORSErrorStatus(mojom::CORSError::kMissingAllowOriginHeader);
   } else if (*allow_origin_header != Serialize(origin, allow_file_origin)) {
     // We do not use url::Origin::IsSameOriginWith() here for two reasons below.
     //  1. Allow "null" to match here. The latest spec does not have a clear
@@ -175,33 +176,42 @@ base::Optional<mojom::CORSError> CheckAccess(
 
     // Does not allow to have multiple origins in the allow origin header.
     // See https://fetch.spec.whatwg.org/#http-access-control-allow-origin.
-    if (allow_origin_header->find_first_of(" ,") != std::string::npos)
-      return mojom::CORSError::kMultipleAllowOriginValues;
+    if (allow_origin_header->find_first_of(" ,") != std::string::npos) {
+      return CORSErrorStatus(mojom::CORSError::kMultipleAllowOriginValues,
+                             *allow_origin_header);
+    }
 
     // Check valid "null" first since GURL assumes it as invalid.
-    if (*allow_origin_header == "null")
-      return mojom::CORSError::kAllowOriginMismatch;
+    if (*allow_origin_header == "null") {
+      return CORSErrorStatus(mojom::CORSError::kAllowOriginMismatch,
+                             *allow_origin_header);
+    }
 
     // As commented above, this validation is not strict as an origin
     // validation, but should be ok for providing error details to developers.
     GURL header_origin(*allow_origin_header);
-    if (!header_origin.is_valid())
-      return mojom::CORSError::kInvalidAllowOriginValue;
+    if (!header_origin.is_valid()) {
+      return CORSErrorStatus(mojom::CORSError::kInvalidAllowOriginValue,
+                             *allow_origin_header);
+    }
 
-    return mojom::CORSError::kAllowOriginMismatch;
+    return CORSErrorStatus(mojom::CORSError::kAllowOriginMismatch,
+                           *allow_origin_header);
   }
 
   if (credentials_mode == mojom::FetchCredentialsMode::kInclude) {
     // https://fetch.spec.whatwg.org/#http-access-control-allow-credentials.
     // This check should be case sensitive.
     // See also https://fetch.spec.whatwg.org/#http-new-header-syntax.
-    if (allow_credentials_header != kLowerCaseTrue)
-      return mojom::CORSError::kInvalidAllowCredentials;
+    if (allow_credentials_header != kLowerCaseTrue) {
+      return CORSErrorStatus(mojom::CORSError::kInvalidAllowCredentials,
+                             allow_credentials_header.value_or(std::string()));
+    }
   }
   return base::nullopt;
 }
 
-base::Optional<mojom::CORSError> CheckPreflightAccess(
+base::Optional<CORSErrorStatus> CheckPreflightAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
@@ -209,35 +219,43 @@ base::Optional<mojom::CORSError> CheckPreflightAccess(
     mojom::FetchCredentialsMode actual_credentials_mode,
     const url::Origin& origin,
     bool allow_file_origin) {
-  base::Optional<mojom::CORSError> error =
+  const auto error_status =
       CheckAccess(response_url, response_status_code, allow_origin_header,
                   allow_credentials_header, actual_credentials_mode, origin,
                   allow_file_origin);
-  if (!error)
+  if (!error_status)
     return base::nullopt;
 
   // TODO(toyoshim): Remove following two lines when the status code check is
   // removed from CheckAccess().
-  if (*error == mojom::CORSError::kInvalidResponse)
-    return error;
+  if (error_status->cors_error == mojom::CORSError::kInvalidResponse)
+    return error_status;
 
-  switch (*error) {
+  mojom::CORSError error = error_status->cors_error;
+  switch (error_status->cors_error) {
     case mojom::CORSError::kWildcardOriginNotAllowed:
-      return mojom::CORSError::kPreflightWildcardOriginNotAllowed;
+      error = mojom::CORSError::kPreflightWildcardOriginNotAllowed;
+      break;
     case mojom::CORSError::kMissingAllowOriginHeader:
-      return mojom::CORSError::kPreflightMissingAllowOriginHeader;
+      error = mojom::CORSError::kPreflightMissingAllowOriginHeader;
+      break;
     case mojom::CORSError::kMultipleAllowOriginValues:
-      return mojom::CORSError::kPreflightMultipleAllowOriginValues;
+      error = mojom::CORSError::kPreflightMultipleAllowOriginValues;
+      break;
     case mojom::CORSError::kInvalidAllowOriginValue:
-      return mojom::CORSError::kPreflightInvalidAllowOriginValue;
+      error = mojom::CORSError::kPreflightInvalidAllowOriginValue;
+      break;
     case mojom::CORSError::kAllowOriginMismatch:
-      return mojom::CORSError::kPreflightAllowOriginMismatch;
+      error = mojom::CORSError::kPreflightAllowOriginMismatch;
+      break;
     case mojom::CORSError::kInvalidAllowCredentials:
-      return mojom::CORSError::kPreflightInvalidAllowCredentials;
+      error = mojom::CORSError::kPreflightInvalidAllowCredentials;
+      break;
     default:
       NOTREACHED();
+      break;
   }
-  return error;
+  return CORSErrorStatus(error, error_status->failed_parameter);
 }
 
 base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
@@ -275,13 +293,14 @@ base::Optional<mojom::CORSError> CheckPreflight(const int status_code) {
 }
 
 // https://wicg.github.io/cors-rfc1918/#http-headerdef-access-control-allow-external
-base::Optional<mojom::CORSError> CheckExternalPreflight(
+base::Optional<CORSErrorStatus> CheckExternalPreflight(
     const base::Optional<std::string>& allow_external) {
   if (!allow_external)
-    return mojom::CORSError::kPreflightMissingAllowExternal;
+    return CORSErrorStatus(mojom::CORSError::kPreflightMissingAllowExternal);
   if (*allow_external == kLowerCaseTrue)
     return base::nullopt;
-  return mojom::CORSError::kPreflightInvalidAllowExternal;
+  return CORSErrorStatus(mojom::CORSError::kPreflightInvalidAllowExternal,
+                         *allow_external);
 }
 
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode) {

@@ -180,7 +180,7 @@ void CORSURLLoader::OnReceiveResponse(
   if (fetch_cors_flag_ &&
       IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
-    base::Optional<mojom::CORSError> cors_error = CheckAccess(
+    const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
         GetHeaderString(response_head.headers,
                         header_names::kAccessControlAllowOrigin),
@@ -188,10 +188,8 @@ void CORSURLLoader::OnReceiveResponse(
                         header_names::kAccessControlAllowCredentials),
         request_.fetch_credentials_mode,
         tainted_ ? url::Origin() : *request_.request_initiator);
-    if (cors_error) {
-      // TODO(toyoshim): Generate related_response_headers here.
-      CORSErrorStatus cors_error_status(*cors_error);
-      HandleComplete(URLLoaderCompletionStatus(cors_error_status));
+    if (error_status) {
+      HandleComplete(URLLoaderCompletionStatus(*error_status));
       return;
     }
   }
@@ -210,7 +208,7 @@ void CORSURLLoader::OnReceiveRedirect(
   if (fetch_cors_flag_ &&
       IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
-    base::Optional<mojom::CORSError> cors_error = CheckAccess(
+    const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
         GetHeaderString(response_head.headers,
                         header_names::kAccessControlAllowOrigin),
@@ -218,10 +216,8 @@ void CORSURLLoader::OnReceiveRedirect(
                         header_names::kAccessControlAllowCredentials),
         request_.fetch_credentials_mode,
         tainted_ ? url::Origin() : *request_.request_initiator);
-    if (cors_error) {
-      // TODO(toyoshim): Generate related_response_headers here.
-      CORSErrorStatus cors_error_status(*cors_error);
-      HandleComplete(URLLoaderCompletionStatus(cors_error_status));
+    if (error_status) {
+      HandleComplete(URLLoaderCompletionStatus(*error_status));
       return;
     }
   }

@@ -129,7 +129,7 @@ class HTTPHeaderNameListParser {
 
 }  // namespace
 
-base::Optional<CORSError> HandleRedirect(
+base::Optional<network::CORSErrorStatus> HandleRedirect(
     WebSecurityOrigin& current_security_origin,
     WebURLRequest& new_request,
     const WebURL redirect_response_url,
@@ -148,10 +148,10 @@ base::Optional<CORSError> HandleRedirect(
     base::Optional<CORSError> redirect_error =
         CORS::CheckRedirectLocation(new_url);
     if (redirect_error)
-      return redirect_error;
+      return network::CORSErrorStatus(*redirect_error);
 
     KURL redirect_response_kurl = redirect_response_url;
-    base::Optional<CORSError> access_error =
+    base::Optional<network::CORSErrorStatus> access_error =
         CORS::CheckAccess(redirect_response_kurl, redirect_response_status_code,
                           redirect_response_header.GetHTTPHeaderMap(),
                           credentials_mode, *current_security_origin.Get());

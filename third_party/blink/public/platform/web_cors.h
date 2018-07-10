@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CORS_H_
 
 #include "base/optional.h"
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/web_http_header_map.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
@@ -47,7 +47,7 @@ namespace WebCORS {
 // TODO(toyoshim): Using platform/loader/fetch/ResourceLoaderOptions violates
 // the DEPS rule. This will be fixed soon by making HandleRedirect() not
 // depending on ResourceLoaderOptions.
-BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> HandleRedirect(
+BLINK_PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> HandleRedirect(
     WebSecurityOrigin&,
     WebURLRequest&,
     const WebURL,
