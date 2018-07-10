@@ -91,7 +91,8 @@ class TestOverlayWindow : public OverlayWindow {
   ui::Layer* GetLayer() override { return nullptr; }
   gfx::Rect GetBounds() const override { return gfx::Rect(); }
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
-  void UpdatePlayPauseControlsIcon(bool is_playing) override {}
+  void SetPlaybackState(PlaybackState playback_state) override {}
+  ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
   ui::Layer* GetVideoLayer() override { return nullptr; }
   ui::Layer* GetControlsBackgroundLayer() override { return nullptr; }
   ui::Layer* GetCloseControlsLayer() override { return nullptr; }

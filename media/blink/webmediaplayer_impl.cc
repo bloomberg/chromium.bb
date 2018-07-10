@@ -328,12 +328,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  // If running in Picture-in-Picture but not in auto-pip, notify the player.
-  if (client_->DisplayType() ==
-          WebMediaPlayer::DisplayType::kPictureInPicture &&
-      !client_->IsInAutoPIP())
-    ExitPictureInPicture(base::DoNothing());
-
   if (!surface_layer_for_video_enabled_ && video_layer_) {
     video_layer_->StopUsingProvider();
   }

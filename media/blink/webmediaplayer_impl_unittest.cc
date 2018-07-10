@@ -1386,8 +1386,7 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
   }
 }
 
-// Tests when the PipSurfaceInfoCB for |wmpi_| is triggered for
-// Picture-in-Picture.
+// Tests delegate methods are called when Picture-in-Picture is triggered.
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
@@ -1420,9 +1419,9 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   wmpi_->EnterPictureInPicture(base::DoNothing());
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
-  // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to
-  // be called. ~WMPI calls ExitPictureInPicture().
-  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _));
+  // Updating SurfaceId should NOT exit Picture-in-Picture.
+  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
+      .Times(0);
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

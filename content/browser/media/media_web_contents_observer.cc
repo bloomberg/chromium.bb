@@ -209,7 +209,8 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
       pip_player_ == player_id) {
     content::PictureInPictureWindowController::GetOrCreateForWebContents(
         web_contents())
-        ->UpdatePlaybackState(false /* is not playing */);
+        ->UpdatePlaybackState(false /* is not playing */,
+                              reached_end_of_stream);
   }
 
   if (removed_audio || removed_video) {
@@ -260,7 +261,8 @@ void MediaWebContentsObserver::OnMediaPlaying(
       pip_player_ == id) {
     content::PictureInPictureWindowController::GetOrCreateForWebContents(
         web_contents())
-        ->UpdatePlaybackState(true /* is playing */);
+        ->UpdatePlaybackState(true /* is playing */,
+                              false /* reached_end_of_stream */);
   }
 
   // Notify observers of the new player.
@@ -351,6 +353,7 @@ void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(
           web_contents_impl());
   DCHECK(pip_controller);
 
+  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
   pip_controller->EmbedSurface(surface_id, natural_size);
 }
 

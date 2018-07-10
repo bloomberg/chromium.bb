@@ -432,6 +432,47 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(is_paused);
 }
 
+// Tests that resetting video src when video is in Picture-in-Picture session
+// keep Picture-in-Picture window opened.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       ResetVideoSrcKeepsPictureInPictureWindowOpened) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  bool in_picture_in_picture = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.src = null;"));
+
+  in_picture_in_picture = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,
 // using the metadata optimizations. This test is checking that there are no
 // crashes.

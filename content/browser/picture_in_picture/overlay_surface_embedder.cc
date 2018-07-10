@@ -11,6 +11,12 @@ namespace content {
 OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
     : window_(window) {
   DCHECK(window_);
+  // Add window background.
+  window_background_layer_ = window_->GetWindowBackgroundLayer();
+  window_background_layer_->SetBounds(
+      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
+  window_->GetLayer()->Add(window_background_layer_);
+
   video_layer_ = window_->GetVideoLayer();
   video_layer_->SetMasksToBounds(true);
 
@@ -39,6 +45,10 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
 }
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
+  // Update the size of window background.
+  window_background_layer_->SetBounds(
+      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
+
   // Update the size and position of the video to stretch on the entire window.
   video_layer_ = window_->GetVideoLayer();
   video_layer_->SetBounds(window_->GetVideoBounds());
