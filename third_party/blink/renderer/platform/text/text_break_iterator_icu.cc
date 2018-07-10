@@ -731,17 +731,23 @@ void ReleaseLineBreakIterator(TextBreakIterator* iterator) {
   LineBreakIteratorPool::SharedPool().Put(iterator);
 }
 
-static TextBreakIterator* g_non_shared_character_break_iterator;
+static TextBreakIterator* GetNonSharedCharacterBreakIterator() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<std::unique_ptr<TextBreakIterator>>, thread_specific, ());
 
-static inline bool CompareAndSwapNonSharedCharacterBreakIterator(
-    TextBreakIterator* expected,
-    TextBreakIterator* new_value) {
-  DEFINE_STATIC_LOCAL(Mutex, non_shared_character_break_iterator_mutex, ());
-  MutexLocker locker(non_shared_character_break_iterator_mutex);
-  if (g_non_shared_character_break_iterator != expected)
-    return false;
-  g_non_shared_character_break_iterator = new_value;
-  return true;
+  std::unique_ptr<TextBreakIterator>& iterator = *thread_specific;
+
+  if (!iterator) {
+    ICUError error_code;
+    iterator = base::WrapUnique(icu::BreakIterator::createCharacterInstance(
+        icu::Locale(CurrentTextBreakLocaleID()), error_code));
+    CHECK(U_SUCCESS(error_code) && iterator)
+        << "ICU could not open a break iterator: " << u_errorName(error_code)
+        << " (" << error_code << ")";
+  }
+
+  DCHECK(iterator);
+  return iterator.get();
 }
 
 NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
@@ -780,29 +786,13 @@ NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
 void NonSharedCharacterBreakIterator::CreateIteratorForBuffer(
     const UChar* buffer,
     unsigned length) {
-  iterator_ = g_non_shared_character_break_iterator;
-  bool created_iterator =
-      iterator_ &&
-      CompareAndSwapNonSharedCharacterBreakIterator(iterator_, nullptr);
-  if (!created_iterator) {
-    ICUError error_code;
-    iterator_ = icu::BreakIterator::createCharacterInstance(
-        icu::Locale(CurrentTextBreakLocaleID()), error_code);
-    CHECK(U_SUCCESS(error_code) && iterator_)
-        << "ICU could not open a break iterator: " << u_errorName(error_code)
-        << " (" << error_code << ")";
-  } else {
-    CHECK(iterator_);
-  }
-
+  iterator_ = GetNonSharedCharacterBreakIterator();
   SetText16(iterator_, buffer, length);
 }
 
 NonSharedCharacterBreakIterator::~NonSharedCharacterBreakIterator() {
   if (is8_bit_)
     return;
-  if (!CompareAndSwapNonSharedCharacterBreakIterator(nullptr, iterator_))
-    delete iterator_;
 }
 
 int NonSharedCharacterBreakIterator::Next() {
