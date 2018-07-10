@@ -80,6 +80,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
           }));
   factory_->AddSharedMemoryVirtualDevice(
       info, std::move(producer_proxy),
+      false /* send_buffer_handles_to_producer_as_raw_file_descriptors */,
       mojo::MakeRequest(&virtual_device_proxy));
   factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
@@ -125,6 +126,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->AddSharedMemoryVirtualDevice(
       info, std::move(producer_proxy),
+      false /* send_buffer_handles_to_producer_as_raw_file_descriptors */,
       mojo::MakeRequest(&virtual_device_proxy));
   factory_->CreateDevice(virtual_device_id, mojo::MakeRequest(&device_proxy),
                          create_device_proxy_callback.Get());

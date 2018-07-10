@@ -99,7 +99,6 @@ class CAPTURE_EXPORT VideoCaptureDevice
             bool read_only) = 0;
         virtual base::SharedMemoryHandle
         GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
-        virtual uint32_t GetMemorySizeInBytes() = 0;
         virtual std::unique_ptr<VideoCaptureBufferHandle>
         GetHandleForInProcessAccess() = 0;
       };

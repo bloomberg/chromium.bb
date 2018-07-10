@@ -40,6 +40,7 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       video_capture::mojom::ProducerPtr producer,
+      bool send_buffer_handles_to_producer_as_raw_file_descriptors,
       video_capture::mojom::SharedMemoryVirtualDeviceRequest virtual_device)
       override {
     DoAddVirtualDevice(device_info, producer.get(), &virtual_device);

@@ -44,11 +44,17 @@ interface DeviceFactory {
   // factory using the given |device_info|. The returned |virtual_device| is to
   // be used by the caller to subsequently push video frames. These frames will
   // appear to clients of the device as if they were produced by the device.
+  // If |send_buffer_handles_to_producer_as_raw_file_descriptors| is set to
+  // true, buffers requested via
+  // |SharedMemoryVirtualDevice.RequestFrameBuffer()| will be shared with
+  // |producer| as |VideoBufferHandle.shared_memory_via_raw_file_descriptor|,
+  // and otherwise as |VideoBufferHandle.shared_buffer_handle|.
   // The virtual device is removed either when the caller releases
   // |virtual_device| or the given |producer| is closed.
   AddSharedMemoryVirtualDevice(
       media.mojom.VideoCaptureDeviceInfo device_info,
       Producer producer,
+      bool send_buffer_handles_to_producer_as_raw_file_descriptors,
       SharedMemoryVirtualDevice& virtual_device);
 
   // Similar to AddSharedMemoryVirtualDevice() but for virtual devices that

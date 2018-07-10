@@ -68,10 +68,6 @@ class StubBufferHandleProvider
     return base::SharedMemoryHandle();
   }
 
-  uint32_t GetMemorySizeInBytes() override {
-    return static_cast<uint32_t>(mapped_size_);
-  }
-
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override {
     return std::make_unique<StubBufferHandle>(mapped_size_, data_);

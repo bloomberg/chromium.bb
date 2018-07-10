@@ -233,9 +233,12 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
       video_capture::mojom::DeviceFactoryPtr* factory,
       const media::VideoCaptureDeviceInfo& info) override {
     video_capture::mojom::ProducerPtr producer;
+    static const bool kSendBufferHandlesToProducerAsRawFileDescriptors = false;
     producer_binding_.Bind(mojo::MakeRequest(&producer));
     (*factory)->AddSharedMemoryVirtualDevice(
-        info, std::move(producer), mojo::MakeRequest(&virtual_device_));
+        info, std::move(producer),
+        kSendBufferHandlesToProducerAsRawFileDescriptors,
+        mojo::MakeRequest(&virtual_device_));
   }
   void PushNextFrame(base::TimeDelta timestamp) override {
     virtual_device_->RequestFrameBuffer(
@@ -250,12 +253,14 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   }
 
   // video_capture::mojom::Producer implementation.
-  void OnNewBufferHandle(int32_t buffer_id,
-                         mojo::ScopedSharedBufferHandle buffer_handle,
-                         OnNewBufferHandleCallback callback) override {
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle,
+                   OnNewBufferCallback callback) override {
+    CHECK(buffer_handle->is_shared_buffer_handle());
     auto handle_provider =
         std::make_unique<media::SharedMemoryHandleProvider>();
-    handle_provider->InitFromMojoHandle(std::move(buffer_handle));
+    handle_provider->InitFromMojoHandle(
+        std::move(buffer_handle->get_shared_buffer_handle()));
     outgoing_buffer_id_to_buffer_map_.insert(
         std::make_pair(buffer_id, std::move(handle_provider)));
     std::move(callback).Run();
