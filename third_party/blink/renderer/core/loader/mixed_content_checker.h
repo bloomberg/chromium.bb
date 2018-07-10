@@ -43,16 +43,15 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ConsoleMessage;
 class Frame;
+class FrameFetchContext;
 class LocalFrame;
 class KURL;
 class ResourceResponse;
 class SecurityOrigin;
 class SourceLocation;
-class WorkerGlobalScope;
-class WorkerOrWorkletGlobalScope;
-class WebWorkerFetchContext;
+class WorkerFetchContext;
 
 // Checks resource loads for mixed content. If PlzNavigate is enabled then this
 // class only checks for sub-resource loads while frame-level loads are
@@ -74,17 +73,17 @@ class CORE_EXPORT MixedContentChecker final {
                                SecurityViolationReportingPolicy =
                                    SecurityViolationReportingPolicy::kReport);
 
-  static bool ShouldBlockFetchOnWorker(WorkerOrWorkletGlobalScope*,
-                                       WebWorkerFetchContext*,
+  static bool ShouldBlockFetchOnWorker(const WorkerFetchContext&,
                                        WebURLRequest::RequestContext,
                                        ResourceRequest::RedirectStatus,
                                        const KURL&,
-                                       SecurityViolationReportingPolicy);
+                                       SecurityViolationReportingPolicy,
+                                       bool is_worklet_global_scope);
 
-  static bool IsWebSocketAllowed(LocalFrame*, const KURL&);
-  static bool IsWebSocketAllowed(WorkerGlobalScope*,
-                                 WebWorkerFetchContext*,
+  static bool IsWebSocketAllowed(const FrameFetchContext&,
+                                 LocalFrame*,
                                  const KURL&);
+  static bool IsWebSocketAllowed(const WorkerFetchContext&, const KURL&);
 
   static bool IsMixedContent(const SecurityOrigin*, const KURL&);
   static bool IsMixedFormAction(LocalFrame*,
@@ -128,16 +127,15 @@ class CORE_EXPORT MixedContentChecker final {
       const KURL&,
       const LocalFrame*);
 
-  static void LogToConsoleAboutFetch(ExecutionContext*,
-                                     const KURL&,
-                                     const KURL&,
-                                     WebURLRequest::RequestContext,
-                                     bool allowed,
-                                     std::unique_ptr<SourceLocation>);
-  static void LogToConsoleAboutWebSocket(ExecutionContext*,
-                                         const KURL&,
-                                         const KURL&,
-                                         bool allowed);
+  static ConsoleMessage* CreateConsoleMessageAboutFetch(
+      const KURL&,
+      const KURL&,
+      WebURLRequest::RequestContext,
+      bool allowed,
+      std::unique_ptr<SourceLocation>);
+  static ConsoleMessage* CreateConsoleMessageAboutWebSocket(const KURL&,
+                                                            const KURL&,
+                                                            bool allowed);
   static void Count(Frame*, WebURLRequest::RequestContext, const LocalFrame*);
 
   DISALLOW_COPY_AND_ASSIGN(MixedContentChecker);

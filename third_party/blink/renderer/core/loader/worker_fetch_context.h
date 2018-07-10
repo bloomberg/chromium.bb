@@ -21,6 +21,8 @@ class WebURLLoader;
 class WebURLLoaderFactory;
 class WebWorkerFetchContext;
 class WorkerClients;
+class WorkerContentSettingsClient;
+class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
 
 CORE_EXPORT void ProvideWorkerFetchContextToWorker(
@@ -112,7 +114,10 @@ class WorkerFetchContext final : public BaseFetchContext {
                                ResourceRequest&) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
-  WebWorkerFetchContext* GetWebWorkerFetchContext() {
+  SecurityContext& GetSecurityContext() const;
+  WorkerSettings* GetWorkerSettings() const;
+  WorkerContentSettingsClient* GetWorkerContentSettingsClient() const;
+  WebWorkerFetchContext* GetWebWorkerFetchContext() const {
     return web_context_.get();
   }
 

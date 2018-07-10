@@ -387,7 +387,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // Called when mixed content is detected on a page; will trigger a violation
   // report if the 'block-all-mixed-content' directive is specified for a
   // policy.
-  void ReportMixedContent(const KURL& mixed_url, RedirectStatus);
+  void ReportMixedContent(const KURL& mixed_url, RedirectStatus) const;
 
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) const;

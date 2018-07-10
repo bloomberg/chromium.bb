@@ -43,6 +43,8 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -147,14 +149,14 @@ const char* RequestContextName(WebURLRequest::RequestContext context) {
 // ContentSettingsClient/WorkerContentSettingsClient to avoid using C++
 // template.
 template <typename SettingsType, typename SettingsClientType>
-bool IsWebSocketAllowedImpl(ExecutionContext* execution_context,
+bool IsWebSocketAllowedImpl(const BaseFetchContext& fetch_context,
                             SecurityContext* security_context,
                             const SecurityOrigin* security_origin,
                             SettingsType* settings,
                             SettingsClientType* settings_client,
                             const KURL& url) {
-  UseCounter::Count(execution_context, WebFeature::kMixedContentPresent);
-  UseCounter::Count(execution_context, WebFeature::kMixedContentWebSocket);
+  fetch_context.CountUsage(WebFeature::kMixedContentPresent);
+  fetch_context.CountUsage(WebFeature::kMixedContentWebSocket);
   if (ContentSecurityPolicy* policy =
           security_context->GetContentSecurityPolicy()) {
     policy->ReportMixedContent(url,
@@ -253,8 +255,7 @@ Frame* MixedContentChecker::InWhichFrameIsContentMixed(
 }
 
 // static
-void MixedContentChecker::LogToConsoleAboutFetch(
-    ExecutionContext* execution_context,
+ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
     const KURL& main_resource_url,
     const KURL& url,
     WebURLRequest::RequestContext request_context,
@@ -271,13 +272,10 @@ void MixedContentChecker::LogToConsoleAboutFetch(
   MessageLevel message_level =
       allowed ? kWarningMessageLevel : kErrorMessageLevel;
   if (source_location) {
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, message_level, message,
-                               std::move(source_location)));
-  } else {
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, message_level, message));
+    return ConsoleMessage::Create(kSecurityMessageSource, message_level,
+                                  message, std::move(source_location));
   }
+  return ConsoleMessage::Create(kSecurityMessageSource, message_level, message);
 }
 
 // static
@@ -443,77 +441,76 @@ bool MixedContentChecker::ShouldBlockFetch(
   };
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    LogToConsoleAboutFetch(frame->GetDocument(),
-                           MainResourceUrlForFrame(mixed_frame), url,
-                           request_context, allowed, nullptr);
+    frame->GetDocument()->AddConsoleMessage(
+        CreateConsoleMessageAboutFetch(MainResourceUrlForFrame(mixed_frame),
+                                       url, request_context, allowed, nullptr));
   }
   return !allowed;
 }
 
 // static
 bool MixedContentChecker::ShouldBlockFetchOnWorker(
-    WorkerOrWorkletGlobalScope* global_scope,
-    WebWorkerFetchContext* worker_fetch_context,
+    const WorkerFetchContext& worker_fetch_context,
     WebURLRequest::RequestContext request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) {
-  if (!MixedContentChecker::IsMixedContent(global_scope->GetSecurityOrigin(),
-                                           url)) {
+    SecurityViolationReportingPolicy reporting_policy,
+    bool is_worklet_global_scope) {
+  if (!MixedContentChecker::IsMixedContent(
+          worker_fetch_context.GetSecurityOrigin(), url)) {
     return false;
   }
 
-  UseCounter::Count(global_scope, WebFeature::kMixedContentPresent);
-  UseCounter::Count(global_scope, WebFeature::kMixedContentBlockable);
-  if (ContentSecurityPolicy* policy = global_scope->GetContentSecurityPolicy())
+  worker_fetch_context.CountUsage(WebFeature::kMixedContentPresent);
+  worker_fetch_context.CountUsage(WebFeature::kMixedContentBlockable);
+  if (auto* policy = worker_fetch_context.GetContentSecurityPolicy())
     policy->ReportMixedContent(url, redirect_status);
 
   // Blocks all mixed content request from worklets.
   // TODO(horo): Revise this when the spec is updated.
   // Worklets spec: https://www.w3.org/TR/worklets-1/#security-considerations
   // Spec issue: https://github.com/w3c/css-houdini-drafts/issues/92
-  if (!global_scope->IsWorkerGlobalScope())
+  if (is_worklet_global_scope)
     return true;
 
-  WorkerGlobalScope* worker_global_scope = ToWorkerGlobalScope(global_scope);
-  WorkerSettings* settings = worker_global_scope->GetWorkerSettings();
+  WorkerSettings* settings = worker_fetch_context.GetWorkerSettings();
   DCHECK(settings);
   bool allowed = false;
   if (!settings->GetAllowRunningOfInsecureContent() &&
-      worker_fetch_context->IsOnSubframe()) {
-    UseCounter::Count(global_scope,
-                      WebFeature::kBlockableMixedContentInSubframeBlocked);
+      worker_fetch_context.GetWebWorkerFetchContext()->IsOnSubframe()) {
+    worker_fetch_context.CountUsage(
+        WebFeature::kBlockableMixedContentInSubframeBlocked);
     allowed = false;
   } else {
-    bool strict_mode = worker_global_scope->GetInsecureRequestPolicy() &
-                           kBlockAllMixedContent ||
-                       settings->GetStrictMixedContentChecking();
+    bool strict_mode =
+        worker_fetch_context.GetSecurityContext().GetInsecureRequestPolicy() &
+            kBlockAllMixedContent ||
+        settings->GetStrictMixedContentChecking();
     bool should_ask_embedder =
         !strict_mode && (!settings->GetStrictlyBlockBlockableMixedContent() ||
                          settings->GetAllowRunningOfInsecureContent());
     allowed = should_ask_embedder &&
-              WorkerContentSettingsClient::From(*global_scope)
+              worker_fetch_context.GetWorkerContentSettingsClient()
                   ->AllowRunningInsecureContent(
                       settings->GetAllowRunningOfInsecureContent(),
-                      global_scope->GetSecurityOrigin(), url);
+                      worker_fetch_context.GetSecurityOrigin(), url);
     if (allowed) {
-      worker_fetch_context->DidRunInsecureContent(
-          WebSecurityOrigin(global_scope->GetSecurityOrigin()), url);
-      UseCounter::Count(global_scope,
-                        WebFeature::kMixedContentBlockableAllowed);
+      worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
+          WebSecurityOrigin(worker_fetch_context.GetSecurityOrigin()), url);
+      worker_fetch_context.CountUsage(
+          WebFeature::kMixedContentBlockableAllowed);
     }
   }
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    LogToConsoleAboutFetch(global_scope, global_scope->Url(), url,
-                           request_context, allowed, nullptr);
+    worker_fetch_context.AddConsoleMessage(CreateConsoleMessageAboutFetch(
+        worker_fetch_context.Url(), url, request_context, allowed, nullptr));
   }
   return !allowed;
 }
 
 // static
-void MixedContentChecker::LogToConsoleAboutWebSocket(
-    ExecutionContext* execution_context,
+ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutWebSocket(
     const KURL& main_resource_url,
     const KURL& url,
     bool allowed) {
@@ -528,13 +525,14 @@ void MixedContentChecker::LogToConsoleAboutWebSocket(
                 "available over WSS.");
   MessageLevel message_level =
       allowed ? kWarningMessageLevel : kErrorMessageLevel;
-  execution_context->AddConsoleMessage(
-      ConsoleMessage::Create(kSecurityMessageSource, message_level, message));
+  return ConsoleMessage::Create(kSecurityMessageSource, message_level, message);
 }
 
 // static
-bool MixedContentChecker::IsWebSocketAllowed(LocalFrame* frame,
-                                             const KURL& url) {
+bool MixedContentChecker::IsWebSocketAllowed(
+    const FrameFetchContext& frame_fetch_context,
+    LocalFrame* frame,
+    const KURL& url) {
   Frame* mixed_frame = InWhichFrameIsContentMixed(
       frame, network::mojom::RequestContextFrameType::kNone, url, frame);
   if (!mixed_frame)
@@ -548,43 +546,45 @@ bool MixedContentChecker::IsWebSocketAllowed(LocalFrame* frame,
   SecurityContext* security_context = mixed_frame->GetSecurityContext();
   const SecurityOrigin* security_origin = security_context->GetSecurityOrigin();
 
-  bool allowed = IsWebSocketAllowedImpl(frame->GetDocument(), security_context,
+  bool allowed = IsWebSocketAllowedImpl(frame_fetch_context, security_context,
                                         security_origin, settings,
                                         content_settings_client, url);
   if (allowed)
     frame->Client()->DidRunInsecureContent(security_origin, url);
 
-  LogToConsoleAboutWebSocket(
-      frame->GetDocument(), MainResourceUrlForFrame(mixed_frame), url, allowed);
+  frame->GetDocument()->AddConsoleMessage(CreateConsoleMessageAboutWebSocket(
+      MainResourceUrlForFrame(mixed_frame), url, allowed));
 
   return allowed;
 }
 
 // static
 bool MixedContentChecker::IsWebSocketAllowed(
-    WorkerGlobalScope* global_scope,
-    WebWorkerFetchContext* worker_fetch_context,
+    const WorkerFetchContext& worker_fetch_context,
     const KURL& url) {
-  if (!MixedContentChecker::IsMixedContent(global_scope->GetSecurityOrigin(),
-                                           url)) {
+  if (!MixedContentChecker::IsMixedContent(
+          worker_fetch_context.GetSecurityOrigin(), url)) {
     return true;
   }
 
-  WorkerSettings* settings = global_scope->GetWorkerSettings();
+  WorkerSettings* settings = worker_fetch_context.GetWorkerSettings();
   WorkerContentSettingsClient* content_settings_client =
-      WorkerContentSettingsClient::From(*global_scope);
-  SecurityContext* security_context = &global_scope->GetSecurityContext();
-  const SecurityOrigin* security_origin = global_scope->GetSecurityOrigin();
+      worker_fetch_context.GetWorkerContentSettingsClient();
+  SecurityContext* security_context =
+      &worker_fetch_context.GetSecurityContext();
+  const SecurityOrigin* security_origin =
+      worker_fetch_context.GetSecurityOrigin();
 
-  bool allowed =
-      IsWebSocketAllowedImpl(global_scope, security_context, security_origin,
-                             settings, content_settings_client, url);
+  bool allowed = IsWebSocketAllowedImpl(worker_fetch_context, security_context,
+                                        security_origin, settings,
+                                        content_settings_client, url);
   if (allowed) {
-    worker_fetch_context->DidRunInsecureContent(
+    worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
         WebSecurityOrigin(security_origin), url);
   }
 
-  LogToConsoleAboutWebSocket(global_scope, global_scope->Url(), url, allowed);
+  worker_fetch_context.AddConsoleMessage(CreateConsoleMessageAboutWebSocket(
+      worker_fetch_context.Url(), url, allowed));
 
   return allowed;
 }
@@ -701,9 +701,9 @@ void MixedContentChecker::MixedContentFound(
     bool had_redirect,
     std::unique_ptr<SourceLocation> source_location) {
   // Logs to the frame console.
-  LogToConsoleAboutFetch(frame->GetDocument(), main_resource_url,
-                         mixed_content_url, request_context, was_allowed,
-                         std::move(source_location));
+  frame->GetDocument()->AddConsoleMessage(CreateConsoleMessageAboutFetch(
+      main_resource_url, mixed_content_url, request_context, was_allowed,
+      std::move(source_location)));
   // Reports to the CSP policy.
   ContentSecurityPolicy* policy =
       frame->GetSecurityContext()->GetContentSecurityPolicy();

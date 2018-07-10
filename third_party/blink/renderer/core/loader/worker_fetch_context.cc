@@ -160,8 +160,7 @@ bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
     const KURL& url) const {
   // Worklets don't support WebSocket.
   DCHECK(global_scope_->IsWorkerGlobalScope());
-  return !MixedContentChecker::IsWebSocketAllowed(
-      ToWorkerGlobalScope(global_scope_), web_context_.get(), url);
+  return !MixedContentChecker::IsWebSocketAllowed(*this, url);
 }
 
 std::unique_ptr<WebSocketHandshakeThrottle>
@@ -176,8 +175,8 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      global_scope_, web_context_.get(), request_context, redirect_status, url,
-      reporting_policy);
+      *this, request_context, redirect_status, url, reporting_policy,
+      global_scope_->IsWorkletGlobalScope());
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
@@ -221,8 +220,7 @@ const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
 
 base::Optional<mojom::IPAddressSpace> WorkerFetchContext::GetAddressSpace()
     const {
-  return base::make_optional(
-      global_scope_->GetSecurityContext().AddressSpace());
+  return base::make_optional(GetSecurityContext().AddressSpace());
 }
 
 const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()
@@ -406,6 +404,21 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerFetchContext::GetLoadingTaskRunner() {
   return loading_task_runner_;
+}
+
+SecurityContext& WorkerFetchContext::GetSecurityContext() const {
+  return global_scope_->GetSecurityContext();
+}
+
+WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
+  if (!global_scope_->IsWorkerGlobalScope())
+    return nullptr;
+  return ToWorkerGlobalScope(global_scope_)->GetWorkerSettings();
+}
+
+WorkerContentSettingsClient*
+WorkerFetchContext::GetWorkerContentSettingsClient() const {
+  return WorkerContentSettingsClient::From(*global_scope_);
 }
 
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {
