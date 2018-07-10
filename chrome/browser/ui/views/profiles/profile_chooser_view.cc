@@ -729,6 +729,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         accounts, GetImagesForAccounts(accounts, browser_->profile()),
         base::BindOnce(&ProfileChooserView::EnableSync,
                        base::Unretained(this)));
+    // Add sign-out button.
+    dice_accounts_menu_->SetSignOutButtonCallback(base::BindOnce(
+        &ProfileChooserView::SignOutAllWebAccounts, base::Unretained(this)));
     dice_accounts_menu_->Show(sender, sync_to_another_account_button_);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
@@ -1595,6 +1598,12 @@ void ProfileChooserView::EnableSync(
                                         false /* is_default_promo_account */);
   else
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+}
+
+void ProfileChooserView::SignOutAllWebAccounts() {
+  Hide();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())
+      ->RevokeAllCredentials();
 }
 
 int ProfileChooserView::GetDiceSigninPromoShowCount() const {

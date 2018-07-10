@@ -42,6 +42,9 @@ class DiceAccountsMenu : public views::MenuDelegate {
   // given. This method can only be called once.
   void Show(views::View* anchor_view, views::MenuButton* menu_button = nullptr);
 
+  // A sign-out button is only added to the menu when this function is called.
+  void SetSignOutButtonCallback(base::OnceClosure signout_callback);
+
  private:
   views::MenuItemView* BuildMenu();
 
@@ -59,6 +62,7 @@ class DiceAccountsMenu : public views::MenuDelegate {
   std::vector<gfx::Image> icons_;
 
   Callback account_selected_callback_;
+  base::OnceClosure signout_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceAccountsMenu);
 };
