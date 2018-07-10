@@ -4583,8 +4583,6 @@ crbug.com/831796 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.
 
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
 
-crbug.com/861544 [ Win ] fast/text/selection/khmer-selection.html [ Failure Pass ]
-
 crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.html [ Failure Pass ]
 
 # Sheriff 2018-07-09
