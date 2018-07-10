@@ -3180,11 +3180,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_UTILITY_PROCESS_FILE_UTILITY_NAME" desc="The name of the utility process used for various Chrome specific file operations.">
           Chrome File Utilities
       </message>
-      <if expr="is_linux">
-        <message name="IDS_UTILITY_PROCESS_FONT_SERVICE_UTILITY_NAME" desc="The name of the utility process used for FontConfig operations for Chrome on Linux.">
-          Linux Font Service
-        </message>
-      </if>
       <if expr="not is_android">
         <message name="IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME" desc="The name of the utility process used for importing profiles.">
           Profile Importer

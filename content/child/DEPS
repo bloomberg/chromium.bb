@@ -4,7 +4,7 @@ include_rules = [
   "+components/tracing",
   "+components/variations/child_process_field_trial_syncer.h",
   "+components/webcrypto",
-  "+components/services/font",
+  "+components/services/font/public",
 
   "+content/app/strings/grit",  # For generated headers
   "+content/public/child",

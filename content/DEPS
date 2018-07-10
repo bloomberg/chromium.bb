@@ -24,7 +24,7 @@ include_rules = [
   # settings, packaging details, installation or crash reporting.
 
   "+components/services/filesystem",
-  "+components/services/font",
+  "+components/services/font/public",
 
   "+crypto",
   "+grit/blink_resources.h",

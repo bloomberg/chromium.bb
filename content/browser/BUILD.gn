@@ -1795,7 +1795,10 @@ jumbo_source_set("browser") {
   }
 
   if (is_linux) {
-    deps += [ "//services/service_manager/zygote" ]
+    deps += [
+      "//components/services/font/public/interfaces",
+      "//services/service_manager/zygote",
+    ]
   }
 
   # ChromeOS also defines linux but their memory-monitors conflict.

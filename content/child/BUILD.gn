@@ -140,19 +140,16 @@ target(link_target_type, "child") {
     ]
   }
 
-  if (is_linux && !is_android) {
-    deps += [
-      "//components/services/font:lib",
-      "//components/services/font/public/cpp",
-    ]
-  }
-
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
 
   if (is_linux) {
-    deps += [ "//services/service_manager/zygote" ]
+    deps += [
+      "//components/services/font/public/cpp",
+      "//components/services/font/public/interfaces",
+      "//services/service_manager/zygote",
+    ]
   }
 
   if (is_win) {

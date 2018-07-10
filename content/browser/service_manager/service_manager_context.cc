@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "content/app/strings/grit/content_strings.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -92,6 +93,10 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "components/services/font/public/interfaces/constants.mojom.h"
 #endif
 
 namespace content {
@@ -602,6 +607,19 @@ ServiceManagerContext::ServiceManagerContext(
 
   out_of_process_services[data_decoder::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
+
+#if defined(OS_LINUX)
+  out_of_process_services[font_service::mojom::kServiceName] =
+      base::BindRepeating([] {
+        auto title = GetContentClient()->GetLocalizedString(
+            IDS_FONT_SERVICE_PROCESS_TITLE);
+        if (!title.empty())
+          return title;
+
+        // Default to a non-localized string if we have to.
+        return base::ASCIIToUTF16("Linux Font Service");
+      });
+#endif
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(network::features::kNetworkService);

@@ -222,10 +222,6 @@ source_set("app_shell_lib") {
     ]
   }
 
-  if (is_linux) {
-    deps += [ "//components/services/font/public/cpp" ]
-  }
-
   if (is_chromeos) {
     sources += [
       "browser/api/vpn_provider/vpn_service_factory.cc",
