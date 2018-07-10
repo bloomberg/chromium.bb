@@ -105,7 +105,7 @@ class BASE_EXPORT SamplingHeapProfiler {
   std::stack<std::unique_ptr<LockFreeAddressHashSet>> sampled_addresses_stack_;
   std::unordered_map<void*, Sample> samples_;
   std::vector<SamplesObserver*> observers_;
-  uint32_t last_sample_ordinal_ = 0;
+  uint32_t last_sample_ordinal_ = 1;
 
   static SamplingHeapProfiler* instance_;
 
