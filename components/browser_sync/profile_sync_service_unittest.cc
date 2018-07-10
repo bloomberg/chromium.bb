@@ -425,8 +425,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY |
-                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             service()->GetDisableReasons());
   EXPECT_FALSE(service()->IsSyncActive());
   EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
@@ -542,8 +541,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   // Wait for PSS to be notified that the primary account has gone away.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->IsSyncActive());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
 }
