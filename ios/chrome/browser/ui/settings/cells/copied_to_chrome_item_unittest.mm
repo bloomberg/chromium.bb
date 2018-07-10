@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +31,13 @@ TEST_F(CopiedToChromeItemTest, InitializeCell) {
   CopiedToChromeCell* copiedToChromeCell = cell;
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY),
               copiedToChromeCell.textLabel.text);
-  EXPECT_NSEQ([l10n_util::GetNSString(IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON)
-                  uppercaseString],
+
+  NSString* buttonText =
+      l10n_util::GetNSString(IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON);
+  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+    buttonText = [buttonText uppercaseString];
+  }
+  EXPECT_NSEQ(buttonText,
               [copiedToChromeCell.button titleForState:UIControlStateNormal]);
 }
 
