@@ -9,8 +9,8 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
-import android.os.AsyncTask;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
