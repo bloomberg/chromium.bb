@@ -1027,7 +1027,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   layout_size.SetHeight(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
 
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
-  if (browser_controls.PermittedState() != kWebBrowserControlsHidden) {
+  if (browser_controls.PermittedState() != cc::BrowserControlsState::kHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
     // so that we get correct results on mobile where the page is laid out into
     // a rect that may be larger than the viewport (e.g. the 980px fallback

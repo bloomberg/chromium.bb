@@ -1074,14 +1074,14 @@ void FrameLoader::CommitProvisionalLoad() {
   // events, so these notifications tell it there are (presently) no handlers.
   if (frame_->IsLocalRoot()) {
     frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, WebEventListenerClass::kTouchStartOrMove,
-        WebEventListenerProperties::kNothing);
+        frame_, cc::EventListenerClass::kTouchStartOrMove,
+        cc::EventListenerProperties::kNone);
     frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, WebEventListenerClass::kMouseWheel,
-        WebEventListenerProperties::kNothing);
+        frame_, cc::EventListenerClass::kMouseWheel,
+        cc::EventListenerProperties::kNone);
     frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, WebEventListenerClass::kTouchEndOrCancel,
-        WebEventListenerProperties::kNothing);
+        frame_, cc::EventListenerClass::kTouchEndOrCancel,
+        cc::EventListenerProperties::kNone);
   }
 
   Client()->TransitionToCommittedForNewPage();

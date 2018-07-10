@@ -18,6 +18,10 @@ IntPoint::operator gfx::Point() const {
   return gfx::Point(X(), Y());
 }
 
+IntPoint::operator gfx::Vector2d() const {
+  return gfx::Vector2d(X(), Y());
+}
+
 String IntPoint::ToString() const {
   return String::Format("%d,%d", X(), Y());
 }

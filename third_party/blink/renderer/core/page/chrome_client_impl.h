@@ -138,11 +138,11 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // allows the client to know which optimizations can be used for the
   // associated event classes.
   void SetEventListenerProperties(LocalFrame*,
-                                  WebEventListenerClass,
-                                  WebEventListenerProperties) override;
-  WebEventListenerProperties EventListenerProperties(
+                                  cc::EventListenerClass,
+                                  cc::EventListenerProperties) override;
+  cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
-      WebEventListenerClass) const override;
+      cc::EventListenerClass) const override;
   // Informs client about the existence of handlers for scroll events so
   // appropriate scroll optimizations can be chosen.
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;

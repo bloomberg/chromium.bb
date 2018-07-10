@@ -679,8 +679,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gfx::Rect viewport_visible_rect_;
 
   bool have_scroll_event_handlers_ = false;
-  EventListenerProperties event_listener_properties_[static_cast<size_t>(
-      EventListenerClass::kNumClasses)];
+  EventListenerProperties event_listener_properties_
+      [static_cast<size_t>(EventListenerClass::kLast) + 1];
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 

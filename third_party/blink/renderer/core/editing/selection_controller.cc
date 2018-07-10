@@ -31,7 +31,6 @@
 
 #include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
-#include "third_party/blink/public/web/web_selection.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
@@ -1281,9 +1280,5 @@ bool IsExtendingSelection(const MouseEventWithHitTestResults& event) {
              0 &&
          !is_mouse_down_on_link_or_image;
 }
-
-STATIC_ASSERT_ENUM(WebSelection::kNoSelection, kNoSelection);
-STATIC_ASSERT_ENUM(WebSelection::kCaretSelection, kCaretSelection);
-STATIC_ASSERT_ENUM(WebSelection::kRangeSelection, kRangeSelection);
 
 }  // namespace blink

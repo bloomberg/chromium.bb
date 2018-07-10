@@ -146,6 +146,7 @@ _CONFIG = [
             'gfx::Size',
             'gfx::SizeF',
             'gfx::Transform',
+            'gfx::Vector2d',
             'gfx::Vector2dF',
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
@@ -153,6 +154,10 @@ _CONFIG = [
             # A geometric set of TouchActions associated with areas, and only
             # depends on the geometry types above.
             'cc::TouchActionRegion',
+
+            # Selection bounds.
+            'cc::LayerSelection',
+            'gfx::SelectionBound',
 
             # cc::Layers.
             'cc::Layer',
@@ -173,6 +178,9 @@ _CONFIG = [
             'cc::VERTICAL',
             'cc::THUMB',
             'cc::TICKMARKS',
+            'cc::BrowserControlsState',
+            'cc::EventListenerClass',
+            'cc::EventListenerProperties',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',

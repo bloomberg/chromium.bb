@@ -155,12 +155,12 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_TRUE(root_scroll_layer->scrollable());
   ASSERT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
-  ASSERT_EQ(WebEventListenerProperties::kNothing,
+  ASSERT_EQ(cc::EventListenerProperties::kNone,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kTouchStartOrMove));
-  ASSERT_EQ(WebEventListenerProperties::kNothing,
+                cc::EventListenerClass::kTouchStartOrMove));
+  ASSERT_EQ(cc::EventListenerProperties::kNone,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kMouseWheel));
+                cc::EventListenerClass::kMouseWheel));
 
   cc::Layer* inner_viewport_scroll_layer =
       page->GetVisualViewport().ScrollLayer()->CcLayer();
@@ -473,9 +473,9 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandler) {
   NavigateTo(base_url_ + "touch-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kBlocking,
+  ASSERT_EQ(cc::EventListenerProperties::kBlocking,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kTouchStartOrMove));
+                cc::EventListenerClass::kTouchStartOrMove));
 }
 
 TEST_P(ScrollingCoordinatorTest, elementBlockingTouchEventHandler) {
@@ -501,9 +501,9 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandlerPassive) {
   NavigateTo(base_url_ + "touch-event-handler-passive.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kPassive,
+  ASSERT_EQ(cc::EventListenerProperties::kPassive,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kTouchStartOrMove));
+                cc::EventListenerClass::kTouchStartOrMove));
 }
 
 TEST_P(ScrollingCoordinatorTest, elementTouchEventHandlerPassive) {
@@ -532,9 +532,9 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandlerBoth) {
   NavigateTo(base_url_ + "touch-event-handler-both.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kBlockingAndPassive,
+  ASSERT_EQ(cc::EventListenerProperties::kBlockingAndPassive,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kTouchStartOrMove));
+                cc::EventListenerClass::kTouchStartOrMove));
 }
 
 TEST_P(ScrollingCoordinatorTest, wheelEventHandler) {
@@ -542,9 +542,9 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandler) {
   NavigateTo(base_url_ + "wheel-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kBlocking,
+  ASSERT_EQ(cc::EventListenerProperties::kBlocking,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kMouseWheel));
+                cc::EventListenerClass::kMouseWheel));
 }
 
 TEST_P(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
@@ -552,9 +552,9 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
   NavigateTo(base_url_ + "wheel-event-handler-passive.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kPassive,
+  ASSERT_EQ(cc::EventListenerProperties::kPassive,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kMouseWheel));
+                cc::EventListenerClass::kMouseWheel));
 }
 
 TEST_P(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
@@ -562,9 +562,9 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
   NavigateTo(base_url_ + "wheel-event-handler-both.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_EQ(WebEventListenerProperties::kBlockingAndPassive,
+  ASSERT_EQ(cc::EventListenerProperties::kBlockingAndPassive,
             GetWebLayerTreeView()->EventListenerProperties(
-                WebEventListenerClass::kMouseWheel));
+                cc::EventListenerClass::kMouseWheel));
 }
 
 TEST_P(ScrollingCoordinatorTest, scrollEventHandler) {

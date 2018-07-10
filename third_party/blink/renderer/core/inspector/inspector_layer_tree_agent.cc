@@ -311,8 +311,8 @@ InspectorLayerTreeAgent::BuildLayerTree() {
       layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =
       inspected_frames_->Root()->GetChromeClient().EventListenerProperties(
-          inspected_frames_->Root(), WebEventListenerClass::kMouseWheel) ==
-      WebEventListenerProperties::kBlocking;
+          inspected_frames_->Root(), cc::EventListenerClass::kMouseWheel) ==
+      cc::EventListenerProperties::kBlocking;
 
   GatherGraphicsLayers(RootGraphicsLayer(), layer_id_to_node_id_map, layers,
                        have_blocking_wheel_event_handlers, scrolling_layer_id);

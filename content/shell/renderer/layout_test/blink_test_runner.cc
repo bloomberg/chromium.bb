@@ -832,7 +832,8 @@ void BlinkTestRunner::OnSetTestConfiguration(
 
   // Tests should always start with the browser controls hidden.
   render_view()->GetWebView()->UpdateBrowserControlsState(
-      blink::kWebBrowserControlsBoth, blink::kWebBrowserControlsHidden, false);
+      cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kHidden,
+      false);
 
   LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()

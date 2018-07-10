@@ -36,6 +36,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
-#include "third_party/blink/public/web/web_selection.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -768,8 +768,36 @@ void ChromeClientImpl::UpdateCompositedSelection(
   if (!client)
     return;
 
-  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView())
-    layer_tree_view->RegisterSelection(WebSelection(selection));
+  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView()) {
+    DCHECK_NE(selection.type, kNoSelection);
+
+    cc::LayerSelection cc_selection;
+    if (selection.type == kRangeSelection) {
+      cc_selection.start.type = selection.start.is_text_direction_rtl
+                                    ? gfx::SelectionBound::Type::RIGHT
+                                    : gfx::SelectionBound::Type::LEFT;
+      cc_selection.end.type = selection.end.is_text_direction_rtl
+                                  ? gfx::SelectionBound::Type::RIGHT
+                                  : gfx::SelectionBound::Type::LEFT;
+    } else {
+      cc_selection.start.type = gfx::SelectionBound::Type::CENTER;
+      cc_selection.end.type = gfx::SelectionBound::Type::CENTER;
+    }
+    cc_selection.start.edge_top =
+        gfx::Point(RoundedIntPoint(selection.start.edge_top_in_layer));
+    cc_selection.start.edge_bottom =
+        gfx::Point(RoundedIntPoint(selection.start.edge_bottom_in_layer));
+    cc_selection.start.layer_id = selection.start.layer->CcLayer()->id();
+    cc_selection.start.hidden = selection.start.hidden;
+    cc_selection.end.edge_top =
+        gfx::Point(RoundedIntPoint(selection.end.edge_top_in_layer));
+    cc_selection.end.edge_bottom =
+        gfx::Point(RoundedIntPoint(selection.end.edge_bottom_in_layer));
+    cc_selection.end.layer_id = selection.end.layer->CcLayer()->id();
+    cc_selection.end.hidden = selection.end.hidden;
+
+    layer_tree_view->RegisterSelection(cc_selection);
+  }
 }
 
 bool ChromeClientImpl::HasOpenedPopup() const {
@@ -846,8 +874,8 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
 
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
-    WebEventListenerClass event_class,
-    WebEventListenerProperties properties) {
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
   // |frame| might be null if called via TreeScopeAdopter::
   // moveNodeToNewDocument() and the new document has no frame attached.
   // Since a document without a frame cannot attach one later, it is safe to
@@ -862,7 +890,7 @@ void ChromeClientImpl::SetEventListenerProperties(
   if (web_frame->IsProvisional()) {
     // If we hit a provisional frame, we expect it to be during initialization
     // in which case the |properties| should be 'nothing'.
-    DCHECK(properties == WebEventListenerProperties::kNothing);
+    DCHECK(properties == cc::EventListenerProperties::kNone);
     return;
   }
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
@@ -879,18 +907,18 @@ void ChromeClientImpl::SetEventListenerProperties(
   WebWidgetClient* client = widget->Client();
   if (WebLayerTreeView* tree_view = widget->GetLayerTreeView()) {
     tree_view->SetEventListenerProperties(event_class, properties);
-    if (event_class == WebEventListenerClass::kTouchStartOrMove) {
+    if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
       client->HasTouchEventHandlers(
-          properties != WebEventListenerProperties::kNothing ||
+          properties != cc::EventListenerProperties::kNone ||
           tree_view->EventListenerProperties(
-              WebEventListenerClass::kTouchEndOrCancel) !=
-              WebEventListenerProperties::kNothing);
-    } else if (event_class == WebEventListenerClass::kTouchEndOrCancel) {
+              cc::EventListenerClass::kTouchEndOrCancel) !=
+              cc::EventListenerProperties::kNone);
+    } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
       client->HasTouchEventHandlers(
-          properties != WebEventListenerProperties::kNothing ||
+          properties != cc::EventListenerProperties::kNone ||
           tree_view->EventListenerProperties(
-              WebEventListenerClass::kTouchStartOrMove) !=
-              WebEventListenerProperties::kNothing);
+              cc::EventListenerClass::kTouchStartOrMove) !=
+              cc::EventListenerProperties::kNone);
     }
   } else {
     client->HasTouchEventHandlers(true);
@@ -904,17 +932,17 @@ void ChromeClientImpl::BeginLifecycleUpdates() {
   }
 }
 
-WebEventListenerProperties ChromeClientImpl::EventListenerProperties(
+cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
     LocalFrame* frame,
-    WebEventListenerClass event_class) const {
+    cc::EventListenerClass event_class) const {
   if (!frame)
-    return WebEventListenerProperties::kNothing;
+    return cc::EventListenerProperties::kNone;
 
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
 
   if (!widget || !widget->GetLayerTreeView())
-    return WebEventListenerProperties::kNothing;
+    return cc::EventListenerProperties::kNone;
   return widget->GetLayerTreeView()->EventListenerProperties(event_class);
 }
 

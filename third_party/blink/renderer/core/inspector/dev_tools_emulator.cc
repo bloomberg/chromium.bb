@@ -475,7 +475,8 @@ base::Optional<IntRect> DevToolsEmulator::VisibleContentRectForPainting()
     const {
   if (!viewport_override_)
     return base::nullopt;
-  FloatSize viewport_size(web_view_->LayerTreeView()->GetViewportSize());
+  FloatSize viewport_size(
+      IntSize(web_view_->LayerTreeView()->GetViewportSize()));
   viewport_size.Scale(1. / CompositorDeviceScaleFactor());
   viewport_size.Scale(1. / viewport_override_->scale);
   return EnclosingIntRect(

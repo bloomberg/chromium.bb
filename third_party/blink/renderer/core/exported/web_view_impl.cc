@@ -64,7 +64,6 @@
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
-#include "third_party/blink/public/web/web_selection.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -835,8 +834,9 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
   } else {
     if (!layer_tree_view_)
       return false;
-    layer_tree_view_->StartPageScaleAnimation(target_position, use_anchor,
-                                              new_scale, duration_in_seconds);
+    layer_tree_view_->StartPageScaleAnimation(
+        static_cast<gfx::Vector2d>(target_position), use_anchor, new_scale,
+        duration_in_seconds);
   }
   return true;
 }
@@ -1545,7 +1545,8 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
   // controls hide so that the ICB will always be the same size as the
   // viewport with the browser controls shown.
   IntSize icb_size = size_;
-  if (GetBrowserControls().PermittedState() == kWebBrowserControlsBoth &&
+  if (GetBrowserControls().PermittedState() ==
+          cc::BrowserControlsState::kBoth &&
       !GetBrowserControls().ShrinkViewport()) {
     icb_size.Expand(0, -GetBrowserControls().TotalHeight());
   }
@@ -1568,10 +1569,11 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
   }
 }
 
-void WebViewImpl::UpdateBrowserControlsState(WebBrowserControlsState constraint,
-                                             WebBrowserControlsState current,
-                                             bool animate) {
-  WebBrowserControlsState old_permitted_state =
+void WebViewImpl::UpdateBrowserControlsState(
+    cc::BrowserControlsState constraint,
+    cc::BrowserControlsState current,
+    bool animate) {
+  cc::BrowserControlsState old_permitted_state =
       GetBrowserControls().PermittedState();
 
   GetBrowserControls().UpdateConstraintsAndState(constraint, current, animate);
@@ -1580,10 +1582,10 @@ void WebViewImpl::UpdateBrowserControlsState(WebBrowserControlsState constraint,
   // versa, the ICB size needs to change but we can't rely on getting a
   // WebViewImpl::resize since the top controls shown state may not have
   // changed.
-  if ((old_permitted_state == kWebBrowserControlsHidden &&
-       constraint == kWebBrowserControlsBoth) ||
-      (old_permitted_state == kWebBrowserControlsBoth &&
-       constraint == kWebBrowserControlsHidden)) {
+  if ((old_permitted_state == cc::BrowserControlsState::kHidden &&
+       constraint == cc::BrowserControlsState::kBoth) ||
+      (old_permitted_state == cc::BrowserControlsState::kBoth &&
+       constraint == cc::BrowserControlsState::kHidden)) {
     UpdateICBAndResizeViewport();
   }
 

@@ -418,8 +418,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return matches_heuristics_for_gpu_rasterization_;
   }
 
-  void UpdateBrowserControlsState(WebBrowserControlsState constraint,
-                                  WebBrowserControlsState current,
+  void UpdateBrowserControlsState(cc::BrowserControlsState constraint,
+                                  cc::BrowserControlsState current,
                                   bool animate) override;
 
   BrowserControls& GetBrowserControls();
