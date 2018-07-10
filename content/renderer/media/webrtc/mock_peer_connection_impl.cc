@@ -220,8 +220,8 @@ cricket::MediaType FakeRtpTransceiver::media_type() const {
   return media_type_;
 }
 
-rtc::Optional<std::string> FakeRtpTransceiver::mid() const {
-  return rtc::nullopt;
+absl::optional<std::string> FakeRtpTransceiver::mid() const {
+  return absl::nullopt;
 }
 
 rtc::scoped_refptr<webrtc::RtpSenderInterface> FakeRtpTransceiver::sender()
@@ -247,9 +247,9 @@ void FakeRtpTransceiver::SetDirection(
   NOTIMPLEMENTED();
 }
 
-rtc::Optional<webrtc::RtpTransceiverDirection>
+absl::optional<webrtc::RtpTransceiverDirection>
 FakeRtpTransceiver::current_direction() const {
-  return rtc::nullopt;
+  return absl::nullopt;
 }
 
 void FakeRtpTransceiver::Stop() {

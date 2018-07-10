@@ -73,13 +73,13 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
   ~FakeRtpTransceiver() override;
 
   cricket::MediaType media_type() const override;
-  rtc::Optional<std::string> mid() const override;
+  absl::optional<std::string> mid() const override;
   rtc::scoped_refptr<webrtc::RtpSenderInterface> sender() const override;
   rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver() const override;
   bool stopped() const override;
   webrtc::RtpTransceiverDirection direction() const override;
   void SetDirection(webrtc::RtpTransceiverDirection new_direction) override;
-  rtc::Optional<webrtc::RtpTransceiverDirection> current_direction()
+  absl::optional<webrtc::RtpTransceiverDirection> current_direction()
       const override;
   void Stop() override;
   void SetCodecPreferences(
