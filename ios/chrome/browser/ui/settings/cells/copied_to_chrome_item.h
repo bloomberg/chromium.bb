@@ -24,7 +24,7 @@
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 
 // Button to clear the copy.
-@property(nonatomic, readonly, strong) MDCButton* button;
+@property(nonatomic, readonly, strong) UIButton* button;
 
 @end
 
