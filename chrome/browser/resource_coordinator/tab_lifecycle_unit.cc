@@ -83,7 +83,7 @@ bool IsValidStateChange(LifecycleUnitState from,
         case LifecycleUnitState::DISCARDED:
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
-        // The renderer notifies the browser that the "onfreeze" callback ran.
+        // The renderer notifies the browser that the page has been frozen.
         case LifecycleUnitState::FROZEN:
           return reason == StateChangeReason::RENDERER_INITIATED;
         default:
@@ -92,8 +92,8 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::FROZEN: {
       switch (to) {
-        // The renderer notifies the browser that it unfroze the page and ran
-        // the "onresume" callback after the page became visible.
+        // The renderer notifies the browser that the page was unfrozen after it
+        // became visible.
         case LifecycleUnitState::ACTIVE: {
           return reason == StateChangeReason::RENDERER_INITIATED;
         }
@@ -121,8 +121,7 @@ bool IsValidStateChange(LifecycleUnitState from,
         // - Discard(kUrgent|kExternal) is called, or,
         // - The proactive discard can be completed because:
         //   - The freeze timeout expires, or,
-        //   - The renderer notifies the browser that the "onfreeze" callback
-        //     ran.
+        //   - The renderer notifies the browser that the page has been frozen.
         case LifecycleUnitState::DISCARDED:
           return reason == StateChangeReason::BROWSER_INITIATED;
         // The WebContents IS focused.
@@ -143,8 +142,8 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::PENDING_UNFREEZE: {
       switch (to) {
-        // The renderer notifies the browser that the "onresume" callback ran,
-        // after Unfreeze() was called in the browser.
+        // The renderer notifies the browser that the page was unfrozen after
+        // Unfreeze() was called in the browser.
         case LifecycleUnitState::ACTIVE: {
           return reason == StateChangeReason::RENDERER_INITIATED;
         }
