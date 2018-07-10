@@ -28,7 +28,10 @@ namespace {
 // of the background.
 class SolidRoundRectPainter : public Painter {
  public:
-  SolidRoundRectPainter(SkColor bg_color, SkColor stroke_color, float radius);
+  SolidRoundRectPainter(SkColor bg_color,
+                        SkColor stroke_color,
+                        float radius,
+                        const gfx::Insets& insets);
   ~SolidRoundRectPainter() override;
 
   // Painter:
@@ -39,14 +42,19 @@ class SolidRoundRectPainter : public Painter {
   const SkColor bg_color_;
   const SkColor stroke_color_;
   const float radius_;
+  const gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidRoundRectPainter);
 };
 
 SolidRoundRectPainter::SolidRoundRectPainter(SkColor bg_color,
                                              SkColor stroke_color,
-                                             float radius)
-    : bg_color_(bg_color), stroke_color_(stroke_color), radius_(radius) {}
+                                             float radius,
+                                             const gfx::Insets& insets)
+    : bg_color_(bg_color),
+      stroke_color_(stroke_color),
+      radius_(radius),
+      insets_(insets) {}
 
 SolidRoundRectPainter::~SolidRoundRectPainter() {}
 
@@ -58,7 +66,9 @@ void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
 
-  gfx::RectF border_rect_f(gfx::ScaleToEnclosingRect(gfx::Rect(size), scale));
+  gfx::Rect inset_rect(size);
+  inset_rect.Inset(insets_);
+  gfx::RectF border_rect_f(gfx::ScaleToEnclosingRect(inset_rect, scale));
   const SkScalar scaled_corner_radius = SkFloatToScalar(radius_ * scale);
 
   cc::PaintFlags flags;
@@ -253,10 +263,12 @@ void Painter::PaintFocusPainter(View* view,
 }
 
 // static
-std::unique_ptr<Painter> Painter::CreateSolidRoundRectPainter(SkColor color,
-                                                              float radius) {
+std::unique_ptr<Painter> Painter::CreateSolidRoundRectPainter(
+    SkColor color,
+    float radius,
+    const gfx::Insets& insets) {
   return std::make_unique<SolidRoundRectPainter>(color, SK_ColorTRANSPARENT,
-                                                 radius);
+                                                 radius, insets);
 }
 
 // static
@@ -264,8 +276,8 @@ std::unique_ptr<Painter> Painter::CreateRoundRectWith1PxBorderPainter(
     SkColor bg_color,
     SkColor stroke_color,
     float radius) {
-  return std::make_unique<SolidRoundRectPainter>(bg_color, stroke_color,
-                                                 radius);
+  return std::make_unique<SolidRoundRectPainter>(bg_color, stroke_color, radius,
+                                                 gfx::Insets());
 }
 
 // static

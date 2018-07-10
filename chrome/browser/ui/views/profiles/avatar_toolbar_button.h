@@ -28,7 +28,7 @@ class AvatarToolbarButton : public ToolbarButton,
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
-  void UpdateTooltipText();
+  void UpdateText();
 
  private:
   enum class SyncState { kNormal, kPaused, kError };
@@ -63,10 +63,10 @@ class AvatarToolbarButton : public ToolbarButton,
 
   bool IsIncognito() const;
   bool ShouldShowGenericIcon() const;
-  base::string16 GetAvatarTooltipText();
-  gfx::ImageSkia GetAvatarIcon();
+  base::string16 GetAvatarTooltipText() const;
+  gfx::ImageSkia GetAvatarIcon() const;
   gfx::Image GetIconImageFromProfile() const;
-  SyncState GetSyncState();
+  SyncState GetSyncState() const;
 
   Browser* const browser_;
   Profile* const profile_;

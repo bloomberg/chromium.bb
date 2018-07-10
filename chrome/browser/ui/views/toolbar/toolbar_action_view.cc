@@ -141,7 +141,7 @@ void ToolbarActionView::StateChanged(ButtonState old_state) {
 std::unique_ptr<views::InkDropRipple> ToolbarActionView::CreateInkDropRipple()
     const {
   return CreateToolbarInkDropRipple<MenuButton>(
-      this, GetInkDropCenterBasedOnLastEvent());
+      this, GetInkDropCenterBasedOnLastEvent(), gfx::Insets());
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -152,7 +152,7 @@ ToolbarActionView::CreateInkDropHighlight() const {
 
 std::unique_ptr<views::InkDropMask> ToolbarActionView::CreateInkDropMask()
     const {
-  return CreateToolbarInkDropMask<MenuButton>(this);
+  return CreateToolbarInkDropMask<MenuButton>(this, gfx::Insets());
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
