@@ -7,6 +7,9 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 # See the GpuTestExpectations class for documentation.
 
 class ContextLostExpectations(GpuTestExpectations):
+  def __init__(self, is_asan=False):
+    super(ContextLostExpectations, self).__init__(is_asan=is_asan)
+
   def SetExpectations(self):
     # Sample Usage:
     # self.Fail('ContextLost_WebGLContextLostFromGPUProcessExit',
@@ -38,6 +41,12 @@ class ContextLostExpectations(GpuTestExpectations):
               ['mountainlion', 'debug'], bug=497411)
     self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['lion', 'debug'], bug=498149)
+
+    # There are probably multiple race conditions in the renderer
+    # process related to context loss, but they're happening most
+    # often on the Mac ASAN bot.
+    self.Flaky('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
+               ['mac', 'asan'], bug=861956)
 
     # 'Browser must support tab control' raised on Android
     self.Skip('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',

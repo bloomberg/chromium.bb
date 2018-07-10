@@ -7160,7 +7160,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--is-asan"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
