@@ -88,10 +88,7 @@ void PopupMenuHelper::ShowPopupMenu(
     base::mac::ScopedSendingEvent sending_event_scoper;
 
     // Ensure the UI can update while the menu is fading out.
-    // TODO(erikchen): Temporarily disabled as potential cause of memory leak of
-    // CATransaction continuations. See https://crbug.com/853438.
-    // pump_in_fade_ =
-    // std::make_unique<base::ScopedPumpMessagesInPrivateModes>();
+    pump_in_fade_ = std::make_unique<base::ScopedPumpMessagesInPrivateModes>();
 
     // Now run a NESTED EVENT LOOP until the pop-up is finished.
     [runner runMenuInView:cocoa_view
