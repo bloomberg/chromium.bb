@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -936,9 +937,12 @@ public class LocationBarLayout extends FrameLayout
         }
 
         if (pastedText != null) {
+            ToolbarManager.recordOmniboxFocusReason(ToolbarManager.FAKE_BOX_LONG_PRESS);
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlBar.setUrl(UrlBarData.forNonUrlText(pastedText));
             mUrlBar.setSelection(mUrlBar.getText().length());
+        } else {
+            ToolbarManager.recordOmniboxFocusReason(ToolbarManager.FAKE_BOX_TAP);
         }
     }
 
