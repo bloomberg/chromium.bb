@@ -2303,7 +2303,7 @@ void Document::UpdateStyle() {
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, update_histogram,
                       ("Style.UpdateTime", 0, 10000000, 50));
-  update_histogram.Count((CurrentTimeTicks() - start_time).InMicroseconds());
+  update_histogram.CountMicroseconds(CurrentTimeTicks() - start_time);
 }
 
 void Document::ViewportDefiningElementDidChange() {
@@ -3449,8 +3449,8 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, beforeunload_histogram,
       ("DocumentEventTiming.BeforeUnloadDuration", 0, 10000000, 50));
-  beforeunload_histogram.Count(
-      (beforeunload_event_end - beforeunload_event_start).InMicroseconds());
+  beforeunload_histogram.CountMicroseconds(beforeunload_event_end -
+                                           beforeunload_event_start);
   if (!before_unload_event->defaultPrevented())
     DefaultEventHandler(before_unload_event);
 
@@ -3521,8 +3521,8 @@ void Document::DispatchUnloadEvents() {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, pagehide_histogram,
             ("DocumentEventTiming.PageHideDuration", 0, 10000000, 50));
-        pagehide_histogram.Count(
-            (pagehide_event_end - pagehide_event_start).InMicroseconds());
+        pagehide_histogram.CountMicroseconds(pagehide_event_end -
+                                             pagehide_event_start);
       }
       if (!frame_)
         return;
@@ -3538,9 +3538,9 @@ void Document::DispatchUnloadEvents() {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
                              0, 10000000, 50));
-        pagevisibility_histogram.Count((pagevisibility_hidden_event_end -
-                                        pagevisibility_hidden_event_start)
-                                           .InMicroseconds());
+        pagevisibility_histogram.CountMicroseconds(
+            pagevisibility_hidden_event_end -
+            pagevisibility_hidden_event_start);
         DispatchEvent(
             Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
       }
@@ -3565,8 +3565,8 @@ void Document::DispatchUnloadEvents() {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
-        unload_histogram.Count(
-            (unload_event_end - unload_event_start).InMicroseconds());
+        unload_histogram.CountMicroseconds(unload_event_end -
+                                           unload_event_start);
         timing.MarkUnloadEventEnd(unload_event_end);
       } else {
         frame_->DomWindow()->DispatchEvent(unload_event, frame_->GetDocument());
@@ -3600,8 +3600,7 @@ void Document::DispatchFreezeEvent() {
   const TimeTicks freeze_event_end = CurrentTimeTicks();
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
                       ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
-  freeze_histogram.Count(
-      (freeze_event_end - freeze_event_start).InMicroseconds());
+  freeze_histogram.CountMicroseconds(freeze_event_end - freeze_event_start);
 }
 
 Document::PageDismissalType Document::PageDismissalEventBeingDispatched()

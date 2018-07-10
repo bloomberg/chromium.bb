@@ -373,8 +373,8 @@ void StyleSheetContents::ParseAuthorStyleSheet(
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, parse_histogram,
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));
-  TimeDelta parse_duration_seconds = (CurrentTimeTicks() - start_time);
-  parse_histogram.Count(parse_duration_seconds.InMicroseconds());
+  TimeDelta parse_duration = (CurrentTimeTicks() - start_time);
+  parse_histogram.CountMicroseconds(parse_duration);
 }
 
 void StyleSheetContents::ParseString(const String& sheet_text) {

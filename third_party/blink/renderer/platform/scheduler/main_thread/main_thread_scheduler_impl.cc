@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -2701,17 +2702,21 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
   if (!ContainsLocalMainFrame()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "RendererScheduler.ExpectedTaskQueueingDurationWithoutMainFrame",
-        queueing_time.InMicroseconds(), kMinExpectedQueueingTimeBucket,
-        kMaxExpectedQueueingTimeBucket, kNumberExpectedQueueingTimeBuckets);
+        base::saturated_cast<base::HistogramBase::Sample>(
+            queueing_time.InMicroseconds()),
+        kMinExpectedQueueingTimeBucket, kMaxExpectedQueueingTimeBucket,
+        kNumberExpectedQueueingTimeBuckets);
     return;
   }
 
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                       queueing_time);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "RendererScheduler.ExpectedTaskQueueingDuration3",
-      queueing_time.InMicroseconds(), kMinExpectedQueueingTimeBucket,
-      kMaxExpectedQueueingTimeBucket, kNumberExpectedQueueingTimeBuckets);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.ExpectedTaskQueueingDuration3",
+                              base::saturated_cast<base::HistogramBase::Sample>(
+                                  queueing_time.InMicroseconds()),
+                              kMinExpectedQueueingTimeBucket,
+                              kMaxExpectedQueueingTimeBucket,
+                              kNumberExpectedQueueingTimeBuckets);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
@@ -2729,7 +2734,9 @@ void MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(
     return;
 
   base::UmaHistogramCustomCounts(
-      split_description, queueing_time.InMicroseconds(),
+      split_description,
+      base::saturated_cast<base::HistogramBase::Sample>(
+          queueing_time.InMicroseconds()),
       kMinExpectedQueueingTimeBucket, kMaxExpectedQueueingTimeBucket,
       kNumberExpectedQueueingTimeBuckets);
 }

@@ -223,7 +223,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, distillability_histogram,
                       ("WebCore.DistillabilityUs", 1, 1000000, 50));
-  distillability_histogram.Count(elapsed_time.InMicroseconds());
+  distillability_histogram.CountMicroseconds(elapsed_time);
 
   return features;
 }

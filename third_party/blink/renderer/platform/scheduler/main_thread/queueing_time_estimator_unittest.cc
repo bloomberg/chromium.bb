@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -34,7 +35,8 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
                           queueing_time);
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "RendererScheduler.ExpectedTaskQueueingDuration3",
-          queueing_time.InMicroseconds(),
+          base::saturated_cast<base::HistogramBase::Sample>(
+              queueing_time.InMicroseconds()),
           MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
           MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
           MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
@@ -48,7 +50,9 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
     split_eqts_[split_description].push_back(queueing_time);
     // Mimic MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime.
     base::UmaHistogramCustomCounts(
-        split_description, queueing_time.InMicroseconds(),
+        split_description,
+        base::saturated_cast<base::HistogramBase::Sample>(
+            queueing_time.InMicroseconds()),
         MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
         MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
         MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);

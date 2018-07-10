@@ -49,9 +49,8 @@ base::TimeDelta ExpectedQueueingTimeFromTask(base::TimeTicks task_start,
   DCHECK_LE(task_in_step_end_time, task_in_step_end_time);
 
   double probability_of_this_task =
-      static_cast<double>(
-          (task_in_step_end_time - task_in_step_start_time).InMicroseconds()) /
-      (step_end - step_start).InMicroseconds();
+      (task_in_step_end_time - task_in_step_start_time).InMicrosecondsF() /
+      (step_end - step_start).InMicrosecondsF();
 
   base::TimeDelta expected_queueing_duration_within_task =
       ((task_end - task_in_step_start_time) +

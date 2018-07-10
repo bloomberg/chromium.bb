@@ -1360,7 +1360,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   if (!IsPaint2D()) {
     DCHECK(!start_time.is_null());
-    timer->Count((WTF::CurrentTimeTicks() - start_time).InMicroseconds());
+    timer->CountMicroseconds(WTF::CurrentTimeTicks() - start_time);
   }
 }
 

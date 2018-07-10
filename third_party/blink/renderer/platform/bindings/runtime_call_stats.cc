@@ -27,7 +27,7 @@ RuntimeCallStats* g_runtime_call_stats_for_testing = nullptr;
 void RuntimeCallCounter::Dump(TracedValue& value) const {
   value.BeginArray(name_);
   value.PushDouble(count_);
-  value.PushDouble(time_.InMicroseconds());
+  value.PushDouble(time_.InMicrosecondsF());
   value.EndArray();
 }
 
