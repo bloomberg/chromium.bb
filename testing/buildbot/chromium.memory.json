@@ -6923,6 +6923,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
