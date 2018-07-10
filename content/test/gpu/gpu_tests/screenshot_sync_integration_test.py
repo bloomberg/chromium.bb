@@ -119,12 +119,9 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
         red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
     screenshot = tab.Screenshot(10)
-    # Avoid checking along antialiased boundary due to limited Ardeno 3xx
-    # interpolation precision (crbug.com/847984).
-    inset = 1
-    start_x = inset
-    start_y = inset
-    outer_size = 256 - inset
+    start_x = 10
+    start_y = 0
+    outer_size = 256
     skip = 10
     for y in range(start_y, outer_size, skip):
       for x in range(start_x, outer_size, skip):
