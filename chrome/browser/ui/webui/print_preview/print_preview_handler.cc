@@ -322,10 +322,9 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
     ReportPrintSettingHistogram(SCALING);
   }
 
-  int num_pages_per_sheet = 1;
-  if (settings.GetInteger(printing::kSettingPagesPerSheet,
-                          &num_pages_per_sheet) &&
-      num_pages_per_sheet != 1) {
+  int pages_per_sheet = 1;
+  if (settings.GetInteger(printing::kSettingPagesPerSheet, &pages_per_sheet) &&
+      pages_per_sheet != 1) {
     ReportPrintSettingHistogram(PAGES_PER_SHEET);
   }
 

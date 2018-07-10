@@ -187,9 +187,9 @@ class PRINTING_EXPORT PrintSettings {
   void set_is_modifiable(bool is_modifiable) { is_modifiable_ = is_modifiable; }
   bool is_modifiable() const { return is_modifiable_; }
 
-  int num_pages_per_sheet() const { return num_pages_per_sheet_; }
-  void set_num_pages_per_sheet(int num_pages_per_sheet) {
-    num_pages_per_sheet_ = num_pages_per_sheet;
+  int pages_per_sheet() const { return pages_per_sheet_; }
+  void set_pages_per_sheet(int pages_per_sheet) {
+    pages_per_sheet_ = pages_per_sheet;
   }
 
   // Cookie generator. It is used to initialize PrintedDocument with its
@@ -269,7 +269,7 @@ class PRINTING_EXPORT PrintSettings {
   PageMargins requested_custom_margins_in_points_;
 
   // Number of pages per sheet.
-  int num_pages_per_sheet_;
+  int pages_per_sheet_;
 };
 
 }  // namespace printing

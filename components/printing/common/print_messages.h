@@ -63,7 +63,7 @@ struct PrintMsg_Print_Params {
   bool should_print_backgrounds;
   printing::SkiaDocumentType printed_doc_type;
   bool prefer_css_page_size;
-  int num_pages_per_sheet;
+  int pages_per_sheet;
 };
 
 struct PrintMsg_PrintPages_Params {
@@ -204,7 +204,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // Number of pages per sheet.  This parameter is for N-up mode.
   // Defaults to 1 if the feature is disabled, and some number greater
   // than 1 otherwise.  See printing::NupParameters for supported values.
-  IPC_STRUCT_TRAITS_MEMBER(num_pages_per_sheet)
+  IPC_STRUCT_TRAITS_MEMBER(pages_per_sheet)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)

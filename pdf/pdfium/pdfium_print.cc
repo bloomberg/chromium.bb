@@ -32,9 +32,9 @@ namespace chrome_pdf {
 namespace {
 
 // UI should have done parameter sanity check, when execution
-// reaches here, |num_pages_per_sheet| should be a positive integer.
-bool ShouldDoNup(int num_pages_per_sheet) {
-  return num_pages_per_sheet > 1;
+// reaches here, |pages_per_sheet| should be a positive integer.
+bool ShouldDoNup(int pages_per_sheet) {
+  return pages_per_sheet > 1;
 }
 
 // Check the source doc orientation.  Returns true if the doc is landscape.
@@ -294,11 +294,10 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(
   pp::Buffer_Dev buffer;
   if (i == pages_to_print.size()) {
     FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
-    uint32_t num_pages_per_sheet = pdf_print_settings.num_pages_per_sheet;
+    uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
     uint32_t scale_factor = pdf_print_settings.scale_factor;
-    if (ShouldDoNup(num_pages_per_sheet)) {
-      buffer =
-          NupPdfToPdf(output_doc.get(), num_pages_per_sheet, print_settings);
+    if (ShouldDoNup(pages_per_sheet)) {
+      buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
     } else {
       FitContentsToPrintableAreaIfRequired(
           output_doc.get(), scale_factor / 100.0f, print_settings);
@@ -330,10 +329,10 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
     return pp::Buffer_Dev();
 
   pp::Buffer_Dev buffer;
-  uint32_t num_pages_per_sheet = pdf_print_settings.num_pages_per_sheet;
+  uint32_t pages_per_sheet = pdf_print_settings.pages_per_sheet;
   uint32_t scale_factor = pdf_print_settings.scale_factor;
-  if (ShouldDoNup(num_pages_per_sheet)) {
-    buffer = NupPdfToPdf(output_doc.get(), num_pages_per_sheet, print_settings);
+  if (ShouldDoNup(pages_per_sheet)) {
+    buffer = NupPdfToPdf(output_doc.get(), pages_per_sheet, print_settings);
   } else {
     FitContentsToPrintableAreaIfRequired(output_doc.get(),
                                          scale_factor / 100.0f, print_settings);
@@ -429,16 +428,16 @@ FPDF_DOCUMENT PDFiumPrint::CreateSinglePageRasterPdf(
 
 pp::Buffer_Dev PDFiumPrint::NupPdfToPdf(
     FPDF_DOCUMENT doc,
-    uint32_t num_pages_per_sheet,
+    uint32_t pages_per_sheet,
     const PP_PrintSettings_Dev& print_settings) {
   DCHECK(doc);
-  DCHECK(ShouldDoNup(num_pages_per_sheet));
+  DCHECK(ShouldDoNup(pages_per_sheet));
 
   PP_Size page_size = print_settings.paper_size;
 
   printing::NupParameters nup_params;
   bool is_landscape = IsSourcePdfLandscape(doc);
-  nup_params.SetParameters(num_pages_per_sheet, is_landscape);
+  nup_params.SetParameters(pages_per_sheet, is_landscape);
 
   // Import n pages to one.
   bool paper_is_landscape = page_size.width > page_size.height;
