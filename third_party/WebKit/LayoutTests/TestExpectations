@@ -3431,7 +3431,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/815116 external/wpt/workers/name-property.html [ Timeout Failure Pass ]
 crbug.com/626703 external/wpt/xhr/abort-after-stop.htm [ Timeout ]
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
-crbug.com/626703 external/wpt/xhr/open-url-redirected-worker-origin.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/send-content-type-string.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/send-entity-body-document.htm [ Failure ]
@@ -3472,6 +3471,26 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
 crbug.com/762017 external/wpt/html/semantics/embedded-content/media-elements/video_loop_base.html [ Pass Crash ]
 
+# Worker/SharedWorker are not exposed in WorkerGlobalScope.
+crbug.com/850662 external/wpt/workers/baseurl/alpha/worker-in-worker.html [ Failure ]
+crbug.com/850662 external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
+
+# crbug.com/861564 is ongoing for classic dedicated workers.
+crbug.com/861564 external/wpt/workers/baseurl/alpha/importScripts-in-worker.html [ Failure ]
+crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-worker.html [ Failure ]
+crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect.html [ Failure ]
+crbug.com/861564 external/wpt/xhr/open-url-redirected-worker-origin.htm [ Failure ]
+
+# crbug.com/861564 is ongoing for classic shared workers.
+crbug.com/861564 external/wpt/workers/baseurl/alpha/importScripts-in-sharedworker.html [ Failure ]
+crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-sharedworker.html [ Failure ]
+crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-sharedworker.html [ Failure ]
+crbug.com/861564 external/wpt/xhr/open-url-redirected-sharedworker-origin.htm [ Failure ]
+
+# crbug.com/861564 is ongoing for module dedicated workers.
+crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
+crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
+
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
@@ -3480,11 +3499,8 @@ crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/locat
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
-crbug.com/655458 external/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
-crbug.com/655458 external/wpt/workers/baseurl/alpha/importScripts.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure ]
-crbug.com/655458 external/wpt/workers/baseurl/alpha/xhr.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/connect-event.html [ Failure ]
 crbug.com/655458 external/wpt/workers/semantics/interface-objects/003.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/Worker/unresolvable-url.html [ Failure ]
@@ -3497,7 +3513,6 @@ crbug.com/655458 external/wpt/workers/semantics/run-a-worker/003.html [ Failure 
 crbug.com/655458 external/wpt/workers/constructors/Worker/AbstractWorker.onerror.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/exception-in-onerror.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/not-handled.html [ Failure ]
-crbug.com/655458 external/wpt/workers/baseurl/alpha/sharedworker.html [ Failure ]
 crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/handled.html [ Failure ]
@@ -3506,7 +3521,6 @@ crbug.com/655458 external/wpt/workers/constructors/SharedWorker/unresolvable-url
 
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/same-origin.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/constructors/Worker/same-origin.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/propagate-to-window-onerror.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/importScripts/006.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
