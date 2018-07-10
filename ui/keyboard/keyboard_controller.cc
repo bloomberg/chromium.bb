@@ -333,6 +333,10 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+ui::TextInputClient* KeyboardController::GetTextInputClient() {
+  return ui_->GetInputMethod()->GetTextInputClient();
+}
+
 void KeyboardController::MoveToDisplayWithTransition(
     display::Display display,
     gfx::Rect new_bounds_in_local) {
@@ -505,7 +509,7 @@ void KeyboardController::ShowKeyboardInDisplay(
 void KeyboardController::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (params.new_parent && params.target == GetKeyboardWindow())
-    OnTextInputStateChanged(ui_->GetInputMethod()->GetTextInputClient());
+    OnTextInputStateChanged(GetTextInputClient());
 }
 
 void KeyboardController::OnWindowAddedToRootWindow(aura::Window* window) {
@@ -669,6 +673,7 @@ void KeyboardController::PopulateKeyboardContent(
   DCHECK_EQ(state_, KeyboardControllerState::HIDDEN);
 
   keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
+  RecordUkmKeyboardShown();
 
   ui::LayerAnimator* container_animator =
       keyboard_window->layer()->GetAnimator();
@@ -840,6 +845,16 @@ void KeyboardController::SetContainerType(
     DCHECK_EQ(GetActiveContainerType(), type);
     std::move(callback).Run(true /* change_successful */);
   }
+}
+
+void KeyboardController::RecordUkmKeyboardShown() {
+  ui::TextInputClient* text_input_client = GetTextInputClient();
+  if (!text_input_client)
+    return;
+
+  keyboard::RecordUkmKeyboardShown(
+      text_input_client->GetClientSourceForMetrics(),
+      text_input_client->GetTextInputType());
 }
 
 bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {

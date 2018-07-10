@@ -28975,6 +28975,7 @@ from previous Chrome versions.
   <int value="1386300777"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:disabled"/>
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
+  <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
@@ -29172,6 +29173,7 @@ from previous Chrome versions.
   <int value="1830460973" label="disable-network-settings-config"/>
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
+  <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>

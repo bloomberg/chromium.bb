@@ -23,6 +23,7 @@
 #include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
+#include "ui/keyboard/keyboard_ukm_recorder.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/queued_container_type.h"
@@ -116,6 +117,9 @@ class KEYBOARD_EXPORT KeyboardController
   void RemoveObserver(KeyboardControllerObserver* observer);
 
   KeyboardUI* ui() { return ui_.get(); }
+
+  // Gets the currently focused text input client.
+  ui::TextInputClient* GetTextInputClient();
 
   void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
@@ -321,6 +325,9 @@ class KEYBOARD_EXPORT KeyboardController
   void ShowKeyboardIfWithinTransientBlurThreshold();
 
   void SetContainerBehaviorInternal(ContainerType type);
+
+  // Records that keyboard was shown on the currently focused UKM source.
+  void RecordUkmKeyboardShown();
 
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;

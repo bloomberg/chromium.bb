@@ -3257,6 +3257,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableVirtualKeyboardMdUiName,
      flag_descriptions::kEnableVirtualKeyboardMdUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnableVirtualKeyboardMdUi)},
+    {"enable-virtual-keyboard-ukm",
+     flag_descriptions::kEnableVirtualKeyboardUkmName,
+     flag_descriptions::kEnableVirtualKeyboardUkmDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnableVirtualKeyboardUkm)},
 #endif  // OS_CHROMEOS
 
 #if !defined(OS_ANDROID)

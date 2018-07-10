@@ -1447,12 +1447,14 @@ bool RenderWidgetHostViewAura::IsTextEditCommandEnabled(
 void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {}
 
-const std::string& RenderWidgetHostViewAura::GetClientSourceInfo() const {
+ukm::SourceId RenderWidgetHostViewAura::GetClientSourceForMetrics() const {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   if (frame) {
-    return frame->GetLastCommittedURL().spec();
+    frame->GetRenderWidgetHost()
+        ->delegate()
+        ->GetUkmSourceIdForLastCommittedSource();
   }
-  return base::EmptyString();
+  return ukm::SourceId();
 }
 
 bool RenderWidgetHostViewAura::ShouldDoLearning() {

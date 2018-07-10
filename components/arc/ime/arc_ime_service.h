@@ -137,7 +137,7 @@ class ArcImeService : public KeyedService,
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override {
   }
-  const std::string& GetClientSourceInfo() const override;
+  ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
   // Normally, the default device scale factor is used to convert from DPI to

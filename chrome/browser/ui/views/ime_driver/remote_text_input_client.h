@@ -57,7 +57,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   void EnsureCaretNotInRect(const gfx::Rect& rect) override;
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
-  const std::string& GetClientSourceInfo() const override;
+  ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
   // ui::internal::InputMethodDelegate:

@@ -52,7 +52,7 @@ class DummyTextInputClient : public TextInputClient {
   void EnsureCaretNotInRect(const gfx::Rect& rect) override;
   bool IsTextEditCommandEnabled(TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(TextEditCommand command) override;
-  const std::string& GetClientSourceInfo() const override;
+  ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
   int insert_char_count() const { return insert_char_count_; }
