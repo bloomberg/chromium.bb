@@ -103,6 +103,8 @@ class UnlockManagerImpl : public UnlockManager,
   // device for decryption.
   void SendSignInChallenge();
 
+  // Once the connection metadata is received from a ClientChannel, its channel
+  // binding data can be used to finish a sign-in request.
   void OnGetConnectionMetadata(
       chromeos::secure_channel::mojom::ConnectionMetadataPtr
           connection_metadata_ptr);
