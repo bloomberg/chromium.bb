@@ -119,7 +119,7 @@ void InstantiatePersistentHistograms() {
   static const char kMappedFile[] = "MappedFile";
   static const char kLocalMemory[] = "LocalMemory";
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Linux kernel 4.4.0.* shows a huge number of SIGBUS crashes with persistent
   // histograms enabled using a mapped file.  Change this to use local memory.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=753741
