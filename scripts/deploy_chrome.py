@@ -100,7 +100,7 @@ class DeployChrome(object):
       self.device = remote.RemoteDevice(options.to, port=options.port,
                                         ping=options.ping,
                                         private_key=options.private_key)
-    self._target_dir_is_still_readonly = multiprocessing.Event()
+    self._root_dir_is_still_readonly = multiprocessing.Event()
 
     self.copy_paths = chrome_util.GetCopyPaths('chrome')
     self.chrome_dir = _CHROME_DIR
@@ -146,12 +146,7 @@ class DeployChrome(object):
       logging.info('Make sure the device is in developer mode!')
       logging.info('Skip this prompt by specifying --force.')
       if not cros_build_lib.BooleanPrompt('Remove roots verification?', False):
-        # Since we stopped Chrome earlier, it's good form to start it up again.
-        if self.options.startui:
-          logging.info('Starting Chrome...')
-          self.device.RunCommand('start ui')
-        raise DeployFailure('Need rootfs verification to be disabled. '
-                            'Aborting.')
+        return False
 
     logging.info('Removing rootfs verification from %s', self.options.to)
     # Running in VM's cause make_dev_ssd's firmware sanity checks to fail.
@@ -168,6 +163,8 @@ class DeployChrome(object):
 
     # Make sure the rootfs is writable now.
     self._MountRootfsAsWritable(error_code_ok=False)
+
+    return True
 
   def _CheckUiJobStarted(self):
     # status output is in the format:
@@ -210,8 +207,8 @@ class DeployChrome(object):
   def _MountRootfsAsWritable(self, error_code_ok=True):
     """Mounts the rootfs as writable.
 
-    If the command fails, and error_code_ok is True, and the target dir is not
-    writable then this function sets self._target_dir_is_still_readonly.
+    If the command fails and the root dir is not writable then this function
+    sets self._root_dir_is_still_readonly.
 
     Args:
       error_code_ok: See remote.RemoteAccess.RemoteSh for details.
@@ -220,9 +217,8 @@ class DeployChrome(object):
     result = self.device.RunCommand(MOUNT_RW_COMMAND,
                                     error_code_ok=error_code_ok,
                                     capture_output=True)
-    if (result.returncode and
-        not self.device.IsDirWritable(self.options.target_dir)):
-      self._target_dir_is_still_readonly.set()
+    if result.returncode and not self.device.IsDirWritable('/'):
+      self._root_dir_is_still_readonly.set()
 
   def _EnsureTargetDir(self):
     """Ensures that the target directory exists on the remote device."""
@@ -364,10 +360,22 @@ class DeployChrome(object):
                                     return_values=True)
     self._CheckDeviceFreeSpace(ret[0])
 
-    # If we're trying to deploy to a dir which is not writable and we failed
-    # to mark the rootfs as writable, try disabling rootfs verification.
-    if self._target_dir_is_still_readonly.is_set():
-      self._DisableRootfsVerification()
+    # If the root dir is not writable, try disabling rootfs verification.
+    # (We always do this by default so that developers can write to
+    # /etc/chriome_dev.conf and other directories in the rootfs).
+    if self._root_dir_is_still_readonly.is_set():
+      if self.options.noremove_rootfs_verification:
+        logging.warning('Skipping disable rootfs verification.')
+      elif not self._DisableRootfsVerification():
+        logging.warning('Failed to disable rootfs verification.')
+
+      # If the target dir is still not writable (i.e. the user opted out or the
+      # command failed), abort.
+      if not self.device.IsDirWritable(self.options.target_dir):
+        if self.options.startui:
+          logging.info('Restarting Chrome...')
+          self.device.RunCommand('start ui')
+        raise DeployFailure('Target location is not writable. Aborting.')
 
     if self.options.mount_dir is not None:
       self._MountTarget()
@@ -437,6 +445,8 @@ def _CreateParser():
                            'it to the default mount directory.'
                            'Any existing mount on this directory will be '
                            'umounted first.')
+  parser.add_argument('--noremove-rootfs-verification', action='store_true',
+                      default=False, help='Never remove rootfs verification.')
 
   group = parser.add_argument_group('Advanced Options')
   group.add_argument('-l', '--local-pkg-path', type='path',

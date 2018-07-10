@@ -165,7 +165,7 @@ class TestDisableRootfsVerification(DeployTest):
     """Test the working case, disabling rootfs verification."""
     self.deploy_mock.MockMountCmd(0)
     self.deploy._DisableRootfsVerification()
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testDisableRootfsVerificationFailure(self):
     """Test failure to disable rootfs verification."""
@@ -176,7 +176,7 @@ class TestDisableRootfsVerification(DeployTest):
     self.assertRaises(cros_build_lib.RunCommandError,
                       self.deploy._DisableRootfsVerification)
     self.remote_reboot_mock.side_effect = None
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
 
 class TestMount(DeployTest):
@@ -184,32 +184,32 @@ class TestMount(DeployTest):
 
   def testSuccess(self):
     """Test case where we are able to mount as writable."""
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
     self.deploy_mock.MockMountCmd(0)
     self.deploy._MountRootfsAsWritable()
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testMountError(self):
     """Test that mount failure doesn't raise an exception by default."""
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
     self.PatchObject(remote_access.RemoteDevice, 'IsDirWritable',
                      return_value=False, autospec=True)
     self.deploy._MountRootfsAsWritable()
-    self.assertTrue(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertTrue(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testMountRwFailure(self):
     """Test that mount failure raises an exception if error_code_ok=False."""
     self.assertRaises(cros_build_lib.RunCommandError,
                       self.deploy._MountRootfsAsWritable, error_code_ok=False)
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testMountTempDir(self):
     """Test that mount succeeds if target dir is writable."""
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
     self.PatchObject(remote_access.RemoteDevice, 'IsDirWritable',
                      return_value=True, autospec=True)
     self.deploy._MountRootfsAsWritable()
-    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
 
 class TestUiJobStarted(DeployTest):
