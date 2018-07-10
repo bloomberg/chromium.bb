@@ -67,12 +67,11 @@ CursorView::CursorView(aura::Window* container,
           {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       new_location_(initial_location),
-      stationary_timer_(new base::Timer(
+      stationary_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kStationaryDelayMs),
           base::BindRepeating(&CursorView::StationaryOnPaintThread,
-                              base::Unretained(this)),
-          /*is_repeating=*/false)),
+                              base::Unretained(this))),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
@@ -159,7 +158,7 @@ void CursorView::OnTimerTick() {
 
   // Restart stationary timer if pointer location changed.
   if (location_ != old_location)
-    stationary_timer_->Reset();
+    stationary_timer_.Reset();
 
   base::TimeDelta interval = time_source_->Interval();
   // Compute velocity unless this is the first tick.
@@ -255,7 +254,7 @@ void CursorView::OnTimerTick() {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(update_surface_callback_, cursor_rect_, damage_rect,
-                     /*auto_refresh=*/stationary_timer_->IsRunning()));
+                     /*auto_refresh=*/stationary_timer_.IsRunning()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +263,7 @@ void CursorView::OnTimerTick() {
 void CursorView::StationaryOnPaintThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(paint_sequence_checker_);
 
-  stationary_timer_->Stop();
+  stationary_timer_.Stop();
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(update_surface_callback_, cursor_rect_,
                                 /*damage_rect=*/gfx::Rect(),

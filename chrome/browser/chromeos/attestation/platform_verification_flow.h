@@ -199,7 +199,7 @@ class PlatformVerificationFlow
   // not invoked.
   void OnCertificateReady(const ChallengeContext& context,
                           const AccountId& account_id,
-                          std::unique_ptr<base::Timer> timer,
+                          std::unique_ptr<base::OneShotTimer> timer,
                           AttestationStatus operation_status,
                           const std::string& certificate_chain);
 

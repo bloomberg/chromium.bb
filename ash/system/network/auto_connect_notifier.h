@@ -15,7 +15,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }
 
 namespace ash {
@@ -41,7 +41,7 @@ class ASH_EXPORT AutoConnectNotifier
   // chromeos::AutoConnectHandler::Observer:
   void OnAutoConnectedInitiated(int auto_connect_reasons) override;
 
-  void set_timer_for_testing(std::unique_ptr<base::Timer> test_timer) {
+  void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
     timer_ = std::move(test_timer);
   }
 
@@ -51,7 +51,7 @@ class ASH_EXPORT AutoConnectNotifier
   void DisplayNotification();
 
   bool has_user_explicitly_requested_connection_ = false;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoConnectNotifier);
 };

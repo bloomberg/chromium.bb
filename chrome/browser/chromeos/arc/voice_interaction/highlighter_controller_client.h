@@ -16,7 +16,7 @@ class Rect;
 }  // namespace gfx
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace service_manager {
@@ -73,7 +73,7 @@ class HighlighterControllerClient
 
   ArcVoiceInteractionFrameworkService* service_;
 
-  std::unique_ptr<base::Timer> delay_timer_;
+  std::unique_ptr<base::OneShotTimer> delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterControllerClient);
 };

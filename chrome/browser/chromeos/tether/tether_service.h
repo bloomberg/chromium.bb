@@ -238,7 +238,7 @@ class TetherService : public KeyedService,
 
   void SetTestDoubles(std::unique_ptr<chromeos::tether::NotificationPresenter>
                           notification_presenter,
-                      std::unique_ptr<base::Timer> timer);
+                      std::unique_ptr<base::OneShotTimer> timer);
 
   // Whether the service has been shut down.
   bool shut_down_ = false;
@@ -283,7 +283,7 @@ class TetherService : public KeyedService,
 
   PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   base::WeakPtrFactory<TetherService> weak_ptr_factory_;
 

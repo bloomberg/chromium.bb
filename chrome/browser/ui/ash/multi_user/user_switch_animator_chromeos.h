@@ -112,7 +112,7 @@ class UserSwitchAnimatorChromeOS {
 
   // A timer which watches to executes the second part of a "user changed"
   // animation. Note that this timer exists only during such an animation.
-  std::unique_ptr<base::Timer> user_changed_animation_timer_;
+  std::unique_ptr<base::RepeatingTimer> user_changed_animation_timer_;
 
   // For unit tests: Check which wallpaper was set.
   std::string wallpaper_user_id_for_test_;

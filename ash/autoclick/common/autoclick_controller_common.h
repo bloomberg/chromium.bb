@@ -48,7 +48,7 @@ class AutoclickControllerCommon {
 
   base::TimeDelta delay_;
   int mouse_event_flags_;
-  std::unique_ptr<base::Timer> autoclick_timer_;
+  std::unique_ptr<base::RetainingOneShotTimer> autoclick_timer_;
   AutoclickControllerCommonDelegate* delegate_;
   views::Widget* widget_;
   // The position in screen coordinates used to determine

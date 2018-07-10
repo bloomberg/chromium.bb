@@ -262,8 +262,7 @@ void PlatformVerificationFlow::OnAttestationPrepared(
 void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
                                               const AccountId& account_id,
                                               bool force_new_key) {
-  std::unique_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
-                                                     false));  // Don't repeat.
+  std::unique_ptr<base::OneShotTimer> timer(new base::OneShotTimer());
   base::Closure timeout_callback = base::Bind(
       &PlatformVerificationFlow::OnCertificateTimeout,
       this,
@@ -281,7 +280,7 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
 void PlatformVerificationFlow::OnCertificateReady(
     const ChallengeContext& context,
     const AccountId& account_id,
-    std::unique_ptr<base::Timer> timer,
+    std::unique_ptr<base::OneShotTimer> timer,
     AttestationStatus operation_status,
     const std::string& certificate_chain) {
   // Log failure before checking the timer so all failures are logged, even if

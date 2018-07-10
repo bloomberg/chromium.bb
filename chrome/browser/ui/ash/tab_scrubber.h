@@ -96,7 +96,7 @@ class TabScrubber : public ui::EventHandler,
   // The index of the tab that is currently highlighted.
   int highlighted_tab_;
   // Timer to control a delayed activation of the |highlighted_tab_|.
-  base::Timer activate_timer_;
+  base::RetainingOneShotTimer activate_timer_;
   // Time to wait in ms before newly selected tab becomes active.
   int activation_delay_;
   // Set if activation_delay had been explicitly set.

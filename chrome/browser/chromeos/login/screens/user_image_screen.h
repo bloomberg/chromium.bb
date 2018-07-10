@@ -18,7 +18,7 @@
 #include "components/user_manager/user_manager.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 class Value;
 }  // namespace base
 
@@ -148,7 +148,7 @@ class UserImageScreen : public BaseScreen,
   bool user_has_selected_image_ = false;
 
   // Timer used for waiting for user image sync.
-  std::unique_ptr<base::Timer> sync_timer_;
+  std::unique_ptr<base::OneShotTimer> sync_timer_;
 
   // The time when we started wait for user image sync.
   base::Time sync_waiting_start_time_;
