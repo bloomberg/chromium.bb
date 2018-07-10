@@ -2770,6 +2770,8 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/tab_manager_web_contents_data.h",
       "resource_coordinator/tab_metrics_logger.cc",
       "resource_coordinator/tab_metrics_logger.h",
+      "resource_coordinator/usage_clock.cc",
+      "resource_coordinator/usage_clock.h",
       "resource_coordinator/utils.cc",
       "resource_coordinator/utils.h",
       "search/background/ntp_background_data.cc",
