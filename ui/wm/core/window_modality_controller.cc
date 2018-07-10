@@ -77,7 +77,7 @@ aura::Window* GetModalTransient(aura::Window* window) {
   if (!window)
     return nullptr;
 
-  // We always want to check the for the transient child of the toplevel window.
+  // We always want to check for the transient child of the toplevel window.
   aura::Window* toplevel = GetToplevelWindow(window);
   if (!toplevel)
     return nullptr;
