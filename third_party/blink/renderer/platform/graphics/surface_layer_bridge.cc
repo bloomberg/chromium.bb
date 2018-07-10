@@ -40,49 +40,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
                                       std::move(client));
 }
 
-cc::Layer* SurfaceLayerBridge::GetCcLayer() const {
-  if (surface_layer_)
-    return surface_layer_.get();
-
-  return solid_color_layer_.get();
-}
-
-void SurfaceLayerBridge::CreateSurfaceLayer() {
-  surface_layer_ = cc::SurfaceLayer::Create();
-
-  // This surface_id is essentially just a placeholder for the real one we will
-  // get in OnFirstSurfaceActivation. We need it so that we properly get a
-  // WillDraw, which then pushes the first compositor frame.
-  current_surface_id_ = viz::SurfaceId(
-      frame_sink_id_,
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
-
-  surface_layer_->SetStretchContentToFillBounds(true);
-  surface_layer_->SetIsDrawable(true);
-
-  if (observer_) {
-    observer_->RegisterContentsLayer(surface_layer_.get());
-  }
-  // We ignore our opacity until we are sure that we have something to show,
-  // as indicated by getting an OnFirstSurfaceActivation call.
-  surface_layer_->SetContentsOpaque(false);
-}
-
 SurfaceLayerBridge::~SurfaceLayerBridge() = default;
-
-void SurfaceLayerBridge::ClearSurfaceId() {
-  current_surface_id_ = viz::SurfaceId();
-
-  if (!surface_layer_)
-    return;
-
-  // We reset the Ids if we lose the context_provider (case: GPU process ended)
-  // If we destroyed the surface_layer before that point, we need not update
-  // the ids.
-  surface_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
-  surface_layer_->SetFallbackSurfaceId(viz::SurfaceId());
-}
 
 void SurfaceLayerBridge::CreateSolidColorLayer() {
   // TODO(lethalantidote): Remove this logic. It should be covered by setting
@@ -126,6 +84,31 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
   surface_layer_->SetContentsOpaque(opaque_);
 }
 
+cc::Layer* SurfaceLayerBridge::GetCcLayer() const {
+  if (surface_layer_)
+    return surface_layer_.get();
+
+  return solid_color_layer_.get();
+}
+
+const viz::FrameSinkId& SurfaceLayerBridge::GetFrameSinkId() const {
+  return frame_sink_id_;
+}
+
+void SurfaceLayerBridge::ClearSurfaceId() {
+  current_surface_id_ = viz::SurfaceId();
+
+  if (!surface_layer_)
+    return;
+
+  // We reset the Ids if we lose the context_provider (case: GPU process ended)
+  // If we destroyed the surface_layer before that point, we need not update
+  // the ids.
+  surface_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
+                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetFallbackSurfaceId(viz::SurfaceId());
+}
+
 void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
   // If the surface isn't activated, we have nothing to show, do not change
   // opacity (defaults to false on surface_layer creation).
@@ -134,8 +117,25 @@ void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
   opaque_ = opaque;
 }
 
-const viz::FrameSinkId& SurfaceLayerBridge::GetFrameSinkId() const {
-  return frame_sink_id_;
+void SurfaceLayerBridge::CreateSurfaceLayer() {
+  surface_layer_ = cc::SurfaceLayer::Create();
+
+  // This surface_id is essentially just a placeholder for the real one we will
+  // get in OnFirstSurfaceActivation. We need it so that we properly get a
+  // WillDraw, which then pushes the first compositor frame.
+  current_surface_id_ = viz::SurfaceId(
+      frame_sink_id_,
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+
+  surface_layer_->SetStretchContentToFillBounds(true);
+  surface_layer_->SetIsDrawable(true);
+
+  if (observer_) {
+    observer_->RegisterContentsLayer(surface_layer_.get());
+  }
+  // We ignore our opacity until we are sure that we have something to show,
+  // as indicated by getting an OnFirstSurfaceActivation call.
+  surface_layer_->SetContentsOpaque(false);
 }
 
 const viz::SurfaceId& SurfaceLayerBridge::GetSurfaceId() const {
