@@ -80,6 +80,7 @@
 /google_toolbox_for_mac/src
 /googlemac
 /googletest/src
+/grpc
 /gson/lib/
 /gvr-android-sdk/common_library.aar
 /gvr-android-sdk/test-libraries/controller_test_api.aar
@@ -189,6 +190,7 @@
 /skia
 /smhasher/src
 /snappy/src
+/speex
 /spirv-headers/src
 /SPIRV-Tools/src
 /spirv-tools-angle/src
