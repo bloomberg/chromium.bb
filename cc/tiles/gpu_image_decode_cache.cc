@@ -626,6 +626,10 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // Unregister this component with memory_coordinator::ClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
+  memory_pressure_listener_.reset(
+      new base::MemoryPressureListener(base::BindRepeating(
+          &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
+
   // TODO(vmpstr): If we don't have a client name, it may cause problems in
   // unittests, since most tests don't set the name but some do. The UMA system
   // expects the name to be always the same. This assertion is violated in the
@@ -1820,6 +1824,18 @@ void GpuImageDecodeCache::OnPurgeMemory() {
   base::AutoReset<base::MemoryState> reset(&memory_state_,
                                            base::MemoryState::SUSPENDED);
   EnsureCapacity(0);
+}
+
+void GpuImageDecodeCache::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  switch (level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      OnPurgeMemory();
+      break;
+  }
 }
 
 bool GpuImageDecodeCache::SupportsColorSpaceConversion() const {
