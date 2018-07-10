@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -39,6 +40,7 @@
 @dynamic view;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize dispatcher = _dispatcher;
+@synthesize longPressDelegate = _longPressDelegate;
 @synthesize loading = _loading;
 @synthesize isNTP = _isNTP;
 
@@ -333,20 +335,25 @@
 
 // Handles the long press on the views.
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
-  if (gesture.state != UIGestureRecognizerStateBegan)
-    return;
-
-  if (gesture.view == self.view.backButton) {
-    [self.dispatcher showNavigationHistoryBackPopupMenu];
-  } else if (gesture.view == self.view.forwardButton) {
-    [self.dispatcher showNavigationHistoryForwardPopupMenu];
-  } else if (gesture.view == self.view.omniboxButton) {
-    [self.dispatcher showSearchButtonPopup];
-  } else if (gesture.view == self.view.tabGridButton) {
-    [self.dispatcher showTabGridButtonPopup];
-  } else if (gesture.view == self.view.toolsMenuButton) {
-    base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
-    [self.dispatcher showToolsMenuPopup];
+  if (gesture.state == UIGestureRecognizerStateBegan) {
+    if (gesture.view == self.view.backButton) {
+      [self.dispatcher showNavigationHistoryBackPopupMenu];
+    } else if (gesture.view == self.view.forwardButton) {
+      [self.dispatcher showNavigationHistoryForwardPopupMenu];
+    } else if (gesture.view == self.view.omniboxButton) {
+      [self.dispatcher showSearchButtonPopup];
+    } else if (gesture.view == self.view.tabGridButton) {
+      [self.dispatcher showTabGridButtonPopup];
+    } else if (gesture.view == self.view.toolsMenuButton) {
+      base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
+      [self.dispatcher showToolsMenuPopup];
+    }
+  } else if (gesture.state == UIGestureRecognizerStateEnded) {
+    [self.longPressDelegate
+        longPressEndedAtPoint:[gesture locationOfTouch:0 inView:nil]];
+  } else if (gesture.state == UIGestureRecognizerStateChanged) {
+    [self.longPressDelegate
+        longPressFocusPointChangedTo:[gesture locationOfTouch:0 inView:nil]];
   }
 }
 

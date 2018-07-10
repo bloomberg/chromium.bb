@@ -105,7 +105,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @property(nonatomic, strong) PopupMenuToolsItem* requestMobileSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readingListItem;
 // Array containing all the nonnull items/
-@property(nonatomic, strong) NSArray<TableViewItem*>* specificItems;
+@property(nonatomic, strong)
+    NSArray<TableViewItem<PopupMenuItem>*>* specificItems;
 
 @end
 
@@ -307,15 +308,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)setPopupMenu:(PopupMenuTableViewController*)popupMenu {
   _popupMenu = popupMenu;
 
-  if (self.type == PopupMenuTypeToolsMenu) {
-    _popupMenu.tableView.accessibilityIdentifier =
-        kPopupMenuToolsMenuTableViewId;
-  } else if (self.type == PopupMenuTypeNavigationBackward ||
-             self.type == PopupMenuTypeNavigationForward) {
-    _popupMenu.tableView.accessibilityIdentifier =
-        kPopupMenuNavigationTableViewId;
-  }
-
   [_popupMenu setPopupMenuItems:self.items];
   if (self.triggerNewIncognitoTabTip) {
     _popupMenu.itemToHighlight = self.openNewIncognitoTabItem;
@@ -335,7 +327,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
           feature_engagement::kIPHBadgedReadingListFeature)) {
     self.readingListItem.badgeText = l10n_util::GetNSStringWithFixup(
         IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
-    [self.popupMenu reconfigureCellsForItems:@[ self.readingListItem ]];
+    [self.popupMenu itemsHaveChanged:@[ self.readingListItem ]];
   }
 }
 
@@ -436,7 +428,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     return;
 
   self.readingListItem.badgeNumber = unreadCount;
-  [self.popupMenu reconfigureCellsForItems:@[ self.readingListItem ]];
+  [self.popupMenu itemsHaveChanged:@[ self.readingListItem ]];
 }
 
 - (void)unseenStateChanged:(BOOL)unseenItemsExist {
@@ -459,7 +451,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [self userAgentType] == web::UserAgentType::DESKTOP;
 
   // Reload the items.
-  [self.popupMenu reconfigureCellsForItems:self.specificItems];
+  [self.popupMenu itemsHaveChanged:self.specificItems];
 }
 
 // Updates the |bookmark| item to match the bookmarked status of the page.
@@ -484,7 +476,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
 
-  [self.popupMenu reconfigureCellsForItems:@[ self.bookmarkItem ]];
+  [self.popupMenu itemsHaveChanged:@[ self.bookmarkItem ]];
 }
 
 // Updates the |reloadStopItem| item to match the current behavior.

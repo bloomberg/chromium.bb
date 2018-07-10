@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
@@ -43,6 +44,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
 // Mediator for the popup menu.
 @property(nonatomic, strong) PopupMenuMediator* mediator;
+// ViewController for this mediator.
+@property(nonatomic, strong) PopupMenuTableViewController* viewController;
 // Time when the presentation of the popup menu is requested.
 @property(nonatomic, assign) NSTimeInterval requestStartTime;
 
@@ -57,6 +60,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @synthesize UIUpdater = _UIUpdater;
 @synthesize webStateList = _webStateList;
 @synthesize bubblePresenter = _bubblePresenter;
+@synthesize viewController = _viewController;
 
 #pragma mark - ChromeCoordinator
 
@@ -74,6 +78,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   [self.dispatcher stopDispatchingToTarget:self];
   [self.mediator disconnect];
   self.mediator = nil;
+  self.viewController = nil;
 }
 
 #pragma mark - Public
@@ -128,6 +133,17 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.presenter = nil;
   [self.mediator disconnect];
   self.mediator = nil;
+  self.viewController = nil;
+}
+
+#pragma mark - PopupMenuLongPressDelegate
+
+- (void)longPressFocusPointChangedTo:(CGPoint)point {
+  [self.viewController focusRowAtPoint:point];
+}
+
+- (void)longPressEndedAtPoint:(CGPoint)point {
+  [self.viewController selectRowAtPoint:point];
 }
 
 #pragma mark - ContainedPresenterDelegate
@@ -178,6 +194,16 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(
           self.dispatcher);
   tableViewController.baseViewController = self.baseViewController;
+  if (type == PopupMenuTypeToolsMenu) {
+    tableViewController.tableView.accessibilityIdentifier =
+        kPopupMenuToolsMenuTableViewId;
+  } else if (type == PopupMenuTypeNavigationBackward ||
+             type == PopupMenuTypeNavigationForward) {
+    tableViewController.tableView.accessibilityIdentifier =
+        kPopupMenuNavigationTableViewId;
+  }
+
+  self.viewController = tableViewController;
 
   BOOL triggerNewIncognitoTabTip = NO;
   if (type == PopupMenuTypeToolsMenu) {

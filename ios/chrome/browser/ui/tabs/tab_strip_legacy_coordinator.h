@@ -12,6 +12,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol PopupMenuLongPressDelegate;
 @class TabModel;
 @protocol TabStripFoldAnimation;
 @protocol TabStripPresentation;
@@ -29,6 +30,9 @@ class ChromeBrowserState;
 
 // Dispatcher for sending commands.
 @property(nonatomic, weak) id dispatcher;
+
+// Delegate for the long press gesture recognizer triggering popup menu.
+@property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
 
 // Model layer for the tab strip.
 @property(nonatomic, weak) TabModel* tabModel;

@@ -47,7 +47,42 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
 }
 
-#pragma mark - Properties
+- (void)selectRowAtPoint:(CGPoint)point {
+  NSIndexPath* rowIndexPath = [self indexPathForInnerRowAtPoint:point];
+  if (!rowIndexPath)
+    return;
+
+  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:rowIndexPath];
+  if (!cell.userInteractionEnabled)
+    return;
+
+  base::RecordAction(base::UserMetricsAction("MobilePopupMenuSwipeToSelect"));
+  [self executeActionForItem:[self.tableViewModel itemAtIndexPath:rowIndexPath]
+                      origin:[cell convertPoint:cell.center toView:nil]];
+}
+
+- (void)focusRowAtPoint:(CGPoint)point {
+  NSIndexPath* rowIndexPath = [self indexPathForInnerRowAtPoint:point];
+
+  BOOL rowAlreadySelected = NO;
+  NSArray<NSIndexPath*>* selectedRows =
+      [self.tableView indexPathsForSelectedRows];
+  for (NSIndexPath* selectedIndexPath in selectedRows) {
+    if (selectedIndexPath == rowIndexPath) {
+      rowAlreadySelected = YES;
+      continue;
+    }
+    [self.tableView deselectRowAtIndexPath:selectedIndexPath animated:NO];
+  }
+
+  if (!rowAlreadySelected && rowIndexPath) {
+    [self.tableView selectRowAtIndexPath:rowIndexPath
+                                animated:NO
+                          scrollPosition:UITableViewScrollPositionNone];
+  }
+}
+
+#pragma mark - PopupMenuConsumer
 
 - (void)setItemToHighlight:(TableViewItem<PopupMenuItem>*)itemToHighlight {
   DCHECK_GT(self.tableViewModel.numberOfSections, 0L);
@@ -55,6 +90,32 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   if (itemToHighlight && self.viewDidAppear) {
     [self highlightItem:itemToHighlight repeat:YES];
   }
+}
+
+- (void)setPopupMenuItems:
+    (NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>*)items {
+  [super loadModel];
+  for (NSUInteger section = 0; section < items.count; section++) {
+    NSInteger sectionIdentifier = kSectionIdentifierEnumZero + section;
+    [self.tableViewModel addSectionWithIdentifier:sectionIdentifier];
+    for (TableViewItem<PopupMenuItem>* item in items[section]) {
+      [self.tableViewModel addItem:item
+           toSectionWithIdentifier:sectionIdentifier];
+    }
+
+    if (section != items.count - 1) {
+      // Add a footer for all sections except the last one.
+      TableViewHeaderFooterItem* footer =
+          [[PopupMenuFooterItem alloc] initWithType:kItemTypeEnumZero];
+      [self.tableViewModel setFooter:footer
+            forSectionWithIdentifier:sectionIdentifier];
+    }
+  }
+  [self.tableView reloadData];
+}
+
+- (void)itemsHaveChanged:(NSArray<TableViewItem<PopupMenuItem>*>*)items {
+  [self reconfigureCellsForItems:items];
 }
 
 #pragma mark - UIViewController
@@ -85,28 +146,6 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   if (self.itemToHighlight) {
     [self highlightItem:self.itemToHighlight repeat:YES];
   }
-}
-
-- (void)setPopupMenuItems:
-    (NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>*)items {
-  [super loadModel];
-  for (NSUInteger section = 0; section < items.count; section++) {
-    NSInteger sectionIdentifier = kSectionIdentifierEnumZero + section;
-    [self.tableViewModel addSectionWithIdentifier:sectionIdentifier];
-    for (TableViewItem<PopupMenuItem>* item in items[section]) {
-      [self.tableViewModel addItem:item
-           toSectionWithIdentifier:sectionIdentifier];
-    }
-
-    if (section != items.count - 1) {
-      // Add a footer for all sections except the last one.
-      TableViewHeaderFooterItem* footer =
-          [[PopupMenuFooterItem alloc] initWithType:kItemTypeEnumZero];
-      [self.tableViewModel setFooter:footer
-            forSectionWithIdentifier:sectionIdentifier];
-    }
-  }
-  [self.tableView reloadData];
 }
 
 - (CGSize)preferredContentSize {
@@ -155,6 +194,26 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 }
 
 #pragma mark - Private
+
+// Returns the index path identifying the the row at the position |point|.
+// |point| must be in the window coordinates. Returns nil if |point| is outside
+// the bounds of the table view.
+- (NSIndexPath*)indexPathForInnerRowAtPoint:(CGPoint)point {
+  CGPoint pointInTableViewCoordinates =
+      [self.tableView convertPoint:point fromView:nil];
+  CGRect insetRect =
+      CGRectInset(self.tableView.bounds, 0, kPopupMenuVerticalInsets);
+  BOOL pointInTableViewBounds =
+      CGRectContainsPoint(insetRect, pointInTableViewCoordinates);
+
+  NSIndexPath* indexPath = nil;
+  if (pointInTableViewBounds) {
+    indexPath =
+        [self.tableView indexPathForRowAtPoint:pointInTableViewCoordinates];
+  }
+
+  return indexPath;
+}
 
 // Highlights the |item| and |repeat| the highlighting once.
 - (void)highlightItem:(TableViewItem<PopupMenuItem>*)item repeat:(BOOL)repeat {

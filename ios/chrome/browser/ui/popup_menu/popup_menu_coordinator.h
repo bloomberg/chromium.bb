@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 
 @class BubblePresenter;
 @class CommandDispatcher;
@@ -15,7 +16,7 @@
 class WebStateList;
 
 // Coordinator for the popup menu, handling the commands.
-@interface PopupMenuCoordinator : ChromeCoordinator
+@interface PopupMenuCoordinator : ChromeCoordinator<PopupMenuLongPressDelegate>
 
 // Dispatcher used by this coordinator to receive the PopupMenuCommands.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;

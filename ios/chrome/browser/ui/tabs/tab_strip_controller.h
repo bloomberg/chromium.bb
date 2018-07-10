@@ -11,6 +11,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol PopupMenuLongPressDelegate;
 @class TabModel;
 @protocol TabStripPresentation;
 
@@ -25,6 +26,8 @@
 
 @property(nonatomic, readonly, weak) id<BrowserCommands, ApplicationCommands>
     dispatcher;
+// Delegate for the long press gesture recognizer triggering popup menu.
+@property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
 
 // The duration to wait before starting tab strip animations. Used to
 // synchronize animations.

@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_TABLE_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol ApplicationCommands;
@@ -14,7 +15,8 @@
 @protocol LoadQueryCommands;
 
 // TableViewController for the popup menu.
-@interface PopupMenuTableViewController : ChromeTableViewController
+@interface PopupMenuTableViewController
+    : ChromeTableViewController<PopupMenuConsumer>
 
 // The model of this controller.
 @property(nonatomic, readonly, strong)
@@ -23,15 +25,9 @@
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, LoadQueryCommands>
         dispatcher;
-// Command handler for this table view.
-@property(nonatomic, weak) id<PopupMenuTableViewControllerCommands>
-    commandHandler;
 // Presenting ViewController for the ViewController needing to be presented as
 // result of an interaction with the popup.
 @property(nonatomic, weak) UIViewController* baseViewController;
-// Item to be highlighted. Nil if no item should be highlighted. Must be set
-// after the popup menu items.
-@property(nonatomic, weak) TableViewItem<PopupMenuItem>* itemToHighlight;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
@@ -40,10 +36,12 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
-// Sets the |items| to be displayed by this Table View. Removes all the
-// currently presented items.
-- (void)setPopupMenuItems:
-    (NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>*)items;
+// Selects the row at |point|. This is the same as tapping the row. Point must
+// be in window base coordinates.
+- (void)selectRowAtPoint:(CGPoint)point;
+// Focuses the row at |point|. This adds an highlight to the row. Point must be
+// in window base coordinates.
+- (void)focusRowAtPoint:(CGPoint)point;
 
 @end
 
