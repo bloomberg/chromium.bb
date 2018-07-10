@@ -10,7 +10,7 @@
 
 namespace blink {
 
-// The NGLayoutTest is intended to let all NGFooTest classes easiy inherit
+// The NGLayoutTest is intended to let all NGFooTest classes easily inherit
 // ScopedLayoutNGForTest as well as RenderingTest. The ScopedLayoutNGForTest
 // ensures original settings are restored for other tests.
 // See http://crbug.com/769541 for more details.
