@@ -264,11 +264,9 @@ void BrowserPlugin::SynchronizeVisualProperties() {
                       sent_visual_properties_->screen_space_rect.size() !=
                           pending_visual_properties_.screen_space_rect.size();
 
-  bool zoom_changed = !sent_visual_properties_ ||
-                      sent_visual_properties_->zoom_level !=
-                          pending_visual_properties_.zoom_level ||
-                      sent_visual_properties_->uses_temporary_zoom !=
-                          pending_visual_properties_.uses_temporary_zoom;
+  bool zoom_changed =
+      !sent_visual_properties_ || sent_visual_properties_->zoom_level !=
+                                      pending_visual_properties_.zoom_level;
 
   // Note that the following flag is true if the capture sequence number
   // actually changed. That is, it is false if we did not have
@@ -492,10 +490,8 @@ void BrowserPlugin::ScreenInfoChanged(const ScreenInfo& screen_info) {
   SynchronizeVisualProperties();
 }
 
-void BrowserPlugin::OnZoomLevelChanged(bool uses_temporary_zoom,
-                                       double zoom_level) {
+void BrowserPlugin::OnZoomLevelChanged(double zoom_level) {
   pending_visual_properties_.zoom_level = zoom_level;
-  pending_visual_properties_.uses_temporary_zoom = uses_temporary_zoom;
   SynchronizeVisualProperties();
 }
 

@@ -400,9 +400,9 @@ class RenderViewImplTest : public RenderViewTest {
     return view()->preferred_size_;
   }
 
-  void SetZoomLevel(double level) {
-    view()->UpdateZoomLevel(view()->uses_temporary_zoom_level(), level);
-  }
+  void SetZoomLevel(double level) { view()->UpdateZoomLevel(level); }
+
+  double GetZoomLevel() { return view()->page_zoom_level(); }
 
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
@@ -522,17 +522,6 @@ class RenderViewImplDisableZoomForDSFTest
     deps->set_use_zoom_for_dsf_enabled(false);
     return deps;
   }
-};
-
-class RenderViewImplZoomTest : public RenderViewImplScaleFactorTest {
- protected:
-  void SetZoomLevel(bool uses_temporary_zoom, double zoom_level) {
-    view()->SetZoomLevelForTesting(uses_temporary_zoom, zoom_level);
-  }
-
-  bool UsesTemporaryZoom() { return view()->uses_temporary_zoom_level(); }
-
-  double GetZoomLevel() { return view()->GetZoomLevel(); }
 };
 
 #if defined(OS_ANDROID)
@@ -2748,40 +2737,16 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 
-TEST_F(RenderViewImplZoomTest, ZoomLevelChangeWithTemporaryZoomDisabled) {
-  // 0 is the default zoom level and false is the default value
-  // for temporary zoom, so nothing will change.
-  SetZoomLevel(false, 0);
+TEST_F(RenderViewImplScaleFactorTest, ZoomLevelUpdate) {
+  // 0 is the default zoom level, nothing will change.
+  SetZoomLevel(0);
   EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
-  EXPECT_EQ(false, UsesTemporaryZoom());
 
   // Change the zoom level to 25% and check if the view gets the change.
-  SetZoomLevel(false, content::ZoomFactorToZoomLevel(0.25));
+  SetZoomLevel(content::ZoomFactorToZoomLevel(0.25));
   EXPECT_NEAR(content::ZoomFactorToZoomLevel(0.25), GetZoomLevel(), 0.01);
-  EXPECT_EQ(false, UsesTemporaryZoom());
 }
 
-TEST_F(RenderViewImplZoomTest, ZoomLevelChangeWithTemporaryZoomEnabled) {
-  double new_level = content::ZoomFactorToZoomLevel(0.25);
-
-  // 0 is the default zoom level and false is the default value
-  // for temporary zoom, so nothing will change.
-  SetZoomLevel(true, 0);
-  EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
-  EXPECT_EQ(true, UsesTemporaryZoom());
-
-  // Try to change the zoom level to 25%; should remain 100% since temporary
-  // zoom is enabled.
-  SetZoomLevel(true, new_level);
-  EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
-  EXPECT_EQ(true, UsesTemporaryZoom());
-
-  // Try to change the zoom level to 25% with temporary zoom disabled; zoom
-  // level should indeed change to 25%.
-  SetZoomLevel(false, new_level);
-  EXPECT_NEAR(new_level, GetZoomLevel(), 0.01);
-  EXPECT_EQ(false, UsesTemporaryZoom());
-}
 #endif
 
 // Origin Trial Policy which vends the test public key so that the token

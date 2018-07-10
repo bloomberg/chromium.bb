@@ -565,17 +565,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return render_view_host_delegate_view_.get();
   }
 
-  void SetPendingPageZoomLevel(double zoom_level) { zoom_level_ = zoom_level; }
+  void SetZoomLevel(double zoom_level) { zoom_level_ = zoom_level; }
 
   double GetPendingPageZoomLevel() const override { return zoom_level_; }
-
-  void SetTemporaryZoomLevel(bool uses_temporary_zoom_level) {
-    uses_temporary_zoom_level_ = uses_temporary_zoom_level;
-  }
-
-  bool UsesTemporaryZoomLevel() const override {
-    return uses_temporary_zoom_level_;
-  }
 
   RenderViewHostDelegateView* GetDelegateView() override {
     return mock_delegate_view();
@@ -636,7 +628,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
       render_view_host_delegate_view_;
 
   double zoom_level_ = 0;
-  bool uses_temporary_zoom_level_ = false;
 };
 
 enum WheelScrollingMode {
@@ -982,7 +973,7 @@ class RenderWidgetHostWithSourceTest
 
 TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The initial zoom is 0 so host should not send a sync message
-  delegate_->SetPendingPageZoomLevel(0);
+  delegate_->SetZoomLevel(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
@@ -991,27 +982,10 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The zoom has changed so host should send out a sync message
   process_->sink().ClearMessages();
   double new_zoom_level = content::ZoomFactorToZoomLevel(0.25);
-  delegate_->SetPendingPageZoomLevel(content::ZoomFactorToZoomLevel(0.25));
+  delegate_->SetZoomLevel(new_zoom_level);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_NEAR(new_zoom_level, host_->old_visual_properties_->zoom_level, 0.01);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
-
-  // The initial temporary zoom is false so host will not send a sync message
-  process_->sink().ClearMessages();
-  delegate_->SetTemporaryZoomLevel(false);
-  EXPECT_FALSE(host_->SynchronizeVisualProperties());
-  EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
-
-  // Switch temporary zoom, we expect the host to send a sync message
-  // and the temporary zoom to be on
-  delegate_->SetTemporaryZoomLevel(true);
-  EXPECT_TRUE(host_->SynchronizeVisualProperties());
-  EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_EQ(true, host_->old_visual_properties_->uses_temporary_zoom);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
 

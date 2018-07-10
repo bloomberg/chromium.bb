@@ -129,9 +129,8 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
 
   // Notifies the renderers from this browser context to change the zoom level
   // for the specified host and scheme.
-  // Both |zoom level| and the flag |temporary_zoom_level| will be extracted
-  // from |host_zoom_levels_| and |temporary_zoom_levels_| when needed,
-  // so no need to pass them in.
+  // |zoom level| will be extracted from |host_zoom_levels_| when needed, so no
+  // need to pass them in.
   // TODO(wjmaclean) Should we use a GURL here? crbug.com/384486
   void SendZoomLevelChange(const std::string& scheme, const std::string& host);
 

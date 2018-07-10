@@ -443,7 +443,6 @@ RenderViewImpl::RenderViewImpl(
       history_list_length_(0),
       frames_in_progress_(0),
       target_url_status_(TARGET_NONE),
-      uses_temporary_zoom_level_(false),
 #if defined(OS_ANDROID)
       top_controls_constraints_(BROWSER_CONTROLS_STATE_BOTH),
 #endif
@@ -1822,16 +1821,7 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   webview()->SetPageScaleFactor(page_scale_factor);
 }
 
-void RenderViewImpl::SetUsesTemporaryZoomLevel(
-    const bool uses_temporary_zoom_level) {
-  uses_temporary_zoom_level_ = uses_temporary_zoom_level;
-}
-
-void RenderViewImpl::UpdateZoomLevel(bool temporary_zoom, double zoom_level) {
-  // Don't override a temporary zoom level without an explicit SET.
-  if (uses_temporary_zoom_level() && temporary_zoom)
-    return;
-  uses_temporary_zoom_level_ = temporary_zoom;
+void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
   webview()->HidePopups();
   SetZoomLevel(zoom_level);
 }
@@ -2344,25 +2334,6 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view())
     layer_tree_view()->RequestNewLocalSurfaceId();
-
-  OnSynchronizeVisualProperties(visual_properties);
-}
-
-void RenderViewImpl::SetZoomLevelForTesting(bool uses_temporary_zoom,
-                                            double zoom_level) {
-  VisualProperties visual_properties;
-  visual_properties.screen_info = screen_info_;
-  visual_properties.new_size = size();
-  visual_properties.visible_viewport_size = visible_viewport_size_;
-  visual_properties.compositor_viewport_pixel_size =
-      compositor_viewport_pixel_size_;
-  visual_properties.browser_controls_shrink_blink_size = false;
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted();
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id = local_surface_id_from_parent_;
-  visual_properties.zoom_level = zoom_level;
-  visual_properties.uses_temporary_zoom = uses_temporary_zoom;
 
   OnSynchronizeVisualProperties(visual_properties);
 }

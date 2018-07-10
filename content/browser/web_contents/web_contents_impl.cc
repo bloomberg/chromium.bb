@@ -1275,18 +1275,12 @@ void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
 }
 
 #if !defined(OS_ANDROID)
-
 void WebContentsImpl::UpdateZoom() {
   RenderWidgetHostImpl* rwh = GetRenderViewHost()->GetWidget();
   if (rwh->GetView())
     rwh->SynchronizeVisualProperties();
 }
 
-bool WebContentsImpl::UsesTemporaryZoomLevel() const {
-  return HostZoomMap::GetForWebContents(this)->UsesTemporaryZoomLevel(
-      GetMainFrame()->GetProcess()->GetID(),
-      GetRenderViewHost()->GetRoutingID());
-}
 
 void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
                                             const std::string& host) {

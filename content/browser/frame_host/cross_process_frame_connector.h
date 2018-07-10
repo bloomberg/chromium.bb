@@ -205,11 +205,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // if a new surface is created in case of zoom level change.
   double last_received_zoom_level_ = 0.0;
 
-  // The last value received from parent renderer for |uses_temporary_zoom|,
-  // which is used to check if a new surface is created when
-  // |uses_temporary_zoom| was toggled.
-  bool last_received_uses_temporary_zoom_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(CrossProcessFrameConnector);
 };
 
