@@ -375,8 +375,6 @@ bool DownloadController::HasFileAccessPermission() {
 
 void DownloadController::OnDownloadStarted(
     DownloadItem* download_item) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   // For dangerous item, we need to show the dangerous infobar before the
   // download can start.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -400,7 +398,6 @@ void DownloadController::OnDownloadStarted(
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED)) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
