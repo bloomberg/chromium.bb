@@ -54,45 +54,6 @@ void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
   info_map->GetRulesetManager()->RemoveRuleset(extension_id);
 }
 
-// Constructs the RulesetMatcher instance for a given extension and forwards the
-// same to the IO thread.
-void LoadRulesetOnFileTaskRunner(ExtensionId extension_id,
-                                 int ruleset_checksum,
-                                 base::FilePath indexed_file_path,
-                                 URLPatternSet allowed_pages,
-                                 scoped_refptr<InfoMap> info_map) {
-  base::AssertBlockingAllowed();
-
-  std::unique_ptr<RulesetMatcher> ruleset_matcher;
-  RulesetMatcher::LoadRulesetResult result =
-      RulesetMatcher::CreateVerifiedMatcher(indexed_file_path, ruleset_checksum,
-                                            &ruleset_matcher);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.DeclarativeNetRequest.LoadRulesetResult", result,
-      RulesetMatcher::kLoadResultMax);
-  if (result != RulesetMatcher::kLoadSuccess)
-    return;
-
-  base::OnceClosure task =
-      base::BindOnce(&LoadRulesetOnIOThread, std::move(extension_id),
-                     std::move(ruleset_matcher), std::move(allowed_pages),
-                     base::RetainedRef(std::move(info_map)));
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   std::move(task));
-}
-
-// Forwards the ruleset unloading to the IO thread.
-void UnloadRulesetOnFileTaskRunner(ExtensionId extension_id,
-                                   scoped_refptr<InfoMap> info_map) {
-  base::AssertBlockingAllowed();
-
-  base::OnceClosure task =
-      base::BindOnce(&UnloadRulesetOnIOThread, std::move(extension_id),
-                     base::RetainedRef(std::move(info_map)));
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   std::move(task));
-}
-
 }  // namespace
 
 // static
@@ -111,54 +72,180 @@ bool RulesMonitorService::HasRegisteredRuleset(
                           extensions_with_rulesets_.end();
 }
 
+// Helper to pass information related to the ruleset being loaded.
+struct RulesMonitorService::LoadRulesetInfo {
+  LoadRulesetInfo(scoped_refptr<const Extension> extension,
+                  int expected_ruleset_checksum,
+                  URLPatternSet allowed_pages)
+      : extension(std::move(extension)),
+        expected_ruleset_checksum(expected_ruleset_checksum),
+        allowed_pages(std::move(allowed_pages)) {}
+  ~LoadRulesetInfo() = default;
+  LoadRulesetInfo(LoadRulesetInfo&&) = default;
+  LoadRulesetInfo& operator=(LoadRulesetInfo&&) = default;
+
+  scoped_refptr<const Extension> extension;
+  int expected_ruleset_checksum;
+  URLPatternSet allowed_pages;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadRulesetInfo);
+};
+
+// Maintains state needed on |file_task_runner_|. Created on the UI thread, but
+// should only be accessed on the extension file task runner.
+class RulesMonitorService::FileSequenceState {
+ public:
+  FileSequenceState() { DCHECK_CURRENTLY_ON(content::BrowserThread::UI); }
+
+  ~FileSequenceState() {
+    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
+  }
+
+  using LoadRulesetUICallback =
+      base::OnceCallback<void(LoadRulesetInfo,
+                              std::unique_ptr<RulesetMatcher>)>;
+  // Loads ruleset for |info|. Invokes |ui_callback| with the RulesetMatcher
+  // instance created, passing null on failure.
+  void LoadRuleset(LoadRulesetInfo info,
+                   LoadRulesetUICallback ui_callback) const {
+    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
+
+    std::unique_ptr<RulesetMatcher> matcher;
+    RulesetMatcher::LoadRulesetResult result =
+        RulesetMatcher::CreateVerifiedMatcher(
+            file_util::GetIndexedRulesetPath(info.extension->path()),
+            info.expected_ruleset_checksum, &matcher);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.DeclarativeNetRequest.LoadRulesetResult", result,
+        RulesetMatcher::kLoadResultMax);
+
+    // |matcher| is valid only on success.
+    DCHECK_EQ(result == RulesetMatcher::kLoadSuccess, !!matcher);
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(ui_callback), std::move(info),
+                       std::move(matcher)));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileSequenceState);
+};
+
+// Helper to bridge tasks to FileSequenceState. Lives on the UI thread.
+class RulesMonitorService::FileSequenceBridge {
+ public:
+  FileSequenceBridge()
+      : file_task_runner_(GetExtensionFileTaskRunner()),
+        file_sequence_state_(std::make_unique<FileSequenceState>()) {}
+
+  ~FileSequenceBridge() {
+    file_task_runner_->DeleteSoon(FROM_HERE, std::move(file_sequence_state_));
+  }
+
+  void LoadRuleset(
+      LoadRulesetInfo info,
+      FileSequenceState::LoadRulesetUICallback load_ruleset_callback) const {
+    // base::Unretained is safe here because we trigger the destruction of
+    // |file_sequence_state_| on |file_task_runner_| from our destructor. Hence
+    // it is guaranteed to be alive when |load_ruleset_task| is run.
+    base::OnceClosure load_ruleset_task =
+        base::BindOnce(&FileSequenceState::LoadRuleset,
+                       base::Unretained(file_sequence_state_.get()),
+                       std::move(info), std::move(load_ruleset_callback));
+    file_task_runner_->PostTask(FROM_HERE, std::move(load_ruleset_task));
+  }
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+
+  // Created on the UI thread. Accessed and destroyed on |file_task_runner_|.
+  // Maintains state needed on |file_task_runner_|.
+  std::unique_ptr<FileSequenceState> file_sequence_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSequenceBridge);
+};
+
 RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
     : registry_observer_(this),
-      file_task_runner_(GetExtensionFileTaskRunner()),
+      file_sequence_bridge_(std::make_unique<FileSequenceBridge>()),
       info_map_(ExtensionSystem::Get(browser_context)->info_map()),
-      prefs_(ExtensionPrefs::Get(browser_context)) {
-  registry_observer_.Add(ExtensionRegistry::Get(browser_context));
+      prefs_(ExtensionPrefs::Get(browser_context)),
+      extension_registry_(ExtensionRegistry::Get(browser_context)),
+      weak_factory_(this) {
+  registry_observer_.Add(extension_registry_);
 }
 
 RulesMonitorService::~RulesMonitorService() = default;
 
+/* Description of thread hops for various scenarios:
+   On ruleset load success:
+      UI -> File -> UI -> IO.
+   On ruleset load failure:
+      UI -> File -> UI.
+   On ruleset unload:
+      UI -> IO.
+*/
+
 void RulesMonitorService::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  int ruleset_checksum;
-  if (!prefs_->GetDNRRulesetChecksum(extension->id(), &ruleset_checksum))
+  int expected_ruleset_checksum;
+  if (!prefs_->GetDNRRulesetChecksum(extension->id(),
+                                     &expected_ruleset_checksum)) {
     return;
-
-  URLPatternSet allowed_pages = prefs_->GetDNRAllowedPages(extension->id());
+  }
 
   DCHECK(IsAPIAvailable());
-  extensions_with_rulesets_.insert(extension->id());
 
-  base::OnceClosure task = base::BindOnce(
-      &LoadRulesetOnFileTaskRunner, extension->id(), ruleset_checksum,
-      file_util::GetIndexedRulesetPath(extension->path()),
-      std::move(allowed_pages), base::WrapRefCounted(info_map_));
-  file_task_runner_->PostTask(FROM_HERE, std::move(task));
+  LoadRulesetInfo info(base::WrapRefCounted(extension),
+                       expected_ruleset_checksum,
+                       prefs_->GetDNRAllowedPages(extension->id()));
+
+  FileSequenceState::LoadRulesetUICallback load_ruleset_callback =
+      base::BindOnce(&RulesMonitorService::OnRulesetLoaded,
+                     weak_factory_.GetWeakPtr());
+
+  file_sequence_bridge_->LoadRuleset(std::move(info),
+                                     std::move(load_ruleset_callback));
 }
 
 void RulesMonitorService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  // Return early if the extension does not have an indexed ruleset.
+  // Return early if the extension does not have an active indexed ruleset.
   if (!extensions_with_rulesets_.erase(extension->id()))
     return;
 
   DCHECK(IsAPIAvailable());
 
-  // Post the task first to the |file_task_runner_| and then to the IO thread,
-  // even though we don't need to do any file IO. Posting the task directly to
-  // the IO thread here can lead to RulesetManager::RemoveRuleset being called
-  // before a corresponding RulesetManager::AddRuleset.
-  base::OnceClosure task =
-      base::BindOnce(&UnloadRulesetOnFileTaskRunner, extension->id(),
-                     base::WrapRefCounted(info_map_));
-  file_task_runner_->PostTask(FROM_HERE, std::move(task));
+  base::OnceClosure unload_ruleset_on_io_task = base::BindOnce(
+      &UnloadRulesetOnIOThread, extension->id(), base::RetainedRef(info_map_));
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   std::move(unload_ruleset_on_io_task));
+}
+
+void RulesMonitorService::OnRulesetLoaded(
+    LoadRulesetInfo info,
+    std::unique_ptr<RulesetMatcher> matcher) {
+  // TODO(crbug.com/852058): Disable extension when ruleset loading fails.
+  if (!matcher)
+    return;
+
+  // It's possible that the extension has been disabled since the initial load
+  // ruleset request. If it's disabled, do nothing.
+  if (!extension_registry_->enabled_extensions().Contains(info.extension->id()))
+    return;
+
+  extensions_with_rulesets_.insert(info.extension->id());
+
+  base::OnceClosure load_ruleset_on_io = base::BindOnce(
+      &LoadRulesetOnIOThread, info.extension->id(), std::move(matcher),
+      std::move(info.allowed_pages), base::RetainedRef(info_map_));
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   std::move(load_ruleset_on_io));
 }
 
 }  // namespace declarative_net_request
