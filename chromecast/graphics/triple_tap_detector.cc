@@ -25,7 +25,9 @@ TripleTapDetector::TripleTapDetector(aura::Window* root_window,
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
 
-TripleTapDetector::~TripleTapDetector() {}
+TripleTapDetector::~TripleTapDetector() {
+  root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
+}
 
 ui::EventRewriteStatus TripleTapDetector::RewriteEvent(
     const ui::Event& event,

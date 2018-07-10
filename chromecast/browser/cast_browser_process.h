@@ -58,6 +58,7 @@ class CastBrowserProcess {
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   void SetAccessibilityManager(
       std::unique_ptr<AccessibilityManager> accessibility_manager);
+  void ClearAccessibilityManager();
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
   void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
