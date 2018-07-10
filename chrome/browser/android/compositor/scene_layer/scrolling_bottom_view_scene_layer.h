@@ -35,6 +35,7 @@ class ScrollingBottomViewSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jresource_manager,
       jint view_resource_id,
       jint shadow_height,
+      jfloat x_offset,
       jfloat y_offset,
       bool show_shadow);
 

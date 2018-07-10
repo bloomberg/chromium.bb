@@ -33,8 +33,14 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     /** The height of the view's top shadow. */
     private int mTopShadowHeightPx;
 
-    /** The current offset of the bottom view in px. */
-    private int mCurrentOffsetPx;
+    /** The current Y offset of the bottom view in px. */
+    private int mCurrentYOffsetPx;
+
+    /** The current X offset of the bottom view in px. */
+    private int mCurrentXOffsetPx;
+
+    /** Whether the {@link SceneLayer}is visible. */
+    private boolean mIsVisibile;
 
     /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
     private ViewResourceFrameLayout mBottomView;
@@ -49,6 +55,16 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
         mBottomView = bottomView;
         mResourceId = mBottomView.getId();
         mTopShadowHeightPx = topShadowHeightPx;
+        mIsVisibile = true;
+    }
+
+    /**
+     * Build a copy of an existing {@link ScrollingBottomViewSceneLayer}.
+     * @param sceneLayer The existing scene layer to copy. This only copies the source view,
+     *                   resource ID, and shadow height. All other state is ignored.
+     */
+    public ScrollingBottomViewSceneLayer(ScrollingBottomViewSceneLayer sceneLayer) {
+        this(sceneLayer.mBottomView, sceneLayer.mTopShadowHeightPx);
     }
 
     /**
@@ -57,7 +73,21 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
      * @param offsetPx The view's offset in px.
      */
     public void setYOffset(int offsetPx) {
-        mCurrentOffsetPx = offsetPx;
+        mCurrentYOffsetPx = offsetPx;
+    }
+
+    /**
+     * @param offsetPx The view's X translation in px.
+     */
+    public void setXOffset(int offsetPx) {
+        mCurrentXOffsetPx = offsetPx;
+    }
+
+    /**
+     * @param visible Whether this {@link SceneLayer} is visible.
+     */
+    public void setIsVisibile(boolean visible) {
+        mIsVisibile = visible;
     }
 
     @Override
@@ -80,7 +110,8 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
         boolean isShadowVisible = mBottomView.getVisibility() != View.VISIBLE;
 
         nativeUpdateScrollingBottomViewLayer(mNativePtr, resourceManager, mResourceId,
-                mTopShadowHeightPx, viewport.height() + mCurrentOffsetPx, isShadowVisible);
+                mTopShadowHeightPx, mCurrentXOffsetPx, viewport.height() + mCurrentYOffsetPx,
+                isShadowVisible);
 
         return this;
     }
@@ -88,7 +119,7 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     @Override
     public boolean isSceneOverlayTreeShowing() {
         // If the offset is greater than the toolbar's height, don't draw the layer.
-        return mCurrentOffsetPx < mBottomView.getHeight() - mTopShadowHeightPx;
+        return mIsVisibile && mCurrentYOffsetPx < mBottomView.getHeight() - mTopShadowHeightPx;
     }
 
     @Override
@@ -167,5 +198,6 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
             long nativeScrollingBottomViewSceneLayer, SceneLayer contentTree);
     private native void nativeUpdateScrollingBottomViewLayer(
             long nativeScrollingBottomViewSceneLayer, ResourceManager resourceManager,
-            int viewResourceId, int shadowHeightPx, float yOffset, boolean showShadow);
+            int viewResourceId, int shadowHeightPx, float xOffset, float yOffset,
+            boolean showShadow);
 }

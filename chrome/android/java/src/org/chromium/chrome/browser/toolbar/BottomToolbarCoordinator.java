@@ -13,6 +13,7 @@ import android.view.ViewStub;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
@@ -125,6 +126,15 @@ public class BottomToolbarCoordinator {
      */
     public boolean isShowingAppMenuUpdateBadge() {
         return mMediator.isShowingAppMenuUpdateBadge();
+    }
+
+    /**
+     * @param layout The {@link ToolbarSwipeLayout} that the bottom toolbar will hook into. This
+     *               allows the bottom toolbar to provide the layout with scene layers with the
+     *               bottom toolbar's texture.
+     */
+    public void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
+        mMediator.setToolbarSwipeLayout(layout);
     }
 
     /**

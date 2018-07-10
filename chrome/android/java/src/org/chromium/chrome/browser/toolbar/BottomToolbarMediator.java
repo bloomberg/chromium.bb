@@ -9,9 +9,12 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
+import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
@@ -132,6 +135,26 @@ class BottomToolbarMediator
 
     public void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
+
+        layoutManager.addSceneChangeObserver(new SceneChangeObserver() {
+            /** Whether the swipe layout is currently active. */
+            private boolean mIsInSwipeLayout;
+
+            @Override
+            public void onTabSelectionHinted(int tabId) {}
+
+            @Override
+            public void onSceneChange(Layout layout) {
+                if (layout instanceof ToolbarSwipeLayout) {
+                    mIsInSwipeLayout = true;
+                    mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+                } else if (mIsInSwipeLayout) {
+                    // Only change to visible if leaving the swipe layout.
+                    mIsInSwipeLayout = false;
+                    mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+                }
+            }
+        });
     }
 
     public void setResourceManager(ResourceManager resourceManager) {
@@ -155,5 +178,9 @@ class BottomToolbarMediator
         mContextualSearchManger = contextualSearchManager;
         if (mContextualSearchManger == null) return;
         mContextualSearchManger.addObserver(this);
+    }
+
+    public void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
+        mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT, layout);
     }
 }
