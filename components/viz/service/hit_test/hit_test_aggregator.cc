@@ -5,6 +5,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -38,7 +39,12 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
   hit_test_data_size_ = 0;
   hit_test_data_.resize(hit_test_data_capacity_);
 
+  base::ElapsedTimer aggregate_timer;
   AppendRoot(display_surface_id);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.AggregateTimeUs",
+                                          aggregate_timer.Elapsed(),
+                                          base::TimeDelta::FromMicroseconds(1),
+                                          base::TimeDelta::FromSeconds(10), 50);
   referenced_child_regions_.clear();
   SendHitTestData();
 }
@@ -50,8 +56,6 @@ void HitTestAggregator::SendHitTestData() {
 }
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.AggregateTime");
-
   const HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(
           local_surface_id_lookup_delegate_, surface_id.frame_sink_id());
