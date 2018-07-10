@@ -625,16 +625,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-// Flaky on Linux: crbug/860513
-#if defined(OS_LINUX)
-#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
-  DISABLED_CrossOriginFrameEnterLeaveCloseWindow
-#else
-#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
-  CrossOriginFrameEnterLeaveCloseWindow
-#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MAYBE_CrossOriginFrameEnterLeaveCloseWindow) {
+                       CrossOriginFrameEnterLeaveCloseWindow) {
   GURL embed_url = embedded_test_server()->GetURL(
       "a.com", "/media/picture-in-picture/iframe-content.html");
   GURL main_url = embedded_test_server()->GetURL(
@@ -677,17 +669,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-// https://crbug.com/855883
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_MultipleBrowserWindowOnePIPWindow \
-  DISABLED_MultipleBrowserWindowOnePIPWindow
-#else
-#define MAYBE_MultipleBrowserWindowOnePIPWindow \
-  MultipleBrowserWindowOnePIPWindow
-#endif
-
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MAYBE_MultipleBrowserWindowOnePIPWindow) {
+                       MultipleBrowserWindowOnePIPWindow) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::PictureInPictureWindowController* first_controller =
