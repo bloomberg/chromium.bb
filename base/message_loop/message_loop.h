@@ -373,6 +373,11 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   // it can safely quit.
   void QuitWhenIdle(base::OnceClosure callback);
 #endif
+
+#if defined(OS_WIN)
+  // See method of the same name in the Windows MessagePumpForUI implementation.
+  void EnableWmQuit();
+#endif
 };
 
 // Do not add any member variables to MessageLoopForUI!  This is important b/c

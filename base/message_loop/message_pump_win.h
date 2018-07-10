@@ -124,6 +124,9 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
+  // Make the MessagePumpForUI respond to WM_QUIT messages.
+  void EnableWmQuit();
+
  private:
   bool MessageCallback(
       UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
@@ -137,6 +140,10 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessPumpReplacementMessage();
 
   base::win::MessageWindow message_window_;
+
+  // Whether MessagePumpForUI responds to WM_QUIT messages or not.
+  // TODO(thestig): Remove when the Cloud Print Service goes away.
+  bool enable_wm_quit_ = false;
 };
 
 //-----------------------------------------------------------------------------
