@@ -162,7 +162,7 @@ NSString* GetNSErrorMessage() {
 // renderer-initiated.
 // TODO(crbug.com/840489): Remove this test.
 // disable due to flaky: crbug.com/859910
-- (void)DISABLED_testRendererInitiatedGoBackFromErrorPageAndForwardToErrorPage {
+- (void)FLAKY_testRendererInitiatedGoBackFromErrorPageAndForwardToErrorPage {
   // First page loads sucessfully.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
   [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
