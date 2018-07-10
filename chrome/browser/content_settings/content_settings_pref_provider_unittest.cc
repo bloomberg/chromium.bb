@@ -10,8 +10,10 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +26,7 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/default_pref_store.h"
@@ -625,7 +628,7 @@ TEST_F(PrefProviderTest, RejectEphemeralStorage) {
 
   sync_preferences::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
-  PrefProvider provider(&prefs, true /* regular */,
+  PrefProvider provider(&prefs, false /* regular */,
                         true /* store_last_modified */);
   ContentSettingsPattern site_pattern =
       ContentSettingsPattern::FromString("https://example.com");
@@ -639,5 +642,88 @@ TEST_F(PrefProviderTest, RejectEphemeralStorage) {
 
   provider.ShutdownOnUIThread();
 }
+
+// Tests if PrefProvider clears unsupported (ephemeral) types if they are
+// stored.
+// kEnableEphemeralFlashPermission is not available on Android.
+#if BUILDFLAG(ENABLE_PLUGINS)
+#if !defined(OS_ANDROID)
+TEST_F(PrefProviderTest, ClearingUnsupportedTypes) {
+  sync_preferences::TestingPrefServiceSyncable prefs;
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
+
+  const ContentSettingsPattern site_pattern =
+      ContentSettingsPattern::FromString("https://example.com");
+
+  enum steps {
+    SET_PERMISSION,
+    CHECK_EXISTENCE,
+    CLEAR_PERMISSION,
+    CHECK_DELETION,
+  };
+
+  for (int step = SET_PERMISSION; step <= CHECK_DELETION; step++) {
+    bool ephemeral_flash_permission = (step == CLEAR_PERMISSION);
+
+    // Boilerplate code to set the switch and restart PrefProvider.
+    base::test::ScopedFeatureList feature_list;
+    if (ephemeral_flash_permission) {
+      feature_list.InitAndEnableFeature(
+          features::kEnableEphemeralFlashPermission);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kEnableEphemeralFlashPermission);
+    }
+    ContentSettingsRegistry::GetInstance()->ResetForTest();
+    PrefProvider provider(&prefs, false, true);
+
+    switch (step) {
+      case SET_PERMISSION: {
+        // Disable Ephemeral Flash permissions and set permission.
+        ASSERT_FALSE(ephemeral_flash_permission);
+        EXPECT_TRUE(provider.SetWebsiteSetting(
+            site_pattern, site_pattern, CONTENT_SETTINGS_TYPE_PLUGINS,
+            std::string(), new base::Value(CONTENT_SETTING_ALLOW)));
+        EXPECT_NE(nullptr,
+                  provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           std::string(), false));
+        break;
+      }
+      case CHECK_EXISTENCE: {
+        // Reload PrefProvider with persistent Flash permission and ensure the
+        // permission still exists.
+        ASSERT_FALSE(ephemeral_flash_permission);
+        EXPECT_NE(nullptr,
+                  provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           std::string(), false));
+        break;
+      }
+      case CLEAR_PERMISSION: {
+        // Enable Ephemeral Flash permissions and clear permission.
+        ASSERT_TRUE(ephemeral_flash_permission);
+        EXPECT_EQ(nullptr,
+                  provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           std::string(), false));
+
+        provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_PLUGINS);
+        break;
+      }
+      case CHECK_DELETION: {
+        // Reload PrefProvider with persistent Flash permission and check if the
+        // permission is gone.
+        ASSERT_FALSE(ephemeral_flash_permission);
+        EXPECT_EQ(nullptr,
+                  provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           std::string(), false));
+        break;
+      }
+    }
+
+    provider.ShutdownOnUIThread();
+  }
+}
+#endif  // !defined(OS_ANDROID)
+
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 }  // namespace content_settings
