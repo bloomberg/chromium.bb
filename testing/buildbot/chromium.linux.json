@@ -93,7 +93,7 @@
           "--test-launcher-jobs=1"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": false
         },
         "test": "cast_shell_browsertests"
       },
@@ -398,7 +398,7 @@
           "--test-launcher-jobs=1"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": false
         },
         "test": "cast_shell_browsertests"
       },
