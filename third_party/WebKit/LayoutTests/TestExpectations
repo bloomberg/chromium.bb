@@ -4225,9 +4225,6 @@ crbug.com/798572 virtual/enable_wasm/external/wpt/wasm/wasm_service_worker_test.
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
 crbug.com/793771 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing.html [ Skip ]
 
-crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
-crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
-
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
 skbug.com/7641 fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
