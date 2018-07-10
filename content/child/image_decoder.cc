@@ -33,20 +33,16 @@ ImageDecoder::~ImageDecoder() {
 }
 
 SkBitmap ImageDecoder::Decode(const unsigned char* data, size_t size) const {
-  const WebImage& image = WebImage::FromData(
-      WebData(reinterpret_cast<const char*>(data), size), desired_icon_size_);
-  return image.GetSkBitmap();
+  return WebImage::FromData(WebData(reinterpret_cast<const char*>(data), size),
+                            desired_icon_size_);
 }
 
 // static
 std::vector<SkBitmap> ImageDecoder::DecodeAll(
       const unsigned char* data, size_t size) {
-  const blink::WebVector<WebImage>& images = WebImage::FramesFromData(
-      WebData(reinterpret_cast<const char*>(data), size));
-  std::vector<SkBitmap> result;
-  for (size_t i = 0; i < images.size(); ++i)
-    result.push_back(images[i].GetSkBitmap());
-  return result;
+  return WebImage::FramesFromData(
+             WebData(reinterpret_cast<const char*>(data), size))
+      .ReleaseVector();
 }
 
 }  // namespace content

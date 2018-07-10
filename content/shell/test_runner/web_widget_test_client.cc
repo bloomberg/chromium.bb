@@ -90,9 +90,9 @@ void WebWidgetTestClient::SetToolTipText(const blink::WebString& text,
 void WebWidgetTestClient::StartDragging(blink::WebReferrerPolicy policy,
                                         const blink::WebDragData& data,
                                         blink::WebDragOperationsMask mask,
-                                        const blink::WebImage& image,
-                                        const blink::WebPoint& point) {
-  test_runner()->setDragImage(image);
+                                        const SkBitmap& drag_image,
+                                        const blink::WebPoint& image_offset) {
+  test_runner()->setDragImage(drag_image);
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.

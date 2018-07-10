@@ -7938,12 +7938,11 @@ TEST_F(WebFrameTest, WebNodeImageContents) {
   WebNode node = frame->GetDocument().Body().FirstChild();
   EXPECT_TRUE(node.IsElementNode());
   WebElement element = node.To<WebElement>();
-  WebImage image = element.ImageContents();
-  ASSERT_FALSE(image.IsNull());
-  EXPECT_EQ(image.Size().width, 10);
-  EXPECT_EQ(image.Size().height, 10);
-  SkBitmap bitmap = image.GetSkBitmap();
-  EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
+  SkBitmap image = element.ImageContents();
+  ASSERT_FALSE(image.isNull());
+  EXPECT_EQ(image.width(), 10);
+  EXPECT_EQ(image.height(), 10);
+  EXPECT_EQ(image.getColor(0, 0), SK_ColorBLUE);
 }
 
 TEST_F(WebFrameTest, WebNodeImageContentsWithOrientation) {
@@ -7989,13 +7988,12 @@ TEST_F(WebFrameTest, WebNodeImageContentsWithOrientation) {
   EXPECT_TRUE(node.IsElementNode());
   WebElement element = node.To<WebElement>();
 
-  WebImage image_with_orientation = element.ImageContents();
-  ASSERT_FALSE(image_with_orientation.IsNull());
-  EXPECT_EQ(image_with_orientation.Size().width, 8);
-  EXPECT_EQ(image_with_orientation.Size().height, 4);
-  SkBitmap oriented_bitmap = image_with_orientation.GetSkBitmap();
+  SkBitmap image_with_orientation = element.ImageContents();
+  ASSERT_FALSE(image_with_orientation.isNull());
+  EXPECT_EQ(image_with_orientation.width(), 8);
+  EXPECT_EQ(image_with_orientation.height(), 4);
   // Should be almost blue.
-  SkColor oriented_color = oriented_bitmap.getColor(0, 0);
+  SkColor oriented_color = image_with_orientation.getColor(0, 0);
   EXPECT_NEAR(SkColorGetR(oriented_color), SkColorGetR(SK_ColorBLUE), 5);
   EXPECT_NEAR(SkColorGetG(oriented_color), SkColorGetG(SK_ColorBLUE), 5);
   EXPECT_NEAR(SkColorGetB(oriented_color), SkColorGetB(SK_ColorBLUE), 5);

@@ -73,8 +73,8 @@ class WebImageDecoder {
   // Returns if the frame at given index is completely decoded.
   BLINK_EXPORT bool IsFrameCompleteAtIndex(int index) const;
 
-  // Creates and returns WebImage from buffer at the index.
-  BLINK_EXPORT WebImage GetFrameAtIndex(int index) const;
+  // Creates and returns SkBitmap from buffer at the index.
+  BLINK_EXPORT SkBitmap GetFrameAtIndex(int index) const;
 
  private:
   // Creates type-specific decoder.

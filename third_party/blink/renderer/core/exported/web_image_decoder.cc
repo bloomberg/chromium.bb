@@ -33,11 +33,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/ico/ico_image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -95,12 +95,12 @@ bool WebImageDecoder::IsFrameCompleteAtIndex(int index) const {
   return frame_buffer->GetStatus() == ImageFrame::kFrameComplete;
 }
 
-WebImage WebImageDecoder::GetFrameAtIndex(int index = 0) const {
+SkBitmap WebImageDecoder::GetFrameAtIndex(int index = 0) const {
   DCHECK(private_);
   ImageFrame* const frame_buffer = private_->DecodeFrameBufferAtIndex(index);
   if (!frame_buffer)
-    return WebImage();
-  return WebImage(frame_buffer->Bitmap());
+    return {};
+  return frame_buffer->Bitmap();
 }
 
 }  // namespace blink

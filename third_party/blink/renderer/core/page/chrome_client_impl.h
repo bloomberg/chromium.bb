@@ -70,7 +70,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void StartDragging(LocalFrame*,
                      const WebDragData&,
                      WebDragOperationsMask,
-                     const WebImage& drag_image,
+                     const SkBitmap& drag_image,
                      const WebPoint& drag_image_offset) override;
   bool AcceptsLoadDrops() const override;
   Page* CreateWindow(LocalFrame*,

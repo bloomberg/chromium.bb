@@ -208,7 +208,7 @@ void WebFrameWidgetBase::CancelDrag() {
 void WebFrameWidgetBase::StartDragging(WebReferrerPolicy policy,
                                        const WebDragData& data,
                                        WebDragOperationsMask mask,
-                                       const WebImage& drag_image,
+                                       const SkBitmap& drag_image,
                                        const WebPoint& drag_image_offset) {
   doing_drag_and_drop_ = true;
   Client()->StartDragging(policy, data, mask, drag_image, drag_image_offset);

@@ -34,11 +34,18 @@
 
 namespace blink {
 
+static SkBitmap GetCursorBitmap(const Cursor& cursor) {
+  if (!cursor.GetImage())
+    return {};
+  return cursor.GetImage()->AsSkBitmapForCurrentFrame(
+      kDoNotRespectImageOrientation);
+}
+
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)
     : type(static_cast<Type>(cursor.GetType())),
       hot_spot(cursor.HotSpot()),
       image_scale_factor(cursor.ImageScaleFactor()),
-      custom_image(cursor.GetImage())
+      custom_image(GetCursorBitmap(cursor))
 #ifdef WIN32
       ,
       external_handle(0)

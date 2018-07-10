@@ -83,7 +83,6 @@ struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
 class WebGestureEvent;
-class WebImage;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
@@ -333,8 +332,8 @@ class CONTENT_EXPORT RenderWidget
   void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
-                     const blink::WebImage& image,
-                     const blink::WebPoint& imageOffset) override;
+                     const SkBitmap& drag_image,
+                     const blink::WebPoint& image_offset) override;
 
   // Override point to obtain that the current input method state and caret
   // position.

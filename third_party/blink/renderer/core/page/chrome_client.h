@@ -83,7 +83,6 @@ class PagePopup;
 class PagePopupClient;
 class PopupOpeningObserver;
 class WebDragData;
-class WebImage;
 class WebLayerTreeView;
 class WebViewImpl;
 
@@ -131,7 +130,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void StartDragging(LocalFrame*,
                              const WebDragData&,
                              WebDragOperationsMask,
-                             const WebImage& drag_image,
+                             const SkBitmap& drag_image,
                              const WebPoint& drag_image_offset) = 0;
   virtual bool AcceptsLoadDrops() const = 0;
 

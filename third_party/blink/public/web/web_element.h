@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
 
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/web/web_node.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -86,9 +86,9 @@ class BLINK_EXPORT WebElement : public WebNode {
   // This function will update the layout if required.
   WebRect BoundsInViewport() const;
 
-  // Returns the image contents of this element or a null WebImage
+  // Returns the image contents of this element or a null SkBitmap
   // if there isn't any.
-  WebImage ImageContents();
+  SkBitmap ImageContents();
   void RequestFullscreen();
 
 #if INSIDE_BLINK

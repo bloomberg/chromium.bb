@@ -125,9 +125,10 @@ class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
   void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
-                     const blink::WebImage& image,
-                     const blink::WebPoint& point) override {
-    widget_test_client()->StartDragging(policy, data, mask, image, point);
+                     const SkBitmap& drag_image,
+                     const blink::WebPoint& image_offset) override {
+    widget_test_client()->StartDragging(policy, data, mask, drag_image,
+                                        image_offset);
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }

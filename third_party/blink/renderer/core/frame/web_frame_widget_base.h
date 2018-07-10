@@ -30,7 +30,6 @@ class GraphicsLayer;
 struct IntrinsicSizingInfo;
 class PageWidgetEventHandler;
 class WebActiveGestureAnimation;
-class WebImage;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -110,7 +109,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void StartDragging(WebReferrerPolicy,
                      const WebDragData&,
                      WebDragOperationsMask,
-                     const WebImage& drag_image,
+                     const SkBitmap& drag_image,
                      const WebPoint& drag_image_offset);
 
   bool DoingDragAndDrop() { return doing_drag_and_drop_; }
