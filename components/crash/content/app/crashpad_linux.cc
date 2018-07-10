@@ -25,12 +25,17 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
+#include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_handler_client.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_information.h"
 #include "third_party/crashpad/crashpad/util/misc/from_pointer_cast.h"
 #include "third_party/crashpad/crashpad/util/posix/signals.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/java_exception_reporter.h"
+#endif  // OS_ANDROID
 
 namespace crashpad {
 namespace {
@@ -144,6 +149,23 @@ class SandboxedHandler {
 }  // namespace
 }  // namespace crashpad
 
+#if defined(OS_ANDROID)
+
+namespace {
+
+void SetJavaExceptionInfo(const char* info_string) {
+  static crashpad::StringAnnotation<5 * 4096> exception_info("exception_info");
+  if (info_string) {
+    exception_info.Set(info_string);
+  } else {
+    exception_info.Clear();
+  }
+}
+
+}  // namespace
+
+#endif  // OS_ANDROID
+
 namespace crash_reporter {
 namespace internal {
 
@@ -254,6 +276,10 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
   // Not used on Linux/Android.
   DCHECK(!embedded_handler);
   DCHECK(exe_path.empty());
+
+#if defined(OS_ANDROID)
+  base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
+#endif  // OS_ANDROID
 
   if (browser_process) {
     base::FilePath handler_path;
