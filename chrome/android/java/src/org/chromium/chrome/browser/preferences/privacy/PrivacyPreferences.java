@@ -24,6 +24,9 @@ import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -44,6 +47,7 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
+    private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -75,9 +79,19 @@ public class PrivacyPreferences extends PreferenceFragment
             preferenceScreen.removePreference(findPreference(PREF_NETWORK_PREDICTIONS));
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
             preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
+
+            TextMessageWithLinkAndIconPreference syncAndServicesLink =
+                    (TextMessageWithLinkAndIconPreference) findPreference(
+                            PREF_SYNC_AND_SERVICES_LINK);
+            syncAndServicesLink.setLinkClickDelegate(() -> {
+                PreferencesLauncher.launchSettingsPage(
+                        getActivity(), SyncAndServicesPreferences.class.getName());
+            });
+
             updateSummaries();
             return;
         }
+        preferenceScreen.removePreference(findPreference(PREF_SYNC_AND_SERVICES_LINK));
 
         ChromeBaseCheckBoxPreference networkPredictionPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);

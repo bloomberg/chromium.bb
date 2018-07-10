@@ -40,6 +40,8 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
         mNoBottomSpacing = a.getBoolean(
                 R.styleable.TextMessageWithLinkAndIconPreference_noBottomSpacing, false);
         a.recycle();
+
+        setSummary(getSummary()); // Apply spans to the summary loaded from XML.
     }
 
     /**
