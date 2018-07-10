@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi/accelerated_video_encoder.h"
 
 #include "media/base/video_frame.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace media {
 
@@ -24,6 +25,12 @@ AcceleratedVideoEncoder::EncodeJob::~EncodeJob() = default;
 VaapiEncodeJob* AcceleratedVideoEncoder::EncodeJob::AsVaapiEncodeJob() {
   CHECK(false);
   return nullptr;
+}
+
+BitstreamBufferMetadata AcceleratedVideoEncoder::EncodeJob::Metadata(
+    size_t payload_size) const {
+  return BitstreamBufferMetadata(payload_size, IsKeyframeRequested(),
+                                 timestamp());
 }
 
 void AcceleratedVideoEncoder::EncodeJob::AddSetupCallback(

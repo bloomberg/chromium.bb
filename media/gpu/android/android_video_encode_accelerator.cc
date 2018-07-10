@@ -450,8 +450,8 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::BitstreamBufferReady,
-                 client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(), size,
-                 key_frame, frame_timestamp));
+                 client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(),
+                 BitstreamBufferMetadata(size, key_frame, frame_timestamp)));
 }
 
 }  // namespace media

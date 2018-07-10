@@ -435,10 +435,8 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
             << " id: " << buffer->id << " size: " << data_size;
 
   child_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::BitstreamBufferReady, client_, buffer->id,
-                     data_size, encode_job->IsKeyframeRequested(),
-                     encode_job->timestamp()));
+      FROM_HERE, base::BindOnce(&Client::BitstreamBufferReady, client_,
+                                buffer->id, encode_job->Metadata(data_size)));
 }
 
 void VaapiVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,

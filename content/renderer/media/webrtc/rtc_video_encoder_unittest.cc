@@ -180,7 +180,9 @@ class RTCVideoEncoderTest
 
   void ReturnFrameWithTimeStamp(const scoped_refptr<media::VideoFrame>& frame,
                                 bool force_keyframe) {
-    client_->BitstreamBufferReady(0, 0, force_keyframe, frame->timestamp());
+    client_->BitstreamBufferReady(
+        0,
+        media::BitstreamBufferMetadata(0, force_keyframe, frame->timestamp()));
   }
 
   void VerifyTimestamp(uint32_t rtp_timestamp,

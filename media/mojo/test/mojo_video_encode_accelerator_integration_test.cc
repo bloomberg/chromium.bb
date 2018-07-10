@@ -52,8 +52,8 @@ class MockVideoEncodeAcceleratorClient : public VideoEncodeAccelerator::Client {
 
   MOCK_METHOD3(RequireBitstreamBuffers,
                void(unsigned int, const gfx::Size&, size_t));
-  MOCK_METHOD4(BitstreamBufferReady,
-               void(int32_t, size_t, bool, base::TimeDelta));
+  MOCK_METHOD2(BitstreamBufferReady,
+               void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
 
  private:
@@ -239,8 +239,11 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodeOneFrame) {
     video_frame->AddSharedMemoryHandle(shmem.handle());
     const bool is_keyframe = true;
 
-    EXPECT_CALL(*mock_vea_client,
-                BitstreamBufferReady(kBistreamBufferId, _, is_keyframe, _));
+    EXPECT_CALL(*mock_vea_client, BitstreamBufferReady(kBistreamBufferId, _))
+        .WillOnce(testing::Invoke(
+            [is_keyframe](int32_t, const BitstreamBufferMetadata& metadata) {
+              EXPECT_EQ(is_keyframe, metadata.key_frame);
+            }));
 
     mojo_vea()->Encode(video_frame, is_keyframe);
     base::RunLoop().RunUntilIdle();

@@ -487,8 +487,9 @@ void VideoEncoderShim::OnBitstreamBufferReady(
     bool key_frame) {
   DCHECK(RenderThreadImpl::current());
 
-  host_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
-                              frame->timestamp());
+  host_->BitstreamBufferReady(bitstream_buffer_id,
+                              media::BitstreamBufferMetadata(
+                                  payload_size, key_frame, frame->timestamp()));
 }
 
 void VideoEncoderShim::OnNotifyError(

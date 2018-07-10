@@ -26,6 +26,43 @@ namespace media {
 class BitstreamBuffer;
 class VideoFrame;
 
+//  Metadata for a VP8 bitstream buffer.
+//  |non_reference| is true iff this frame does not update any reference buffer,
+//                  meaning dropping this frame still results in a decodable
+//                  stream.
+//  |temporal_idx|  indicates the temporal index for this frame.
+//  |layer_sync|    if true iff this frame has |temporal_idx| > 0 and does NOT
+//                  reference any reference buffer containing a frame with
+//                  temporal_idx > 0.
+struct MEDIA_EXPORT Vp8Metadata final {
+  Vp8Metadata();
+  Vp8Metadata(const Vp8Metadata& other);
+  Vp8Metadata(Vp8Metadata&& other);
+  ~Vp8Metadata();
+  bool non_reference;
+  uint8_t temporal_idx;
+  bool layer_sync;
+};
+
+//  Metadata associated with a bitstream buffer.
+//  |payload_size| is the byte size of the used portion of the buffer.
+//  |key_frame| is true if this delivered frame is a keyframe.
+//  |timestamp| is the same timestamp as in VideoFrame passed to Encode().
+//  |vp8|, if set, contains metadata specific to VP8. See above.
+struct MEDIA_EXPORT BitstreamBufferMetadata final {
+  BitstreamBufferMetadata();
+  BitstreamBufferMetadata(BitstreamBufferMetadata&& other);
+  BitstreamBufferMetadata(size_t payload_size_bytes,
+                          bool key_frame,
+                          base::TimeDelta timestamp);
+  ~BitstreamBufferMetadata();
+
+  size_t payload_size_bytes;
+  bool key_frame;
+  base::TimeDelta timestamp;
+  base::Optional<Vp8Metadata> vp8;
+};
+
 // Video encoder interface.
 class MEDIA_EXPORT VideoEncodeAccelerator {
  public:
@@ -82,13 +119,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // is transferred back to the VEA::Client once this callback is made.
     // Parameters:
     //  |bitstream_buffer_id| is the id of the buffer that is ready.
-    //  |payload_size| is the byte size of the used portion of the buffer.
-    //  |key_frame| is true if this delivered frame is a keyframe.
-    //  |timestamp| is the same timestamp as in VideoFrame passed to Encode().
-    virtual void BitstreamBufferReady(int32_t bitstream_buffer_id,
-                                      size_t payload_size,
-                                      bool key_frame,
-                                      base::TimeDelta timestamp) = 0;
+    //  |metadata| contains data such as payload size and timestamp. See above.
+    virtual void BitstreamBufferReady(
+        int32_t bitstream_buffer_id,
+        const BitstreamBufferMetadata& metadata) = 0;
 
     // Error notification callback. Note that errors in Initialize() will not be
     // reported here, but will instead be indicated by a false return value

@@ -440,8 +440,9 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     DVLOG(2) << " frame dropped";
     client_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id, 0,
-                   false, encode_output->capture_timestamp));
+        base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
+                   BitstreamBufferMetadata(0, false,
+                                           encode_output->capture_timestamp)));
     return;
   }
 
@@ -465,7 +466,8 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
-                 used_buffer_size, keyframe, encode_output->capture_timestamp));
+                 BitstreamBufferMetadata(used_buffer_size, keyframe,
+                                         encode_output->capture_timestamp)));
 }
 
 bool VTVideoEncodeAccelerator::ResetCompressionSession() {

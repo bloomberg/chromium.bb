@@ -16,6 +16,7 @@
 
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Invoke;
 
 namespace media {
 
@@ -63,8 +64,9 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
               EncodeCallback callback) override {
     EXPECT_NE(-1, configured_bitstream_buffer_id_);
     EXPECT_TRUE(client_);
-    client_->BitstreamBufferReady(configured_bitstream_buffer_id_, 0, keyframe,
-                                  frame->timestamp());
+    client_->BitstreamBufferReady(
+        configured_bitstream_buffer_id_,
+        BitstreamBufferMetadata(0, keyframe, frame->timestamp()));
     configured_bitstream_buffer_id_ = -1;
 
     DoEncode(frame, keyframe);
@@ -105,8 +107,8 @@ class MockVideoEncodeAcceleratorClient : public VideoEncodeAccelerator::Client {
 
   MOCK_METHOD3(RequireBitstreamBuffers,
                void(unsigned int, const gfx::Size&, size_t));
-  MOCK_METHOD4(BitstreamBufferReady,
-               void(int32_t, size_t, bool, base::TimeDelta));
+  MOCK_METHOD2(BitstreamBufferReady,
+               void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
 
  private:
@@ -218,9 +220,12 @@ TEST_F(MojoVideoEncodeAcceleratorTest, EncodeOneFrame) {
 
     // The remote end of the mojo Pipe doesn't receive |video_frame| itself.
     EXPECT_CALL(*mock_mojo_vea(), DoEncode(_, is_keyframe));
-    EXPECT_CALL(*mock_vea_client,
-                BitstreamBufferReady(kBitstreamBufferId, _, is_keyframe,
-                                     video_frame->timestamp()));
+    EXPECT_CALL(*mock_vea_client, BitstreamBufferReady(kBitstreamBufferId, _))
+        .WillOnce(Invoke([is_keyframe, &video_frame](
+                             int32_t, const BitstreamBufferMetadata& metadata) {
+          EXPECT_EQ(is_keyframe, metadata.key_frame);
+          EXPECT_EQ(metadata.timestamp, video_frame->timestamp());
+        }));
 
     mojo_vea()->Encode(video_frame, is_keyframe);
     base::RunLoop().RunUntilIdle();

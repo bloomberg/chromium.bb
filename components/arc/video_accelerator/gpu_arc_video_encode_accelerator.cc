@@ -55,15 +55,14 @@ void GpuArcVideoEncodeAccelerator::RequireBitstreamBuffers(
 
 void GpuArcVideoEncodeAccelerator::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
-    size_t payload_size,
-    bool key_frame,
-    base::TimeDelta timestamp) {
+    const media::BitstreamBufferMetadata& metadata) {
   DVLOGF(2) << "id=" << bitstream_buffer_id;
   DCHECK(client_);
   auto iter = use_bitstream_cbs_.find(bitstream_buffer_id);
   DCHECK(iter != use_bitstream_cbs_.end());
   std::move(iter->second)
-      .Run(payload_size, key_frame, timestamp.InMicroseconds());
+      .Run(metadata.payload_size_bytes, metadata.key_frame,
+           metadata.timestamp.InMicroseconds());
   use_bitstream_cbs_.erase(iter);
 }
 
