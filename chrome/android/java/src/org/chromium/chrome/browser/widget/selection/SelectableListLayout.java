@@ -329,4 +329,25 @@ public class SelectableListLayout<E>
     public View getToolbarShadowForTests() {
         return mToolbarShadow;
     }
+
+    /**
+     * Called when the user presses the back key. Note that this method is not called automatically.
+     * The embedding UI must call this method
+     * when a backpress is detected for the event to be handled.
+     * @return Whether this event is handled.
+     */
+    public boolean onBackPressed() {
+        SelectionDelegate selectionDelegate = mToolbar.getSelectionDelegate();
+        if (selectionDelegate.isSelectionEnabled()) {
+            selectionDelegate.clearSelection();
+            return true;
+        }
+
+        if (mToolbar.isSearching()) {
+            mToolbar.hideSearchView();
+            return true;
+        }
+
+        return false;
+    }
 }
