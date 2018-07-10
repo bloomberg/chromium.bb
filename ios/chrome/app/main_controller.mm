@@ -1539,6 +1539,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         [self.currentBVC webPageOrderedOpen:[command URL]
                                    referrer:[command referrer]
                                inBackground:[command inBackground]
+                                originPoint:[command originPoint]
                                    appendTo:[command appendTo]];
       }
                                dismissOmnibox:YES];

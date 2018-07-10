@@ -889,6 +889,7 @@ initWithLoader:(id<UrlLoader>)loader
                                                    referrer:web::Referrer()
                                                 inIncognito:NO
                                                inBackground:NO
+                                                originPoint:CGPointZero
                                                    appendTo:kLastTab];
                        }];
 }
@@ -901,6 +902,7 @@ initWithLoader:(id<UrlLoader>)loader
                                                    referrer:web::Referrer()
                                                 inIncognito:YES
                                                inBackground:NO
+                                                originPoint:CGPointZero
                                                    appendTo:kLastTab];
                        }];
 }

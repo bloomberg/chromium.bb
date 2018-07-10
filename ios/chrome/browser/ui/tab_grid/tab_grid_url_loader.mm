@@ -75,11 +75,13 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
 - (void)webPageOrderedOpen:(const GURL&)URL
                   referrer:(const web::Referrer&)referrer
               inBackground:(BOOL)inBackground
+               originPoint:(CGPoint)originPoint
                   appendTo:(OpenPosition)appendTo {
   [self webPageOrderedOpen:URL
                   referrer:referrer
                inIncognito:NO
               inBackground:inBackground
+               originPoint:originPoint
                   appendTo:appendTo];
 }
 
@@ -91,6 +93,7 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
                   referrer:(const web::Referrer&)referrer
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
+               originPoint:(CGPoint)originPoint
                   appendTo:(OpenPosition)appendTo {
   WebStateList* webStateList;
   ios::ChromeBrowserState* browserState;

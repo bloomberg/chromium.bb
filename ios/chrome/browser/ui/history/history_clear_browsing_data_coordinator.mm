@@ -65,6 +65,7 @@
                              referrer:web::Referrer()
                           inIncognito:NO
                          inBackground:NO
+                          originPoint:CGPointZero
                              appendTo:kLastTab];
       [self.presentationDelegate showActiveRegularTabFromHistory];
     }];

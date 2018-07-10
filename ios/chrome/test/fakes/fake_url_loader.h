@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 
 // URLLoader which captures argument passed into loadURLWithParams: and
-// webPageOrderedOpen:referrer:inIncognito:inBackground:appendTo:.
+// webPageOrderedOpen:referrer:inIncognito:inBackground:originPoint:appendTo:.
 @interface FakeURLLoader : NSObject<UrlLoader>
 
 // These properties capture argumenents passed into protocol methods.

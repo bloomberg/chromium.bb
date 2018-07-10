@@ -1006,6 +1006,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     [self.loader webPageOrderedOpen:tab->virtual_url
                            referrer:web::Referrer()
                        inBackground:YES
+                        originPoint:CGPointZero
                            appendTo:kLastTab];
   }
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
