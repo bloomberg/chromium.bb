@@ -2045,7 +2045,7 @@ jumbo_source_set("browser") {
     if (use_pangocairo) {
       sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
     }
-    if (is_linux && !is_android) {
+    if (is_linux) {
       deps += [ "//components/services/font:ppapi_fontconfig_matching" ]
     }
   }

@@ -25,7 +25,7 @@ source_set("standalone_service") {
     "//services/service_manager/public/mojom",
   ]
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     deps += [
       "//sandbox/linux:sandbox",
       "//sandbox/linux:sandbox_services",

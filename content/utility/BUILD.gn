@@ -69,7 +69,7 @@ jumbo_source_set("utility") {
     ]
   }
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     deps += [ "//components/services/font:lib" ]
   }
 }
