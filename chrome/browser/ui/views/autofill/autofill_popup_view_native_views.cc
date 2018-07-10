@@ -72,51 +72,9 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   ~AutofillPopupItemView() override = default;
 
   // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    auto suggestion = controller_->GetSuggestionAt(line_number_);
-    std::vector<base::string16> text;
-    text.push_back(suggestion.value);
-    text.push_back(suggestion.label);
-
-    base::string16 icon_description;
-    if (!suggestion.icon.empty()) {
-      const int id =
-          controller_->layout_model().GetIconAccessibleNameResourceId(
-              suggestion.icon);
-      if (id > 0)
-        text.push_back(l10n_util::GetStringUTF16(id));
-    }
-    node_data->SetName(base::JoinString(text, base::ASCIIToUTF16(" ")));
-
-    // Options are selectable.
-    node_data->role = ax::mojom::Role::kMenuItem;
-    node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                                is_selected_);
-
-    // Compute set size and position in set, which must not include separators.
-    int set_size = 0;
-    int pos_in_set = line_number_ + 1;
-    for (int i = 0; i < controller_->GetLineCount(); ++i) {
-      if (controller_->GetSuggestionAt(i).frontend_id ==
-          autofill::POPUP_ITEM_ID_SEPARATOR) {
-        if (i < line_number_)
-          --pos_in_set;
-      } else {
-        ++set_size;
-      }
-    }
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
-  }
-
-  void OnMouseEntered(const ui::MouseEvent& event) override {
-    controller_->SetSelectedLine(line_number_);
-  }
-
-  void OnMouseReleased(const ui::MouseEvent& event) override {
-    if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
-      controller_->AcceptSuggestion(line_number_);
-  }
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
 
  protected:
   AutofillPopupItemView(AutofillPopupController* controller,
@@ -126,62 +84,8 @@ class AutofillPopupItemView : public AutofillPopupRowView {
         extra_height_(extra_height) {}
 
   // AutofillPopupRowView:
-  void CreateContent() override {
-    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal,
-        gfx::Insets(0, views::MenuConfig::instance().item_horizontal_padding +
-                           GetCornerRadius())));
-
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
-    layout->set_minimum_cross_axis_size(
-        views::MenuConfig::instance().touchable_menu_height + extra_height_);
-
-    // TODO(crbug.com/831603): Remove elision responsibilities from controller.
-    views::Label* text_label = new views::Label(
-        controller_->GetElidedValueAt(line_number_),
-        {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                               GetPrimaryTextStyle())});
-    text_label->SetEnabledColor(views::style::GetColor(
-        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-        GetPrimaryTextStyle()));
-
-    AddChildView(text_label);
-
-    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
-                      /*resize=*/true, layout);
-
-    const base::string16& description_text =
-        controller_->GetElidedLabelAt(line_number_);
-    if (!description_text.empty()) {
-      views::Label* subtext_label = new views::Label(
-          description_text,
-          {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                                 ChromeTextStyle::STYLE_SECONDARY)});
-      subtext_label->SetEnabledColor(views::style::GetColor(
-          *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-          ChromeTextStyle::STYLE_SECONDARY));
-
-      AddChildView(subtext_label);
-    }
-
-    const gfx::ImageSkia icon =
-        controller_->layout_model().GetIconImage(line_number_);
-    if (!icon.isNull()) {
-      AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
-                        /*resize=*/false, layout);
-
-      auto* image_view = new views::ImageView();
-      image_view->SetImage(icon);
-
-      AddChildView(image_view);
-    }
-  }
-
-  void RefreshStyle() override {
-    SetBackground(CreateBackground());
-    SchedulePaint();
-  }
+  void CreateContent() override;
+  void RefreshStyle() override;
 
  protected:
   virtual int GetPrimaryTextStyle() = 0;
@@ -189,160 +93,318 @@ class AutofillPopupItemView : public AutofillPopupRowView {
  private:
   void AddSpacerWithSize(int spacer_width,
                          bool resize,
-                         views::BoxLayout* layout) {
-    auto* spacer = new views::View;
-    spacer->SetPreferredSize(gfx::Size(spacer_width, 1));
-    AddChildView(spacer);
-    layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
-  }
+                         views::BoxLayout* layout);
 
   const int extra_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupItemView);
 };
 
+// This represents a suggestion; i.e., a row containing data that will be filled
+// into the page if selected.
 class AutofillPopupSuggestionView : public AutofillPopupItemView {
  public:
   ~AutofillPopupSuggestionView() override = default;
 
   static AutofillPopupSuggestionView* Create(
       AutofillPopupController* controller,
-      int line_number) {
-    AutofillPopupSuggestionView* result =
-        new AutofillPopupSuggestionView(controller, line_number);
-    result->Init();
-    return result;
-  }
+      int line_number);
 
  protected:
   // AutofillPopupItemView:
-  std::unique_ptr<views::Background> CreateBackground() override {
-    return views::CreateSolidBackground(
-        is_selected_ ? kAutofillPopupSelectedBackgroundColor
-                     : kAutofillPopupBackgroundColor);
-  }
-
-  int GetPrimaryTextStyle() override {
-    return is_warning_ ? ChromeTextStyle::STYLE_RED
-                       : views::style::TextStyle::STYLE_PRIMARY;
-  }
+  std::unique_ptr<views::Background> CreateBackground() override;
+  int GetPrimaryTextStyle() override;
 
  private:
   AutofillPopupSuggestionView(AutofillPopupController* controller,
-                              int line_number)
-      : AutofillPopupItemView(controller, line_number) {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
-  }
+                              int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSuggestionView);
 };
 
+// This represents an option which appears in the footer of the dropdown, such
+// as a row which will open the Autofill settings page when selected.
 class AutofillPopupFooterView : public AutofillPopupItemView {
  public:
   ~AutofillPopupFooterView() override = default;
 
   static AutofillPopupFooterView* Create(AutofillPopupController* controller,
-                                         int line_number) {
-    AutofillPopupFooterView* result =
-        new AutofillPopupFooterView(controller, line_number);
-    result->Init();
-    return result;
-  }
+                                         int line_number);
 
  protected:
   // AutofillPopupItemView:
-  void CreateContent() override {
-    SetBorder(views::CreateSolidSidedBorder(
-        /*top=*/views::MenuConfig::instance().separator_thickness,
-        /*left=*/0,
-        /*bottom=*/0,
-        /*right=*/0,
-        /*color=*/kAutofillPopupSeparatorColor));
-    AutofillPopupItemView::CreateContent();
-  }
-
-  std::unique_ptr<views::Background> CreateBackground() override {
-    return views::CreateSolidBackground(
-        is_selected_ ? kAutofillPopupSelectedBackgroundColor
-                     : kAutofillPopupFooterBackgroundColor);
-  }
-
-  int GetPrimaryTextStyle() override {
-    return ChromeTextStyle::STYLE_SECONDARY;
-  }
+  void CreateContent() override;
+  std::unique_ptr<views::Background> CreateBackground() override;
+  int GetPrimaryTextStyle() override;
 
  private:
-  AutofillPopupFooterView(AutofillPopupController* controller, int line_number)
-      : AutofillPopupItemView(controller, line_number, GetCornerRadius()) {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
-  }
+  AutofillPopupFooterView(AutofillPopupController* controller, int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupFooterView);
 };
 
+// Draws a separator between sections of the dropdown, namely between datalist
+// and Autofill suggestions. Note that this is NOT the same as the border on top
+// of the footer section or the border between footer items.
 class AutofillPopupSeparatorView : public AutofillPopupRowView {
  public:
   ~AutofillPopupSeparatorView() override = default;
 
   static AutofillPopupSeparatorView* Create(AutofillPopupController* controller,
-                                            int line_number) {
-    AutofillPopupSeparatorView* result =
-        new AutofillPopupSeparatorView(controller, line_number);
-    result->Init();
-    return result;
-  }
+                                            int line_number);
 
   // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    // Separators are not selectable.
-    node_data->role = ax::mojom::Role::kSplitter;
-  }
-
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override {}
   void OnMouseReleased(const ui::MouseEvent& event) override {}
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    RefreshStyle();
-  }
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  protected:
   // AutofillPopupRowView:
-  void CreateContent() override {
-    SetLayoutManager(std::make_unique<views::FillLayout>());
-
-    // In order to draw the horizontal line for the separator, create an empty
-    // view which matches the width of the parent (by using full flex) and has a
-    // height equal to the desired padding, then paint a border on the bottom.
-    empty_ = new views::View();
-    empty_->SetPreferredSize(
-        gfx::Size(1, views::MenuConfig::instance().menu_vertical_border_size));
-    AddChildView(empty_);
-  }
-
-  void RefreshStyle() override {
-    empty_->SetBorder(views::CreateSolidSidedBorder(
-        /*top=*/0,
-        /*left=*/0,
-        /*bottom=*/views::MenuConfig::instance().separator_thickness,
-        /*right=*/0,
-        /*color=*/kAutofillPopupSeparatorColor));
-    SchedulePaint();
-  }
-
-  std::unique_ptr<views::Background> CreateBackground() override {
-    return views::CreateSolidBackground(SK_ColorWHITE);
-  }
+  void CreateContent() override;
+  void RefreshStyle() override;
+  std::unique_ptr<views::Background> CreateBackground() override;
 
  private:
   AutofillPopupSeparatorView(AutofillPopupController* controller,
-                             int line_number)
-      : AutofillPopupRowView(controller, line_number) {
-    SetFocusBehavior(FocusBehavior::NEVER);
-  }
+                             int line_number);
 
   views::View* empty_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSeparatorView);
 };
+
+void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  auto suggestion = controller_->GetSuggestionAt(line_number_);
+  std::vector<base::string16> text;
+  text.push_back(suggestion.value);
+  text.push_back(suggestion.label);
+
+  base::string16 icon_description;
+  if (!suggestion.icon.empty()) {
+    const int id = controller_->layout_model().GetIconAccessibleNameResourceId(
+        suggestion.icon);
+    if (id > 0)
+      text.push_back(l10n_util::GetStringUTF16(id));
+  }
+  node_data->SetName(base::JoinString(text, base::ASCIIToUTF16(" ")));
+
+  // Options are selectable.
+  node_data->role = ax::mojom::Role::kMenuItem;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              is_selected_);
+
+  // Compute set size and position in set, which must not include separators.
+  int set_size = 0;
+  int pos_in_set = line_number_ + 1;
+  for (int i = 0; i < controller_->GetLineCount(); ++i) {
+    if (controller_->GetSuggestionAt(i).frontend_id ==
+        autofill::POPUP_ITEM_ID_SEPARATOR) {
+      if (i < line_number_)
+        --pos_in_set;
+    } else {
+      ++set_size;
+    }
+  }
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
+}
+
+void AutofillPopupItemView::OnMouseEntered(const ui::MouseEvent& event) {
+  controller_->SetSelectedLine(line_number_);
+}
+
+void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
+    controller_->AcceptSuggestion(line_number_);
+}
+
+void AutofillPopupItemView::CreateContent() {
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(0, views::MenuConfig::instance().item_horizontal_padding +
+                         GetCornerRadius())));
+
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout->set_minimum_cross_axis_size(
+      views::MenuConfig::instance().touchable_menu_height + extra_height_);
+
+  // TODO(crbug.com/831603): Remove elision responsibilities from controller.
+  views::Label* text_label = new views::Label(
+      controller_->GetElidedValueAt(line_number_),
+      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             GetPrimaryTextStyle())});
+  text_label->SetEnabledColor(
+      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             GetPrimaryTextStyle()));
+
+  AddChildView(text_label);
+
+  AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+                    /*resize=*/true, layout);
+
+  const base::string16& description_text =
+      controller_->GetElidedLabelAt(line_number_);
+  if (!description_text.empty()) {
+    views::Label* subtext_label = new views::Label(
+        description_text,
+        {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                               ChromeTextStyle::STYLE_SECONDARY)});
+    subtext_label->SetEnabledColor(views::style::GetColor(
+        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        ChromeTextStyle::STYLE_SECONDARY));
+
+    AddChildView(subtext_label);
+  }
+
+  const gfx::ImageSkia icon =
+      controller_->layout_model().GetIconImage(line_number_);
+  if (!icon.isNull()) {
+    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+                      /*resize=*/false, layout);
+
+    auto* image_view = new views::ImageView();
+    image_view->SetImage(icon);
+
+    AddChildView(image_view);
+  }
+}
+
+void AutofillPopupItemView::RefreshStyle() {
+  SetBackground(CreateBackground());
+  SchedulePaint();
+}
+
+void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,
+                                              bool resize,
+                                              views::BoxLayout* layout) {
+  auto* spacer = new views::View;
+  spacer->SetPreferredSize(gfx::Size(spacer_width, 1));
+  AddChildView(spacer);
+  layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
+}
+
+// static
+AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
+    AutofillPopupController* controller,
+    int line_number) {
+  AutofillPopupSuggestionView* result =
+      new AutofillPopupSuggestionView(controller, line_number);
+  result->Init();
+  return result;
+}
+
+std::unique_ptr<views::Background>
+AutofillPopupSuggestionView::CreateBackground() {
+  return views::CreateSolidBackground(
+      is_selected_ ? kAutofillPopupSelectedBackgroundColor
+                   : kAutofillPopupBackgroundColor);
+}
+
+int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
+  return is_warning_ ? ChromeTextStyle::STYLE_RED
+                     : views::style::TextStyle::STYLE_PRIMARY;
+}
+
+AutofillPopupSuggestionView::AutofillPopupSuggestionView(
+    AutofillPopupController* controller,
+    int line_number)
+    : AutofillPopupItemView(controller, line_number) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+}
+
+// static
+AutofillPopupFooterView* AutofillPopupFooterView::Create(
+    AutofillPopupController* controller,
+    int line_number) {
+  AutofillPopupFooterView* result =
+      new AutofillPopupFooterView(controller, line_number);
+  result->Init();
+  return result;
+}
+
+void AutofillPopupFooterView::CreateContent() {
+  SetBorder(views::CreateSolidSidedBorder(
+      /*top=*/views::MenuConfig::instance().separator_thickness,
+      /*left=*/0,
+      /*bottom=*/0,
+      /*right=*/0,
+      /*color=*/kAutofillPopupSeparatorColor));
+  AutofillPopupItemView::CreateContent();
+}
+
+std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
+  return views::CreateSolidBackground(
+      is_selected_ ? kAutofillPopupSelectedBackgroundColor
+                   : kAutofillPopupFooterBackgroundColor);
+}
+
+int AutofillPopupFooterView::GetPrimaryTextStyle() {
+  return ChromeTextStyle::STYLE_SECONDARY;
+}
+
+AutofillPopupFooterView::AutofillPopupFooterView(
+    AutofillPopupController* controller,
+    int line_number)
+    : AutofillPopupItemView(controller, line_number, GetCornerRadius()) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+}
+
+// static
+AutofillPopupSeparatorView* AutofillPopupSeparatorView::Create(
+    AutofillPopupController* controller,
+    int line_number) {
+  AutofillPopupSeparatorView* result =
+      new AutofillPopupSeparatorView(controller, line_number);
+  result->Init();
+  return result;
+}
+
+void AutofillPopupSeparatorView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  // Separators are not selectable.
+  node_data->role = ax::mojom::Role::kSplitter;
+}
+
+void AutofillPopupSeparatorView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  RefreshStyle();
+}
+
+void AutofillPopupSeparatorView::CreateContent() {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  // In order to draw the horizontal line for the separator, create an empty
+  // view which matches the width of the parent (by using full flex) and has a
+  // height equal to the desired padding, then paint a border on the bottom.
+  empty_ = new views::View();
+  empty_->SetPreferredSize(
+      gfx::Size(1, views::MenuConfig::instance().menu_vertical_border_size));
+  AddChildView(empty_);
+}
+
+void AutofillPopupSeparatorView::RefreshStyle() {
+  empty_->SetBorder(views::CreateSolidSidedBorder(
+      /*top=*/0,
+      /*left=*/0,
+      /*bottom=*/views::MenuConfig::instance().separator_thickness,
+      /*right=*/0,
+      /*color=*/kAutofillPopupSeparatorColor));
+  SchedulePaint();
+}
+
+std::unique_ptr<views::Background>
+AutofillPopupSeparatorView::CreateBackground() {
+  return views::CreateSolidBackground(SK_ColorWHITE);
+}
+
+AutofillPopupSeparatorView::AutofillPopupSeparatorView(
+    AutofillPopupController* controller,
+    int line_number)
+    : AutofillPopupRowView(controller, line_number) {
+  SetFocusBehavior(FocusBehavior::NEVER);
+}
 
 }  // namespace
 
