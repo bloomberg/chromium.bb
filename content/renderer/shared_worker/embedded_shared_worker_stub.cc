@@ -25,11 +25,11 @@
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
+#include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -387,7 +387,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // TODO(crbug.com/853085): Send the preference from the browser process.
   RendererPreferences renderer_preferences;
 
-  auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
+  auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
       std::move(renderer_preferences), std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), loader_factories_->Clone(),

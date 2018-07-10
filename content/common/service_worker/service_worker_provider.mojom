@@ -66,7 +66,7 @@ struct ServiceWorkerProviderHostInfo {
 
 // ServiceWorkerWorkerClient represents a service worker client that is a worker
 // (i.e., a shared worker or dedicated worker). We use this interface to let the
-// WorkerFetchContextImpl in the worker thread know about the change of
+// WebWorkerFetchContextImpl in the worker thread know about the change of
 // controlling service worker by calling OnControllerChanged() from the
 // ServiceWorkerProviderContext in the main thread of the renderer process.
 //

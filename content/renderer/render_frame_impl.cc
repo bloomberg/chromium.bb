@@ -118,6 +118,7 @@
 #include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
+#include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/loader/weburlresponse_extradata_impl.h"
 #include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/manifest/manifest_change_notifier.h"
@@ -147,7 +148,6 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "content/renderer/shared_worker/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
@@ -3543,20 +3543,19 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
-  std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
-      std::make_unique<WorkerFetchContextImpl>(
-          render_view_->renderer_preferences(),
-          std::move(service_worker_client_request),
-          std::move(service_worker_worker_client_registry_ptr_info),
-          std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
-          GetLoaderFactoryBundle()->CloneWithoutDefaultFactory(),
-          GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-              URLLoaderThrottleProviderType::kWorker),
-          GetContentClient()
-              ->renderer()
-              ->CreateWebSocketHandshakeThrottleProvider(),
-          ChildThreadImpl::current()->thread_safe_sender(),
-          ChildThreadImpl::current()->GetConnector()->Clone());
+  auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
+      render_view_->renderer_preferences(),
+      std::move(service_worker_client_request),
+      std::move(service_worker_worker_client_registry_ptr_info),
+      std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
+      GetLoaderFactoryBundle()->CloneWithoutDefaultFactory(),
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider(),
+      ChildThreadImpl::current()->thread_safe_sender(),
+      ChildThreadImpl::current()->GetConnector()->Clone());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
   worker_fetch_context->set_site_for_cookies(
