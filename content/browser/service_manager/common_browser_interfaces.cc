@@ -99,8 +99,13 @@ class ConnectionFilterImpl : public ConnectionFilter {
     // So Reset the current connection if there is one.
     gpu_clients_.erase(source_info.identity);
 
-    std::unique_ptr<GpuClientImpl> gpu_client = std::make_unique<GpuClientImpl>(
-        ChildProcessHostImpl::GenerateChildProcessUniqueId());
+    const int gpu_client_id =
+        ChildProcessHostImpl::GenerateChildProcessUniqueId();
+    const uint64_t gpu_client_tracing_id =
+        ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+            gpu_client_id);
+    auto gpu_client =
+        std::make_unique<GpuClientImpl>(gpu_client_id, gpu_client_tracing_id);
     gpu_client->SetConnectionErrorHandler(
         base::BindOnce(&ConnectionFilterImpl::OnGpuConnectionClosed,
                        base::Unretained(this), source_info.identity));

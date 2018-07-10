@@ -1458,8 +1458,12 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   InitializeChannelProxy();
 
-  if (features::IsAshInBrowserProcess())
-    gpu_client_.reset(new GpuClientImpl(GetID()));
+  if (features::IsAshInBrowserProcess()) {
+    const int id = GetID();
+    const uint64_t tracing_id =
+        ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
+    gpu_client_.reset(new GpuClientImpl(id, tracing_id));
+  }
 
   GetMemoryDumpProvider().AddHost(this);
 }
