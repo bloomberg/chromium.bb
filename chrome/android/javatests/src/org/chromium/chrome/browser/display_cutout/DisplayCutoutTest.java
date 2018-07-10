@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.blink.mojom.ViewportFit;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -21,11 +22,11 @@ import java.util.concurrent.TimeoutException;
  * Tests the display cutout.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-blink-features=DisplayCutoutAPI,CSSViewport,CSSEnvironmentVariables"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DisplayCutoutTest {
     @Rule
-    public DisplayCutoutTestRule mTestRule = new DisplayCutoutTestRule();
+    public DisplayCutoutTestRule mTestRule =
+            new DisplayCutoutTestRule<ChromeActivity>(ChromeActivity.class);
 
     /**
      * Test that no safe area is applied when we have viewport fit auto

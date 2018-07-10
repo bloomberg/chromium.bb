@@ -32,8 +32,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * Custom test rule for simulating a Display Cutout. This allows us to test display cutout
  * functionality without having a test device with a cutout.
+ *
+ * @param <T> The type of {@link ChromeActivity} to use for the test.
  */
-public class DisplayCutoutTestRule extends ChromeActivityTestRule<ChromeActivity> {
+public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActivityTestRule<T> {
     /** These are the two test safe areas with and without the test cutout. */
     public static final Rect TEST_SAFE_AREA_WITH_CUTOUT = new Rect(10, 20, 30, 40);
     public static final Rect TEST_SAFE_AREA_WITHOUT_CUTOUT = new Rect(0, 0, 0, 0);
@@ -141,8 +143,8 @@ public class DisplayCutoutTestRule extends ChromeActivityTestRule<ChromeActivity
     /** The {@link Tab} we are running the test in. */
     private Tab mTab;
 
-    public DisplayCutoutTestRule() {
-        super(ChromeActivity.class);
+    public DisplayCutoutTestRule(Class<T> activityClass) {
+        super(activityClass);
     }
 
     @Override
@@ -150,29 +152,35 @@ public class DisplayCutoutTestRule extends ChromeActivityTestRule<ChromeActivity
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                startMainActivityOnBlankPage();
+
                 setUp();
+                loadUrl(getTestURL());
+
                 base.evaluate();
                 tearDown();
             }
         }, description);
     }
 
-    private void setUp() throws Exception {
-        startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+    protected String getTestURL() throws Exception {
+        if (mTestServer == null) {
+            mTestServer = EmbeddedTestServer.createAndStartServer(
+                    InstrumentationRegistry.getInstrumentation().getContext());
+        }
+        return mTestServer.getURL(DEFAULT_TEST_PAGE);
+    }
 
+    protected void setUp() throws Exception {
         mTab = getActivity().getActivityTab();
         mTestController = new TestDisplayCutoutController(mTab);
         mTab.setDisplayCutoutController(mTestController);
 
         FullscreenTabObserver observer = new FullscreenTabObserver();
         mTab.addObserver(observer);
-
-        loadUrl(mTestServer.getURL(DEFAULT_TEST_PAGE));
     }
 
-    private void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
     }
 
