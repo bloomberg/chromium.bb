@@ -461,8 +461,8 @@ int BrowserActionsContainer::OnDragUpdated(
     // indicator before. We also mirror the event.x() so that our calculations
     // are consistent with left-to-right.
     const auto size = toolbar_actions_bar_->GetViewSize();
-    const int offset_into_icon_area =
-        GetMirroredXInView(event.x()) + (size.width() / 2);
+    const int offset_into_icon_area = GetMirroredXInView(event.x()) -
+                                      GetResizeAreaWidth() + (size.width() / 2);
     const int before_icon_unclamped = offset_into_icon_area / size.width();
 
     // Next, figure out what row we're on. This only matters for overflow mode,
@@ -660,8 +660,11 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
     // Convert back to a pixel offset into the container.  First find the X
     // coordinate of the drop icon.
     const auto size = toolbar_actions_bar_->GetViewSize();
-    const int drop_icon_x =
-        drop_position_->icon_in_row * size.width() - (kDropIndicatorWidth / 2);
+    // TODO(pbos): The drag/drop separator and view placement should share code
+    // after ToolbarActionsBar and BrowserActionsContainer merge.
+    const int drop_icon_x = GetResizeAreaWidth() +
+                            drop_position_->icon_in_row * size.width() -
+                            (kDropIndicatorWidth / 2);
 
     // Next, clamp so the indicator doesn't touch the adjoining toolbar items.
     const int drop_indicator_x =
