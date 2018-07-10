@@ -172,14 +172,15 @@ class BASE_EXPORT SequenceManagerImpl
   // task related state needed to make pairs of TakeTask() / DidRunTask() work.
   struct ExecutingTask {
     ExecutingTask(internal::TaskQueueImpl::Task&& pending_task,
-                  internal::TaskQueueImpl* task_queue)
-        : pending_task(std::move(pending_task)), task_queue(task_queue) {}
+                  internal::TaskQueueImpl* task_queue,
+                  TaskQueue::TaskTiming task_timing)
+        : pending_task(std::move(pending_task)),
+          task_queue(task_queue),
+          task_timing(task_timing) {}
 
     internal::TaskQueueImpl::Task pending_task;
     internal::TaskQueueImpl* task_queue = nullptr;
-    TimeTicks task_start_time;
-    ThreadTicks task_start_thread_time;
-    bool should_record_thread_time = false;
+    TaskQueue::TaskTiming task_timing;
   };
 
   struct MainThreadOnly {
@@ -249,8 +250,7 @@ class BASE_EXPORT SequenceManagerImpl
   void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
 
   void NotifyWillProcessTask(ExecutingTask* task, LazyNow* time_before_task);
-  void NotifyDidProcessTask(const ExecutingTask& task,
-                            LazyNow* time_after_task);
+  void NotifyDidProcessTask(ExecutingTask* task, LazyNow* time_after_task);
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
@@ -285,6 +285,11 @@ class BASE_EXPORT SequenceManagerImpl
   void CleanUpQueues();
 
   bool ShouldRecordCPUTimeForTask();
+
+  // Determines if wall time or thread time should be recorded for the next
+  // task.
+  TaskQueue::TaskTiming InitializeTaskTiming(
+      internal::TaskQueueImpl* task_queue);
 
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_shutdown_helper_;

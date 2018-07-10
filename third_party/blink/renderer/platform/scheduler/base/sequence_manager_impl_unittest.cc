@@ -2871,23 +2871,21 @@ namespace {
 void SetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue,
                        int* start_counter,
                        int* complete_counter) {
-  task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
-      BindRepeating([](int* counter, const TaskQueue::Task& task,
-                       TimeTicks start) { ++(*counter); },
-                    start_counter));
+  task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(BindRepeating(
+      [](int* counter, const TaskQueue::Task& task,
+         const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
+      start_counter));
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(BindRepeating(
-      [](int* counter, const TaskQueue::Task& task, TimeTicks start,
-         TimeTicks end, Optional<TimeDelta> thread_time) { ++(*counter); },
+      [](int* counter, const TaskQueue::Task& task,
+         const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
       complete_counter));
 }
 
 void UnsetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue) {
   task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
-      RepeatingCallback<void(const TaskQueue::Task& task, TimeTicks start)>());
+      internal::TaskQueueImpl::OnTaskStartedHandler());
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-      RepeatingCallback<void(const TaskQueue::Task& task, TimeTicks start,
-                             TimeTicks end,
-                             Optional<TimeDelta> thread_time)>());
+      internal::TaskQueueImpl::OnTaskStartedHandler());
 }
 }  // namespace
 

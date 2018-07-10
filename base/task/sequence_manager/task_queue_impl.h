@@ -173,9 +173,11 @@ class BASE_EXPORT TaskQueueImpl {
 
   using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
   using OnTaskStartedHandler =
-      RepeatingCallback<void(const TaskQueue::Task&, TimeTicks)>;
-  using OnTaskCompletedHandler = RepeatingCallback<
-      void(const TaskQueue::Task&, TimeTicks, TimeTicks, Optional<TimeDelta>)>;
+      RepeatingCallback<void(const TaskQueue::Task&,
+                             const TaskQueue::TaskTiming&)>;
+  using OnTaskCompletedHandler =
+      RepeatingCallback<void(const TaskQueue::Task&,
+                             const TaskQueue::TaskTiming&)>;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -291,12 +293,11 @@ class BASE_EXPORT TaskQueueImpl {
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
-  void OnTaskStarted(const TaskQueue::Task& task, TimeTicks start);
+  void OnTaskStarted(const TaskQueue::Task& task,
+                     const TaskQueue::TaskTiming& task_timing);
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
   void OnTaskCompleted(const TaskQueue::Task& task,
-                       TimeTicks start,
-                       TimeTicks end,
-                       Optional<TimeDelta> thread_time);
+                       const TaskQueue::TaskTiming& task_timing);
   bool RequiresTaskTiming() const;
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();
@@ -348,7 +349,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
-    std::priority_queue<Task> delayed_incoming_queue;
+    std::priority_queue<TaskQueueImpl::Task> delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver> task_observers;
     size_t set_index;
     HeapHandle heap_handle;

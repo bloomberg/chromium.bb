@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/time/time.h"
 
 namespace base {
 namespace sequence_manager {
@@ -35,6 +36,23 @@ TaskQueue::Task::Task(TaskQueue::PostedTask task, TimeTicks desired_run_time)
                   desired_run_time,
                   task.nestable),
       task_type_(task.task_type) {}
+
+TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)
+    : has_wall_time_(has_wall_time), has_thread_time_(has_thread_time) {}
+
+void TaskQueue::TaskTiming::RecordTaskStart(LazyNow* now) {
+  if (has_wall_time())
+    start_time_ = now->Now();
+  if (has_thread_time())
+    start_thread_time_ = base::ThreadTicks::Now();
+}
+
+void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
+  if (has_wall_time())
+    end_time_ = now->Now();
+  if (has_thread_time())
+    end_thread_time_ = base::ThreadTicks::Now();
+}
 
 TaskQueue::PostedTask::PostedTask(OnceClosure callback,
                                   Location posted_from,

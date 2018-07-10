@@ -39,44 +39,39 @@ MetricsHelper::~MetricsHelper() {}
 bool MetricsHelper::ShouldDiscardTask(
     base::sequence_manager::TaskQueue* queue,
     const base::sequence_manager::TaskQueue::Task& task,
-    base::TimeTicks start_time,
-    base::TimeTicks end_time,
-    base::Optional<base::TimeDelta> thread_time) {
+    const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   // TODO(altimin): Investigate the relationship between thread time and
   // wall time for discarded tasks.
-  return end_time - start_time > kLongTaskDiscardingThreshold;
+  return task_timing.wall_duration() > kLongTaskDiscardingThreshold;
 }
 
 void MetricsHelper::RecordCommonTaskMetrics(
     base::sequence_manager::TaskQueue* queue,
     const base::sequence_manager::TaskQueue::Task& task,
-    base::TimeTicks start_time,
-    base::TimeTicks end_time,
-    base::Optional<base::TimeDelta> thread_time) {
-  base::TimeDelta wall_time = end_time - start_time;
-
-  thread_task_duration_reporter_.RecordTask(thread_type_, wall_time);
+    const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
+  thread_task_duration_reporter_.RecordTask(thread_type_,
+                                            task_timing.wall_duration());
 
   bool backgrounded = internal::ProcessState::Get()->is_process_backgrounded;
 
   if (backgrounded) {
-    background_thread_task_duration_reporter_.RecordTask(thread_type_,
-                                                         wall_time);
+    background_thread_task_duration_reporter_.RecordTask(
+        thread_type_, task_timing.wall_duration());
   } else {
-    foreground_thread_task_duration_reporter_.RecordTask(thread_type_,
-                                                         wall_time);
+    foreground_thread_task_duration_reporter_.RecordTask(
+        thread_type_, task_timing.wall_duration());
   }
 
-  if (!thread_time)
+  if (!task_timing.has_thread_time())
     return;
   thread_task_cpu_duration_reporter_.RecordTask(thread_type_,
-                                                thread_time.value());
+                                                task_timing.thread_duration());
   if (backgrounded) {
     background_thread_task_cpu_duration_reporter_.RecordTask(
-        thread_type_, thread_time.value());
+        thread_type_, task_timing.thread_duration());
   } else {
     foreground_thread_task_cpu_duration_reporter_.RecordTask(
-        thread_type_, thread_time.value());
+        thread_type_, task_timing.thread_duration());
   }
 }
 

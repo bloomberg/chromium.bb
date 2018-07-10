@@ -32,9 +32,8 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
   void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
                        const base::sequence_manager::TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end,
-                       base::Optional<base::TimeDelta> thread_time) override;
+                       const base::sequence_manager::TaskQueue::TaskTiming&
+                           task_timing) override;
 
   // WebThreadScheduler:
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> IdleTaskRunner()

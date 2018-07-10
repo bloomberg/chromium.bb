@@ -24,6 +24,7 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/fake_task.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
@@ -40,6 +41,8 @@ namespace main_thread_scheduler_impl_unittest {
 
 using testing::Mock;
 using InputEventState = WebThreadScheduler::InputEventState;
+using base::sequence_manager::FakeTask;
+using base::sequence_manager::FakeTaskTiming;
 
 class FakeInputEvent : public blink::WebInputEvent {
  public:
@@ -299,9 +302,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
 class MainThreadSchedulerImplTest : public testing::Test {
  public:
   MainThreadSchedulerImplTest(std::vector<base::Feature> features_to_enable,
-                              std::vector<base::Feature> features_to_disable)
-      : fake_task_(TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
-                   base::TimeTicks()) {
+                              std::vector<base::Feature> features_to_disable) {
     feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
   }
 
@@ -636,11 +637,12 @@ class MainThreadSchedulerImplTest : public testing::Test {
             MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
 
     base::TimeTicks start = Now();
-    scheduler_->OnTaskStarted(fake_queue.get(), fake_task_, start);
+    scheduler_->OnTaskStarted(fake_queue.get(), FakeTask(),
+                              FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
-    scheduler_->OnTaskCompleted(fake_queue.get(), fake_task_, start, end,
-                                base::nullopt);
+    scheduler_->OnTaskCompleted(fake_queue.get(), FakeTask(),
+                                FakeTaskTiming(start, end));
   }
 
   void RunSlowCompositorTask() {
@@ -769,7 +771,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  TaskQueue::Task fake_task_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 

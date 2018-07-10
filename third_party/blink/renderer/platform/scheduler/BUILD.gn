@@ -136,6 +136,8 @@ jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
+    "base/test/fake_task.cc",
+    "base/test/fake_task.h",
     "base/test/mock_time_domain.cc",
     "base/test/mock_time_domain.h",
     "base/test/sequence_manager_for_test.cc",

@@ -32,26 +32,23 @@ namespace scheduler {
 // own instantiation of this class.
 class PLATFORM_EXPORT MetricsHelper {
  public:
-  explicit MetricsHelper(WebThreadType thread_type);
+  MetricsHelper(WebThreadType thread_type);
   ~MetricsHelper();
 
  protected:
-  bool ShouldDiscardTask(base::sequence_manager::TaskQueue* queue,
-                         const base::sequence_manager::TaskQueue::Task& task,
-                         base::TimeTicks start_time,
-                         base::TimeTicks end_time,
-                         base::Optional<base::TimeDelta> thread_time);
+  bool ShouldDiscardTask(
+      base::sequence_manager::TaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   // Record task metrics which are shared between threads.
   void RecordCommonTaskMetrics(
       base::sequence_manager::TaskQueue* queue,
       const base::sequence_manager::TaskQueue::Task& task,
-      base::TimeTicks start_time,
-      base::TimeTicks end_time,
-      base::Optional<base::TimeDelta> thread_time);
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
  protected:
-  WebThreadType thread_type_;
+  const WebThreadType thread_type_;
 
  private:
   TaskDurationMetricReporter<WebThreadType> thread_task_duration_reporter_;

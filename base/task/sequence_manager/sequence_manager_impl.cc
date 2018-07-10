@@ -335,11 +335,9 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
       continue;
     }
 
-    // Due to nested message loops we need to maintain a stack of currently
-    // executing tasks so in SequenceManagerImpl::DidRunTask we can run the
-    // right observers.
     main_thread_only().task_execution_stack.emplace_back(
-        work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue());
+        work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue(),
+        InitializeTaskTiming(work_queue->task_queue()));
 
     UMA_HISTOGRAM_COUNTS_1000("TaskQueueManager.ActiveQueuesCount",
                               main_thread_only().active_queues.size());
@@ -355,7 +353,7 @@ void SequenceManagerImpl::DidRunTask() {
   LazyNow lazy_now(controller_->GetClock());
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
-  NotifyDidProcessTask(executing_task, &lazy_now);
+  NotifyDidProcessTask(&executing_task, &lazy_now);
   main_thread_only().task_execution_stack.pop_back();
 
   if (main_thread_only().nesting_depth == 0)
@@ -402,6 +400,16 @@ void SequenceManagerImpl::WillQueueTask(
   controller_->WillQueueTask(pending_task);
 }
 
+TaskQueue::TaskTiming SequenceManagerImpl::InitializeTaskTiming(
+    internal::TaskQueueImpl* task_queue) {
+  bool records_wall_time =
+      (task_queue->GetShouldNotifyObservers() &&
+       main_thread_only().task_time_observers.might_have_observers()) ||
+      task_queue->RequiresTaskTiming();
+  bool records_thread_time = records_wall_time && ShouldRecordCPUTimeForTask();
+  return TaskQueue::TaskTiming(records_wall_time, records_thread_time);
+}
+
 void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
                                                 LazyNow* time_before_task) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
@@ -418,72 +426,64 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
       executing_task->pending_task.posted_from.function_name());
 #endif  // OS_NACL
 
-  if (executing_task->task_queue->GetShouldNotifyObservers()) {
-    {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                   "SequenceManager.WillProcessTaskObservers");
-      for (auto& observer : main_thread_only().task_observers)
-        observer.WillProcessTask(executing_task->pending_task);
-    }
+  executing_task->task_timing.RecordTaskStart(time_before_task);
 
-    {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                   "SequenceManager.QueueNotifyWillProcessTask");
-      executing_task->task_queue->NotifyWillProcessTask(
-          executing_task->pending_task);
-    }
+  if (!executing_task->task_queue->GetShouldNotifyObservers())
+    return;
 
-    bool notify_time_observers =
-        main_thread_only().task_time_observers.might_have_observers() ||
-        executing_task->task_queue->RequiresTaskTiming();
-    if (notify_time_observers) {
-      executing_task->task_start_time = time_before_task->Now();
-      if (main_thread_only().nesting_depth == 0) {
-        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                     "SequenceManager.WillProcessTaskTimeObservers");
-        for (auto& observer : main_thread_only().task_time_observers)
-          observer.WillProcessTask(executing_task->task_start_time);
-      }
-
-      {
-        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                     "SequenceManager.QueueOnTaskStarted");
-        executing_task->task_queue->OnTaskStarted(
-            executing_task->pending_task, executing_task->task_start_time);
-      }
-    }
+  {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                 "SequenceManager.WillProcessTaskObservers");
+    for (auto& observer : main_thread_only().task_observers)
+      observer.WillProcessTask(executing_task->pending_task);
   }
 
-  executing_task->should_record_thread_time = ShouldRecordCPUTimeForTask();
-  if (executing_task->should_record_thread_time)
-    executing_task->task_start_thread_time = ThreadTicks::Now();
+  {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                 "SequenceManager.QueueNotifyWillProcessTask");
+    executing_task->task_queue->NotifyWillProcessTask(
+        executing_task->pending_task);
+  }
+
+  bool notify_time_observers =
+      main_thread_only().task_time_observers.might_have_observers() ||
+      executing_task->task_queue->RequiresTaskTiming();
+
+  if (!notify_time_observers)
+    return;
+
+  if (main_thread_only().nesting_depth == 0) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                 "SequenceManager.WillProcessTaskTimeObservers");
+    for (auto& observer : main_thread_only().task_time_observers)
+      observer.WillProcessTask(executing_task->task_timing.start_time());
+  }
+
+  {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                 "SequenceManager.QueueOnTaskStarted");
+    executing_task->task_queue->OnTaskStarted(executing_task->pending_task,
+                                              executing_task->task_timing);
+  }
 }
 
-void SequenceManagerImpl::NotifyDidProcessTask(
-    const ExecutingTask& executing_task,
-    LazyNow* time_after_task) {
+void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
+                                               LazyNow* time_after_task) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "SequenceManagerImpl::NotifyDidProcessTaskObservers");
 
-  Optional<TimeDelta> thread_time;
-  if (executing_task.should_record_thread_time) {
-    auto task_end_thread_time = ThreadTicks::Now();
-    thread_time = task_end_thread_time - executing_task.task_start_thread_time;
-  }
+  executing_task->task_timing.RecordTaskEnd(time_after_task);
 
-  if (!executing_task.task_queue->GetShouldNotifyObservers())
+  const TaskQueue::TaskTiming& task_timing = executing_task->task_timing;
+
+  if (!executing_task->task_queue->GetShouldNotifyObservers())
     return;
 
-  TimeTicks task_start_time = executing_task.task_start_time;
-  TimeTicks task_end_time =
-      task_start_time.is_null() ? TimeTicks() : time_after_task->Now();
-  DCHECK(task_start_time.is_null() || !task_end_time.is_null());
-
-  if (!task_start_time.is_null() && main_thread_only().nesting_depth == 0) {
+  if (task_timing.has_wall_time() && main_thread_only().nesting_depth == 0) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.DidProcessTaskTimeObservers");
     for (auto& observer : main_thread_only().task_time_observers) {
-      observer.DidProcessTask(task_start_time, task_end_time);
+      observer.DidProcessTask(task_timing.start_time(), task_timing.end_time());
     }
   }
 
@@ -491,32 +491,30 @@ void SequenceManagerImpl::NotifyDidProcessTask(
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.DidProcessTaskObservers");
     for (auto& observer : main_thread_only().task_observers)
-      observer.DidProcessTask(executing_task.pending_task);
+      observer.DidProcessTask(executing_task->pending_task);
   }
 
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.QueueNotifyDidProcessTask");
-    executing_task.task_queue->NotifyDidProcessTask(
-        executing_task.pending_task);
+    executing_task->task_queue->NotifyDidProcessTask(
+        executing_task->pending_task);
   }
 
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.QueueOnTaskCompleted");
-    if (!task_start_time.is_null()) {
-      executing_task.task_queue->OnTaskCompleted(executing_task.pending_task,
-                                                 task_start_time, task_end_time,
-                                                 thread_time);
-    }
+    if (task_timing.has_wall_time())
+      executing_task->task_queue->OnTaskCompleted(executing_task->pending_task,
+                                                  task_timing);
   }
 
-  if (!task_start_time.is_null() &&
-      task_end_time - task_start_time > kLongTaskTraceEventThreshold &&
+  // TODO(altimin): Move this back to blink.
+  if (task_timing.has_wall_time() &&
+      task_timing.wall_duration() > kLongTaskTraceEventThreshold &&
       main_thread_only().nesting_depth == 0) {
     TRACE_EVENT_INSTANT1("blink", "LongTask", TRACE_EVENT_SCOPE_THREAD,
-                         "duration",
-                         (task_end_time - task_start_time).InSecondsF());
+                         "duration", task_timing.wall_duration().InSecondsF());
   }
 }
 
@@ -674,7 +672,7 @@ bool SequenceManagerImpl::ShouldRecordCPUTimeForTask() {
   return ThreadTicks::IsSupported() &&
          main_thread_only().uniform_distribution(
              main_thread_only().random_generator) <
-             kSamplingRateForRecordingCPUTime;
+             GetSamplingRateForRecordingCPUTime();
 }
 
 double SequenceManagerImpl::GetSamplingRateForRecordingCPUTime() const {

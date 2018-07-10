@@ -19,11 +19,10 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
   explicit WorkerMetricsHelper(WebThreadType thread_type);
   ~WorkerMetricsHelper();
 
-  void RecordTaskMetrics(NonMainThreadTaskQueue* queue,
-                         const base::sequence_manager::TaskQueue::Task& task,
-                         base::TimeTicks start_time,
-                         base::TimeTicks end_time,
-                         base::Optional<base::TimeDelta> thread_time);
+  void RecordTaskMetrics(
+      NonMainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void SetParentFrameType(FrameOriginType frame_type);
 

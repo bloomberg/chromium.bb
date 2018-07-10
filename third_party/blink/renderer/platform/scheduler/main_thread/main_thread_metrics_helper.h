@@ -34,11 +34,10 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
                           bool renderer_backgrounded);
   ~MainThreadMetricsHelper();
 
-  void RecordTaskMetrics(MainThreadTaskQueue* queue,
-                         const base::sequence_manager::TaskQueue::Task& task,
-                         base::TimeTicks start_time,
-                         base::TimeTicks end_time,
-                         base::Optional<base::TimeDelta> thread_time);
+  void RecordTaskMetrics(
+      MainThreadTaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnRendererForegrounded(base::TimeTicks now);
   void OnRendererBackgrounded(base::TimeTicks now);
