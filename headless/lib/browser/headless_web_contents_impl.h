@@ -99,6 +99,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   void Close() override;
 
+  void DelegateRequestsClose();
+
   std::string GetDevToolsAgentHostId();
 
   HeadlessBrowserImpl* browser() const;
@@ -175,6 +177,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   content::RenderProcessHost* render_process_host_;  // Not owned.
 
   base::ObserverList<HeadlessWebContents::Observer> observers_;
+
+  base::Closure quit_closure_;
 
   base::WeakPtrFactory<HeadlessWebContentsImpl> weak_ptr_factory_;
 
