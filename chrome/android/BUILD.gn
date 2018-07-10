@@ -682,19 +682,45 @@ android_library("chrome_test_java") {
   ]
 }
 
-if (enable_vr) {
-  android_library("chrome_test_vr_java") {
+if (enable_vr || (enable_arcore && package_arcore)) {
+  # Desugaring doesn't seem to play nice with deps when there are multiple
+  # layers of android_library. If A is included in B's deps, and B is included
+  # in C's deps, desugar can fail to find classes from A. As a workaround,
+  # have each android_library have duplicate entries in their deps lists.
+  # See https://crbug.com/860018.
+  chrome_test_xr_java_deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/android:app_hooks_java",
+    "//chrome/android:chrome_java",
+    "//chrome/android:class_register_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//components/policy/android:policy_java",
+    "//content/public/android:content_java",
+    "//content/public/test/android:content_java_test_support",
+    "//net/android:net_java_test_support",
+    "//third_party/android_protobuf:protobuf_nano_javalib",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_arch_lifecycle_common_java",
+    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_tools:android_support_v7_recyclerview_java",
+    "//third_party/custom_tabs_client:custom_tabs_support_java",
+    "//third_party/junit",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
+    "//ui/android:ui_java",
+  ]
+
+  # Files used for both VR and AR testing
+  android_library("chrome_test_xr_java") {
     testonly = true
 
     java_files = [
       "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
       "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockBrowserKeyboardInterface.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrCoreVersionCheckerImpl.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrDaydreamApi.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/nfc_apk/SimNfcActivity.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/ChromeTabbedActivityVrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/CustomTabActivityVrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/HeadTrackingMode.java",
@@ -703,67 +729,78 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/VrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/WebappActivityVrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/HeadTrackingUtils.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/util/NativeUiUtils.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/TransitionUtils.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrInfoBarUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrShellDelegateUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrTestRuleUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrTransitionUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/XrTransitionUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/TestFramework.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/TestVrShellDelegate.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrFeedbackInfoBarTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrInstallUpdateInfoBarTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellCompositorViewHolderTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellControllerInputTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellDialogTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNativeUiTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTransitionTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellWebInputEditingTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestFramework.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrDeviceTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrInputTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTabTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTransitionTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/XrTestFramework.java",
       "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
       "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
     ]
 
-    deps = [
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//chrome/android:app_hooks_java",
-      "//chrome/android:chrome_java",
-      "//chrome/android:class_register_java",
-      "//chrome/test/android:chrome_java_test_support",
-      "//components/policy/android:policy_java",
-      "//content/public/android:content_java",
-      "//content/public/test/android:content_java_test_support",
-      "//net/android:net_java_test_support",
-      "//third_party/android_protobuf:protobuf_nano_javalib",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_arch_lifecycle_common_java",
-      "//third_party/android_tools:android_support_annotations_java",
-      "//third_party/android_tools:android_support_v7_appcompat_java",
-      "//third_party/android_tools:android_support_v7_recyclerview_java",
-      "//third_party/custom_tabs_client:custom_tabs_support_java",
-      "//third_party/gvr-android-sdk:controller_test_api_java",
-      "//third_party/gvr-android-sdk:gvr_common_java",
-      "//third_party/junit",
-      "//third_party/ub-uiautomator:ub_uiautomator_java",
-      "//ui/android:ui_java",
-    ]
+    deps = chrome_test_xr_java_deps
 
     data = [
-      "//chrome/android/shared_preference_files/test/",
       "//chrome/test/data/vr/e2e_test_files/",
-      "//third_party/gvr-android-sdk/test-apks/",
       "//third_party/WebKit/LayoutTests/resources/testharness.js",
     ]
+  }
+
+  if (enable_vr) {
+    # All files necessary for VR instrumentation tests
+    android_library("chrome_test_vr_java") {
+      testonly = true
+
+      java_files = [
+        "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockBrowserKeyboardInterface.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrDaydreamApi.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/nfc_apk/SimNfcActivity.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/util/NativeUiUtils.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrInfoBarUtils.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrFeedbackInfoBarTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrInstallUpdateInfoBarTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellCompositorViewHolderTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellControllerInputTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellDialogTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNativeUiTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTransitionTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellWebInputEditingTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrDeviceTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrInputTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTabTest.java",
+        "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTransitionTest.java",
+      ]
+
+      deps = chrome_test_xr_java_deps + [
+               "//chrome/android:chrome_test_xr_java",
+               "//third_party/gvr-android-sdk:controller_test_api_java",
+               "//third_party/gvr-android-sdk:gvr_common_java",
+             ]
+
+      data = [
+        "//chrome/android/shared_preference_files/test/",
+        "//third_party/gvr-android-sdk/test-apks/",
+      ]
+    }
+  }
+
+  if (enable_arcore && package_arcore) {
+    # All files necessary for AR instrumentation tests
+    android_library("chrome_test_ar_java") {
+      testonly = true
+
+      java_files = [ "javatests/src/org/chromium/chrome/browser/vr_shell/WebXrArSessionTest.java" ]
+
+      deps =
+          chrome_test_xr_java_deps + [ "//chrome/android:chrome_test_xr_java" ]
+    }
   }
 }
 
@@ -1290,6 +1327,8 @@ chrome_public_test_vr_apk_manifest =
     "$root_gen_dir/chrome_public_test_vr_apk_manifest/AndroidManifest.xml"
 chrome_sync_shell_test_apk_manifest =
     "$root_gen_dir/chrome_sync_shell_test_apk_manifest/AndroidManifest.xml"
+monochrome_public_test_ar_apk_manifest =
+    "$root_gen_dir/monochrome_public_test_ar_apk_manifest/AndroidManifest.xml"
 vr_nfc_simulator_apk_manifest =
     "$root_gen_dir/vr_nfc_simulator_apk_manifest/AndroidManifest.xml"
 
@@ -1297,12 +1336,28 @@ jinja_template("chrome_public_test_apk_manifest") {
   input = "javatests/AndroidManifest.xml"
   output = chrome_public_test_apk_manifest
   variables = chrome_public_jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=$android_sdk_version",
+  ]
 }
 
 jinja_template("chrome_public_test_vr_apk_manifest") {
   input = "javatests/AndroidManifest.xml"
   output = chrome_public_test_vr_apk_manifest
   variables = chrome_public_jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=$android_sdk_version",
+  ]
+}
+
+jinja_template("monochrome_public_test_ar_apk_manifest") {
+  input = "javatests/AndroidManifest_monochrome.xml"
+  output = monochrome_public_test_ar_apk_manifest
+  variables = chrome_public_jinja_variables +
+              monochrome_android_manifest_jinja_variables +
+              [ "target_sdk_version=$android_sdk_version" ]
 }
 
 jinja_template("vr_nfc_simulator_apk_manifest") {
@@ -1382,6 +1437,33 @@ if (enable_vr) {
 
     # APK exceeds dex limit if not enabled
     enable_multidex = true
+  }
+}
+
+if (enable_arcore && package_arcore) {
+  instrumentation_test_apk("monochrome_public_test_ar_apk") {
+    apk_name = "MonochromePublicTestAr"
+    apk_under_test = ":monochrome_public_apk"
+    android_manifest = monochrome_public_test_ar_apk_manifest
+    android_manifest_dep = ":monochrome_public_test_ar_apk_manifest"
+
+    deps = [
+      ":chrome_test_ar_java",
+    ]
+    additional_apks = [ "//net/android:net_test_support_apk" ]
+    proguard_enabled = !is_java_debug
+    if (proguard_enabled && !enable_proguard_obfuscation) {
+      proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
+      proguard_config_exclusions =
+          [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
+    }
+
+    # The test APK contains code from both the APK under test and the
+    # test APK when proguard is enabled. That causes this APK to exceed
+    # the dex limit.
+    enable_multidex = proguard_enabled
+
+    never_incremental = true
   }
 }
 
