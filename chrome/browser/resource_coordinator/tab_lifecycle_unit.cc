@@ -76,9 +76,6 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::PENDING_FREEZE: {
       switch (to) {
-        // Unfreeze() is called.
-        case LifecycleUnitState::ACTIVE:
-          return reason == StateChangeReason::BROWSER_INITIATED;
         // Discard(kProactive) is called.
         case LifecycleUnitState::PENDING_DISCARD:
           return reason == StateChangeReason::BROWSER_INITIATED;
@@ -86,7 +83,7 @@ bool IsValidStateChange(LifecycleUnitState from,
         case LifecycleUnitState::DISCARDED:
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
-        // The renderer notified the browser that the freeze callback ran.
+        // The renderer notifies the browser that the "onfreeze" callback ran.
         case LifecycleUnitState::FROZEN:
           return reason == StateChangeReason::RENDERER_INITIATED;
         default:
@@ -95,16 +92,20 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::FROZEN: {
       switch (to) {
-        // Unfreeze() is called or the renderer re-activates the page because it
-        // became visible.
+        // The renderer notifies the browser that it unfroze the page and ran
+        // the "onresume" callback after the page became visible.
         case LifecycleUnitState::ACTIVE: {
-          return reason == StateChangeReason::BROWSER_INITIATED ||
-                 reason == StateChangeReason::RENDERER_INITIATED;
+          return reason == StateChangeReason::RENDERER_INITIATED;
         }
         // Discard(kProactive|kUrgent|kExternal) is called.
         case LifecycleUnitState::DISCARDED: {
           return reason == StateChangeReason::BROWSER_INITIATED ||
-                 reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE;
+                 reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
+                 reason == StateChangeReason::EXTENSION_INITIATED;
+        }
+        // Unfreeze() is called.
+        case LifecycleUnitState::PENDING_UNFREEZE: {
+          return reason == StateChangeReason::BROWSER_INITIATED;
         }
         default:
           return false;
@@ -112,16 +113,19 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::PENDING_DISCARD: {
       switch (to) {
-        // The WebContents was explicitly reloaded or focused.
+        // The WebContents is focused or explicitly reloaded.
         case LifecycleUnitState::ACTIVE: {
           return reason == StateChangeReason::BROWSER_INITIATED ||
                  reason == StateChangeReason::RENDERER_INITIATED;
         }
-        // The freeze timeout expired or the renderer notified the browser that
-        // the freeze callback ran, allowing the proactive discard to complete.
+        // - Discard(kUrgent|kExternal) is called, or,
+        // - The proactive discard can be completed because:
+        //   - The freeze timeout expires, or,
+        //   - The renderer notifies the browser that the "onfreeze" callback
+        //     ran.
         case LifecycleUnitState::DISCARDED:
           return reason == StateChangeReason::BROWSER_INITIATED;
-        // The WebContents was focused.
+        // The WebContents IS focused.
         case LifecycleUnitState::PENDING_FREEZE:
           return reason == StateChangeReason::BROWSER_INITIATED;
         default:
@@ -130,11 +134,26 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::DISCARDED: {
       switch (to) {
-        // The WebContents was focused.
+        // The WebContents is focused.
         case LifecycleUnitState::ACTIVE:
           return reason == StateChangeReason::BROWSER_INITIATED;
         default:
           return false;
+      }
+    }
+    case LifecycleUnitState::PENDING_UNFREEZE: {
+      switch (to) {
+        // The renderer notifies the browser that the "onresume" callback ran,
+        // after Unfreeze() was called in the browser.
+        case LifecycleUnitState::ACTIVE: {
+          return reason == StateChangeReason::RENDERER_INITIATED;
+        }
+        // Discard(kUrgent|kExternal) is called.
+        case LifecycleUnitState::DISCARDED: {
+          return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
+                 reason == StateChangeReason::EXTENSION_INITIATED;
+        }
+        default: { return false; }
       }
     }
   }
@@ -550,7 +569,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Unfreeze() {
-  if (!IsValidStateChange(GetState(), LifecycleUnitState::ACTIVE,
+  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_UNFREEZE,
                           StateChangeReason::BROWSER_INITIATED)) {
     return false;
   }
@@ -559,7 +578,8 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Unfreeze() {
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
     return false;
 
-  SetState(LifecycleUnitState::ACTIVE, StateChangeReason::BROWSER_INITIATED);
+  SetState(LifecycleUnitState::PENDING_UNFREEZE,
+           StateChangeReason::BROWSER_INITIATED);
   GetWebContents()->SetPageFrozen(false);
   return true;
 }

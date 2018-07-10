@@ -994,27 +994,38 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndMakeVisible) {
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
   TestTransitionFromActiveToFrozen();
 
-  // Unfreeze the tab. It should transition to the ACTIVE state.
+  // Unfreeze the tab. It should immediately transition to the PENDING_FREEZE
+  // state. Then, it shuold transition to the ACTIVE state once the "onresume"
+  // callback has run.
   EXPECT_TRUE(GetLifecycleUnitAt(1)->Unfreeze());
-  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
+  EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
+            GetLifecycleUnitAt(1)->GetState());
+  {
+    ExpectStateTransitionObserver expect_state_transition(
+        GetLifecycleUnitAt(1), LifecycleUnitState::ACTIVE);
+    expect_state_transition.Wait();
+  }
 }
 
-// Flaky on Mac/Linux and ChromeOS. https://crbug.com/855874
-#if defined(OS_POSIX) || defined(OS_CHROMEOS)
-#define MAYBE_TabPendingFreezeAndUnfreeze DISABLED_TabPendingFreezeAndUnfreeze
-#else
-#define MAYBE_TabPendingFreezeAndUnfreeze TabPendingFreezeAndUnfreeze
-#endif
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
 // - Freeze(): ACTIVE->PENDING_FREEZE
-// - Unfreeze(): PENDING_FREEZE->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabPendingFreezeAndUnfreeze) {
+// - Unfreeze(): Disallowed. Transition to PENDING_FREEZE->FROZEN should happen
+//     once the freeze happens in renderer.
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabPendingFreezeAndUnfreeze) {
   TestTransitionFromActiveToPendingFreeze();
 
-  // Unfreeze the tab. It should transition to the ACTIVE state.
-  EXPECT_TRUE(GetLifecycleUnitAt(1)->Unfreeze());
-  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
+  // Unfreezing a PENDING_FREEZE tab is not allowed. The tab must be fully
+  // frozen before it is unfrozen.
+  EXPECT_FALSE(GetLifecycleUnitAt(1)->Unfreeze());
+  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE,
+            GetLifecycleUnitAt(1)->GetState());
+
+  {
+    ExpectStateTransitionObserver expect_state_transition(
+        GetLifecycleUnitAt(1), LifecycleUnitState::FROZEN);
+    expect_state_transition.Wait();
+  }
 }
 
 // Verifies the following state transitions for a tab:

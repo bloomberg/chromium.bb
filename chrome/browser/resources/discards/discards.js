@@ -238,6 +238,8 @@ cr.define('discards', function() {
         return 'pending discard';
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded';
+      case mojom.LifecycleUnitState.PENDING_UNFREEZE:
+        return 'pending unfreeze';
     }
     assertNotReached('Unsupported lifecycle state: ' + state);
   }

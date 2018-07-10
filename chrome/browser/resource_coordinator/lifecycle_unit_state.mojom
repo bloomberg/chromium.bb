@@ -19,6 +19,9 @@ enum LifecycleUnitState {
   PENDING_DISCARD = 4,
   // The LifecycleUnit is discarded, and is consuming no system resources.
   DISCARDED = 5,
+  // The Lifecycle is currently transitioning from the FROZEN state to the
+  // ACTIVE state.
+  PENDING_UNFREEZE = 6,
 };
 
 // Indicates the loading state of a lifecycle unit, orthogonal to the basic
