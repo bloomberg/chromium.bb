@@ -61,6 +61,7 @@ customBackgrounds.CLASSES = {
   KEYBOARD_NAV: 'using-keyboard-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
+  SELECTED_CIRCLE: 'selected-circle',
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
@@ -194,9 +195,12 @@ customBackgrounds.showCollectionSelectionDialog = function() {
 customBackgrounds.applySelectedState = function(tile) {
   tile.classList.add(customBackgrounds.CLASSES.COLLECTION_SELECTED);
   var selectedBorder = document.createElement('div');
+  var selectedCircle = document.createElement('div');
   var selectedCheck = document.createElement('div');
   selectedBorder.classList.add(customBackgrounds.CLASSES.SELECTED_BORDER);
+  selectedCircle.classList.add(customBackgrounds.CLASSES.SELECTED_CIRCLE);
   selectedCheck.classList.add(customBackgrounds.CLASSES.SELECTED_CHECK);
+  selectedBorder.appendChild(selectedCircle);
   selectedBorder.appendChild(selectedCheck);
   tile.appendChild(selectedBorder);
 };

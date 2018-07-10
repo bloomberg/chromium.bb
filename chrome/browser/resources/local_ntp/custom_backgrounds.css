@@ -201,11 +201,11 @@ html[dir=rtl] #bg-sel-tiles {
 
 #bg-sel-back {
   background: url(../../../../ui/webui/resources/images/icon_arrow_back.svg) no-repeat center;
-  background-size: 16px 16px;
+  background-size: 20px 20px;
   display: none;
-  height: 16px;
-  vertical-align: middle;
-  width: 16px;
+  height: 20px;
+  margin: 16px 16px 0 16px;
+  width: 20px;
 }
 
 .is-col-sel #bg-sel-back {
@@ -228,10 +228,10 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 #bg-sel-title {
   color: rgb(32, 33, 36);
   display: inline-block;
-  line-height: normal;
-  padding-left: 16px;
+  height: 20px;
+  line-height: 20px;
+  margin: 16px 0 0 0;
   text-align: center;
-  vertical-align: middle;
 }
 
 .is-col-sel #bg-sel-title {
@@ -241,13 +241,12 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 
 .is-img-sel #bg-sel-title {
   float: left;
-  padding: 18px 0 0 16px;
-  text-align: left;
+  margin: 18px 0 0 16px;
 }
 
 html[dir=rtl] .is-img-sel #bg-sel-title {
   float: right;
-  padding: 18px 16px 0 0;
+  margin: 18px 16px 0 0;
   text-align: left;
 }
 
@@ -329,7 +328,7 @@ html[dir=rtl] #bg-sel-footer-cancel {
 }
 
 .bg-sel-tile {
-  background-color: rgb(32, 33, 36);
+  background-color: rgba(32, 33, 36, .06);
   background-size: cover;
   display: inline-block;
   height: 117px;
@@ -350,21 +349,38 @@ html[dir=rtl] .bg-sel-tile {
   border: 2px solid rgba(26, 115, 232, .4);
   border-radius: 4px;
   height: 113px;
+  position: relative;
   width: 152px;
 }
 
-.selected-check {
-  background: #FFF url(../../../../ui/webui/resources/images/check_circle.svg) no-repeat center;
-  background-size: 24px 24px;
+.selected-circle {
+  background: #FFF no-repeat center;
   border-radius: 50%;
-  display: block;
-  height: 20px;
-  margin: 46px 0 0 66px;
-  width: 20px;
+  height: 22px;
+  left: 66px;
+  position: absolute;
+  top: 46px;
+  width: 22px;
+}
+
+html[dir=rtl] .selected-circle {
+  left: auto;
+  right: 66px;
+}
+
+.selected-check {
+  background: url(../../../../ui/webui/resources/images/check_circle.svg) no-repeat center;
+  background-size: 28px 28px;
+  height: 28px;
+  left: 63px;
+  position: absolute;
+  top: 43px;
+  width: 28px;
 }
 
 html[dir=rtl] .selected-check {
-  margin: 46px 66px 0 0;
+  left: auto;
+  right: 63px;
 }
 
 .bg-sel-tile-title {
