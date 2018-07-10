@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
@@ -213,7 +214,9 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
   last_reported_task_ = task_timing.end_time();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime2",
-                              duration.InMicroseconds(), 1, 1000 * 1000, 50);
+                              base::saturated_cast<base::HistogramBase::Sample>(
+                                  duration.InMicroseconds()),
+                              1, 1000 * 1000, 50);
 
   // We want to measure thread time here, but for efficiency reasons
   // we stick with wall time.

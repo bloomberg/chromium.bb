@@ -553,8 +553,7 @@ void LocalFrame::DidResume() {
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
-    resume_histogram.Count(
-        (resume_event_end - resume_event_start).InMicroseconds());
+    resume_histogram.CountMicroseconds(resume_event_end - resume_event_start);
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink
     if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {

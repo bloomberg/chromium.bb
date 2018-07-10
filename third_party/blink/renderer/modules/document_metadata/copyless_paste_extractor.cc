@@ -308,12 +308,12 @@ WebPagePtr CopylessPasteExtractor::extract(const Document& document) {
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, extractionHistogram,
         ("CopylessPaste.ExtractionFailedUs", 1, 1000 * 1000, 50));
-    extractionHistogram.Count(elapsed_time.InMicroseconds());
+    extractionHistogram.CountMicroseconds(elapsed_time);
     return nullptr;
   }
   DEFINE_STATIC_LOCAL(CustomCountHistogram, extractionHistogram,
                       ("CopylessPaste.ExtractionUs", 1, 1000 * 1000, 50));
-  extractionHistogram.Count(elapsed_time.InMicroseconds());
+  extractionHistogram.CountMicroseconds(elapsed_time);
 
   page->url = document.Url();
   page->title = document.title();

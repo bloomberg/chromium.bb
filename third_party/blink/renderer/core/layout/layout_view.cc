@@ -76,11 +76,11 @@ class HitTestLatencyRecorder {
     if (allows_child_frame_content_) {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, recursive_latency_histogram,
                           ("Event.Latency.HitTestRecursive", 0, 10000000, 100));
-      recursive_latency_histogram.Count(duration.InMicroseconds());
+      recursive_latency_histogram.CountMicroseconds(duration);
     } else {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, latency_histogram,
                           ("Event.Latency.HitTest", 0, 10000000, 100));
-      latency_histogram.Count(duration.InMicroseconds());
+      latency_histogram.CountMicroseconds(duration);
     }
   }
 

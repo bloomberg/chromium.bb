@@ -26,6 +26,7 @@ class PLATFORM_EXPORT CustomCountHistogram {
                        base::HistogramBase::Sample max,
                        int32_t bucket_count);
   void Count(base::HistogramBase::Sample);
+  void CountMicroseconds(base::TimeDelta);
 
  protected:
   explicit CustomCountHistogram(base::HistogramBase*);
@@ -69,7 +70,7 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
       : start_time_(CurrentTimeTicks()), counter_(counter) {}
 
   ~ScopedUsHistogramTimer() {
-    counter_.Count((CurrentTimeTicks() - start_time_).InMicroseconds());
+    counter_.CountMicroseconds(CurrentTimeTicks() - start_time_);
   }
 
  private:

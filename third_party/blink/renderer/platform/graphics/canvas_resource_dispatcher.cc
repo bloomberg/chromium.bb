@@ -304,16 +304,16 @@ bool CanvasResourceDispatcher::PrepareFrame(
             CustomCountHistogram, commit_gpu_canvas_gpu_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
              10000000, 50));
-        commit_gpu_canvas_gpu_compositing_main_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_gpu_canvas_gpu_compositing_main_timer.CountMicroseconds(
+            elapsed_time);
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_gpu_canvas_gpu_compositing_worker_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
              10000000, 50));
-        commit_gpu_canvas_gpu_compositing_worker_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_gpu_canvas_gpu_compositing_worker_timer.CountMicroseconds(
+            elapsed_time);
       }
       break;
     case kCommitGPUCanvasSoftwareCompositing:
@@ -323,8 +323,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             commit_gpu_canvas_software_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingMain", 0,
              10000000, 50));
-        commit_gpu_canvas_software_compositing_main_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_gpu_canvas_software_compositing_main_timer.CountMicroseconds(
+            elapsed_time);
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -332,8 +332,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "GPUCanvasSoftwareCompositingWorker",
              0, 10000000, 50));
-        commit_gpu_canvas_software_compositing_worker_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_gpu_canvas_software_compositing_worker_timer.CountMicroseconds(
+            elapsed_time);
       }
       break;
     case kCommitSoftwareCanvasGPUCompositing:
@@ -343,8 +343,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             commit_software_canvas_gpu_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingMain", 0,
              10000000, 50));
-        commit_software_canvas_gpu_compositing_main_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_software_canvas_gpu_compositing_main_timer.CountMicroseconds(
+            elapsed_time);
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -352,8 +352,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "SoftwareCanvasGPUCompositingWorker",
              0, 10000000, 50));
-        commit_software_canvas_gpu_compositing_worker_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_software_canvas_gpu_compositing_worker_timer.CountMicroseconds(
+            elapsed_time);
       }
       break;
     case kCommitSoftwareCanvasSoftwareCompositing:
@@ -364,8 +364,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "SoftwareCanvasSoftwareCompositingMain",
              0, 10000000, 50));
-        commit_software_canvas_software_compositing_main_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_software_canvas_software_compositing_main_timer
+            .CountMicroseconds(elapsed_time);
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -373,8 +373,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "SoftwareCanvasSoftwareCompositingWorker",
              0, 10000000, 50));
-        commit_software_canvas_software_compositing_worker_timer.Count(
-            elapsed_time.InMicroseconds());
+        commit_software_canvas_software_compositing_worker_timer
+            .CountMicroseconds(elapsed_time);
       }
       break;
     case kOffscreenCanvasCommitTypeCount:

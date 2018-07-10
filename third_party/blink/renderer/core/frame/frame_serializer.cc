@@ -448,7 +448,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     DEFINE_STATIC_LOCAL(CustomCountHistogram, css_histogram,
                         ("PageSerialization.SerializationTime.CSSElement", 0,
                          maxSerializationTimeUmaMicroseconds, 50));
-    css_histogram.Count((CurrentTimeTicks() - css_start_time).InMicroseconds());
+    css_histogram.CountMicroseconds(CurrentTimeTicks() - css_start_time);
   }
 }
 
@@ -547,8 +547,7 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
     DEFINE_STATIC_LOCAL(CustomCountHistogram, image_histogram,
                         ("PageSerialization.SerializationTime.ImageElement", 0,
                          maxSerializationTimeUmaMicroseconds, 50));
-    image_histogram.Count(
-        (CurrentTimeTicks() - image_start_time).InMicroseconds());
+    image_histogram.CountMicroseconds(CurrentTimeTicks() - image_start_time);
   }
 }
 

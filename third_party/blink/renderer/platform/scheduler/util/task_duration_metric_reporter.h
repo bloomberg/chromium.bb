@@ -43,8 +43,9 @@ class TaskDurationMetricReporter {
     // since |value_per_type_histogram_| is constructed with a scale of
     // 1000*1000.
     if (!duration.is_zero()) {
-      value_per_type_histogram_->AddScaledCount(static_cast<int>(task_class),
-                                                duration.InMicroseconds());
+      value_per_type_histogram_->AddScaledCount(
+          static_cast<int>(task_class),
+          base::saturated_cast<int>(duration.InMicroseconds()));
     }
   }
 

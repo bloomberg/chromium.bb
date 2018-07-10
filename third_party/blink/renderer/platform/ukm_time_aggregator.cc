@@ -76,7 +76,7 @@ void UkmTimeAggregator::RecordSample(size_t metric_index,
   // Record the UMA if we have a counter.
   TimeDelta duration = end - start;
   if (histogram_counter)
-    histogram_counter->Count(duration.InMicroseconds());
+    histogram_counter->CountMicroseconds(duration);
 
   // Append the duration to the appropriate metrics record.
   DCHECK_LT(metric_index, metric_records_.size());

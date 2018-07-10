@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace blink {
 
@@ -23,6 +24,11 @@ CustomCountHistogram::CustomCountHistogram(base::HistogramBase* histogram)
 
 void CustomCountHistogram::Count(base::HistogramBase::Sample sample) {
   histogram_->Add(sample);
+}
+
+void CustomCountHistogram::CountMicroseconds(base::TimeDelta delta) {
+  Count(base::saturated_cast<base::HistogramBase::Sample>(
+      delta.InMicroseconds()));
 }
 
 BooleanHistogram::BooleanHistogram(const char* name)
