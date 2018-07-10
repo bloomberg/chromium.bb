@@ -32,7 +32,6 @@
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
-#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
 #include "printing/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -441,124 +440,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
   // Check that we have a new tab.
   EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
 }
-
-namespace {
-const char* kRequestOrderTestPage = R"(
-<html>
-  <body>
-    <script src='script1' async></script>
-    <script src='script2' async></script>
-    <script src='script3' async></script>
-    <script src='script4' async></script>
-    <script src='script5' async></script>
-    <script src='script6' async></script>
-    <script src='script7' async></script>
-    <script src='script8' async></script>
-    <script src='script9' async></script>
-    <script src='script10' async></script>
-    <script src='script11' async></script>
-    <script src='script12' async></script>
-    <script src='script13' async></script>
-    <script src='script14' async></script>
-    <script src='script15' async></script>
-    <script src='script16' async></script>
-    <script src='script17' async></script>
-    <script src='script18' async></script>
-    <script src='script19' async></script>
-    <script src='script20' async></script>
-  </body>
-</html> )";
-
-}  // namespace
-
-class ResourceSchedulerTest
-    : public HeadlessAsyncDevTooledBrowserTest,
-      public page::Observer,
-      public TestInMemoryProtocolHandler::RequestDeferrer {
- public:
-  void SetUp() override {
-    options()->enable_resource_scheduler = GetEnableResourceScheduler();
-    HeadlessBrowserTest::SetUp();
-  }
-
-  void RunDevTooledTest() override {
-    http_handler_->SetHeadlessBrowserContext(browser_context_);
-    devtools_client_->GetPage()->AddObserver(this);
-
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    run_loop.Run();
-
-    devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
-  }
-
-  virtual bool GetEnableResourceScheduler() = 0;
-
-  ProtocolHandlerMap GetProtocolHandlers() override {
-    ProtocolHandlerMap protocol_handlers;
-    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
-        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
-    http_handler_ = http_handler.get();
-    http_handler_->InsertResponse("http://foo.com/index.html",
-                                  {kRequestOrderTestPage, "text/html"});
-    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
-    return protocol_handlers;
-  }
-
-  void OnRequest(const GURL& url, base::Closure complete_request) override {
-    if (max_requests_in_flight_ < ++num_requests_in_flight_)
-      max_requests_in_flight_ = num_requests_in_flight_;
-    browser()->BrowserIOThread()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ResourceSchedulerTest::AllowRequest,
-                       base::Unretained(this), complete_request),
-        base::TimeDelta::FromMilliseconds(100));
-  }
-
-  void AllowRequest(base::Closure complete_request) {
-    num_requests_in_flight_--;
-    complete_request.Run();
-  }
-
-  const TestInMemoryProtocolHandler* http_handler() const {
-    return http_handler_;
-  }
-
-  int max_requests_in_flight() const { return max_requests_in_flight_; }
-
- private:
-  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
-  int num_requests_in_flight_ = 0;
-  int max_requests_in_flight_ = 0;
-};
-
-class DisableResourceSchedulerTest : public ResourceSchedulerTest {
- public:
-  bool GetEnableResourceScheduler() override { return false; }
-
-  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    // All scripts should have been requested simultaneously.
-    EXPECT_EQ(20, max_requests_in_flight());
-    FinishAsynchronousTest();
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(DisableResourceSchedulerTest);
-
-class EnableResourceSchedulerTest : public ResourceSchedulerTest {
- public:
-  bool GetEnableResourceScheduler() override {
-    return true;  // The default value.
-  }
-
-  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    // Only a limited number of scripts should be requested simultaneously.
-    EXPECT_EQ(6, max_requests_in_flight());
-    FinishAsynchronousTest();
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(EnableResourceSchedulerTest);
 
 // BeginFrameControl is not supported on MacOS.
 #if !defined(OS_MACOSX)
@@ -994,8 +875,11 @@ class WebContentsOpenTest : public page::Observer,
                             public HeadlessAsyncDevTooledBrowserTest {
  public:
   void RunDevTooledTest() override {
-    http_handler_->SetHeadlessBrowserContext(browser_context_);
     devtools_client_->GetPage()->AddObserver(this);
+    interceptor_->InsertResponse("http://foo.com/index.html",
+                                 {kPageWhichOpensAWindow, "text/html"});
+    interceptor_->InsertResponse("http://foo.com/page2.html",
+                                 {kPage2, "text/html"});
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
@@ -1003,26 +887,6 @@ class WebContentsOpenTest : public page::Observer,
 
     devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
   }
-
-  ProtocolHandlerMap GetProtocolHandlers() override {
-    ProtocolHandlerMap protocol_handlers;
-    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
-        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
-    http_handler_ = http_handler.get();
-    http_handler_->InsertResponse("http://foo.com/index.html",
-                                  {kPageWhichOpensAWindow, "text/html"});
-    http_handler_->InsertResponse("http://foo.com/page2.html",
-                                  {kPage2, "text/html"});
-    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
-    return protocol_handlers;
-  }
-
-  const TestInMemoryProtocolHandler* http_handler() const {
-    return http_handler_;
-  }
-
- private:
-  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
 };
 
 class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
@@ -1034,7 +898,7 @@ class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
     EXPECT_THAT(
-        http_handler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://foo.com/index.html", "http://foo.com/page2.html"));
     FinishAsynchronousTest();
   }
@@ -1050,7 +914,7 @@ class BlockWebContentsOpenTest : public WebContentsOpenTest {
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    EXPECT_THAT(http_handler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://foo.com/index.html"));
     FinishAsynchronousTest();
   }

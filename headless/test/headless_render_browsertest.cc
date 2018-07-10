@@ -154,7 +154,7 @@ const DOMNode* FindTag(const GetSnapshotResult* snapshot, const char* name) {
   return tags[0];
 }
 
-TestInMemoryProtocolHandler::Response HttpRedirect(
+TestNetworkInterceptor::Response HttpRedirect(
     int code,
     const std::string& url,
     const std::string& status = "Moved") {
@@ -162,16 +162,16 @@ TestInMemoryProtocolHandler::Response HttpRedirect(
   std::stringstream str;
   str << "HTTP/1.1 " << code << " " << status << "\r\nLocation: " << url
       << "\r\n\r\n";
-  return TestInMemoryProtocolHandler::Response(str.str());
+  return TestNetworkInterceptor::Response(str.str());
 }
 
-TestInMemoryProtocolHandler::Response HttpOk(
+TestNetworkInterceptor::Response HttpOk(
     const std::string& html,
     const std::string& mime_type = kTextHtml) {
-  return TestInMemoryProtocolHandler::Response(html, mime_type);
+  return TestNetworkInterceptor::Response(html, mime_type);
 }
 
-TestInMemoryProtocolHandler::Response ResponseFromFile(
+TestNetworkInterceptor::Response ResponseFromFile(
     const std::string& file_name,
     const std::string& mime_type) {
   static const base::FilePath kTestDataDirectory(
@@ -186,7 +186,7 @@ TestInMemoryProtocolHandler::Response ResponseFromFile(
   std::string contents;
   CHECK(base::ReadFileToString(file_path, &contents));
 
-  return TestInMemoryProtocolHandler::Response(contents, mime_type);
+  return TestNetworkInterceptor::Response(contents, mime_type);
 }
 
 }  // namespace
@@ -194,7 +194,7 @@ TestInMemoryProtocolHandler::Response ResponseFromFile(
 class HelloWorldTest : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(kSomeUrl, HttpOk(R"|(<!doctype html>
+    interceptor_->InsertResponse(kSomeUrl, HttpOk(R"|(<!doctype html>
 <h1>Hello headless world!</h1>
 )|"));
     return GURL(kSomeUrl);
@@ -208,7 +208,7 @@ class HelloWorldTest : public HeadlessRenderTest {
         FilterDOM(dom_snapshot, IsText),
         ElementsAre(NodeValue("Hello headless world!"), NodeValue("\n")));
     EXPECT_THAT(TextLayout(dom_snapshot), ElementsAre("Hello headless world!"));
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(), ElementsAre(kSomeUrl));
+    EXPECT_THAT(interceptor_->urls_requested(), ElementsAre(kSomeUrl));
     EXPECT_FALSE(main_frame_.empty());
     EXPECT_TRUE(scheduled_navigations_.empty());
     EXPECT_THAT(frames_[main_frame_].size(), Eq(1u));
@@ -235,7 +235,7 @@ HEADLESS_RENDER_BROWSERTEST(TimeoutTest);
 class JavaScriptOverrideTitle_JsEnabled : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(kSomeUrl, HttpOk(R"|(
+    interceptor_->InsertResponse(kSomeUrl, HttpOk(R"|(
 <html>
   <head>
     <title>JavaScript is off</title>
@@ -280,7 +280,7 @@ HEADLESS_RENDER_BROWSERTEST(JavaScriptOverrideTitle_JsDisabled);
 class JavaScriptConsoleErrors : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(kSomeUrl, HttpOk(R"|(
+    interceptor_->InsertResponse(kSomeUrl, HttpOk(R"|(
 <html>
   <head>
     <script language="JavaScript">
@@ -323,7 +323,7 @@ class DelayedCompletion : public HeadlessRenderTest {
   base::TimeTicks start_;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(kSomeUrl, HttpOk(R"|(
+    interceptor_->InsertResponse(kSomeUrl, HttpOk(R"|(
 <html>
   <body>
    <script type="text/javascript">
@@ -361,7 +361,7 @@ HEADLESS_RENDER_BROWSERTEST(DelayedCompletion);
 class ClientRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <head>
     <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
@@ -370,7 +370,7 @@ class ClientRedirectChain : public HeadlessRenderTest {
   <body>http://www.example.com/</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/1", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 1</title>
@@ -381,7 +381,7 @@ class ClientRedirectChain : public HeadlessRenderTest {
   <body>http://www.example.com/1</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/2", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 2</title>
@@ -392,7 +392,7 @@ class ClientRedirectChain : public HeadlessRenderTest {
   <body>http://www.example.com/2</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/3", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/3", HttpOk(R"|(
 <html>
   <head>
     <title>Pass</title>
@@ -408,7 +408,7 @@ class ClientRedirectChain : public HeadlessRenderTest {
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2", "http://www.example.com/3",
                     "http://www.example.com/pass"));
@@ -434,7 +434,7 @@ class ClientRedirectChain_NoJs : public ClientRedirectChain {
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1"));
     const DOMNode* value =
         NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
@@ -450,23 +450,20 @@ HEADLESS_RENDER_BROWSERTEST(ClientRedirectChain_NoJs);
 class ServerRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/",
-        HttpRedirect(302, "http://www.example.com/1"));
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/1",
-        HttpRedirect(301, "http://www.example.com/2"));
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/2",
-        HttpRedirect(302, "http://www.example.com/3"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/",
+                                 HttpRedirect(302, "http://www.example.com/1"));
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpRedirect(301, "http://www.example.com/2"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 HttpRedirect(302, "http://www.example.com/3"));
+    interceptor_->InsertResponse("http://www.example.com/3",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2", "http://www.example.com/3"));
     const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
@@ -487,10 +484,9 @@ HEADLESS_RENDER_BROWSERTEST(ServerRedirectChain);
 class ServerRedirectToFailure : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/",
-        HttpRedirect(302, "http://www.example.com/1"));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse("http://www.example.com/",
+                                 HttpRedirect(302, "http://www.example.com/1"));
+    interceptor_->InsertResponse(
         "http://www.example.com/1",
         HttpRedirect(301, "http://www.example.com/FAIL"));
     return GURL("http://www.example.com/");
@@ -498,34 +494,29 @@ class ServerRedirectToFailure : public HeadlessRenderTest {
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/FAIL"));
   }
 };
-// Flaky on Linux. https://crbug.com/839747
-#if defined(OS_LINUX)
+// TODO(crbug.com/861548): re-implement as DevTools protocol test.
 DISABLED_HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
-#else
-HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
-#endif
 
 class ServerRedirectRelativeChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/",
-        HttpRedirect(302, "http://www.mysite.com/1"));
-    GetProtocolHandler()->InsertResponse("http://www.mysite.com/1",
-                                         HttpRedirect(301, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.mysite.com/2",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/",
+                                 HttpRedirect(302, "http://www.mysite.com/1"));
+    interceptor_->InsertResponse("http://www.mysite.com/1",
+                                 HttpRedirect(301, "/2"));
+    interceptor_->InsertResponse("http://www.mysite.com/2",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.mysite.com/1",
                     "http://www.mysite.com/2"));
     const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
@@ -537,7 +528,7 @@ HEADLESS_RENDER_BROWSERTEST(ServerRedirectRelativeChain);
 class MixedRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
  <html>
    <head>
      <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
@@ -546,7 +537,7 @@ class MixedRedirectChain : public HeadlessRenderTest {
    <body>http://www.example.com/</body>
  </html>
  )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/1", HttpOk(R"|(
  <html>
    <head>
      <title>Hello, World 1</title>
@@ -557,19 +548,18 @@ class MixedRedirectChain : public HeadlessRenderTest {
    <body>http://www.example.com/1</body>
  </html>
  )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         HttpRedirect(302, "3"));
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/3",
-        HttpRedirect(301, "http://www.example.com/4"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/4",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 HttpRedirect(302, "3"));
+    interceptor_->InsertResponse("http://www.example.com/3",
+                                 HttpRedirect(301, "http://www.example.com/4"));
+    interceptor_->InsertResponse("http://www.example.com/4",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2", "http://www.example.com/3",
                     "http://www.example.com/4"));
@@ -582,10 +572,9 @@ HEADLESS_RENDER_BROWSERTEST(MixedRedirectChain);
 class FramesRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/",
-        HttpRedirect(302, "http://www.example.com/1"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/",
+                                 HttpRedirect(302, "http://www.example.com/1"));
+    interceptor_->InsertResponse("http://www.example.com/1", HttpOk(R"|(
 <html>
  <frameset>
   <frame src="http://www.example.com/frameA/">
@@ -595,8 +584,7 @@ class FramesRedirectChain : public HeadlessRenderTest {
 )|"));
 
     // Frame A
-    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/frameA/", HttpOk(R"|(
 <html>
  <head>
   <script>document.location='http://www.example.com/frameA/1'</script>
@@ -604,14 +592,13 @@ class FramesRedirectChain : public HeadlessRenderTest {
  <body>HELLO WORLD 1</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/1",
-                                         HttpRedirect(301, "/frameA/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/2",
-                                         HttpOk("<p>FRAME A</p>"));
+    interceptor_->InsertResponse("http://www.example.com/frameA/1",
+                                 HttpRedirect(301, "/frameA/2"));
+    interceptor_->InsertResponse("http://www.example.com/frameA/2",
+                                 HttpOk("<p>FRAME A</p>"));
 
     // Frame B
-    GetProtocolHandler()->InsertResponse("http://www.example.com/frameB/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/frameB/", HttpOk(R"|(
 <html>
  <head><title>HELLO WORLD 2</title></head>
  <body>
@@ -619,8 +606,7 @@ class FramesRedirectChain : public HeadlessRenderTest {
  </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/iframe/", HttpOk(R"|(
 <html>
  <head>
   <script>document.location='http://www.example.com/iframe/1'</script>
@@ -628,18 +614,18 @@ class FramesRedirectChain : public HeadlessRenderTest {
  <body>HELLO WORLD 1</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/1",
-                                         HttpRedirect(302, "/iframe/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/2",
-                                         HttpRedirect(301, "3"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/3",
-                                         HttpOk("<p>IFRAME B</p>"));
+    interceptor_->InsertResponse("http://www.example.com/iframe/1",
+                                 HttpRedirect(302, "/iframe/2"));
+    interceptor_->InsertResponse("http://www.example.com/iframe/2",
+                                 HttpRedirect(301, "3"));
+    interceptor_->InsertResponse("http://www.example.com/iframe/3",
+                                 HttpOk("<p>IFRAME B</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         UnorderedElementsAre(
             "http://www.example.com/", "http://www.example.com/1",
             "http://www.example.com/frameA/", "http://www.example.com/frameA/1",
@@ -697,7 +683,7 @@ HEADLESS_RENDER_BROWSERTEST(FramesRedirectChain);
 class DoubleRedirect : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 1</title>
@@ -709,8 +695,8 @@ class DoubleRedirect : public HeadlessRenderTest {
   <body>http://www.example.com/1</body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -722,7 +708,7 @@ class DoubleRedirect : public HeadlessRenderTest {
                     Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED)));
     // ..., but only the second one was started. It canceled the first one.
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/2"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -734,7 +720,7 @@ HEADLESS_RENDER_BROWSERTEST(DoubleRedirect);
 class RedirectAfterCompletion : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
  <head>
   <meta http-equiv='refresh' content='120; url=http://www.example.com/1'>
@@ -742,8 +728,8 @@ class RedirectAfterCompletion : public HeadlessRenderTest {
  <body><p>Pass</p></body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         HttpOk("<p>Fail</p>"));
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpOk("<p>Fail</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -753,7 +739,7 @@ class RedirectAfterCompletion : public HeadlessRenderTest {
         scheduled_navigations_[main_frame_],
         ElementsAre(Reason(FrameScheduledNavigationReason::META_TAG_REFRESH)));
     // ..., but because of the timeout, it has not been started yet.
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -765,7 +751,7 @@ HEADLESS_RENDER_BROWSERTEST(RedirectAfterCompletion);
 class Redirect307PostMethod : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
  <body onload='document.forms[0].submit();'>
   <form action='1' method='post'>
@@ -774,19 +760,19 @@ class Redirect307PostMethod : public HeadlessRenderTest {
  </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         HttpRedirect(307, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpRedirect(307, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2"));
-    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+    EXPECT_THAT(interceptor_->methods_requested(),
                 ElementsAre("GET", "POST", "POST"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -797,7 +783,7 @@ HEADLESS_RENDER_BROWSERTEST(Redirect307PostMethod);
 class RedirectPostChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
  <body onload='document.forms[0].submit();'>
   <form action='1' method='post'>
@@ -806,9 +792,9 @@ class RedirectPostChain : public HeadlessRenderTest {
  </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         HttpRedirect(307, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpRedirect(307, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2", HttpOk(R"|(
 <html>
  <body onload='document.forms[0].submit();'>
   <form action='3' method='post'>
@@ -816,20 +802,20 @@ class RedirectPostChain : public HeadlessRenderTest {
  </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
-                                         HttpRedirect(307, "/4"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/4",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/3",
+                                 HttpRedirect(307, "/4"));
+    interceptor_->InsertResponse("http://www.example.com/4",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2", "http://www.example.com/3",
                     "http://www.example.com/4"));
-    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+    EXPECT_THAT(interceptor_->methods_requested(),
                 ElementsAre("GET", "POST", "POST", "POST", "POST"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -840,7 +826,7 @@ HEADLESS_RENDER_BROWSERTEST(RedirectPostChain);
 class Redirect307PutMethod : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
  <html>
   <head>
    <script>
@@ -860,19 +846,19 @@ class Redirect307PutMethod : public HeadlessRenderTest {
   </body>
  </html>
  )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         HttpRedirect(307, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         {"Pass", "text/plain"});
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpRedirect(307, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 {"Pass", "text/plain"});
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2"));
-    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+    EXPECT_THAT(interceptor_->methods_requested(),
                 ElementsAre("GET", "PUT", "PUT"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -883,7 +869,7 @@ HEADLESS_RENDER_BROWSERTEST(Redirect307PutMethod);
 class Redirect303PutGet : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
  <head>
   <script>
@@ -903,19 +889,19 @@ class Redirect303PutGet : public HeadlessRenderTest {
  </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         HttpRedirect(303, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         {"Pass", "text/plain"});
+    interceptor_->InsertResponse("http://www.example.com/1",
+                                 HttpRedirect(303, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2",
+                                 {"Pass", "text/plain"});
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2"));
-    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+    EXPECT_THAT(interceptor_->methods_requested(),
                 ElementsAre("GET", "PUT", "GET"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -926,15 +912,15 @@ HEADLESS_RENDER_BROWSERTEST(Redirect303PutGet);
 class RedirectBaseUrl : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://foo.com/",
-                                         HttpRedirect(302, "http://bar.com/"));
-    GetProtocolHandler()->InsertResponse("http://bar.com/",
-                                         HttpOk("<img src=\"pass\">"));
+    interceptor_->InsertResponse("http://foo.com/",
+                                 HttpRedirect(302, "http://bar.com/"));
+    interceptor_->InsertResponse("http://bar.com/",
+                                 HttpOk("<img src=\"pass\">"));
     return GURL("http://foo.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://foo.com/", "http://bar.com/",
                             "http://bar.com/pass"));
   }
@@ -945,23 +931,23 @@ class RedirectNonAsciiUrl : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     // "中文" is 0xE4 0xB8 0xAD, 0xE6 0x96 0x87
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/",
         HttpRedirect(302, "http://www.example.com/中文"));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/%E4%B8%AD%E6%96%87",
         HttpRedirect(303, "http://www.example.com/pass#中文"));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/pass#%E4%B8%AD%E6%96%87",
         HttpOk("<p>Pass</p>"));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/%C3%A4%C2%B8%C2%AD%C3%A6%C2%96%C2%87",
         {"HTTP/1.1 500 Bad Response\r\nContent-Type: text/html\r\n\r\nFail"});
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/",
                             "http://www.example.com/%E4%B8%AD%E6%96%87",
                             "http://www.example.com/pass#%E4%B8%AD%E6%96%87"));
@@ -974,14 +960,15 @@ HEADLESS_RENDER_BROWSERTEST(RedirectNonAsciiUrl);
 class RedirectEmptyUrl : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/",
-        {"HTTP/1.1 302 Found\r\nLocation: \r\n\r\n<!DOCTYPE html><p>Pass</p>"});
+        {"HTTP/1.1 302 Found\r\nLocation: \r\nContent-Type: "
+         "text/html\r\n\r\n<!DOCTYPE html><p>Pass</p>"});
     return GURL("http://www.example.com/");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
@@ -992,7 +979,7 @@ HEADLESS_RENDER_BROWSERTEST(RedirectEmptyUrl);
 class RedirectInvalidUrl : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/",
         {"HTTP/1.1 302 Found\r\nLocation: http://\r\n\r\n"
          "<!DOCTYPE html><p>Pass</p>"});
@@ -1000,26 +987,21 @@ class RedirectInvalidUrl : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/"));
   }
 };
-// Flaky on Linux. https://crbug.com/839747
-#if defined(OS_LINUX)
+// TODO(crbug.com/861548): re-implement as DevTools protocol test.
 DISABLED_HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
-#else
-HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
-#endif
 
 class RedirectKeepsFragment : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/#foo",
-                                         HttpRedirect(302, "/1"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1#foo",
-                                         HttpRedirect(302, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2#foo",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/#foo",
+                                 HttpRedirect(302, "/1"));
+    interceptor_->InsertResponse("http://www.example.com/1#foo",
+                                 HttpRedirect(302, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2#foo", HttpOk(R"|(
 <body>
  <p id="content"></p>
  <script>
@@ -1031,7 +1013,7 @@ class RedirectKeepsFragment : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/#foo",
                             "http://www.example.com/1#foo",
                             "http://www.example.com/2#foo"));
@@ -1044,12 +1026,11 @@ HEADLESS_RENDER_BROWSERTEST(RedirectKeepsFragment);
 class RedirectReplacesFragment : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/#foo",
-                                         HttpRedirect(302, "/1#bar"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1#bar",
-                                         HttpRedirect(302, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2#bar",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/#foo",
+                                 HttpRedirect(302, "/1#bar"));
+    interceptor_->InsertResponse("http://www.example.com/1#bar",
+                                 HttpRedirect(302, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2#bar", HttpOk(R"|(
 <body>
  <p id="content"></p>
  <script>
@@ -1061,7 +1042,7 @@ class RedirectReplacesFragment : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/#foo",
                             "http://www.example.com/1#bar",
                             "http://www.example.com/2#bar"));
@@ -1069,17 +1050,17 @@ class RedirectReplacesFragment : public HeadlessRenderTest {
                 NodeValue("http://www.example.com/2#bar"));
   }
 };
-HEADLESS_RENDER_BROWSERTEST(RedirectReplacesFragment);
+// TODO(crbug.com/861548): re-implement as DevTools protocol test.
+DISABLED_HEADLESS_RENDER_BROWSERTEST(RedirectReplacesFragment);
 
 class RedirectNewFragment : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/",
-                                         HttpRedirect(302, "/1#foo"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1#foo",
-                                         HttpRedirect(302, "/2"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2#foo",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/",
+                                 HttpRedirect(302, "/1#foo"));
+    interceptor_->InsertResponse("http://www.example.com/1#foo",
+                                 HttpRedirect(302, "/2"));
+    interceptor_->InsertResponse("http://www.example.com/2#foo", HttpOk(R"|(
 <body>
  <p id="content"></p>
  <script>
@@ -1092,39 +1073,40 @@ class RedirectNewFragment : public HeadlessRenderTest {
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     EXPECT_THAT(
-        GetProtocolHandler()->urls_requested(),
+        interceptor_->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1#foo",
                     "http://www.example.com/2#foo"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("http://www.example.com/2#foo"));
   }
 };
-HEADLESS_RENDER_BROWSERTEST(RedirectNewFragment);
+// TODO(https://crbug.com/839747): Re-implement as DevTools protocol test.
+DISABLED_HEADLESS_RENDER_BROWSERTEST(RedirectNewFragment);
 
 class WindowLocationFragments : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/#fragment1",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/#fragment1",
+                                 HttpOk(R"|(
  <script>
    if (window.location.hash == '#fragment1') {
      document.write('<iframe src="iframe#fragment2"></iframe>');
    }
  </script>)|"));
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/iframe#fragment2", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/iframe#fragment2",
+                                 HttpOk(R"|(
  <script>
    if (window.location.hash == '#fragment2') {
      document.location = 'http://www.example.com/pass';
    }
  </script>)|"));
-    GetProtocolHandler()->InsertResponse("http://www.example.com/pass",
-                                         HttpOk("<p>Pass</p>"));
+    interceptor_->InsertResponse("http://www.example.com/pass",
+                                 HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/#fragment1");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/#fragment1",
                             "http://www.example.com/iframe#fragment2",
                             "http://www.example.com/pass"));
@@ -1137,7 +1119,7 @@ HEADLESS_RENDER_BROWSERTEST(WindowLocationFragments);
 class CookieSetFromJs : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html><head><script>
 document.cookie = 'SessionID=123';
 n = document.cookie.indexOf('SessionID');
@@ -1149,7 +1131,7 @@ if (n < 0) {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "BODY")),
                 NodeValue("Pass"));
@@ -1165,7 +1147,7 @@ class CookieSetFromJs_NoCookies : public CookieSetFromJs {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+    EXPECT_THAT(interceptor_->urls_requested(),
                 ElementsAre("http://www.example.com/",
                             "http://www.example.com/epicfail"));
   }
@@ -1186,7 +1168,7 @@ class CookieUpdatedFromJs : public HeadlessRenderTest {
                                         .SetName("foo")
                                         .SetValue("bar")
                                         .Build());
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html><head><script>
 var x = document.cookie;
 document.cookie = x + 'baz';
@@ -1219,7 +1201,7 @@ HEADLESS_RENDER_BROWSERTEST(CookieUpdatedFromJs);
 class InCrossOriginObject : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://foo.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://foo.com/", HttpOk(R"|(
  <html><body>
   <iframe id='myframe' src='http://bar.com/'></iframe>
    <script>
@@ -1231,8 +1213,8 @@ class InCrossOriginObject : public HeadlessRenderTest {
       }
     };
  </script><p>Pass</p></body></html>)|"));
-    GetProtocolHandler()->InsertResponse("http://bar.com/",
-                                         HttpOk(R"|(<html></html>)|"));
+    interceptor_->InsertResponse("http://bar.com/",
+                                 HttpOk(R"|(<html></html>)|"));
     return GURL("http://foo.com/");
   }
 
@@ -1251,7 +1233,7 @@ class ContentSecurityPolicy : public HeadlessRenderTest {
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     // Only first 3 scripts of 4 on the page are whitelisted for execution.
     // Therefore only 3 lines in the log are expected.
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://example.com/",
         {"HTTP/1.1 200 OK\r\n"
          "Content-Type: text/html\r\n"
@@ -1287,51 +1269,46 @@ class FrameLoadEvents : public HeadlessRenderTest {
   std::map<std::string, std::string> frame_scheduled_;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
-        "http://example.com/", HttpRedirect(302, "http://example.com/1"));
+    interceptor_->InsertResponse("http://example.com/",
+                                 HttpRedirect(302, "http://example.com/1"));
 
-    GetProtocolHandler()->InsertResponse("http://example.com/1", HttpOk(R"|(
+    interceptor_->InsertResponse("http://example.com/1", HttpOk(R"|(
 <html><frameset>
  <frame src="http://example.com/frameA/" id="frameA">
  <frame src="http://example.com/frameB/" id="frameB">
 </frameset></html>
 )|"));
 
-    GetProtocolHandler()->InsertResponse("http://example.com/frameA/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://example.com/frameA/", HttpOk(R"|(
 <html><head><script>
  document.location="http://example.com/frameA/1"
 </script></head></html>
 )|"));
 
-    GetProtocolHandler()->InsertResponse("http://example.com/frameB/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://example.com/frameB/", HttpOk(R"|(
 <html><head><script>
  document.location="http://example.com/frameB/1"
 </script></head></html>
 )|"));
 
-    GetProtocolHandler()->InsertResponse(
-        "http://example.com/frameA/1",
-        HttpOk("<html><body>FRAME A 1</body></html>"));
+    interceptor_->InsertResponse("http://example.com/frameA/1",
+                                 HttpOk("<html><body>FRAME A 1</body></html>"));
 
-    GetProtocolHandler()->InsertResponse("http://example.com/frameB/1",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://example.com/frameB/1", HttpOk(R"|(
 <html><body>FRAME B 1
  <iframe src="http://example.com/frameB/1/iframe/" id="iframe"></iframe>
 </body></html>
 )|"));
 
-    GetProtocolHandler()->InsertResponse("http://example.com/frameB/1/iframe/",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://example.com/frameB/1/iframe/",
+                                 HttpOk(R"|(
 <html><head><script>
  document.location="http://example.com/frameB/1/iframe/1"
 </script></head></html>
 )|"));
 
-    GetProtocolHandler()->InsertResponse(
-        "http://example.com/frameB/1/iframe/1",
-        HttpOk("<html><body>IFRAME 1</body><html>"));
+    interceptor_->InsertResponse("http://example.com/frameB/1/iframe/1",
+                                 HttpOk("<html><body>IFRAME 1</body><html>"));
 
     return GURL("http://example.com/");
   }
@@ -1373,7 +1350,7 @@ HEADLESS_RENDER_BROWSERTEST(FrameLoadEvents);
 class CustomFont : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <head>
     <style>
@@ -1392,7 +1369,7 @@ class CustomFont : public HeadlessRenderTest {
   </body>
 </html>
 )|"));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/font.ttf",
         ResponseFromFile("font.ttf", kApplicationOctetStream));
     return GURL("http://www.example.com/");
@@ -1410,7 +1387,7 @@ class CssUrlFilter : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     // The image from circle.svg will be drawn with the blur from blur.svg.
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <!DOCTYPE html>
 <style>
 body { margin: 0; }
@@ -1423,18 +1400,18 @@ img {
 )|"));
 
     // Just a normal image.
-    GetProtocolHandler()->InsertResponse("http://www.example.com/circle.svg",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/circle.svg",
+                                 HttpOk(R"|(
 <svg width="100" height="100" version="1.1" xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink">
 <circle cx="50" cy="50" r="50" fill="green" />
 </svg>
 )|",
-                                                kImageSvgXml));
+                                        kImageSvgXml));
 
     // A blur filter stored inside an svg file.
-    GetProtocolHandler()->InsertResponse("http://www.example.com/blur.svg#blur",
-                                         HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/blur.svg#blur",
+                                 HttpOk(R"|(
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink">
   <filter id="blur">
@@ -1442,7 +1419,7 @@ img {
   </filter>
 </svg>
 )|",
-                                                kImageSvgXml));
+                                        kImageSvgXml));
 
     return GURL("http://www.example.com/");
   }
@@ -1457,10 +1434,10 @@ HEADLESS_RENDER_BROWSERTEST(CssUrlFilter);
 class SvgExamples : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/",
         ResponseFromFile("svg_examples.svg", kImageSvgXml));
-    GetProtocolHandler()->InsertResponse(
+    interceptor_->InsertResponse(
         "http://www.example.com/svg_example_image.png",
         ResponseFromFile("svg_example_image.png", kImagePng));
 
@@ -1482,7 +1459,7 @@ HEADLESS_RENDER_BROWSERTEST(SvgExamples);
 class Canvas : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+    interceptor_->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <body>
     <canvas id="test_canvas" width="200" height="200"

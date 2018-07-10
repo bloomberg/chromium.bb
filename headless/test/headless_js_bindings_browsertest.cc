@@ -21,7 +21,6 @@
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
-#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +48,6 @@ window.TabSocket.send = (json) => console.debug(json);
 class HeadlessJsBindingsTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public HeadlessDevToolsClient::RawProtocolListener,
-      public TestInMemoryProtocolHandler::RequestDeferrer,
       public headless::runtime::Observer,
       public page::ExperimentalObserver {
  public:
@@ -77,25 +75,14 @@ class HeadlessJsBindingsTest
       HeadlessWebContents::Builder& builder) override {
     builder.SetWindowSize(gfx::Size(0, 0));
     builder.SetInitialURL(GURL("http://test.com/index.html"));
-
-    http_handler_->SetHeadlessBrowserContext(browser_context_);
-  }
-
-  ProtocolHandlerMap GetProtocolHandlers() override {
-    ProtocolHandlerMap protocol_handlers;
-    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
-        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
-    http_handler_ = http_handler.get();
-    bindings_js_ = ui::ResourceBundle::GetSharedInstance()
-                       .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
-                       .as_string();
-    http_handler->InsertResponse("http://test.com/index.html",
+    interceptor_->InsertResponse("http://test.com/index.html",
                                  {kIndexHtml, "text/html"});
-    http_handler->InsertResponse(
+    std::string bindings_js = ui::ResourceBundle::GetSharedInstance()
+                                  .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
+                                  .as_string();
+    interceptor_->InsertResponse(
         "http://test.com/bindings.js",
-        {bindings_js_.c_str(), "application/javascript"});
-    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
-    return protocol_handlers;
+        {bindings_js.c_str(), "application/javascript"});
   }
 
   void RunDevTooledTest() override {
@@ -110,11 +97,6 @@ class HeadlessJsBindingsTest
         base::BindOnce(&HeadlessJsBindingsTest::ConnectionEstablished,
                        weak_factory_.GetWeakPtr()));
     devtools_client_->SetRawProtocolListener(this);
-  }
-
-  void OnRequest(const GURL& url,
-                 base::RepeatingClosure complete_request) override {
-    complete_request.Run();
   }
 
   void ConnectionEstablished(std::unique_ptr<EvaluateResult>) {
@@ -242,8 +224,6 @@ class HeadlessJsBindingsTest
   }
 
  protected:
-  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
-  std::string bindings_js_;
   base::RepeatingClosure complete_request_;
   bool connection_established_ = false;
   base::WeakPtrFactory<HeadlessJsBindingsTest> weak_factory_;

@@ -18,9 +18,7 @@
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
-#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
-#include "net/test/embedded_test_server/http_request.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -35,8 +33,7 @@ class GetSnapshotResult;
 // Base class for tests that render a particular page and verify the output.
 class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
                            public page::ExperimentalObserver,
-                           public runtime::ExperimentalObserver,
-                           public TestInMemoryProtocolHandler::RequestDeferrer {
+                           public runtime::ExperimentalObserver {
  public:
   struct Navigation {
     std::string url;
@@ -83,9 +80,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   // Marks that the test case reached the final conclusion.
   void SetTestCompleted() { state_ = FINISHED; }
 
-  // The protocol handler used to respond to requests.
-  TestInMemoryProtocolHandler* GetProtocolHandler() { return http_handler_; }
-
   // Do necessary preparations and return a URL to render.
   virtual GURL GetPageUrl(HeadlessDevToolsClient* client) = 0;
 
@@ -116,7 +110,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
       HeadlessBrowserContext::Builder& builder) override;
   bool GetEnableBeginFrameControl() override;
   void PostRunAsynchronousTest() override;
-  ProtocolHandlerMap GetProtocolHandlers() override;
 
   // page::ExperimentalObserver implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
@@ -130,9 +123,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   void OnConsoleAPICalled(
       const runtime::ConsoleAPICalledParams& params) override;
   void OnExceptionThrown(const runtime::ExceptionThrownParams& params) override;
-
-  // TestInMemoryProtocolHandler::RequestDeferrer
-  void OnRequest(const GURL& url, base::Closure complete_request) override;
 
   // For each frame, keep track of scheduled navigations.
   // FYI: It doesn't track every navigations. For instance, it doesn't include
@@ -173,7 +163,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
 
   std::unique_ptr<VirtualTimeController> virtual_time_controller_;
   std::unique_ptr<CompositorController> compositor_controller_;
-  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
 
   base::test::ScopedFeatureList scoped_feature_list_;
 

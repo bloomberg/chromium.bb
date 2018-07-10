@@ -609,8 +609,6 @@ test("headless_unittests") {
     "public/util/error_reporter_unittest.cc",
     "public/util/expedited_dispatcher_test.cc",
     "public/util/generic_url_request_job_test.cc",
-    "public/util/testing/test_in_memory_protocol_handler.cc",
-    "public/util/testing/test_in_memory_protocol_handler.h",
     "public/util/throttled_dispatcher_test.cc",
     "public/util/virtual_time_controller_test.cc",
   ]
@@ -736,7 +734,6 @@ if (is_linux) {
 test("headless_browsertests") {
   configs += [ "//net:net_test_config" ]
   sources = [
-    "lib/frame_id_browsertest.cc",
     "lib/headless_browser_browsertest.cc",
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
@@ -744,13 +741,13 @@ test("headless_browsertests") {
     "public/util/compositor_controller_browsertest.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
-    "public/util/testing/test_in_memory_protocol_handler.cc",
-    "public/util/testing/test_in_memory_protocol_handler.h",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_client_browsertest.cc",
     "test/headless_protocol_browsertest.cc",
     "test/headless_test_launcher.cc",
+    "test/test_network_interceptor.cc",
+    "test/test_network_interceptor.h",
     "test/test_protocol_handler.cc",
     "test/test_protocol_handler.h",
     "test/test_url_request_job.cc",
@@ -792,6 +789,7 @@ test("headless_browsertests") {
     "//base",
     "//components/security_state/content",
     "//content/test:test_support",
+    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

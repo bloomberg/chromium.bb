@@ -13,6 +13,7 @@
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
+#include "headless/test/test_network_interceptor.h"
 
 namespace base {
 class RunLoop;
@@ -140,10 +141,6 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // are processed (e.g. in a callback).
   virtual void RunDevTooledTest() = 0;
 
-  // Returns the protocol handlers to construct the browser with.  By default
-  // the map returned is empty.
-  virtual ProtocolHandlerMap GetProtocolHandlers();
-
   // Whether to enable BeginFrameControl when creating |web_contents_|.
   virtual bool GetEnableBeginFrameControl();
 
@@ -163,6 +160,7 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   std::unique_ptr<HeadlessDevToolsClient> browser_devtools_client_;
   bool render_process_exited_;
+  std::unique_ptr<TestNetworkInterceptor> interceptor_;
 };
 
 }  // namespace headless
