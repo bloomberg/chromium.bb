@@ -427,6 +427,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
         result.push_back(std::make_unique<CSSNumberInterpolationType>(
             property, &registration, true));
         break;
+      case CSSSyntaxType::kTransformFunction:
       case CSSSyntaxType::kTransformList:
         // TODO(alancutter): Support smooth interpolation of these types.
         break;

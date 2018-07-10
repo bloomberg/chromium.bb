@@ -213,6 +213,9 @@ bool ConsumeRadii(CSSValue* horizontal_radii[4],
 
 CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange&);
 
+CSSValue* ConsumeTransformValue(CSSParserTokenRange&,
+                                const CSSParserContext&,
+                                bool use_legacy_parsing);
 CSSValue* ConsumeTransformList(CSSParserTokenRange&,
                                const CSSParserContext&,
                                const CSSParserLocalContext&);
