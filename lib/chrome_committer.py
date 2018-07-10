@@ -28,11 +28,8 @@ class ChromeCommitter(object):
   def __init__(self, args):
     self._checkout_dir = args.workdir
     self._dryrun = args.dryrun
-    self._git_committer_args = ['-c', 'user.email=%s' % args.user_email,
-                                '-c', 'user.name=%s' % args.user_email]
     self._commit_msg = ''
 
-    logging.info('user_email=%s', args.user_email)
     logging.info('checkout_dir=%s', args.workdir)
 
   def __del__(self):
@@ -84,7 +81,7 @@ class ChromeCommitter(object):
       for file_path in file_paths:
         git.AddPath(file_path)
       commit_args = ['commit', '-m', self._commit_msg]
-      git.RunGit(self._checkout_dir, self._git_committer_args + commit_args,
+      git.RunGit(self._checkout_dir, commit_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       raise CommitError('Could not create git commit: %r' % e)
@@ -108,7 +105,7 @@ class ChromeCommitter(object):
           upload_args += ['--tbr-owners']
         # Marks CL as ready.
         upload_args += ['--send-mail']
-      git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
+      git.RunGit(self._checkout_dir, upload_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
 
       # Flip the CQ commit bit.
@@ -139,9 +136,6 @@ class ChromeCommitter(object):
     parser = commandline.ArgumentParser(usage=__doc__, add_help=False)
     parser.add_argument('--dryrun', action='store_true', default=False,
                         help='Don\'t commit changes or send out emails.')
-    parser.add_argument('--user_email', required=False,
-                        default='chromeos-commit-bot@chromium.org',
-                        help='Email address to use when comitting changes.')
     parser.add_argument('--workdir',
                         default=os.path.join(os.getcwd(), 'chrome_src'),
                         help=('Path to a checkout of the chrome src. '

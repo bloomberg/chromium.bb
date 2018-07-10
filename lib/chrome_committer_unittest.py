@@ -24,7 +24,6 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     def __init__(self, workdir):
       self.workdir = workdir
       self.dryrun = False
-      self.user_email = 'user@test.org'
 
 
   def setUp(self):
@@ -64,8 +63,6 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self._assertCommand('git add -- OWNERS')
     self._assertCommand('git add -- BUILD.gn')
     self.assertCommandContains(['git',
-                                '-c', 'user.email=user@test.org',
-                                '-c', 'user.name=user@test.org',
                                 'commit', '-m',
                                 'Automated Commit: Modify OWNERS and BUILD.gn'])
 
@@ -86,8 +83,6 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Upload()
 
     self.assertCommandContains(['git',
-                                '-c', 'user.email=user@test.org',
-                                '-c', 'user.name=user@test.org',
                                 'cl', 'upload', '-v', '-m',
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
                                 '--bypass-hooks', '-f',
@@ -107,8 +102,6 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Upload()
 
     self.assertCommandContains(['git',
-                                '-c', 'user.email=user@test.org',
-                                '-c', 'user.name=user@test.org',
                                 'cl', 'upload', '-v', '-m',
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
                                 '--bypass-hooks', '-f'])
