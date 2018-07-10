@@ -2,11 +2,6 @@ bauerb@chromium.org
 droger@chromium.org
 msarda@chromium.org
 
-# ProfileKeyedServiceFactory and related
-per-file chrome_browser_main_extra_parts_profiles*=erg@chromium.org
-per-file *profile_impl*=erg@chromium.org
-per-file profile.*=erg@chromium.org
-
 # ProfileManager and GetDefaultProfile and related
 skuhne@chromium.org
 
