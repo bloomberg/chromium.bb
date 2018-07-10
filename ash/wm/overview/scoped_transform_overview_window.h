@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -46,8 +45,7 @@ class WindowSelectorItem;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedTransformOverviewWindow
-    : public ui::ImplicitAnimationObserver,
-      public ui::CompositorObserver {
+    : public ui::ImplicitAnimationObserver {
  public:
   // Overview windows have certain properties if their aspect ratio exceedes a
   // threshold. This enum keeps track of which category the window falls into,
@@ -188,25 +186,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // the bounds of the |window_|.
   void ResizeMinimizedWidgetIfNeeded();
 
-  // Hides the title bar associated with |window_|, if it exists. Wait for the
-  // the compositor to paint the new title bar and then animate the overview
-  // item. Returns false if we could not find an associated title bar.
-  bool HideTitleBarAndAnimate(const gfx::Transform& transform,
-                              OverviewAnimationType animation_type);
-
   views::Widget* minimized_widget() { return minimized_widget_.get(); }
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
-
-  // ui::CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingChildResizing(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
  private:
   friend class WindowSelectorTest;
@@ -221,9 +204,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Creates and applys a mask which adds rounded edges to windows in overview
   // mode.
   void CreateAndApplyMaskAndShadow();
-
-  void PrepareAnimationSettings(OverviewAnimationType animation_type,
-                                ScopedAnimationSettings* animation_settings);
 
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
@@ -249,11 +229,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Empty if window is of type normal. Contains the bounds the window selector
   // item should be if the window is too wide or too tall.
   base::Optional<gfx::Rect> window_selector_bounds_;
-
-  using AnimationData = std::pair<gfx::Transform, OverviewAnimationType>;
-  // Stores the data needed to perform a animation, if we need to wait for the
-  // compositor to hide the title bar.
-  base::Optional<AnimationData> delayed_animation_data_;
 
   // A widget that holds the content for the minimized window.
   std::unique_ptr<views::Widget> minimized_widget_;

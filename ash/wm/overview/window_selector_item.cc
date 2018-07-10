@@ -59,10 +59,6 @@ namespace ash {
 
 namespace {
 
-// When set to true by tests, item does not wait for header to finish painting
-// before starting animation. This should be always be false for all tests.
-bool disallow_delayed_animation_for_tests = false;
-
 // In the conceptual overview table, the window margin is the space reserved
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
@@ -111,7 +107,7 @@ constexpr int kSelectorFadeInMilliseconds = 350;
 constexpr int kExitFadeInMilliseconds = 30;
 
 // Duration of the header and close button fade in/out when a drag is
-// started/finished on a window selector item.
+// started/finished on a window selector item;
 constexpr int kDragAnimationMs = 167;
 
 // Before closing a window animate both the window and the caption to shrink by
@@ -668,11 +664,6 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
 };
 
-// static
-void WindowSelectorItem::SetDisallowDelayedAnimationForTests() {
-  disallow_delayed_animation_for_tests = true;
-}
-
 WindowSelectorItem::WindowSelectorItem(aura::Window* window,
                                        WindowSelector* window_selector,
                                        WindowGrid* window_grid)
@@ -723,8 +714,7 @@ void WindowSelectorItem::RestoreWindow(bool reset_transform) {
     background_view_->OnItemRestored();
     background_view_ = nullptr;
   }
-  UpdateHeaderLayout(HeaderFadeAndLayoutMode::kExit,
-                     GetExitOverviewAnimationType());
+  UpdateHeaderLayout(HeaderFadeInMode::kExit, GetExitOverviewAnimationType());
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -768,7 +758,7 @@ void WindowSelectorItem::PrepareForOverview() {
       wm::GetWindowState(GetWindow())->IsMinimized()) {
     RestackItemWidget();
   }
-  UpdateHeaderLayout(HeaderFadeAndLayoutMode::kEnter,
+  UpdateHeaderLayout(HeaderFadeInMode::kEnter,
                      OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
 
@@ -792,10 +782,10 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // If |target_bounds_| is empty, this is the first update. For tablet mode,
   // let UpdateHeaderLayout know, as we do not want |item_widget_| to be
   // animated with the window.
-  HeaderFadeAndLayoutMode mode =
+  HeaderFadeInMode mode =
       target_bounds_.IsEmpty() && UseTabletModeAnimations(GetWindow())
-          ? HeaderFadeAndLayoutMode::kFirstUpdate
-          : HeaderFadeAndLayoutMode::kUpdate;
+          ? HeaderFadeInMode::kFirstUpdate
+          : HeaderFadeInMode::kUpdate;
   target_bounds_ = target_bounds;
 
   gfx::Rect inset_bounds(target_bounds);
@@ -803,14 +793,22 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   if (wm::GetWindowState(GetWindow())->IsMinimized())
     new_animation_type = OVERVIEW_ANIMATION_NONE;
 
-  if (SetItemBounds(inset_bounds, new_animation_type)) {
-    // Delayed animation will handle updating the header, shadow and backdrop.
-    return;
+  SetItemBounds(inset_bounds, new_animation_type);
+
+  // SetItemBounds is called before UpdateHeaderLayout so the header can
+  // properly use the updated windows bounds.
+  UpdateHeaderLayout(mode, new_animation_type);
+
+  // Shadow is normally set after an animation is finished. In the case of no
+  // animations, manually set the shadow. Shadow relies on both the window
+  // transform and |item_widget_|'s new bounds so set it after SetItemBounds
+  // and UpdateHeaderLayout.
+  if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
+    SetShadowBounds(
+        base::make_optional(transform_window_.GetTransformedBounds()));
   }
 
-  // SetItemBounds is called before UpdateHeaderShadowBackdrop so the those
-  // elements can properly use the updated windows bounds.
-  UpdateHeaderShadowBackdrop(new_animation_type, mode);
+  UpdateBackdropBounds();
 }
 
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
@@ -1135,23 +1133,6 @@ void WindowSelectorItem::SetShadowBounds(
   shadow_->SetContentBounds(bounds_in_item);
 }
 
-void WindowSelectorItem::UpdateHeaderShadowBackdrop(
-    OverviewAnimationType animation_type,
-    HeaderFadeAndLayoutMode mode) {
-  UpdateHeaderLayout(mode, animation_type);
-
-  // Shadow is normally set after an animation is finished. In the case of no
-  // animations, manually set the shadow. Shadow relies on both the window
-  // transform and |item_widget_|'s new bounds so set it after SetItemBounds
-  // and UpdateHeaderLayout.
-  if (animation_type == OVERVIEW_ANIMATION_NONE) {
-    SetShadowBounds(
-        base::make_optional(transform_window_.GetTransformedBounds()));
-  }
-
-  UpdateBackdropBounds();
-}
-
 void WindowSelectorItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
   transform_window_.SetOpacity(opacity);
@@ -1216,7 +1197,7 @@ gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
   return transform_window_.GetTargetBoundsInScreen();
 }
 
-bool WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
+void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
                                        OverviewAnimationType animation_type) {
   DCHECK(root_window_ == GetWindow()->GetRootWindow());
   gfx::Rect screen_rect = transform_window_.GetTargetBoundsInScreen();
@@ -1233,23 +1214,9 @@ bool WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
           screen_rect, target_bounds, top_view_inset, title_height);
   gfx::Transform transform = ScopedTransformOverviewWindow::GetTransformForRect(
       screen_rect, selector_item_bounds);
-
-  const bool delay_transform = !disallow_delayed_animation_for_tests &&
-                               maybe_delay_animation_ &&
-                               transform_window_.GetTopInset();
-  maybe_delay_animation_ = false;
-  if (delay_transform) {
-    // HideTitleBarAndAnimate will handle transforming the window as well as
-    // updating the header, shadow and backdrop. If no title bar was found then
-    // continue as normally.
-    if (transform_window_.HideTitleBarAndAnimate(transform, animation_type))
-      return true;
-  }
-
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   transform_window_.SetTransform(root_window_, transform);
-  return false;
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
@@ -1336,11 +1303,11 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
-    HeaderFadeAndLayoutMode mode,
+    HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
   // Do not move the header on exit if the window is originally minimized
   // or in tablet mode.
-  if (mode == HeaderFadeAndLayoutMode::kExit &&
+  if (mode == HeaderFadeInMode::kExit &&
       (UseTabletModeAnimations(GetWindow()) ||
        wm::GetWindowState(GetWindow())->IsMinimized())) {
     return;
@@ -1355,20 +1322,20 @@ void WindowSelectorItem::UpdateHeaderLayout(
   label_rect.set_width(transformed_window_bounds.width());
   // For tabbed windows the initial bounds of the caption are set such that it
   // appears to be "growing" up from the window content area.
-  label_rect.set_y((mode != HeaderFadeAndLayoutMode::kEnter ||
-                    transform_window_.GetTopInset())
-                       ? -label_rect.height()
-                       : 0);
+  label_rect.set_y(
+      (mode != HeaderFadeInMode::kEnter || transform_window_.GetTopInset())
+          ? -label_rect.height()
+          : 0);
 
   {
     ui::ScopedLayerAnimationSettings layer_animation_settings(
         item_widget_->GetLayer()->GetAnimator());
     if (background_view_) {
-      if (mode == HeaderFadeAndLayoutMode::kEnter) {
+      if (mode == HeaderFadeInMode::kEnter) {
         // Animate the color of |background_view_| once the fade in animation of
         // |item_widget_| ends.
         layer_animation_settings.AddObserver(background_view_);
-      } else if (mode == HeaderFadeAndLayoutMode::kExit) {
+      } else if (mode == HeaderFadeInMode::kExit) {
         // Make the header visible above the window. It will be faded out when
         // the Shutdown() is called.
         background_view_->AnimateColor(
@@ -1387,14 +1354,14 @@ void WindowSelectorItem::UpdateHeaderLayout(
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   // For the first update, place the widget at its destination.
   ScopedOverviewAnimationSettings animation_settings(
-      mode == HeaderFadeAndLayoutMode::kFirstUpdate
+      mode == HeaderFadeInMode::kFirstUpdate
           ? OverviewAnimationType::OVERVIEW_ANIMATION_NONE
           : animation_type,
       widget_window);
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
-  if (mode != HeaderFadeAndLayoutMode::kEnter) {
+  if (mode != HeaderFadeInMode::kEnter) {
     label_rect.set_height(close_button_->GetPreferredSize().height() +
                           transformed_window_bounds.height());
   }

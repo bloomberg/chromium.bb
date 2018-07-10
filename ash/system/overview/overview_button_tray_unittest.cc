@@ -70,16 +70,9 @@ class OverviewButtonTrayTest : public AshTestBase {
   OverviewButtonTrayTest() = default;
   ~OverviewButtonTrayTest() override = default;
 
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kUseFirstDisplayAsInternal);
-    AshTestBase::SetUp();
-  }
+  void SetUp() override;
 
-  void NotifySessionStateChanged() {
-    GetTray()->OnSessionStateChanged(
-        Shell::Get()->session_controller()->GetSessionState());
-  }
+  void NotifySessionStateChanged();
 
  protected:
   views::ImageView* GetImageView(OverviewButtonTray* tray) {
@@ -89,6 +82,17 @@ class OverviewButtonTrayTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(OverviewButtonTrayTest);
 };
+
+void OverviewButtonTrayTest::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kUseFirstDisplayAsInternal);
+  AshTestBase::SetUp();
+}
+
+void OverviewButtonTrayTest::NotifySessionStateChanged() {
+  GetTray()->OnSessionStateChanged(
+      Shell::Get()->session_controller()->GetSessionState());
+}
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
 TEST_F(OverviewButtonTrayTest, BasicConstruction) {
