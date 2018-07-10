@@ -1,4 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
@@ -9,7 +11,7 @@
 
 <dom-module id="history-side-bar">
   <template>
-    <style include="shared-style">
+    <style include="shared-style cr-icons">
       :host {
         display: flex;
         height: 100%;
@@ -29,13 +31,8 @@
         justify-content: space-between;
       }
 
-      #clear-browsing-data iron-icon {
+      #clear-browsing-data .cr-icon {
         -webkit-margin-end: 20px;
-        color: var(--paper-grey-400);
-        height: 20px;
-        margin-bottom: 10px;
-        margin-top: 10px;
-        width: 20px;
       }
 
       iron-selector {
@@ -111,7 +108,7 @@
           disabled$="[[guestSession_]]"
           tabindex$="[[computeClearBrowsingDataTabIndex_(guestSession_)]]">
         $i18n{clearBrowsingData}
-        <iron-icon icon="cr:open-in-new"></iron-icon>
+        <div class="cr-icon icon-external"></div>
         <paper-ripple id="cbd-ripple"></paper-ripple>
       </a>
       <div id="spacer"></div>
