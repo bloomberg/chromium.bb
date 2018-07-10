@@ -98,20 +98,24 @@ TEST(NumberFormattingTest, FormatPercent) {
   static const struct {
     int64_t number;
     const char* expected_english;
-    const wchar_t* expected_german;   // Note: Space before % isn't \x20.
+    const char* expected_german;  // Note: Space before % isn't \x20.
     // Note: Eastern Arabic-Indic digits (U+06Fx) for Persian and
-    // Arabic-Indic digits (U+066x) for Arabic.
+    // Arabic-Indic digits (U+066x) for Arabic in Egypt(ar-EG). In Arabic (ar),
+    // uses European digits (Google-patch).
     // See https://unicode.org/cldr/trac/ticket/9040 for details.
     // See also https://unicode.org/cldr/trac/ticket/10176 .
     // For now, take what CLDR 32 has (percent sign to the right of
     // a number in Persian).
-    const wchar_t* expected_persian;
-    const wchar_t* expected_arabic;
+    const char* expected_persian;
+    const char* expected_arabic;
+    const char* expected_arabic_egypt;
   } cases[] = {
-      {0, "0%", L"0\xa0%", L"\x6f0\x66a", L"\x660\x66a\x61c"},
-      {42, "42%", L"42\xa0%", L"\x6f4\x6f2\x66a", L"\x664\x662\x66a\x61c"},
-      {1024, "1,024%", L"1.024\xa0%", L"\x6f1\x66c\x6f0\x6f2\x6f4\x66a",
-       L"\x661\x66c\x660\x662\x664\x66a\x61c"},
+      {0, "0%", u8"0\u00a0%", u8"\u06f0\u066a", u8"0\u200e%\u200e",
+       u8"\u0660\u066a\u061c"},
+      {42, "42%", "42\u00a0%", u8"\u06f4\u06f2\u066a", u8"42\u200e%\u200e",
+       "\u0664\u0662\u066a\u061c"},
+      {1024, "1,024%", "1.024\u00a0%", u8"\u06f1\u066c\u06f0\u06f2\u06f4\u066a",
+       "1,024\u200e%\u200e", "\u0661\u066c\u0660\u0662\u0664\u066a\u061c"},
   };
 
   test::ScopedRestoreICUDefaultLocale restore_locale;
@@ -120,13 +124,16 @@ TEST(NumberFormattingTest, FormatPercent) {
     EXPECT_EQ(ASCIIToUTF16(cases[i].expected_english),
               FormatPercent(cases[i].number));
     i18n::SetICUDefaultLocale("de");
-    EXPECT_EQ(WideToUTF16(cases[i].expected_german),
+    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_german),
               FormatPercent(cases[i].number));
     i18n::SetICUDefaultLocale("fa");
-    EXPECT_EQ(WideToUTF16(cases[i].expected_persian),
+    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_persian),
               FormatPercent(cases[i].number));
     i18n::SetICUDefaultLocale("ar");
-    EXPECT_EQ(WideToUTF16(cases[i].expected_arabic),
+    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_arabic),
+              FormatPercent(cases[i].number));
+    i18n::SetICUDefaultLocale("ar-EG");
+    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_arabic_egypt),
               FormatPercent(cases[i].number));
   }
 }

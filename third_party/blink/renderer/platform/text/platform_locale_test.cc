@@ -9,10 +9,13 @@
 namespace blink {
 
 TEST(PlatformLocaleTest, StripInvalidNumberCharacters) {
-  std::unique_ptr<Locale> locale = Locale::Create("ar");
+  // Arabic does not use Arabic-Indic digit any more per
+  // Google's customized CLDR 33.1, but ar-EG does. Persian
+  // uses Extened Arabic-Indic digits.
+  std::unique_ptr<Locale> locale = Locale::Create("fa");
   String result = locale->StripInvalidNumberCharacters(
-      String::FromUTF8("abc\xD9\xA0ghi"), "0123456789");
-  // ARABIC-INDIC DIGIT ZERO U+0660 = \xD9\xA0 in UTF-8
-  EXPECT_EQ(String::FromUTF8("\xD9\xA0"), result);
+      String::FromUTF8(u8"abc\u06F0ghi"), "0123456789");
+  // EXTENDED ARABIC-INDIC DIGIT ZERO U+06F0
+  EXPECT_EQ(String::FromUTF8(u8"\u06F0"), result);
 }
 }

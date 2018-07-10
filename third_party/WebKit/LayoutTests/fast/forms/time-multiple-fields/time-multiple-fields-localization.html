@@ -13,10 +13,13 @@ if (window.internals)
 <div id=console></div>
 <input type="time" value="13:23:45.1" lang="en" /><br>
 <input type="time" value="13:23:45.1" lang="ar" /><br>
+<input type="time" value="13:23:45.1" lang="ar-EG" /><br>
 <input type="time" value="13:23:45.1" lang="fr" /><br>
 <input type="time" value="13:23:45.1" lang="ja" /><br>
 <input type="time" value="13:23:45.1" lang="ko" /><br>
-<input type="time" value="13:23:45.1" lang="cn" />
+<!-- Windows implementation does not support zh-Hans nor
+  zh-CN. Use 'zh', instead. -->
+<input type="time" value="13:23:45.1" lang="zh" />
 <script>
 description("Tests the time format for various locales.", true);
 debug("The following lines depend on the locale data in the system.");
