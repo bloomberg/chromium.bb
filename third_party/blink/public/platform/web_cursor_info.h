@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
 
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_point.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #ifdef WIN32
 typedef struct HICON__* HICON;
@@ -97,7 +97,7 @@ struct WebCursorInfo {
   Type type;
   WebPoint hot_spot;
   float image_scale_factor;
-  WebImage custom_image;
+  SkBitmap custom_image;
 
 #ifdef WIN32
   // On Windows, kTypeCustom may alternatively reference an externally

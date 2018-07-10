@@ -163,7 +163,6 @@ class WebVector {
 
   template <typename... Args>
   void emplace_back(Args&&... args) {
-    DCHECK_LT(data_.size(), data_.capacity());
     data_.emplace_back(std::forward<Args>(args)...);
   }
 

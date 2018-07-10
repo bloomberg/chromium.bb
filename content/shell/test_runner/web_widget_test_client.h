@@ -40,8 +40,8 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
-                     const blink::WebImage& image,
-                     const blink::WebPoint& point) override;
+                     const SkBitmap& drag_image,
+                     const blink::WebPoint& image_offset) override;
 
  private:
   void AnimateNow();

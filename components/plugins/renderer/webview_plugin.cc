@@ -32,7 +32,6 @@ using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebDragOperationsMask;
 using blink::WebFrameWidget;
-using blink::WebImage;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebPlugin;
@@ -299,7 +298,7 @@ void WebViewPlugin::WebViewHelper::SetToolTipText(
 void WebViewPlugin::WebViewHelper::StartDragging(blink::WebReferrerPolicy,
                                                  const WebDragData&,
                                                  WebDragOperationsMask,
-                                                 const WebImage&,
+                                                 const SkBitmap&,
                                                  const WebPoint&) {
   // Immediately stop dragging.
   main_frame()->FrameWidget()->DragSourceSystemDragEnded();

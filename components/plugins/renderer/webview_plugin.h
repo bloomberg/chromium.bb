@@ -167,7 +167,7 @@ class WebViewPlugin : public blink::WebPlugin,
     void StartDragging(blink::WebReferrerPolicy,
                        const blink::WebDragData&,
                        blink::WebDragOperationsMask,
-                       const blink::WebImage&,
+                       const SkBitmap&,
                        const blink::WebPoint&) override;
     // TODO(ojan): Remove this override and have this class use a non-null
     // layerTreeView.

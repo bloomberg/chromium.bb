@@ -35,23 +35,20 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/renderer/platform/drag_image.h"
-#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
-WebImage WebImage::FromData(const WebData& data, const WebSize& desired_size) {
+SkBitmap WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
-    return WebImage();
+    return {};
 
   // Frames are arranged by decreasing size, then decreasing bit depth.
   // Pick the frame closest to |desiredSize|'s area without being smaller,
@@ -77,10 +74,12 @@ WebImage WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   }
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(index);
-  return (frame && !decoder->Failed()) ? WebImage(frame->Bitmap()) : WebImage();
+  if (!frame || decoder->Failed())
+    return {};
+  return frame->Bitmap();
 }
 
-WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
+WebVector<SkBitmap> WebImage::FramesFromData(const WebData& data) {
   // This is to protect from malicious images. It should be big enough that it's
   // never hit in practice.
   const size_t kMaxFrameCount = 8;
@@ -90,14 +89,14 @@ WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
-    return WebVector<WebImage>();
+    return {};
 
   // Frames are arranged by decreasing size, then decreasing bit depth.
   // Keep the first frame at every size, has the highest bit depth.
   const size_t frame_count = decoder->FrameCount();
   IntSize last_size;
 
-  Vector<WebImage> frames;
+  WebVector<SkBitmap> frames;
   for (size_t i = 0; i < std::min(frame_count, kMaxFrameCount); ++i) {
     const IntSize frame_size = decoder->FrameSizeAtIndex(i);
     if (frame_size == last_size)
@@ -110,7 +109,7 @@ WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
 
     SkBitmap bitmap = frame->Bitmap();
     if (!bitmap.isNull() && frame->GetStatus() == ImageFrame::kFrameComplete)
-      frames.push_back(WebImage(bitmap));
+      frames.emplace_back(std::move(bitmap));
   }
 
   return frames;
@@ -123,20 +122,20 @@ WebVector<WebImage::AnimationFrame> WebImage::AnimationFromData(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable() || decoder->FrameCount() == 0)
-    return WebVector<WebImage::AnimationFrame>();
+    return {};
 
   const size_t frame_count = decoder->FrameCount();
   IntSize last_size = decoder->FrameSizeAtIndex(0);
 
-  Vector<WebImage::AnimationFrame> frames;
-  frames.ReserveCapacity(frame_count);
+  WebVector<WebImage::AnimationFrame> frames;
+  frames.reserve(frame_count);
   for (size_t i = 0; i < frame_count; ++i) {
     // If frame size changes, this is most likely not an animation and is
     // instead an image with multiple versions at different resolutions. If
     // that's the case, return only the first frame (or no frames if we failed
     // decoding the first one).
     if (last_size != decoder->FrameSizeAtIndex(i)) {
-      frames.resize(frames.IsEmpty() ? 0 : 1);
+      frames.resize(frames.empty() ? 0 : 1);
       return frames;
     }
     last_size = decoder->FrameSizeAtIndex(i);
@@ -155,47 +154,10 @@ WebVector<WebImage::AnimationFrame> WebImage::AnimationFromData(
     AnimationFrame output;
     output.bitmap = bitmap;
     output.duration = frame->Duration();
-    frames.push_back(output);
+    frames.emplace_back(std::move(output));
   }
 
   return frames;
-}
-
-void WebImage::Reset() {
-  bitmap_.reset();
-}
-
-void WebImage::Assign(const WebImage& image) {
-  bitmap_ = image.bitmap_;
-}
-
-bool WebImage::IsNull() const {
-  return bitmap_.isNull();
-}
-
-WebSize WebImage::Size() const {
-  return WebSize(bitmap_.width(), bitmap_.height());
-}
-
-WebImage::WebImage(scoped_refptr<Image> image,
-                   RespectImageOrientationEnum should_respect_image_orientation) {
-  if (!image)
-    return;
-
-  PaintImage paint_image = image->PaintImageForCurrentFrame();
-  if (!paint_image)
-    return;
-
-  if (should_respect_image_orientation == kRespectImageOrientation &&
-      image->IsBitmapImage()) {
-    ImageOrientation orientation = ToBitmapImage(image.get())->CurrentFrameOrientation();
-    paint_image = DragImage::ResizeAndOrientImage(paint_image, orientation);
-    if (!paint_image)
-      return;
-  }
-
-  if (sk_sp<SkImage> sk_image = paint_image.GetSkImage())
-    sk_image->asLegacyBitmap(&bitmap_);
 }
 
 }  // namespace blink

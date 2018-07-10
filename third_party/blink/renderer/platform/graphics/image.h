@@ -269,6 +269,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
 
+  // Returns an SkBitmap that is a copy of the image's current frame.
+  SkBitmap AsSkBitmapForCurrentFrame(RespectImageOrientationEnum);
+
  protected:
   Image(ImageObserver* = nullptr, bool is_multipart = false);
 

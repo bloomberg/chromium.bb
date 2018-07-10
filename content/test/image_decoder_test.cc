@@ -86,10 +86,9 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
 
   // Calculate MD5 sum.
   base::MD5Digest actual_digest;
-  blink::WebImage web_image = decoder.GetFrameAtIndex(frame_index);
-  base::MD5Sum(web_image.GetSkBitmap().getPixels(),
-               web_image.GetSkBitmap().width() *
-                   web_image.GetSkBitmap().height() * sizeof(uint32_t),
+  SkBitmap bitmap = decoder.GetFrameAtIndex(frame_index);
+  base::MD5Sum(bitmap.getPixels(),
+               bitmap.width() * bitmap.height() * sizeof(uint32_t),
                &actual_digest);
 
   // Read the MD5 sum off disk.

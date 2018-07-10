@@ -48,24 +48,24 @@ TEST(WebImageTest, PNGImage) {
   scoped_refptr<SharedBuffer> data = ReadFile("white-1x1.png");
   ASSERT_TRUE(data.get());
 
-  WebImage image = WebImage::FromData(WebData(data), WebSize());
-  EXPECT_TRUE(image.Size() == WebSize(1, 1));
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            image.GetSkBitmap().getColor(0, 0));
+  SkBitmap image = WebImage::FromData(WebData(data), WebSize());
+  EXPECT_EQ(image.width(), 1);
+  EXPECT_EQ(image.height(), 1);
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), image.getColor(0, 0));
 }
 
 TEST(WebImageTest, ICOImage) {
   scoped_refptr<SharedBuffer> data = ReadFile("black-and-white.ico");
   ASSERT_TRUE(data.get());
 
-  WebVector<WebImage> images = WebImage::FramesFromData(WebData(data));
+  WebVector<SkBitmap> images = WebImage::FramesFromData(WebData(data));
   ASSERT_EQ(2u, images.size());
-  EXPECT_TRUE(images[0].Size() == WebSize(2, 2));
-  EXPECT_TRUE(images[1].Size() == WebSize(1, 1));
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            images[0].GetSkBitmap().getColor(0, 0));
-  EXPECT_EQ(SkColorSetARGB(255, 0, 0, 0),
-            images[1].GetSkBitmap().getColor(0, 0));
+  EXPECT_EQ(images[0].width(), 2);
+  EXPECT_EQ(images[0].height(), 2);
+  EXPECT_EQ(images[1].width(), 1);
+  EXPECT_EQ(images[1].height(), 1);
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), images[0].getColor(0, 0));
+  EXPECT_EQ(SkColorSetARGB(255, 0, 0, 0), images[1].getColor(0, 0));
 }
 
 TEST(WebImageTest, ICOValidHeaderMissingBitmap) {
@@ -73,18 +73,18 @@ TEST(WebImageTest, ICOValidHeaderMissingBitmap) {
       ReadFile("valid_header_missing_bitmap.ico");
   ASSERT_TRUE(data.get());
 
-  WebVector<WebImage> images = WebImage::FramesFromData(WebData(data));
-  ASSERT_TRUE(images.IsEmpty());
+  WebVector<SkBitmap> images = WebImage::FramesFromData(WebData(data));
+  ASSERT_TRUE(images.empty());
 }
 
 TEST(WebImageTest, BadImage) {
   const char kBadImage[] = "hello world";
-  WebVector<WebImage> images = WebImage::FramesFromData(WebData(kBadImage));
+  WebVector<SkBitmap> images = WebImage::FramesFromData(WebData(kBadImage));
   ASSERT_EQ(0u, images.size());
 
-  WebImage image = WebImage::FromData(WebData(kBadImage), WebSize());
-  EXPECT_TRUE(image.GetSkBitmap().empty());
-  EXPECT_TRUE(image.GetSkBitmap().isNull());
+  SkBitmap image = WebImage::FromData(WebData(kBadImage), WebSize());
+  EXPECT_TRUE(image.empty());
+  EXPECT_TRUE(image.isNull());
 }
 
 }  // namespace blink

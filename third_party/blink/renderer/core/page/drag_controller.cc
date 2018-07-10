@@ -1299,7 +1299,7 @@ void DragController::DoSystemDrag(DragImage* image,
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
-  WebImage drag_image;
+  SkBitmap drag_image;
 
   if (image) {
     float resolution_scale = image->ResolutionScale();
@@ -1314,7 +1314,7 @@ void DragController::DoSystemDrag(DragImage* image,
   }
 
   page_->GetChromeClient().StartDragging(frame, drag_data, drag_operation_mask,
-                                         drag_image, offset_point);
+                                         std::move(drag_image), offset_point);
 }
 
 DragOperation DragController::GetDragOperation(DragData* drag_data) {

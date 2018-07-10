@@ -146,7 +146,6 @@ using blink::WebDragOperationsMask;
 using blink::WebDragData;
 using blink::WebFrameWidget;
 using blink::WebGestureEvent;
-using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
 using blink::WebInputMethodController;
@@ -2912,16 +2911,15 @@ bool RenderWidget::IsPointerLocked() {
 void RenderWidget::StartDragging(blink::WebReferrerPolicy policy,
                                  const WebDragData& data,
                                  WebDragOperationsMask mask,
-                                 const WebImage& image,
-                                 const WebPoint& webImageOffset) {
-  blink::WebRect offset_in_window(webImageOffset.x, webImageOffset.y, 0, 0);
+                                 const SkBitmap& drag_image,
+                                 const WebPoint& web_image_offset) {
+  blink::WebRect offset_in_window(web_image_offset.x, web_image_offset.y, 0, 0);
   ConvertViewportToWindow(&offset_in_window);
   DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = policy;
-  gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
-  Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask,
-                                     image.GetSkBitmap(), imageOffset,
-                                     possible_drag_event_info_));
+  gfx::Vector2d image_offset(offset_in_window.x, offset_in_window.y);
+  Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask, drag_image,
+                                     image_offset, possible_drag_event_info_));
 }
 
 uint32_t RenderWidget::GetContentSourceId() {

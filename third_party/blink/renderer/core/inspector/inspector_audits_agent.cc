@@ -33,8 +33,7 @@ bool EncodeAsImage(char* body,
                    Vector<unsigned char>* output) {
   const WebSize maximum_size = WebSize(kMaximumEncodeImageWidthInPixels,
                                        kMaximumEncodeImageHeightInPixels);
-  SkBitmap bitmap =
-      WebImage::FromData(WebData(body, size), maximum_size).GetSkBitmap();
+  SkBitmap bitmap = WebImage::FromData(WebData(body, size), maximum_size);
   if (bitmap.isNull())
     return false;
 

@@ -44,11 +44,12 @@
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 
+class SkBitmap;
+
 namespace blink {
 
 class WebDragData;
 class WebGestureEvent;
-class WebImage;
 class WebString;
 class WebWidget;
 struct WebCursorInfo;
@@ -179,7 +180,7 @@ class WebWidgetClient {
   virtual void StartDragging(WebReferrerPolicy,
                              const WebDragData&,
                              WebDragOperationsMask,
-                             const WebImage& drag_image,
+                             const SkBitmap& drag_image,
                              const WebPoint& drag_image_offset) {}
 };
 

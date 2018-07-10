@@ -155,7 +155,7 @@ class TestRunner : public WebTestRunner {
   bool policyDelegateIsPermissive() const;
   bool policyDelegateShouldNotifyDone() const;
   void setToolTipText(const blink::WebString&);
-  void setDragImage(const blink::WebImage& drag_image);
+  void setDragImage(const SkBitmap& drag_image);
   bool shouldDumpNavigationPolicy() const;
 
   midi::mojom::Result midiAccessorResult();
@@ -584,7 +584,7 @@ class TestRunner : public WebTestRunner {
   int chooser_count_;
 
   // Captured drag image.
-  blink::WebImage drag_image_;
+  SkBitmap drag_image_;
 
   // View that was focused by a previous call to TestRunner::SetFocus method.
   // Note - this can be a dangling pointer to an already destroyed WebView (this

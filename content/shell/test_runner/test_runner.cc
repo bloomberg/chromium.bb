@@ -1523,7 +1523,7 @@ void TestRunner::Reset() {
   top_loading_frame_ = nullptr;
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
-  drag_image_.Reset();
+  drag_image_.reset();
 
   WebSecurityPolicy::ResetOriginAccessWhitelists();
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
@@ -1638,7 +1638,7 @@ bool TestRunner::DumpPixelsAsync(
     blink::WebLocalFrame* frame,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   if (layout_test_runtime_flags_.dump_drag_image()) {
-    if (drag_image_.IsNull()) {
+    if (drag_image_.isNull()) {
       // This means the test called dumpDragImage but did not initiate a drag.
       // Return a blank image so that the test fails.
       SkBitmap bitmap;
@@ -1648,7 +1648,7 @@ bool TestRunner::DumpPixelsAsync(
       return false;
     }
 
-    std::move(callback).Run(drag_image_.GetSkBitmap());
+    std::move(callback).Run(drag_image_);
     return false;
   }
 
@@ -1864,9 +1864,9 @@ void TestRunner::setToolTipText(const WebString& text) {
   tooltip_text_ = text.Utf8();
 }
 
-void TestRunner::setDragImage(const blink::WebImage& drag_image) {
+void TestRunner::setDragImage(const SkBitmap& drag_image) {
   if (layout_test_runtime_flags_.dump_drag_image()) {
-    if (drag_image_.IsNull())
+    if (drag_image_.isNull())
       drag_image_ = drag_image;
   }
 }

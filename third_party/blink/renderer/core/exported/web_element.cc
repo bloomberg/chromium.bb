@@ -152,11 +152,12 @@ WebRect WebElement::BoundsInViewport() const {
   return ConstUnwrap<Element>()->BoundsInViewport();
 }
 
-WebImage WebElement::ImageContents() {
+SkBitmap WebElement::ImageContents() {
   if (IsNull())
-    return WebImage();
+    return {};
 
-  return WebImage(Unwrap<Element>()->ImageContents(), kRespectImageOrientation);
+  return Unwrap<Element>()->ImageContents()->AsSkBitmapForCurrentFrame(
+      kRespectImageOrientation);
 }
 
 void WebElement::RequestFullscreen() {

@@ -31,24 +31,19 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
 
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_vector.h"
+#include <vector>
 
 #include "base/time/time.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-#if INSIDE_BLINK
-#include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
-#endif
 
 namespace blink {
 
-class Image;
 class WebData;
 struct WebSize;
 
-// A container for an ARGB bitmap.
+// APIs to decode an image from a string of data.
 class WebImage {
  public:
   // An image with a duration associated. An animation is a sequence of
@@ -58,58 +53,22 @@ class WebImage {
     base::TimeDelta duration;
   };
 
-  ~WebImage() { Reset(); }
-
-  WebImage() { Init(); }
-  WebImage(const WebImage& image) {
-    Init();
-    Assign(image);
-  }
-
-  WebImage& operator=(const WebImage& image) {
-    Assign(image);
-    return *this;
-  }
-
   // Decodes the given image data. If the image has multiple frames,
   // then the frame whose size is desired_size is returned. Otherwise,
   // the first frame is returned.
-  BLINK_PLATFORM_EXPORT static WebImage FromData(const WebData&,
+  BLINK_PLATFORM_EXPORT static SkBitmap FromData(const WebData&,
                                                  const WebSize& desired_size);
 
   // Returns a list of all frames in the image. Only the first frame at each
   // pixel size will be returned.
-  BLINK_PLATFORM_EXPORT static WebVector<WebImage> FramesFromData(
+  BLINK_PLATFORM_EXPORT static WebVector<SkBitmap> FramesFromData(
       const WebData&);
 
   // Returns a list of all animation frames in the image.
   BLINK_PLATFORM_EXPORT static WebVector<AnimationFrame> AnimationFromData(
       const WebData&);
 
-  BLINK_PLATFORM_EXPORT void Reset();
-  BLINK_PLATFORM_EXPORT void Assign(const WebImage&);
-
-  BLINK_PLATFORM_EXPORT bool IsNull() const;
-  BLINK_PLATFORM_EXPORT WebSize Size() const;
-
-#if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebImage(scoped_refptr<Image>,
-                                 RespectImageOrientationEnum = kDoNotRespectImageOrientation);
-#endif
-
-  WebImage(const SkBitmap& bitmap) : bitmap_(bitmap) {}
-
-  WebImage& operator=(const SkBitmap& bitmap) {
-    bitmap_ = bitmap;
-    return *this;
-  }
-
-  SkBitmap& GetSkBitmap() { return bitmap_; }
-  const SkBitmap& GetSkBitmap() const { return bitmap_; }
-
- private:
-  void Init() {}
-  SkBitmap bitmap_;
+  WebImage() = delete;
 };
 
 }  // namespace blink
