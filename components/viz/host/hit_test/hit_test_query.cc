@@ -5,6 +5,7 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -45,13 +46,17 @@ void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
 Target HitTestQuery::FindTargetForLocation(
     EventSource event_source,
     const gfx::PointF& location_in_root) const {
-  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TargetTime");
+  base::ElapsedTimer target_timer;
 
   Target target;
   if (!hit_test_data_size_)
     return target;
 
   FindTargetInRegionForLocation(event_source, location_in_root, 0, &target);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TargetTimeUs",
+                                          target_timer.Elapsed(),
+                                          base::TimeDelta::FromMicroseconds(1),
+                                          base::TimeDelta::FromSeconds(10), 50);
   return target;
 }
 
@@ -60,7 +65,7 @@ bool HitTestQuery::TransformLocationForTarget(
     const std::vector<FrameSinkId>& target_ancestors,
     const gfx::PointF& location_in_root,
     gfx::PointF* transformed_location) const {
-  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TransformTime");
+  base::ElapsedTimer transform_timer;
 
   if (!hit_test_data_size_)
     return false;
@@ -74,6 +79,10 @@ bool HitTestQuery::TransformLocationForTarget(
   // TODO(riajiang): Cache the matrix product such that the transform can be
   // done immediately. crbug/758062.
   *transformed_location = location_in_root;
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TransformTimeUs",
+                                          transform_timer.Elapsed(),
+                                          base::TimeDelta::FromMicroseconds(1),
+                                          base::TimeDelta::FromSeconds(10), 50);
   return TransformLocationForTargetRecursively(event_source, target_ancestors,
                                                target_ancestors.size() - 1, 0,
                                                transformed_location);
