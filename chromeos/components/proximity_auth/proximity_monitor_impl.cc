@@ -230,8 +230,10 @@ void ProximityMonitorImpl::CheckForProximityStateChange() {
   bool is_now_in_proximity =
       rssi_rolling_average_ && *rssi_rolling_average_ > rssi_threshold_;
 
-  if (rssi_rolling_average_)
-    PA_LOG(INFO) << "  Rolling RSSI: " << *rssi_rolling_average_;
+  if (rssi_rolling_average_ && !is_now_in_proximity) {
+    PA_LOG(INFO) << "Not in proximity. Rolling RSSI average: "
+                 << *rssi_rolling_average_;
+  }
 
   if (remote_device_is_in_proximity_ != is_now_in_proximity) {
     PA_LOG(INFO) << "[Proximity] Updated proximity state: "
