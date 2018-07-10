@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -31,12 +32,16 @@ class UnifiedConsentServiceTest : public testing::Test,
     pref_service_.registry()->RegisterBooleanPref(
         autofill::prefs::kAutofillWalletImportEnabled, false);
     UnifiedConsentService::RegisterPrefs(pref_service_.registry());
+    syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+  }
+
+  void TearDown() override { consent_service_->Shutdown(); }
+
+  void CreateConsentService() {
     consent_service_ = std::make_unique<UnifiedConsentService>(
         this, &pref_service_, identity_test_environment_.identity_manager(),
         &sync_service_);
   }
-
-  void TearDown() override { consent_service_->Shutdown(); }
 
   // UnifiedConsentServiceClient:
   void SetAlternateErrorPagesEnabled(bool enabled) override {
@@ -73,12 +78,14 @@ class UnifiedConsentServiceTest : public testing::Test,
 };
 
 TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
+  CreateConsentService();
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
 TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
+  CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
@@ -111,7 +118,48 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
 }
 
 #if !defined(OS_CHROMEOS)
+TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverything) {
+  // Create inconsistent state.
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  sync_prefs.SetKeepEverythingSynced(true);
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  CreateConsentService();
+  // After the creation of the consent service, inconsistencies are resolved and
+  // the migration state should be in-progress (i.e. the consent bump should be
+  // shown).
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_EQ(
+      consent_service_->GetMigrationState(),
+      unified_consent::MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP);
+
+  // When the user signs out, the migration state changes to completed.
+  identity_test_environment_.ClearPrimaryAccount();
+  EXPECT_EQ(consent_service_->GetMigrationState(),
+            unified_consent::MigrationState::COMPLETED);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  sync_prefs.SetKeepEverythingSynced(false);
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+
+  CreateConsentService();
+  // Since there were not inconsistencies, the migration is completed after the
+  // creation of the consent service.
+  EXPECT_EQ(consent_service_->GetMigrationState(),
+            unified_consent::MigrationState::COMPLETED);
+}
+
+#if !defined(OS_CHROMEOS)
 TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
+  CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
 
   // Precondition: Enable unified consent.

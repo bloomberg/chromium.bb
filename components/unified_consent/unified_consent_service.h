@@ -26,6 +26,13 @@ class SyncService;
 
 namespace unified_consent {
 
+enum class MigrationState : int {
+  NOT_INITIALIZED = 0,
+  IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP = 1,
+  // Reserve space for other IN_PROGRESS_* entries to be added here.
+  COMPLETED = 10,
+};
+
 class UnifiedConsentServiceClient;
 
 // A browser-context keyed service that is used to manage the user consent
@@ -33,7 +40,6 @@ class UnifiedConsentServiceClient;
 class UnifiedConsentService : public KeyedService,
                               public identity::IdentityManager::Observer {
  public:
-  //
   UnifiedConsentService(UnifiedConsentServiceClient* service_client,
                         PrefService* pref_service,
                         identity::IdentityManager* identity_manager,
@@ -42,6 +48,21 @@ class UnifiedConsentService : public KeyedService,
 
   // Register the prefs used by this UnifiedConsentService.
   static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // This updates the consent pref and if |unified_consent_given| is true, all
+  // unified consent services are enabled.
+  void SetUnifiedConsentGiven(bool unified_consent_given);
+  bool IsUnifiedConsentGiven();
+
+  // Helper function for the consent bump. The consent bump has to
+  // be shown depending on the migration state.
+  MigrationState GetMigrationState();
+  // Returns true if the consent bump needs to be shown to the user as part
+  // of the migration of the Chrome profile to unified consent.
+  bool ShouldShowConsentBump();
+  // Finishes the migration to unified consent. All future calls to
+  // |GetMigrationState| are guranteed to return |MIGRATION_COMPLETED|.
+  void MarkMigrationComplete();
 
   // KeyedService:
   void Shutdown() override;
@@ -55,6 +76,10 @@ class UnifiedConsentService : public KeyedService,
   // When set to true, it enables syncing of all data types and it enables all
   // non-personalized services. Otherwise it does nothing.
   void OnUnifiedConsentGivenPrefChanged();
+
+  // Called when the unified consent service is created to resolve
+  // inconsistencies with sync-related prefs.
+  void MigrateProfileToUnifiedConsent();
 
   UnifiedConsentServiceClient* service_client_;
   PrefService* pref_service_;

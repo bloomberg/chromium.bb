@@ -31,8 +31,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/unified_consent_service.h"
 
 // The sync consent bump is shown after startup when a profile's browser
 // instance becomes active or when there is already an active instance.
@@ -106,20 +109,25 @@ class ConsentBumpActivator : public BrowserListObserver,
       LoginUIService::SyncConfirmationUIClosedResult result) override {
     scoped_login_ui_service_observer_.RemoveAll();
 
-    // TODO(crbug.com/819909): Record that consent bump was shown.
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile_);
+
+    consent_service->MarkMigrationComplete();
 
     switch (result) {
       case LoginUIService::CONFIGURE_SYNC_FIRST:
+        // Opt into Unity and open settings page to make configurations.
+        consent_service->SetUnifiedConsentGiven(true);
         chrome::ShowSettingsSubPage(selected_browser_,
                                     chrome::kSyncSetupSubPage);
         break;
       case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
-        // User gave unified consent.
-        // TODO(crbug.com/819909): Use unity service to record unified consent /
-        // set pref.
+        // Opt into Unity with default configuration.
+        consent_service->SetUnifiedConsentGiven(true);
         break;
       case LoginUIService::ABORT_SIGNIN:
         // "Make no changes" was selected.
+        DCHECK(!consent_service->IsUnifiedConsentGiven());
         break;
     }
   }
@@ -127,21 +135,20 @@ class ConsentBumpActivator : public BrowserListObserver,
   // This should only be called after the browser has been set up, otherwise
   // this might crash because the profile has not been fully initialized yet.
   static bool ShouldShowConsentBumpFor(Profile* profile) {
-    if (!profile->IsSyncAllowed() || !IsUnifiedConsentBumpEnabled(profile))
+    if (!profile->IsSyncAllowed() || !IsUnifiedConsentBumpEnabled(profile) ||
+        !ProfileSyncServiceFactory::HasProfileSyncService(profile))
       return false;
 
-    // TODO(crbug.com/819909): Check if the consent bump or sync confirmation
-    // has been shown already. (Unity service)
-
-    if (!ProfileSyncServiceFactory::HasProfileSyncService(profile))
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile);
+    if (!consent_service->ShouldShowConsentBump())
       return false;
+
     sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
         profile, ProfileSyncServiceFactory::GetForProfile(profile),
         *SigninManagerFactory::GetForProfile(profile));
-    syncer::SyncPrefs prefs(profile->GetPrefs());
 
-    return sync_status == sync_ui_util::SYNCED &&
-           prefs.HasKeepEverythingSynced();
+    return sync_status == sync_ui_util::SYNCED;
   }
 
  private:

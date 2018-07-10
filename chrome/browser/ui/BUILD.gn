@@ -1004,6 +1004,7 @@ split_static_library("ui") {
     "//components/ukm:ukm",
     "//components/ukm/content",
     "//components/undo",
+    "//components/unified_consent",
     "//components/update_client",
     "//components/upload_list",
     "//components/url_formatter",

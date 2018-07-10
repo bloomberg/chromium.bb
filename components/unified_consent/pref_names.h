@@ -9,6 +9,7 @@ namespace unified_consent {
 namespace prefs {
 
 extern const char kUnifiedConsentGiven[];
+extern const char kUnifiedConsentMigrationState[];
 extern const char kUrlKeyedAnonymizedDataCollectionEnabled[];
 
 }  // namespace prefs
