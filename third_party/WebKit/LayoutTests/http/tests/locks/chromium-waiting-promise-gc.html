@@ -4,7 +4,6 @@
 <link rel=help href="https://github.com/inexorabletash/web-locks">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="resources/helpers.js"></script>
 <script>
 'use strict';
 
@@ -19,7 +18,7 @@ function task(t) {
 }
 
 promise_test(async t => {
-  let res = uniqueName(t);
+  let res = `${self.location.pathname}-${t.name}`;
   let observe_lock, observe_promise;
 
   // Acquire the lock, and keep it alive via a promise that never resolves.

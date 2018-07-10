@@ -4,14 +4,8 @@
 <link rel=help href="https://github.com/inexorabletash/web-locks">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="/resources/get-host-info.js"></script>
-<script src="/serviceworker/resources/test-helpers.js"></script>
+<script src="/service-workers/service-worker/resources/test-helpers.sub.js"></script>
 <script>
-// TODO(jsbell): When migrated to WPT: remove block, rename with .https infix.
-if (location.origin != get_host_info().AUTHENTICATED_ORIGIN) {
-  location = get_host_info().AUTHENTICATED_ORIGIN + location.pathname;
-  throw new Error('Reloading with appropriate origin for desired context...');
-}
 
 // Returns a promise resolved by the next message event.
 function nextMessage() {

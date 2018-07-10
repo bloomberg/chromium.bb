@@ -1,11 +1,10 @@
+// META: script=/resources/WebIDLParser.js
+// META: script=/resources/idlharness.js
+
 'use strict';
 
-importScripts('/resources/testharness.js',
-              '/w3c/resources/webidl2.js',
-              '/w3c/resources/idlharness.js');
-
 promise_test(async t => {
-  const response = await fetch('../interfaces.idl');
+  const response = await fetch('interfaces.idl');
   const idls = await response.text();
 
   const idl_array = new IdlArray();
@@ -25,5 +24,3 @@ promise_test(async t => {
 
   idl_array.test();
 });
-
-done();
