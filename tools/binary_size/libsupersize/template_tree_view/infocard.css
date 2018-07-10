@@ -2,20 +2,22 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.infocard {
-  display: grid;
+.infocards {
   position: fixed;
-  padding: 16px;
-  margin: 0 auto;
   bottom: 8px;
   left: 8px;
   right: 8px;
+  margin: 0 auto;
   max-width: 512px;
   max-height: 50vh;
   overflow-y: auto;
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 2px #3c40434d, 0 1px 3px 1px #3c404326;
+}
+.infocard {
+  display: grid;
+  padding: 16px;
 }
 .infocard-container {
   grid-template-areas: 'header icon' 'type type';
@@ -33,7 +35,7 @@
   display: none;
 }
 @media (min-width: 700px) {
-  .show-options .infocard {
+  .show-options .infocards {
     right: 256px;
   }
 }
@@ -43,6 +45,11 @@
   align-self: center;
   padding: 8px 2px 8px 8px;
   border-radius: 50%;
+}
+.container-icon-info {
+  position: relative;
+  padding: 0;
+  height: 80px;
 }
 .header-info {
   grid-area: header;
@@ -64,8 +71,6 @@
 }
 
 .type-pie-info {
-  grid-area: icon;
-  align-self: center;
   height: 80px;
   width: 80px;
   background: #5f6368;
@@ -76,7 +81,15 @@
   border-top: 1px solid #dadce0;
   padding-top: 8px;
   clear: right;
-  height: 0;  /* Fixes bug with table height in Firefox */
+  height: 0; /* Fixes bug with table height in Firefox */
+}
+.canvas-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
 }
 
 th {
