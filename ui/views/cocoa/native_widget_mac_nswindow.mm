@@ -15,7 +15,13 @@
 #include "ui/views/widget/widget_delegate.h"
 
 @interface NSWindow (Private)
++ (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle;
 - (BOOL)hasKeyAppearance;
+- (long long)_resizeDirectionForMouseLocation:(CGPoint)location;
+
+// Available in later point releases of 10.10. On 10.11+, use the public
+// -performWindowDragWithEvent: instead.
+- (void)beginWindowDragWithEvent:(NSEvent*)event;
 @end
 
 @interface NativeWidgetMacNSWindow ()
@@ -27,6 +33,48 @@
 // Private API on NSWindow, determines whether the title is drawn on the title
 // bar. The title is still visible in menus, Expose, etc.
 - (BOOL)_isTitleHidden;
+@end
+
+// Use this category to implement mouseDown: on multiple frame view classes
+// with different superclasses.
+@interface NSView (CRFrameViewAdditions)
+- (void)cr_mouseDownOnFrameView:(NSEvent*)event;
+@end
+
+@implementation NSView (CRFrameViewAdditions)
+// If a mouseDown: falls through to the frame view, turn it into a window drag.
+- (void)cr_mouseDownOnFrameView:(NSEvent*)event {
+  if ([self.window _resizeDirectionForMouseLocation:event.locationInWindow] !=
+      -1)
+    return;
+  if (@available(macOS 10.11, *))
+    [self.window performWindowDragWithEvent:event];
+  else if ([self.window
+               respondsToSelector:@selector(beginWindowDragWithEvent:)])
+    [self.window beginWindowDragWithEvent:event];
+  else
+    NOTREACHED();
+}
+@end
+
+@implementation NativeWidgetMacNSWindowTitledFrame
+- (void)mouseDown:(NSEvent*)event {
+  [self cr_mouseDownOnFrameView:event];
+  [super mouseDown:event];
+}
+- (BOOL)usesCustomDrawing {
+  return NO;
+}
+@end
+
+@implementation NativeWidgetMacNSWindowBorderlessFrame
+- (void)mouseDown:(NSEvent*)event {
+  [self cr_mouseDownOnFrameView:event];
+  [super mouseDown:event];
+}
+- (BOOL)usesCustomDrawing {
+  return NO;
+}
 @end
 
 @implementation NativeWidgetMacNSWindow {
@@ -99,11 +147,29 @@
 
 // NSWindow overrides.
 
++ (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle {
+  if (windowStyle & NSWindowStyleMaskTitled) {
+    if (Class customFrame = [NativeWidgetMacNSWindowTitledFrame class])
+      return customFrame;
+  } else if (Class customFrame =
+                 [NativeWidgetMacNSWindowBorderlessFrame class]) {
+    return customFrame;
+  }
+  return [super frameViewClassForStyleMask:windowStyle];
+}
+
 - (BOOL)_isTitleHidden {
   if (![self delegate])
     return NO;
 
   return ![self viewsWidget]->widget_delegate()->ShouldShowWindowTitle();
+}
+
+// The base implementation returns YES if the window's frame view is a custom
+// class, which causes undesirable changes in behavior. AppKit NSWindow
+// subclasses are known to override it and return NO.
+- (BOOL)_usesCustomDrawing {
+  return NO;
 }
 
 // Ignore [super canBecome{Key,Main}Window]. The default is NO for windows with

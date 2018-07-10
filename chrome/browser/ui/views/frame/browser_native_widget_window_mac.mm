@@ -15,19 +15,13 @@
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
-
-// Available in later point releases of 10.10. On 10.11+, use the public
-// -performWindowDragWithEvent: instead.
-- (void)beginWindowDragWithEvent:(NSEvent*)event;
 @end
 
-// Weak lets Chrome launch even if a future macOS doesn't have NSThemeFrame.
-WEAK_IMPORT_ATTRIBUTE
-@interface NSThemeFrame : NSView
+@interface NSThemeFrame (PrivateAPI)
 - (CGFloat)_titlebarHeight;
 @end
 
-@interface BrowserWindowFrame : NSThemeFrame
+@interface BrowserWindowFrame : NativeWidgetMacNSWindowTitledFrame
 @end
 
 @implementation BrowserWindowFrame
@@ -76,20 +70,6 @@ WEAK_IMPORT_ATTRIBUTE
 // Same as _copyDragRegion, but for 10.10.
 - (NSRect)_draggableFrame NS_DEPRECATED_MAC(10_10, 10_11) {
   return NSZeroRect;
-}
-
-// Lets the window be dragged by its title bar on 10.11 and older.
-- (void)mouseDown:(NSEvent*)event {
-  if (@available(macOS 10.12, *))
-    ;  // Not needed on 10.12 and up.
-  else if (@available(macOS 10.11, *))
-    [self.window performWindowDragWithEvent:event];
-  else if ([self.window
-               respondsToSelector:@selector(beginWindowDragWithEvent:)])
-    [self.window beginWindowDragWithEvent:event];
-  else
-    NOTREACHED();
-  [super mouseDown:event];
 }
 
 @end
