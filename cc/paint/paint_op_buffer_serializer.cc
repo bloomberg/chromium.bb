@@ -340,6 +340,16 @@ bool PaintOpBufferSerializer::SerializeOp(
   DCHECK_GE(bytes, 4u);
   DCHECK_EQ(bytes % PaintOpBuffer::PaintOpAlign, 0u);
 
+  // Only 2 types of ops need to played on the analysis canvas.
+  // 1) Non-draw ops which affect the transform/clip state on the canvas, since
+  //    we need the correct ctm at which text and images will be rasterized, and
+  //    the clip rect so we can skip sending data for ops which will not be
+  //    rasterized.
+  // 2) DrawTextBlob ops since they need to be analyzed by the cache diff canvas
+  //    to serialize/lock the requisite glyphs for this op.
+  if (op->IsDrawOp() && op->GetType() != PaintOpType::DrawTextBlob)
+    return true;
+
   if (op->IsPaintOpWithFlags() && options.flags_to_serialize) {
     static_cast<const PaintOpWithFlags*>(op)->RasterWithFlags(
         canvas_.get(), options.flags_to_serialize, params);
