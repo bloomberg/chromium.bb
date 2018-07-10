@@ -86,6 +86,10 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   void BindFramebuffer() override {}
   void SetDrawRectangle(const gfx::Rect& rect) override {}
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {}
+  gpu::VulkanSurface* GetVulkanSurface() override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/vulkan/vulkan_implementation_android.h"
+#include "gpu/vulkan/android/vulkan_implementation_android.h"
 
 #include "base/files/file_path.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "ui/gfx/gpu_fence.h"
 
 namespace gpu {
 
-VulkanImplementationAndroid::VulkanImplementationAndroid() {}
+VulkanImplementationAndroid::VulkanImplementationAndroid() = default;
 
-VulkanImplementationAndroid::~VulkanImplementationAndroid() {}
+VulkanImplementationAndroid::~VulkanImplementationAndroid() = default;
 
 bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   std::vector<const char*> required_extensions = {
@@ -55,8 +56,8 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
   VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
   surface_create_info.window = window;
-  result = vkCreateAndroidSurfaceKHR(GetVulkanInstance(), &surface_create_info,
-                                     nullptr, &surface);
+  VkResult result = vkCreateAndroidSurfaceKHR_(
+      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
     return nullptr;
@@ -68,7 +69,7 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
 bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(
     VkPhysicalDevice device,
     const std::vector<VkQueueFamilyProperties>& queue_family_properties,
-    uint32_t queue_family_index) override {
+    uint32_t queue_family_index) {
   // On Android, all physical devices and queue families must be capable of
   // presentation with any native window.
   // As a result there is no Android-specific query for these capabilities.

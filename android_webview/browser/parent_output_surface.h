@@ -29,6 +29,7 @@ class ParentOutputSurface : public viz::OutputSurface {
                bool has_alpha,
                bool use_stencil) override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
+  gpu::VulkanSurface* GetVulkanSurface() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;

@@ -43,6 +43,11 @@ void ParentOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 
+gpu::VulkanSurface* ParentOutputSurface::GetVulkanSurface() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 bool ParentOutputSurface::HasExternalStencilTest() const {
   return ScopedAppGLStateRestore::Current()
       ->stencil_state()

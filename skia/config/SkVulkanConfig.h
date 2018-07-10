@@ -14,10 +14,6 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
 
-#if defined(OS_ANDROID)
-#define VK_USE_PLATFORM_ANDROID_KHR
-#endif
-
 #include <vulkan/vulkan.h>
 
 #endif

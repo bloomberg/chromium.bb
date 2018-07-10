@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_VULKAN_VULKAN_IMPLEMENTATION_ANDROID_H_
-#define GPU_VULKAN_VULKAN_IMPLEMENTATION_ANDROID_H_
+#ifndef GPU_VULKAN_ANDROID_VULKAN_IMPLEMENTATION_ANDROID_H_
+#define GPU_VULKAN_ANDROID_VULKAN_IMPLEMENTATION_ANDROID_H_
 
 #include <memory>
 
-#include "gpu/vulkan/vulkan_export.h"
+#include "base/component_export.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
 
 namespace gpu {
 
-class VULKAN_EXPORT VulkanImplementationAndroid : public VulkanImplementation {
+class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
+    : public VulkanImplementation {
  public:
   VulkanImplementationAndroid();
   ~VulkanImplementationAndroid() override;
@@ -30,7 +31,7 @@ class VULKAN_EXPORT VulkanImplementationAndroid : public VulkanImplementation {
       uint32_t queue_family_index) override;
   std::vector<const char*> GetRequiredDeviceExtensions() override;
   VkFence CreateVkFenceForGpuFence(VkDevice vk_device) override;
-  virtual std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
+  std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
 
@@ -44,4 +45,4 @@ class VULKAN_EXPORT VulkanImplementationAndroid : public VulkanImplementation {
 
 }  // namespace gpu
 
-#endif  // GPU_VULKAN_VULKAN_IMPLEMENTATION_ANDROID_H_
+#endif  // GPU_VULKAN_ANDROID_VULKAN_IMPLEMENTATION_ANDROID_H_
