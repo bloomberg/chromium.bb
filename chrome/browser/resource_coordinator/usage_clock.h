@@ -18,6 +18,10 @@ namespace resource_coordinator {
 // A clock that advances when Chrome is in use.
 //
 // See metrics::DesktopSessionDurationTracker for how Chrome usage is tracked.
+// If metrics::DesktopSessionDurationTracker isn't initialized before this, the
+// clock will advance continuously, regardless of Chrome usage. This avoids
+// forcing all tests that indirectly depend on this to initialize
+// metrics::DesktopSessionDurationTracker.
 class UsageClock
 #if !defined(OS_CHROMEOS)
     : public metrics::DesktopSessionDurationTracker::Observer
