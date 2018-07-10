@@ -128,6 +128,7 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
             auth_method);
   EXPECT_CALL(*client,
               AuthenticateUser_(primary_user, testing::_, false, testing::_));
+  EXPECT_CALL(*client, OnFocusPod(primary_user));
 
   // Authentication attempt with password "abc1";
   ui::test::EventGenerator* generator = GetEventGenerator();
