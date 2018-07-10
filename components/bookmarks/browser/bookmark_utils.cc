@@ -15,6 +15,7 @@
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -374,7 +375,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* node = root_node->GetChild(i);
       if (node->IsVisible() && model->client()->CanBeEditedByUser(node) &&
-          std::find(nodes.begin(), nodes.end(), node) == nodes.end()) {
+          !base::ContainsValue(nodes, node)) {
         nodes.push_back(node);
 
         if (nodes.size() == max_count)

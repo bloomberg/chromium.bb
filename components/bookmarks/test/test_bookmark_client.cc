@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
@@ -51,8 +52,7 @@ void TestBookmarkClient::SetExtraNodesToLoad(
 }
 
 bool TestBookmarkClient::IsExtraNodeRoot(const BookmarkNode* node) {
-  return std::find(unowned_extra_nodes_.begin(), unowned_extra_nodes_.end(),
-                   node) != unowned_extra_nodes_.end();
+  return base::ContainsValue(unowned_extra_nodes_, node);
 }
 
 bool TestBookmarkClient::IsAnExtraNode(const BookmarkNode* node) {
