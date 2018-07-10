@@ -227,6 +227,26 @@ message DestroyDiskImageResponse {
   string failure_reason = 3;
 }
 
+// Request to concierge to export a disk image.
+// Must be accompanied by an FD. The contents of `disk_path` will be written to
+// the passed FD.
+message ExportDiskImageRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The path to the disk image. This must be a relative path.
+  string disk_path = 2;
+}
+
+// Response to a ExportDiskImageRequest.
+message ExportDiskImageResponse {
+  // If DISK_STATUS_CREATED, the disk image has been successfully exported.
+  DiskImageStatus status = 1;
+
+  // The failure reason if the disk image could not be exported.
+  string failure_reason = 2;
+}
+
 // Request to list all VM disk images in the given storage area.
 message ListVmDisksRequest {
   // The cryptohome id for the user's encrypted storage.
