@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/common/download_stats.h"
@@ -1351,7 +1352,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   network::mojom::URLLoaderFactoryPtrInfo factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = new_request->url.scheme();
-  if (std::find(schemes.begin(), schemes.end(), scheme) != schemes.end()) {
+  if (base::ContainsValue(schemes, scheme)) {
     factory_for_webui = CreateWebUIURLLoaderBinding(
                             frame_tree_node->current_frame_host(), scheme)
                             .PassInterface();

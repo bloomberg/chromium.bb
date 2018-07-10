@@ -831,10 +831,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       expected = 2;  // 2 hosts using frontend1
       EXPECT_EQ(expected, events[0].first.size());
       MockFrontend::HostIds& host_ids = events[0].first;
-      EXPECT_TRUE(std::find(host_ids.begin(), host_ids.end(), host1.host_id())
-          != host_ids.end());
-      EXPECT_TRUE(std::find(host_ids.begin(), host_ids.end(), host3.host_id())
-          != host_ids.end());
+      EXPECT_TRUE(base::ContainsValue(host_ids, host1.host_id()));
+      EXPECT_TRUE(base::ContainsValue(host_ids, host3.host_id()));
       EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
 
       events = mock_frontend2.raised_events_;
@@ -3644,8 +3642,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
         for (size_t k = 0; k < expected_ids.size(); ++k) {
           int id = expected_ids[k];
-          EXPECT_TRUE(std::find(actual_ids.begin(), actual_ids.end(), id) !=
-              actual_ids.end());
+          EXPECT_TRUE(base::ContainsValue(actual_ids, id));
         }
       }
 

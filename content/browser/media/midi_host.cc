@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -108,8 +109,7 @@ void MidiHost::OnSendData(uint32_t port,
   // Blink running in a renderer checks permission to raise a SecurityError
   // in JavaScript. The actual permission check for security purposes
   // happens here in the browser process.
-  if (!has_sys_ex_permission_ &&
-      std::find(data.begin(), data.end(), kSysExByte) != data.end()) {
+  if (!has_sys_ex_permission_ && base::ContainsValue(data, kSysExByte)) {
     bad_message::ReceivedBadMessage(this, bad_message::MH_SYS_EX_PERMISSION);
     return;
   }
