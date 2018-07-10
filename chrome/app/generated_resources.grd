@@ -480,10 +480,16 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open audio in new tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
-            Picture-in-Picture
-          </message>
-
+          <if expr="is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
+              Picture in Picture
+            </message>
+          </if>
+          <if expr="not is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
+              Picture in picture
+            </message>
+          </if>
           <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
             &amp;Undo
           </message>
@@ -686,9 +692,16 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open Audio in New Tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
-            Picture-in-Picture
-          </message>
+          <if expr="is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
+              Picture in Picture
+            </message>
+          </if>
+          <if expr="not is_macosx">
+            <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
+              Picture in picture
+            </message>
+          </if>
 
           <message name="IDS_CONTENT_CONTEXT_UNDO" desc="In Title Case: The name of the Undo command in the content area context menu">
             &amp;Undo
@@ -5488,9 +5501,16 @@ the Bookmarks menu.">
       </message>
 
       <!-- Picture-in-Picture -->
-      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the Picture-in-Picture window. This appears in the system tray and window header.">
-        Picture-in-Picture
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the Picture-in-Picture window. This appears in the system tray and window header.">
+          Picture in Picture
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the Picture-in-Picture window. This appears in the system tray and window header.">
+          Picture in picture
+        </message>
+      </if>
       <message name="IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT" desc="Text label of the pause control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently playing.">
         Pause
       </message>
@@ -5510,7 +5530,7 @@ the Bookmarks menu.">
         Are you sure you want to leave this page?
       </message>
       <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_DESCRIPTION" desc="Text label of the description for the confirmation dialog. This dialog appears when the user tries to close a tab / window or leave a page while in Picture-in-Picture mode.">
-        The video in Picture-in-Picture will stop playing.
+        The video in picture-in-picture mode will stop playing.
       </message>
       <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_CLOSE_TEXT" desc="Text label of the close button. The button appears in the confirmation dialog when the user tries to close a tab or window while in Picture-in-Picture mode.">
         Close
@@ -8561,7 +8581,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         This tab is connected to a USB device.
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING" desc="Extra tool tip text, when tab is playing a video in Picture-in-Picture.">
-        This tab is playing a video in Picture-in-Picture.
+        This tab is playing a video in picture-in-picture mode.
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is caturing desktop contents.">
         This tab is sharing your desktop content.
@@ -8574,8 +8594,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT" desc="Accessibility label text, when the tab content is being captured and shared using screen sharing. Example: 'Google Hangouts - Tab content shared'">
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Tab content shared
       </message>
-        <message name="IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT" desc="Accessibility label text, when the tab is playing a persistent video in Picture-in-Picture. Example: 'Google Hangouts - Video playing in Picture-in-Picture'">
-        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Video playing in Picture-in-Picture
+      <message name="IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT" desc="Accessibility label text, when the tab is playing a persistent video in Picture-in-Picture. Example: 'Google Hangouts - Video playing in picture-in-picture mode'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Video playing in picture-in-picture mode
       </message>
       <message name="IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT" desc="Accessibility label text, when the tab is playing audio. Example: 'Google Play Music - Audio playing'">
         <ph name="WINDOW_TITLE">$1<ex>Google Play Music</ex></ph> - Audio playing

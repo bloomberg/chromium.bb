@@ -35,4 +35,4 @@ var OverflowMenuButtons = {
 var overflowMenuText = ["Play", "Fullscreen", "Download", "Mute", "Cast", "CaptionsOff"];
 
 if (document.pictureInPictureEnabled)
-  overflowMenuText.push('Picture-in-Picture');
+  overflowMenuText.push('Picture in Picture');

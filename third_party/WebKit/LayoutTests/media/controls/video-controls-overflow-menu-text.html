@@ -25,7 +25,10 @@ async_test(function(t) {
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
       var innerButton = child.children[0];
-      assert_equals(child.textContent, overflowMenuText[i]);
+      // Check for text content disregarding casing. Mac OS and other OS
+      // have different casing styles.
+      assert_equals(child.textContent.toLowerCase(),
+                    overflowMenuText[i].toLowerCase());
     }
   });
 });
