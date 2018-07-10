@@ -34,6 +34,7 @@
 #include "third_party/crashpad/crashpad/util/posix/signals.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "base/android/java_exception_reporter.h"
 #endif  // OS_ANDROID
 
@@ -162,6 +163,28 @@ void SetJavaExceptionInfo(const char* info_string) {
   }
 }
 
+void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
+  base::android::BuildInfo* info = base::android::BuildInfo::GetInstance();
+
+  (*annotations)["android_build_id"] = info->android_build_id();
+  (*annotations)["android_build_fp"] = info->android_build_fp();
+  (*annotations)["device"] = info->device();
+  (*annotations)["model"] = info->model();
+  (*annotations)["brand"] = info->brand();
+  (*annotations)["board"] = info->board();
+  (*annotations)["installer_package_name"] = info->installer_package_name();
+  (*annotations)["abi_name"] = info->abi_name();
+  (*annotations)["custom_themes"] = info->custom_themes();
+  (*annotations)["resources_verison"] = info->resources_version();
+  (*annotations)["gms_core_version"] = info->gms_version_code();
+
+  if (info->firebase_app_id()[0] != '\0') {
+    (*annotations)["package"] = std::string(info->firebase_app_id()) + " v" +
+                                info->package_version_code() + " (" +
+                                info->package_version_name() + ")";
+  }
+}
+
 }  // namespace
 
 #endif  // OS_ANDROID
@@ -238,6 +261,10 @@ bool BuildHandlerArgs(base::FilePath* handler_path,
                                                   &product_version, &channel);
   (*process_annotations)["prod"] = product_name;
   (*process_annotations)["ver"] = product_version;
+
+#if defined(OS_ANDROID)
+  SetBuildInfoAnnotations(process_annotations);
+#endif  // OS_ANDROID
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Empty means stable.
