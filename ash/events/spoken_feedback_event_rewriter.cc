@@ -46,9 +46,22 @@ ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(
   if (!Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
     return ui::EVENT_REWRITE_CONTINUE;
 
-  // TODO: Avoid passing events that will be reposted for system-wide dispatch.
-  delegate_->DispatchKeyEventToChromeVox(ui::Event::Clone(event));
-  return ui::EVENT_REWRITE_DISCARD;
+  const ui::KeyEvent* key_event = event.AsKeyEvent();
+
+  bool capture = capture_all_keys_;
+
+  // Always capture the Search key.
+  capture |= key_event->IsCommandDown();
+
+  // Don't capture tab as it gets consumed by Blink so never comes back
+  // unhandled. In third_party/WebKit/Source/core/input/EventHandler.cpp, a
+  // default tab handler consumes tab even when no focusable nodes are found; it
+  // sets focus to Chrome and eats the event.
+  if (key_event->GetDomKey() == ui::DomKey::TAB)
+    capture = false;
+
+  delegate_->DispatchKeyEventToChromeVox(ui::Event::Clone(event), capture);
+  return capture ? ui::EVENT_REWRITE_DISCARD : ui::EVENT_REWRITE_CONTINUE;
 }
 
 ui::EventRewriteStatus SpokenFeedbackEventRewriter::NextDispatchEvent(
