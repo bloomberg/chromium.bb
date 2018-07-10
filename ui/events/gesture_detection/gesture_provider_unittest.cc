@@ -428,10 +428,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   }
 
   static void RunTasksAndWait(base::TimeDelta delay) {
+    base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-        delay);
-    base::RunLoop().Run();
+        FROM_HERE, run_loop.QuitClosure(), delay);
+    run_loop.Run();
   }
 
   std::vector<GestureEventData> gestures_;
