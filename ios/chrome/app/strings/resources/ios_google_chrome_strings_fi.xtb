@@ -10,6 +10,7 @@
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="2342981853652716282">Kirjaudu sisään Chromeen, jotta voit käyttää kirjanmerkkejäsi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="2347208864470321755">Kun tämä ominaisuus on käytössä, Chrome tarjoaa vierailla kielillä kirjoitettujen sivujen käännöksiä Google-kääntäjän kautta. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="2436117022029368436">On yhteydessä Googleen parantaakseen selaamista ja Chromea</translation>
 <translation id="2441696206556358796">Anna Chromelle asetuksissa lupa käyttää kuviasi, niin kuvia voi tallentaa.</translation>
 <translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="257708665678654955">Haluatko Google Chromen ehdottavan sivuston kielellä <ph name="LANGUAGE_NAME" /> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
@@ -28,6 +29,7 @@
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="415767770115540173">Saat paremman Googlen käyttökokemuksen Chromessa sijaintisi perusteella.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
+<translation id="447252321002412580">Auta parantamaan Chromen ominaisuuksia ja suorituskykyä</translation>
 <translation id="4523886039239821078">Jokin laajennus kaataa Chromen. Kokeile poistaa seuraavat:</translation>
 <translation id="4615174829807303908">Olet kirjautumassa ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> hallinnoimalta tililtä. Chrome-tietosi poistetaan tältä laitteelta, mutta tietosi säilyvät Google-tililläsi.</translation>
 <translation id="5389212809648216794">Google Chrome ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>

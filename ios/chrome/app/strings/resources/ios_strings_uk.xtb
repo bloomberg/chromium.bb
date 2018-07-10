@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Не надруковано.</translation>
 <translation id="1125564390852150847">Створити вкладку.</translation>
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
+<translation id="1157102636231978136">Дані веб-перегляду й історія активності, синхронізовані з обліковим записом Google</translation>
 <translation id="1165039591588034296">Помилка</translation>
 <translation id="1172898394251786223">Наступне поле</translation>
 <translation id="1176932207622159128">Помилка збереження</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Неможливо під’єднатися до Інтернету.</translation>
 <translation id="1254117744268754948">Вибрати папку</translation>
 <translation id="1265739287306757398">Докладніше</translation>
+<translation id="127138278192656016">Використовувати синхронізацію та всі сервіси</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1323735185997015385">Видалити</translation>
 <translation id="132683371494960526">Двічі торкніться, щоб змінити батьківську папку.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Нічого немає</translation>
 <translation id="1700629756560807968">Вибрано <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Торкніться двічі, щоб установити.</translation>
+<translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1752547299766512813">Зберігати паролі</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
 <translation id="1809939268435598390">Видалити папку</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">Нова папка</translation>
 <translation id="5857770089550859117">Введіть парольну фразу, щоб почати синхронізацію.</translation>
 <translation id="5860033963881614850">Вимк.</translation>
+<translation id="5865733239029070421">Автоматично надсилає статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">Переміщено 1 елемент</translation>
 <translation id="5911030830365207728">Google Перекладач</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7961015016161918242">Ніколи</translation>
 <translation id="7971521879845308059">Блок.сплив.вікна</translation>
+<translation id="7981313251711023384">Попередньо завантажувати сторінки, щоб швидше переглядати та шукати</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="8019783059653722575">Ви зможете зберігати й завантажувати фотографії.</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>

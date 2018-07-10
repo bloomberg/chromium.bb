@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Print. ebaõnn.</translation>
 <translation id="1125564390852150847">Loo uus vaheleht.</translation>
 <translation id="1145536944570833626">Kustutage olemasolevad andmed.</translation>
+<translation id="1157102636231978136">Teie sirvimisandmed ja -tegevused, mis on sünkroonitud teie Google'i kontoga</translation>
 <translation id="1165039591588034296">Viga</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
 <translation id="1176932207622159128">Ei saa salvestada</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Internetiga ei saa ühendust.</translation>
 <translation id="1254117744268754948">Kausta valimine</translation>
 <translation id="1265739287306757398">Lisateave</translation>
+<translation id="127138278192656016">Sünkroonimise ja kõigi teenuste kasutamine</translation>
 <translation id="1272079795634619415">Peata</translation>
 <translation id="1323735185997015385">Kustuta</translation>
 <translation id="132683371494960526">Ülemkausta muutmiseks topeltpuudutage.</translation>
@@ -50,6 +52,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="1690731385917361335">Üksuseid pole</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valitud</translation>
 <translation id="1740468249224277719">Installimiseks topeltpuudutage.</translation>
+<translation id="17513872634828108">Avatud vahelehed</translation>
 <translation id="1752547299766512813">Paroolide salv.</translation>
 <translation id="1753905327828125965">Enim külastatud</translation>
 <translation id="1809939268435598390">Kustuta kaust</translation>
@@ -262,6 +265,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="5857090052475505287">Uus kaust</translation>
 <translation id="5857770089550859117">Sünkroonimise alustamiseks on vaja parooli.</translation>
 <translation id="5860033963881614850">Väljas</translation>
+<translation id="5865733239029070421">Google'ile saadetakse automaatselt kasutusstatistikat ja krahhiaruandeid</translation>
 <translation id="5869029295770560994">Selge, sain aru</translation>
 <translation id="5871497086027727873">1 üksus on teisaldatud</translation>
 <translation id="5911030830365207728">Google'i tõlge</translation>
@@ -385,6 +389,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7947953824732555851">Nõustu ja logi sisse</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="7971521879845308059">Hüpikute blok.</translation>
+<translation id="7981313251711023384">Eellaaditakse lehti kiiremaks sirvimiseks ja otsimiseks</translation>
 <translation id="7982789257301363584">Võrk</translation>
 <translation id="8019783059653722575">See võimaldab fotosid salvestada ja üles laadida.</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>

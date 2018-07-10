@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Échec impr.</translation>
 <translation id="1125564390852150847">Créer un onglet</translation>
 <translation id="1145536944570833626">Supprimer les données existantes.</translation>
+<translation id="1157102636231978136">Vos données de navigation et votre activité sont synchronisées avec votre compte Google</translation>
 <translation id="1165039591588034296">Erreur</translation>
 <translation id="1172898394251786223">Champ suivant</translation>
 <translation id="1176932207622159128">Imposs. enreg. image</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Impossible de se connecter à Internet.</translation>
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">En savoir plus</translation>
+<translation id="127138278192656016">Utiliser la synchronisation et tous les services</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
@@ -50,6 +52,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="1690731385917361335">Aucun élément</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> favoris sélectionnés.</translation>
 <translation id="1740468249224277719">Appuyez deux fois pour installer.</translation>
+<translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1752547299766512813">Enreg. mots de passe</translation>
 <translation id="1753905327828125965">Les + visités</translation>
 <translation id="1809939268435598390">Supprimer le dossier</translation>
@@ -262,6 +265,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5857090052475505287">Nouveau dossier</translation>
 <translation id="5857770089550859117">Veuillez saisir la phrase secrète pour lancer la synchronisation.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
+<translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 élément déplacé.</translation>
 <translation id="5911030830365207728">Google Traduction</translation>
@@ -385,6 +389,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
+<translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
 <translation id="7982789257301363584">Réseau</translation>
 <translation id="8019783059653722575">Cela vous permet d'enregistrer et d'importer des photos.</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>

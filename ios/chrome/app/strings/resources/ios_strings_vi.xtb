@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">In không thành công.</translation>
 <translation id="1125564390852150847">Tạo tab mới.</translation>
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
+<translation id="1157102636231978136">Hoạt động và dữ liệu duyệt web của bạn, được đồng bộ hóa với Tài khoản Google</translation>
 <translation id="1165039591588034296">Lỗi</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
 <translation id="1176932207622159128">Không thể lưu ảnh</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Không thể kết nối Internet.</translation>
 <translation id="1254117744268754948">Chọn thư mục</translation>
 <translation id="1265739287306757398">Tìm hiểu cách thức</translation>
+<translation id="127138278192656016">Sử dụng tùy chọn đồng bộ hóa và tất cả dịch vụ</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1323735185997015385">Xóa</translation>
 <translation id="132683371494960526">Nhấn đúp để thay đổi thư mục gốc.</translation>
@@ -50,6 +52,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="1690731385917361335">Không có mục nào</translation>
 <translation id="1700629756560807968">Đã chọn <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang</translation>
 <translation id="1740468249224277719">Nhấn đúp để cài đặt.</translation>
+<translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1752547299766512813">Lưu mật khẩu</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
 <translation id="1809939268435598390">Xóa thư mục</translation>
@@ -262,6 +265,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5857090052475505287">Thư mục Mới</translation>
 <translation id="5857770089550859117">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa.</translation>
 <translation id="5860033963881614850">Tắt</translation>
+<translation id="5865733239029070421">Tự động gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 dấu trang đã được di chuyển</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -385,6 +389,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7961015016161918242">Không bao giờ</translation>
 <translation id="7971521879845308059">Chặn cửa sổ bật lên</translation>
+<translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="7982789257301363584">Mạng</translation>
 <translation id="8019783059653722575">Điều này cho phép bạn lưu và tải ảnh lên.</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>

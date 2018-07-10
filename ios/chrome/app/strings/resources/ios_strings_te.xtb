@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">ముద్రణ విఫలమైంది.</translation>
 <translation id="1125564390852150847">కొత్త ట్యాబ్‌ను సృష్టించండి.</translation>
 <translation id="1145536944570833626">ఇప్పటికే ఉన్న డేటాను తొలగించండి.</translation>
+<translation id="1157102636231978136">మీ బ్రౌజింగ్ డేటా మరియు కార్యాకలాపం, మీ Google ఖాతాకు సమకాలీకరించబడ్డాయి</translation>
 <translation id="1165039591588034296">లోపం</translation>
 <translation id="1172898394251786223">తదుపరి ఫీల్డ్</translation>
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడదు</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">ఇంటర్నెట్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="1254117744268754948">ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="1265739287306757398">ఎలాగో తెలుసుకోండి</translation>
+<translation id="127138278192656016">సమకాలీకరణ మరియు అన్ని సేవలను ఉపయోగించండి</translation>
 <translation id="1272079795634619415">ఆపు</translation>
 <translation id="1323735185997015385">తొలగించు</translation>
 <translation id="132683371494960526">మూలాధారిత ఫోల్డర్‌ను మార్చడానికి రెండుసార్లు నొక్కండి.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">అంశాలు లేవు</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="1740468249224277719">ఇన్‌స్టాల్ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
+<translation id="17513872634828108">తెరిచిన ట్యాబ్‍లు</translation>
 <translation id="1752547299766512813">పాస్‌వర్డ్‌లను సేవ్ చేయి</translation>
 <translation id="1753905327828125965">అధికంగా సందర్శించేది</translation>
 <translation id="1809939268435598390">ఫోల్డర్‌ను తొలగించు</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
 <translation id="5857770089550859117">సమకాలీకరణను ప్రారంభించడానికి రహస్య పదబంధం అవసరం.</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
+<translation id="5865733239029070421">Googleకు ఆటోమేటిక్‌గా వినియోగ గణాంకాలను మరియు క్రాష్ నివేదికలను పంపుతుంది</translation>
 <translation id="5869029295770560994">సరే, అర్థమైంది</translation>
 <translation id="5871497086027727873">1 అంశం తరలించబడింది</translation>
 <translation id="5911030830365207728">Google అనువాదం</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">ఆమోదించి, సైన్ ఇన్ చేయండి</translation>
 <translation id="7961015016161918242">ఎప్పుడూ లేదు</translation>
 <translation id="7971521879845308059">పాప్-అప్‌లను బ్లాక్ చేయి</translation>
+<translation id="7981313251711023384">వేగవంతమైన బ్రౌజింగ్ మరియు శోధన కోసం పేజీలను ముందస్తుగా లోడ్ చేస్తుంది</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="8019783059653722575">దీని వలన మీరు ఫోటోలను సేవ్ చేసి, అప్‌లోడ్ చేయగలుగుతారు.</translation>
 <translation id="802154636333426148">డౌన్‌లోడ్ విఫలమైంది</translation>

@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Afdrukken mislukt.</translation>
 <translation id="1125564390852150847">Nieuw tabblad maken.</translation>
 <translation id="1145536944570833626">Bestaande gegevens verwijderen.</translation>
+<translation id="1157102636231978136">Je browsergegevens en activiteit die zijn gesynchroniseerd met je Google-account</translation>
 <translation id="1165039591588034296">Fout</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
 <translation id="1176932207622159128">Kan afbeelding niet opslaan</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Kan geen verbinding maken met internet.</translation>
 <translation id="1254117744268754948">Map kiezen</translation>
 <translation id="1265739287306757398">Meer informatie</translation>
+<translation id="127138278192656016">Synchronisatie en alle services gebruiken</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1323735185997015385">Verwijderen</translation>
 <translation id="132683371494960526">Dubbeltik om de hoofdmap te wijzigen.</translation>
@@ -50,6 +52,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="1690731385917361335">Geen items</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> geselecteerd</translation>
 <translation id="1740468249224277719">Dubbeltik om te installeren.</translation>
+<translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1752547299766512813">Wachtwoorden opslaan</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
 <translation id="1809939268435598390">Map verwijderen</translation>
@@ -262,6 +265,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5857090052475505287">Nieuwe map</translation>
 <translation id="5857770089550859117">Wachtwoordzin vereist om de synchronisatie te starten.</translation>
 <translation id="5860033963881614850">Uit</translation>
+<translation id="5865733239029070421">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden</translation>
 <translation id="5869029295770560994">OK, begrepen</translation>
 <translation id="5871497086027727873">1 item verplaatst</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -385,6 +389,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7971521879845308059">Pop-ups blokkeren</translation>
+<translation id="7981313251711023384">Pagina's vooraf laden voor sneller browsen en zoeken</translation>
 <translation id="7982789257301363584">Netwerk</translation>
 <translation id="8019783059653722575">Hiermee kun je foto's opslaan en uploaden.</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>

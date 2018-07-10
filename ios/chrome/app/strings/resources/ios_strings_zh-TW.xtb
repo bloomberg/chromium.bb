@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">列印失敗。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
+<translation id="1157102636231978136">讓你的瀏覽資料和活動與你的 Google 帳戶保持同步</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
 <translation id="1176932207622159128">無法儲存圖片</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">無法連線至網際網路。</translation>
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1265739287306757398">操作說明</translation>
+<translation id="127138278192656016">使用同步處理功能和所有服務</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1323735185997015385">刪除</translation>
 <translation id="132683371494960526">輕觸兩下即可變更上層資料夾。</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">沒有任何項目</translation>
 <translation id="1700629756560807968">已選取 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="1740468249224277719">輕觸兩下即可安裝。</translation>
+<translation id="17513872634828108">開啟分頁</translation>
 <translation id="1752547299766512813">儲存密碼</translation>
 <translation id="1753905327828125965">最常造訪</translation>
 <translation id="1809939268435598390">刪除資料夾</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入通關密語，才能開始進行同步處理。</translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7961015016161918242">一律不要</translation>
 <translation id="7971521879845308059">封鎖彈出式視窗</translation>
+<translation id="7981313251711023384">預先載入網頁，以加快瀏覽及搜尋速度</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="8019783059653722575">可讓你儲存並上傳相片。</translation>
 <translation id="802154636333426148">下載失敗</translation>

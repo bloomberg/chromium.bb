@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Неуспешно отпечатване.</translation>
 <translation id="1125564390852150847">Създаване на нов раздел.</translation>
 <translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
+<translation id="1157102636231978136">Активността ви и данните ви за сърфирането, синхронизирани с профила ви в Google</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1172898394251786223">Следващото поле</translation>
 <translation id="1176932207622159128">Изобр. не може да се запази</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Не може да се установи връзка с интернет.</translation>
 <translation id="1254117744268754948">Избор на папка</translation>
 <translation id="1265739287306757398">Научете как</translation>
+<translation id="127138278192656016">Използване на синхронизиране и всички услуги</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Няма елементи</translation>
 <translation id="1700629756560807968">Избрахте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Докоснете двукратно, за да инсталирате.</translation>
+<translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1752547299766512813">Запазени пароли</translation>
 <translation id="1753905327828125965">Ползвани</translation>
 <translation id="1809939268435598390">Изтриване на папката</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">Нова папка</translation>
 <translation id="5857770089550859117">За старт на синхронизирането е необходим пропуск.</translation>
 <translation id="5860033963881614850">Изключено</translation>
+<translation id="5865733239029070421">Автоматично изпраща до Google статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="5869029295770560994">Добре, разбрах</translation>
 <translation id="5871497086027727873">Преместихте 1 елемент</translation>
 <translation id="5911030830365207728">Google Преводач</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7971521879845308059">Изск. прозорци: Блокиране</translation>
+<translation id="7981313251711023384">Предварително зареждане на страниците с цел по-бързо сърфиране и търсене</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="8019783059653722575">Това ви позволява да запазвате и качвате снимки.</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>

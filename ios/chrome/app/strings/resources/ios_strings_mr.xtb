@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">प्रिंट अयशस्वी झाले.</translation>
 <translation id="1125564390852150847">नवीन टॅब तयार करा.</translation>
 <translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
+<translation id="1157102636231978136">तुमच्या Google खात्याशी सिंक केलेला, तुमचा ब्राउझ केलेला डेटा आणि अॅक्टिव्हिटी</translation>
 <translation id="1165039591588034296">एरर</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
 <translation id="1176932207622159128">इमेज सेव्ह करू शकत नाही</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">इंटरनेटशी कनेक्ट करण्यात अक्षम.</translation>
 <translation id="1254117744268754948">फोल्डर निवडा</translation>
 <translation id="1265739287306757398">कसे ते जाणून घ्या</translation>
+<translation id="127138278192656016">सिंक आणि सर्व सेवा वापरा</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1323735185997015385">हटवा</translation>
 <translation id="132683371494960526">मुख्य फोल्डर बदलण्यासाठी दोनदा टॅप करा.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">कोणतेही आयटम नाहीत</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> निवडले</translation>
 <translation id="1740468249224277719">इंस्टॉल करण्यासाठी दोनदा टॅप करा.</translation>
+<translation id="17513872634828108">खुले टॅब</translation>
 <translation id="1752547299766512813">पासवर्ड सेव्ह करा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
 <translation id="1809939268435598390">फोल्डर हटवा</translation>
@@ -263,6 +266,7 @@
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
 <translation id="5857770089550859117">संकालन प्रारंभ करण्यासाठी सांकेतिक वाक्यांश आवश्यक आहे.</translation>
 <translation id="5860033963881614850">बंद</translation>
+<translation id="5865733239029070421">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते</translation>
 <translation id="5869029295770560994">ठीक आहे, समजले</translation>
 <translation id="5871497086027727873">1 आयटम हलविला</translation>
 <translation id="5911030830365207728">Google भाषांतर</translation>
@@ -386,6 +390,7 @@
 <translation id="7947953824732555851">स्वीकार करा आणि साइन इन करा</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="7971521879845308059">पॉप-अप अवरोधित करा</translation>
+<translation id="7981313251711023384">जलद ब्राउझिंग आणि शोधाकरता पेज आधीच लोड करा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8019783059653722575">हे आपल्याला फोटो सेव्ह आणि अपलोड करू देते.</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>

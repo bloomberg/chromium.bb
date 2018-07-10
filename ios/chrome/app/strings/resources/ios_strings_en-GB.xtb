@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Printing failed.</translation>
 <translation id="1125564390852150847">Create new tab.</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
+<translation id="1157102636231978136">Your browsing data and activity, synced to your Google account</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Next field</translation>
 <translation id="1176932207622159128">Cannot Save Image</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Unable to connect to the Internet.</translation>
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1265739287306757398">Learn How</translation>
+<translation id="127138278192656016">Use sync and all services</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1323735185997015385">Delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
@@ -50,6 +52,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="1690731385917361335">No items</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
 <translation id="1740468249224277719">Double tap to install.</translation>
+<translation id="17513872634828108">Open tabs</translation>
 <translation id="1752547299766512813">Save Passwords</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="1809939268435598390">Delete Folder</translation>
@@ -262,6 +265,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5857770089550859117">Passphrase required to start sync.</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
 <translation id="5869029295770560994">OK, got it</translation>
 <translation id="5871497086027727873">1 item moved</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -385,6 +389,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7971521879845308059">Block Pop-ups</translation>
+<translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="8019783059653722575">This lets you save and upload photos.</translation>
 <translation id="802154636333426148">Download failed</translation>

@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">ההדפסה נכשלה.</translation>
 <translation id="1125564390852150847">יצירת כרטיסייה חדשה.</translation>
 <translation id="1145536944570833626">מחק נתונים קיימים.</translation>
+<translation id="1157102636231978136">‏סינכרון הנתונים ופעילות הגלישה עם חשבון Google שלך</translation>
 <translation id="1165039591588034296">שגיאה</translation>
 <translation id="1172898394251786223">השדה הבא</translation>
 <translation id="1176932207622159128">לא ניתן לשמור את התמונה</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">לא ניתן להתחבר לאינטרנט.</translation>
 <translation id="1254117744268754948">בחר תיקייה</translation>
 <translation id="1265739287306757398">איך עושים זאת?</translation>
+<translation id="127138278192656016">שימוש בסינכרון ובכל השירותים</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1323735185997015385">מחק</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">אין פריטים</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> נבחרו</translation>
 <translation id="1740468249224277719">הקש פעמיים כדי להתקין.</translation>
+<translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1752547299766512813">שמור סיסמאות</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
 <translation id="1809939268435598390">מחק תיקיה</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="5857770089550859117">יש להזין את ביטוי הסיסמה כדי להפעיל את הסינכרון.</translation>
 <translation id="5860033963881614850">כבוי</translation>
+<translation id="5865733239029070421">‏שליחת דוחות קריסה וסטטיסטיקת שימוש אל Google באופן אוטומטי</translation>
 <translation id="5869029295770560994">בסדר, הבנתי</translation>
 <translation id="5871497086027727873">פריט אחד הועבר</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7971521879845308059">חסום חלונות קופצים</translation>
+<translation id="7981313251711023384">טעינה מראש של דפים כדי לאפשר גלישה וחיפוש מהירים יותר</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="8019783059653722575">אישור זה מאפשר לך לשמור ולהעלות תמונות.</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>

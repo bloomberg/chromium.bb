@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Drukowanie nie udało się.</translation>
 <translation id="1125564390852150847">Utwórz nową kartę.</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
+<translation id="1157102636231978136">Dane przeglądania i aktywność związana z przeglądaniem, które są synchronizowane z Twoim kontem Google</translation>
 <translation id="1165039591588034296">Błąd</translation>
 <translation id="1172898394251786223">Następne pole</translation>
 <translation id="1176932207622159128">Nie można zapisać</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Nie można połączyć się z internetem.</translation>
 <translation id="1254117744268754948">Wybierz folder</translation>
 <translation id="1265739287306757398">Instrukcje</translation>
+<translation id="127138278192656016">Używaj synchronizacji i wszystkich usług</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1323735185997015385">Usuń</translation>
 <translation id="132683371494960526">Kliknij dwukrotnie, by zmienić folder nadrzędny.</translation>
@@ -50,6 +52,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="1690731385917361335">Brak elementów</translation>
 <translation id="1700629756560807968">Wybrane: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Kliknij dwukrotnie, by zainstalować.</translation>
+<translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1752547299766512813">Zapisuj hasła</translation>
 <translation id="1753905327828125965">Najczęstsze</translation>
 <translation id="1809939268435598390">Usuń folder</translation>
@@ -262,6 +265,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5857090052475505287">Nowy folder</translation>
 <translation id="5857770089550859117">Wpisz hasło, by rozpocząć synchronizację.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
+<translation id="5865733239029070421">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="5869029295770560994">Rozumiem</translation>
 <translation id="5871497086027727873">Przeniosłeś 1 element</translation>
 <translation id="5911030830365207728">Tłumacz Google</translation>
@@ -385,6 +389,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7971521879845308059">Blokuj wyskakujące okienka</translation>
+<translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
 <translation id="7982789257301363584">Sieć</translation>
 <translation id="8019783059653722575">Umożliwia zapisywanie i przesyłanie zdjęć.</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>

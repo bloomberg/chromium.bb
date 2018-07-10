@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">ማተም አልተሳካም።</translation>
 <translation id="1125564390852150847">አዲስ ትር ፍጠር።</translation>
 <translation id="1145536944570833626">ነባሩን ውሂብ ይሰርዙ።</translation>
+<translation id="1157102636231978136">የእርስዎ የአሰሳ አደራረግ ውሂብ እና እንቅስቃሴ፣ ወደ የእርስዎ የGoogle መለያ ተመሳስለዋል</translation>
 <translation id="1165039591588034296">ስህተት</translation>
 <translation id="1172898394251786223">ቀጣይ መስክ</translation>
 <translation id="1176932207622159128">ምስሉን ማስቀመጥ አልተቻለም</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">ከበይነመረቡ ጋር መገናኘት አልተቻለም</translation>
 <translation id="1254117744268754948">አቃፊ ይምረጡ</translation>
 <translation id="1265739287306757398">እንዴት እንደሆነ ይወቁ</translation>
+<translation id="127138278192656016">ማመሳሰልን እና ሁሉንም አገልግሎቶች ይጠቀሙ</translation>
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1323735185997015385">ሰርዝ</translation>
 <translation id="132683371494960526">የቀድሞ አቃፊውን ለመለወጥ ሁለቴ መታ ያድርጉ።</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">ምንም ንጥሎች የሉም</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ተመርጧል</translation>
 <translation id="1740468249224277719">ለመጫን ሁለቴ ነካ ያድርጉ።</translation>
+<translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1752547299766512813">የይለፍ ቃላትን አስቀምጥ</translation>
 <translation id="1753905327828125965">በይበልጥ የተጎበኙ</translation>
 <translation id="1809939268435598390">አቃፊ ሰርዝ</translation>
@@ -262,6 +265,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="5857090052475505287">አዲስ አቃፊ</translation>
 <translation id="5857770089550859117">ስምረትን ለመጀመር የይለፍ ሐረግ ያስፈልጋል።</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
+<translation id="5865733239029070421">የአጠቃቀም ስታስቲክስን እና የብልሽት ሪፖርቶችን በራስ-ሰር ወደ Google ይልካል</translation>
 <translation id="5869029295770560994">እሺ፣ ገባኝ</translation>
 <translation id="5871497086027727873">1 ንጥል ተንቀሳቅሷል</translation>
 <translation id="5911030830365207728">Google ትርጉም</translation>
@@ -385,6 +389,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="7971521879845308059">ብቅ-ባዮችን አግድ</translation>
+<translation id="7981313251711023384">ይበልጥ ፈጣን ለሆነ አሰሳ እና ፍለጋ ገጾችን ቅድሚያ ይጫኑ</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
 <translation id="8019783059653722575">ይህ ፎቶዎችን እንዲያስቀምጡ እና እንዲሰቅሉ ያስችልዎታል።</translation>
 <translation id="802154636333426148">ማውረድ አልተሳካም</translation>

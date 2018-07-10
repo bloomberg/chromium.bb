@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Yazdırılamadı.</translation>
 <translation id="1125564390852150847">Yeni sekme oluştur.</translation>
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
+<translation id="1157102636231978136">Google Hesabınızla senkronize edilen tarama verileriniz ve etkinliğiniz</translation>
 <translation id="1165039591588034296">Hata</translation>
 <translation id="1172898394251786223">Sonraki alan</translation>
 <translation id="1176932207622159128">Görüntü Kaydedilemiyor</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">İnternet'e bağlanılamıyor.</translation>
 <translation id="1254117744268754948">Klasör Seçin</translation>
 <translation id="1265739287306757398">Nasıl Yapacağınızı Öğrenin</translation>
+<translation id="127138278192656016">Senkronizasyonu ve tüm hizmetleri kullan</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1323735185997015385">Sil</translation>
 <translation id="132683371494960526">Üst klasörü değiştirmek için iki kez dokunun.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Öğe yok</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> yer işareti seçildi</translation>
 <translation id="1740468249224277719">Yüklemek için iki kez dokunun.</translation>
+<translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1752547299766512813">Şifreleri Kaydet</translation>
 <translation id="1753905327828125965">En Çok Ziyaret Edilenler</translation>
 <translation id="1809939268435598390">Klasörü Sil</translation>
@@ -262,6 +265,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5857090052475505287">Yeni Klasör</translation>
 <translation id="5857770089550859117">Senkronizasyonu başlatmak için parola gerekiyor.</translation>
 <translation id="5860033963881614850">Kapalı</translation>
+<translation id="5865733239029070421">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir</translation>
 <translation id="5869029295770560994">Tamam, Anladım</translation>
 <translation id="5871497086027727873">1 öğe taşındı</translation>
 <translation id="5911030830365207728">Google Çeviri</translation>
@@ -385,6 +389,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7971521879845308059">Pop-up'ları Engelle</translation>
+<translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="8019783059653722575">Böylece, fotoğrafları kaydedebilir ve yükleyebilirsiniz.</translation>
 <translation id="802154636333426148">İndirilemedi</translation>

@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Falha na impressão.</translation>
 <translation id="1125564390852150847">Criar nova guia</translation>
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
+<translation id="1157102636231978136">Seus dados e atividades de navegação, sincronizados com sua Conta do Google</translation>
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Não foi possível se conectar à Internet.</translation>
 <translation id="1254117744268754948">Escolher pasta</translation>
 <translation id="1265739287306757398">Saiba como</translation>
+<translation id="127138278192656016">Usar a sincronização e todos os serviços</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1323735185997015385">Excluir</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta pai.</translation>
@@ -51,6 +53,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="1690731385917361335">Nenhum item</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
 <translation id="1740468249224277719">Toque duas vezes para instalar.</translation>
+<translation id="17513872634828108">Guias abertas</translation>
 <translation id="1752547299766512813">Salvar senhas</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1809939268435598390">Excluir pasta</translation>
@@ -263,6 +266,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5857090052475505287">Nova pasta</translation>
 <translation id="5857770089550859117">É necessário ter uma senha longa para iniciar a sincronização.</translation>
 <translation id="5860033963881614850">Desativado</translation>
+<translation id="5865733239029070421">Envia estatísticas de uso e relatórios de erros automaticamente para o Google</translation>
 <translation id="5869029295770560994">Ok, entendi</translation>
 <translation id="5871497086027727873">1 item movido</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
@@ -386,6 +390,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>
+<translation id="7981313251711023384">Pré-carregar páginas para possibilitar navegação e pesquisa mais rápidas</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>
 <translation id="802154636333426148">Falha no download</translation>

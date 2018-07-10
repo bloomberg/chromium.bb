@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Tlač zlyhala.</translation>
 <translation id="1125564390852150847">Vytvoriť novú kartu.</translation>
 <translation id="1145536944570833626">Odstrániť existujúce dáta.</translation>
+<translation id="1157102636231978136">Dáta prehliadania a aktivita sa synchronizujú do vášho účtu Google</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1172898394251786223">Ďalšie pole</translation>
 <translation id="1176932207622159128">Obrázok sa nedá uložiť</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Nepodarilo sa pripojiť k internetu.</translation>
 <translation id="1254117744268754948">Vybrať priečinok</translation>
 <translation id="1265739287306757398">Ako na to</translation>
+<translation id="127138278192656016">Používať synchronizáciu a všetky služby</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1323735185997015385">Odstrániť</translation>
 <translation id="132683371494960526">Dvojitým klepnutím zmeníte nadradený priečinok.</translation>
@@ -50,6 +52,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="1690731385917361335">Žiadne položky</translation>
 <translation id="1700629756560807968">Počet vybraných záložiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte inštaláciu.</translation>
+<translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1752547299766512813">Ukladanie hesiel</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
 <translation id="1809939268435598390">Odstrániť priečinok</translation>
@@ -262,6 +265,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="5857770089550859117">Spustenie synchronizácie vyžaduje prístupovú frázu.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
+<translation id="5865733239029070421">Automaticky odosiela štatistiky o používaní a správy o zlyhaní Googlu</translation>
 <translation id="5869029295770560994">Ok, rozumiem</translation>
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
@@ -385,6 +389,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>
+<translation id="7981313251711023384">Vopred načítavať stránky na zrýchlenie prehliadania a vyhľadávania</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="8019783059653722575">Umožňuje uložiť a nahrať fotky.</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>

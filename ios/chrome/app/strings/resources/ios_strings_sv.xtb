@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Utskriftsfel.</translation>
 <translation id="1125564390852150847">Skapa en ny flik.</translation>
 <translation id="1145536944570833626">Radera befintlig data.</translation>
+<translation id="1157102636231978136">Din webbinformation och aktivitet som synkroniseras med Google-kontot</translation>
 <translation id="1165039591588034296">Fel</translation>
 <translation id="1172898394251786223">Nästa fält</translation>
 <translation id="1176932207622159128">Bilden sparades inte</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Det går inte att ansluta till internet.</translation>
 <translation id="1254117744268754948">Välj mapp</translation>
 <translation id="1265739287306757398">Läs mer</translation>
+<translation id="127138278192656016">Använd synkronisering och alla tjänster</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1323735185997015385">Radera</translation>
 <translation id="132683371494960526">Tryck snabbt två gånger om du vill ändra överordnad mapp.</translation>
@@ -50,6 +52,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1690731385917361335">Det finns inga objekt</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valda</translation>
 <translation id="1740468249224277719">Tryck snabbt två gånger här om du vill installera.</translation>
+<translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1752547299766512813">Spara lösenord</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
 <translation id="1809939268435598390">Ta bort mapp</translation>
@@ -262,6 +265,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5857090052475505287">Ny mapp</translation>
 <translation id="5857770089550859117">Lösenfras krävs för att starta synkroniseringen.</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
 <translation id="5869029295770560994">Ok, jag förstår</translation>
 <translation id="5871497086027727873">1 objekt flyttades</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
@@ -385,6 +389,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7971521879845308059">Blockera popup-fönster</translation>
+<translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
 <translation id="7982789257301363584">Nätverk</translation>
 <translation id="8019783059653722575">Det här gör att du kan spara foton och ladda upp dem.</translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>

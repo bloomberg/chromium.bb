@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Error en imprimir</translation>
 <translation id="1125564390852150847">Crea una pestanya nova.</translation>
 <translation id="1145536944570833626">Suprimeix les dades existents.</translation>
+<translation id="1157102636231978136">Les teves dades de navegació i activitat, sincronitzades al teu Compte de Google</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Camp següent</translation>
 <translation id="1176932207622159128">No es pot desar.</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">No es pot connectar a Internet.</translation>
 <translation id="1254117744268754948">Selecció de la carpeta</translation>
 <translation id="1265739287306757398">Més informació</translation>
+<translation id="127138278192656016">Fes servir la sincronització i tots els serveis</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1323735185997015385">Suprimeix</translation>
 <translation id="132683371494960526">Feu doble toc per canviar la carpeta principal.</translation>
@@ -50,6 +52,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="1690731385917361335">Cap element</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionades</translation>
 <translation id="1740468249224277719">Feu doble toc per instal·lar l'aplicació.</translation>
+<translation id="17513872634828108">Pestanyes obertes</translation>
 <translation id="1752547299766512813">Desa les contrasenyes</translation>
 <translation id="1753905327828125965">Els més visitats</translation>
 <translation id="1809939268435598390">Suprimeix la carpeta</translation>
@@ -262,6 +265,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5857090052475505287">Carpeta nova</translation>
 <translation id="5857770089550859117">Cal una frase de contrasenya per iniciar la sincronització.</translation>
 <translation id="5860033963881614850">Desactivat</translation>
+<translation id="5865733239029070421">Envia automàticament a Google estadístiques d'ús i informes d'error</translation>
 <translation id="5869029295770560994">D'acord</translation>
 <translation id="5871497086027727873">1 element desplaçat</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
@@ -385,6 +389,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>
+<translation id="7981313251711023384">Carrega les pàgines prèviament per poder-hi navegar i fer cerques més de pressa</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="8019783059653722575">Això et permet desar i penjar fotos.</translation>
 <translation id="802154636333426148">Error de baixada</translation>

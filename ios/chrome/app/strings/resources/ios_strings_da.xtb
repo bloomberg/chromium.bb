@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Udskrift mislykkedes.</translation>
 <translation id="1125564390852150847">Opret ny fane.</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
+<translation id="1157102636231978136">Dine browserdata og -aktivitet, der synkroniseres med din Google-konto</translation>
 <translation id="1165039591588034296">Fejl</translation>
 <translation id="1172898394251786223">Næste felt</translation>
 <translation id="1176932207622159128">Billedet kan ikke gemmes</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Der kunne ikke oprettes forbindelse til internettet.</translation>
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1265739287306757398">Se, hvordan du gør</translation>
+<translation id="127138278192656016">Brug synkronisering og alle tjenester</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
@@ -50,6 +52,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="1690731385917361335">Ingen elementer</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valgt</translation>
 <translation id="1740468249224277719">Tryk to gange for at installere.</translation>
+<translation id="17513872634828108">Åbne faner</translation>
 <translation id="1752547299766512813">Gem adgangskoder</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
 <translation id="1809939268435598390">Slet mappe</translation>
@@ -262,6 +265,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5857770089550859117">Angiv adgangssætningen for at påbegynde synkroniseringen.</translation>
 <translation id="5860033963881614850">Fra</translation>
+<translation id="5865733239029070421">Sender automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 bogmærke blev flyttet</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
@@ -385,6 +389,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7971521879845308059">Bloker pop op-vinduer</translation>
+<translation id="7981313251711023384">Forudindlæs sider, så du kan browse og søge hurtigere</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="8019783059653722575">Dette giver dig mulighed for at gemme og uploade billeder.</translation>
 <translation id="802154636333426148">Download mislykkedes</translation>

@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">تعذّرت الطباعة.</translation>
 <translation id="1125564390852150847">إنشاء علامة تبويب جديدة.</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
+<translation id="1157102636231978136">‏بيانات التصفُّح والنشاط المتزامنة في حسابك على Google</translation>
 <translation id="1165039591588034296">خطأ</translation>
 <translation id="1172898394251786223">الحقل التالي</translation>
 <translation id="1176932207622159128">يتعذر حفظ الصورة</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">يتعذر الاتصال بالإنترنت.</translation>
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1265739287306757398">تعرَّف على الطريقة</translation>
+<translation id="127138278192656016">استخدام المزامنة وجميع الخدمات</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">انقر مرّتين لتغيير المجلد الرئيسي.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">لا توجد عناصر</translation>
 <translation id="1700629756560807968">تم تحديد <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">انقر مرّتين للتثبيت.</translation>
+<translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1752547299766512813">حفظ كلمات المرور</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
 <translation id="1809939268435598390">حذف مجلد</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">مجلد جديد</translation>
 <translation id="5857770089550859117">عبارة المرور مطلوبة لبدء المزامنة.</translation>
 <translation id="5860033963881614850">إيقاف</translation>
+<translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="5869029295770560994">موافق</translation>
 <translation id="5871497086027727873">تم نقل عنصر واحد</translation>
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7971521879845308059">حظر النوافذ المنبثقة</translation>
+<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع للتصفح والبحث</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>

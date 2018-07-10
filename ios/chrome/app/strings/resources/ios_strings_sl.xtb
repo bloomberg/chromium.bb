@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Printing failed.</translation>
 <translation id="1125564390852150847">Create new tab.</translation>
 <translation id="1145536944570833626">Izbris obstoječih podatkov.</translation>
+<translation id="1157102636231978136">Podatki in dejavnost brskanja, sinhronizirani z Google Računom</translation>
 <translation id="1165039591588034296">Napaka</translation>
 <translation id="1172898394251786223">Naslednje polje</translation>
 <translation id="1176932207622159128">Slike ni mog. shran.</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Internetne povezave ni mogoče vzpostaviti.</translation>
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1265739287306757398">Več o tem</translation>
+<translation id="127138278192656016">Uporaba sinhronizacije in vseh storitev</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
@@ -50,6 +52,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="1690731385917361335">Ni elementov</translation>
 <translation id="1700629756560807968">Št. izbranih: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dvakrat se dotaknite, če želite namestiti.</translation>
+<translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1752547299766512813">Shranjena gesla</translation>
 <translation id="1753905327828125965">Najpogosteje obiskane</translation>
 <translation id="1809939268435598390">Izbriši mapo</translation>
@@ -260,6 +263,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5857770089550859117">Passphrase required to start sync.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
+<translation id="5865733239029070421">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="5869029295770560994">V redu, razumem</translation>
 <translation id="5871497086027727873">1 element premaknjen</translation>
 <translation id="5911030830365207728">Google Prevajalnik</translation>
@@ -383,6 +387,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7971521879845308059">Blokiraj pojavna okna</translation>
+<translation id="7981313251711023384">Vnaprejšnje nalaganje strani zaradi hitrejšega brskanja in iskanja</translation>
 <translation id="7982789257301363584">Omrežje</translation>
 <translation id="8019783059653722575">S tem je mogoče shranjevati in nalagati fotografije.</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
