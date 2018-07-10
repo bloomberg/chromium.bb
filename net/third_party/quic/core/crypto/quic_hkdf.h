@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_HKDF_H_
-#define NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_HKDF_H_
+#ifndef NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_HKDF_H_
+#define NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_HKDF_H_
 
-#include "net/third_party/quic/platform/impl/quic_hkdf_impl.h"
-
+#include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
@@ -14,7 +13,7 @@ namespace quic {
 // QuicHKDF implements the key derivation function specified in RFC 5869
 // (using SHA-256) and outputs key material, as needed by QUIC.
 // See https://tools.ietf.org/html/rfc5869 for details.
-class QuicHKDF {
+class QUIC_EXPORT QuicHKDF {
  public:
   // |secret|: the input shared secret (or, from RFC 5869, the IKM).
   // |salt|: an (optional) public salt / non-secret random value. While
@@ -35,13 +34,7 @@ class QuicHKDF {
            QuicStringPiece info,
            size_t key_bytes_to_generate,
            size_t iv_bytes_to_generate,
-           size_t subkey_secret_bytes_to_generate)
-      : impl_(secret,
-              salt,
-              info,
-              key_bytes_to_generate,
-              iv_bytes_to_generate,
-              subkey_secret_bytes_to_generate) {}
+           size_t subkey_secret_bytes_to_generate);
 
   // An alternative constructor that allows the client and server key/IV
   // lengths to be different.
@@ -52,28 +45,26 @@ class QuicHKDF {
            size_t server_key_bytes_to_generate,
            size_t client_iv_bytes_to_generate,
            size_t server_iv_bytes_to_generate,
-           size_t subkey_secret_bytes_to_generate)
-      : impl_(secret,
-              salt,
-              info,
-              client_key_bytes_to_generate,
-              server_key_bytes_to_generate,
-              client_iv_bytes_to_generate,
-              server_iv_bytes_to_generate,
-              subkey_secret_bytes_to_generate) {}
+           size_t subkey_secret_bytes_to_generate);
 
-  ~QuicHKDF() = default;
+  ~QuicHKDF();
 
-  QuicStringPiece client_write_key() const { return impl_.client_write_key(); }
-  QuicStringPiece client_write_iv() const { return impl_.client_write_iv(); }
-  QuicStringPiece server_write_key() const { return impl_.server_write_key(); }
-  QuicStringPiece server_write_iv() const { return impl_.server_write_iv(); }
-  QuicStringPiece subkey_secret() const { return impl_.subkey_secret(); }
+  QuicStringPiece client_write_key() const { return client_write_key_; }
+  QuicStringPiece client_write_iv() const { return client_write_iv_; }
+  QuicStringPiece server_write_key() const { return server_write_key_; }
+  QuicStringPiece server_write_iv() const { return server_write_iv_; }
+  QuicStringPiece subkey_secret() const { return subkey_secret_; }
 
  private:
-  QuicHKDFImpl impl_;
+  std::vector<uint8_t> output_;
+
+  QuicStringPiece client_write_key_;
+  QuicStringPiece server_write_key_;
+  QuicStringPiece client_write_iv_;
+  QuicStringPiece server_write_iv_;
+  QuicStringPiece subkey_secret_;
 };
 
 }  // namespace quic
 
-#endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_HKDF_H_
+#endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_HKDF_H_
