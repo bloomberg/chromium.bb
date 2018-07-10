@@ -72,8 +72,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestInitialization) {
 
   // Expect one header section.
   EXPECT_EQ(1, NumberOfSections());
-  // Expect header section to contain two rows.
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  // Expect header section to contain one row.
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
 }
 
 // Adding a single address results in an address section.
@@ -82,8 +82,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneProfile) {
   CreateController();
   // Expect two sections (header and addresses section).
   EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain two rows.
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  // Expect header section to contain one row.
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
   // Expect address section to contain 1 row (the address itself).
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
@@ -107,8 +107,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneCreditCard) {
   CreateController();
   // Expect two sections (header and credit card section).
   EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain two rows.
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  // Expect header section to contain one row.
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
   // Expect credit card section to contain 1 row (the credit card itself).
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
@@ -119,8 +119,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneProfileItemDeleted) {
   CreateController();
   // Expect two sections (header and addresses section).
   EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain two rows.
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  // Expect header section to contain one row.
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
   // Expect address section to contain 1 row (the address itself).
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 
@@ -156,8 +156,10 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneProfileItemDeleted) {
   [view_controller editButtonPressed];
 
   // Verify the resulting UI.
+  // Expect one header section.
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  // Expect header section to contain one row.
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
 }
 
 }  // namespace

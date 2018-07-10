@@ -39,7 +39,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillSwitch = kItemTypeEnumZero,
-  ItemTypeWalletSwitch,
   ItemTypeAddress,
   ItemTypeCard,
   ItemTypeHeader,
@@ -109,9 +108,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSwitches];
 
   if ([self isAutofillEnabled]) {
-    [model addItem:[self walletSwitchItem]
-        toSectionWithIdentifier:SectionIdentifierSwitches];
-
     [self populateProfileSection];
     [self populateCardSection];
   }
@@ -159,15 +155,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   switchItem.on = [self isAutofillEnabled];
   switchItem.accessibilityIdentifier = @"autofillItem_switch";
-  return switchItem;
-}
-
-- (CollectionViewItem*)walletSwitchItem {
-  SettingsSwitchItem* switchItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeWalletSwitch];
-  switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_USE_WALLET_DATA);
-  switchItem.on = [self isWalletEnabled];
-  switchItem.accessibilityIdentifier = @"walletItem_switch";
   return switchItem;
 }
 
@@ -265,12 +252,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [switchCell.switchView addTarget:self
                               action:@selector(autofillSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
-  } else if (itemType == ItemTypeWalletSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(walletSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
   }
   return cell;
 }
@@ -294,21 +275,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
 
     if ([switchView isOn]) {
-      [strongSelf insertWalletSwitchItem];
       [strongSelf insertProfileAndCardSections];
     } else {
-      [strongSelf removeWalletSwitchItem];
       [strongSelf removeProfileAndCardSections];
     }
   }
                                 completion:nil];
-}
-
-- (void)walletSwitchChanged:(UISwitch*)switchView {
-  [self setSwitchItemOn:[switchView isOn] itemType:ItemTypeWalletSwitch];
-  _userInteractionInProgress = YES;
-  [self setWalletEnabled:[switchView isOn]];
-  _userInteractionInProgress = NO;
 }
 
 #pragma mark - Switch Helpers
@@ -346,30 +318,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - Insert or Delete Items and Sections
-
-- (void)insertWalletSwitchItem {
-  CollectionViewModel* model = self.collectionViewModel;
-  [model addItem:[self walletSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitches];
-  NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeWalletSwitch
-                                   sectionIdentifier:SectionIdentifierSwitches];
-  [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
-}
-
-- (void)removeWalletSwitchItem {
-  if (![self.collectionViewModel
-          hasItemForItemType:ItemTypeWalletSwitch
-           sectionIdentifier:SectionIdentifierSwitches]) {
-    return;
-  }
-  NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeWalletSwitch
-                                   sectionIdentifier:SectionIdentifierSwitches];
-  [self.collectionViewModel removeItemWithType:ItemTypeWalletSwitch
-                     fromSectionWithIdentifier:SectionIdentifierSwitches];
-  [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
-}
 
 - (void)insertProfileAndCardSections {
   [self populateProfileSection];
@@ -416,8 +364,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeAddress || item.type == ItemTypeCard ||
-      item.type == ItemTypeWalletSwitch) {
+  if (item.type == ItemTypeAddress || item.type == ItemTypeCard) {
     return [MDCCollectionViewCell
         cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                            forItem:item];
@@ -430,7 +377,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
     case ItemTypeAutofillSwitch:
-    case ItemTypeWalletSwitch:
       return YES;
     default:
       return NO;
@@ -489,14 +435,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillSwitch];
-  [self setSwitchItemEnabled:NO itemType:ItemTypeWalletSwitch];
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillSwitch];
-  [self setSwitchItemEnabled:YES itemType:ItemTypeWalletSwitch];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
@@ -613,16 +557,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setAutofillEnabled:(BOOL)isEnabled {
   _browserState->GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled,
                                         isEnabled);
-}
-
-- (BOOL)isWalletEnabled {
-  return _browserState->GetPrefs()->GetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled);
-}
-
-- (void)setWalletEnabled:(BOOL)isEnabled {
-  _browserState->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled, isEnabled);
 }
 
 @end
