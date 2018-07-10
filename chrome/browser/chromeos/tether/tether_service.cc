@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
@@ -84,7 +83,7 @@ void TetherService::RegisterProfilePrefs(
 
 // static
 bool TetherService::IsFeatureFlagEnabled() {
-  return base::FeatureList::IsEnabled(features::kInstantTethering);
+  return base::FeatureList::IsEnabled(chromeos::features::kInstantTethering);
 }
 
 // static.

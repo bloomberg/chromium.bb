@@ -24,6 +24,10 @@ const base::Feature kEnableUnifiedMultiDeviceSettings{
 const base::Feature kEnableUnifiedMultiDeviceSetup{
     "EnableUnifiedMultiDeviceSetup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables Instant Tethering on Chrome OS.
+const base::Feature kInstantTethering{"InstantTethering",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the MultiDevice API on Chrome OS.
 const base::Feature kMultiDeviceApi{"MultiDeviceApi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

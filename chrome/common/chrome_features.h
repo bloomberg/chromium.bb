@@ -334,8 +334,6 @@ extern const base::Feature kCrosCompUpdates;
 
 extern const base::Feature kCrOSComponent;
 
-extern const base::Feature kInstantTethering;
-
 extern const base::Feature kTPMFirmwareUpdate;
 
 extern const base::Feature kCrOSEnableUSMUserService;

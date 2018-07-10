@@ -19,6 +19,7 @@ CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
 CHROMEOS_EXPORT extern const base::Feature kDriveFs;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
+CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
 
 CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;
 

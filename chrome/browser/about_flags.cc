@@ -1557,7 +1557,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kHideActiveAppsFromShelf)},
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kInstantTethering)},
+     FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
     {"multidevice-service", flag_descriptions::kMultiDeviceApiName,
      flag_descriptions::kMultiDeviceApiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMultiDeviceApi)},
