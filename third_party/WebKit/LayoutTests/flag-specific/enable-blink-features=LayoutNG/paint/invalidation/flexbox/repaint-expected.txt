@@ -1,0 +1,304 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow DIV id='content'",
+          "rect": [138, 128, 654, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='content'",
+          "rect": [148, 128, 644, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [138, 168, 636, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 168, 635, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 168, 635, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [138, 128, 635, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 128, 634, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 128, 634, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [138, 188, 627, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 188, 626, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 188, 626, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [138, 148, 619, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 148, 618, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 148, 618, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [138, 208, 573, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 208, 572, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [148, 208, 572, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='content'",
+          "rect": [400, 128, 392, 180],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='left'",
+          "rect": [8, 228, 392, 80],
+          "reason": "incremental"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 208, 391, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 268, 385, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 168, 385, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 248, 384, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 148, 384, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 228, 382, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 188, 374, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 128, 347, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='left'",
+          "rect": [148, 128, 252, 180],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='left'",
+          "rect": [8, 128, 140, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [400, 288, 39, 19],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutFlexibleBox DIV id='flexbox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV id='left'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV id='content'",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutFlexibleBox DIV id='flexbox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV id='left'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutNGBlockFlow DIV id='content'",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "subtree"
+    }
+  ]
+}
+
