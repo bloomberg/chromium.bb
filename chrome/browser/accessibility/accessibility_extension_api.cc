@@ -24,16 +24,20 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -154,15 +158,16 @@ AccessibilityPrivateSetKeyboardListenerFunction::Run() {
   if (!current_id.empty() && extension()->id() != current_id)
     return RespondNow(Error("Existing keyboard listener registered."));
 
-  if (enabled) {
-    manager->SetKeyboardListenerExtensionId(extension()->id(),
-                                            details.GetProfile());
-    manager->set_keyboard_listener_capture(capture);
-  } else {
-    manager->SetKeyboardListenerExtensionId(std::string(),
-                                            details.GetProfile());
-    manager->set_keyboard_listener_capture(false);
-  }
+  manager->SetKeyboardListenerExtensionId(
+      enabled ? extension()->id() : std::string(), details.GetProfile());
+
+  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                            &event_rewriter_controller_ptr);
+  event_rewriter_controller_ptr->CaptureAllKeysForSpokenFeedback(enabled &&
+                                                                 capture);
   return RespondNow(NoArguments());
 #endif  // defined OS_CHROMEOS
 

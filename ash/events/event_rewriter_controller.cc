@@ -85,6 +85,10 @@ void EventRewriterController::OnUnhandledSpokenFeedbackEvent(
       std::move(event));
 }
 
+void EventRewriterController::CaptureAllKeysForSpokenFeedback(bool capture) {
+  spoken_feedback_event_rewriter_->set_capture_all_keys(capture);
+}
+
 void EventRewriterController::OnHostInitialized(aura::WindowTreeHost* host) {
   for (const auto& rewriter : rewriters_)
     host->GetEventSource()->AddEventRewriter(rewriter.get());

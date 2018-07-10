@@ -30,6 +30,8 @@ class ASH_EXPORT SpokenFeedbackEventRewriter : public ui::EventRewriter {
   // NOTE: These events may be delivered out-of-order from non-ChromeVox events.
   void OnUnhandledSpokenFeedbackEvent(std::unique_ptr<ui::Event> event) const;
 
+  void set_capture_all_keys(bool value) { capture_all_keys_ = value; }
+
  private:
   // ui::EventRewriter:
   ui::EventRewriteStatus RewriteEvent(
@@ -41,6 +43,9 @@ class ASH_EXPORT SpokenFeedbackEventRewriter : public ui::EventRewriter {
 
   // The delegate used to send key events to the ChromeVox extension.
   mojom::SpokenFeedbackEventRewriterDelegatePtr delegate_;
+
+  // Whether to capture all keys.
+  bool capture_all_keys_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackEventRewriter);
 };

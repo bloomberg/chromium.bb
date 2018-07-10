@@ -23,7 +23,8 @@ class SpokenFeedbackEventRewriterDelegate
   ~SpokenFeedbackEventRewriterDelegate() override;
 
   // ui::mojom::SpokenFeedbackEventRewriterDelegate:
-  void DispatchKeyEventToChromeVox(std::unique_ptr<ui::Event> event) override;
+  void DispatchKeyEventToChromeVox(std::unique_ptr<ui::Event> event,
+                                   bool capture) override;
 
  private:
   // Returns whether the event should be dispatched to the ChromeVox extension.

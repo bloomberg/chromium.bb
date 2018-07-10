@@ -65,10 +65,16 @@ class TestDelegate : public mojom::SpokenFeedbackEventRewriterDelegate {
   // Count of events sent to the delegate.
   size_t recorded_event_count_ = 0;
 
+  // Count of captured events sent to the delegate.
+  size_t captured_event_count_ = 0;
+
  private:
   // SpokenFeedbackEventRewriterDelegate:
-  void DispatchKeyEventToChromeVox(std::unique_ptr<ui::Event> event) override {
+  void DispatchKeyEventToChromeVox(std::unique_ptr<ui::Event> event,
+                                   bool capture) override {
     recorded_event_count_++;
+    if (capture)
+      captured_event_count_++;
   }
 
   // The binding that backs the interface pointer held by the event rewriter.
@@ -106,6 +112,24 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
     spoken_feedback_event_rewriter_.get_delegate_for_testing()
         ->FlushForTesting();
     return delegate_.recorded_event_count_;
+  }
+
+  size_t GetDelegateCapturedEventCount() {
+    spoken_feedback_event_rewriter_.get_delegate_for_testing()
+        ->FlushForTesting();
+    return delegate_.captured_event_count_;
+  }
+
+  void SetDelegateCaptureAllKeys(bool value) {
+    spoken_feedback_event_rewriter_.set_capture_all_keys(value);
+  }
+
+  void ExpectCounts(size_t expected_recorded_count,
+                    size_t expected_delegate_count,
+                    size_t expected_captured_count) {
+    EXPECT_EQ(expected_recorded_count, event_recorder_.recorded_event_count_);
+    EXPECT_EQ(expected_delegate_count, GetDelegateRecordedEventCount());
+    EXPECT_EQ(expected_captured_count, GetDelegateCapturedEventCount());
   }
 
  protected:
@@ -152,19 +176,23 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsConsumedWhenEnabled) {
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(0U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
   EXPECT_EQ(1U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
   generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(0U, event_recorder_.recorded_event_count_);
-  EXPECT_EQ(2U, GetDelegateRecordedEventCount());
-
-  generator_->ClickLeftButton();
   EXPECT_EQ(2U, event_recorder_.recorded_event_count_);
   EXPECT_EQ(2U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
 
-  generator_->GestureTapAt(gfx::Point());
+  generator_->ClickLeftButton();
   EXPECT_EQ(4U, event_recorder_.recorded_event_count_);
   EXPECT_EQ(2U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
+
+  generator_->GestureTapAt(gfx::Point());
+  EXPECT_EQ(6U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(2U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
 }
 
 // Asynchronously unhandled events should be sent to subsequent rewriters.
@@ -208,6 +236,50 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
   EXPECT_EQ(9U, event_recorder_.recorded_event_count_);
 
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+}
+
+TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsCaptured) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+
+  // Initialize expected counts as variables for easier maintaiblity.
+  size_t recorded_count = 0;
+  size_t delegate_count = 0;
+  size_t captured_count = 0;
+
+  // Anything with Search gets captured.
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  ExpectCounts(recorded_count, ++delegate_count, ++captured_count);
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  ExpectCounts(recorded_count, ++delegate_count, ++captured_count);
+
+  // Tab never gets captured.
+  generator_->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
+  generator_->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
+
+  // A client requested capture of all keys.
+  SetDelegateCaptureAllKeys(true);
+  generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
+  ExpectCounts(recorded_count, ++delegate_count, ++captured_count);
+  generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  ExpectCounts(recorded_count, ++delegate_count, ++captured_count);
+
+  // Tab never gets captured even with explicit client request for all keys.
+  generator_->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
+  generator_->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
+
+  // A client requested to not capture all keys.
+  SetDelegateCaptureAllKeys(false);
+  generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
+  generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  ExpectCounts(++recorded_count, ++delegate_count, captured_count);
 }
 
 }  // namespace
