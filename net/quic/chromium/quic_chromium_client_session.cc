@@ -741,6 +741,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       probing_manager_(this, task_runner_),
       retry_migrate_back_count_(0),
       current_connection_migration_cause_(UNKNOWN),
+      send_packet_after_migration_(false),
       migration_pending_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency &&
@@ -1589,7 +1590,8 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
 void QuicChromiumClientSession::OnConnectivityProbeReceived(
     const quic::QuicSocketAddress& self_address,
     const quic::QuicSocketAddress& peer_address) {
-  DVLOG(1) << "Probing response from ip:port: " << peer_address.ToString()
+  DVLOG(1) << "Speculative probing response from ip:port: "
+           << peer_address.ToString()
            << " to ip:port: " << self_address.ToString() << " is received";
   // Notify the probing manager that a connectivity probing packet is received.
   probing_manager_.OnConnectivityProbingReceived(self_address, peer_address);
@@ -1702,9 +1704,11 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
 void QuicChromiumClientSession::OnNoNewNetwork() {
   migration_pending_ = true;
 
-  // Block the packet writer to avoid any writes while migration is in progress.
+  DVLOG(1) << "Force blocking the packet writer";
+  // Force blocking the packet writer to avoid any writes since there is no
+  // alternate network available.
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
-      ->set_write_blocked(true);
+      ->set_force_write_blocked(true);
 
   // Post a task to maybe close the session if the alarm fires.
   task_runner_->PostDelayedTask(
@@ -1716,30 +1720,15 @@ void QuicChromiumClientSession::OnNoNewNetwork() {
 void QuicChromiumClientSession::WriteToNewSocket() {
   // Prevent any pending migration from executing.
   migration_pending_ = false;
+  // Set |send_packet_after_migration_| to true so that a packet will be
+  // sent when the writer becomes unblocked.
+  send_packet_after_migration_ = true;
+
+  DVLOG(1) << "Cancel force blocking the packet writer";
+  // Notify writer that it is no longer forced blocked, which may call
+  // OnWriteUnblocked() if the writer has no write in progress.
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
-      ->set_write_blocked(false);
-  if (packet_ == nullptr) {
-    // Unblock the connection before sending a PING packet, since it
-    // may have been blocked before the migration started.
-    connection()->OnCanWrite();
-    SendPing();
-    return;
-  }
-
-  // The connection is waiting for the original write to complete
-  // asynchronously. The new writer will notify the connection if the
-  // write below completes asynchronously, but a synchronous competion
-  // must be propagated back to the connection here.
-  quic::WriteResult result =
-      static_cast<QuicChromiumPacketWriter*>(connection()->writer())
-          ->WritePacketToSocket(std::move(packet_));
-  if (result.error_code == ERR_IO_PENDING)
-    return;
-
-  // All write errors should be mapped into ERR_IO_PENDING by
-  // HandleWriteError.
-  DCHECK_LT(0, result.error_code);
-  connection()->OnCanWrite();
+      ->set_force_write_blocked(false);
 }
 
 void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
@@ -1974,7 +1963,25 @@ void QuicChromiumClientSession::OnWriteError(int error_code) {
 }
 
 void QuicChromiumClientSession::OnWriteUnblocked() {
+  DCHECK(!connection()->writer()->IsWriteBlocked());
+
+  if (packet_) {
+    DCHECK(send_packet_after_migration_);
+    send_packet_after_migration_ = false;
+    static_cast<QuicChromiumPacketWriter*>(connection()->writer())
+        ->WritePacketToSocket(std::move(packet_));
+    return;
+  }
+
+  // Unblock the connection, which may send queued packets.
   connection()->OnCanWrite();
+  if (send_packet_after_migration_) {
+    send_packet_after_migration_ = false;
+    if (!connection()->writer()->IsWriteBlocked()) {
+      SendPing();
+    }
+  }
+  return;
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
@@ -2655,9 +2662,10 @@ bool QuicChromiumClientSession::MigrateToSocket(
   packet_readers_.push_back(std::move(reader));
   sockets_.push_back(std::move(socket));
   StartReading();
-  // Block the writer to prevent it being used until WriteToNewSocket
-  // completes.
-  writer->set_write_blocked(true);
+  // Froce the writer to be blocked to prevent it being used until
+  // WriteToNewSocket completes.
+  DVLOG(1) << "Force blocking the packet writer";
+  writer->set_force_write_blocked(true);
   connection()->SetQuicPacketWriter(writer.release(), /*owns_writer=*/true);
 
   // Post task to write the pending packet or a PING packet to the new
