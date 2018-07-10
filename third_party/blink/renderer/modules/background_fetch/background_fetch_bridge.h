@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"

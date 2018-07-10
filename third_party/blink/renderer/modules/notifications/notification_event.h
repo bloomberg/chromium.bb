@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
-#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {

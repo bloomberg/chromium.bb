@@ -4,5 +4,5 @@ include_rules = [
     "+third_party/blink/renderer/modules/modules_export.h",
     "+third_party/blink/renderer/modules/permissions",
     "+third_party/blink/renderer/modules/push_messaging",
-    "+third_party/blink/renderer/modules/serviceworkers",
+    "+third_party/blink/renderer/modules/service_worker",
 ]

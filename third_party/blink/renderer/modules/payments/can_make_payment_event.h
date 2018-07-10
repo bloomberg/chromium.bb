@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
-#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace WTF {

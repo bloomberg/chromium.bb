@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/histogram.h"

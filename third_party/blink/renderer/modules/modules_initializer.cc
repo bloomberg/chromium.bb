@@ -71,7 +71,7 @@
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
-#include "third_party/blink/renderer/modules/serviceworkers/navigator_service_worker.h"
+#include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"

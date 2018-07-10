@@ -6,5 +6,5 @@ include_rules = [
     "+third_party/blink/renderer/modules/event_modules.h",
     "+third_party/blink/renderer/modules/event_target_modules.h",
     "+third_party/blink/renderer/modules/modules_export.h",
-    "+third_party/blink/renderer/modules/serviceworkers",
+    "+third_party/blink/renderer/modules/service_worker",
 ]

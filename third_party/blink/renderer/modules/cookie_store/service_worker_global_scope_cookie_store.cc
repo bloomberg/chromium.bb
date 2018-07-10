@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store.h"
 #include "third_party/blink/renderer/modules/cookie_store/global_cookie_store_impl.h"
-#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 
 namespace blink {
 

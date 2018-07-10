@@ -480,12 +480,12 @@
                   '|third_party/blink/renderer/core/paint/.*scrollable_area.*' \
                   '|third_party/blink/renderer/platform/scroll/'
     },
-    'blink_serviceworkers' : {
-      'filepath': 'third_party/blink/renderer/modules/serviceworkers' \
+    'blink_service_worker' : {
+      'filepath': 'third_party/blink/renderer/modules/service_worker' \
                   '|third_party/WebKit/LayoutTests/http/tests/serviceworker' \
                   '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
     },
-    'blink_serviceworkers_tests' : {
+    'blink_service_worker_tests' : {
       'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker' \
                   '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
     },
@@ -1882,7 +1882,7 @@
                      'hiroshige+script@chromium.org',
                      'kochi+script@chromium.org'],
     'blink_scroll': ['bokan@chromium.org'],
-    'blink_serviceworkers': ['falken+watch@chromium.org',
+    'blink_service_worker': ['falken+watch@chromium.org',
                              'horo+watch@chromium.org',
                              'jsbell+serviceworker@chromium.org',
                              'kinuko+serviceworker@chromium.org',
@@ -1890,7 +1890,7 @@
                              'serviceworker-reviews@chromium.org',
                              'shimazu+serviceworker@chromium.org',
                              'tzik@chromium.org'],
-    'blink_serviceworkers_tests': ['kenjibaheux+watch@chromium.org'],
+    'blink_service_worker_tests': ['kenjibaheux+watch@chromium.org'],
     'blink_shadow_dom': ['hayato@chromium.org'],
     'blink_spellcheck' : ['groby+blinkspell@chromium.org',
                           'timvolodine@chromium.org',
