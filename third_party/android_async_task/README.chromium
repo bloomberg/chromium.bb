@@ -13,5 +13,7 @@ Local Modifications:
 - Explicitly import android.os objects.
 - Switch to using android.support.annotations (from android.support.v13).
 - Added annotations to help it compile issue-free.
-- Changed THREAD_POOL_EXECUTOR to reuse the threads from android.os.AsyncTask
+- Changed THREAD_POOL_EXECUTOR to use our extension of Android's
+  ThreadPoolExecutor, shut down Android's ThreadPoolExecutor, and rerouted
+  runnables sent to Android's ThreadPoolExecutor to our extension.
 - Changed SERIAL_EXECUTOR to reuse the executor from android.os.AsyncTask

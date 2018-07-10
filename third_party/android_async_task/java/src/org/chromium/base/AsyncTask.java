@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -184,7 +185,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@link #THREAD_POOL_EXECUTOR}.</p>
  */
 public abstract class AsyncTask<Params, Progress, Result> {
-    private static final String LOG_TAG = "AsyncTask";
+    private static final String TAG = "AsyncTask";
 
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     // We want at least 2 threads and at most 4 threads in the core pool,
@@ -209,19 +210,29 @@ public abstract class AsyncTask<Params, Progress, Result> {
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
      */
-    public static final Executor THREAD_POOL_EXECUTOR = android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+    public static final Executor THREAD_POOL_EXECUTOR;
+
+    static {
+        ThreadPoolExecutor threadPoolExecutor =
+                new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS,
+                        TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        THREAD_POOL_EXECUTOR = threadPoolExecutor;
+    }
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
      * order.  This serialization is global to a particular process.
      */
-    public static final Executor SERIAL_EXECUTOR = android.os.AsyncTask.SERIAL_EXECUTOR;
+    public static final Executor SERIAL_EXECUTOR = new SerialExecutor();
 
     private static final int MESSAGE_POST_RESULT = 0x1;
     private static final int MESSAGE_POST_PROGRESS = 0x2;
 
     private static volatile Executor sDefaultExecutor = SERIAL_EXECUTOR;
     private static InternalHandler sHandler;
+
+    private static final StealRunnableHandler STEAL_RUNNABLE_HANDLER = new StealRunnableHandler();
 
     private final WorkerRunnable<Params, Result> mWorker;
     private final FutureTask<Result> mFuture;
@@ -261,6 +272,13 @@ public abstract class AsyncTask<Params, Progress, Result> {
         }
     }
 
+    private static class StealRunnableHandler implements RejectedExecutionHandler {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            THREAD_POOL_EXECUTOR.execute(r);
+        }
+    }
+
     /**
      * Indicates the current status of the task. Each status will be set only once
      * during the lifetime of a task.
@@ -287,6 +305,12 @@ public abstract class AsyncTask<Params, Progress, Result> {
             }
             return sHandler;
         }
+    }
+
+    public static void takeOverAndroidThreadPool() {
+        ThreadPoolExecutor exec = (ThreadPoolExecutor) android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+        exec.setRejectedExecutionHandler(STEAL_RUNNABLE_HANDLER);
+        exec.shutdown();
     }
 
     private Handler getHandler() {
@@ -350,7 +374,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
                 try {
                     postResultIfNotInvoked(get());
                 } catch (InterruptedException e) {
-                    android.util.Log.w(LOG_TAG, e);
+                    android.util.Log.w(TAG, e);
                 } catch (ExecutionException e) {
                     throw new RuntimeException(
                             "An error occurred while executing doInBackground()", e.getCause());

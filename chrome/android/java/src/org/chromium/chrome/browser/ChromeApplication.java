@@ -13,6 +13,7 @@ import android.os.Bundle;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
@@ -111,6 +112,7 @@ public class ChromeApplication extends Application {
                         PureJavaExceptionReporter::reportJavaException);
             }
         }
+        AsyncTask.takeOverAndroidThreadPool();
     }
 
     /** Ensure this application object is not out-of-date. */
