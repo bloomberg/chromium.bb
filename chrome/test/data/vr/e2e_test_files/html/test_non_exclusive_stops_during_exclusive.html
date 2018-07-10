@@ -21,7 +21,7 @@ is active, but resumes afterwards.
           // Verify that we call a rAF once, then make sure any subsequent calls
           // are not done while there is an exclusive session.
           onMagicWindowXRFrameCallback = function() {
-            if (exclusiveSession !== null) {
+            if (sessionInfos[sessionTypes.EXCLUSIVE].currentSession !== null) {
               t.step( () => {
                 assert_unreached(
                     "Non-exclusive rAF called during exclusive session");
