@@ -209,14 +209,6 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
 
-  // Set EmbeddedWorkerSettings for content settings only readable from the UI
-  // thread.
-  // TODO(bengr): Support changes to the data saver setting while the worker is
-  // running.
-  params->data_saver_enabled =
-      GetContentClient()->browser()->IsDataSaverEnabled(
-          process_manager->browser_context());
-
   // Continue to OnSetupCompleted on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
