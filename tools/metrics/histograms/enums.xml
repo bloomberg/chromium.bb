@@ -19307,6 +19307,7 @@ Called by update_net_error_codes.py.-->
   <int value="2496" label="DocumentOpenThreeArgs"/>
   <int value="2497" label="V8FunctionTokenOffsetTooLongForToString"/>
   <int value="2498" label="ServiceWorkerImportScriptNotInstalled"/>
+  <int value="2499" label="NestedDedicatedWorker"/>
 </enum>
 
 <enum name="FeedbackSource">
