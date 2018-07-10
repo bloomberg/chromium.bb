@@ -51,7 +51,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     /**
      * A listener for passphrase events.
      */
-    interface Listener {
+    public interface Listener {
         /**
          * @return whether passphrase was valid.
          */

@@ -48,9 +48,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         DialogInterface.OnClickListener, OnItemClickListener {
     private static final String TAG = "PassphraseTypeDialogFragment";
 
-    interface Listener {
-        void onPassphraseTypeSelected(PassphraseType type);
-    }
+    public interface Listener { void onPassphraseTypeSelected(PassphraseType type); }
 
     private String[] getDisplayNames(List<PassphraseType> passphraseTypes) {
         String[] displayNames = new String[passphraseTypes.size()];
@@ -143,7 +141,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     private static final String ARG_IS_ENCRYPT_EVERYTHING_ALLOWED =
             "arg_is_encrypt_everything_allowed";
 
-    static PassphraseTypeDialogFragment create(
+    public static PassphraseTypeDialogFragment create(
             PassphraseType currentType, long passphraseTime, boolean isEncryptEverythingAllowed) {
         PassphraseTypeDialogFragment dialog = new PassphraseTypeDialogFragment();
         Bundle args = new Bundle();
