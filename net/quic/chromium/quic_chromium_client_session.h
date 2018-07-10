@@ -430,6 +430,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                        scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer>
                            last_packet) override;
   void OnWriteError(int error_code) override;
+  // Called when the associated writer is unblocked. Write the cached |packet_|
+  // if |packet_| is set. May send a PING packet if
+  // |send_packet_after_migration_| is set and writer is not blocked after
+  // writing queued packets.
   void OnWriteUnblocked() override;
 
   // QuicConnectivityProbingManager::Delegate override.
@@ -551,9 +555,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Attempts to migrate session when a write error is encountered.
   void MigrateSessionOnWriteError(int error_code);
 
-  // Helper method that writes a packet on the new socket after
-  // migration completes. If not null, the packet_ member is written,
-  // otherwise a PING packet is written.
+  // Helper method that completes connection/server migration.
+  // Unblocks packet writer on network level. If the writer becomes unblocked
+  // then, OnWriteUnblocked() will be invoked to send packet after migration.
   void WriteToNewSocket();
 
   // Migrates session over to use |peer_address| and |network|.
@@ -765,8 +769,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   int streams_pushed_and_claimed_count_;
   uint64_t bytes_pushed_count_;
   uint64_t bytes_pushed_and_unclaimed_count_;
-  // Stores packet that witnesses socket write error. This packet is
-  // written to a new socket after migration completes.
+  // Stores the packet that witnesses socket write error. This packet will be
+  // written to an alternate socket when the migration completes and the
+  // alternate socket is unblocked.
   scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet_;
   // Stores the latest default network platform marks.
   NetworkChangeNotifier::NetworkHandle default_network_;
@@ -774,6 +779,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   int retry_migrate_back_count_;
   base::OneShotTimer migrate_back_to_default_timer_;
   ConnectionMigrationCause current_connection_migration_cause_;
+  // True if a packet needs to be sent when packet writer is unblocked to
+  // complete connection migration. The packet can be a cached packet if
+  // |packet_| is set, a queued packet, or a PING packet.
+  bool send_packet_after_migration_;
   // TODO(jri): Replace use of migration_pending_ sockets_.size().
   // When a task is posted for MigrateSessionOnError, pass in
   // sockets_.size(). Then in MigrateSessionOnError, check to see if

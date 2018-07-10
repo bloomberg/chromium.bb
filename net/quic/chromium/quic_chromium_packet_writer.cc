@@ -88,7 +88,8 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
     : socket_(socket),
       delegate_(nullptr),
       packet_(new ReusableIOBuffer(quic::kMaxPacketSize)),
-      write_blocked_(false),
+      write_in_progress_(false),
+      force_write_blocked_(false),
       retry_count_(0),
       weak_factory_(this) {
   retry_timer_.SetTaskRunner(task_runner);
@@ -97,6 +98,13 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
 }
 
 QuicChromiumPacketWriter::~QuicChromiumPacketWriter() {}
+
+void QuicChromiumPacketWriter::set_force_write_blocked(
+    bool force_write_blocked) {
+  force_write_blocked_ = force_write_blocked;
+  if (!IsWriteBlocked() && delegate_ != nullptr)
+    delegate_->OnWriteUnblocked();
+}
 
 void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   if (UNLIKELY(!packet_)) {
@@ -127,10 +135,13 @@ quic::WriteResult QuicChromiumPacketWriter::WritePacket(
   return WritePacketToSocketImpl();
 }
 
-quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocket(
+void QuicChromiumPacketWriter::WritePacketToSocket(
     scoped_refptr<ReusableIOBuffer> packet) {
+  DCHECK(!force_write_blocked_);
   packet_ = std::move(packet);
-  return QuicChromiumPacketWriter::WritePacketToSocketImpl();
+  quic::WriteResult result = WritePacketToSocketImpl();
+  if (result.error_code != ERR_IO_PENDING)
+    OnWriteComplete(result.error_code);
 }
 
 quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
@@ -156,7 +167,7 @@ quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
       status = quic::WRITE_STATUS_ERROR;
     } else {
       status = quic::WRITE_STATUS_BLOCKED;
-      write_blocked_ = true;
+      write_in_progress_ = true;
     }
   }
 
@@ -184,17 +195,17 @@ bool QuicChromiumPacketWriter::IsWriteBlockedDataBuffered() const {
 }
 
 bool QuicChromiumPacketWriter::IsWriteBlocked() const {
-  return write_blocked_;
+  return (force_write_blocked_ || write_in_progress_);
 }
 
 void QuicChromiumPacketWriter::SetWritable() {
-  write_blocked_ = false;
+  write_in_progress_ = false;
 }
 
 void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(delegate_) << "Uninitialized delegate.";
-  write_blocked_ = false;
+  write_in_progress_ = false;
   if (rv < 0) {
     if (MaybeRetryAfterWriteError(rv))
       return;
@@ -205,8 +216,10 @@ void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
     rv = delegate_->HandleWriteError(rv, std::move(packet_));
     DCHECK(packet_ == nullptr);
     if (rv == ERR_IO_PENDING) {
-      // Set write blocked back as HandleWriteError hasn't complete migration.
-      write_blocked_ = true;
+      // Set write blocked back as write error is encountered in this writer,
+      // delegate may be able to handle write error but this writer will never
+      // be used to write any new data.
+      write_in_progress_ = true;
       return;
     }
   }
@@ -217,7 +230,7 @@ void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
 
   if (rv < 0)
     delegate_->OnWriteError(rv);
-  else
+  else if (!force_write_blocked_)
     delegate_->OnWriteUnblocked();
 }
 
@@ -235,7 +248,7 @@ bool QuicChromiumPacketWriter::MaybeRetryAfterWriteError(int rv) {
       base::Bind(&QuicChromiumPacketWriter::RetryPacketAfterNoBuffers,
                  weak_factory_.GetWeakPtr()));
   retry_count_++;
-  write_blocked_ = true;
+  write_in_progress_ = true;
   return true;
 }
 

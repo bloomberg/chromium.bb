@@ -74,10 +74,13 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   // |delegate| must outlive writer.
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
-  void set_write_blocked(bool write_blocked) { write_blocked_ = write_blocked; }
+  // This method may unblock the packet writer if |force_write_blocked| is
+  // false.
+  void set_force_write_blocked(bool force_write_blocked);
 
-  // Writes |packet| to the socket and returns the error code from the write.
-  quic::WriteResult WritePacketToSocket(scoped_refptr<ReusableIOBuffer> packet);
+  // Writes |packet| to the socket and handles write result if the write
+  // completes synchronously.
+  void WritePacketToSocket(scoped_refptr<ReusableIOBuffer> packet);
 
   // quic::QuicPacketWriter
   quic::WriteResult WritePacket(const char* buffer,
@@ -108,8 +111,14 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   // moved to the delegate in the case of a write error.
   scoped_refptr<ReusableIOBuffer> packet_;
 
-  // Whether a write is currently in flight.
-  bool write_blocked_;
+  // Whether a write is currently in progress: true if an asynchronous write is
+  // in flight, or a retry of a previous write is in progress, or session is
+  // handling write error of a previous write.
+  bool write_in_progress_;
+
+  // If ture, IsWriteBlocked() will return true regardless of
+  // |write_in_progress_|.
+  bool force_write_blocked_;
 
   int retry_count_;
   // Timer set when a packet should be retried after ENOBUFS.
