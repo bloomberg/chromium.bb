@@ -22,6 +22,7 @@ import android.view.View.OnClickListener;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -129,6 +130,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private static final int FOCUS_REASON_BOUNDARY = 5;
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
             new EnumeratedHistogramSample("Android.OmniboxFocusReason", FOCUS_REASON_BOUNDARY);
+    private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
+            new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
 
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
@@ -739,6 +742,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (mBottomToolbarCoordinator != null) {
             final OnClickListener searchAcceleratorListener = v -> {
                 recordOmniboxFocusReason(ACCELERATOR_TAP);
+                ACCELERATOR_BUTTON_TAP_ACTION.record();
                 setUrlBarFocus(true);
             };
             final OnClickListener homeButtonListener = v -> openHomepage();
