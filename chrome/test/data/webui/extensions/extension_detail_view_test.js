@@ -11,6 +11,8 @@ cr.define('extension_detail_view_tests', function() {
     ClickableElements: 'clickable elements',
     Indicator: 'indicator',
     Warnings: 'warnings',
+    RuntimeHostPermissionsDisplay: 'runtime host permissions display',
+    RuntimeHostPermissionsSelection: 'runtime host permissions selection',
   };
 
   var suiteName = 'ExtensionDetailViewTest';
@@ -37,7 +39,6 @@ cr.define('extension_detail_view_tests', function() {
       extensionData = extension_test_util.createExtensionInfo({
         incognitoAccess: {isEnabled: true, isActive: false},
         fileAccess: {isEnabled: true, isActive: false},
-        runOnAllUrls: {isEnabled: true, isActive: false},
         errorCollection: {isEnabled: true, isActive: false},
       });
       mockDelegate = new extension_test_util.MockItemDelegate();
@@ -69,7 +70,6 @@ cr.define('extension_detail_view_tests', function() {
       var accessOptions = [
         {key: 'incognitoAccess', id: '#allow-incognito'},
         {key: 'fileAccess', id: '#allow-on-file-urls'},
-        {key: 'runOnAllUrls', id: '#allow-on-all-sites'},
         {key: 'errorCollection', id: '#collect-errors'},
       ];
       var isChecked = id => item.$$(id).checked;
@@ -97,13 +97,20 @@ cr.define('extension_detail_view_tests', function() {
           item.$$('#dependent-extensions-list').querySelectorAll('li').length);
 
       expectFalse(testIsVisible('#permissions-list'));
+      expectFalse(testIsVisible('#host-access'));
+      expectFalse(testIsVisible('#runtime-hosts'));
+
       expectTrue(testIsVisible('#no-permissions'));
-      item.set('data.permissions', ['Permission 1', 'Permission 2']);
+      item.set(
+          'data.permissions',
+          {simplePermissions: ['Permission 1', 'Permission 2']});
       Polymer.dom.flush();
       expectTrue(testIsVisible('#permissions-list'));
       expectEquals(
           2, item.$$('#permissions-list').querySelectorAll('li').length);
       expectFalse(testIsVisible('#no-permissions'));
+      expectFalse(testIsVisible('#host-access'));
+      expectFalse(testIsVisible('#runtime-hosts'));
 
       var optionsUrl =
           'chrome-extension://' + extensionData.id + '/options.html';
@@ -194,9 +201,6 @@ cr.define('extension_detail_view_tests', function() {
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
           item.$$('#allow-on-file-urls').getLabel(), 'setItemAllowedOnFileUrls',
-          [extensionData.id, true]);
-      mockDelegate.testClickingCalls(
-          item.$$('#allow-on-all-sites').getLabel(), 'setItemAllowedOnAllSites',
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
           item.$$('#collect-errors').getLabel(), 'setItemCollectsErrors',
@@ -292,6 +296,81 @@ cr.define('extension_detail_view_tests', function() {
       testWarningVisible('#suspicious-warning', false);
       testWarningVisible('#blacklisted-warning', false);
       testWarningVisible('#update-required-warning', false);
+    });
+
+    test(assert(TestNames.RuntimeHostPermissionsDisplay), function() {
+      var HostAccess = chrome.developerPrivate.HostAccess;
+
+      var permissions = {
+        simplePermissions: ['permission 1', 'permission 2'],
+        hostAccess: HostAccess.ON_CLICK,
+        runtimeHostPermissions: [],
+      };
+
+      item.set('data.permissions', permissions);
+      Polymer.dom.flush();
+
+      var testIsVisible = extension_test_util.isVisible.bind(null, item);
+      expectTrue(testIsVisible('#host-access'));
+
+      // The host-access menu should be visible, since the data includes
+      // host access information.
+      var selectHostAccess = item.$$('#host-access');
+      expectEquals(HostAccess.ON_CLICK, selectHostAccess.value);
+      // For on-click mode, there should be no runtime hosts listed.
+      expectFalse(testIsVisible('#runtime-hosts'));
+
+      // Changing the data's access should change the UI appropriately.
+      item.set('data.permissions.hostAccess', HostAccess.ON_ALL_SITES);
+      Polymer.dom.flush();
+      expectEquals(HostAccess.ON_ALL_SITES, selectHostAccess.value);
+      expectFalse(testIsVisible('#runtime-hosts'));
+
+      // Setting the mode to on specific sites should display the runtime hosts
+      // list.
+      item.set('data.permissions.hostAccess', HostAccess.ON_SPECIFIC_SITES);
+      item.set(
+          'data.permissions.runtimeHostPermissions',
+          ['https://example.com', 'https://chromium.org']);
+      Polymer.dom.flush();
+      expectEquals(HostAccess.ON_SPECIFIC_SITES, selectHostAccess.value);
+      expectTrue(testIsVisible('#runtime-hosts'));
+      expectEquals(
+          2, item.$$('#runtime-hosts').getElementsByTagName('li').length);
+    });
+
+    test(assert(TestNames.RuntimeHostPermissionsSelection), function() {
+      var HostAccess = chrome.developerPrivate.HostAccess;
+
+      var permissions = {
+        simplePermissions: ['permission 1', 'permission 2'],
+        hostAccess: HostAccess.ON_CLICK,
+        runtimeHostPermissions: [],
+      };
+
+      item.set('data.permissions', permissions);
+      Polymer.dom.flush();
+
+      var selectHostAccess = item.$$('#host-access');
+
+      // Changes the value of the selectHostAccess menu and fires the change
+      // event, then verifies that the delegate was called with the correct
+      // value.
+      function expectDelegateCallOnAccessChange(newValue) {
+        var mock = new MockController();
+        var mockMethod =
+            mock.createFunctionMock(mockDelegate, 'setItemHostAccess');
+        mockMethod.addExpectation(extensionData.id, newValue);
+        selectHostAccess.value = newValue;
+        selectHostAccess.dispatchEvent(
+            new CustomEvent('change', {target: selectHostAccess}));
+        mock.verifyMocks();
+      }
+
+      // Check that selecting different values correctly notifies the delegate.
+      expectDelegateCallOnAccessChange(HostAccess.ON_SPECIFIC_SITES);
+      expectDelegateCallOnAccessChange(HostAccess.ON_ALL_SITES);
+      expectDelegateCallOnAccessChange(HostAccess.ON_CLICK);
     });
   });
 

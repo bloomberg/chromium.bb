@@ -83,12 +83,6 @@ std::unique_ptr<KeyedService> BuildEventRouter(
   return std::make_unique<EventRouter>(profile, ExtensionPrefs::Get(profile));
 }
 
-bool HasAllUrlsPermission(const Extension* extension,
-                          content::BrowserContext* context) {
-  return !ScriptingPermissionsModifier(context, extension)
-              .HasWithheldHostPermissions();
-}
-
 bool HasPrefsPermission(bool (*has_pref)(const std::string&,
                                          content::BrowserContext*),
                         content::BrowserContext* context,
@@ -378,9 +372,6 @@ TEST_F(DeveloperPrivateApiUnitTest,
   TestExtensionPrefSetting(
       base::Bind(&HasPrefsPermission, &util::AllowFileAccess, profile(), id),
       "fileAccess", id);
-  TestExtensionPrefSetting(base::Bind(&HasAllUrlsPermission,
-                                      base::RetainedRef(extension), profile()),
-                           "runOnAllUrls", id);
 }
 
 // Test developerPrivate.reload.
@@ -1392,6 +1383,45 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
 
   run_remove_host_permission(host.spec(), true, nullptr);
   EXPECT_FALSE(modifier.HasGrantedHostPermission(host));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+
+  auto run_update_host_access = [this,
+                                 extension](base::StringPiece new_access) {
+    SCOPED_TRACE(new_access);
+    ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+    scoped_refptr<UIThreadExtensionFunction> function = base::MakeRefCounted<
+        api::DeveloperPrivateUpdateExtensionConfigurationFunction>();
+    std::string args =
+        base::StringPrintf(R"([{"extensionId": "%s", "hostAccess": "%s"}])",
+                           extension->id().c_str(), new_access.data());
+    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
+        << function->GetError();
+  };
+
+  run_update_host_access("ON_CLICK");
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  run_update_host_access("ON_ALL_SITES");
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+
+  run_update_host_access("ON_SPECIFIC_SITES");
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  // TODO(devlin): Test behavior of specific granted hosts (e.g. in the case of
+  // `on specific sites` -> `on click`) once we revoke granted hosts in that
+  // transition.
+  // https://crbug.com/844128.
 }
 
 class DeveloperPrivateZipInstallerUnitTest

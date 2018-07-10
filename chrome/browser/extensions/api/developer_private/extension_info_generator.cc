@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,6 +47,8 @@
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -215,6 +218,79 @@ void ConstructCommands(CommandService* command_service,
       command_to_use.set_global(active_command.global());
       bool active = command_to_use.accelerator().key_code() != ui::VKEY_UNKNOWN;
       commands->push_back(construct_command(command_to_use, active, false));
+    }
+  }
+}
+
+// Populates the |permissions| data for the given |extension|.
+void AddPermissionsInfo(content::BrowserContext* browser_context,
+                        const Extension& extension,
+                        developer::Permissions* permissions) {
+  auto get_permission_messages = [](const PermissionMessages& messages) {
+    std::vector<developer::Permission> permissions;
+    permissions.reserve(messages.size());
+    for (const PermissionMessage& message : messages) {
+      permissions.push_back(developer::Permission());
+      developer::Permission& permission_message = permissions.back();
+      permission_message.message = base::UTF16ToUTF8(message.message());
+      permission_message.submessages.reserve(message.submessages().size());
+      for (const auto& submessage : message.submessages())
+        permission_message.submessages.push_back(base::UTF16ToUTF8(submessage));
+    }
+    return permissions;
+  };
+
+  ScriptingPermissionsModifier permissions_modifier(
+      browser_context, base::WrapRefCounted(&extension));
+  bool enable_runtime_host_permissions =
+      permissions_modifier.CanAffectExtension();
+
+  if (!enable_runtime_host_permissions) {
+    // Without runtime host permissions, everything goes into
+    // simple_permissions.
+    permissions->simple_permissions = get_permission_messages(
+        extension.permissions_data()->GetPermissionMessages());
+    return;
+  }
+
+  // With runtime host permissions, we separate out API permission messages
+  // from host permissions.
+  const PermissionSet& active_permissions =
+      extension.permissions_data()->active_permissions();
+  PermissionSet non_host_permissions(active_permissions.apis(),
+                                     active_permissions.manifest_permissions(),
+                                     URLPatternSet(), URLPatternSet());
+  const PermissionMessageProvider* message_provider =
+      PermissionMessageProvider::Get();
+  // Generate the messages for just the API (and manifest) permissions.
+  PermissionMessages api_messages = message_provider->GetPermissionMessages(
+      message_provider->GetAllPermissionIDs(non_host_permissions,
+                                            extension.GetType()));
+  permissions->simple_permissions = get_permission_messages(api_messages);
+
+  // Add the host access data, including the mode and any runtime-granted
+  // hosts.
+  if (!permissions_modifier.HasWithheldHostPermissions()) {
+    permissions->host_access = developer::HOST_ACCESS_ON_ALL_SITES;
+  } else {
+    constexpr bool include_rcd = true;
+    constexpr bool exclude_file_scheme = true;
+    std::set<std::string> distinct_hosts =
+        permission_message_util::GetDistinctHosts(
+            active_permissions.effective_hosts(), include_rcd,
+            exclude_file_scheme);
+    // TODO(devlin): This isn't quite right - it's possible the user just
+    // selected "on specific sites" from the dropdown, and hasn't yet added
+    // any sites. We'll need to handle this.
+    // https://crbug.com/844128.
+    if (!distinct_hosts.empty()) {
+      permissions->host_access = developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+      permissions->runtime_host_permissions =
+          std::make_unique<std::vector<std::string>>(
+              std::make_move_iterator(distinct_hosts.begin()),
+              std::make_move_iterator(distinct_hosts.end()));
+    } else {
+      permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
     }
   }
 }
@@ -515,28 +591,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe()));
   }
 
-  // Permissions.
-  PermissionMessages messages =
-      extension.permissions_data()->GetPermissionMessages();
-  // TODO(devlin): We need to indicate which permissions can be removed and
-  // which can't.
-  info->permissions.reserve(messages.size());
-  for (const PermissionMessage& message : messages) {
-    info->permissions.push_back(developer::Permission());
-    developer::Permission& permission_message = info->permissions.back();
-    permission_message.message = base::UTF16ToUTF8(message.message());
-    permission_message.submessages.reserve(message.submessages().size());
-    for (const auto& submessage : message.submessages())
-      permission_message.submessages.push_back(base::UTF16ToUTF8(submessage));
-  }
-
-  // Runs on all urls.
-  ScriptingPermissionsModifier permissions_modifier(
-      browser_context_, base::WrapRefCounted(&extension));
-  info->run_on_all_urls.is_enabled = permissions_modifier.CanAffectExtension();
-  info->run_on_all_urls.is_active =
-      info->run_on_all_urls.is_enabled &&
-      !permissions_modifier.HasWithheldHostPermissions();
+  AddPermissionsInfo(browser_context_, extension, &info->permissions);
 
   // Runtime warnings.
   std::vector<std::string> warnings =

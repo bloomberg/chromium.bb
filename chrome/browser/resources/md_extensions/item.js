@@ -28,9 +28,9 @@ cr.define('extensions', function() {
 
     /**
      * @param {string} id
-     * @param {boolean} isAllowedOnAllSites
+     * @param {!chrome.developerPrivate.HostAccess} hostAccess
      */
-    setItemAllowedOnAllSites(id, isAllowedOnAllSites) {}
+    setItemHostAccess(id, hostAccess) {}
 
     /**
      * @param {string} id

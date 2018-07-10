@@ -113,7 +113,7 @@ cr.define('extension_test_util', function() {
     setItemAllowedOnFileUrls: function(id, enabled) {},
 
     /** @override */
-    setItemAllowedOnAllSites: function(id, enabled) {},
+    setItemHostAccess: function(id, hostAccess) {},
 
     /** @override */
     setItemCollectsErrors: function(id, enabled) {},
@@ -213,7 +213,7 @@ cr.define('extension_test_util', function() {
           name: 'Wonderful Extension',
           runtimeErrors: [],
           runtimeWarnings: [],
-          permissions: [],
+          permissions: {simplePermissions: []},
           state: 'ENABLED',
           type: 'EXTENSION',
           userMayModify: true,
