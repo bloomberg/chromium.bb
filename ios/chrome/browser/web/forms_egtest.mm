@@ -211,7 +211,15 @@ id<GREYMatcher> GoButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [ChromeEarlGrey reload];
+  // WKBasedNavigationManager presents repost confirmation dialog before loading
+  // stops.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
+  } else {
+    // Legacy navigation manager presents repost confirmation dialog after
+    // loading stops.
+    [ChromeEarlGrey reload];
+  }
   [self confirmResendWarning];
 
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
