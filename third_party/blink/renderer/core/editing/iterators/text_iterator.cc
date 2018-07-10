@@ -709,9 +709,10 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
   // The currPos.isNotNull() check is needed because positions in non-HTML
   // content (like SVG) do not have visible positions, and we don't want to emit
   // for them either.
-  VisiblePosition start_pos =
-      CreateVisiblePosition(Position(start_container_, start_offset_));
-  VisiblePosition curr_pos = VisiblePosition::BeforeNode(*node_);
+  const VisiblePositionTemplate<Strategy> start_pos = CreateVisiblePosition(
+      PositionTemplate<Strategy>(start_container_, start_offset_));
+  const VisiblePositionTemplate<Strategy> curr_pos =
+      VisiblePositionTemplate<Strategy>::BeforeNode(*node_);
   return start_pos.IsNotNull() && curr_pos.IsNotNull() &&
          !InSameLine(start_pos, curr_pos);
 }
