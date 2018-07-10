@@ -330,11 +330,6 @@ DesktopAutomationHandler.prototype = {
 
     // Editable selection.
     if (anchor.state[StateType.EDITABLE]) {
-      // Ignore selection changes we triggered.
-      if (evt.eventFrom == 'action' &&
-          !DesktopAutomationHandler.announceActions)
-        return;
-
       anchor = AutomationUtil.getEditableRoot(anchor) || anchor;
       this.onEditableChanged_(
           new CustomAutomationEvent(evt.type, anchor, evt.eventFrom));
