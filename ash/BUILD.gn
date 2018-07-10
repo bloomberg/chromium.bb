@@ -100,6 +100,8 @@ component("ash") {
     "assistant/assistant_controller_observer.h",
     "assistant/assistant_interaction_controller.cc",
     "assistant/assistant_interaction_controller.h",
+    "assistant/assistant_notification_controller.cc",
+    "assistant/assistant_notification_controller.h",
     "assistant/assistant_ui_controller.cc",
     "assistant/assistant_ui_controller.h",
     "assistant/model/assistant_interaction_model.cc",

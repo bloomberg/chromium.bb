@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
@@ -110,7 +111,10 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
-      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)) {
+      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
+      assistant_notification_controller_(
+          std::make_unique<AssistantNotificationController>(this)),
+      weak_factory_(this) {
   // Note that the sub-controllers have a circular dependency.
   // TODO(dmblack): Remove this circular dependency.
   assistant_interaction_controller_->SetAssistantUiController(
@@ -152,6 +156,7 @@ void AssistantController::SetAssistant(
   // Provide reference to sub-controllers.
   assistant_interaction_controller_->SetAssistant(assistant_.get());
   assistant_ui_controller_->SetAssistant(assistant_.get());
+  assistant_notification_controller_->SetAssistant(assistant_.get());
 }
 
 void AssistantController::SetAssistantImageDownloader(
@@ -295,6 +300,10 @@ void AssistantController::OpenUrl(const GURL& url) {
 
   for (AssistantControllerObserver& observer : observers_)
     observer.OnUrlOpened(url);
+}
+
+base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 std::unique_ptr<ui::LayerTreeOwner>

@@ -1591,6 +1591,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_PROMPT_STYLUS" desc="Message shown to indicate that Assistant is ready to receive a selection made using the stylus.">
         Use your stylus to select
       </message>
+      <message name="IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE" desc="The name for the source of the assistant notification.">
+        Assistant
+      </message>
     </messages>
   </release>
 </grit>

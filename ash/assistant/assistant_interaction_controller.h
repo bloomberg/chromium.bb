@@ -25,7 +25,7 @@ class AssistantInteractionModelObserver;
 class AssistantUiController;
 
 class AssistantInteractionController
-    : public chromeos::assistant::mojom::AssistantEventSubscriber,
+    : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer,
@@ -71,7 +71,7 @@ class AssistantInteractionController
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
 
-  // chromeos::assistant::mojom::AssistantEventSubscriber:
+  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
   void OnInteractionStarted() override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
@@ -107,8 +107,8 @@ class AssistantInteractionController
   // Owned by AssisantController.
   AssistantUiController* assistant_ui_controller_ = nullptr;
 
-  mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
-      assistant_event_subscriber_binding_;
+  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_binding_;
 
   AssistantInteractionModel assistant_interaction_model_;
 

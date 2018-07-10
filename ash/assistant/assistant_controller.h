@@ -17,6 +17,7 @@
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -34,6 +35,7 @@ namespace ash {
 
 class AssistantControllerObserver;
 class AssistantInteractionController;
+class AssistantNotificationController;
 class AssistantUiController;
 
 class ASH_EXPORT AssistantController
@@ -110,6 +112,8 @@ class ASH_EXPORT AssistantController
     return assistant_ui_controller_.get();
   }
 
+  base::WeakPtr<AssistantController> GetWeakPtr();
+
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
@@ -134,6 +138,11 @@ class ASH_EXPORT AssistantController
       assistant_interaction_controller_;
 
   std::unique_ptr<AssistantUiController> assistant_ui_controller_;
+
+  std::unique_ptr<AssistantNotificationController>
+      assistant_notification_controller_;
+
+  base::WeakPtrFactory<AssistantController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };
