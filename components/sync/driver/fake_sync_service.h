@@ -25,6 +25,9 @@ class FakeSyncService : public SyncService {
   FakeSyncService();
   ~FakeSyncService() override;
 
+  // TODO(crbug.com/859874): Add setters for all the other state here, so that
+  // subclasses don't have to reimplement it N times.
+
   void set_auth_error(GoogleServiceAuthError error) {
     error_ = std::move(error);
   }
@@ -32,7 +35,8 @@ class FakeSyncService : public SyncService {
   void SetAuthenticatedAccountInfo(const AccountInfo& account_info);
   AccountInfo GetAuthenticatedAccountInfo() const override;
 
- private:
+  void SetConfigurationDone(bool configuration_done);
+
   // Dummy methods.
   // SyncService implementation.
   int GetDisableReasons() const override;
@@ -57,7 +61,6 @@ class FakeSyncService : public SyncService {
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
-  bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool IsEngineInitialized() const override;
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
@@ -97,12 +100,15 @@ class FakeSyncService : public SyncService {
   // KeyedService implementation.
   void Shutdown() override;
 
+ private:
   GoogleServiceAuthError error_;
   GURL sync_service_url_;
   std::string unrecoverable_error_message_;
   std::unique_ptr<UserShare> user_share_;
 
   AccountInfo account_info_;
+
+  bool configuration_done_ = true;
 };
 
 }  // namespace syncer

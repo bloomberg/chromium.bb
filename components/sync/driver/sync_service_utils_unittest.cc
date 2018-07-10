@@ -14,7 +14,7 @@ namespace syncer {
 
 class TestSyncService : public FakeSyncService {
  public:
-  TestSyncService() = default;
+  TestSyncService() { SetConfigurationDone(false); }
   ~TestSyncService() override = default;
 
   void SetDisableReasons(int disable_reasons) {
@@ -28,7 +28,6 @@ class TestSyncService : public FakeSyncService {
   void SetActiveDataTypes(const ModelTypeSet& types) {
     active_data_types_ = types;
   }
-  void SetConfigurationDone(bool done) { configuration_done_ = done; }
   void SetCustomPassphraseEnabled(bool enabled) {
     custom_passphrase_enabled_ = enabled;
   }
@@ -72,7 +71,6 @@ class TestSyncService : public FakeSyncService {
     }
     return SyncCycleSnapshot();
   }
-  bool ConfigurationDone() const override { return configuration_done_; }
   bool IsUsingSecondaryPassphrase() const override {
     return custom_passphrase_enabled_;
   }
@@ -84,7 +82,6 @@ class TestSyncService : public FakeSyncService {
   bool local_sync_enabled_ = false;
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;
-  bool configuration_done_ = false;
   bool custom_passphrase_enabled_ = false;
 };
 

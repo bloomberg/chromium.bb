@@ -23,7 +23,6 @@ class TestSyncService : public syncer::FakeSyncService {
   bool IsFirstSetupComplete() const override;
   bool IsUsingSecondaryPassphrase() const override;
   bool IsSyncActive() const override;
-  bool ConfigurationDone() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
@@ -48,10 +47,6 @@ class TestSyncService : public syncer::FakeSyncService {
     is_sync_active_ = is_sync_active;
   }
 
-  void SetConfigurationDone(bool configuration_done) {
-    configuration_done_ = configuration_done;
-  }
-
   void SetSyncCycleComplete(bool complete) { sync_cycle_complete_ = complete; }
 
   void SetInAuthError(bool is_in_auth_error);
@@ -63,7 +58,6 @@ class TestSyncService : public syncer::FakeSyncService {
   bool is_engine_initialized_ = true;
   bool is_using_secondary_passphrase_ = false;
   bool is_sync_active_ = true;
-  bool configuration_done_ = true;
   bool sync_cycle_complete_ = true;
   GoogleServiceAuthError auth_error_;
   bool is_in_auth_error_ = false;

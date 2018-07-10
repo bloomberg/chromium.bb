@@ -22,6 +22,10 @@ AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
   return account_info_;
 }
 
+void FakeSyncService::SetConfigurationDone(bool configuration_done) {
+  configuration_done_ = configuration_done;
+}
+
 // Dummy methods
 
 FakeSyncService::FakeSyncService()
@@ -55,11 +59,10 @@ syncer::SyncService::State FakeSyncService::GetState() const {
     return State::INITIALIZING;
   }
   if (!IsFirstSetupComplete()) {
-    DCHECK(!ConfigurationDone());
     return State::WAITING_FOR_CONSENT;
   }
   DCHECK(IsSyncActive());
-  if (!ConfigurationDone()) {
+  if (!configuration_done_) {
     return State::CONFIGURING;
   }
   return State::ACTIVE;
@@ -120,10 +123,6 @@ FakeSyncService::GetSetupInProgressHandle() {
 }
 
 bool FakeSyncService::IsSetupInProgress() const {
-  return false;
-}
-
-bool FakeSyncService::ConfigurationDone() const {
   return false;
 }
 

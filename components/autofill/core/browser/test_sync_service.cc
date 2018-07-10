@@ -46,10 +46,6 @@ bool TestSyncService::IsSyncActive() const {
   return is_sync_active_;
 }
 
-bool TestSyncService::ConfigurationDone() const {
-  return configuration_done_;
-}
-
 const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
   return auth_error_;
 }

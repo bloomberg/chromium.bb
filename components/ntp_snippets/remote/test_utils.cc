@@ -15,7 +15,6 @@ namespace test {
 
 FakeSyncService::FakeSyncService()
     : is_sync_active_(true),
-      configuration_done_(true),
       is_encrypt_everything_enabled_(false),
       active_data_types_(syncer::HISTORY_DELETE_DIRECTIVES) {}
 
@@ -27,10 +26,6 @@ int FakeSyncService::GetDisableReasons() const {
 
 bool FakeSyncService::IsSyncActive() const {
   return is_sync_active_;
-}
-
-bool FakeSyncService::ConfigurationDone() const {
-  return configuration_done_;
 }
 
 bool FakeSyncService::IsEncryptEverythingEnabled() const {

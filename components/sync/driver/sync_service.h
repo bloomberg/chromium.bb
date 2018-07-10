@@ -283,11 +283,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Used by tests.
   virtual bool IsSetupInProgress() const = 0;
 
-  // Whether the data types active for the current mode have finished
-  // configuration.
-  // DEPRECATED! Use GetState instead.
-  virtual bool ConfigurationDone() const = 0;
-
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
 
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
