@@ -47,8 +47,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   bool gpu_compositing =
       !is_gpu_compositing_disabled_ && !compositor->force_software_compositor();
 
-// TODO(sky): need to add reconnection logic here. See
-// VizProcessTransportFactory.
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->RegisterParent(
       compositor->widget());
