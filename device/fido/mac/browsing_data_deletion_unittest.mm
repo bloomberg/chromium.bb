@@ -11,7 +11,9 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
@@ -109,6 +111,7 @@ bool ResetKeychain() {
 class BrowsingDataDeletionTest : public testing::Test {
  public:
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(device::kWebAuthTouchId);
     authenticator_ = MakeAuthenticator(kMetadataSecret);
     CHECK(authenticator_);
     CHECK(ResetKeychain());
@@ -152,7 +155,8 @@ class BrowsingDataDeletionTest : public testing::Test {
                                      base::Time(), base::Time::Max());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<TouchIdAuthenticator> authenticator_;
 };
 
@@ -186,6 +190,20 @@ TEST_F(BrowsingDataDeletionTest, DISABLED_DifferentProfiles) {
   EXPECT_EQ(1, CredentialCount());
   EXPECT_TRUE(DeleteCredentials(other_metadata_secret));
   EXPECT_EQ(0, CredentialCount());
+}
+
+TEST_F(BrowsingDataDeletionTest, DISABLED_FeatureFlag) {
+  // Remove the feature flag override provided by the fixture.
+  base::FeatureList::ClearInstanceForTesting();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(device::kWebAuthTouchId);
+
+  ASSERT_EQ(0, CredentialCount());
+  ASSERT_TRUE(MakeCredential());
+
+  // DeleteCredentials() has no effect with the feature flag flipped off.
+  EXPECT_TRUE(DeleteCredentials());
+  EXPECT_EQ(1, CredentialCount());
 }
 
 }  // namespace

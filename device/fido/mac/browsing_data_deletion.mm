@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
@@ -16,6 +17,8 @@
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "device/base/features.h"
 #include "device/fido/mac/credential_metadata.h"
 #include "device/fido/mac/keychain.h"
 
@@ -141,12 +144,16 @@ bool DeleteWebAuthnCredentials(const std::string& keychain_access_group,
                                const std::string& profile_metadata_secret,
                                base::Time begin,
                                base::Time end) {
-  // Touch ID uses macOS APIs available in 10.12.2 or newer. No need to check
-  // for credentials in lower OS versions.
-  if (__builtin_available(macos 10.12.2, *)) {
-    return DoDeleteWebAuthnCredentials(keychain_access_group,
-                                       profile_metadata_secret, begin, end);
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
+    // Touch ID uses macOS APIs available in 10.12.2 or newer. No need to check
+    // for credentials in lower OS versions.
+    if (__builtin_available(macos 10.12.2, *)) {
+      return DoDeleteWebAuthnCredentials(keychain_access_group,
+                                         profile_metadata_secret, begin, end);
+    }
   }
+#endif  // defined(OS_MACOSX)
   return true;
 }
 
