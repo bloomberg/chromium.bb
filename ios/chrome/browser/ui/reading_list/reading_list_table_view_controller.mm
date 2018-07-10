@@ -193,6 +193,15 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   [self.tableView addGestureRecognizer:longPressRecognizer];
 }
 
+#pragma mark - UITableViewDataSource
+
+- (void)tableView:(UITableView*)tableView
+    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+     forRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
+  [self deleteItemsAtIndexPaths:@[ indexPath ]];
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
