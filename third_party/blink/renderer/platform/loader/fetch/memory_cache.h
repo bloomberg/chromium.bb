@@ -138,8 +138,7 @@ class PLATFORM_EXPORT MemoryCache final
     max_prune_deferral_delay_ = seconds;
   }
 
-  enum EvictResourcePolicy { kEvictAllResources, kDoNotEvictUnusedPreloads };
-  void EvictResources(EvictResourcePolicy = kEvictAllResources);
+  void EvictResources();
 
   void Prune();
 

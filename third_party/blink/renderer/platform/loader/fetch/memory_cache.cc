@@ -332,11 +332,10 @@ MemoryCache::Statistics MemoryCache::GetStatistics() const {
   return stats;
 }
 
-void MemoryCache::EvictResources(EvictResourcePolicy policy) {
+void MemoryCache::EvictResources() {
   for (auto resource_map_iter = resource_maps_.begin();
        resource_map_iter != resource_maps_.end();) {
     ResourceMap* resources = resource_map_iter->value.Get();
-    HeapVector<Member<MemoryCacheEntry>> unused_preloads;
     for (auto resource_iter = resources->begin();
          resource_iter != resources->end();
          resource_iter = resources->begin()) {
@@ -345,25 +344,10 @@ void MemoryCache::EvictResources(EvictResourcePolicy policy) {
       DCHECK(resource_iter->value->GetResource());
       Resource* resource = resource_iter->value->GetResource();
       DCHECK(resource);
-      if (policy != kEvictAllResources && resource->IsUnusedPreload()) {
-        // Store unused preloads aside, so they could be added back later.
-        // That is in order to avoid the performance impact of iterating over
-        // the same resource multiple times.
-        unused_preloads.push_back(resource_iter->value.Get());
-      }
       RemoveInternal(resources, resource_iter);
     }
-    for (const auto& unused_preload : unused_preloads) {
-      AddInternal(resources, unused_preload);
-    }
-    // We may iterate multiple times over resourceMaps with unused preloads.
-    // That's extremely unlikely to have any real-life performance impact.
-    if (!resources->size()) {
-      resource_maps_.erase(resource_map_iter);
-      resource_map_iter = resource_maps_.begin();
-    } else {
-      ++resource_map_iter;
-    }
+    resource_maps_.erase(resource_map_iter);
+    resource_map_iter = resource_maps_.begin();
   }
 }
 

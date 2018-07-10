@@ -1538,7 +1538,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
     return;
 
   if (state_->booleanProperty(NetworkAgentState::kCacheDisabled, false))
-    GetMemoryCache()->EvictResources(MemoryCache::kDoNotEvictUnusedPreloads);
+    GetMemoryCache()->EvictResources();
 
   resources_data_->Clear(IdentifiersFactory::LoaderId(loader));
 }
