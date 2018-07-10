@@ -179,7 +179,10 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
 
   switch (attr) {
     case ax::mojom::StringAttribute::kName:
-      AddEvent(node, Event::NAME_CHANGED);
+      // If the name of the root node changes, we expect OnTreeDataChanged to
+      // add a DOCUMENT_TITLE_CHANGED event instead.
+      if (node != tree->root())
+        AddEvent(node, Event::NAME_CHANGED);
 
       // TODO(accessibility): tree in the midst of updates. Disallow
       // access to |node|.

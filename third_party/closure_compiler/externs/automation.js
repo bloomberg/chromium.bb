@@ -30,6 +30,7 @@ chrome.automation.EventType = {
   CHILDREN_CHANGED: 'childrenChanged',
   CLICKED: 'clicked',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
+  DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
   FOCUS_CONTEXT: 'focusContext',

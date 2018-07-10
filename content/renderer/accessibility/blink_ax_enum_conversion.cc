@@ -424,6 +424,8 @@ ax::mojom::Event AXEventFromBlink(blink::WebAXEvent event) {
       return ax::mojom::Event::kClicked;
     case blink::kWebAXEventDocumentSelectionChanged:
       return ax::mojom::Event::kDocumentSelectionChanged;
+    case blink::kWebAXEventDocumentTitleChanged:
+      return ax::mojom::Event::kDocumentTitleChanged;
     case blink::kWebAXEventExpandedChanged:
       return ax::mojom::Event::kExpandedChanged;
     case blink::kWebAXEventFocus:

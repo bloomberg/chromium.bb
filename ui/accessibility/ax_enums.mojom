@@ -36,6 +36,7 @@ enum Event {
   kChildrenChanged,
   kClicked,
   kDocumentSelectionChanged,
+  kDocumentTitleChanged,
   kExpandedChanged,           // Web
   kFocus,
   kFocusContext,              // Contextual focus event that must delay the next focus event

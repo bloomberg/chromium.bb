@@ -28,6 +28,8 @@ const char* ToString(ax::mojom::Event event) {
       return "clicked";
     case ax::mojom::Event::kDocumentSelectionChanged:
       return "documentSelectionChanged";
+    case ax::mojom::Event::kDocumentTitleChanged:
+      return "documentTitleChanged";
     case ax::mojom::Event::kExpandedChanged:
       return "expandedChanged";
     case ax::mojom::Event::kFocus:
@@ -136,6 +138,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kClicked;
   if (0 == strcmp(event, "documentSelectionChanged"))
     return ax::mojom::Event::kDocumentSelectionChanged;
+  if (0 == strcmp(event, "documentTitleChanged"))
+    return ax::mojom::Event::kDocumentTitleChanged;
   if (0 == strcmp(event, "expandedChanged"))
     return ax::mojom::Event::kExpandedChanged;
   if (0 == strcmp(event, "focus"))
