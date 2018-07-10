@@ -141,6 +141,11 @@ static const char* g_ui_element_name_strings[] = {
     "kControllerTouchpadButton",
     "kControllerAppButton",
     "kControllerHomeButton",
+    "kControllerBatteryDot0",
+    "kControllerBatteryDot1",
+    "kControllerBatteryDot2",
+    "kControllerBatteryDot3",
+    "kControllerBatteryDot4",
     "kContentRepositionHitPlane",
     "kContentRepositionVisibilityToggle",
 };

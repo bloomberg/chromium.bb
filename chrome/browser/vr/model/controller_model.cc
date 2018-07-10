@@ -18,7 +18,8 @@ ControllerModel::ControllerModel(const ControllerModel& other)
       opacity(other.opacity),
       quiescent(other.quiescent),
       resting_in_viewport(other.resting_in_viewport),
-      handedness(other.handedness) {}
+      handedness(other.handedness),
+      battery_level(other.battery_level) {}
 
 ControllerModel::~ControllerModel() = default;
 

@@ -117,6 +117,8 @@ struct VR_EXPORT ColorScheme {
   SkColor controller_label_callout;
   SkColor controller_button;
   SkColor controller_button_down;
+  SkColor controller_battery_full;
+  SkColor controller_battery_empty;
 
   SkColor reposition_label;
   SkColor reposition_label_background;

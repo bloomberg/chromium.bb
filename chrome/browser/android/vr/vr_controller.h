@@ -87,6 +87,7 @@ class VrController : public PlatformController {
   base::TimeTicks GetLastButtonTimestamp() const override;
   PlatformController::Handedness GetHandedness() const override;
   bool GetRecentered() const override;
+  int GetBatteryLevel() const override;
 
  private:
 

@@ -60,6 +60,11 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kControllerTouchpadButton,
     kControllerAppButton,
     kControllerHomeButton,
+    kControllerBatteryDot0,
+    kControllerBatteryDot1,
+    kControllerBatteryDot2,
+    kControllerBatteryDot3,
+    kControllerBatteryDot4,
     kIndicatorBackplane,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
@@ -401,6 +406,11 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kControllerTouchpadButton);
   visible_in_fullscreen.insert(kControllerAppButton);
   visible_in_fullscreen.insert(kControllerHomeButton);
+  visible_in_fullscreen.insert(kControllerBatteryDot0);
+  visible_in_fullscreen.insert(kControllerBatteryDot1);
+  visible_in_fullscreen.insert(kControllerBatteryDot2);
+  visible_in_fullscreen.insert(kControllerBatteryDot3);
+  visible_in_fullscreen.insert(kControllerBatteryDot4);
   visible_in_fullscreen.insert(kLaser);
   visible_in_fullscreen.insert(kContentFrame);
   visible_in_fullscreen.insert(kContentFrameHitPlane);
@@ -1114,6 +1124,71 @@ TEST_F(UiTest, ControllerLabels) {
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
   EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
+}
+
+TEST_F(UiTest, ControllerBatteryIndicator) {
+  CreateScene(kNotInWebVr);
+
+  Rect* dot_0 =
+      static_cast<Rect*>(scene_->GetUiElementByName(kControllerBatteryDot0));
+  Rect* dot_1 =
+      static_cast<Rect*>(scene_->GetUiElementByName(kControllerBatteryDot1));
+  Rect* dot_2 =
+      static_cast<Rect*>(scene_->GetUiElementByName(kControllerBatteryDot2));
+  Rect* dot_3 =
+      static_cast<Rect*>(scene_->GetUiElementByName(kControllerBatteryDot3));
+  Rect* dot_4 =
+      static_cast<Rect*>(scene_->GetUiElementByName(kControllerBatteryDot4));
+
+  ColorScheme scheme = model_->color_scheme();
+
+  model_->controller.battery_level = 5;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_full);
+
+  model_->controller.battery_level = 4;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
+
+  model_->controller.battery_level = 3;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
+
+  model_->controller.battery_level = 2;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
+
+  model_->controller.battery_level = 1;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
+
+  model_->controller.battery_level = 0;
+  RunForMs(kAnimationTimeMs);
+  EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_2->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
+  EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
 }
 
 TEST_F(UiTest, ResetRepositioner) {

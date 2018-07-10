@@ -221,6 +221,10 @@ static constexpr float kControllerLength = 0.105f;
 static constexpr float kControllerSmallButtonSize = kControllerWidth * 0.306f;
 static constexpr float kControllerAppButtonZ = kControllerLength * -0.075f;
 static constexpr float kControllerHomeButtonZ = kControllerLength * 0.075f;
+static constexpr float kControllerBatteryDotMargin = kControllerWidth * 0.07f;
+static constexpr float kControllerBatteryDotSize = kControllerWidth * 0.07f;
+static constexpr float kControllerBatteryDotZ = kControllerLength * 0.325f;
+static constexpr int kControllerBatteryDotCount = 5;
 
 static constexpr float kSkyDistance = 1000.0f;
 static constexpr float kGridOpacity = 0.5f;
