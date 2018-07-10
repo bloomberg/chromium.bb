@@ -313,6 +313,8 @@ class LoadGmailDesktopStory(_LoadGmailBaseStory):
 
 class LoadGmailMobileStory(_LoadGmailBaseStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
+  SKIP_LOGIN = False
 
   def _DidLoadDocument(self, action_runner):
     # Wait until the UI loads.

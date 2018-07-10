@@ -63,6 +63,8 @@ class _LongRunningGmailBase(_LongRunningStory):
 
 class _LongRunningGmailMobileBase(_LongRunningGmailBase):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
+  SKIP_LOGIN = False
 
   def _DidLoadDocument(self, action_runner):
     # Close the "Get Inbox by Gmail" interstitial.
