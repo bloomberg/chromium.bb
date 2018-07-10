@@ -109,6 +109,8 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
     view_->Show();
+    if (autoselect_first_suggestion)
+      SetSelectedLine(0);
   } else {
     if (selected_line_ && *selected_line_ >= GetLineCount())
       selected_line_.reset();
