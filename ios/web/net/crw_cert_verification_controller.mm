@@ -124,7 +124,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   // |webView:didFailProvisionalNavigation:withError:|.
   if (!cert->intermediate_buffers().empty()) {
     cert = net::X509Certificate::CreateFromBuffer(
-        net::x509_util::DupCryptoBuffer(cert->cert_buffer()), {});
+        bssl::UpRef(cert->cert_buffer()), {});
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());

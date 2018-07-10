@@ -2329,15 +2329,12 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   ASSERT_TRUE(certs[0]->EqualsExcludingChain(unverified_certs[0].get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> temp_intermediates;
-  temp_intermediates.push_back(
-      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  temp_intermediates.push_back(
-      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  temp_intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  temp_intermediates.push_back(bssl::UpRef(certs[2]->cert_buffer()));
 
   CertVerifyResult verify_result;
   verify_result.verified_cert = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-      std::move(temp_intermediates));
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(temp_intermediates));
   ASSERT_TRUE(verify_result.verified_cert);
 
   // Add a rule that maps the server cert (A) to the chain of A->B->C2

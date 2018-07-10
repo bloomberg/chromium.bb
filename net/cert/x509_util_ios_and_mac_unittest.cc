@@ -83,11 +83,10 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509CertificateErrors) {
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.push_back(std::move(bad_cert));
-  intermediates.push_back(x509_util::DupCryptoBuffer(ok_cert2->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(ok_cert2->cert_buffer()));
   scoped_refptr<X509Certificate> cert_with_intermediates(
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()),
-          std::move(intermediates)));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(ok_cert->cert_buffer()),
+                                        std::move(intermediates)));
   ASSERT_TRUE(cert_with_intermediates);
   EXPECT_EQ(2U, cert_with_intermediates->intermediate_buffers().size());
 

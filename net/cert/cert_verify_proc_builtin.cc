@@ -289,7 +289,7 @@ bool CertVerifyProcBuiltin::SupportsAdditionalTrustAnchors() const {
 scoped_refptr<ParsedCertificate> ParseCertificateFromBuffer(
     CRYPTO_BUFFER* cert_handle,
     CertErrors* errors) {
-  return ParsedCertificate::Create(x509_util::DupCryptoBuffer(cert_handle),
+  return ParsedCertificate::Create(bssl::UpRef(cert_handle),
                                    x509_util::DefaultParseCertificateOptions(),
                                    errors);
 }
@@ -384,8 +384,7 @@ scoped_refptr<X509Certificate> CreateVerifiedCertChain(
     intermediates.push_back(CreateCertBuffers(path.certs[i]));
 
   scoped_refptr<X509Certificate> result = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(target_cert->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(target_cert->cert_buffer()), std::move(intermediates));
   // |target_cert| was already successfully parsed, so this should never fail.
   DCHECK(result);
 

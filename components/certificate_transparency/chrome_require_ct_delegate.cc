@@ -111,7 +111,7 @@ bool ParseOrganizationBoundName(net::der::Input dn_without_sequence,
 bool AreCertsSameOrganization(const net::RDNSequence& leaf_rdn_sequence,
                               CRYPTO_BUFFER* org_cert) {
   scoped_refptr<net::ParsedCertificate> parsed_org =
-      net::ParsedCertificate::Create(net::x509_util::DupCryptoBuffer(org_cert),
+      net::ParsedCertificate::Create(bssl::UpRef(org_cert),
                                      net::ParseCertificateOptions(), nullptr);
   if (!parsed_org)
     return false;
@@ -315,7 +315,7 @@ bool ChromeRequireCTDelegate::MatchSPKI(const net::X509Certificate* chain,
     return false;
 
   scoped_refptr<net::ParsedCertificate> parsed_leaf =
-      net::ParsedCertificate::Create(net::x509_util::DupCryptoBuffer(leaf_cert),
+      net::ParsedCertificate::Create(bssl::UpRef(leaf_cert),
                                      net::ParseCertificateOptions(), nullptr);
   if (!parsed_leaf)
     return false;

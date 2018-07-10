@@ -34,7 +34,7 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
   // Add the certificate to the parallel |test_trust_store_|.
   CertErrors errors;
   scoped_refptr<ParsedCertificate> parsed = ParsedCertificate::Create(
-      x509_util::DupCryptoBuffer(certificate->cert_buffer()),
+      bssl::UpRef(certificate->cert_buffer()),
       x509_util::DefaultParseCertificateOptions(), &errors);
   if (!parsed)
     return false;

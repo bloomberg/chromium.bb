@@ -95,11 +95,6 @@ NET_EXPORT bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
 NET_EXPORT bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
     const char* invalid_data);
 
-// Increments the reference count of |buffer| and returns a UniquePtr owning
-// that reference.
-NET_EXPORT bssl::UniquePtr<CRYPTO_BUFFER> DupCryptoBuffer(
-    CRYPTO_BUFFER* buffer);
-
 // Compares two CRYPTO_BUFFERs and returns true if they have the same contents.
 NET_EXPORT bool CryptoBufferEqual(const CRYPTO_BUFFER* a,
                                   const CRYPTO_BUFFER* b);

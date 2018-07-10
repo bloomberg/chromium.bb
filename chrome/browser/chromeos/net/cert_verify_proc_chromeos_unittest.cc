@@ -24,8 +24,7 @@ namespace {
 
 std::string GetSubjectCN(CRYPTO_BUFFER* cert_handle) {
   scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBuffer(
-          net::x509_util::DupCryptoBuffer(cert_handle), {});
+      net::X509Certificate::CreateFromBuffer(bssl::UpRef(cert_handle), {});
   if (!cert)
     return std::string();
   return "CN=" + cert->subject().common_name;

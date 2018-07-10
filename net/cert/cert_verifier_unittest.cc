@@ -30,10 +30,10 @@ TEST(CertVerifierTest, RequestParamsComparators) {
   // Create a certificate that contains both a leaf and an
   // intermediate/root.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
-  chain.push_back(x509_util::DupCryptoBuffer(root_cert->cert_buffer()));
+  chain.push_back(bssl::UpRef(root_cert->cert_buffer()));
   const scoped_refptr<X509Certificate> combined_cert =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()), std::move(chain));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(ok_cert->cert_buffer()),
+                                        std::move(chain));
   ASSERT_TRUE(combined_cert.get());
 
   const CertificateList empty_list;

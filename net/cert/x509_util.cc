@@ -308,11 +308,6 @@ bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
                         data.size(), GetBufferPool()));
 }
 
-bssl::UniquePtr<CRYPTO_BUFFER> DupCryptoBuffer(CRYPTO_BUFFER* buffer) {
-  CRYPTO_BUFFER_up_ref(buffer);
-  return bssl::UniquePtr<CRYPTO_BUFFER>(buffer);
-}
-
 bool CryptoBufferEqual(const CRYPTO_BUFFER* a, const CRYPTO_BUFFER* b) {
   DCHECK(a && b);
   if (a == b)
@@ -338,10 +333,10 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_chain;
   for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i) {
     intermediate_chain.push_back(
-        DupCryptoBuffer(sk_CRYPTO_BUFFER_value(buffers, i)));
+        bssl::UpRef(sk_CRYPTO_BUFFER_value(buffers, i)));
   }
   return X509Certificate::CreateFromBuffer(
-      DupCryptoBuffer(sk_CRYPTO_BUFFER_value(buffers, 0)),
+      bssl::UpRef(sk_CRYPTO_BUFFER_value(buffers, 0)),
       std::move(intermediate_chain));
 }
 

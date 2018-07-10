@@ -49,8 +49,7 @@ void ClientCertIdentity::SetIntermediates(
   X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   cert_ = X509Certificate::CreateFromBufferUnsafeOptions(
-      x509_util::DupCryptoBuffer(cert_->cert_buffer()),
-      std::move(intermediates), options);
+      bssl::UpRef(cert_->cert_buffer()), std::move(intermediates), options);
   // |cert_->cert_buffer()| was already successfully parsed, so this should
   // never fail.
   DCHECK(cert_);

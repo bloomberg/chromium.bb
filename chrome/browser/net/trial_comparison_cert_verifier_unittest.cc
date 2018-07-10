@@ -200,7 +200,7 @@ class TrialComparisonCertVerifierTest : public testing::Test {
         net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(cert_chain_1_);
     leaf_cert_1_ = net::X509Certificate::CreateFromBuffer(
-        net::x509_util::DupCryptoBuffer(cert_chain_1_->cert_buffer()), {});
+        bssl::UpRef(cert_chain_1_->cert_buffer()), {});
     ASSERT_TRUE(leaf_cert_1_);
     cert_chain_2_ = CreateCertificateChainFromFile(
         net::GetTestCertsDirectory(), "multi-root-chain2.pem",
@@ -797,18 +797,17 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   scoped_refptr<net::X509Certificate> leaf =
       net::X509Certificate::CreateFromBuffer(
-          net::x509_util::DupCryptoBuffer(cert_chain->cert_buffer()), {});
+          bssl::UpRef(cert_chain->cert_buffer()), {});
   ASSERT_TRUE(leaf);
 
   // Chain with the same leaf and different root. This is not a valid chain, but
   // doesn't matter for the unittest since this uses mock CertVerifyProcs.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(net::x509_util::DupCryptoBuffer(
-      cert_chain_1_->intermediate_buffers().back().get()));
+  intermediates.push_back(
+      bssl::UpRef(cert_chain_1_->intermediate_buffers().back().get()));
   scoped_refptr<net::X509Certificate> different_chain =
       net::X509Certificate::CreateFromBuffer(
-          net::x509_util::DupCryptoBuffer(cert_chain->cert_buffer()),
-          std::move(intermediates));
+          bssl::UpRef(cert_chain->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(different_chain);
 
   net::CertVerifyResult different_chain_result;

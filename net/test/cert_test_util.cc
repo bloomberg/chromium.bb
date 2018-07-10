@@ -55,12 +55,10 @@ scoped_refptr<X509Certificate> CreateCertificateChainFromFile(
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   for (size_t i = 1; i < certs.size(); ++i)
-    intermediates.push_back(
-        x509_util::DupCryptoBuffer(certs[i]->cert_buffer()));
+    intermediates.push_back(bssl::UpRef(certs[i]->cert_buffer()));
 
   scoped_refptr<X509Certificate> result(X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-      std::move(intermediates)));
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates)));
   return result;
 }
 

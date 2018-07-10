@@ -507,11 +507,10 @@ TEST_P(CertVerifyProcInternalTest, InvalidTarget) {
   ASSERT_TRUE(ok_cert);
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(ok_cert->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(ok_cert->cert_buffer()));
   scoped_refptr<X509Certificate> cert_with_bad_target(
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(bad_cert->cert_buffer()),
-          std::move(intermediates)));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(bad_cert->cert_buffer()),
+                                        std::move(intermediates)));
   ASSERT_TRUE(cert_with_bad_target);
   EXPECT_EQ(1U, cert_with_bad_target->intermediate_buffers().size());
 
@@ -545,9 +544,8 @@ TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.push_back(std::move(bad_cert));
   scoped_refptr<X509Certificate> cert_with_bad_intermediate(
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()),
-          std::move(intermediates)));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(ok_cert->cert_buffer()),
+                                        std::move(intermediates)));
   ASSERT_TRUE(cert_with_bad_intermediate);
   EXPECT_EQ(1U, cert_with_bad_intermediate->intermediate_buffers().size());
 
@@ -576,11 +574,10 @@ TEST_P(CertVerifyProcInternalTest, IntermediateCARequireExplicitPolicy) {
   ASSERT_EQ(3U, certs.size());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
 
   scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert.get());
 
   ScopedTestRoot scoped_root(certs[2].get());
@@ -667,12 +664,10 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
       ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate.get());
 
       std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-      intermediates.push_back(
-          x509_util::DupCryptoBuffer(intermediate->cert_buffer()));
+      intermediates.push_back(bssl::UpRef(intermediate->cert_buffer()));
       scoped_refptr<X509Certificate> cert_chain =
-          X509Certificate::CreateFromBuffer(
-              x509_util::DupCryptoBuffer(ee_cert->cert_buffer()),
-              std::move(intermediates));
+          X509Certificate::CreateFromBuffer(bssl::UpRef(ee_cert->cert_buffer()),
+                                            std::move(intermediates));
       ASSERT_TRUE(cert_chain);
 
       CertVerifyResult verify_result;
@@ -726,11 +721,9 @@ TEST_P(CertVerifyProcInternalTest, ExtraneousMD5RootCert) {
   ScopedTestRoot scoped_root(root_cert.get());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(extra_cert->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(extra_cert->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(server_cert->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert_chain);
 
   CertVerifyResult verify_result;
@@ -762,11 +755,9 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
   ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert.get());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util ::DupCryptoBuffer(intermediate_cert->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(intermediate_cert->cert_buffer()));
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(server_cert->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(server_cert->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert_chain);
 
   CertVerifyResult verify_result;
@@ -1087,12 +1078,10 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
     std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
     for (size_t i = 1; i < certs.size(); ++i)
-      intermediates.push_back(
-          x509_util::DupCryptoBuffer(certs[i]->cert_buffer()));
+      intermediates.push_back(bssl::UpRef(certs[i]->cert_buffer()));
 
     return X509Certificate::CreateFromBuffer(
-        x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-        std::move(intermediates));
+        bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
   }
 };
 
@@ -1232,7 +1221,7 @@ TEST_P(CertVerifyProcInternalTest, NameConstraintsFailure) {
   ASSERT_EQ(1U, cert_list.size());
 
   scoped_refptr<X509Certificate> leaf = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(cert_list[0]->cert_buffer()), {});
+      bssl::UpRef(cert_list[0]->cert_buffer()), {});
   ASSERT_TRUE(leaf);
 
   int flags = 0;
@@ -1311,13 +1300,12 @@ TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
   ASSERT_EQ(3U, certs.size());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[2]->cert_buffer()));
 
   ScopedTestRoot scoped_root(certs[2].get());
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert_chain);
   ASSERT_EQ(2U, cert_chain->intermediate_buffers().size());
 
@@ -1402,9 +1390,7 @@ TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
   ASSERT_FALSE(cert_chain->intermediate_buffers().empty());
 
   auto root = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(
-          cert_chain->intermediate_buffers().back().get()),
-      {});
+      bssl::UpRef(cert_chain->intermediate_buffers().back().get()), {});
 
   ScopedTestRoot scoped_root(root.get());
 
@@ -1442,15 +1428,14 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainBasic) {
   ASSERT_EQ(3U, certs.size());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[2]->cert_buffer()));
 
   ScopedTestRoot scoped_root(certs[2].get());
 
   scoped_refptr<X509Certificate> google_full_chain =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain.get());
   ASSERT_EQ(2U, google_full_chain->intermediate_buffers().size());
 
@@ -1706,15 +1691,14 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainProperlyOrdered) {
 
   // Construct the chain out of order.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[2]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
 
   ScopedTestRoot scoped_root(certs[2].get());
 
   scoped_refptr<X509Certificate> google_full_chain =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(google_full_chain);
   ASSERT_EQ(2U, google_full_chain->intermediate_buffers().size());
 
@@ -1761,17 +1745,14 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainFiltersUnrelatedCerts) {
 
   // Interject unrelated certificates into the list of intermediates.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(unrelated_certificate->cert_buffer()));
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-  intermediates.push_back(
-      x509_util::DupCryptoBuffer(unrelated_certificate2->cert_buffer()));
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(unrelated_certificate->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(unrelated_certificate2->cert_buffer()));
+  intermediates.push_back(bssl::UpRef(certs[2]->cert_buffer()));
 
   scoped_refptr<X509Certificate> google_full_chain =
-      X509Certificate::CreateFromBuffer(
-          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-          std::move(intermediates));
+      X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
+                                        std::move(intermediates));
   ASSERT_TRUE(google_full_chain);
   ASSERT_EQ(4U, google_full_chain->intermediate_buffers().size());
 
@@ -1933,7 +1914,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   ASSERT_EQ(1U, intermediate_cert_list.size());
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(intermediate_cert_list[0]->cert_buffer()));
+      bssl::UpRef(intermediate_cert_list[0]->cert_buffer()));
 
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
@@ -1941,8 +1922,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   ASSERT_EQ(1U, cert_list.size());
 
   scoped_refptr<X509Certificate> leaf = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(cert_list[0]->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(cert_list[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(leaf);
 
   int flags = 0;
@@ -2075,18 +2055,17 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
   // interacting with the underlying library.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(path_1_certs[1]->cert_buffer()));  // B-by-C
+      bssl::UpRef(path_1_certs[1]->cert_buffer()));  // B-by-C
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(path_1_certs[2]->cert_buffer()));  // C-by-D
+      bssl::UpRef(path_1_certs[2]->cert_buffer()));  // C-by-D
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(path_2_certs[2]->cert_buffer()));  // C-by-E
+      bssl::UpRef(path_2_certs[2]->cert_buffer()));  // C-by-E
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(path_3_certs[1]->cert_buffer()));  // B-by-F
+      bssl::UpRef(path_3_certs[1]->cert_buffer()));  // B-by-F
   intermediates.push_back(
-      x509_util::DupCryptoBuffer(path_3_certs[2]->cert_buffer()));  // F-by-E
+      bssl::UpRef(path_3_certs[2]->cert_buffer()));  // F-by-E
   scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(path_1_certs[0]->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(path_1_certs[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(cert);
 
   struct TestPermutations {
@@ -2132,7 +2111,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
 
     scoped_refptr<X509Certificate> intermediate =
         X509Certificate::CreateFromBuffer(
-            x509_util::DupCryptoBuffer(verified_intermediates[1].get()), {});
+            bssl::UpRef(verified_intermediates[1].get()), {});
     ASSERT_TRUE(intermediate);
 
     EXPECT_TRUE(testcase.expected_intermediate->EqualsExcludingChain(
@@ -2441,7 +2420,7 @@ class CertBuilder {
   }
 
   bssl::UniquePtr<CRYPTO_BUFFER> DupCertBuffer() {
-    return x509_util::DupCryptoBuffer(GetCertBuffer());
+    return bssl::UpRef(GetCertBuffer());
   }
 
   // Returns the subject of the generated certificate.
@@ -2937,7 +2916,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Build a chain to verify that includes the SHA1 intermediate.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(intermediate_sha1.get()));
+  intermediates.push_back(bssl::UpRef(intermediate_sha1.get()));
   scoped_refptr<X509Certificate> chain_sha1 = X509Certificate::CreateFromBuffer(
       leaf.DupCertBuffer(), std::move(intermediates));
   ASSERT_TRUE(chain_sha1.get());
@@ -3156,16 +3135,14 @@ TEST_P(CertVerifyProcWeakDigestTest, VerifyDetectsAlgorithm) {
     scoped_refptr<X509Certificate> intermediate_cert =
         ImportCertFromFile(certs_dir, data.intermediate_cert_filename);
     ASSERT_TRUE(intermediate_cert);
-    intermediates.push_back(
-        x509_util::DupCryptoBuffer(intermediate_cert->cert_buffer()));
+    intermediates.push_back(bssl::UpRef(intermediate_cert->cert_buffer()));
   }
 
   if (data.root_cert_filename) {
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(certs_dir, data.root_cert_filename);
     ASSERT_TRUE(root_cert);
-    intermediates.push_back(
-        x509_util::DupCryptoBuffer(root_cert->cert_buffer()));
+    intermediates.push_back(bssl::UpRef(root_cert->cert_buffer()));
   }
 
   scoped_refptr<X509Certificate> ee_cert =
@@ -3173,8 +3150,7 @@ TEST_P(CertVerifyProcWeakDigestTest, VerifyDetectsAlgorithm) {
   ASSERT_TRUE(ee_cert);
 
   scoped_refptr<X509Certificate> ee_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(ee_cert->cert_buffer()),
-      std::move(intermediates));
+      bssl::UpRef(ee_cert->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(ee_chain);
 
   int flags = 0;
