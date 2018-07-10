@@ -126,6 +126,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)footerItem {
   CollectionViewFooterItem* footerItem =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
+  footerItem.cellStyle = CollectionViewCellStyle::kUIKit;
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_HINT);
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(

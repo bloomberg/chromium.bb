@@ -235,6 +235,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)showSuggestionsFooterItem {
   CollectionViewFooterItem* showSuggestionsFooterItem =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeWebServicesFooter];
+  showSuggestionsFooterItem.cellStyle = CollectionViewCellStyle::kUIKit;
   showSuggestionsFooterItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_FOOTER);
   showSuggestionsFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
