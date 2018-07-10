@@ -63,5 +63,5 @@ message SequenceManagerTestDescription {
     optional uint64 delay_ms = 3;
   }
 
-  repeated PostDelayedTaskAction initial_task = 1;
+  repeated Action initial_actions = 1;
 }
