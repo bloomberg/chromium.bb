@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 #include "base/bind.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
@@ -34,18 +34,19 @@ void PrepareCurrentThread(WaitableEvent* event, WebThread* thread) {
 
 TestingPlatformSupportWithMockScheduler::
     TestingPlatformSupportWithMockScheduler()
-    : mock_task_runner_(
-          base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true)) {
+    : test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+          base::TestMockTimeTaskRunner::Type::kStandalone)) {
   DCHECK(IsMainThread());
-  clock_.Advance(base::TimeDelta::FromSeconds(1));
+  test_task_runner_->AdvanceMockTickClock(base::TimeDelta::FromSeconds(1));
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
-          nullptr, mock_task_runner_, &clock_);
+          nullptr, test_task_runner_, test_task_runner_->GetMockTickClock());
   sequence_manager_ = sequence_manager.get();
+
   scheduler_ = std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::move(sequence_manager), base::nullopt);
   thread_ = scheduler_->CreateMainThread();
-  // Set the work batch size to one so RunPendingTasks behaves as expected.
+  // Set the work batch size to one so TakePendingTasks behaves as expected.
   scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
 
   WTF::SetTimeFunctionsForTesting(GetTestTime);
@@ -83,13 +84,26 @@ WebThread* TestingPlatformSupportWithMockScheduler::CurrentThread() {
 }
 
 void TestingPlatformSupportWithMockScheduler::RunSingleTask() {
-  mock_task_runner_->SetRunTaskLimit(1);
-  mock_task_runner_->RunPendingTasks();
-  mock_task_runner_->ClearRunTaskLimit();
+  base::circular_deque<base::TestPendingTask> tasks =
+      test_task_runner_->TakePendingTasks();
+  if (tasks.empty())
+    return;
+  // Scheduler doesn't post more than one task.
+  DCHECK_EQ(tasks.size(), 1u);
+  base::TestPendingTask task = std::move(tasks.front());
+  tasks.clear();
+  // Set clock to the beginning of task and run it.
+  test_task_runner_->AdvanceMockTickClock(task.GetTimeToRun() -
+                                          test_task_runner_->NowTicks());
+  std::move(task.task).Run();
 }
 
 void TestingPlatformSupportWithMockScheduler::RunUntilIdle() {
-  mock_task_runner_->RunUntilIdle();
+  if (auto_advance_) {
+    test_task_runner_->FastForwardUntilNoTasksRemain();
+  } else {
+    test_task_runner_->RunUntilIdle();
+  }
 }
 
 void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
@@ -99,32 +113,7 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
 
 void TestingPlatformSupportWithMockScheduler::RunForPeriod(
     base::TimeDelta period) {
-  const base::TimeTicks deadline = clock_.NowTicks() + period;
-
-  for (;;) {
-    // If we've run out of immediate work then fast forward to the next delayed
-    // task, but don't pass |deadline|.
-    if (!sequence_manager_->HasImmediateWork()) {
-      base::sequence_manager::LazyNow lazy_now(&clock_);
-      base::Optional<base::TimeDelta> delay =
-          sequence_manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now);
-      if (!delay)
-        break;
-
-      base::TimeTicks next_delayed_task = lazy_now.Now() + *delay;
-      if (next_delayed_task > deadline)
-        break;
-
-      clock_.SetNowTicks(next_delayed_task);
-    }
-
-    if (clock_.NowTicks() > deadline)
-      break;
-
-    mock_task_runner_->RunPendingTasks();
-  }
-
-  clock_.SetNowTicks(deadline);
+  test_task_runner_->FastForwardBy(period);
 }
 
 void TestingPlatformSupportWithMockScheduler::AdvanceClockSeconds(
@@ -134,12 +123,12 @@ void TestingPlatformSupportWithMockScheduler::AdvanceClockSeconds(
 
 void TestingPlatformSupportWithMockScheduler::AdvanceClock(
     base::TimeDelta duration) {
-  clock_.Advance(duration);
+  test_task_runner_->AdvanceMockTickClock(duration);
 }
 
 void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(
     bool auto_advance) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(auto_advance);
+  auto_advance_ = auto_advance;
 }
 
 scheduler::MainThreadSchedulerImpl*
@@ -152,7 +141,8 @@ double TestingPlatformSupportWithMockScheduler::GetTestTime() {
   TestingPlatformSupportWithMockScheduler* platform =
       static_cast<TestingPlatformSupportWithMockScheduler*>(
           Platform::Current());
-  return (platform->clock_.NowTicks() - base::TimeTicks()).InSecondsF();
+  return (platform->test_task_runner_->NowTicks() - base::TimeTicks())
+      .InSecondsF();
 }
 
 }  // namespace blink

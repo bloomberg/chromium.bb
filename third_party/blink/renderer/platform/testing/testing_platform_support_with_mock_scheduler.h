@@ -6,14 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_MOCK_SCHEDULER_H_
 
 #include <memory>
-#include "base/test/simple_test_tick_clock.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
-namespace cc {
-class OrderedSimpleTaskRunner;
+namespace base {
+class TestMockTimeTaskRunner;
 }
 
 namespace blink {
@@ -67,8 +66,9 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
  protected:
   static double GetTestTime();
 
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
+  bool auto_advance_ = true;
+
   std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
   base::sequence_manager::SequenceManagerForTest*
       sequence_manager_;  // Owned by scheduler_.
