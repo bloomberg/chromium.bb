@@ -27,6 +27,9 @@ const char kSafeSitesEnabled[] = "SafeSites";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";
 
+// NOTE: Do not change this value without changing the value of the
+// corresponding constant in
+// //services/identity/public/cpp/identity_manager.cc to correspond.
 const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 
 const char kChildAccountSUID[] = "ChildAccountSUID";
