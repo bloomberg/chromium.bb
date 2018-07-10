@@ -264,6 +264,15 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     /**
+     * Called when the user presses the back key. This is only going to be called
+     * when the history UI is shown in a separate activity rather inside a tab.
+     * @return True if manager handles this event, false if it decides to ignore.
+     */
+    public boolean onBackPressed() {
+        return mSelectableListLayout.onBackPressed();
+    }
+
+    /**
      * Removes the HistoryItem from the history backend and the HistoryAdapter.
      * @param item The HistoryItem to remove.
      */

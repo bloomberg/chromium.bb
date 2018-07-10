@@ -238,13 +238,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         if (mIsDestroyed) return false;
 
         // TODO(twellington): replicate this behavior for other list UIs during unification.
-        if (mSelectionDelegate.isSelectionEnabled()) {
-            mSelectionDelegate.clearSelection();
-            return true;
-        }
-
-        if (mToolbar.isSearching()) {
-            mToolbar.hideSearchView();
+        if (mSelectableListLayout.onBackPressed()) {
             return true;
         }
 
