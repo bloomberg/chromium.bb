@@ -1949,7 +1949,8 @@ enum drm_output_propose_state_mode {
 
 static struct drm_plane_state *
 drm_output_prepare_scanout_view(struct drm_output_state *output_state,
-				struct weston_view *ev)
+				struct weston_view *ev,
+				enum drm_output_propose_state_mode mode)
 {
 	struct drm_output *output = output_state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
@@ -1959,6 +1960,7 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	pixman_box32_t *extents;
 
 	assert(!b->sprites_are_broken);
+	assert(mode == DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
 
 	/* Check the view spans exactly the output size, calculated in the
 	 * logical co-ordinate space. */
@@ -1983,15 +1985,13 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	}
 
 	state = drm_output_state_get_plane(output_state, scanout_plane);
-	if (state->fb) {
-		/* If there is already a framebuffer on the scanout plane,
-		 * a client view has already been placed on the scanout
-		 * view. In that case, do not free or put back the state,
-		 * but just leave it in place and quietly exit. */
-		drm_fb_unref(fb);
-		return NULL;
-	}
 
+	/* The only way we can already have a buffer in the scanout plane is
+	 * if we are in mixed mode, or if a client buffer has already been
+	 * placed into scanout. The former case will never call into here,
+	 * and in the latter case, the view must have been marked as occluded,
+	 * meaning we should never have ended up here. */
+	assert(!state->fb);
 	state->fb = fb;
 	state->ev = ev;
 	state->output = output;
@@ -2007,6 +2007,8 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	    state->dest_h != (unsigned) output->base.current_mode->height)
 		goto err;
 
+	/* In plane-only mode, we don't need to test the state now, as we
+	 * will only test it once at the end. */
 	return state;
 
 err:
@@ -3049,7 +3051,8 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
 
 static struct drm_plane_state *
 drm_output_prepare_overlay_view(struct drm_output_state *output_state,
-				struct weston_view *ev)
+				struct weston_view *ev,
+				enum drm_output_propose_state_mode mode)
 {
 	struct drm_output *output = output_state->output;
 	struct weston_compositor *ec = output->base.compositor;
@@ -3058,6 +3061,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct drm_plane_state *state = NULL;
 	struct drm_fb *fb;
 	unsigned int i;
+	int ret;
 
 	assert(!b->sprites_are_broken);
 
@@ -3098,31 +3102,42 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			continue;
 		}
 
-		break;
+		state->ev = ev;
+		state->output = output;
+		if (!drm_plane_state_coords_for_view(state, ev)) {
+			drm_plane_state_put_back(state);
+			state = NULL;
+			continue;
+		}
+		if (state->src_w != state->dest_w << 16 ||
+		    state->src_h != state->dest_h << 16) {
+			drm_plane_state_put_back(state);
+			state = NULL;
+			continue;
+		}
+
+		/* We hold one reference for the lifetime of this function;
+		 * from calling drm_fb_get_from_view, to the out label where
+		 * we unconditionally drop the reference. So, we take another
+		 * reference here to live within the state. */
+		state->fb = drm_fb_ref(fb);
+
+		/* In planes-only mode, we don't have an incremental state to
+		 * test against, so we just hope it'll work. */
+		if (mode == DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY)
+			goto out;
+
+		ret = drm_pending_state_test(output_state->pending_state);
+		if (ret == 0)
+			goto out;
+
+		drm_plane_state_put_back(state);
+		state = NULL;
 	}
 
-	/* No sprites available */
-	if (!state) {
-		drm_fb_unref(fb);
-		return NULL;
-	}
-
-	state->fb = fb;
-	state->ev = ev;
-	state->output = output;
-
-	if (!drm_plane_state_coords_for_view(state, ev))
-		goto err;
-
-	if (state->src_w != state->dest_w << 16 ||
-	    state->src_h != state->dest_h << 16)
-		goto err;
-
+out:
+	drm_fb_unref(fb);
 	return state;
-
-err:
-	drm_plane_state_put_back(state);
-	return NULL;
 }
 
 /**
@@ -3316,6 +3331,7 @@ drm_output_propose_state(struct weston_output *output_base,
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_output_state *state;
+	struct drm_plane_state *scanout_state = NULL;
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region, occluded_region;
 	bool planes_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
@@ -3326,6 +3342,35 @@ drm_output_propose_state(struct weston_output *output_base,
 	state = drm_output_state_duplicate(output->state_cur,
 					   pending_state,
 					   DRM_OUTPUT_STATE_CLEAR_PLANES);
+
+	/* We implement mixed mode by progressively creating and testing
+	 * incremental states, of scanout + overlay + cursor. Since we
+	 * walk our views top to bottom, the scanout plane is last, however
+	 * we always need it in our scene for the test modeset to be
+	 * meaningful. To do this, we steal a reference to the last
+	 * renderer framebuffer we have, if we think it's basically
+	 * compatible. If we don't have that, then we conservatively fall
+	 * back to only using the renderer for this repaint. */
+	if (mode == DRM_OUTPUT_PROPOSE_STATE_MIXED) {
+		struct drm_plane *plane = output->scanout_plane;
+		struct drm_fb *scanout_fb = plane->state_cur->fb;
+
+		if (!scanout_fb ||
+		    (scanout_fb->type != BUFFER_GBM_SURFACE &&
+		     scanout_fb->type != BUFFER_PIXMAN_DUMB)) {
+			drm_output_state_free(state);
+			return NULL;
+		}
+
+		if (scanout_fb->width != output_base->current_mode->width ||
+		    scanout_fb->height != output_base->current_mode->height) {
+			drm_output_state_free(state);
+			return NULL;
+		}
+
+		scanout_state = drm_plane_state_duplicate(state,
+							  plane->state_cur);
+	}
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -3411,10 +3456,14 @@ drm_output_propose_state(struct weston_output *output_base,
 		if (!ps && !drm_view_is_opaque(ev))
 			force_renderer = true;
 
+		/* Only try to place scanout surfaces in planes-only mode; in
+		 * mixed mode, we have already failed to place a view on the
+		 * scanout surface, forcing usage of the renderer on the
+		 * scanout plane. */
+		if (!ps && !force_renderer && !renderer_ok)
+			ps = drm_output_prepare_scanout_view(state, ev, mode);
 		if (!ps && !force_renderer)
-			ps = drm_output_prepare_scanout_view(state, ev);
-		if (!ps && !force_renderer)
-			ps = drm_output_prepare_overlay_view(state, ev);
+			ps = drm_output_prepare_overlay_view(state, ev, mode);
 
 		if (ps) {
 			/* If we have been assigned to an overlay or scanout
@@ -3453,6 +3502,16 @@ drm_output_propose_state(struct weston_output *output_base,
 	ret = drm_pending_state_test(state->pending_state);
 	if (ret != 0)
 		goto err;
+
+	/* Counterpart to duplicating scanout state at the top of this
+	 * function: if we have taken a renderer framebuffer and placed it in
+	 * the pending state in order to incrementally test overlay planes,
+	 * remove it now. */
+	if (mode == DRM_OUTPUT_PROPOSE_STATE_MIXED) {
+		assert(scanout_state->fb->type == BUFFER_GBM_SURFACE ||
+		       scanout_state->fb->type == BUFFER_PIXMAN_DUMB);
+		drm_plane_state_put_back(scanout_state);
+	}
 
 	return state;
 
