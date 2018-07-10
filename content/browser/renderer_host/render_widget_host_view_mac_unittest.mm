@@ -1500,11 +1500,11 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvents[0]];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchBegin MouseWheel", GetMessageNames(events));
+    EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-    // After acking the synthetic mouse wheel, no GesturePinchUpdate is
+    // After acking the synthetic mouse wheel, no GesturePinch events are
     // produced.
-    events[1]->ToEvent()->CallCallback(
+    events[0]->ToEvent()->CallCallback(
         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
@@ -1516,11 +1516,11 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-    // Now acking the synthetic mouse wheel does produce a GesturePinchUpdate.
+    // Now acking the synthetic mouse wheel does produce GesturePinch events.
     events[0]->ToEvent()->CallCallback(
         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
+    EXPECT_EQ("GesturePinchBegin GesturePinchUpdate", GetMessageNames(events));
 
     // The third update still has zoom enabled.
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvents[2]];
@@ -1555,11 +1555,11 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvent];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchBegin MouseWheel", GetMessageNames(events));
-    events[1]->ToEvent()->CallCallback(
+    EXPECT_EQ("MouseWheel", GetMessageNames(events));
+    events[0]->ToEvent()->CallCallback(
         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
+    EXPECT_EQ("GesturePinchBegin GesturePinchUpdate", GetMessageNames(events));
 
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();
@@ -1588,17 +1588,19 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvent];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchBegin MouseWheel", GetMessageNames(events));
+    EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-    events[1]->ToEvent()->CallCallback(
+    events[0]->ToEvent()->CallCallback(
         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
 
+    // Since no GesturePinchBegin was sent by the time we reach the pinch end,
+    // the GesturePinchBegin and GesturePinchEnd are elided.
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchEnd", GetMessageNames(events));
+    EXPECT_EQ(0U, events.size());
   }
 }
 

@@ -6211,6 +6211,50 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_ = nullptr;
 }
 
+// Test that we elide touchpad pinch gesture steams consisting of only begin
+// and end events.
+TEST_F(RenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
+  ui::GestureEventDetails begin_details(ui::ET_GESTURE_PINCH_BEGIN);
+  begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  ui::GestureEvent begin_event(0, 0, 0, ui::EventTimeForNow(), begin_details);
+
+  ui::GestureEventDetails update_details(ui::ET_GESTURE_PINCH_UPDATE);
+  update_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  update_details.set_scale(1.23);
+  ui::GestureEvent update_event(0, 0, 0, ui::EventTimeForNow(), update_details);
+
+  ui::GestureEventDetails end_details(ui::ET_GESTURE_PINCH_END);
+  end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  ui::GestureEvent end_event(0, 0, 0, ui::EventTimeForNow(), end_details);
+
+  view_->OnGestureEvent(&begin_event);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+  // Since we don't know if we'll have GesturePinchUpdates at this point, the
+  // GesturePinchBegin should not be sent yet.
+  EXPECT_EQ(0U, events.size());
+
+  view_->OnGestureEvent(&update_event);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+
+  // If the page consumes the update, then no GesturePinchUpdate is sent and
+  // we continue to postpone sending the GesturePinchBegin.
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(0U, events.size());
+
+  view_->OnGestureEvent(&end_event);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  // Since we have not sent any GesturePinchUpdates by the time we get to the
+  // end of the pinch, the GesturePinchBegin and GesturePinchEnd events should
+  // be elided.
+  EXPECT_EQ(0U, events.size());
+}
+
 TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   view_->InitAsFullscreen(parent_view_);
   view_->Show();
