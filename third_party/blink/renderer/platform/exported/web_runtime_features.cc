@@ -324,6 +324,10 @@ void WebRuntimeFeatures::EnableTouchpadAndWheelScrollLatching(bool enable) {
   RuntimeEnabledFeatures::SetTouchpadAndWheelScrollLatchingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebGL2ComputeContext(bool enable) {
+  RuntimeEnabledFeatures::SetWebGL2ComputeContextEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebGLDraftExtensions(bool enable) {
   RuntimeEnabledFeatures::SetWebGLDraftExtensionsEnabled(enable);
 }
