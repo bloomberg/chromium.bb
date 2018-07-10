@@ -20,8 +20,6 @@
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
-#include "headless/public/util/deterministic_dispatcher.h"
-#include "net/base/file_stream.h"
 
 class GURL;
 
@@ -31,8 +29,7 @@ namespace headless {
 class HeadlessShell : public HeadlessWebContents::Observer,
                       public emulation::ExperimentalObserver,
                       public inspector::ExperimentalObserver,
-                      public page::ExperimentalObserver,
-                      public network::ExperimentalObserver {
+                      public page::ExperimentalObserver {
  public:
   HeadlessShell();
   ~HeadlessShell() override;
@@ -54,10 +51,6 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
-
-  // network::Observer implementation:
-  void OnRequestIntercepted(
-      const network::RequestInterceptedParams& params) override;
 
   virtual void Shutdown();
 
@@ -112,7 +105,6 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool processed_page_ready_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
-  std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);

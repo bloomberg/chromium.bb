@@ -21,8 +21,6 @@
 #include "headless/lib/browser/headless_net_log.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
-#include "headless/public/util/black_hole_protocol_handler.h"
-#include "headless/public/util/in_memory_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -369,8 +367,7 @@ HeadlessNetworkConditions HeadlessBrowserContextImpl::GetNetworkConditions() {
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
     : browser_(browser),
-      options_(new HeadlessBrowserContextOptions(browser->options())),
-      enable_http_and_https_if_mojo_used_(false) {}
+      options_(new HeadlessBrowserContextOptions(browser->options())) {}
 
 HeadlessBrowserContext::Builder::~Builder() = default;
 
@@ -456,13 +453,6 @@ HeadlessBrowserContext::Builder::SetAllowCookies(bool allow_cookies) {
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
-    bool enable_http_and_https_if_mojo_used) {
-  enable_http_and_https_if_mojo_used_ = enable_http_and_https_if_mojo_used;
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
     base::RepeatingCallback<void(WebPreferences*)> callback) {
   options_->override_web_preferences_callback_ = std::move(callback);
@@ -470,17 +460,6 @@ HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
 }
 
 HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
-  if (!mojo_bindings_.empty()) {
-    // Unless you know what you're doing it's unsafe to allow http/https for a
-    // context with mojo bindings.
-    if (!enable_http_and_https_if_mojo_used_) {
-      options_->protocol_handlers_[url::kHttpScheme] =
-          std::make_unique<BlackHoleProtocolHandler>();
-      options_->protocol_handlers_[url::kHttpsScheme] =
-          std::make_unique<BlackHoleProtocolHandler>();
-    }
-  }
-
   return browser_->CreateBrowserContext(this);
 }
 
