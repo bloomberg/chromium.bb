@@ -250,7 +250,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     compositor_id.process_id =
         web_contents_->GetRenderViewHost()->GetProcess()->GetID();
     compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetRoutingID();
+        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
   }
 
   browser_view_renderer_.SetActiveCompositorID(compositor_id);
@@ -1353,7 +1353,7 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
   DCHECK(new_host);
 
   int process_id = new_host->GetProcess()->GetID();
-  int routing_id = new_host->GetRoutingID();
+  int routing_id = new_host->GetWidget()->GetRoutingID();
 
   // At this point, the current RVH may or may not contain a compositor. So
   // compositor_ may be nullptr, in which case
@@ -1390,7 +1390,8 @@ void AwContents::DidAttachInterstitialPage() {
   CompositorID compositor_id;
   RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
   compositor_id.process_id = rfh->GetProcess()->GetID();
-  compositor_id.routing_id = rfh->GetRenderViewHost()->GetRoutingID();
+  compositor_id.routing_id =
+      rfh->GetRenderViewHost()->GetWidget()->GetRoutingID();
   browser_view_renderer_.SetActiveCompositorID(compositor_id);
 }
 
@@ -1403,7 +1404,7 @@ void AwContents::DidDetachInterstitialPage() {
     compositor_id.process_id =
         web_contents_->GetRenderViewHost()->GetProcess()->GetID();
     compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetRoutingID();
+        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
   } else {
     LOG(WARNING) << "failed setting the compositor on detaching interstitital";
   }

@@ -466,10 +466,15 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
     CONNECTION_ERROR,
   };
 
+  // RenderWidget public API that should no longer go through RenderView.
+  using RenderWidget::routing_id;
+
   // RenderWidgetOwnerDelegate implementation ----------------------------------
 
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
+  void SetActive(bool active) override;
+  void SetBackgroundOpaque(bool opaque) override;
 
   // Old WebLocalFrameClient implementations
   // ----------------------------------------
@@ -499,7 +504,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
   void OnClosePage();
+#if defined(OS_MACOSX)
   void OnClose();
+#endif
 
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
@@ -513,8 +520,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnResolveTapDisambiguation(base::TimeTicks timestamp,
                                   const gfx::Point& tap_viewport_offset,
                                   bool is_long_press);
-  void OnSetActive(bool active);
-  void OnSetBackgroundOpaque(bool opaque);
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);
   void OnSetInitialFocus(bool reverse);
@@ -524,7 +529,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
-  void OnForceRedraw(int snapshot_id);
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
   void OnPausePageScheduledTasks(bool paused);
@@ -542,9 +546,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Misc private functions ----------------------------------------------------
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
-
-  void OnForceDrawFramePresented(int snapshot_id,
-                                 const gfx::PresentationFeedback& feedback);
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video
@@ -592,6 +593,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.
   // ---------------------------------------------------------------------------
+
+  // Routing ID that allows us to communicate with the corresponding
+  // RenderViewHost in the parent browser process.
+  const int32_t routing_id_;
 
   // Settings ------------------------------------------------------------------
 

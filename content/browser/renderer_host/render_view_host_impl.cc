@@ -112,6 +112,12 @@ using blink::WebPluginAction;
 namespace content {
 namespace {
 
+// <process id, routing id>
+using RenderViewHostID = std::pair<int32_t, int32_t>;
+using RoutingIDViewMap = base::hash_map<RenderViewHostID, RenderViewHostImpl*>;
+base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
 #if defined(OS_WIN)
   NONCLIENTMETRICS_XP metrics = {0};
@@ -173,13 +179,12 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
 // RenderViewHostImpl, public:
 
 // static
-RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
-                                               int render_view_id) {
-  RenderWidgetHost* widget =
-      RenderWidgetHost::FromID(render_process_id, render_view_id);
-  if (!widget)
-    return nullptr;
-  return From(widget);
+RenderViewHostImpl* RenderViewHostImpl::FromID(int process_id, int routing_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
+  RoutingIDViewMap::iterator it =
+      views->find(RenderViewHostID(process_id, routing_id));
+  return it == views->end() ? nullptr : it->second;
 }
 
 // static
@@ -198,6 +203,7 @@ RenderViewHostImpl::RenderViewHostImpl(
     SiteInstance* instance,
     std::unique_ptr<RenderWidgetHostImpl> widget,
     RenderViewHostDelegate* delegate,
+    int32_t routing_id,
     int32_t main_frame_routing_id,
     bool swapped_out,
     bool has_initialized_audio_host)
@@ -207,6 +213,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       is_active_(!swapped_out),
       is_swapped_out_(swapped_out),
+      routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id),
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
@@ -216,6 +223,13 @@ RenderViewHostImpl::RenderViewHostImpl(
       weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
+  DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
+
+  std::pair<RoutingIDViewMap::iterator, bool> result =
+      g_routing_id_view_map.Get().emplace(
+          RenderViewHostID(GetProcess()->GetID(), routing_id_), this);
+  CHECK(result.second) << "Inserting a duplicate item!";
+  GetProcess()->AddRoute(routing_id_, this);
 
   GetWidget()->set_owner_delegate(this);
 
@@ -255,6 +269,12 @@ RenderViewHostImpl::~RenderViewHostImpl() {
                        base::Unretained(ResourceDispatcherHostImpl::Get()),
                        GetProcess()->GetID(), GetRoutingID()));
   }
+
+  // Detach the routing ID as the object is going away.
+  GetProcess()->RemoveRoute(GetRoutingID());
+  g_routing_id_view_map.Get().erase(
+      RenderViewHostID(GetProcess()->GetID(), GetRoutingID()));
+
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
 }
@@ -314,6 +334,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
   params->main_frame_routing_id = main_frame_routing_id_;
+  params->main_frame_widget_routing_id = render_widget_host_->GetRoutingID();
   if (main_rfh) {
     main_rfh->BindInterfaceProviderRequest(
         mojo::MakeRequest(&params->main_frame_interface_provider));
@@ -649,7 +670,7 @@ RenderProcessHost* RenderViewHostImpl::GetProcess() const {
 }
 
 int RenderViewHostImpl::GetRoutingID() const {
-  return GetWidget()->GetRoutingID();
+  return routing_id_;
 }
 
 RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
@@ -911,6 +932,11 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
 
 bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
   return is_active_;
+}
+
+void RenderViewHostImpl::RenderWidgetDidShutdown() {
+  bool rv = Send(new ViewMsg_Close(GetRoutingID()));
+  DCHECK(rv);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {

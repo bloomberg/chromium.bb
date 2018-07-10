@@ -261,33 +261,18 @@ class PresentationServiceDelegateImplIncognitoTest
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
-  // Note that |render_frame_id2| does not correspond to a real frame. As a
-  // result, the observer added with have an empty GURL as origin.
-  int render_frame_id2 = 2;
-
-  EXPECT_CALL(*router_, RegisterMediaSinksObserver(_))
-      .Times(2)
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
   EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
       main_frame_process_id_, main_frame_routing_id_, &listener1_));
-  EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
-      main_frame_process_id_, render_frame_id2, &listener2_));
   EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
       main_frame_process_id_, main_frame_routing_id_, source1_.id()))
       << "Mapping not found for " << source1_.ToString();
-  EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
-      main_frame_process_id_, render_frame_id2, source2_.id()))
-      << "Mapping not found for " << source2_.ToString();
 
-  EXPECT_CALL(*router_, UnregisterMediaSinksObserver(_)).Times(2);
+  EXPECT_CALL(*router_, UnregisterMediaSinksObserver(_));
   delegate_impl_->RemoveScreenAvailabilityListener(
       main_frame_process_id_, main_frame_routing_id_, &listener1_);
-  delegate_impl_->RemoveScreenAvailabilityListener(
-      main_frame_process_id_, render_frame_id2, &listener2_);
   EXPECT_FALSE(delegate_impl_->HasScreenAvailabilityListenerForTest(
       main_frame_process_id_, main_frame_routing_id_, source1_.id()));
-  EXPECT_FALSE(delegate_impl_->HasScreenAvailabilityListenerForTest(
-      main_frame_process_id_, render_frame_id2, source2_.id()));
 }
 
 TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {

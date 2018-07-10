@@ -348,8 +348,9 @@ void TestWebContents::SetOpener(WebContents* opener) {
 void TestWebContents::AddPendingContents(
     std::unique_ptr<WebContents> contents) {
   // This is normally only done in WebContentsImpl::CreateNewWindow.
-  ProcessRoutingIdPair key(contents->GetRenderViewHost()->GetProcess()->GetID(),
-                           contents->GetRenderViewHost()->GetRoutingID());
+  ProcessRoutingIdPair key(
+      contents->GetRenderViewHost()->GetProcess()->GetID(),
+      contents->GetRenderViewHost()->GetWidget()->GetRoutingID());
   WebContentsImpl* raw_contents = static_cast<WebContentsImpl*>(contents.get());
   AddDestructionObserver(raw_contents);
   pending_contents_[key] = std::move(contents);

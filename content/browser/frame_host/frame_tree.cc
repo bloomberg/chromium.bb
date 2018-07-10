@@ -353,6 +353,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
     SiteInstance* site_instance,
     int32_t routing_id,
     int32_t main_frame_routing_id,
+    int32_t widget_routing_id,
     bool swapped_out,
     bool hidden) {
   RenderViewHostMap::iterator iter =
@@ -363,7 +364,8 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, swapped_out, hidden));
+          routing_id, main_frame_routing_id, widget_routing_id, swapped_out,
+          hidden));
 
   render_view_host_map_[site_instance->GetId()] = rvh;
   return rvh;

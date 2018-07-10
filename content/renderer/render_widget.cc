@@ -171,6 +171,10 @@ namespace content {
 
 namespace {
 
+using RoutingIDWidgetMap = std::map<int32_t, RenderWidget*>;
+base::LazyInstance<RoutingIDWidgetMap>::Leaky g_routing_id_widget_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
     "UnpremultiplyAndDitherLowBitDepthTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -447,10 +451,18 @@ RenderWidget::RenderWidget(
   if (!features::IsAshInBrowserProcess())
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
 #endif
+
+  if (routing_id_ != MSG_ROUTING_NONE)
+    g_routing_id_widget_map.Get().emplace(routing_id_, this);
 }
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
+  // TODO(ajwong): Add in check that routing_id_ has been removed from
+  // g_routing_id_widget_map once the shutdown semantics for RenderWidget
+  // and RenderViewImpl are rationalized. Currently, too many unit and
+  // browser tests delete a RenderWidget without correclty going through
+  // the shutdown. https://crbug.com/545684
 
   if (input_event_queue_)
     input_event_queue_->ClearClient();
@@ -473,6 +485,13 @@ void RenderWidget::InstallCreateHook(
   CHECK(!g_create_render_widget && !g_render_widget_initialized);
   g_create_render_widget = create_render_widget;
   g_render_widget_initialized = render_widget_initialized;
+}
+
+// static
+RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
+  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
+  RoutingIDWidgetMap::iterator it = widgets->find(routing_id);
+  return it == widgets->end() ? NULL : it->second;
 }
 
 // static
@@ -513,11 +532,13 @@ RenderWidget* RenderWidget::CreateForFrame(
     CompositorDependencies* compositor_deps,
     blink::WebLocalFrame* frame) {
   CHECK_NE(widget_routing_id, MSG_ROUTING_NONE);
-  // TODO(avi): Before RenderViewImpl has-a RenderWidget, the browser passes the
-  // same routing ID for both the view routing ID and the main frame widget
-  // routing ID. https://crbug.com/545684
-  RenderViewImpl* view = RenderViewImpl::FromRoutingID(widget_routing_id);
-  if (view) {
+  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+  // For the mainframe, the RenderWidget is attached to the RenderView.
+  // TODO(ajwong): Remove this when the widget is always attached to a frame.
+  // https://crbug.com/545684
+  if (!frame->Parent()) {
+    RenderViewImpl* view =
+        static_cast<RenderViewImpl*>(render_frame->GetRenderView());
     view->AttachWebFrameWidget(
         RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
     view->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
@@ -679,9 +700,12 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
+    IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIsInert, OnSetIsInert)
@@ -768,6 +792,7 @@ void RenderWidget::OnClose() {
   // Browser correspondence is no longer needed at this point.
   if (routing_id_ != MSG_ROUTING_NONE) {
     RenderThread::Get()->RemoveRoute(routing_id_);
+    g_routing_id_widget_map.Get().erase(routing_id_);
     SetHidden(false);
     if (RenderThreadImpl::current())
       RenderThreadImpl::current()->WidgetDestroyed();
@@ -873,6 +898,21 @@ void RenderWidget::OnRequestSetBoundsAck() {
   pending_window_rect_count_--;
 }
 
+void RenderWidget::OnForceRedraw(int snapshot_id) {
+  if (LayerTreeView* ltv = layer_tree_view()) {
+    ltv->layer_tree_host()->RequestPresentationTimeForNextFrame(
+        base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
+                       weak_ptr_factory_.GetWeakPtr(), snapshot_id));
+    ltv->SetNeedsForcedRedraw();
+  }
+}
+
+void RenderWidget::DidPresentForceDrawFrame(
+    int snapshot_id,
+    const gfx::PresentationFeedback& feedback) {
+  Send(new ViewHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
+}
+
 GURL RenderWidget::GetURLForGraphicsContext3D() {
   return GURL();
 }
@@ -906,6 +946,16 @@ void RenderWidget::OnMouseCaptureLost() {
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   edit_commands_ = edit_commands;
+}
+
+void RenderWidget::OnSetActive(bool active) {
+  if (owner_delegate_)
+    owner_delegate_->SetActive(active);
+}
+
+void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
+  if (owner_delegate_)
+    owner_delegate_->SetBackgroundOpaque(opaque);
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
@@ -1004,7 +1054,22 @@ void RenderWidget::DidReceiveCompositorFrameAck() {
 }
 
 bool RenderWidget::IsClosing() const {
-  return host_closing_;
+  // TODO(ajwong): There is oddly 2 closing states. This API is used by
+  // LayerTreeView only as part of the LayerTreeViewDelegate interface and
+  // is the guard against creating new compositor frames unnecessarily.
+  // Historically, when RenderViewImpl and RenderWidget shared the same
+  // routing id, it was possible for |closing_| to be true, |host_closing_| to
+  // false, and for the code in
+  // RenderThreadImpl::RequestNewLayerTreeFrameSink() to still look up a valid
+  // RenderViewImpl from the routing id. This is actually a benign shutdown
+  // race in Android that can be triggered in the SynchronouslyComposite path
+  // via AwContentsGarbageCollectionTest#testCreateAndGcManyTimes.
+  //
+  // Once RenderViewImpl and RenderWidget are split, attempt to combine two
+  // states so the shutdown logic is cleaner.
+  //
+  // http://crbug.com/545684
+  return host_closing_ || closing_;
 }
 
 void RenderWidget::RequestScheduleAnimation() {

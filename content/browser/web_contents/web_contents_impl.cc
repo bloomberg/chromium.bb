@@ -2017,9 +2017,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   int32_t view_routing_id = params.routing_id;
   int32_t main_frame_widget_routing_id = params.main_frame_widget_routing_id;
   if (main_frame_widget_routing_id == MSG_ROUTING_NONE) {
-    view_routing_id = main_frame_widget_routing_id =
+    view_routing_id = site_instance->GetProcess()->GetNextRoutingID();
+    main_frame_widget_routing_id =
         site_instance->GetProcess()->GetNextRoutingID();
   }
+
+  DCHECK_NE(view_routing_id, main_frame_widget_routing_id);
 
   GetRenderManager()->Init(
       site_instance.get(), view_routing_id, params.main_frame_routing_id,
@@ -2761,6 +2764,10 @@ void WebContentsImpl::CreateNewWindow(
     }
     // Save the created window associated with the route so we can show it
     // later.
+    //
+    // TODO(ajwong): This should be keyed off the RenderFrame routing id or the
+    // FrameTreeNode id instead of the routing id of the Widget for the main
+    // frame.  https://crbug.com/545684
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
     pending_contents_[std::make_pair(render_process_id,
                                      main_frame_widget_route_id)] =

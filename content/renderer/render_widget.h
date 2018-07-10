@@ -173,6 +173,9 @@ class CONTENT_EXPORT RenderWidget
       CreateRenderWidgetFunction create_render_widget,
       RenderWidgetInitializedCallback render_widget_initialized_callback);
 
+  // Returns the RenderWidget for the given routing ID.
+  static RenderWidget* FromRoutingID(int32_t routing_id);
+
   // Closes a RenderWidget that was created by |CreateForFrame|.
   // TODO(avi): De-virtualize this once RenderViewImpl has-a RenderWidget.
   // https://crbug.com/545684
@@ -411,6 +414,9 @@ class CONTENT_EXPORT RenderWidget
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
 
+  void DidPresentForceDrawFrame(int snapshot_id,
+                                const gfx::PresentationFeedback& feedback);
+
   // Indicates whether this widget has focus.
   bool has_focus() const { return has_focus_; }
 
@@ -462,7 +468,9 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
+  void OnSetActive(bool active);
   virtual void OnSetFocus(bool enable);
+  void OnSetBackgroundOpaque(bool opaque);
   void OnMouseCaptureLost();
   void OnCursorVisibilityChange(bool is_visible);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
@@ -587,6 +595,7 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
+  void OnForceRedraw(int snapshot_id);
   // Request from browser to show context menu.
   virtual void OnShowContextMenu(ui::MenuSourceType source_type,
                                  const gfx::Point& location);

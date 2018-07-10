@@ -102,11 +102,6 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
                                   int32_t widget_routing_id,
                                   bool renderer_initiated_creation) {
   DCHECK(site_instance);
-  // TODO(avi): While RenderViewHostImpl is-a RenderWidgetHostImpl, this must
-  // hold true to avoid having two RenderWidgetHosts for the top-level frame.
-  // https://crbug.com/545684
-  DCHECK(!frame_tree_node_->IsMainFrame() ||
-         view_routing_id == widget_routing_id);
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
                                            delegate_->IsHidden(),
@@ -1668,7 +1663,8 @@ RenderFrameHostManager::CreateRenderFrameHost(
   RenderViewHostImpl* render_view_host = nullptr;
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
-        site_instance, view_routing_id, frame_routing_id, false, hidden);
+        site_instance, view_routing_id, frame_routing_id, widget_routing_id,
+        false, hidden);
     // TODO(avi): It's a bit bizarre that this logic lives here instead of in
     // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
     // doesn't /always/ create a new RenderViewHost. It first tries to find an
@@ -1679,8 +1675,9 @@ RenderFrameHostManager::CreateRenderFrameHost(
     // if just ignored, should be an easy cleanup once RenderViewHostImpl has-a
     // RenderWidgetHostImpl. https://crbug.com/545684
     if (view_routing_id == MSG_ROUTING_NONE) {
-      widget_routing_id = render_view_host->GetRoutingID();
+      widget_routing_id = render_view_host->GetWidget()->GetRoutingID();
     } else {
+      DCHECK_NE(view_routing_id, widget_routing_id);
       DCHECK_EQ(view_routing_id, render_view_host->GetRoutingID());
     }
   } else {
@@ -1745,6 +1742,10 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
   // A RenderFrame in a different process from its parent RenderFrame
   // requires a RenderWidget for input/layout/painting.
+  //
+  // TODO(ajwong): When RVH no longer owns a RWH, this logic should be
+  // simplified as the decision to create a RWH will be centralized here.
+  // https://crbug.com/545684
   if (frame_tree_node_->parent() &&
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
           instance) {
@@ -1823,7 +1824,8 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
     if (!render_view_host) {
       CHECK(frame_tree_node_->IsMainFrame());
       render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
-          instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true, true);
+          instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true,
+          true);
     }
 
     proxy = CreateRenderFrameProxyHost(instance, render_view_host);

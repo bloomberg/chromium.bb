@@ -3060,10 +3060,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (!params->opener_suppressed && !no_javascript_access) {
     render_view_route_id = GetProcess()->GetNextRoutingID();
     main_frame_route_id = GetProcess()->GetNextRoutingID();
-    // TODO(avi): When RenderViewHostImpl has-a RenderWidgetHostImpl, this
-    // should be updated to give the widget a distinct routing ID.
-    // https://crbug.com/545684
-    main_frame_widget_route_id = render_view_route_id;
+    main_frame_widget_route_id = GetProcess()->GetNextRoutingID();
     // Block resource requests until the frame is created, since the HWND might
     // be needed if a response ends up creating a plugin. We'll only have a
     // single frame at this point. These requests will be resumed either in

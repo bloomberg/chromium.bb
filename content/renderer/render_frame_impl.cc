@@ -1486,6 +1486,9 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #endif
 
   manifest_manager_ = std::make_unique<ManifestManager>(this);
+  // TODO(ajwong): This always returns true as is_main_frame_ gets initialized
+  // later in RenderFrameImpl::Initialize(). Should the conditional be in
+  // RenderFrameImpl::Initialize()?  https://crbug.com/840533
   if (IsMainFrame()) {
     // Manages its own lifetime.
     new ManifestChangeNotifier(this);
@@ -1691,7 +1694,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // Synchronous IPC to obtain a routing id for the fullscreen widget.
   int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
   if (!RenderThreadImpl::current_render_message_filter()
-           ->CreateFullscreenWidget(render_view()->routing_id(),
+           ->CreateFullscreenWidget(render_view()->GetRoutingID(),
                                     std::move(widget_channel),
                                     &fullscreen_widget_routing_id)) {
     return nullptr;

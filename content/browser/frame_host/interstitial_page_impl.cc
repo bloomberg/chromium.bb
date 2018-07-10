@@ -607,12 +607,9 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
       SessionStorageNamespaceImpl::Create(dom_storage_context);
 
   // Use the RenderViewHost from our FrameTree.
-  // TODO(avi): The view routing ID can be restored to MSG_ROUTING_NONE once
-  // RenderViewHostImpl has-a RenderWidgetHostImpl. https://crbug.com/545684
-  int32_t widget_routing_id = site_instance->GetProcess()->GetNextRoutingID();
   frame_tree_->root()->render_manager()->Init(
-      site_instance.get(), widget_routing_id, MSG_ROUTING_NONE,
-      widget_routing_id, false);
+      site_instance.get(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      false);
   return frame_tree_->root()->current_frame_host()->render_view_host();
 }
 

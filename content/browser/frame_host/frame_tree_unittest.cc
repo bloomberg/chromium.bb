@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors.All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ TEST_F(FrameTreeTest, Shape) {
   // itself. Instead, leave them in "not live" state, which is indicated by the
   // * after the frame id, since this test cares about the shape, not the
   // frame liveness.
-  EXPECT_EQ("2: []", GetTreeState(frame_tree));
+  EXPECT_EQ("3: []", GetTreeState(frame_tree));
 
   // Simulate attaching a series of frames to build the frame tree.
   frame_tree->AddFrame(root, process_id, 14,
@@ -194,7 +194,7 @@ TEST_F(FrameTreeTest, Shape) {
                        blink::FramePolicy(), FrameOwnerProperties(), false);
 
   EXPECT_EQ(
-      "2: [14: [244: [], 245: []], "
+      "3: [14: [244: [], 245: []], "
       "15: [255 'no children node': []], "
       "16: []]",
       GetTreeState(frame_tree));
@@ -250,7 +250,7 @@ TEST_F(FrameTreeTest, Shape) {
 
   // Now that's it's fully built, verify the tree structure is as expected.
   EXPECT_EQ(
-      "2: [14: [244: [], 245: []], "
+      "3: [14: [244: [], 245: []], "
       "15: [255 'no children node': []], "
       "16: [264: [], 265: [], 266: [], "
       "267 'node with deep subtree': "
@@ -264,27 +264,27 @@ TEST_F(FrameTreeTest, Shape) {
   FrameTreeNode* child_245 = child_14->child_at(1);
   FrameTreeNode* child_555 = child_267->child_at(0)->child_at(0)->child_at(0);
   FrameTreeNode* child_655 = child_555->child_at(0);
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, nullptr));
-  EXPECT_EQ("2", GetTraversalOrder(frame_tree, root));
-  EXPECT_EQ("2 14 15 16 255 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3", GetTraversalOrder(frame_tree, root));
+  EXPECT_EQ("3 14 15 16 255 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, child_14));
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, child_244));
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, child_245));
-  EXPECT_EQ("2 14 15 16 244 245 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3 14 15 16 244 245 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, child_15));
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268",
             GetTraversalOrder(frame_tree, child_267));
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268 365 455 555",
             GetTraversalOrder(frame_tree, child_555));
-  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
+  EXPECT_EQ("3 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
             GetTraversalOrder(frame_tree, child_655));
 
   frame_tree->RemoveFrame(child_555);
   EXPECT_EQ(
-      "2: [14: [244: [], 245: []], "
+      "3: [14: [244: [], 245: []], "
       "15: [255 'no children node': []], "
       "16: [264: [], 265: [], 266: [], "
       "267 'node with deep subtree': "
@@ -293,7 +293,7 @@ TEST_F(FrameTreeTest, Shape) {
 
   frame_tree->RemoveFrame(child_16->child_at(1));
   EXPECT_EQ(
-      "2: [14: [244: [], 245: []], "
+      "3: [14: [244: [], 245: []], "
       "15: [255 'no children node': []], "
       "16: [264: [], 266: [], "
       "267 'node with deep subtree': "
@@ -302,7 +302,7 @@ TEST_F(FrameTreeTest, Shape) {
 
   frame_tree->RemoveFrame(root->child_at(1));
   EXPECT_EQ(
-      "2: [14: [244: [], 245: []], "
+      "3: [14: [244: [], 245: []], "
       "16: [264: [], 266: [], "
       "267 'node with deep subtree': "
       "[365: [455: []]], 268: []]]",
@@ -424,7 +424,7 @@ TEST_F(FrameTreeTest, GetSibling) {
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(2) -> 2: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameCreated(3) -> 3: []", activity.GetLog());
 
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
@@ -436,8 +436,8 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(14) -> 2: []\n"
-      "RenderFrameCreated(14) -> 2: [14: []]",
+      "RenderFrameHostChanged(new)(14) -> 3: []\n"
+      "RenderFrameCreated(14) -> 3: [14: []]",
       activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(
       18, CreateStubInterfaceProviderRequest(),
@@ -445,13 +445,13 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(18) -> 2: [14: []]\n"
-      "RenderFrameCreated(18) -> 2: [14: [], 18: []]",
+      "RenderFrameHostChanged(new)(18) -> 3: [14: []]\n"
+      "RenderFrameCreated(18) -> 3: [14: [], 18: []]",
       activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
-  EXPECT_EQ("RenderFrameDeleted(14) -> 2: [18: []]", activity.GetLog());
+  EXPECT_EQ("RenderFrameDeleted(14) -> 3: [18: []]", activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
-  EXPECT_EQ("RenderFrameDeleted(18) -> 2: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameDeleted(18) -> 3: []", activity.GetLog());
 }
 
 // Make sure that WebContentsObservers see a consistent view of the tree after
@@ -459,7 +459,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(2) -> 2: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameCreated(3) -> 3: []", activity.GetLog());
 
   main_test_rfh()->OnCreateChildFrame(
       22, CreateStubInterfaceProviderRequest(),
@@ -467,8 +467,8 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(22) -> 2: []\n"
-      "RenderFrameCreated(22) -> 2: [22: []]",
+      "RenderFrameHostChanged(new)(22) -> 3: []\n"
+      "RenderFrameCreated(22) -> 3: [22: []]",
       activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(
       23, CreateStubInterfaceProviderRequest(),
@@ -476,17 +476,17 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(23) -> 2: [22: []]\n"
-      "RenderFrameCreated(23) -> 2: [22: [], 23: []]",
+      "RenderFrameHostChanged(new)(23) -> 3: [22: []]\n"
+      "RenderFrameCreated(23) -> 3: [22: [], 23: []]",
       activity.GetLog());
 
   // Crash the renderer
   main_test_rfh()->GetProcess()->SimulateCrash();
   EXPECT_EQ(
-      "RenderProcessGone -> 2*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(23) -> 2*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(22) -> 2*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(2) -> 2*: []",
+      "RenderProcessGone -> 3*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(23) -> 3*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(22) -> 3*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(3) -> 3*: []",
       activity.GetLog());
 }
 
@@ -498,7 +498,7 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
   FrameTreeNode* root = frame_tree->root();
   int process_id = root->current_frame_host()->GetProcess()->GetID();
 
-  ASSERT_EQ("2: []", GetTreeState(frame_tree));
+  ASSERT_EQ("3: []", GetTreeState(frame_tree));
 
   // Simulate attaching a frame from mismatched process id.
   ASSERT_FALSE(frame_tree->AddFrame(
@@ -506,7 +506,7 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName0", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false));
-  ASSERT_EQ("2: []", GetTreeState(frame_tree));
+  ASSERT_EQ("3: []", GetTreeState(frame_tree));
 }
 
 // Ensure that frames removed while a process has crashed are not preserved in

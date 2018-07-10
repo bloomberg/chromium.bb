@@ -29,6 +29,7 @@ class RenderViewHostFactory {
                                 RenderWidgetHostDelegate* widget_delegate,
                                 int32_t routing_id,
                                 int32_t main_frame_routing_id,
+                                int32_t widget_routing_id,
                                 bool swapped_out,
                                 bool hidden);
 
@@ -61,6 +62,7 @@ class RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int32_t routing_id,
       int32_t main_frame_routing_id,
+      int32_t widget_routing_id,
       bool swapped_out) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.

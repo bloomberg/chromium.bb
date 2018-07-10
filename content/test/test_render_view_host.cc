@@ -217,11 +217,13 @@ TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     std::unique_ptr<RenderWidgetHostImpl> widget,
     RenderViewHostDelegate* delegate,
+    int32_t routing_id,
     int32_t main_frame_routing_id,
     bool swapped_out)
     : RenderViewHostImpl(instance,
                          std::move(widget),
                          delegate,
+                         routing_id,
                          main_frame_routing_id,
                          swapped_out,
                          false /* has_initialized_audio_host */),

@@ -370,10 +370,7 @@ void MockRenderThread::OnCreateWindow(
   frame_routing_id_to_initial_interface_provider_requests_.emplace(
       reply->main_frame_route_id,
       mojo::MakeRequest(&reply->main_frame_interface_provider));
-  // TODO(avi): Widget routing IDs should be distinct from the view routing IDs,
-  // once RenderWidgetHost is distilled from RenderViewHostImpl.
-  // See: https://crbug.com/545684.
-  reply->main_frame_widget_route_id = reply->route_id;
+  reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id = "";
 }
 
