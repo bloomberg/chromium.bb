@@ -233,7 +233,7 @@ class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
 
  private:
   std::vector<base::Closure> rename_callbacks_;
-  bool waiting_;
+  base::OnceClosure stop_waiting_;
   base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelayFactory);
@@ -290,8 +290,7 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
 }
 
 DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
-    : waiting_(false),
-      weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this) {}
 
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
@@ -309,8 +308,8 @@ download::DownloadFile* DownloadFileWithDelayFactory::CreateFile(
 void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   rename_callbacks_.push_back(std::move(callback));
-  if (waiting_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  if (stop_waiting_)
+    std::move(stop_waiting_).Run();
 }
 
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(
@@ -323,9 +322,9 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (rename_callbacks_.empty()) {
-    waiting_ = true;
-    RunMessageLoop();
-    waiting_ = false;
+    base::RunLoop run_loop;
+    stop_waiting_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 }
 
@@ -368,11 +367,12 @@ class CountingDownloadFile : public download::DownloadFileImpl {
   // until data is returned.
   static int GetNumberActiveFilesFromFileThread() {
     int result = -1;
+    base::RunLoop run_loop;
     download::GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    base::RunLoop().Run();
+        run_loop.QuitClosure());
+    run_loop.Run();
     DCHECK_NE(-1, result);
     return result;
   }
