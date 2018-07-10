@@ -386,8 +386,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void UnregisterLayer(Layer* layer);
   Layer* LayerById(int id) const;
 
-  size_t NumLayers() const;
-
   bool in_update_property_trees() const { return in_update_property_trees_; }
   bool PaintContent(const LayerList& update_layer_list,
                     bool* content_has_slow_paths,

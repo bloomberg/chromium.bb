@@ -642,20 +642,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time, bool raster) {
   proxy->CompositeImmediately(frame_begin_time, raster);
 }
 
-static int GetLayersUpdateTimeHistogramBucket(size_t numLayers) {
-  // We uses the following exponential (ratio 2) bucketization:
-  // [0, 10), [10, 30), [30, 70), [70, 150), [150, infinity)
-  if (numLayers < 10)
-    return 0;
-  if (numLayers < 30)
-    return 1;
-  if (numLayers < 70)
-    return 2;
-  if (numLayers < 150)
-    return 3;
-  return 4;
-}
-
 bool LayerTreeHost::UpdateLayers() {
   if (!root_layer()) {
     property_trees_.clear();
@@ -672,11 +658,6 @@ bool LayerTreeHost::UpdateLayers() {
 
     std::string histogram_name =
         base::StringPrintf("Compositing.%s.LayersUpdateTime", client_name);
-    base::UmaHistogramCounts10M(histogram_name, elapsed);
-
-    // Also add UpdateLayers metrics bucketed by the layer count.
-    base::StringAppendF(&histogram_name, ".%d",
-                        GetLayersUpdateTimeHistogramBucket(NumLayers()));
     base::UmaHistogramCounts10M(histogram_name, elapsed);
   }
 
@@ -1294,10 +1275,6 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
 Layer* LayerTreeHost::LayerById(int id) const {
   auto iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : nullptr;
-}
-
-size_t LayerTreeHost::NumLayers() const {
-  return layer_id_map_.size();
 }
 
 bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
