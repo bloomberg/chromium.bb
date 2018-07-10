@@ -35,6 +35,7 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::Time;
+using base::TimeDelta;
 
 namespace {
 
@@ -2451,6 +2452,43 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
   EXPECT_EQ(ASCIIToUTF16("new_kw"), final_turl->keyword());
   EXPECT_EQ(ASCIIToUTF16("my name"), final_turl->short_name());
   EXPECT_EQ(default_turl->url(), final_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngineWithChangedKeyword) {
+  const TemplateURLData default_data =
+      *TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(nullptr);
+
+  // Add a prepopulated search engine and mark it as default.
+  model()->Add(std::make_unique<TemplateURL>(default_data));
+  ASSERT_EQ(1u, model()->GetTemplateURLs().size());
+  model()->SetUserSelectedDefaultSearchProvider(model()->GetTemplateURLs()[0]);
+  ASSERT_EQ(model()->GetTemplateURLs()[0], model()->GetDefaultSearchProvider());
+
+  // Now Sync data comes in changing the keyword.
+  TemplateURLData changed_data(default_data);
+  changed_data.SetKeyword(ASCIIToUTF16("new_kw"));
+  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  // It's important to set |safe_for_autoreplace| to false, which marks the
+  // update as a manual user update. Without this,
+  // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to
+  // the keyword or search URL.
+  changed_data.safe_for_autoreplace = false;
+  // Since we haven't synced on this device before, the incoming data will have
+  // a different guid (even though it's based on the exact same prepopulated
+  // engine).
+  changed_data.sync_guid = "different_guid";
+
+  syncer::SyncDataList list{TemplateURLService::CreateSyncDataFromTemplateURL(
+      TemplateURL(changed_data))};
+  MergeAndExpectNotify(list, 1);
+
+  // Make sure that no duplicate was created, that the local GUID was updated to
+  // the one from Sync, and the keyword was updated.
+  EXPECT_EQ(1u, model()->GetTemplateURLs().size());
+  EXPECT_FALSE(model()->GetTemplateURLForGUID(default_data.sync_guid));
+  TemplateURL* result_turl = model()->GetTemplateURLForGUID("different_guid");
+  ASSERT_TRUE(result_turl);
+  EXPECT_EQ(ASCIIToUTF16("new_kw"), result_turl->keyword());
 }
 
 TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {

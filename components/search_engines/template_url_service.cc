@@ -2235,8 +2235,15 @@ void TemplateURLService::MergeInSyncTemplateURL(
         // ApplyDefaultSearchChange() may change something that requires a
         // notification, but if so, it will send out that notification, and we
         // are not involved, thus we do not update |should_notify| here.
+        // TODO(crbug.com/788222): This will set
+        // prefs::kSyncedDefaultSearchProviderGUID, which is wrong if the pref
+        // points to a not-yet-synced search engine (i.e. the pref change was
+        // processed before the search engine addition).
         ApplyDefaultSearchChange(&sync_turl->data(),
                                  DefaultSearchManager::FROM_USER);
+        // ApplyDefaultSearchChange() already added a new TemplateURL from the
+        // given data if required, so don't add it again.
+        should_add_sync_turl = false;
         merge_result->set_num_items_modified(
             merge_result->num_items_modified() + 1);
       } else {
