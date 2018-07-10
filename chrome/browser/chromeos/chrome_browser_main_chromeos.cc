@@ -166,8 +166,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -661,7 +659,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       std::unique_ptr<quirks::QuirksManager::Delegate>(
           new quirks::QuirksManagerDelegateImpl()),
       g_browser_process->local_state(),
-      g_browser_process->system_request_context());
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory());
 
   // Start loading machine statistics here. StatisticsProvider::Shutdown()
   // will ensure that loading is aborted on early exit.

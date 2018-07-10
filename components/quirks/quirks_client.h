@@ -12,7 +12,10 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_fetcher_delegate.h"
+
+namespace network {
+class SimpleURLLoader;
+}
 
 namespace quirks {
 
@@ -23,21 +26,20 @@ using RequestFinishedCallback =
     base::Callback<void(const base::FilePath&, bool)>;
 
 // Handles downloading icc and other display data files from Quirks Server.
-class QuirksClient : public net::URLFetcherDelegate {
+class QuirksClient {
  public:
   QuirksClient(int64_t product_id,
                const std::string& display_name,
                const RequestFinishedCallback& on_request_finished,
                QuirksManager* manager);
-  ~QuirksClient() override;
+  ~QuirksClient();
 
   void StartDownload();
 
   int64_t product_id() const { return product_id_; }
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnDownloadComplete(std::unique_ptr<std::string> response_body);
 
   // Send callback and tell manager to delete |this|.
   void Shutdown(bool success);
@@ -66,8 +68,8 @@ class QuirksClient : public net::URLFetcherDelegate {
   // The class is expected to run on UI thread.
   base::ThreadChecker thread_checker_;
 
-  // This fetcher is used to download icc file.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // This loader is used to download icc file.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Pending retry.
   base::OneShotTimer request_scheduled_;
