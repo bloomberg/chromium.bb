@@ -3504,6 +3504,25 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
             std::string("header_value"));
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
+  GURL webui_url("chrome://resources/images/apps/blue_button.png");
+  NavigateToURL(shell(), webui_url);
+  SetupEnsureNoPendingDownloads();
+  std::unique_ptr<download::DownloadUrlParameters> download_parameters(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+          shell()->web_contents(), webui_url, TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  ASSERT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+}
+
 // Test fixture for forcing MHTML download.
 class MhtmlDownloadTest : public DownloadContentTest {
  protected:
