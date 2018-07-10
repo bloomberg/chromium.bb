@@ -691,6 +691,19 @@
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
 <translation id="2893546967669465276">Enviar registos do sistema para o servidor de gestão</translation>
 <translation id="2899002520262095963">As aplicações Android podem utilizar as configurações de rede e os certificados da AC (Autoridade de certificação) definidos através desta política, mas não têm acesso a algumas opções de configuração.</translation>
+<translation id="290002216614278247">Permite bloquear a sessão do utilizador com base no tempo do cliente ou na quota de utilização do dia.
+
+          |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+
+          |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+
+          |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
+          * Se time_window_limit e time_usage_limit não estiverem ativos, é possível utilizar |LOCK| para bloquear o dispositivo.
+          * |LOCK| bloqueia temporariamente a sessão do utilizador até que seja iniciado o próximo time_window_limit ou time_usage_limit.
+          * |UNLOCK| desbloqueia uma sessão do utilizador bloqueada por time_window_limit ou time_usage_limit.
+          |created_time_millis| é a data/hora UTC de criação da substituição. É enviado como uma string porque a data/hora não seria suportada como um número inteiro. É utilizado para determinar se esta substituição deve continuar a ser aplicada. Se a funcionalidade de limite de tempo ativa atual (limite de tempo de utilização ou limite de tempo do intervalo) for iniciada depois de a substituição ter sido criada, não deverá efetuar qualquer ação. Além disso, se a substituição tiver sido criada antes da última alteração de time_window_limit ou de time_usage_window ativo, não deverá ser aplicada.
+
+          É possível enviar várias substituições, sendo que a entrada válida mais recente é a que será aplicada.</translation>
 <translation id="2906874737073861391">Lista de extensões AppPack</translation>
 <translation id="2907992746861405243">Controla as impressoras de <ph name="BULK_PRINTERS_POLICY" /> que estão disponíveis para os utilizadores.
 
@@ -1376,6 +1389,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4980635395568992380">Tipo de dados:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins desatualizados</translation>
 <translation id="4988291787868618635">Ação a realizar quando o atraso de inatividade for alcançado</translation>
+<translation id="4990301296093321860">Permite controlar o acionamento do aviso de proteção da palavra-passe. A proteção da palavra-passe alerta os utilizadores quando reutilizarem as respetivas palavras-passe protegidas em sites potencialmente suspeitos.
+
+      Pode utilizar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar a palavra-passe a proteger.
+
+      Se esta política estiver definida como "PasswordProtectionWarningOff", não é mostrado nenhum aviso de proteção por palavra-passe.
+      Se esta política estiver definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção da palavra-passe é mostrado quando o utilizador reutilizar a respetiva palavra-passe protegida num site que não tenha sido adicionado à lista de autorizações.
+      Se esta política estiver definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção da palavra-passe é mostrado quando o utilizador reutilizar a respetiva palavras-passe protegida num site de phishing.
+      Se esta política não for definida, o aviso de proteção da palavra-passe é acionado quando o utilizador reutilizar a respetiva palavra-passe protegida num site de phishing, mas o utilizador pode alterar esta definição.</translation>
 <translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
 <translation id="5047604665028708335">Permitir o acesso a sites fora dos pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
@@ -1750,6 +1771,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras para ignorar o proxy</translation>
 <translation id="6158324314836466367">Nome da Web store da empresa (descontinuado)</translation>
+<translation id="6164955668342404660">Descontinuado no M69. Utilize OverrideSecurityRestrictionsOnInsecureOrigin como alternativa.
+
+      A política especifica uma lista de origens (URLs) que devem ser tratadas como contexto seguro. A intenção é permitir que as entidades configurem um servidor experimental para programações Web internas para que os respetivos programadores possam testar as funcionalidades que necessitam de contextos seguros sem terem de implementar o TLS no servidor experimental.
+      Definir uma lista de URLs nesta política tem o mesmo efeito que definir o sinalizador de linha de comandos "--unsafely-treat-insecure-origin-as-secure" numa lista separada por vírgulas dos mesmos URLs. Se a política estiver definida, substitui o sinalizador de linha de comandos.
+      Para mais informações acerca de contextos seguros, consulte https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6181608880636987460">Permite-lhe definir uma lista de padrões de URL que especificam sites que não têm autorização para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida, ou, caso contrário, a configuração pessoal do utilizador.</translation>
@@ -1923,6 +1950,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6786967369487349613">Definir o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação suportados</translation>
+<translation id="6832455357698286434">
+      A política especifica uma lista de origens (URLs) ou padrões de nomes de anfitrião (como "*.example.com") que devem ser tratados como contextos seguros. A intenção é permitir que as entidades configurem um servidor experimental para programações Web internas para que os respetivos programadores possam testar as funcionalidades que necessitam de contextos seguros sem terem de implementar o TLS no servidor experimental.
+      Definir uma lista de URLs nesta política tem o mesmo efeito que definir o sinalizador de linha de comandos "--unsafely-treat-insecure-origin-as-secure" numa lista separada por vírgulas dos mesmos URLs. Se a política estiver definida, substitui o sinalizador de linha de comandos.
+      Para mais informações acerca de contextos seguros, consulte https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6835883744948188639">Apresentar uma mensagem recorrente ao utilizador a indicar que é recomendado reiniciar</translation>
 <translation id="6838056959556423778">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
 
@@ -2263,6 +2295,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7617319494457709698">Esta política especifica as extensões com permissão para utilizar a função <ph name="CHALLENGE_USER_KEY_FUNCTION" /> da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
 
           Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falha e resulta num código de erro.</translation>
+<translation id="7620300057302654932">As origens ou os padrões de nomes de anfitrião que devem ser tratados como contexto seguro.</translation>
 <translation id="7625444193696794922">Especifica o canal de lançamento ao qual este aparelho deve estar bloqueado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura o local da aplicação no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> utilizará o local indicado. Se o local configurado não for suportado, será utilizado "en-US". Se esta definição estiver desativada ou não for definida, o <ph name="PRODUCT_NAME" /> utilizará o local preferencial indicado pelo utilizador (se estiver configurado), o local do sistema ou o local alternativo "en-US".</translation>

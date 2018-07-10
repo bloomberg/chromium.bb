@@ -42,9 +42,9 @@
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
 
       Si no estableces esta política, se usará el directorio de caché predeterminado, y el usuario podrá anularlo con la marca '--disk-cache-dir' en la línea de comandos.</translation>
-<translation id="1135264353752122851">Determina cuáles son los diseños de teclado permitidos para las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
+<translation id="1135264353752122851">Configura cuáles son los diseños de teclado permitidos para las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
 
-      Si se establece esta política, el usuario solo podrá elegir uno de los métodos de entrada que se especifican aquí. Si no se establece o se establece como una lista vacía, el usuario podrá seleccionar todos los métodos de entrada compatibles. Si la política no permite el método de entrada actual, se cambiará al diseño de teclado del hardware (si se permite) o la primera entrada válida en esta lista. Se ignorarán todos los métodos de entrada no válidos o no compatibles.</translation>
+      Si se establece esta política, el usuario solo podrá elegir uno de los métodos de entrada que se especifican aquí. Si no se establece o se establece como una lista vacía, el usuario podrá seleccionar todos los métodos de entrada compatibles. Si la política no permite el método de entrada actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida en esta lista. Se ignorarán todos los métodos de entrada no válidos o no compatibles.</translation>
 <translation id="1138294736309071213">Esta política solo se encuentra activa en el modo de venta.
 
       Permite determinar el tiempo que debe transcurrir antes de que se muestre el protector de pantalla en la página de inicio de sesión para dispositivos que se encuentren en el modo de venta.
@@ -71,7 +71,7 @@
 <translation id="1221359380862872747">Cargar las URL especificadas en el inicio de sesión del demo</translation>
 <translation id="1223789468190631420">La Navegación segura habilita el estado para las fuentes de confianza</translation>
 <translation id="123081309365616809">Permite transmitir contenido al dispositivo</translation>
-<translation id="1243570869342663665">Controlar el filtro de contenido para adultos de SafeSites</translation>
+<translation id="1243570869342663665">Controlar el filtro de contenido para adultos de SafeSites.</translation>
 <translation id="1257550411839719984">Establecer el directorio de descarga predeterminado</translation>
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
 <translation id="1291880496936992484">Advertencia: RC4 se eliminará por completo de <ph name="PRODUCT_NAME" /> después de la versión 52 (alrededor de septiembre de 2016) y esta política dejará de funcionar para entonces.
@@ -367,7 +367,7 @@
 
       Si la política no se establece, el valor predeterminado es de 0 grados, y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
 <translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
-<translation id="2166472654199325139">No filtrar sitios con contenido para adultos</translation>
+<translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2176565653304920879">Cuando se establece esta política, la detección automática de la zona horaria se llevará a cabo de las siguientes formas, según el valor de la configuración:
@@ -518,9 +518,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2484208301968418871">Esta política controla la aplicación del filtro de URL de SafeSites.
       Este filtro usa la API de Google SafeSearch para determinar si las URL tienen contenido pornográfico o no.
 
-      Cuando no se configura esta política o se establece como "No filtrar sitios con contenido para adultos", no se filtrarán los sitios.
+      Cuando no se configura esta política o se establece como "No aplicar filtros de contenido para adultos a los sitios", no se filtrarán los sitios.
 
-      Cuando se establece como "Filtrar sitios principales con contenido para adultos", se filtrarán los sitios clasificados como pornográficos.</translation>
+      Cuando se configura como "Aplicar filtros de contenido para adultos a los sitios principales", se filtrarán los sitios clasificados como pornográficos.</translation>
 <translation id="2485721741875148980">Si se establece esta política como verdadera, el usuario deberá acceder a <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado de BrowserGuestModeEnabled se establecerá como falso. Debes tener en cuenta que, una vez habilitada esta política, se bloquearán los perfiles a los que no se haya accedido y no podrás ingresar a ellos. Para obtener más información, consulta el artículo del centro de ayuda.
 
       Si se establece esta política como falsa o no se configura, el usuario podrá usar el navegador sin acceder a <ph name="PRODUCT_NAME" />.</translation>
@@ -1869,7 +1869,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se inhabilita o no se establece, solo se usarán los perfiles locales comunes.
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita la sincronización de todos los datos y anula la política RoamingProfileSupportEnabled.</translation>
-<translation id="6731757988219967594">Filtrar los sitios principales (pero no los iframes incrustados) con contenido para adultos</translation>
+<translation id="6731757988219967594">Aplicar filtros de contenido para adultos a los sitios principales (pero no a los iframes incorporados)</translation>
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>
 <translation id="673699536430961464">Esta configuración permite que los usuarios cambien entre cuentas de Google en el área de contenido de la ventana del navegador después de acceder en el dispositivo con <ph name="PRODUCT_OS_NAME" />.
 
@@ -1898,7 +1898,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se inhabilita (se establece como falsa), <ph name="PRODUCT_NAME" /> no mostrará a los usuarios contenido sobre productos en pestaña completa.
 
-      Esta configuración controla la presentación de las páginas de bienvenida que permiten a los usuarios acceder a <ph name="PRODUCT_NAME" />, elegir el navegador predeterminado o recibir información sobre funciones de productos.</translation>
+      Esta configuración controla la presentación de las páginas de bienvenida que permiten a los usuarios acceder a <ph name="PRODUCT_NAME" />, elegirlo como navegador predeterminado o recibir información sobre funciones de productos.</translation>
 <translation id="6766216162565713893">Permitir que los sitios soliciten permiso al usuario para acceder a un dispositivo Bluetooth cercano</translation>
 <translation id="6770454900105963262">Informar datos sobre las sesiones de kiosco activas</translation>
 <translation id="6786747875388722282">Extensiones</translation>

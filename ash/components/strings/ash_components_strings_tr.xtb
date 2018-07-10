@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Chrome menüsünü göster</translation>
 <translation id="2424073332829844142">Caps Lock'u açar ve kapatır</translation>
 <translation id="2441202986792279177">Pencereler arasında hızlı geçiş yapar</translation>
+<translation id="2454251766545114447">Görüntüyü Uzaklaştır</translation>
 <translation id="2478303094958140141">ChromeVox'u (sesli geri bildirim) açar veya kapatır</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Web sayfasını aşağı doğru kaydırır</translation>
+<translation id="2574014812750545982">Sayfadaki yakınlaştırma düzeyini sıfırla</translation>
 <translation id="2596078834055697711">Pencerenin ekran görüntüsünü alır</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, daha sonra <ph name="TAB" /> veya <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Sonraki dilin giriş yöntemine geçer</translation>
@@ -48,7 +50,7 @@
 <translation id="2789868185375229787">Sayfayı uzaklaştırır</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> tuşunu basılı tutarken bağlantıyı tıklayın</translation>
 <translation id="2830827904629746450">Pencereyi sağa yerleştirir</translation>
-<translation id="2840766858109427815">Bir sonraki sayfaya git</translation>
+<translation id="2840766858109427815">Sonraki sayfaya git</translation>
 <translation id="2872353916818027657">Birincil monitörü değiştir</translation>
 <translation id="2914313326123580426">Geliştirici Araçları panelini gösterir veya gizler</translation>
 <translation id="292495055542441795">Tam ekranı açar/kapatır</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> veya <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Geçerli pencerenizdeki tüm açık sayfaları yeni bir klasörde yer işaretleri olarak kaydeder</translation>
 <translation id="355103131818127604">Bağlantıyı arka planda yeni bir sekmede açar</translation>
+<translation id="3622741593887335780">Yakınlaştır (yuvaya yerleştirildiğinde VEYA tam ekran büyüteçleri etkin olduğunda)</translation>
 <translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
 <translation id="3655154169297074232">Sekmeler ve Pencereler</translation>
 <translation id="3668361878347172356">Son işleminizi yineler</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 ile 8 arasındaki tuşlar</translation>
 <translation id="3837047332182291558">Klavyenin ışığını açar (yalnızca arkadan aydınlatmalı klavyeler için)</translation>
 <translation id="3976863468609830880">Rafınızdaki son simgeyi tıklar</translation>
+<translation id="3994783594793697310">Görüntü yakınlaştırma seviyesini sıfırla</translation>
 <translation id="4026843240379844265">Etkin pencereyi ekranlar arasında taşıma</translation>
 <translation id="4035482366624727273">Sayfadaki her şeyi seçer</translation>
 <translation id="4060703249685950734">Kapattığınız son sekmeyi veya pencereyi yeniden açar</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Parlaklığı azaltır</translation>
 <translation id="6276708887952587684">Sayfa kaynağını görüntüler</translation>
 <translation id="6321940490215594447">Geçmiş sayfasını açar</translation>
+<translation id="6340769215862220182">Görüntüyü Yakınlaştır</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Metni satırın sonuna kadar seçer</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> veya <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Rafınızdaki 1-8. simgeyi tıklar</translation>
 <translation id="6435207348963613811">Rafınızdaki önceki öğeyi vurgular</translation>
 <translation id="6445033640292336367">Sekmeyi orijinal konumuna döndürür</translation>
+<translation id="6474744297082284761">Uzaklaştır (yuvaya yerleştirildiğinde VEYA tam ekran büyüteçler etkin olduğunda)</translation>
 <translation id="649811797655257835">Dosyayı seçip <ph name="SPACE" /> tuşuna basın</translation>
 <translation id="6556040137485212400">En uzun süre kullanılmayan pencereyi açar</translation>
 <translation id="666343722268997814">Vurgulanan öğe için sağ tıklama menüsünü açar</translation>

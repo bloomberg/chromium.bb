@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2424073332829844142">Activer et désactiver le verrouillage des majuscules</translation>
 <translation id="2441202986792279177">Changer de fenêtre rapidement</translation>
+<translation id="2454251766545114447">Zoom arrière de l'écran</translation>
 <translation id="2478303094958140141">Activer ou désactiver ChromeVox (commentaires audio)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Faire défiler la page Web vers le bas</translation>
+<translation id="2574014812750545982">Réinitialiser le niveau de zoom de la page</translation>
 <translation id="2596078834055697711">Faire une capture de la fenêtre</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Passer au mode de saisie de la langue suivante</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Enregistrer toutes les pages de la fenêtre active dans un nouveau dossier de favoris</translation>
 <translation id="355103131818127604">Ouvrir le lien dans un nouvel onglet en arrière-plan</translation>
+<translation id="3622741593887335780">Zoom avant (lorsque l'appareil est installé sur la station d'accueil OU lorsque la loupe en mode plein écran est activée)</translation>
 <translation id="3649256019230929621">Réduire la fenêtre</translation>
 <translation id="3655154169297074232">Onglets et fenêtres</translation>
 <translation id="3668361878347172356">Répéter la dernière action</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" />1 à 8</translation>
 <translation id="3837047332182291558">Augmenter la luminosité du clavier (claviers rétroéclairés uniquement)</translation>
 <translation id="3976863468609830880">Cliquer sur la dernière icône de l'étagère</translation>
+<translation id="3994783594793697310">Réinitialiser le niveau de zoom de l'écran</translation>
 <translation id="4026843240379844265">Transférer la fenêtre active entre des écrans</translation>
 <translation id="4035482366624727273">Sélectionner tout le contenu de la page</translation>
 <translation id="4060703249685950734">Rouvrir l'onglet ou la fenêtre que vous venez de fermer</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Réduire la luminosité</translation>
 <translation id="6276708887952587684">Afficher le code source de la page</translation>
 <translation id="6321940490215594447">Ouvrir la page "Historique"</translation>
+<translation id="6340769215862220182">Zoom avant de l'écran</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Sélectionner du texte jusqu'à la fin de la ligne</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> ou <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Cliquer sur les icônes de 1 à 8 de l'étagère</translation>
 <translation id="6435207348963613811">Mettre en surbrillance l'élément précédent sur l'étagère</translation>
 <translation id="6445033640292336367">Replacer l'onglet à sa position initiale</translation>
+<translation id="6474744297082284761">Zoom arrière (lorsque l'appareil est installé sur la station d'accueil OU lorsque la loupe en mode plein écran est activée)</translation>
 <translation id="649811797655257835">Sélectionnez le fichier, puis appuyez sur <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Ouvrir la fenêtre inutilisée depuis le plus longtemps</translation>
 <translation id="666343722268997814">Ouvrir le menu pop-up correspondant aux éléments mis en surbrillance</translation>

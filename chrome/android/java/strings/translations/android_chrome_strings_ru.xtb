@@ -325,7 +325,6 @@
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
-<translation id="3871936494901781193">Прокручивая страницу вверх, вы будете видеть ссылки на похожие ресурсы.</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
 <translation id="3927692899758076493">Без засечек</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">Голосовой поиск недоступен</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="395206256282351086">Подсказки запросов и сайтов отключены</translation>
-<translation id="3952533382939530115">Для этой функции используется <ph name="BEGIN_LINK" />синхронизация<ph name="END_LINK" />. URL посещаемых вами страниц будут отправлены в Google.</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="397583555483684758">Ошибка синхронизации</translation>
 <translation id="3976396876660209797">Удалите этот ярлык и создайте его заново</translation>
@@ -797,7 +795,7 @@
 <translation id="7698359219371678927">Написать письмо в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="773466115871691567">Переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
-<translation id="773905249182896430">Защитите устройство от опасных сайтов.</translation>
+<translation id="773905249182896430">Защищать устройство от опасных сайтов</translation>
 <translation id="7762668264895820836">SD-карта <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
@@ -821,6 +819,7 @@
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
+<translation id="7981313251711023384">Разрешить предварительную настройку страниц для повышения скорости работы и поиска</translation>
 <translation id="79859296434321399">Чтобы просматривать контент в режиме дополненной реальности, установите приложение ARCore.</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
@@ -831,6 +830,7 @@
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8035133914807600019">Создать папку…</translation>
+<translation id="8037686209485537503">Показать похожие результаты</translation>
 <translation id="8037750541064988519">Осталось <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">SD-карта не найдена</translation>
 <translation id="805047784848435650">На основе вашей истории просмотров</translation>
@@ -915,7 +915,7 @@
 <translation id="8812260976093120287">На некоторых сайтах вы можете совершать платежи со своего устройства с помощью перечисленных выше приложений.</translation>
 <translation id="8816439037877937734">Приложение "<ph name="APP_NAME" />" откроется в Chrome. Продолжая, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome, а также с <ph name="BEGIN_LINK3" />Примечанием о конфиденциальности для аккаунтов Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="8823704566850948458">Создать пароль</translation>
+<translation id="8823704566850948458">Сгенерировать пароль</translation>
 <translation id="8830904257167680355"><ph name="DESCRIPTION" /> (<ph name="FILE_SIZE" />)</translation>
 <translation id="883806473910249246">При скачивании контента произошла ошибка.</translation>
 <translation id="8840953339110955557">Страница может отличаться от онлайн-версии.</translation>
@@ -959,7 +959,7 @@
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9204836675896933765">Остался 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
-<translation id="9218033835049520260">Создать надежный пароль</translation>
+<translation id="9218033835049520260">Сгенерировать надежный пароль</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>

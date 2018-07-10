@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Rodyti „Chrome“ meniu</translation>
 <translation id="2424073332829844142">Įjungti ir išjungti didžiųjų raidžių klavišą</translation>
 <translation id="2441202986792279177">Greitai perjungti langus</translation>
+<translation id="2454251766545114447">Tolinti ekraną</translation>
 <translation id="2478303094958140141">Įjungti arba išjungti „ChromeVox“ (ekrano skaitymą balsu)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Slinkti tinklalapiu žemyn</translation>
+<translation id="2574014812750545982">Iš naujo nustatyti puslapio mastelio keitimo lygį</translation>
 <translation id="2596078834055697711">Sukurti lango ekrano kopiją</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="TAB" /> arba <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Perjungti į kitą kalbos įvesties metodą</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> arba <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Visus dabartiniame lange atidarytus puslapius išsaugoti kaip žymes naujame aplanke</translation>
 <translation id="355103131818127604">Atidaryti nuorodą naujame skirtuke fone</translation>
+<translation id="3622741593887335780">Artinti (kai yra doke ARBA įgalintas viso ekrano didinimas)</translation>
 <translation id="3649256019230929621">Sumažinti langą</translation>
 <translation id="3655154169297074232">Skirtukai ir langai</translation>
 <translation id="3668361878347172356">Grąžinti paskutinį veiksmą</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> nuo 1 iki 8</translation>
 <translation id="3837047332182291558">Pašviesinti klaviatūrą (skirta tik klaviatūroms su foniniu apšvietimu)</translation>
 <translation id="3976863468609830880">Spustelėti paskutinę piktogramą lentynoje</translation>
+<translation id="3994783594793697310">Iš naujo nustatyti ekrano mastelio keitimo lygį</translation>
 <translation id="4026843240379844265">Aktyvaus lango perkėlimas iš vieno ekrano į kitą</translation>
 <translation id="4035482366624727273">Pasirinkti viską puslapyje</translation>
 <translation id="4060703249685950734">Iš naujo atidaryti paskutinį uždarytą skirtuką arba langą</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Sumažinti šviesumą</translation>
 <translation id="6276708887952587684">Peržiūrėti puslapio šaltinį</translation>
 <translation id="6321940490215594447">Atidaryti istorijos puslapį</translation>
+<translation id="6340769215862220182">Artinti ekraną</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Pasirinkti tekstą iki eilutės pabaigos</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> arba <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Spustelėti 1–8 piktogramas lentynoje</translation>
 <translation id="6435207348963613811">Paryškinti ankstesnį elementą lentynoje</translation>
 <translation id="6445033640292336367">Grąžinti skirtuką į pradinę padėtį</translation>
+<translation id="6474744297082284761">Tolinti (kai yra doke ARBA įgalintas viso ekrano didinimas)</translation>
 <translation id="649811797655257835">Pasirinkite failą, tada paspauskite <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Atidaryti langą, kuris buvo nenaudojamas ilgiausiai</translation>
 <translation id="666343722268997814">Atidaryti paryškinto elemento kontekstinį meniu</translation>

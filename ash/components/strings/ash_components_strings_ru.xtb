@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2424073332829844142">Включить или отключить режим Caps Lock</translation>
 <translation id="2441202986792279177">Перейти в другое окно</translation>
+<translation id="2454251766545114447">Уменьшить масштаб экрана</translation>
 <translation id="2478303094958140141">Включить или отключить ChromeVox (озвучивание действий)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Прокрутить веб-страницу вниз</translation>
+<translation id="2574014812750545982">Восстановить исходный масштаб страницы</translation>
 <translation id="2596078834055697711">Сделать скриншот окна</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="TAB" /> или <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Переключиться на способ ввода для следующего языка.</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Сохранить все страницы, открытые в текущем окне, в закладках (в новой папке)</translation>
 <translation id="355103131818127604">Открыть ссылку в новой фоновой вкладке</translation>
+<translation id="3622741593887335780">Увеличить масштаб (когда включена закрепленная или полноэкранная лупа)</translation>
 <translation id="3649256019230929621">Свернуть окно</translation>
 <translation id="3655154169297074232">Вкладки и окна</translation>
 <translation id="3668361878347172356">Повторить отмененное действие</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> клавиши от 1 до 8</translation>
 <translation id="3837047332182291558">Увеличить яркость клавиатуры (для клавиатур с подсветкой)</translation>
 <translation id="3976863468609830880">Открыть последний значок на панели запуска</translation>
+<translation id="3994783594793697310">Восстановить исходный масштаб экрана</translation>
 <translation id="4026843240379844265">Переместить активное окно между экранами</translation>
 <translation id="4035482366624727273">Выделить весь контент на странице</translation>
 <translation id="4060703249685950734">Открыть последнюю закрытую вкладку или последнее закрытое окно</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Уменьшить яркость</translation>
 <translation id="6276708887952587684">Посмотреть исходный код страницы</translation>
 <translation id="6321940490215594447">Открыть страницу "История"</translation>
+<translation id="6340769215862220182">Увеличить масштаб экрана</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Выделить текст до конца строки</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> или <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Нажать значок на панели запуска (1-8)</translation>
 <translation id="6435207348963613811">Выделить предыдущий объект на панели запуска</translation>
 <translation id="6445033640292336367">Вернуть вкладку в исходное положение</translation>
+<translation id="6474744297082284761">Уменьшить масштаб (когда включена закрепленная или полноэкранная лупа)</translation>
 <translation id="649811797655257835">Выбрать файл и нажать <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Открыть окно, которое не использовалось дольше других.</translation>
 <translation id="666343722268997814">Открыть меню для выделенного объекта, нажав правую кнопку мыши</translation>

@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Chrome मेनू दर्शवा</translation>
 <translation id="2424073332829844142">कॅप्स लॉक चालू करा आणि बंद करा</translation>
 <translation id="2441202986792279177">विंडोंदरम्यान झटपट स्विच करा</translation>
+<translation id="2454251766545114447">झूम आउट प्रदर्शित करा</translation>
 <translation id="2478303094958140141">ChromeVox (वाचिक फीडबॅक) चालू किंवा बंद करा</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">वेब पेज खालच्या दिशेला स्क्रोल करा</translation>
+<translation id="2574014812750545982">पेजवर झूम स्तर रीसेट करा</translation>
 <translation id="2596078834055697711">विंडो स्क्रीनशॉट घ्या</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="TAB" /> किंवा <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">पुढील भाषेच्या इनपुट पद्धतीवर स्विच करा</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">एका नवीन फोल्डरमध्ये बुकमार्क म्हणून तुमच्या या विंडोमधील उघडलेली सर्व पेज सेव्ह करा</translation>
 <translation id="355103131818127604">बॅकग्राउंडला एका नवीन टॅबमध्ये लिंक उघडा</translation>
+<translation id="3622741593887335780">झूम इन करा (डॉक केलेले असताना किंवा पूर्णस्क्रीन मॅग्निफायर सुरू केलेले असताना)</translation>
 <translation id="3649256019230929621">विंडो लहान करा</translation>
 <translation id="3655154169297074232">टॅब आणि विंडो</translation>
 <translation id="3668361878347172356">तुमची याआधीची क्रिया पुन्हा करा</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> एक ते आठ</translation>
 <translation id="3837047332182291558">कीबोर्ड उजळ करा (फक्त बॅकलिट कीबोर्डसाठी)</translation>
 <translation id="3976863468609830880">तुमच्या शेल्फवरील शेवटच्या आयकनवर क्लिक करा</translation>
+<translation id="3994783594793697310">डिस्प्ले झूम स्तर रीसेट करा</translation>
 <translation id="4026843240379844265">डिस्प्ले दरम्यान अॅक्टिव्ह विंडो हलवा</translation>
 <translation id="4035482366624727273">पेजवरील प्रत्येक गोष्ट निवडा</translation>
 <translation id="4060703249685950734">तुम्ही याआधी बंद केलेला टॅब किंवा विंडो पुन्हा उघडा</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">उजळपणा कमी करा</translation>
 <translation id="6276708887952587684">पेज स्त्रोत पहा</translation>
 <translation id="6321940490215594447">इतिहास पेज उघडा</translation>
+<translation id="6340769215862220182">झूम इन प्रदर्शित करा</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">रेषेच्या शेवटी असलेला मजकूर निवडा</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> किंवा <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">तुमच्या शेल्फवरील १-८ आयकनवर क्लिक करा</translation>
 <translation id="6435207348963613811">तुमच्या शेल्फवरील आधीचे आयटम हायलाइट करा</translation>
 <translation id="6445033640292336367">टॅबला त्याच्या मूळ स्थितीत परत न्या</translation>
+<translation id="6474744297082284761">झूम अाउट करा (डॉक केलेले असताना किंवा पूर्णस्क्रीन मॅग्निफायर सुरू केलेले असताना)</translation>
 <translation id="649811797655257835">फाइल निवडा, त्यानंतर <ph name="SPACE" /> दाबा</translation>
 <translation id="6556040137485212400">सर्वाधिक काळासाठी न वापरली गेलेली विंडो उघडा</translation>
 <translation id="666343722268997814">हायलाइट केलेल्या आयटमसाठी राइट क्लिक मेनू उघडा</translation>

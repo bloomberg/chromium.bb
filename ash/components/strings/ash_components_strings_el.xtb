@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Εμφάνιση του μενού του Chrome</translation>
 <translation id="2424073332829844142">Ενεργοποίηση και απενεργοποίηση Caps Lock</translation>
 <translation id="2441202986792279177">Γρήγορη εναλλαγή μεταξύ παραθύρων</translation>
+<translation id="2454251766545114447">Σμίκρυνση οθόνης</translation>
 <translation id="2478303094958140141">Ενεργοποίηση ή απενεργοποίηση του ChromeVox (εκφωνημένα σχόλια)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Κύλιση στην ιστοσελίδα προς τα κάτω</translation>
+<translation id="2574014812750545982">Επαναφορά επιπέδου εστίασης στη σελίδα</translation>
 <translation id="2596078834055697711">Λήψη στιγμιότυπου οθόνης παραθύρου</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> και έπειτα <ph name="TAB" /> ή <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Εναλλαγή στη μέθοδο εισαγωγής της επόμενης γλώσσας</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> ή <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Αποθήκευση όλων των ανοικτών σελίδων στο τρέχον παράθυρο ως σελιδοδείκτες σε έναν νέο φάκελο</translation>
 <translation id="355103131818127604">Άνοιγμα του συνδέσμου σε νέα καρτέλα στο παρασκήνιο</translation>
+<translation id="3622741593887335780">Μεγέθυνση (όταν είναι ενεργοποιημένοι οι μεγεθυντικοί φακοί σε παράθυρο Ή πλήρους οθόνης)</translation>
 <translation id="3649256019230929621">Ελαχιστοποίηση παραθύρου</translation>
 <translation id="3655154169297074232">Καρτέλες και παράθυρα</translation>
 <translation id="3668361878347172356">Επανάληψη της τελευταίας ενέργειας</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 έως 8</translation>
 <translation id="3837047332182291558">Αύξηση φωτεινότητας πληκτρολογίου (μόνο για πληκτρολόγια με οπίσθιο φωτισμό)</translation>
 <translation id="3976863468609830880">Κλικ στο τελευταίο εικονίδιο στο ράφι σας</translation>
+<translation id="3994783594793697310">Επαναφορά επιπέδου εστίασης οθόνης</translation>
 <translation id="4026843240379844265">Μετακίνηση ενεργού παραθύρου μεταξύ οθονών</translation>
 <translation id="4035482366624727273">Επιλογή όλων στη σελίδα</translation>
 <translation id="4060703249685950734">Εκ νέου άνοιγμα της τελευταίας καρτέλας ή του παραθύρου που κλείσατε</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Μείωση φωτεινότητας</translation>
 <translation id="6276708887952587684">Προβολή πηγαίου κώδικα σελίδας</translation>
 <translation id="6321940490215594447">Άνοιγμα σελίδας "Ιστορικό"</translation>
+<translation id="6340769215862220182">Μεγέθυνση οθόνης</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Επιλογή κειμένου έως το τέλος της γραμμής</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> ή <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Κλικ στα εικονίδια 1-8 στο ράφι σας</translation>
 <translation id="6435207348963613811">Επισήμανση του προηγούμενου στοιχείου στο ράφι σας</translation>
 <translation id="6445033640292336367">Επαναφορά της καρτέλας στην αρχική της θέση</translation>
+<translation id="6474744297082284761">Σμίκρυνση (όταν είναι ενεργοποιημένοι οι μεγεθυντικοί φακοί σε παράθυρο Ή πλήρους οθόνης)</translation>
 <translation id="649811797655257835">Επιλέξτε το αρχείο και έπειτα πατήστε <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Άνοιγμα του παραθύρου που δεν έχει χρησιμοποιηθεί για το μεγαλύτερο χρονικό διάστημα</translation>
 <translation id="666343722268997814">Άνοιγμα του μενού δεξιού κλικ για το στοιχείο που έχετε επισημάνει</translation>

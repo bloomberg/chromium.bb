@@ -684,6 +684,19 @@
 <translation id="2877225735001246144">CNAME keresés tiltása a Kerberos hitelesítési tárgyalások során</translation>
 <translation id="2893546967669465276">Rendszernaplók küldése a kezelőszervernek</translation>
 <translation id="2899002520262095963">Az androidos alkalmazások használhatják a házirenden keresztül beállított hálózati beállításokat és a CA tanúsítványokat, de nem rendelkeznek hozzáféréssel egyes konfigurációs beállításokhoz.</translation>
+<translation id="290002216614278247">Lehetővé teszi a felhasználói munkamenet zárolását ügyfélidő vagy napi használati kvóta alapján.
+
+          A |time_window_limit| meghatározza azt a napi időtartományt, amelyben zárolva van a felhasználói munkamenet. A rendszer egy-egy szabályt támogat a hét egyes napjaihoz, ezért az |entries| tömb 0–7 elemből állhat. A |starts_at| és az |ends_at| az időkorlát kezdetét és végét jelöli. Ha az |ends_at| kisebb, mint a |starts_at|, akkor a |time_limit_window| a következő napon fejeződik be. A |last_updated_millis| érték a bejegyzés utolsó frissítésének UTC-időbélyege, amelyet a böngésző karakterláncként küld el, mivel az időbélyeg nem fejezhető ki egész számmal.
+
+          A |time_usage_limit| a napi képernyőhasználati kvótát határozza meg. Ennek elérésekor a böngésző zárolja a felhasználói munkamenetet. A hét minden napjához tartozik egy-egy tulajdonság, és csak akkor kell beállítani, ha tartozik aktív kvóta az adott naphoz. A |usage_quota_mins| azt az időmennyiséget jelenti, ameddig a felügyelt eszköz használható az adott napon, míg a |reset_at| az az időpont, amikor a rendszer megújítja a használati kvótát. A |reset_at| alapértelmezett értéke éjfél ({'hour': 0, 'minute': 0}). A |last_updated_millis| érték a bejegyzés utolsó frissítésének UTC-időbélyege, amelyet a böngésző karakterláncként küld el, mivel az időbélyeg nem fejezhető ki egész számmal.
+
+          Az |overrides| megadásával átmenetileg érvényteleníteni lehet egy vagy több korábbi szabályt.
+          * Ha sem a time_window_limit, sem a time_usage_limit nem aktív, akkor a |LOCK| parancs használható az eszköz zárolására.
+          * A |LOCK| parancs ideiglenesen zárolja a felhasználói munkamenetet, amíg el nem kezdődik a következő time_window_limit vagy time_usage_limit.
+          * Az |UNLOCK| parancs feloldja a time_window_limit vagy time_usage_limit által lezárt felhasználói munkamenetet.
+          A |created_time_millis| a felülírás létrehozásának UTC időbélyege, amelyet a böngésző karakterláncként küld el, mivel az időbélyeg nem fejezhető ki egész számmal. Annak meghatározására használható, hogy továbbra is érvényesíteni kell-e a felülírást. Ha a jelenleg aktív időkorlát-funkció (használati időre vagy időtartományra vonatkozó korlát) a felülírás létrehozása után kezdődött el, a rendszer nem végez műveletet. Akkor sem kerül alkalmazásra, ha a felülírást az aktív time_window_limit vagy a time_usage_window utolsó módosítása előtt hozták létre.
+
+          Több felülírást is el lehet küldeni, melyek közül a legújabb érvényes bejegyzést alkalmazza a rendszer.</translation>
 <translation id="2906874737073861391">AppPack bővítmények listája</translation>
 <translation id="2907992746861405243">Azt vezérli, hogy a <ph name="BULK_PRINTERS_POLICY" /> házirend mely nyomtatói állnak a felhasználók rendelkezésére.
 
@@ -1364,6 +1377,14 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4980635395568992380">Adattípus:</translation>
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
+<translation id="4990301296093321860">Lehetővé teszi a jelszóvédelmi figyelmeztetés aktiválásának irányítását. A jelszóvédelem figyelmezteti a felhasználókat, amikor potenciálisan gyanús webhelyeken szeretnék újra felhasználni védett jelszavaikat.
+
+      A „PasswordProtectionLoginURLs” és a „PasswordProtectionChangePasswordURL” házirendeket használhatja a védendő jelszavak beállítására.
+
+      Ha a házirend beállítása „PasswordProtectionWarningOff”, akkor nem jelenik meg jelszóvédelmi figyelmeztetés.
+      Ha a házirend beállítása „PasswordProtectionWarningOnPasswordReuse”, akkor jelenik meg jelszóvédelmi figyelmeztetés, amikor a felhasználó újra felhasználja védett jelszavát olyan webhelyen, amely nem szerepel az engedélyezőlistán.
+      Ha a házirend beállítása „PasswordProtectionWarningOnPhishingReuse”, akkor jelenik meg jelszóvédelmi figyelmeztetés, amikor a felhasználó adathalász webhelyen használja fel újra védett jelszavát.
+      Ha a házirend beállítására nem kerül sor, a jelszóvédelmi figyelmeztetés akkor aktiválódik, amikor a felhasználó adathalász webhelyeken használja fel újra védet jelszavát, de a felhasználó módosíthatja ezt a beállítást.</translation>
 <translation id="4995548127349206948">Engedélyezve van-e az NTLMv2 hitelesítés.</translation>
 <translation id="5047604665028708335">Hozzáférés engedélyezése a tartalomcsomagokon kívüli webhelyekhez</translation>
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
@@ -1739,6 +1760,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="6157537876488211233">Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája</translation>
 <translation id="6158324314836466367">Vállalati internetes áruház neve (megszűnt)</translation>
+<translation id="6164955668342404660">Megszűnt az M69 verzióban. Használja helyette az OverrideSecurityRestrictionsOnInsecureOrigin házirendet.
+
+      Ez a házirend megadja a biztonságos környezetként kezelendő eredetek (URL-ek) listáját. Célja, hogy a szervezetek tesztszervert tudjanak beállítani a belső webfejlesztési munkákhoz, így a fejlesztők tesztelhetik a biztonságos környezetet igénylő funkciókat anélkül, hogy TLS-t kellene használniuk a tesztszerveren.
+      Ha beállítja az URL-ek listáját a házirendben, ugyanazt a hatást éri el, mintha az „--unsafely-treat-insecure-origin-as-secure” parancssori jelzőt használná ugyanazon URL-ek vesszővel elválasztott listájánál. Ha be van állítva a házirend, felülírja a parancssori jelzőt.
+      További információ a biztonságos környezetekről: https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6181608880636987460">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek nem futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
@@ -1912,6 +1939,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
+<translation id="6832455357698286434">
+      Ez a házirend megadja a biztonságos környezetként kezelendő eredetek (URL-ek) vagy gazdagépnévminták (például „*.example.com”) listáját. Célja, hogy a szervezetek tesztszervert tudjanak beállítani a belső webfejlesztési munkákhoz, így a fejlesztők tesztelhetik a biztonságos környezetet igénylő funkciókat anélkül, hogy TLS-t kellene használniuk a tesztszerveren.
+      Ha beállítja az URL-ek listáját a házirendben, ugyanazt a hatást éri el, mintha az „--unsafely-treat-insecure-origin-as-secure” parancssori jelzőt használná ugyanazon URL-ek vesszővel elválasztott listájánál. Ha be van állítva a házirend, felülírja a parancssori jelzőt.
+      További információ a biztonságos környezetekről: https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
 <translation id="6838056959556423778">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatókiválasztási szabályait.
 
@@ -2252,6 +2284,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7617319494457709698">Ez a házirend adja meg, hogy mely bővítmények számára engedélyezett az <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> funkciójának használata távoli tanúsításhoz. Az API használatához fel kell vennie a bővítményeket erre a listára.
 
           Ha valamelyik bővítmény nincs a listán, vagy a lista nincs beállítva, akkor az API hívása hibakóddal leáll.</translation>
+<translation id="7620300057302654932">Biztonságos környezetként kezelendő eredetek vagy gazdagépnévminták.</translation>
 <translation id="7625444193696794922">Azt a kiadási csatornát határozza meg, amelyhez az eszközt hozzá kell kötni.</translation>
 <translation id="7632724434767231364">GSSAPI könyvtár neve</translation>
 <translation id="7635471475589566552">Beállítja az alkalmazás nyelv- és országkódját a következőben: <ph name="PRODUCT_NAME" />, és megakadályozza, hogy a felhasználók megváltoztassák a kódot. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> a megadott nyelv- és országkódot fogja használni. Ha a megadott nyelv- és országkód nem támogatott, az "en-US" lehetőséget használja helyette. Ha ez a beállítás ki van kapcsolva, vagy nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> vagy a felhasználó által meghatározott nyelv- és országkódot használja (ha konfigurálva van), vagy a tartalék "en-US" lehetőséget.</translation>

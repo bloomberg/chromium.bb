@@ -523,7 +523,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2482676533225429905">Wiadomości natywne</translation>
 <translation id="2483146640187052324">Przewiduj działania w sieci dla każdego połączenia sieciowego</translation>
 <translation id="2484208301968418871">Ta zasada steruje stosowaniem filtra adresów URL SafeSites.
-      Ten filtr używa interfejsu API usługi Google Safe Search do klasyfikowania adresów URL jako pornograficzne i pozostałe.
+      Ten filtr używa interfejsu API usługi Google Safe Search do klasyfikowania adresów URL jako pornograficznych i pozostałych.
 
       Gdy ta zasada nie jest skonfigurowana lub ma ustawienie „Nie filtruj witryn pod kątem treści dla dorosłych”, witryny nie będą filtrowane.
 
@@ -683,6 +683,19 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
 <translation id="2899002520262095963">Aplikacje na Androida mogą używać konfiguracji sieci i certyfikatów CA ustawianych przez tę zasadę, ale nie mają dostępu do niektórych opcji konfiguracji.</translation>
+<translation id="290002216614278247">Umożliwia blokowanie sesji użytkownika na podstawie godziny na kliencie lub dziennego limitu użytkowania.
+
+          |time_window_limit| określa przedział czasu, w którym sesja użytkownika ma być zablokowana. Możliwe jest określenie tylko jednej reguły dla każdego dnia tygodnia, więc tablica |entries| może mieć od 0 do 7 elementów. |starts_at| i |ends_at| to początek i koniec przedziału czasu – jeśli godzina |ends_at| jest wcześniejsza niż |starts_at|, przedział czasu |time_limit_window| kończy się następnego dnia. |last_updated_millis| to sygnatura czasowa UTC ostatniej modyfikacji tej pozycji – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą.
+
+          |time_usage_limit| określa dzienny limit użytkowania. Gdy użytkownik go przekroczy, jego sesja zostaje zablokowana. Każdemu dniu tygodnia odpowiada odrębna właściwość, którą należy ustawić tylko w przypadku, gdy danego dnia ma obowiązywać limit. |usage_quota_mins| to czas, przez który można używać urządzenia zarządzanego w danym dniu, a |reset_at| to godzina odnowienia limitu. Domyślną wartością |reset_at| jest północ ({'hour': 0, 'minute': 0}). |last_updated_millis| to sygnatura czasowa UTC ostatniej modyfikacji tej pozycji – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą.
+
+          |overrides| umożliwia tymczasowe unieważnienie jednej lub wielu wcześniej określonych reguł.
+          * Jeśli oba limity – time_window_limit i time_usage_limit – są nieaktywne, urządzenie można zablokować za pomocą parametru |LOCK|.
+          * |LOCK| tymczasowo blokuje sesję użytkownika do momentu rozpoczęcia najbliższego przedziału czasu określonego przez time_window_limit lub time_usage_limit.
+          * |UNLOCK| odblokowuje sesję użytkownika zablokowaną przez time_window_limit lub time_usage_limit.
+          |created_time_millis| to sygnatura czasowa UTC utworzenia pozycji |overrides| – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą. Jest używana do ustalenia, czy ta pozycja nadal obowiązuje. Jeśli aktywny obecnie limit (na podstawie czasu użytkowania lub przedziału czasu) rozpoczął się już po utworzeniu tej pozycji, nie będzie ona stosowana. Nie będzie też używana, jeśli została utworzona przed ostatnią zmianą aktywnego limitu time_window_limit lub time_usage_window.
+
+          Można wysłać wiele unieważnień – zastosowane zostanie najnowsze poprawne.</translation>
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
 <translation id="2907992746861405243">Steruje tym, które drukarki określone w zasadzie <ph name="BULK_PRINTERS_POLICY" /> są dostępne dla użytkowników.
 
@@ -1358,6 +1371,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4980635395568992380">Typ danych:</translation>
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
+<translation id="4990301296093321860">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasła. 
+Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją swojego chronionego hasła na potencjalnie niebezpiecznych stronach.
+
+      Zasady „PasswordProtectionLoginURLs” i „PasswordProtectionChangePasswordURL” umożliwiają wskazanie hasła, które ma być chronione.
+
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOff”, nie będą wyświetlane żadne ostrzeżenia dotyczące ochrony hasła.
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPasswordReuse”, ostrzeżenie dotyczące ochrony hasła wyświetli się, gdy użytkownik użyje swojego chronionego hasła na stronie, której nie ma na białej liście.
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPhishingReuse”, ostrzeżenie dotyczące ochrony hasła wyświetli się, gdy użytkownik użyje chronionego hasła na stronie wyłudzającej informacje.
+      Jeśli zasada nie jest skonfigurowana, ostrzeżenie dotyczące ochrony hasła wyświetli się, gdy użytkownik użyje chronionego hasła na stronie wyłudzającej informacje, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="4995548127349206948">Czy uwierzytelnianie NTLMv2 jest włączone.</translation>
 <translation id="5047604665028708335">Zezwalaj na dostęp do witryn spoza pakietów treści</translation>
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
@@ -1731,6 +1753,12 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
+<translation id="6164955668342404660">Wycofana w wersji M69. Zamiast niej użyj OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Ta zasada określa listę źródeł (adresów URL), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
+      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Pozwala utworzyć listę wzorców URL-i określających witryny, które nie mogą uruchamiać wtyczki <ph name="FLASH_PLUGIN_NAME" />.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
@@ -1893,7 +1921,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6762235610019366960">Pozwala na kontrolowanie wyświetlania treści promocyjnych lub informacyjnych na całej karcie w <ph name="PRODUCT_NAME" />.
 
-      Jeśli zasada nie jest skonfigurowana lub włączona (ustawienie prawda), <ph name="PRODUCT_NAME" /> może wyświetlać użytkownikom informacje o przeglądarce na całej karcie.
+      Jeśli zasada jest włączona (ustawienie prawda) lub nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> może wyświetlać użytkownikom informacje o przeglądarce na całej karcie.
 
       Jeśli zasada jest wyłączona (ustawienie fałsz), <ph name="PRODUCT_NAME" /> nie będzie wyświetlać użytkownikom informacji o przeglądarce na całej karcie.
 
@@ -1904,6 +1932,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
+<translation id="6832455357698286434">
+      Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta (np. „*.example.com”), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
+      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
 <translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
 
@@ -2237,6 +2270,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7617319494457709698">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
+<translation id="7620300057302654932">Źródła lub wzorce nazw hosta, które mają być traktowane jako bezpieczny kontekst.</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>

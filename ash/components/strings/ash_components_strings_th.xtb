@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">แสดงเมนู Chrome</translation>
 <translation id="2424073332829844142">เปิดและปิดใช้งาน Caps Lock</translation>
 <translation id="2441202986792279177">สลับไปมาระหว่างหน้าต่างอย่างรวดเร็ว</translation>
+<translation id="2454251766545114447">ซูมหน้าจอออก</translation>
 <translation id="2478303094958140141">เปิดหรือปิด ChromeVox (อธิบายและอ่านออกเสียง)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">เลื่อนหน้าเว็บลง</translation>
+<translation id="2574014812750545982">รีเซ็ตระดับการซูมในหน้าเว็บ</translation>
 <translation id="2596078834055697711">ถ่ายภาพหน้าจอของหน้าต่าง</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="TAB" /> หรือ <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาถัดไป</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> หรือ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">บันทึกหน้าเว็บทั้งหมดที่เปิดในหน้าต่างปัจจุบันเป็นบุ๊กมาร์กในโฟลเดอร์ใหม่</translation>
 <translation id="355103131818127604">เปิดลิงก์ในแท็บใหม่บนพื้นหลัง</translation>
+<translation id="3622741593887335780">ซูมเข้า (เมื่อเปิดใช้แว่นขยายหน้าจอบางส่วนหรือแว่นขยายทั้งหน้าจอ)</translation>
 <translation id="3649256019230929621">ย่อหน้าต่าง</translation>
 <translation id="3655154169297074232">แท็บและหน้าต่าง</translation>
 <translation id="3668361878347172356">ทำงานล่าสุดซ้ำ</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 จนถึง 8</translation>
 <translation id="3837047332182291558">เพิ่มแสงแป้นพิมพ์ (เฉพาะแป้นพิมพ์เรืองแสง)</translation>
 <translation id="3976863468609830880">คลิกไอคอนสุดท้ายบนชั้นวาง</translation>
+<translation id="3994783594793697310">รีเซ็ตระดับการซูมหน้าจอ</translation>
 <translation id="4026843240379844265">ย้ายหน้าต่างที่ใช้งานไปยังหน้าจอต่างๆ</translation>
 <translation id="4035482366624727273">เลือกทุกอย่างในหน้าเว็บ</translation>
 <translation id="4060703249685950734">เปิดแท็บหรือหน้าต่างที่คุณปิดล่าสุดขึ้นมาอีกครั้ง</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">ลดความสว่าง</translation>
 <translation id="6276708887952587684">ดูที่มาของหน้าเว็บ</translation>
 <translation id="6321940490215594447">เปิดหน้าประวัติการเข้าชม</translation>
+<translation id="6340769215862220182">ซูมหน้าจอเข้า</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">เลือกข้อความไปจนสุดบรรทัด</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> หรือ <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">คลิกไอคอน 1-8 บนชั้นวาง</translation>
 <translation id="6435207348963613811">ไฮไลต์รายการก่อนหน้านี้บนชั้นวาง</translation>
 <translation id="6445033640292336367">นำแท็บกลับไปยังตำแหน่งเดิม</translation>
+<translation id="6474744297082284761">ซูมออก (เมื่อเปิดใช้แว่นขยายหน้าจอบางส่วนหรือแว่นขยายทั้งหน้าจอ)</translation>
 <translation id="649811797655257835">เลือกไฟล์แล้วกด <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">เปิดหน้าต่างที่ไม่ได้ใช้งานนานที่สุด</translation>
 <translation id="666343722268997814">เปิดเมนูคลิกขวาสำหรับรายการที่ไฮไลต์</translation>

@@ -37,7 +37,7 @@
 <translation id="1873233029667955273">Google Chrome non è il browser predefinito</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
-<translation id="1915828456209461693">È disponibile un nuovo aggiornamento di Chrome che verrà applicato non appena riavvierai.</translation>
+<translation id="1915828456209461693">È disponibile un nuovo aggiornamento di Chrome che verrà installato al prossimo riavvio.</translation>
 <translation id="2007150628464581396">{0,plural, =1{Chrome verrà riavviato tra un minuto}other{Chrome verrà riavviato tra # minuti}}</translation>
 <translation id="2063848847527508675">Per applicare l'aggiornamento è necessario riavviare Chrome OS.</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
@@ -59,6 +59,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2348335408836342058">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono</translation>
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2429317896000329049">Impossibile sincronizzare i dati in Google Chrome perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
+<translation id="2436117022029368436">Comunica con Google per migliorare Chrome e la navigazione</translation>
 <translation id="2467438592969358367">Google Chrome vuole esportare le password. Per consentire l'esportazione, digita la tua password Windows.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2534507159460261402">Google Pay (copiata in Chrome)</translation>

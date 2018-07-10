@@ -527,7 +527,7 @@
 
       Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'Sites niet filteren op content voor volwassenen', worden de sites niet gefilterd.
 
-      Wanneer dit beleid is ingesteld op 'Sites op hoofdniveau filteren op content voor volwassenen', worden de sites gefilterd die zijn geclassificeerd als pornografisch.</translation>
+      Wanneer dit beleid is ingesteld op 'Sites op hoofdniveau filteren op inhoud voor volwassenen', worden de sites gefilterd die zijn geclassificeerd als pornografisch.</translation>
 <translation id="2485721741875148980">Als dit beleid is ingesteld op 'true' (waar), moet de gebruiker inloggen op <ph name="PRODUCT_NAME" /> met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false' (onwaar). Houd er rekening mee dat bestaande, niet-ingelogde profielen worden vergrendeld en niet toegankelijk zijn na inschakeling van dit beleid. Raadpleeg het Helpcentrum-artikel voor meer informatie.
 
       Als dit beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen op <ph name="PRODUCT_NAME" />.</translation>
@@ -693,6 +693,19 @@
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
 <translation id="2893546967669465276">Systeemlogboeken naar de beheerserver verzenden</translation>
 <translation id="2899002520262095963">Android-apps kunnen de netwerkconfiguraties en CA-certificaten gebruiken die via dit beleid zijn ingesteld, maar hebben geen toegang tot bepaalde configuratieopties.</translation>
+<translation id="290002216614278247">Hiermee kun je de gebruikerssessie vergrendelen op basis van de tijd op de client of de gebruikslimiet van de dag.
+
+          Met |time_window_limit| kun je een dagelijks tijdvenster opgeven waarin de gebruikerssessie moet worden vergrendeld. Omdat er slechts één regel voor elke dag van de week wordt ondersteund, mag de reeks |entries| qua grootte variëren van 0-7. |starts_at| en |ends_at| geven het begin en het einde van het tijdvenster aan. Als |ends_at| kleiner is dan |starts_at|, betekent dit dat |time_limit_window| eindigt op de volgende dag. |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden, omdat de tijdstempel niet in een geheel getal past.
+
+          Met |time_usage_limit| kun je een dagelijkse schermlimiet opgeven. Wanneer de gebruiker deze limiet bereikt, wordt de gebruikerssessie vergrendeld. Er is een eigenschap voor elke dag van de week en deze mag alleen worden ingesteld als er een actieve limiet voor die dag bestaat. |usage_quota_mins| is de hoeveelheid tijd waarin het beheerde apparaat op een dag kan worden gebruikt en |reset_at| is het tijdstip waarop de gebruikslimiet wordt vernieuwd. De standaardwaarde voor |reset_at| is middernacht ({'hour': 0, 'minute': 0}). |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past.
+
+          Met |overrides| kun je tijdelijk een of meer van de vorige regels ongeldig maken.
+          * Als time_window_limit en time_usage_limit geen van beide actief zijn, kun je |LOCK| gebruiken om het apparaat te vergrendelen.
+          * Met |LOCK| wordt een gebruikerssessie tijdelijk vergrendeld totdat de volgende time_window_limit of time_usage_limit begint.
+          * Met |UNLOCK| kun je een gebruikerssessie ontgrendelen die is vergrendeld door time_window_limit of time_usage_limit.
+          |created_time_millis| is de UTC-tijdstempel voor het maken van de overschrijving en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past. Deze variabele wordt gebruikt om te bepalen of deze overschrijving nog steeds moet worden toegepast. Als de momenteel actieve tijdslimietfunctie (time_usage_limit of time_window_limit) is gestart nadat de overschrijving is gemaakt, onderneemt deze geen actie. Daarnaast is het zo dat de overschrijving niet wordt toegepast als deze is gemaakt vóór de laatste wijziging van de actieve time_window_limit of time_usage_window.
+
+          Er kunnen meerdere overschrijvingen worden verzonden. De nieuwste geldige invoer is de invoer die wordt toegepast.</translation>
 <translation id="2906874737073861391">Lijst met app-pakketextensies</translation>
 <translation id="2907992746861405243">Hiermee wordt beheerd welke printers uit <ph name="BULK_PRINTERS_POLICY" /> beschikbaar zijn voor gebruikers.
 
@@ -1397,6 +1410,14 @@
 <translation id="4980635395568992380">Gegevenstype:</translation>
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
+<translation id="4990301296093321860">Hiermee kun je de activering van een waarschuwing voor wachtwoordbeveiliging beheren. Wachtwoordbeveiliging waarschuwt gebruikers wanneer ze hun beveiligde wachtwoord hergebruiken op potentieel verdachte sites.
+
+      Je kunt het beleid 'PasswordProtectionLoginURLs' en 'PasswordProtectionChangePasswordURL' gebruiken om te configureren welk wachtwoord moet worden beveiligd.
+
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOff', wordt er geen waarschuwing voor wachtwoordbeveiliging weergegeven.
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOnPasswordReuse', wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het beveiligde wachtwoord hergebruikt op een site die niet op de witte lijst staat.
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOnPhishingReuse', wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het beveiligde wachtwoord hergebruikt op een phishingsite.
+      Als dit beleid niet is ingesteld, wordt er een waarschuwing voor wachtwoordbeveiliging geactiveerd wanneer de gebruiker het beveiligde wachtwoord hergebruikt op een phishingsite, maar kan de gebruiker deze instelling aanpassen.</translation>
 <translation id="4995548127349206948">Of NTLMv2-verificatie is ingeschakeld.</translation>
 <translation id="5047604665028708335">Toegang toestaan tot sites die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="5052081091120171147">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de browsergeschiedenis wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
@@ -1803,6 +1824,12 @@
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>
+<translation id="6164955668342404660">Beëindigd in M69. Gebruik in plaats daarvan OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Dit beleid specificeert een lijst met beginpunten (URL's) die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een staging-server kunnen instellen voor interne webontwikkeling, zodat hun ontwikkelaars functies kunnen testen die een beveiligde context vereisen, zonder dat ze TLS op de staging-server hoeven te implementeren.
+      Wanneer er een lijst met URL's wordt ingesteld in dit beleid, heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld op een door komma's gescheiden lijst met dezelfde URL's. Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
+      Ga naar https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
+      </translation>
 <translation id="6181608880636987460">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in niet mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
@@ -1984,6 +2011,11 @@
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
+<translation id="6832455357698286434">
+      Dit beleid specificeert een lijst met beginpunten (URL's) of hostnaampatronen (zoals '*.example.com') die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een staging-server kunnen instellen voor interne webontwikkeling, zodat hun ontwikkelaars functies kunnen testen die een beveiligde context vereisen, zonder dat ze TLS op de staging-server hoeven te implementeren.
+      Wanneer er een lijst met URL's wordt ingesteld in dit beleid, heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld op een door komma's gescheiden lijst met dezelfde URL's. Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
+      Ga naar https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
+      </translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
 <translation id="6838056959556423778">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
 
@@ -2332,6 +2364,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7617319494457709698">Dit beleid geeft aan welke extensies de <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-functie <ph name="CHALLENGE_USER_KEY_FUNCTION" /> mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
 
           Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
+<translation id="7620300057302654932">Beginpunten of hostnaampatronen die moeten worden behandeld als beveiligde context.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.

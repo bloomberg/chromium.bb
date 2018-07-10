@@ -706,6 +706,19 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>
 <translation id="2893546967669465276">Enviar los registros del sistema al servidor de administración</translation>
 <translation id="2899002520262095963">Las aplicaciones para Android pueden utilizar los ajustes de red y los certificados de CA configurados mediante esta política, pero no tienen acceso a algunas opciones de configuración.</translation>
+<translation id="290002216614278247">Te permite bloquear la sesión del usuario en función del tiempo del cliente o la cuota de uso diaria.
+
+          El parámetro |time_window_limit| especifica un periodo diario durante el que se debería bloquear la sesión del usuario. Solo se admite una regla por cada día de la semana, por lo que la cantidad de |entries| puede variar entre 0 y 7. Los parámetros |starts_at| y |ends_at| representan el principio y el final del límite de tiempo. Si |ends_at| es inferior a |starts_at|, significa que |time_limit_window| finaliza al día siguiente. |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
+
+          |time_usage_limit| especifica una cuota de pantalla diaria y, cuando el usuario la alcanza, se bloquea su sesión. Hay una propiedad para cada día de la semana y se debería definir únicamente si hay una cuota activa ese día. |usage_quota_mins| es la cantidad de tiempo que el dispositivo administrado se puede usar durante un día y |reset_at| es la hora a la que se renueva la cuota de uso. El valor predeterminado de |reset_at| es medianoche ({'hour': 0, 'minute': 0}). |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
+
+          El parámetro |overrides| se proporciona para invalidar temporalmente una o más de las reglas anteriores.
+          * Si no están activos time_window_limit ni time_usage_limit, se puede usar |LOCK| para bloquear el dispositivo.
+          * |LOCK| bloquea temporalmente la sesión de un usuario hasta la próxima vez que se inician time_window_limit o time_usage_limit.
+          * |UNLOCK| desbloquea la sesión de un usuario durante el periodo de time_window_limit o time_usage_limit.
+          |created_time_millis| es la marca de tiempo UTC de la creación de la anulación y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero. Se usa para determinar si la anulación se debería seguir aplicando. Si la función de límite de tiempo activa (el límite de tiempo de uso o el periodo límite) se ha iniciado después de crear la anulación, no se debería aplicar. De la misma forma, si la anulación se ha creado antes de que se aplicara el último cambio de los parámetros time_window_limit o time_usage_window activos, no se debería aplicar.
+
+          Es posible que se envíen varias anulaciones y se aplicará la entrada válida más reciente.</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
 <translation id="2907992746861405243">Controla a qué impresoras de la política <ph name="BULK_PRINTERS_POLICY" /> tienen acceso los usuarios.
 
@@ -1391,7 +1404,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parámetro que controla el emplazamiento de los términos de búsqueda para el proveedor de búsquedas predeterminado</translation>
-<translation id="4899708173828500852">Habilitar la Navegación Segura</translation>
+<translation id="4899708173828500852">Habilitar Navegación Segura</translation>
 <translation id="4899802251198446659">Permite controlar si los vídeos se pueden reproducir automáticamente (sin el consentimiento de los usuarios) con contenido de audio en <ph name="PRODUCT_NAME" />.
 
       Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia automáticamente.
@@ -1416,6 +1429,14 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4980635395568992380">Tipo de datos:</translation>
 <translation id="4983201894483989687">Permitir la ejecución de complementos obsoletos</translation>
 <translation id="4988291787868618635">Acción que se realiza al alcanzar el retraso de inactividad</translation>
+<translation id="4990301296093321860">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a utilizar la contraseña protegida en los sitios web potencialmente sospechosos.
+
+      Las políticas "PasswordProtectionLoginURLs" y "PasswordProtectionChangePasswordURL" sirven para configurar las contraseñas que se protegen.
+
+      Si se le asigna el valor "PasswordProtectionWarningOff" a esta política, no se mostrará ninguna advertencia de protección de contraseña.
+      Si se le asigna el valor "PasswordProtectionWarningOnPasswordReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en cualquier sitio web que no esté incluido en la lista blanca.
+      Si se le asigna el valor "PasswordProtectionWarningOnPhishingReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en los sitios web de phishing.
+      Si no se le asigna ningún valor a esta política, se activará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en los sitios web de phishing, pero el usuario podrá cambiar esta opción.</translation>
 <translation id="4995548127349206948">Si la autenticación NTLMv2 está habilitada.</translation>
 <translation id="5047604665028708335">Permitir acceso a sitios no incluidos en paquetes de contenido</translation>
 <translation id="5052081091120171147">Si se habilita, esta política fuerza la importación del historial de navegación desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
@@ -1822,6 +1843,12 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6155936611791017817">Establecer el estado predeterminado del cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="6158324314836466367">Nombre de la tienda online de la empresa (política obsoleta)</translation>
+<translation id="6164955668342404660">Obsoleta en M69. Usa OverrideSecurityRestrictionsOnInsecureOrigin en su lugar.
+
+      La política define una lista de orígenes (URLs) que se deben considerar contexto seguro. La intención es permitir que las organizaciones configuren un servidor provisional para desarrollar web internas y conseguir que los desarrolladores puedan probar las funciones que necesiten en contextos seguros sin tener que implementar TLS en el servidor provisional.
+      Definir la lista de URLs de esta política tiene el mismo resultado que asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-as-secure" a una lista de URL separadas por comas. Al habilitar la política, se anula el indicador de línea de comandos.
+      Para obtener más información sobre los contextos seguros, consulta la página https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Permite configurar una lista de patrones de URL que especifican los sitios web que no pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se configura, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultPluginsSetting" (si se ha configurado) o las preferencias personales del usuario (en caso contrario).</translation>
@@ -1864,7 +1891,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="6367755442345892511">Posibilidad de configuración del canal de versiones por parte del usuario</translation>
-<translation id="6368011194414932347">Configurar la URL de la página de inicio</translation>
+<translation id="6368011194414932347">Configurar la URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6378076389057087301">Especificar si la actividad de audio afecta a la administración de energía</translation>
@@ -2004,6 +2031,11 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
+<translation id="6832455357698286434">
+      La política define una lista de orígenes (URLs) o de patrones de nombre de host (como "*.example.com") que se deben considerar contextos seguros. La intención es permitir que las organizaciones configuren un servidor provisional para desarrollar web internas y conseguir que los desarrolladores puedan probar las funciones que necesiten en contextos seguros sin tener que implementar TLS en el servidor provisional.
+      Definir la lista de URLs de esta política tiene el mismo resultado que asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-as-secure" a una lista de URL separadas por comas. Al habilitar la política, se anula el indicador de línea de comandos.
+      Para obtener más información sobre los contextos seguros, consulta la página https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Mostrar un mensaje periódico al usuario indicando que se recomienda reiniciar el navegador</translation>
 <translation id="6838056959556423778">Anula las reglas para seleccionar la impresora predeterminada de <ph name="PRODUCT_NAME" />.
 
@@ -2361,6 +2393,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7617319494457709698">Esta política especifica las extensiones que pueden usar la función <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para la confirmación remota. Las extensiones se deben añadir a esta lista para usar la API.
 
           Si la lista no se ha configurado o si una extensión no está incluida en ella, aparecerá un código de error en la llamada a la API.</translation>
+<translation id="7620300057302654932">Orígenes o patrones de nombre de host que se deben considerar contextos seguros.</translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" /> e impide que los usuarios la modifiquen.

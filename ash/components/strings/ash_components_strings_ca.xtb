@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Mostra el menú de Chrome</translation>
 <translation id="2424073332829844142">Activa i desactiva el bloqueig de majúscules</translation>
 <translation id="2441202986792279177">Canvia de finestra ràpidament</translation>
+<translation id="2454251766545114447">Redueix el contingut de la pantalla</translation>
 <translation id="2478303094958140141">Activa o desactiva ChromeVox (comentaris de veu)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Desplaça la pàgina web cap avall</translation>
+<translation id="2574014812750545982">Restableix el nivell de zoom de la pàgina</translation>
 <translation id="2596078834055697711">Fa una captura de pantalla de la finestra</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Canvia al mètode d'introducció de text de l'idioma següent</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Desa totes les pàgines obertes de la finestra actual a les adreces d'interès en una carpeta nova</translation>
 <translation id="355103131818127604">Obre l'enllaç en una pestanya nova en segon pla</translation>
+<translation id="3622741593887335780">Amplia (quan la lupa de pantalla completa O la lupa acoblada estiguin activades)</translation>
 <translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="3655154169297074232">Pestanyes i finestres</translation>
 <translation id="3668361878347172356">Refés la darrera acció</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> de l'1 al 8</translation>
 <translation id="3837047332182291558">Augmenta la brillantor del teclat (només als teclats retroil·luminats)</translation>
 <translation id="3976863468609830880">Fes clic a la darrera icona del prestatge</translation>
+<translation id="3994783594793697310">Restableix el nivell de zoom de la pantalla</translation>
 <translation id="4026843240379844265">Mou la finestra activa entre pantalles</translation>
 <translation id="4035482366624727273">Selecciona tot el contingut de la pàgina</translation>
 <translation id="4060703249685950734">Torna a obrir la darrera pestanya o finestra que s'ha tancat</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Disminueix la brillantor</translation>
 <translation id="6276708887952587684">Mostra el codi font de la pàgina</translation>
 <translation id="6321940490215594447">Obre la pàgina Historial</translation>
+<translation id="6340769215862220182">Amplia el contingut de la pantalla</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Selecciona text fins al final de la línia</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> o <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Fes clic a les icones de l'1 al 8 del prestatge</translation>
 <translation id="6435207348963613811">Destaca l'element anterior del prestatge</translation>
 <translation id="6445033640292336367">Torna a col·locar la pestanya a la posició original</translation>
+<translation id="6474744297082284761">Redueix (quan la lupa de pantalla completa O la lupa acoblada estiguin activades)</translation>
 <translation id="649811797655257835">Selecciona el fitxer i prem <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Obre la finestra que fa més temps que no s'utilitza</translation>
 <translation id="666343722268997814">Obre el menú contextual de l'element destacat</translation>

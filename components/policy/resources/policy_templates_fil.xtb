@@ -704,6 +704,19 @@
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
 <translation id="2893546967669465276">Magpadala ng mga log ng system sa server sa pamamahala</translation>
 <translation id="2899002520262095963">Maaaring gamitin ng mga Android app ang mga configuration ng network at mga CA certificate na itinakda sa pamamagitan ng patakarang ito, ngunit walang access ang mga ito sa ilang opsyon sa configuration.</translation>
+<translation id="290002216614278247">Nagbibigay-daan sa iyong i-lock ang session ng user batay sa oras ng client o quota sa paggamit sa araw na iyon.
+
+          Tumutukoy ang |time_window_limit| ng pang-araw-araw na window kung kailan dapat i-lock ang session ng user. Isang panuntunan lang ang sinusuportahan namin para sa bawat araw ng linggo, kaya naman maaaring mag-iba-iba ang laki ng array ng |entries| mula 0-7. Ang |starts_at| at |ends_at| ang pagsisimula at pagtatapos ng limitasyon sa window, kapag mas maliit ang |ends_at| kaysa sa |starts_at|, nangangahulugan itong matatapos ang |time_limit_window| sa susunod na araw. Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang string dahil hindi magkakasya ang timestamp sa isang integer.
+
+          Tumutukoy ang |time_usage_limit| ng pang-araw-araw na quota sa screen, kaya kapag naabot ito ng user, mala-lock ang session ng user. May property para sa bawat araw ng linggo, at dapat lang itong itakda kung mayroong aktibong quota para sa araw na iyon. Ang |usage_quota_mins| ay ang tagal kung kailan maaaring gamitin ang pinapamahalaang device sa isang araw at ang |reset_at| ay ang oras kung kailan nare-renew ang quota sa paggamit. Ang default na value para sa |reset_at| ay hatinggabi ({'hour': 0, 'minute': 0}). Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang string dahil hindi magkakasya ang timestamp sa isang integer.
+
+          Ibinibigay ang |overrides| para pansamantalang ma-invalidate ang isa o higit pa sa mga nakaraang panuntunan.
+          * Kung hindi aktibo ang time_window_limit o time_usage_limit maaaring gamitin ang |LOCK| para i-lock ang device.
+          * Pansamantalang naglo-lock ng session ng user ang |LOCK| hanggang sa magsimula ang susunod na time_window_limit o time_usage_limit.
+          * Ang |UNLOCK| ay nag-a-unlock ng session ng user na na-lock ng time_window_limit o time_usage_limit.
+          Ang |created_time_millis| ay ang UTC timestamp para sa paggawa ng override, ipinapadala ito bilang String dahil hindi magkakasya ang timestamp sa isang integer. Ginagamit ito para tukuyin kung dapat pa ring ilapat ang override na ito. Kung nagsimula ang kasalukuyang aktibong feature na limitasyon sa oras (limitasyon sa oras ng paggamit o limitasyon sa oras sa window) pagkatapos gawin ang override, hindi dapat ito magsagawa ng pagkilos. Gayundin, kung nagawa ang override bago ang huling pagbabago ng aktibong time_window_limit o time_usage_window hindi dapat ito ilapat.
+
+          Maaaring magpadala ng maraming override, ang pinakabagong valid na entry ang siyang ilalapat.</translation>
 <translation id="2906874737073861391">Listahan ng mga extension ng AppPack</translation>
 <translation id="2907992746861405243">Kumokontrol sa kung aling mga printer mula sa <ph name="BULK_PRINTERS_POLICY" /> ang available sa mga user.
 
@@ -1406,6 +1419,14 @@
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
+<translation id="4990301296093321860">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala ng proteksyon sa password. Inaalertuhan ng proteksyon sa password ang mga user kapag ginamit nilang muli ang kanilang pinoprotektahang password sa mga posibleng kahina-hinalang site.
+
+      Magagamit mo ang mga patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure kung aling password ang poprotektahan.
+
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala ng proteksyon sa password.
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang hindi naka-whitelist na site.
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang phishing site.
+      Kung hindi nakatakda ang patakarang ito, mati-trigger ang babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
@@ -1809,6 +1830,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6155936611791017817">Itakda ang default na katayuan ng malaking cursor sa screen ng pag-login</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="6158324314836466367">Pangalan ng web store na enterprise (hindi na ginagamit)</translation>
+<translation id="6164955668342404660">Hindi na magagamit sa M69. Gamitin na lang ang OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Tumutukoy ang patakaran ng listahan ng mga pinagmulan (mga URL) na ituturing na secure na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng staging server para sa internal na pag-develop sa web, nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging server.
+      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang listahan ng mga parehong URL na pinaghihiwa-hiwalay ng kuwit. Kung nakatakda ang patakaran, io-override nito ang command-line flag.
+      Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Nagbibigay-daan sa iyo na magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapahintulutang magpatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" />.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.</translation>
@@ -1990,6 +2017,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
+<translation id="6832455357698286434">
+      Tumutukoy ang patakaran ng listahan ng mga pinagmulan (mga URL) o mga pattern ng hostname na ituturing na mga secure na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng staging server para sa internal na pag-develop sa web, nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging server.
+      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang listahan ng mga parehong URL na pinaghihiwa-hiwalay ng kuwit. Kung nakatakda ang patakaran, io-override nito ang command-line flag.
+      Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Magpakita sa user ng umuulit na prompt na nagsasaad na inirerekomenda ang muling paglulunsad</translation>
 <translation id="6838056959556423778">Ino-override ang mga default na panuntunan sa pagpili ng printer ng <ph name="PRODUCT_NAME" />.
 
@@ -2348,6 +2380,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7617319494457709698">Tinutukoy ng patakarang ito ang mga pinapahintulutang extension upang magamit ang <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> function <ph name="CHALLENGE_USER_KEY_FUNCTION" /> para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
 
           Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, papalya ang call sa API na may code ng error.</translation>
+<translation id="7620300057302654932">Ituturing na secure na konteksto ang mga pinagmulan o pattern ng hostname.</translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="7632724434767231364">Pangalan ng GSSAPI library</translation>
 <translation id="7635471475589566552">Kino-configure ang lokal ng application sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang lokal.

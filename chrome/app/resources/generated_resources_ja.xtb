@@ -107,6 +107,7 @@
 <translation id="1151917987301063366"><ph name="HOST" /> によるセンサーへのアクセスを常に許可する</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1156488781945104845">現在の時刻</translation>
+<translation id="1157102636231978136">閲覧データとアクティビティ（Google アカウントに同期）</translation>
 <translation id="1161575384898972166">クライアント証明書をエクスポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="1163931534039071049">フレームのソースを表示(&amp;V)</translation>
 <translation id="1164674268730883318">Smart Lock for <ph name="DEVICE_TYPE" /> を無効にしますか？</translation>
@@ -388,9 +389,6 @@
 <translation id="1567993339577891801">JavaScript コンソール</translation>
 <translation id="1568067597247500137">サイトをミュート</translation>
 <translation id="1568323446248056064">ディスプレイのデバイス設定を開く</translation>
-<translation id="1570562010786095074">ウェブサイト、Android アプリなどの開発に役立つツールをご利用ください。詳細
-
-Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデータがダウンロードされます。</translation>
 <translation id="1572266655485775982">Wi-Fi の有効化</translation>
 <translation id="1572876035008611720">メールアドレスを入力してください</translation>
 <translation id="1576594961618857597">デフォルトの白のアバター</translation>
@@ -608,6 +606,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="1877520246462554164">認証トークンを取得できませんでした。いったんログアウトして再度ログインし、もう一度お試しください。</translation>
 <translation id="1878302395768190018">この設定は Chrome の [設定] ページでいつでもカスタマイズできます</translation>
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
+<translation id="1883903952484604915">マイファイル</translation>
 <translation id="1886996562706621347">サイトからのプロトコルのデフォルト ハンドラとしての登録要求を許可する（推奨）</translation>
 <translation id="1887442540531652736">ログインエラー</translation>
 <translation id="1887850431809612466">ハードウェア リビジョン</translation>
@@ -679,6 +678,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="1997616988432401742">ユーザーの証明書</translation>
 <translation id="1999115740519098545">起動時</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
+<translation id="2004663115385769400">「$1」で開くことができません</translation>
 <translation id="200544492091181894">これは後から [設定] で変更することもできます</translation>
 <translation id="2006638907958895361"><ph name="APP" /> でリンクを開く</translation>
 <translation id="2007404777272201486">問題の報告...</translation>
@@ -725,6 +725,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2084108471225856927">端末の設定</translation>
 <translation id="2085470240340828803">「<ph name="FILENAME" />」という名前のファイルは既に存在します。どのように処理しますか？</translation>
 <translation id="2085483813371386023">Better Together のオプションを確認するには [<ph name="LINK_BEGIN" />設定<ph name="LINK_END" />] にアクセスしてください</translation>
+<translation id="208586643495776849">もう一度お試しください</translation>
 <translation id="2087822576218954668">印刷: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Google Chrome で安全にブラウジング</translation>
 <translation id="2089795179672254991">クリップボードにコピーされているテキストや画像にサイトがアクセスする際に確認する（推奨）</translation>
@@ -824,6 +825,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2230062665678605299">フォルダ「<ph name="FOLDER_NAME" />」を作成することができません。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">クリックして今日の Doodle を表示</translation>
 <translation id="2231238007119540260">サーバー証明書を削除すると、そのサーバーの通常のセキュリティ チェックを復活させることになり、サーバーは正当な証明書を使用することが必要となります。</translation>
+<translation id="2232379019872353004">一部のシステム情報とページのコンテンツを Google に送信する</translation>
 <translation id="2232876851878324699">ファイルに含まれる 1 件の証明書をインポートできませんでした:</translation>
 <translation id="2233502537820838181">詳細情報(&amp;M)</translation>
 <translation id="2234876718134438132">同期サービスと Google サービス</translation>
@@ -832,7 +834,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2241053333139545397">多数のウェブサイト上にある自分のデータの読み取りと変更</translation>
 <translation id="2242687258748107519">ファイル情報</translation>
 <translation id="2243194103992005307">アプリを削除するには、まず [設定] &gt; [アプリ] または [アプリケーション管理] に移動して、アンインストールするアプリをタップします（必要に応じて、左右にスワイプしてアプリを見つけます）。次に、[アンインストール] または [無効にする] をタップします。</translation>
-<translation id="2245240762616536227">閲覧履歴を基に検索、広告、その他の Google サービスをカスタマイズする方法を設定します</translation>
 <translation id="2249605167705922988">例 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">システム ビューアで開く</translation>
 <translation id="225163402930830576">ネットワークを更新</translation>
@@ -947,8 +948,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2436186046335138073">すべての <ph name="PROTOCOL" /> リンクを <ph name="HANDLER_HOSTNAME" /> で開きますか？</translation>
 <translation id="2436707352762155834">最小</translation>
 <translation id="2437139306601019091">データ使用量の測定が終了しました</translation>
-<translation id="2440300961915670171"><ph name="REASON" />
-このサイトはブロック不要です。</translation>
 <translation id="2440604414813129000">ソースを表示(&amp;O)</translation>
 <translation id="2445081178310039857">拡張機能のルート ディレクトリを指定してください。</translation>
 <translation id="2445484935443597917">新しいプロフィールを作成</translation>
@@ -1158,6 +1157,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2731392572903530958">閉じたウインドウを開く(&amp;E)</translation>
 <translation id="2731700343119398978">お待ちください...</translation>
 <translation id="2731710757838467317">監視対象ユーザーを作成しています。この処理には数分かかる場合があります。</translation>
+<translation id="2734760316755174687"><ph name="SITE_GROUP_NAME" /> のサイトもリセットされます。</translation>
 <translation id="2735438478659026460">マウスカーソルの停止時に自動的にクリックする</translation>
 <translation id="2735712963799620190">スケジュール</translation>
 <translation id="2737363922397526254">折りたたむ...</translation>
@@ -1192,6 +1192,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="2784407158394623927">モバイル データ サービスを有効にしています</translation>
 <translation id="2785873697295365461">ファイル記述子</translation>
 <translation id="2787047795752739979">オリジナルを上書き</translation>
+<translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2789486458103222910">OK</translation>
 <translation id="2791952154587244007">エラーが発生しました。キオスク アプリケーションをこのデバイスで自動的に起動することはできません。</translation>
@@ -1245,6 +1246,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> を追加...</translation>
 <translation id="2874343608108773609">お使いのどの端末でも同じパスワードを使用するには、Chrome にログインします。</translation>
 <translation id="2875698561019555027">（Chrome エラーページ）</translation>
+<translation id="2876441201733326392">USB セキュリティ キーを使用する</translation>
 <translation id="288042212351694283">U2F（Universal 2nd Factor）デバイスにアクセスできませんでした。</translation>
 <translation id="2881966438216424900">最終アクセス日:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> の再起動とリセットを行います</translation>
@@ -1354,6 +1356,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="3031601332414921114">印刷を再開</translation>
 <translation id="303198083543495566">位置情報</translation>
 <translation id="3036546437875325427">Flash を有効にする</translation>
+<translation id="3037754279345160234">ドメインの参加設定を解析できません。管理者にお問い合わせください。</translation>
 <translation id="3038612606416062604">プリンタを手動で追加</translation>
 <translation id="3038675903128704560">すべてのサイトに対し、プラグインを使ったパソコンへのアクセスを禁止する</translation>
 <translation id="3039828483675273919">$1 件の項目を移動しています...</translation>
@@ -1488,6 +1491,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="3271648667212143903"><ph name="ORIGIN" /> が接続を要求しています</translation>
 <translation id="3274763671541996799">全画面表示になりました。</translation>
 <translation id="3275778913554317645">ウィンドウとして開く</translation>
+<translation id="3279230909244266691">この処理には数分かかることがあります。仮想マシンを起動します。</translation>
 <translation id="3279741024917655738">動画の全画面表示:</translation>
 <translation id="3280237271814976245">名前を付けて保存(&amp;A)...</translation>
 <translation id="3280243678470289153">Chrome に留まる</translation>
@@ -1762,6 +1766,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="3688526734140524629">チャンネルを変更</translation>
 <translation id="3688578402379768763">最新</translation>
 <translation id="3691214267321877444">Google Pay のお支払い方法と住所。</translation>
+<translation id="3691231116639905343">キーボード アプリ</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> から、画面の共有許可を求められています</translation>
 <translation id="3693415264595406141">パスワード:</translation>
 <translation id="3694027410380121301">前のタブを選択</translation>
@@ -1965,6 +1970,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> を有効にする</translation>
 <translation id="3981760180856053153">入力された保存形式が無効です。</translation>
 <translation id="3983586614702900908">不明なベンダーのデバイス</translation>
+<translation id="3984159763196946143">デモモードを開始できませんでした</translation>
 <translation id="3985261842049607969">Google ドライブにバックアップします。これにより、いつでも簡単にデータを復元したり端末を切り替えたりできます。バックアップ対象には、アプリのデータが含まれます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">データの使用量が削減されました</translation>
 <translation id="3987938432087324095">聞き取れませんでした。</translation>
@@ -1985,6 +1991,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="4022426551683927403">辞書に追加(&amp;A)</translation>
 <translation id="4023146161712577481">デバイスの設定を確認しています。</translation>
 <translation id="4027804175521224372">（詳細についてはこちら —<ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" />）</translation>
+<translation id="4027951648498485763">Chrome を終了するまで、Flash の設定は保持されます。</translation>
 <translation id="4031179711345676612">マイクを使用できます</translation>
 <translation id="4031527940632463547">センサーがブロックされました</translation>
 <translation id="4031910098617850788">F5</translation>
@@ -2173,7 +2180,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
 <translation id="4365673000813822030">同期は停止されました。</translation>
-<translation id="4370373819607756384">この設定は [<ph name="BEGIN_LINK" />言語<ph name="END_LINK" />] で管理できます</translation>
 <translation id="4370975561335139969">入力したメールアドレスとパスワードが一致しません</translation>
 <translation id="437184764829821926">フォントの詳細設定</translation>
 <translation id="4372884569765913867">1×1</translation>
@@ -2307,6 +2313,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="4598776695426288251">複数の端末から Wi-Fi に接続できます</translation>
 <translation id="4602466770786743961"><ph name="HOST" /> によるカメラとマイクへのアクセスを常に許可する</translation>
 <translation id="4608500690299898628">検索(&amp;F)...</translation>
+<translation id="4608520674724523647">登録が完了したことを示す画像</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> でエラーが発生しました</translation>
 <translation id="4610637590575890427">もしかして: <ph name="SITE" /></translation>
 <translation id="4611114513649582138">データ接続が可能です</translation>
@@ -2430,7 +2437,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="4813136279048157860">自分の画像</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
-<translation id="481772197699992679">ロック解除パスワード</translation>
 <translation id="4820334425169212497">いいえ、表示されていません</translation>
 <translation id="4821935166599369261">プロファイル記録の開始(&amp;P)</translation>
 <translation id="4823484602432206655">ユーザー設定とデバイス設定の読み取りと変更</translation>
@@ -2511,6 +2517,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="4907824805858067479">保存したカードは管理者によって無効になっています</translation>
 <translation id="4908811072292128752">新しいタブを開いて 2 つのサイトを同時に閲覧できます</translation>
 <translation id="4909038193460299775">このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこの端末から消去されます。ただし、データは Google アカウントに保存され、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
+<translation id="4909359680501173791">登録が完了しました</translation>
 <translation id="4912643508233590958">アイドル状態からの復帰</translation>
 <translation id="491691592645955587">安全なブラウザをぜひご利用ください</translation>
 <translation id="4917385247580444890">強い</translation>
@@ -2686,7 +2693,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="5186650237607254032">スマートフォンが近くにあるときに画面ロックがオフになるように、スマートフォンの画面ロックを更新してください。スマートフォンのロック解除をすばやく行えるようになり、<ph name="DEVICE_TYPE" /> で Smart Lock をさらに活用できます。</translation>
 <translation id="5187295959347858724"><ph name="SHORT_PRODUCT_NAME" /> にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />（<ph name="DEVICE" />）</translation>
-<translation id="5196721203029902230">ブラウジング環境と Chrome の改善に向けて Google と通信します</translation>
 <translation id="5204967432542742771">パスワードを入力</translation>
 <translation id="5206215183583316675">「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="520621735928254154">証明書のインポート エラー</translation>
@@ -2763,6 +2769,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="5298219193514155779">テーマの作成者:</translation>
 <translation id="5299109548848736476">トラッキング拒否</translation>
 <translation id="5299682071747318445">すべてのデータは同期パスフレーズで暗号化されています</translation>
+<translation id="5300287940468717207">サイトの権限をリセットしますか。</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5301751748813680278">ゲストとしてログインしています。</translation>
 <translation id="5301954838959518834">OK</translation>
@@ -3127,6 +3134,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - カメラまたはマイクで記録中です</translation>
 <translation id="5835754902560991078">極めて短い（0.6 秒）</translation>
 <translation id="5838456317242088717">現在のシークレット モード セッション</translation>
+<translation id="5842053879378944309">「<ph name="APP_NAME" />」で USB セキュリティ キーを使用します</translation>
 <translation id="5842497610951477805">Bluetooth 有効</translation>
 <translation id="5843250171025351504">お使いの端末は、管理者が指定した最小クライアント バージョンの要件を満たしていません。ログインするにはアップデートしてください。</translation>
 <translation id="5846929185714966548">タブ 4</translation>
@@ -3151,7 +3159,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="5863445608433396414">デバッグ機能を有効にする</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> はディスク イメージから実行されています。パソコンにインストールすると、ディスク イメージなしで実行できるようになり、常に最新の状態に維持できます。</translation>
-<translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
 <translation id="5866557323934807206">これらの設定を消去して次回以降に適用しない</translation>
 <translation id="5866840822086176774">非常に強い</translation>
 <translation id="5867841422488265304">検索語句またはウェブアドレスを入力</translation>
@@ -3725,9 +3732,6 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="6757101664402245801">URL がコピーされました</translation>
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>
 <translation id="6759193508432371551">初期状態へのリセット</translation>
-<translation id="6766101255664245434">新しく写真を撮るか、既存の写真またはアイコンを選択してください。
-          <ph name="LINE_BREAK" />
-          この画像は Chromebook のログイン画面とロック画面に表示されます。</translation>
 <translation id="6767639283522617719">ドメインを追加できません。組織部門の設定が正しいことをご確認ください。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>
 <translation id="6771503742377376720">認証局である</translation>
@@ -3801,6 +3805,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="6885771755599377173">システム情報のプレビュー</translation>
 <translation id="6886871292305414135">新しいタブで開く(&amp;T)</translation>
 <translation id="6892812721183419409"><ph name="USER" /> としてリンクを開く</translation>
+<translation id="6896398788631624004">セキュリティ キーを差し込み、有効にしてください</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6898440773573063262">このデバイスでキオスク アプリケーションが自動起動するように設定できるようになりました。</translation>
 <translation id="6898699227549475383">組織（O）</translation>
@@ -3963,6 +3968,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="713888829801648570">オフラインになっているためパスワードを確認できませんでした。</translation>
 <translation id="7140928199327930795">利用可能なデバイスは他にありません。</translation>
 <translation id="7141105143012495934">アカウントの詳細を取得できなかったためログインできませんでした。管理者に問い合わせるか、もう一度お試しください。</translation>
+<translation id="7143092389027215216">デモモードを開始します</translation>
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
@@ -4090,6 +4096,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="7347751611463936647">この拡張機能を使用するには、「<ph name="EXTENSION_KEYWORD" />」と入力して Tab キーを押してからコマンドまたは検索キーワードを入力してください。</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
+<translation id="735361434055555355">Linux をインストールしています...</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7359588939039777303">広告がブロックされました。</translation>
 <translation id="7360183604634508679">ブックマーク メニュー</translation>
@@ -4115,6 +4122,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="7387829944233909572">[閲覧履歴の消去] ダイアログ</translation>
 <translation id="7388044238629873883">もうすぐ終わりです。</translation>
 <translation id="7388222713940428051">ゲスト ウィンドウを開く</translation>
+<translation id="7391648274628927397">おすすめのブックマークが追加されました</translation>
 <translation id="7392118418926456391">ウイルス スキャンに失敗しました</translation>
 <translation id="7392915005464253525">閉じたウィンドウを開く（&amp;E）</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME" /> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
@@ -4302,6 +4310,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="7709152031285164251">失敗 - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">キャスト(&amp;C)...</translation>
 <translation id="7711920809702896782">画像情報</translation>
+<translation id="7712836429117959503">不明な拡張機能（ID「<ph name="EXTENSION_ID" />」）</translation>
 <translation id="7714307061282548371"><ph name="DOMAIN" /> からの Cookie が許可されました</translation>
 <translation id="7714464543167945231">証明書</translation>
 <translation id="7716781361494605745">Netscape 認証局ポリシー URL</translation>
@@ -5058,6 +5067,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="8845001906332463065">ヘルプ</translation>
 <translation id="8846141544112579928">キーボードを探しています...</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="885217322790849332">「$1」でファイルを開くには、まず Linux Files フォルダにコピーします。</translation>
 <translation id="8858798938034909167">どの端末からでも <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> でパスワードにアクセスできます</translation>
 <translation id="8859057652521303089">言語の選択:</translation>
 <translation id="8859174528519900719">サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
@@ -5080,6 +5090,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="8884961208881553398">新しいサービスを追加</translation>
 <translation id="8885197664446363138">Smart Lock は使用できません</translation>
 <translation id="8888432776533519951">色:</translation>
+<translation id="8890516388109605451">ソース</translation>
 <translation id="8892168913673237979">設定完了。</translation>
 <translation id="8893928184421379330">デバイス <ph name="DEVICE_LABEL" /> を認識できませんでした。</translation>
 <translation id="8895454554629927345">ブックマーク リスト</translation>
@@ -5136,6 +5147,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="8978154919215542464">オン - すべて同期</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
+<translation id="8983677657449185470">セーフ ブラウジングの改善に協力する</translation>
 <translation id="8984654317541110628">ファイル共有 URL</translation>
 <translation id="8986362086234534611">切断</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信する</translation>
@@ -5164,6 +5176,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="9024331582947483881">全画面表示</translation>
 <translation id="9025098623496448965">ログイン画面に戻る</translation>
 <translation id="9026731007018893674">ダウンロード</translation>
+<translation id="9026852570893462412">この処理には数分かかることがあります。仮想マシンをダウンロードします。</translation>
 <translation id="9027459031423301635">新しいタブで開く(&amp;T)</translation>
 <translation id="9030515284705930323">組織の設定により、アカウントで Google Play ストアをご利用いただくことができません。詳しくは管理者にお尋ねください。</translation>
 <translation id="9033857511263905942">貼り付け(&amp;P)</translation>
@@ -5266,6 +5279,7 @@ Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデー
 <translation id="9173995187295789444">Bluetooth デバイスをスキャンしています...</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Bluetooth デバイスに接続されています</translation>
 <translation id="9177499212658576372">現在 <ph name="NETWORK_TYPE" /> ネットワークに接続しています。</translation>
+<translation id="9180281769944411366">この処理には数分かかることがあります。Linux コンテナを起動します。</translation>
 <translation id="9180380851667544951">サイトに画面の共有が許可されています</translation>
 <translation id="9188441292293901223">この <ph name="DEVICE_TYPE" /> のロックを解除するには、スマートフォンを新しいバージョンの Android に更新してください。</translation>
 <translation id="9190063653747922532">L2TP/IPSec + 事前共有鍵</translation>

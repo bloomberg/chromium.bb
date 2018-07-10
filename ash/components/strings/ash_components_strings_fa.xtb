@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">‏نمایش منوی Chrome</translation>
 <translation id="2424073332829844142">‏روشن و خاموش کردن Caps Lock</translation>
 <translation id="2441202986792279177">جابه‌جا شدن سریع بین پنجره‌ها</translation>
+<translation id="2454251766545114447">کوچک کردن صفحه‌نمایش</translation>
 <translation id="2478303094958140141">‏روشن یا خاموش کردن ChromeVox (بازخورد گفتاری)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">پیمایش به پایین صفحه وب</translation>
+<translation id="2574014812750545982">بازنشانی میزان بزرگ‌نمایی صفحه</translation>
 <translation id="2596078834055697711">گرفتن عکس از پنجره صفحه‌نمایش</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="TAB" /> یا <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">تغییر وضعیت به روش ورودی زبان بعدی</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">ذخیره تمام صفحات باز پنجره کنونی شما در پوشه به‌عنوان نشانک</translation>
 <translation id="355103131818127604">بازکردن پیوند در برگه جدیدی در پس‌زمینه</translation>
+<translation id="3622741593887335780">بزرگ کردن (وقتی ذره‌بین متصل یا ذره‌بین تمام‌صفحه فعال است)</translation>
 <translation id="3649256019230929621">بازکردن پنجره در حداقل اندازه</translation>
 <translation id="3655154169297074232">برگه‌ها و پنجره‌ها</translation>
 <translation id="3668361878347172356">انجام مجدد آخرین عمل</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ۱ تا ۸</translation>
 <translation id="3837047332182291558">روشن‌تر کردن صفحه‌کلید (فقط برای صفحه‌کلیدهایی که نور پس‌زمینه دارند)</translation>
 <translation id="3976863468609830880">کلیک کردن آخرین نماد در قفسه</translation>
+<translation id="3994783594793697310">بازنشانی میزان بزرگ‌نمایی صفحه‌نمایش</translation>
 <translation id="4026843240379844265">جابه‌جایی پنجره فعال بین نمایشگرها</translation>
 <translation id="4035482366624727273">انتخاب همه چیز در صفحه</translation>
 <translation id="4060703249685950734">دوباره باز کردن آخرین برگه یا پنجره‌ای که بسته بودید</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">کم کردن روشنایی</translation>
 <translation id="6276708887952587684">مشاهده منبع صفحه</translation>
 <translation id="6321940490215594447">باز کردن صفحه سابقه</translation>
+<translation id="6340769215862220182">بزرگ کردن صفحه‌نمایش</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">انتخاب نوشتار تا انتهای خط</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> یا <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">کلیک کردن نمادهای ۱ تا ۸ در قفسه</translation>
 <translation id="6435207348963613811">برجسته‌سازی مورد قبلی روی قفسه شما</translation>
 <translation id="6445033640292336367">برگرداندن برگه به جای اول</translation>
+<translation id="6474744297082284761">کوچک کردن (وقتی ذره‌بین متصل یا ذره‌بین تمام‌صفحه فعال است)</translation>
 <translation id="649811797655257835">فایلی را انتخاب کنید و سپس <ph name="SPACE" /> را فشار دهید</translation>
 <translation id="6556040137485212400">باز کردن پنجره‌ای که طی طولانی‌ترین زمان استفاده نشده است</translation>
 <translation id="666343722268997814">باز کردن منوی کلیک راست برای مورد برجسته‌شده</translation>

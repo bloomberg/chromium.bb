@@ -382,7 +382,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       jo lahko spremeni. V tem primeru se privzeta vrednost ob vnovičnem
       zagonu ne uveljavi znova.</translation>
 <translation id="2156132677421487971">Konfiguriranje pravilnikov za napravo <ph name="PRODUCT_NAME" /> – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
-<translation id="2166472654199325139">Ne filtriraj spletnih mest za vsebino za odrasle</translation>
+<translation id="2166472654199325139">Ne filtriraj spletnih mest za izločitev vsebine za odrasle</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
 <translation id="2176565653304920879">Če je ta pravilnik nastavljen, je samodejno zaznavanje časovnega pasu odvisno od vrednosti nastavitve:
@@ -538,7 +538,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2482676533225429905">Izvorno pošiljanje sporočil</translation>
 <translation id="2483146640187052324">Predvidevaj omrežna dejanja v kateri koli omrežni povezavi</translation>
 <translation id="2484208301968418871">Ta pravilnik nadzira uporabo filtra URL-jev SafeSites.
-      Ta filter uporablja API Google Safe Search za klasificiranje URL-jev, ali so pornografski ali ne.
+      Ta filter uporablja API Google Safe Search za ugotavljanje, ali so URL-i pornografski ali ne.
 
       Če ta pravilnik ni konfiguriran ali nastavljen na »Ne filtriraj spletnih mest za vsebino za odrasle«, spletna mesta ne bodo filtrirana.
 
@@ -708,6 +708,19 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
 <translation id="2893546967669465276">Pošiljanje sistemskih dnevnikov v strežnik za upravljanje</translation>
 <translation id="2899002520262095963">Aplikacije za Android lahko uporabljajo omrežne konfiguracije in potrdila overitelja potrdil, nastavljena s tem pravilnikom, vendar nimajo dostopa do nekaterih možnosti konfiguracij.</translation>
+<translation id="290002216614278247">Omogoča zaklepanje uporabnikove seje glede na čas odjemalca ali omejitev uporabe v dnevu.
+
+          |time_window_limit| določa dnevno obdobje, v katerem je uporabnikova seja zaklenjena. Podpiramo samo eno pravilo za vsak dan v tednu, zato se polje |entries| morda razlikuje v velikosti od 0 do 7. |starts_at| in |ends_at| sta začetek in konec omejitve obdobja; če je |ends_at| manjši od |starts_at|, se |time_limit_window| konča naslednji dan. |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
+
+          |time_usage_limit| določa omejitev dnevne uporabe. Ko jo uporabnik doseže, se uporabnikova seja zaklene. Za vsak dan v tednu je na voljo lastnost, ki jo nastavite le, če je za ta dan aktivna omejitev. |usage_quota_mins| določa, koliko časa v dnevu je mogoče uporabljati upravljano napravo, |reset_at| pa določa čas, ko se omejitev uporabe znova začne meriti od nič. Privzeta vrednost za |reset_at| je polnoč ({'hour': 0, 'minute': 0}). |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število..
+
+          |overrides| je na voljo za začasno razveljavitev enega ali več prejšnjih pravil.
+          * Če nista aktivna ne time_window_limit ne time_usage_limit, je za zaklepanje naprave mogoče uporabiti |LOCK|.
+          * |LOCK| začasno zaklene uporabnikovo sejo, dokler se ne začne naslednji time_window_limit ali time_usage_limit.
+          * |UNLOCK| odklene uporabnikovo sejo, ki jo zaklene time_window_limit ali time_usage_limit.
+          |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je trenutno aktivna funkcija za omejitev časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.
+
+          Morda je poslanih več preglasitev. Uporabi se najnovejši veljavni vnos.</translation>
 <translation id="2906874737073861391">Seznam razširitev AppPack</translation>
 <translation id="2907992746861405243">Nadzira, kateri tiskalniki iz pravilnika <ph name="BULK_PRINTERS_POLICY" /> so na voljo uporabnikom.
 
@@ -1381,7 +1394,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen oziroma je prazen, se lahko v storitev <ph name="PRODUCT_NAME" /> prijavi vsak uporabnik.</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
-<translation id="4861767323695239729">Konfiguriranje dovoljenih način vnosa v uporabniški seji</translation>
+<translation id="4861767323695239729">Konfiguriranje dovoljenih načinov vnosa v uporabniški seji</translation>
 <translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
 
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
@@ -1421,6 +1434,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4980635395568992380">Vrsta podatkov:</translation>
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
+<translation id="4990301296093321860">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
+
+      S pravilnikoma use »PasswordProtectionLoginURLs« in »PasswordProtectionChangePasswordURL« lahko konfigurirate, katero geslo želite zaščititi.
+
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOff«, ni prikazano nobeno opozorilo zaščite z geslom.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPasswordReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPhishingReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu z lažnim predstavljanjem.
+      Če ta pravilnik ni nastavljen, je opozorilo zaščite z geslom sproženo, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="4995548127349206948">Ali je omogočeno preverjanje pristnosti NTLMv2.</translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
@@ -1826,6 +1847,12 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
+<translation id="6164955668342404660">Zastarelo v M69. Uporabite OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Pravilnik določa seznam izvorov (URL-jev), ki se obravnavajo kot varni kontekst. Namen tega je omogočiti organizacijam nastavitev preskusnega produkcijskega strežnika za notranje spletno razvijanje, tako da lahko razvijalci preskušajo funkcije, ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preskusnem produkcijskem strežniku.
+      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu, ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen, preglasi zastavico ukazne vrstice.
+      Več informacij o varnih kontekstih je na voljo na https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je onemogočeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -1971,7 +1998,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.
 
       Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
-<translation id="6731757988219967594">Filtriranje vrhnjih spletnih mest (vendar ne vdelanih elementov iframe) za vsebino za odrasle</translation>
+<translation id="6731757988219967594">Filtriranje vrhnjih spletnih mest (vendar ne vdelanih elementov iframe) zaradi izločanja  vsebine za odrasle</translation>
 <translation id="6735701345096330595">Vsiljeno preverjanje črkovanja jezikov</translation>
 <translation id="673699536430961464">Ta nastavitev uporabnikom po prijavi v napravo <ph name="PRODUCT_OS_NAME" /> omogoča preklop med Google Računi na območju z vsebino v oknu brskalnika.
 
@@ -2007,6 +2034,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6786967369487349613">Nastavitev imenika za profil za gostovanje</translation>
 <translation id="6810445994095397827">Blokiraj JavaScript na teh mestih</translation>
 <translation id="681446116407619279">Podprti načini preverjanja pristnosti</translation>
+<translation id="6832455357698286434">
+      Pravilnik določa seznam izvorov (URL-jev) ali vzorcev imena gostitelja (na primer »*.example.com«), ki se obravnavajo kot varni kontekst. Namen tega je omogočiti organizacijam nastavitev preskusnega produkcijskega strežnika za notranje spletno razvijanje, tako da lahko razvijalci preskušajo funkcije, ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preskusnem produkcijskem strežniku.
+      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu, ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen, preglasi zastavico ukazne vrstice.
+      Več informacij o varnih kontekstih je na voljo na https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je priporočen vnovičen zagon</translation>
 <translation id="6838056959556423778">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
 
@@ -2365,6 +2397,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7617319494457709698">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo metodo <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za potrjevanje na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo vrnjena koda napake.</translation>
+<translation id="7620300057302654932">Izvori ali vzorci imena gostitelja, ki se obravnavajo kot varni kontekst</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
 <translation id="7635471475589566552">Določa območne nastavitve programa  <ph name="PRODUCT_NAME" /> in prepreči uporabnikom, da jih spreminjajo.

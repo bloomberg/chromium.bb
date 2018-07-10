@@ -707,6 +707,19 @@
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
 <translation id="2893546967669465276">Skicka systemloggar till hanteringsservern</translation>
 <translation id="2899002520262095963">Android-appar kan använda nätverkskonfigurationer och CA-certifikat som har angetts via den här principen men saknar tillgång till vissa konfigurationsalternativ.</translation>
+<translation id="290002216614278247">Den här principen låter dig låsa användarens session utifrån klientenhetens klocka eller en daglig användningskvot.
+
+          Med |time_window_limit| anges en tidsperiod på dygnet när användarens session ska vara låst. Det finns bara stöd för en regel per veckodag och därför kan storleken på vektorn |entries| vara mellan 0 och 7. |starts_at| och |ends_at| anger tidsperiodens början och slut. Om värdet på |ends_at| är mindre än värdet på |starts_at| betyder det att |time_limit_window| slutar nästa dag. |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
+
+          Med |time_usage_limit| anges skärmtid per dag, så att användarens session låses när denna tid har gått. Det finns en egenskap per veckodag som bara ska anges om det finns en aktiv kvot den dagen. |usage_quota_mins| anger hur lång tid den hanterade enheten får användas på en dag och |reset_at| anger vid vilken tidpunkt användningskvoten förnyas. Standardvärdet för |reset_at| är midnatt ({'hour': 0, 'minute': 0}). |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
+
+          |overrides| ger möjlighet att tillfälligt åsidosätta en eller flera av de föregående reglerna.
+          * Om varken time_window_limit eller time_usage_limit är aktiva kan enheten låsas med |LOCK|.
+          * |LOCK| låser en användarsession tillfälligt tills nästa time_window_limit eller time_usage_limit börjar.
+          * |UNLOCK| låser upp en användarsession som låsts med time_window_limit eller time_usage_limit.
+          |created_time_millis| är en UTC-tidsstämpel som anger när åsidosättningen skapades. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal. Det används för att avgöra om den aktuella åsidosättningen fortfarande gäller. Om den nu gällande tidsbegränsningen (begränsad användningstid eller begränsad tidsperiod) påbörjades efter att åsidosättningen skapades gäller den inte. Åsidosättningen gäller inte heller om den skapades före den senaste ändringen av den time_window_limit eller time_usage_window som är aktiv.
+
+          Flera åsidosättningar kan skickas. Den senaste giltiga posten är den som gäller.</translation>
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
 <translation id="2907992746861405243">Styr vilka skrivare från <ph name="BULK_PRINTERS_POLICY" /> som är tillgängliga för användare.
 
@@ -1416,6 +1429,14 @@
 <translation id="4980635395568992380">Datatyp:</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
+<translation id="4990301296093321860">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
+
+      Du kan konfigurera vilket lösenord som ska skyddas med principerna PasswordProtectionLoginURLs och PasswordProtectionChangePasswordURL.
+
+      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
+      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som inte står med på vitlistan.
+      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske.
+      Om principen har lämnats utan inställning utlöses en varning när användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske, men användaren kan ändra inställningen.</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
@@ -1823,6 +1844,12 @@
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
+<translation id="6164955668342404660">Utfasad i M69. Använd OverrideSecurityRestrictionsOnInsecureOrigin i stället.
+
+      I den här principen anges en lista med ursprung (webbadresser) som ska behandlas som säker kontext. Syftet är att tillåta organisationer att använda en provkörningsserver för intern webbutveckling där utvecklarna kan testa funktioner som kräver säker kontext utan att behöva använda TLS på testservern.
+      Att ange en lista med webbadresser i den här principen fungerar på samma sätt som om man använder kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure med webbadresserna ifråga i en kommaavgränsad lista. Om principen har ställts in åsidosätts kommandoradsflaggan.
+      Mer information om säker kontext finns på https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> inte får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
@@ -2004,6 +2031,11 @@
 <translation id="6786967369487349613">Ange roamingprofilkatalogen</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
+<translation id="6832455357698286434">
+      I den här principen anges en lista med ursprung (webbadresser) eller värdnamnsmönster (t.ex. *.example.com) som ska behandlas som säker kontext. Syftet är att tillåta organisationer att använda en provkörningsserver för intern webbutveckling där utvecklarna kan testa funktioner som kräver säker kontext utan att behöva använda TLS på testservern.
+      Att ange en lista med webbadresser i den här principen fungerar på samma sätt som om man använder kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure med webbadresserna ifråga i en kommaavgränsad lista. Om principen har ställts in åsidosätts kommandoradsflaggan.
+      Mer information om säker kontext finns på https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>
 <translation id="6838056959556423778">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
 
@@ -2361,6 +2393,7 @@
 <translation id="7617319494457709698">Principen specificerar vilka tillägg som får använda <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts misslyckas anslutningen till API:et och en felkod visas.</translation>
+<translation id="7620300057302654932">Ursprung eller värdnamnsmönster som behandlas som säker kontext.</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar språk.

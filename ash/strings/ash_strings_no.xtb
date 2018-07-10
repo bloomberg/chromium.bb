@@ -21,6 +21,7 @@
 <translation id="1290331692326790741">Svakt signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
 <translation id="1346748346194534595">Høyre</translation>
+<translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -120,6 +121,7 @@
 <translation id="3009178788565917040">Utdata</translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Vis menyen</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
@@ -169,6 +171,7 @@
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4200057768455216496">Du trykket på snarveien for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4217571870635786043">Diktering</translation>
@@ -194,6 +197,7 @@
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
+<translation id="4734965478015604180">Horisontal</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
@@ -201,6 +205,7 @@
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
 <translation id="4890187583552566966">Administratoren din har slått av Google-assistenten.</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
+<translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Godta</translation>
@@ -358,6 +363,7 @@
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">På for alle apper</translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
@@ -379,6 +385,7 @@
 <translation id="847056008324733326">Innstillinger for visningsskala</translation>
 <translation id="8477270416194247200">Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Kobler til på nytt ...</translation>
+<translation id="8513108775083588393">Automatisk rotasjon</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
 <translation id="8649101189709089199">Tekstopplesing</translation>
@@ -401,7 +408,7 @@
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Hurtigtaster</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
-<translation id="9029474291399787231">En Adobe Flash Player-oppdatering er tilgjengelig</translation>
+<translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9033907480196064950">Du caster for øyeblikket <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
