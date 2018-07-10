@@ -266,7 +266,9 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
 }
 
 bool MediaControlOverlayPlayButtonElement::KeepEventInNode(Event* event) {
-  return ShouldCausePlayPause(event);
+  return ShouldCausePlayPause(event) ||
+         (MediaControlElementsHelper::IsUserInteractionEvent(event) &&
+          event->type() != EventTypeNames::click);
 }
 
 bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(

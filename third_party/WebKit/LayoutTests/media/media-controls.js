@@ -521,6 +521,11 @@ function doubleTouchAtCoordinates(x, y, timeout, callback) {
   ], callback);
 }
 
+function singleTouchOnControl(control, callback) {
+  const coordinates = elementCoordinates(control);
+  singleTouchAtCoordinates(coordinates[0], coordinates[1], callback);
+}
+
 function traverseNextNode(node, stayWithin) {
     var nextNode = node.firstChild;
     if (nextNode)
