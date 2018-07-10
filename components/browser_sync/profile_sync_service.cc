@@ -312,11 +312,8 @@ void ProfileSyncService::Initialize() {
   if ((disable_reasons & DISABLE_REASON_PLATFORM_OVERRIDE) ||
       (disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY)) {
     // Only clear data if disallowed by policy.
-    // TODO(crbug.com/839834): Should this call StopImpl, so that SyncRequested
-    // doesn't get set to false?
-    RequestStop((disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY)
-                    ? CLEAR_DATA
-                    : KEEP_DATA);
+    StopImpl((disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY) ? CLEAR_DATA
+                                                                  : KEEP_DATA);
     return;
   }
 
@@ -435,7 +432,7 @@ void ProfileSyncService::AccountStateChanged() {
 
   if (!IsSignedIn()) {
     sync_disabled_by_admin_ = false;
-    RequestStop(CLEAR_DATA);
+    StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
     DCHECK(!engine_);
@@ -1102,7 +1099,7 @@ void ProfileSyncService::OnActionableError(
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
       if (IsSetupInProgress()) {
-        RequestStop(CLEAR_DATA);
+        StopImpl(CLEAR_DATA);
         expect_sync_configuration_aborted_ = true;
       }
       // Trigger an unrecoverable error to stop syncing.
@@ -1115,6 +1112,9 @@ void ProfileSyncService::OnActionableError(
         UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::BIRTHDAY_ERROR,
                                   syncer::STOP_SOURCE_LIMIT);
       }
+      // Note: Here we explicitly want RequestStop (rather than StopImpl), so
+      // that IsSyncRequested gets set to false, and Sync won't start again on
+      // the next browser startup.
       RequestStop(CLEAR_DATA);
 #if !defined(OS_CHROMEOS)
       // On every platform except ChromeOS, sign out the user after a dashboard
@@ -2109,7 +2109,7 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
   // NetworkResources in the ctor instead of adding them retroactively.
   bool restart = false;
   if (engine_) {
-    RequestStop(KEEP_DATA);
+    StopImpl(KEEP_DATA);
     restart = true;
   }
   DCHECK(!engine_);
