@@ -992,9 +992,8 @@ LayoutUnit LayoutBox::VerticalScrollbarWidthClampedToContentBox() const {
   LayoutUnit width(VerticalScrollbarWidth());
   DCHECK_GE(width, LayoutUnit());
   if (width) {
-    LayoutUnit minimum_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
-    DCHECK_GE(minimum_width, LayoutUnit());
-    width = std::min(width, minimum_width);
+    LayoutUnit maximum_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
+    width = std::min(width, maximum_width.ClampNegativeToZero());
   }
   return width;
 }
