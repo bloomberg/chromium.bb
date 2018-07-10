@@ -24,10 +24,12 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
@@ -596,16 +598,31 @@ void ArcSessionManager::CancelAuthCode() {
 }
 
 void ArcSessionManager::RecordArcState() {
-  // Only record Enabled state if ARC is allowed in the first place, so we do
-  // not split the ARC population by devices that cannot run ARC.
-  if (!IsAllowed())
+  // Only record legacy enabled state if ARC is allowed in the first place, so
+  // we do not split the ARC population by devices that cannot run ARC.
+  if (IsAllowed()) {
+    UpdateEnabledStateUMA(enable_requested_);
+    UpdateEnabledStateByUserTypeUMA(enable_requested_, profile_);
+    ArcMetricsService* service =
+        ArcMetricsService::GetForBrowserContext(profile_);
+    service->RecordNativeBridgeUMA();
     return;
+  }
 
-  UpdateEnabledStateUMA(enable_requested_);
+  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  // Don't record UMA for the set of cases:
+  // * No primary profile is set at this moment.
+  // * Primary profile matches the built-in profile used for signing in or the
+  //   lock screen.
+  // * Primary profile matches guest session.
+  // * Primary profile is in incognito mode.
+  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile) ||
+      profile->IsOffTheRecord() || profile->IsGuestSession()) {
+    return;
+  }
 
-  ArcMetricsService* service =
-      ArcMetricsService::GetForBrowserContext(profile_);
-  service->RecordNativeBridgeUMA();
+  UpdateEnabledStateByUserTypeUMA(enable_requested_, profile);
 }
 
 void ArcSessionManager::RequestEnable() {
