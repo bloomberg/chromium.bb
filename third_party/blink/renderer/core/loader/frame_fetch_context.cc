@@ -1126,7 +1126,7 @@ bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
     // TODO(yhirano): Implement the detached case.
     return false;
   }
-  return !MixedContentChecker::IsWebSocketAllowed(GetFrame(), url);
+  return !MixedContentChecker::IsWebSocketAllowed(*this, GetFrame(), url);
 }
 
 std::unique_ptr<WebSocketHandshakeThrottle>
