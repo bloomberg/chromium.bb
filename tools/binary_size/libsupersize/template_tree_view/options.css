@@ -51,15 +51,6 @@ legend {
   padding: 0;
 }
 
-.icon-list li {
-  display: flex;
-  justify-content: space-between;
-  margin-right: -6px;
-}
-.icon-list .checkbox-label {
-  flex: 1;
-}
-
 /** Toolbar */
 .form-bar {
   display: flex;
@@ -79,34 +70,6 @@ legend {
 }
 .icon-button:hover {
   background: #0000001f;
-}
-
-.filled-button {
-  padding: 0 24px;
-  line-height: 36px;
-  cursor: pointer;
-  background: white;
-  font-family: 'Google Sans', Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  color: #1a73e8;
-}
-.filled-button:hover {
-  border-color: #d2e3fc;
-  background: #d2e3fc26;
-}
-.filled-button:focus {
-  border-color: #d2e3fc;
-  background: #d2e3fc4d;
-}
-.filled-button:hover:focus {
-  background: #d2e3fc60;
-}
-.filled-button:active {
-  border-color: white;
-  box-shadow: 0 1px 2px #3c40434d, 0 1px 3px 1px #3c404326;
 }
 
 /** <input type='text'> or <select> elements */
@@ -204,6 +167,7 @@ input[type='radio'] {
   border-top-width: 0;
   border-left-width: 0;
   transform: rotate(45deg);
+  opacity: 0;
 }
 .radio-label::before {
   border-radius: 50%;
@@ -241,5 +205,9 @@ input[type='radio']:disabled + .radio-label {
   .appbar,
   .symbols {
     padding: 0 16px;
+  }
+  .appbar-progress {
+    margin: 0 -16px;
+    width: calc(100% + 32px);
   }
 }

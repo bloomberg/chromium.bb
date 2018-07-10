@@ -24,10 +24,45 @@
 
         .appbar {
             grid-area: appbar;
+        }
+        .appbar-inner {
+            height: 100%;
             padding: 0 48px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+        }
+        .appbar-progress {
+            display: block;
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            contain: strict;
+            background: #4285f499;
+            transition: opacity 0.5s ease;
+        }
+        .appbar-progress::-webkit-progress-bar {
+            background: transparent;
+        }
+        .appbar-progress::-webkit-progress-value {
+            background: #1a73e8;
+            transition: width 1s ease-in;
+        }
+        .appbar-progress[value="0"]::-webkit-progress-value {
+            transition: none;
+        }
+        .appbar-progress[value="1"] {
+            opacity: 0;
+        }
+        .appbar-progress[value="1"]::-webkit-progress-value {
+            transition-duration: 0.2s;
+        }
+        .error.appbar-progress {
+            background: #ea433599;
+        }
+        .error.appbar-progress::-webkit-progress-value {
+            background: #d93025;
         }
 
         .options {
@@ -153,39 +188,45 @@
             color: #ea4335;
         }
     </style>
+    <link rel="preload" href="tree-worker.js" as="worker">
+    <link rel="stylesheet" href="options.css">
+    <script defer src="shared.js"></script>
     <script defer src="state.js"></script>
-    <script defer src="tree.js"></script>
-    <script defer async onload="loadTree(tree_data);" src="data.js"></script>
+    <script defer src="infocard-ui.js"></script>
+    <script defer async src="tree-ui.js"></script>
 </head>
 
 <body>
     <div class="scrim toggle-options" hidden></div>
     <header class="appbar">
-        <h1 class="headline">Binary Size Analysis</h1>
-        <button type="button" class="icon-button toggle-options" title="Settings">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
-                <!--
-                 Icons from https://material.io/tools/icons/?style=outline
-                 with some custom icons designed in the same style
-                -->
-                <path d="M19.43,12.98c0.04-0.32,0.07-0.64,0.07-0.98c0-0.34-0.03-0.66-0.07-0.98l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46
-                         c-0.09-0.16-0.26-0.25-0.44-0.25c-0.06,0-0.12,0.01-0.17,0.03l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65
-                         C14.46,2.18,14.25,2,14,2h-4C9.75,2,9.54,2.18,9.51,2.42L9.13,5.07C8.52,5.32,7.96,5.66,7.44,6.05l-2.49-1
-                         C4.89,5.03,4.83,5.02,4.77,5.02c-0.17,0-0.34,0.09-0.43,0.25l-2,3.46C2.21,8.95,2.27,9.22,2.46,9.37l2.11,1.65
-                         C4.53,11.34,4.5,11.67,4.5,12c0,0.33,0.03,0.66,0.07,0.98l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46
-                         c0.09,0.16,0.26,0.25,0.44,0.25c0.06,0,0.12-0.01,0.17-0.03l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65
-                         C9.54,21.82,9.75,22,10,22h4c0.25,0,0.46-0.18,0.49-0.42l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1
-                         c0.06,0.02,0.12,0.03,0.18,0.03c0.17,0,0.34-0.09,0.43-0.25l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.43,12.98z M17.45,11.27
-                         c0.04,0.31,0.05,0.52,0.05,0.73c0,0.21-0.02,0.43-0.05,0.73l-0.14,1.13l0.89,0.7l1.08,0.84l-0.7,1.21l-1.27-0.51l-1.04-0.42
-                         l-0.9,0.68c-0.43,0.32-0.84,0.56-1.25,0.73l-1.06,0.43l-0.16,1.13L12.7,20H11.3l-0.19-1.35l-0.16-1.13l-1.06-0.43
-                         c-0.43-0.18-0.83-0.41-1.23-0.71l-0.91-0.7l-1.06,0.43l-1.27,0.51l-0.7-1.21l1.08-0.84l0.89-0.7l-0.14-1.13
-                         C6.52,12.43,6.5,12.2,6.5,12s0.02-0.43,0.05-0.73l0.14-1.13L5.8,9.44L4.72,8.6l0.7-1.21l1.27,0.51l1.04,0.42l0.9-0.68
-                         c0.43-0.32,0.84-0.56,1.25-0.73l1.06-0.43l0.16-1.13L11.3,4h1.39l0.19,1.35l0.16,1.13l1.06,0.43c0.43,0.18,0.83,0.41,1.23,0.71
-                         l0.91,0.7l1.06-0.43l1.27-0.51l0.7,1.21L18.2,9.44l-0.89,0.7L17.45,11.27z" />
-                <path d="M12,8c-2.21,0-4,1.79-4,4s1.79,4,4,4s4-1.79,4-4S14.21,8,12,8z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2
-                         S13.1,14,12,14z" />
-            </svg>
-        </button>
+        <div class="appbar-inner">
+            <h1 class="headline">Binary Size Analysis</h1>
+            <button type="button" class="icon-button toggle-options" title="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
+                    <!--
+                    Icons from https://material.io/tools/icons/?style=outline
+                    with some custom icons designed in the same style
+                    -->
+                    <path d="M19.43,12.98c0.04-0.32,0.07-0.64,0.07-0.98c0-0.34-0.03-0.66-0.07-0.98l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46
+                            c-0.09-0.16-0.26-0.25-0.44-0.25c-0.06,0-0.12,0.01-0.17,0.03l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65
+                            C14.46,2.18,14.25,2,14,2h-4C9.75,2,9.54,2.18,9.51,2.42L9.13,5.07C8.52,5.32,7.96,5.66,7.44,6.05l-2.49-1
+                            C4.89,5.03,4.83,5.02,4.77,5.02c-0.17,0-0.34,0.09-0.43,0.25l-2,3.46C2.21,8.95,2.27,9.22,2.46,9.37l2.11,1.65
+                            C4.53,11.34,4.5,11.67,4.5,12c0,0.33,0.03,0.66,0.07,0.98l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46
+                            c0.09,0.16,0.26,0.25,0.44,0.25c0.06,0,0.12-0.01,0.17-0.03l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65
+                            C9.54,21.82,9.75,22,10,22h4c0.25,0,0.46-0.18,0.49-0.42l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1
+                            c0.06,0.02,0.12,0.03,0.18,0.03c0.17,0,0.34-0.09,0.43-0.25l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.43,12.98z M17.45,11.27
+                            c0.04,0.31,0.05,0.52,0.05,0.73c0,0.21-0.02,0.43-0.05,0.73l-0.14,1.13l0.89,0.7l1.08,0.84l-0.7,1.21l-1.27-0.51l-1.04-0.42
+                            l-0.9,0.68c-0.43,0.32-0.84,0.56-1.25,0.73l-1.06,0.43l-0.16,1.13L12.7,20H11.3l-0.19-1.35l-0.16-1.13l-1.06-0.43
+                            c-0.43-0.18-0.83-0.41-1.23-0.71l-0.91-0.7l-1.06,0.43l-1.27,0.51l-0.7-1.21l1.08-0.84l0.89-0.7l-0.14-1.13
+                            C6.52,12.43,6.5,12.2,6.5,12s0.02-0.43,0.05-0.73l0.14-1.13L5.8,9.44L4.72,8.6l0.7-1.21l1.27,0.51l1.04,0.42l0.9-0.68
+                            c0.43-0.32,0.84-0.56,1.25-0.73l1.06-0.43l0.16-1.13L11.3,4h1.39l0.19,1.35l0.16,1.13l1.06,0.43c0.43,0.18,0.83,0.41,1.23,0.71
+                            l0.91,0.7l1.06-0.43l1.27-0.51l0.7,1.21L18.2,9.44l-0.89,0.7L17.45,11.27z" />
+                    <path d="M12,8c-2.21,0-4,1.79-4,4s1.79,4,4,4s4-1.79,4-4S14.21,8,12,8z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2
+                            S13.1,14,12,14z" />
+                </svg>
+            </button>
+        </div>
+        <progress value="0" id="progress" class="appbar-progress"></progress>
     </header>
     <link href="options.css" rel="stylesheet">
     <form id="options" class="options" method="GET">
@@ -199,7 +240,7 @@
 
         <h2 class="subhead">Size options</h2>
         <p class="select-wrapper">
-            <select id="byteunit" name="byteunit">
+            <select id="byteunit" name="byteunit" data-dynamic>
                 <option value="B">B - bytes</option>
                 <option value="KiB">KiB - kilibytes</option>
                 <option value="MiB" selected>MiB - megabytes</option>
@@ -369,18 +410,18 @@
                 />
             </svg>
         </div>
-        <template id="treefolder">
+        <template id="treenode-container">
             <li role="treeitem" aria-expanded="false">
-                <a class="node" href="#" tabindex="-1">
+                <a class="node" href="#" tabindex="-1" aria-describedby="infocard-container">
                     <span class="symbol-name"></span>
                     <span class="size"></span>
                 </a>
                 <ul role="group"></ul>
             </li>
         </template>
-        <template id="treeitem">
+        <template id="treenode-symbol">
             <li role="treeitem">
-                <span class="node" tabindex="-1">
+                <span class="node" tabindex="-1" aria-describedby="infocard-symbol">
                     <span class="symbol-name"></span>
                     <span class="size"></span>
                 </span>
@@ -389,13 +430,13 @@
         <main class="tree-container">
             <header class="tree-header">
                 <span class="subtitle">Name</span>
-                <span class="subtitle" id="size-header" data-value="{{size_header}}">{{size_header}}</span>
+                <span class="subtitle" id="size-header">Size</span>
             </header>
             <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
         </main>
     </div>
     <link href="infocard.css" rel="stylesheet">
-    <footer class="infocard infocard-container open" id="infocardcontainer" hidden>
+    <footer class="infocard infocard-container open" id="infocard-container" hidden>
         <canvas class="type-pie-info" height="80" width="80"></canvas>
         <header class="header-info">
             <h4 class="subhead size-info">N bytes</h4>
@@ -468,7 +509,7 @@
             </tbody>
         </table>
     </footer>
-    <footer class="infocard infocard-symbol" id="infocardsymbol" hidden>
+    <footer class="infocard infocard-symbol" id="infocard-symbol" hidden>
         <div class="icon-info"></div>
         <header class="header-info">
             <h4 class="subhead size-info">N bytes</h4>

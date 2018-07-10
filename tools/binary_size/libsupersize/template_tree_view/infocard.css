@@ -66,6 +66,8 @@
 .type-pie-info {
   grid-area: icon;
   align-self: center;
+  height: 80px;
+  width: 80px;
   background: #5f6368;
   border-radius: 50%;
 }
@@ -74,6 +76,7 @@
   border-top: 1px solid #dadce0;
   padding-top: 8px;
   clear: right;
+  height: 0;  /* Fixes bug with table height in Firefox */
 }
 
 th {
