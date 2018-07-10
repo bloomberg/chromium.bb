@@ -2130,6 +2130,161 @@ static void define_gf_group_structure_16(AV1_COMP *cpi) {
 }
 #endif  // USE_GF16_MULTI_LAYER
 
+#if USE_SYMM_MULTI_LAYER
+#define GF_INTERVAL_4 4
+#define GF_FRAME_PARAMS 4
+
+static const unsigned char gf4_multi_layer_params[][GF_FRAME_PARAMS] = {
+  {
+      // gf_group->index == 0 (Frame 0)
+      // It can also be KEY frame. Will assign the proper value
+      // in define_gf_group_structure
+      OVERLAY_UPDATE,  // update_type (default value)
+      0,               // arf_src_offset
+      0,               // brf_src_offset
+      0                // arf_update_idx
+  },
+  {
+      // gf_group->index == 1 (Frame 4)
+      ARF_UPDATE,         // update_type
+      GF_INTERVAL_4 - 1,  // arf_src_offset
+      0,                  // brf_src_offset
+      0                   // arf_update_idx
+  },
+  {
+      // gf_group->index == 2 (Frame 2)
+      INTNL_ARF_UPDATE,          // update_type
+      (GF_INTERVAL_4 >> 1) - 1,  // arf_src_offset
+      0,                         // brf_src_offset
+      0                          // arf_update_idx
+  },
+  {
+      // gf_group->index == 3 (Frame 1)
+      LF_UPDATE,  // update_type
+      0,          // arf_src_offset
+      0,          // brf_src_offset
+      0           // arf_update_idx
+  },
+
+  {
+      // gf_group->index == 4 (Frame 2 - OVERLAY)
+      INTNL_OVERLAY_UPDATE,  // update_type
+      0,                     // arf_src_offset
+      0,                     // brf_src_offset
+      0                      // arf_update_idx
+  },
+  {
+      // gf_group->index == 5 (Frame 3)
+      LF_UPDATE,  // update_type
+      0,          // arf_src_offset
+      0,          // brf_src_offset
+      1           // arf_update_idx
+  }
+};
+
+static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
+  // Derive rf_level from update_type
+  switch (update_type) {
+    case LF_UPDATE: return INTER_NORMAL;
+    case ARF_UPDATE: return GF_ARF_STD;
+    case OVERLAY_UPDATE: return INTER_NORMAL;
+    case BRF_UPDATE: return GF_ARF_LOW;
+    case LAST_BIPRED_UPDATE: return INTER_NORMAL;
+    case BIPRED_UPDATE: return INTER_NORMAL;
+    case INTNL_ARF_UPDATE: return GF_ARF_LOW;
+    case INTNL_OVERLAY_UPDATE: return INTER_NORMAL;
+    default: return INTER_NORMAL;
+  }
+}
+
+static void gf4_arf_position_handling(AV1_COMP *cpi) {
+  cpi->arf_pos_for_ovrly[0] = 6;
+  cpi->arf_pos_for_ovrly[1] = 4;
+
+  cpi->arf_pos_in_gf[0] = 1;
+  cpi->arf_pos_in_gf[1] = 2;
+}
+
+static int define_gf_group_structure_4(AV1_COMP *cpi) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  TWO_PASS *const twopass = &cpi->twopass;
+  GF_GROUP *const gf_group = &twopass->gf_group;
+  const int key_frame = cpi->common.frame_type == KEY_FRAME;
+
+  assert(rc->baseline_gf_interval == GF_INTERVAL_4);
+
+  const int gf_update_frames = rc->baseline_gf_interval + 2;
+  int frame_index;
+
+  for (frame_index = 0; frame_index < gf_update_frames; ++frame_index) {
+    int param_idx = 0;
+
+    gf_group->bidir_pred_enabled[frame_index] = 0;
+
+    if (frame_index == 0) {
+      // gf_group->arf_src_offset[frame_index] = 0;
+      gf_group->brf_src_offset[frame_index] = 0;
+      gf_group->bidir_pred_enabled[frame_index] = 0;
+
+      // For key frames the frame target rate is already set and it
+      // is also the golden frame.
+      if (key_frame) continue;
+
+      gf_group->update_type[frame_index] =
+          gf4_multi_layer_params[frame_index][param_idx++];
+
+      if (rc->source_alt_ref_active) {
+        gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+      } else {
+        gf_group->update_type[frame_index] = GF_UPDATE;
+      }
+      param_idx++;
+    } else {
+      gf_group->update_type[frame_index] =
+          gf4_multi_layer_params[frame_index][param_idx++];
+    }
+
+    // setup other parameters
+    gf_group->rf_level[frame_index] =
+        update_type_2_rf_level(gf_group->update_type[frame_index]);
+
+    // == arf_src_offset ==
+    gf_group->arf_src_offset[frame_index] =
+        gf4_multi_layer_params[frame_index][param_idx++];
+
+    // == brf_src_offset ==
+    gf_group->brf_src_offset[frame_index] =
+        gf4_multi_layer_params[frame_index][param_idx++];
+
+    // == arf_update_idx ==
+    gf_group->brf_src_offset[frame_index] =
+        gf4_multi_layer_params[frame_index][param_idx];
+  }
+
+  // NOTE: We need to configure the frame at the end of the sequence + 1 that
+  //       will be the start frame for the next group. Otherwise prior to the
+  //       call to av1_rc_get_second_pass_params() the data will be undefined.
+  gf_group->arf_update_idx[frame_index] = 0;
+  gf_group->arf_ref_idx[frame_index] = 0;
+
+  if (rc->source_alt_ref_pending) {
+    gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+    gf_group->rf_level[frame_index] = INTER_NORMAL;
+
+  } else {
+    gf_group->update_type[frame_index] = GF_UPDATE;
+    gf_group->rf_level[frame_index] = GF_ARF_STD;
+  }
+
+  gf_group->bidir_pred_enabled[frame_index] = 0;
+  gf_group->brf_src_offset[frame_index] = 0;
+
+  gf4_arf_position_handling(cpi);
+
+  return gf_update_frames;
+}
+#endif  // USE_SYMM_MULTI_LAYER
+
 static void define_gf_group_structure(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
 
@@ -2139,6 +2294,14 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
     return;
   }
 #endif  // USE_GF16_MULTI_LAYER
+#if USE_SYMM_MULTI_LAYER
+  if (rc->baseline_gf_interval == 4 && rc->source_alt_ref_pending &&
+      cpi->extra_arf_allowed > 0) {
+    // used only if arf is allowed
+    define_gf_group_structure_4(cpi);
+    return;
+  }
+#endif
 
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
@@ -2728,9 +2891,17 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   if (!cpi->extra_arf_allowed) {
     cpi->num_extra_arfs = 0;
   } else {
+#if USE_SYMM_MULTI_LAYER
+    if (rc->baseline_gf_interval == 4 && rc->source_alt_ref_pending)
+      cpi->num_extra_arfs = 1;
+    else
+      cpi->num_extra_arfs = get_number_of_extra_arfs(
+          rc->baseline_gf_interval, rc->source_alt_ref_pending);
+#else
     // Compute how many extra alt_refs we can have
     cpi->num_extra_arfs = get_number_of_extra_arfs(rc->baseline_gf_interval,
                                                    rc->source_alt_ref_pending);
+#endif  // USE_SYMM_MULTI_LAYER
   }
   // Currently at maximum two extra ARFs' are allowed
   assert(cpi->num_extra_arfs <= MAX_EXT_ARFS);

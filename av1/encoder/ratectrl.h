@@ -29,6 +29,9 @@ extern "C" {
 
 #if FIX_GF_INTERVAL_LENGTH
 #define FIXED_GF_LENGTH 4
+#define USE_SYMM_MULTI_LAYER 1
+#else
+#define USE_SYMM_MULTI_LAYER 0
 #endif
 
 #define MIN_GF_INTERVAL 4
