@@ -146,6 +146,8 @@
         outline: none;
       }
 
+      /* TODO (rbpotter): Remove all the --cr-dialog-close-* mixins below, */
+      /* when Print Preview is updated to Material Design. */
       #closeContainer {
         --layout-inline: {
           display: flex;
@@ -160,6 +162,10 @@
 
       #closeContainer:hover {
         @apply --cr-dialog-close-image-hover;
+      }
+
+      #closeContainer:focus-within {
+        @apply --cr-dialog-close-image-focus;
       }
 
       #closeContainer:active {
