@@ -7,6 +7,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -54,6 +55,23 @@ class TestWebContentsObserver : public WebContentsObserver {
   blink::mojom::ViewportFit wanted_value_ = blink::mojom::ViewportFit::kAuto;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
+};
+
+// Used for forcing a specific |blink::WebDisplayMode| during a test.
+class DisplayCutoutWebContentsDelegate : public WebContentsDelegate {
+ public:
+  blink::WebDisplayMode GetDisplayMode(
+      const WebContents* web_contents) const override {
+    return display_mode_;
+  }
+
+  void SetDisplayMode(blink::WebDisplayMode display_mode) {
+    display_mode_ = display_mode;
+  }
+
+ private:
+  blink::WebDisplayMode display_mode_ =
+      blink::WebDisplayMode::kWebDisplayModeBrowser;
 };
 
 const char kTestHTML[] =
@@ -226,6 +244,50 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Noop) {
     TestWebContentsObserver observer(web_contents_impl());
     LoadTestPageWithViewportFitFromMeta("cover");
     EXPECT_FALSE(observer.has_value());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode) {
+  // Inject the custom delegate used for this test.
+  std::unique_ptr<DisplayCutoutWebContentsDelegate> delegate(
+      new DisplayCutoutWebContentsDelegate());
+  web_contents_impl()->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), web_contents_impl()->GetDelegate());
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    LoadTestPageWithViewportFitFromMeta("cover");
+    EXPECT_FALSE(observer.has_value());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode_Fullscreen) {
+  // Inject the custom delegate used for this test.
+  std::unique_ptr<DisplayCutoutWebContentsDelegate> delegate(
+      new DisplayCutoutWebContentsDelegate());
+  delegate->SetDisplayMode(blink::WebDisplayMode::kWebDisplayModeFullscreen);
+  web_contents_impl()->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), web_contents_impl()->GetDelegate());
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    LoadTestPageWithViewportFitFromMeta("cover");
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode_Standalone) {
+  // Inject the custom delegate used for this test.
+  std::unique_ptr<DisplayCutoutWebContentsDelegate> delegate(
+      new DisplayCutoutWebContentsDelegate());
+  delegate->SetDisplayMode(blink::WebDisplayMode::kWebDisplayModeStandalone);
+  web_contents_impl()->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), web_contents_impl()->GetDelegate());
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    LoadTestPageWithViewportFitFromMeta("cover");
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
   }
 }
 

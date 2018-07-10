@@ -438,13 +438,39 @@ class WebContentsImpl::DisplayCutoutHostImpl
       SetCurrentRenderFrameHost(nullptr);
   }
 
-  // Removes any state built up by a render frame.
+  // WebContentsObserver override.
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    // If the navigation is not in the main frame or if we are a same document
+    // navigation then we should stop now.
+    if (!navigation_handle->IsInMainFrame() ||
+        navigation_handle->IsSameDocument()) {
+      return;
+    }
+
+    // If we finish a main frame navigation and the |WebDisplayMode| is
+    // fullscreen or standalone then we should make the main frame the
+    // current |RenderFrameHost|.
+    RenderWidgetHostImpl* rwh =
+        web_contents_impl()->GetRenderViewHost()->GetWidget();
+    blink::WebDisplayMode mode = web_contents_impl()->GetDisplayMode(rwh);
+    if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen ||
+        mode == blink::WebDisplayMode::kWebDisplayModeStandalone) {
+      SetCurrentRenderFrameHost(web_contents_impl()->GetMainFrame());
+    }
+  }
+
+  // WebContentsObserver override. Removes any state built up by a render frame.
   void RenderFrameDeleted(RenderFrameHost* rfh) override {
     values_.erase(rfh);
 
     // If we were the current |RenderFrameHost| then we should clear that.
     if (current_rfh_ == rfh)
       SetCurrentRenderFrameHost(nullptr);
+  }
+
+  // WebContentsObserver override.
+  void RenderFrameCreated(RenderFrameHost* rfh) override {
+    ViewportFitChangedForFrame(rfh, blink::mojom::ViewportFit::kAuto);
   }
 
   // Updates the safe area insets on the current frame.
@@ -4154,13 +4180,6 @@ void WebContentsImpl::ReadyToCommitNavigation(
       net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
 
   SetNotWaitingForResponse();
-
-  // Reset the viewport fit
-  if (display_cutout_host_impl_) {
-    display_cutout_host_impl_->ViewportFitChangedForFrame(
-        navigation_handle->GetRenderFrameHost(),
-        blink::mojom::ViewportFit::kAuto);
-  }
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
