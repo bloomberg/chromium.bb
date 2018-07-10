@@ -35,12 +35,11 @@ class AvSync {
 
   virtual ~AvSync() = default;
 
-  // Notify that the audio and video playback will start at |timestamp|.
-  // |timestamp| is an absolute timestamp on CLOCK_MONOTONIC or
-  // CLOCK_MONOTONIC_RAW. AvSync will typically start upkeeping AV sync after
-  // this is called.
-  // The AV sync code is *not* responsible for starting the video.
-  virtual void NotifyStart(int64_t timestamp) = 0;
+  // Notify that the audio and video playback will start at |timestamp|, from
+  // |pts|. |timestamp| is an absolute timestamp on CLOCK_MONOTONIC or
+  // CLOCK_MONOTONIC_RAW. |pts| is the PTS that the media playback will start
+  // at. AvSync will typically start upkeeping AV sync after this is called.
+  virtual void NotifyStart(int64_t timestamp, int64_t pts) = 0;
 
   // Notify that the audio playback has been stopped. AvSync will typically stop
   // upkeeping AV sync after this call. The AV sync code is *not* responsible

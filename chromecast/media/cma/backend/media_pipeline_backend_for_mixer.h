@@ -56,6 +56,9 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   int64_t GetPlaybackStartTimeForTesting() const {
     return start_playback_timestamp_us_;
   }
+  int64_t GetPlaybackStartPtsForTesting() const {
+    return start_playback_pts_us_;
+  }
 
  protected:
   std::unique_ptr<VideoDecoderForMixer> video_decoder_;
@@ -77,6 +80,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
 
   std::unique_ptr<AvSync> av_sync_;
   int64_t start_playback_timestamp_us_ = INT64_MIN;
+  int64_t start_playback_pts_us_ = INT64_MIN;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

@@ -834,25 +834,35 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
   int64_t playback_start_time =
       backend_for_mixer->GetPlaybackStartTimeForTesting();
 
+  int64_t playback_start_pts =
+      backend_for_mixer->GetPlaybackStartPtsForTesting();
+
   if (backend_for_mixer->audio_decoder() &&
       backend_for_mixer->video_decoder() &&
       backend_for_mixer->MonotonicClockNow() > playback_start_time + 50000) {
     int64_t vpts = 0;
-    int64_t timestamp = 0;
-    EXPECT_TRUE(
-        backend_for_mixer->video_decoder()->GetCurrentPts(&timestamp, &vpts))
+    int64_t vpts_timestamp = 0;
+    EXPECT_TRUE(backend_for_mixer->video_decoder()->GetCurrentPts(
+        &vpts_timestamp, &vpts))
         << "Getting VPTS failed at current time="
         << backend_for_mixer->MonotonicClockNow()
         << " playback should have started at=" << playback_start_time;
 
     // Check video started at the correct time.
-    EXPECT_LT(abs(timestamp - vpts - playback_start_time), 30000);
+    EXPECT_LT(abs((vpts_timestamp - vpts) -
+                  (playback_start_time - playback_start_pts)),
+              16000);
 
-    // TODO(almasrymina): we still have ~150ms difference between audio and
-    // video in some playbacks in the beginning of the video. We need to
-    // reduce that.
-    EXPECT_LT(abs(backend_for_mixer->audio_decoder()->GetCurrentPts() - vpts),
-              150000);
+    // Check AV sync.
+    int64_t apts = 0;
+    int64_t apts_timestamp = 0;
+    EXPECT_TRUE(backend_for_mixer->audio_decoder()->GetTimestampedPts(
+        &apts_timestamp, &apts));
+
+    int64_t av_sync_difference =
+        (apts - apts_timestamp) - (vpts - vpts_timestamp);
+
+    EXPECT_LT(abs(av_sync_difference), 16000);
   }
 #endif
 

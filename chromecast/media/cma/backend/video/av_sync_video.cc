@@ -106,7 +106,7 @@ void AvSyncVideo::UpkeepAvSync() {
   if (!first_video_pts_received_) {
     LOG(INFO) << "Video starting at difference="
               << (new_vpts_timestamp - new_current_vpts) -
-                     playback_start_timestamp_us_;
+                     (playback_start_timestamp_us_ - playback_start_pts_us_);
     first_video_pts_received_ = true;
   }
 
@@ -124,7 +124,7 @@ void AvSyncVideo::UpkeepAvSync() {
   if (!first_audio_pts_received_) {
     LOG(INFO) << "Audio starting at difference="
               << (new_apts_timestamp - new_current_apts) -
-                     playback_start_timestamp_us_;
+                     (playback_start_timestamp_us_ - playback_start_pts_us_);
     first_audio_pts_received_ = true;
   }
 
@@ -375,12 +375,13 @@ void AvSyncVideo::StopAvSync() {
   playback_statistics_timer_.Stop();
 }
 
-void AvSyncVideo::NotifyStart(int64_t timestamp) {
+void AvSyncVideo::NotifyStart(int64_t timestamp, int64_t pts) {
   number_of_soft_corrections_ = 0;
   number_of_hard_corrections_ = 0;
   in_soft_correction_ = false;
   difference_at_start_of_correction_ = 0;
   playback_start_timestamp_us_ = timestamp;
+  playback_start_pts_us_ = pts;
   first_audio_pts_received_ = false;
   first_video_pts_received_ = false;
 
@@ -390,6 +391,7 @@ void AvSyncVideo::NotifyStart(int64_t timestamp) {
 void AvSyncVideo::NotifyStop() {
   StopAvSync();
   playback_start_timestamp_us_ = INT64_MIN;
+  playback_start_pts_us_ = INT64_MIN;
 }
 
 void AvSyncVideo::NotifyPause() {
