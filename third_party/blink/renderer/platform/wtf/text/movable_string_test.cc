@@ -6,11 +6,19 @@
 
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
 
-TEST(MovableStringTest, Simple) {
+class MovableStringTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    MovableStringTable::Instance().SetRendererBackgrounded(false);
+  }
+};
+
+TEST_F(MovableStringTest, Simple) {
   MovableString movable_abc(String("abc").ReleaseImpl());
 
   EXPECT_TRUE(MovableString().IsNull());
@@ -24,7 +32,9 @@ TEST(MovableStringTest, Simple) {
   EXPECT_EQ(copy.Impl(), movable_abc.Impl());
 }
 
-TEST(MovableStringTest, Park) {
+TEST_F(MovableStringTest, Park) {
+  base::HistogramTester histogram_tester;
+
   MovableString movable(String("abc").Impl());
   EXPECT_FALSE(movable.Impl()->is_parked());
   EXPECT_TRUE(movable.Impl()->Park());
@@ -36,9 +46,16 @@ TEST(MovableStringTest, Park) {
   EXPECT_FALSE(movable2.Impl()->Park());
   abc = String();
   EXPECT_TRUE(movable2.Impl()->Park());
+
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kParkedInBackground, 2);
+  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 2);
 }
 
-TEST(MovableStringTest, Unpark) {
+TEST_F(MovableStringTest, Unpark) {
+  base::HistogramTester histogram_tester;
+
   MovableString movable(String("abc").Impl());
   EXPECT_FALSE(movable.Impl()->is_parked());
   EXPECT_TRUE(movable.Impl()->Park());
@@ -47,9 +64,19 @@ TEST(MovableStringTest, Unpark) {
   String unparked = movable.ToString();
   EXPECT_EQ(String("abc"), unparked);
   EXPECT_FALSE(movable.Impl()->is_parked());
+
+  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 2);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kParkedInBackground, 1);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kUnparkedInForeground, 1);
 }
 
-TEST(MovableStringTest, TableSimple) {
+TEST_F(MovableStringTest, TableSimple) {
+  base::HistogramTester histogram_tester;
+
   std::vector<char> data(20000, 'a');
   MovableString movable(String(data.data(), data.size()).ReleaseImpl());
   ASSERT_FALSE(movable.Impl()->is_parked());
@@ -66,20 +93,25 @@ TEST(MovableStringTest, TableSimple) {
   ASSERT_FALSE(table.IsRendererBackgrounded());
   table.MaybeParkAll();
   EXPECT_FALSE(movable.Impl()->is_parked());
+  histogram_tester.ExpectTotalCount("Memory.MovableStringsCount", 0);
 
   table.SetRendererBackgrounded(true);
   ASSERT_TRUE(table.IsRendererBackgrounded());
   table.MaybeParkAll();
   EXPECT_TRUE(movable.Impl()->is_parked());
+  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
 
   // Park and unpark.
   movable.ToString();
   EXPECT_FALSE(movable.Impl()->is_parked());
   table.MaybeParkAll();
   EXPECT_TRUE(movable.Impl()->is_parked());
+  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 2);
 
   // More than one reference, no parking.
-  String alive_unparked = movable.ToString();
+  table.SetRendererBackgrounded(false);
+  String alive_unparked = movable.ToString();  // Unparked in foreground.
+  table.SetRendererBackgrounded(true);
   table.MaybeParkAll();
   EXPECT_FALSE(movable.Impl()->is_parked());
 
@@ -87,10 +119,24 @@ TEST(MovableStringTest, TableSimple) {
   alive_unparked = String();
   table.MaybeParkAll();
   EXPECT_TRUE(movable.Impl()->is_parked());
+
+  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 5);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kParkedInBackground, 3);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kUnparkedInBackground, 1);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kUnparkedInForeground, 1);
 }
 
-TEST(MovableStringTest, TableMultiple) {
-  std::vector<char> data(20000, 'a');
+TEST_F(MovableStringTest, TableMultiple) {
+  base::HistogramTester histogram_tester;
+
+  size_t size_kb = 20;
+  std::vector<char> data(size_kb * 1000, 'a');
   MovableString movable(String(data.data(), data.size()).ReleaseImpl());
   MovableString movable2(String(data.data(), data.size()).ReleaseImpl());
 
@@ -126,6 +172,14 @@ TEST(MovableStringTest, TableMultiple) {
   EXPECT_EQ(1u, table.table_.size());
   other_movable3 = MovableString();
   EXPECT_EQ(0u, table.table_.size());
+
+  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
+  histogram_tester.ExpectUniqueSample("Memory.MovableStringsTotalSizeKb",
+                                      size_kb, 1);
+  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 1);
+  histogram_tester.ExpectBucketCount(
+      "Memory.MovableStringParkingAction",
+      MovableStringImpl::ParkingAction::kParkedInBackground, 1);
 }
 
 }  // namespace WTF

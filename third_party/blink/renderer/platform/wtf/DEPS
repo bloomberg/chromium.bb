@@ -19,6 +19,7 @@ include_rules = [
     "+base/stl_util.h",
     "+base/strings",
     "+base/template_util.h",
+    "+base/test/metrics/histogram_tester.h",
     "+base/threading/thread_checker.h",
     "+base/threading/thread_local_storage.h",
     "+base/time/time.h",

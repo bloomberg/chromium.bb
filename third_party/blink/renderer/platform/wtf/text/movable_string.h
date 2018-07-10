@@ -31,6 +31,14 @@ namespace WTF {
 class WTF_EXPORT MovableStringImpl final
     : public RefCounted<MovableStringImpl> {
  public:
+  // Histogram buckets, exported for testing.
+  enum class ParkingAction {
+    kParkedInBackground = 0,
+    kUnparkedInBackground = 1,
+    kUnparkedInForeground = 2,
+    kMaxValue = kUnparkedInForeground
+  };
+
   MovableStringImpl();
   explicit MovableStringImpl(scoped_refptr<StringImpl>&& impl);
   ~MovableStringImpl();
