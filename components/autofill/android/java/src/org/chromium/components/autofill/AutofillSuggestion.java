@@ -10,13 +10,6 @@ import org.chromium.ui.DropdownItemBase;
  * Autofill suggestion container used to store information needed for each Autofill popup entry.
  */
 public class AutofillSuggestion extends DropdownItemBase {
-    /**
-     * The constant used to specify warning messages in a list of Autofill suggestions.
-     * Has to be kept in sync with {@code POPUP_ITEM_ID_SEPARATOR} enum in
-     * components/autofill/core/browser/popup_item_ids.h
-     */
-    private static final int ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE = -1;
-
     private final String mLabel;
     private final String mSublabel;
     private final int mIconId;
@@ -78,7 +71,7 @@ public class AutofillSuggestion extends DropdownItemBase {
 
     @Override
     public int getLabelFontColorResId() {
-        if (mSuggestionId == ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE) {
+        if (mSuggestionId == PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE) {
             return R.color.insecure_context_payment_disabled_message_text;
         }
         return super.getLabelFontColorResId();
