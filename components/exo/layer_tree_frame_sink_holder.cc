@@ -5,6 +5,7 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
 #include "ash/shell.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
@@ -124,8 +125,7 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
   for (auto& resource : resources) {
     // Skip resources that are also in last frame. This can happen if
     // the frame sink id changed.
-    if (std::find(last_frame_resources_.begin(), last_frame_resources_.end(),
-                  resource.id) != last_frame_resources_.end()) {
+    if (base::ContainsValue(last_frame_resources_, resource.id)) {
       continue;
     }
     auto it = release_callbacks_.find(resource.id);

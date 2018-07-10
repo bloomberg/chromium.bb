@@ -19,6 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -1358,8 +1359,7 @@ class BookmarkModelFaviconTest : public testing::Test,
   }
 
   bool WasNodeUpdated(const BookmarkNode* node) {
-    return std::find(updated_nodes_.begin(), updated_nodes_.end(), node) !=
-           updated_nodes_.end();
+    return base::ContainsValue(updated_nodes_, node);
   }
 
   void ClearUpdatedNodes() {

@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -123,8 +124,7 @@ void InfoBarContainer::OnManagerShuttingDown(InfoBarManager* manager) {
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,
                                   size_t position,
                                   bool animate) {
-  DCHECK(std::find(infobars_.begin(), infobars_.end(), infobar) ==
-      infobars_.end());
+  DCHECK(!base::ContainsValue(infobars_, infobar));
   DCHECK_LE(position, infobars_.size());
   infobars_.insert(infobars_.begin() + position, infobar);
   PlatformSpecificAddInfoBar(infobar, position);
