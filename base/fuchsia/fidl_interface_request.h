@@ -5,8 +5,9 @@
 #ifndef BASE_FUCHSIA_FIDL_INTERFACE_REQUEST_H_
 #define BASE_FUCHSIA_FIDL_INTERFACE_REQUEST_H_
 
+#include <lib/zx/channel.h>
+
 #include "base/base_export.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 
@@ -35,9 +36,7 @@ class BASE_EXPORT FidlInterfaceRequest {
  public:
   template <typename Interface>
   explicit FidlInterfaceRequest(fidl::InterfaceRequest<Interface> request)
-      : FidlInterfaceRequest(
-            Interface::Name_,
-            ScopedZxHandle::FromZxChannel(request.TakeChannel())) {}
+      : FidlInterfaceRequest(Interface::Name_, request.TakeChannel()) {}
 
   // Creates a new request for |Interface| and binds the client end to the
   // |stub|. |stub| can be used immediately after the request is created, even
@@ -58,7 +57,7 @@ class BASE_EXPORT FidlInterfaceRequest {
   // |channel|.
   static FidlInterfaceRequest CreateFromChannelUnsafe(
       const char* interface_name,
-      ScopedZxHandle channel);
+      zx::channel channel);
 
   bool is_valid() const { return interface_name_ && channel_; }
 
@@ -67,13 +66,13 @@ class BASE_EXPORT FidlInterfaceRequest {
   // Extracts the channel handle to be passed to service implementation. The
   // request becomes invalid after this call, i.e. TakeChannel() can be called
   // only once.
-  ScopedZxHandle TakeChannel();
+  zx::channel TakeChannel();
 
  private:
-  FidlInterfaceRequest(const char* interface_name, ScopedZxHandle channel);
+  FidlInterfaceRequest(const char* interface_name, zx::channel channel);
 
   const char* interface_name_;
-  ScopedZxHandle channel_;
+  zx::channel channel_;
 
   DISALLOW_COPY_AND_ASSIGN(FidlInterfaceRequest);
 };

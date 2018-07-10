@@ -21,11 +21,11 @@
 
 #include "base/win/scoped_handle.h"
 #elif defined(OS_FUCHSIA)
+#include <lib/zx/channel.h>
 #include <zircon/process.h>
 #include <zircon/processargs.h>
-#include <zircon/syscalls.h>
 
-#include "base/fuchsia/scoped_zx_handle.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #elif defined(OS_POSIX)
 #include <fcntl.h>
 #include <sys/types.h>
@@ -84,12 +84,12 @@ void CreateChannel(PlatformHandle* local_endpoint,
 #elif defined(OS_FUCHSIA)
 void CreateChannel(PlatformHandle* local_endpoint,
                    PlatformHandle* remote_endpoint) {
-  zx_handle_t handles[2] = {};
-  zx_status_t result = zx_channel_create(0, &handles[0], &handles[1]);
-  CHECK_EQ(ZX_OK, result);
+  zx::channel handles[2];
+  zx_status_t result = zx::channel::create(0, &handles[0], &handles[1]);
+  ZX_CHECK(result == ZX_OK, result);
 
-  *local_endpoint = PlatformHandle(base::ScopedZxHandle(handles[0]));
-  *remote_endpoint = PlatformHandle(base::ScopedZxHandle(handles[1]));
+  *local_endpoint = PlatformHandle(std::move(handles[0]));
+  *remote_endpoint = PlatformHandle(std::move(handles[1]));
   DCHECK(local_endpoint->is_valid());
   DCHECK(remote_endpoint->is_valid());
 }
@@ -251,7 +251,7 @@ PlatformChannelEndpoint PlatformChannel::RecoverPassedEndpointFromString(
     DLOG(ERROR) << "Invalid PlatformChannel endpoint string.";
     return PlatformChannelEndpoint();
   }
-  return PlatformChannelEndpoint(PlatformHandle(base::ScopedZxHandle(
+  return PlatformChannelEndpoint(PlatformHandle(zx::handle(
       zx_take_startup_handle(base::checked_cast<uint32_t>(handle_value)))));
 #elif defined(OS_ANDROID)
   base::GlobalDescriptors::Key key = -1;

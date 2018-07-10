@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_FUCHSIA)
-#include "base/fuchsia/scoped_zx_handle.h"
+#include <lib/zx/vmo.h>
 #elif defined(OS_POSIX)
 #include "base/files/scoped_file.h"
 #elif defined(OS_WIN)
@@ -51,7 +51,7 @@ CreateSharedMemoryRegionHandleFromPlatformHandles(
   return handle.TakeHandle();
 #elif defined(OS_FUCHSIA)
   DCHECK(!readonly_handle.is_valid());
-  return handle.TakeHandle();
+  return zx::vmo(handle.TakeHandle());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   DCHECK(!readonly_handle.is_valid());
   return handle.TakeMachPort();

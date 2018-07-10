@@ -135,7 +135,7 @@ scoped_refptr<MessageAttachment> MessageAttachment::CreateFromMojoHandle(
   }
 #elif defined(OS_FUCHSIA)
   if (type == Type::FUCHSIA_HANDLE) {
-    base::ScopedZxHandle handle;
+    zx::handle handle;
     if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE)
       handle.reset(static_cast<zx_handle_t>(platform_handle.value));
     return new internal::HandleAttachmentFuchsia(std::move(handle));

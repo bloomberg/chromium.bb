@@ -6,6 +6,8 @@
 
 #include <lib/fdio/limits.h>
 #include <lib/fdio/util.h>
+#include <lib/zx/channel.h>
+#include <lib/zx/handle.h>
 #include <zircon/processargs.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
@@ -14,9 +16,8 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/scoped_file.h"
-#include "base/fuchsia/scoped_zx_handle.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
@@ -65,8 +66,8 @@ bool UnwrapPlatformHandle(PlatformHandleInTransit handle,
   }
 
   if (result <= 0) {
-    DLOG(ERROR) << "fdio_transfer_fd(" << handle.handle().GetFD().get()
-                << "): " << zx_status_get_string(result);
+    ZX_DLOG(ERROR, result) << "fdio_transfer_fd("
+                           << handle.handle().GetFD().get() << ")";
     return false;
   }
   DCHECK_LE(result, FDIO_MAX_HANDLES);
@@ -77,16 +78,15 @@ bool UnwrapPlatformHandle(PlatformHandleInTransit handle,
   for (int i = 0; i < result; ++i) {
     DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
     DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
-    handles_out->emplace_back(PlatformHandleInTransit(
-        PlatformHandle(base::ScopedZxHandle(handles[i]))));
+    handles_out->emplace_back(
+        PlatformHandleInTransit(PlatformHandle(zx::handle(handles[i]))));
   }
 
   return true;
 }
 
-PlatformHandle WrapPlatformHandles(
-    Channel::Message::HandleInfoEntry info,
-    base::circular_deque<base::ScopedZxHandle>* handles) {
+PlatformHandle WrapPlatformHandles(Channel::Message::HandleInfoEntry info,
+                                   base::circular_deque<zx::handle>* handles) {
   PlatformHandle out_handle;
   if (!info.type) {
     out_handle = PlatformHandle(std::move(handles->front()));
@@ -108,7 +108,7 @@ PlatformHandle WrapPlatformHandles(
     zx_status_t result =
         fdio_create_fd(fd_handles, fd_infos, info.count, out_fd.receive());
     if (result != ZX_OK) {
-      DLOG(ERROR) << "fdio_create_fd: " << zx_status_get_string(result);
+      ZX_DLOG(ERROR, result) << "fdio_create_fd";
       return PlatformHandle();
     }
 
@@ -197,7 +197,8 @@ class ChannelFuchsia : public Channel,
                  scoped_refptr<base::TaskRunner> io_task_runner)
       : Channel(delegate),
         self_(this),
-        handle_(connection_params.TakeEndpoint().TakePlatformHandle()),
+        handle_(
+            connection_params.TakeEndpoint().TakePlatformHandle().TakeHandle()),
         io_task_runner_(io_task_runner) {
     CHECK(handle_.is_valid());
   }
@@ -293,7 +294,7 @@ class ChannelFuchsia : public Channel,
     read_watch_.reset(
         new base::MessagePumpForIO::ZxHandleWatchController(FROM_HERE));
     base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
-        handle_.GetHandle().get(), true /* persistent */,
+        handle_.get(), true /* persistent */,
         ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED, read_watch_.get(), this);
   }
 
@@ -302,7 +303,7 @@ class ChannelFuchsia : public Channel,
 
     read_watch_.reset();
     if (leak_handle_)
-      handle_.release();
+      ignore_result(handle_.release());
     handle_.reset();
 
     // May destroy the |this| if it was the last reference.
@@ -319,7 +320,7 @@ class ChannelFuchsia : public Channel,
   // base::MessagePumpForIO::ZxHandleWatcher:
   void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-    CHECK_EQ(handle, handle_.GetHandle().get());
+    CHECK_EQ(handle, handle_.get());
     DCHECK((ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED) & signals);
 
     // We always try to read message(s), even if ZX_CHANNEL_PEER_CLOSED, since
@@ -339,12 +340,12 @@ class ChannelFuchsia : public Channel,
       uint32_t handles_read = 0;
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
 
-      zx_status_t read_result = zx_channel_read(
-          handle_.GetHandle().get(), 0, buffer, handles, buffer_capacity,
-          base::size(handles), &bytes_read, &handles_read);
+      zx_status_t read_result =
+          handle_.read(0, buffer, buffer_capacity, &bytes_read, handles,
+                       base::size(handles), &handles_read);
       if (read_result == ZX_OK) {
         for (size_t i = 0; i < handles_read; ++i) {
-          incoming_handles_.push_back(base::ScopedZxHandle(handles[i]));
+          incoming_handles_.emplace_back(handles[i]);
         }
         total_bytes_read += bytes_read;
         if (!OnReadComplete(bytes_read, &next_read_size)) {
@@ -358,8 +359,8 @@ class ChannelFuchsia : public Channel,
       } else if (read_result == ZX_ERR_SHOULD_WAIT) {
         break;
       } else {
-        DLOG_IF(ERROR, read_result != ZX_ERR_PEER_CLOSED)
-            << "zx_channel_read: " << zx_status_get_string(read_result);
+        ZX_DLOG_IF(ERROR, read_result != ZX_ERR_PEER_CLOSED, read_result)
+            << "zx_channel_read";
         read_error = true;
         break;
       }
@@ -395,9 +396,8 @@ class ChannelFuchsia : public Channel,
 
       write_bytes = std::min(message_view.data_num_bytes(),
                              static_cast<size_t>(ZX_CHANNEL_MAX_MSG_BYTES));
-      zx_status_t result =
-          zx_channel_write(handle_.GetHandle().get(), 0, message_view.data(),
-                           write_bytes, handles, handles_count);
+      zx_status_t result = handle_.write(0, message_view.data(), write_bytes,
+                                         handles, handles_count);
       // zx_channel_write() consumes |handles| whether or not it succeeds, so
       // release() our copies now, to avoid them being double-closed.
       for (auto& outgoing_handle : outgoing_handles)
@@ -406,9 +406,8 @@ class ChannelFuchsia : public Channel,
       if (result != ZX_OK) {
         // TODO(fuchsia): Handle ZX_ERR_SHOULD_WAIT flow-control errors, once
         // the platform starts generating them. See https://crbug.com/754084.
-        DLOG_IF(ERROR, result != ZX_ERR_PEER_CLOSED)
-            << "WriteNoLock(zx_channel_write): "
-            << zx_status_get_string(result);
+        ZX_DLOG_IF(ERROR, result != ZX_ERR_PEER_CLOSED, result)
+            << "WriteNoLock(zx_channel_write)";
         return false;
       }
 
@@ -438,12 +437,12 @@ class ChannelFuchsia : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  PlatformHandle handle_;
+  zx::channel handle_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These members are only used on the IO thread.
   std::unique_ptr<base::MessagePumpForIO::ZxHandleWatchController> read_watch_;
-  base::circular_deque<base::ScopedZxHandle> incoming_handles_;
+  base::circular_deque<zx::handle> incoming_handles_;
   bool leak_handle_ = false;
 
   base::Lock write_lock_;

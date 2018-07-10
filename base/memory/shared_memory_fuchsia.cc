@@ -6,13 +6,12 @@
 
 #include <limits>
 
-#include <zircon/process.h>
+#include <lib/zx/vmar.h>
+#include <lib/zx/vmo.h>
 #include <zircon/rights.h>
-#include <zircon/syscalls.h>
 
 #include "base/bits.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
 
@@ -53,23 +52,21 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   requested_size_ = options.size;
   mapped_size_ = bits::Align(requested_size_, GetPageSize());
-  ScopedZxHandle vmo;
-  zx_status_t status = zx_vmo_create(mapped_size_, 0, vmo.receive());
+  zx::vmo vmo;
+  zx_status_t status = zx::vmo::create(mapped_size_, 0, &vmo);
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_vmo_create failed, status=" << status;
+    ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return false;
   }
 
   if (!options.executable) {
     // If options.executable isn't set, drop that permission by replacement.
     const int kNoExecFlags = ZX_DEFAULT_VMO_RIGHTS & ~ZX_RIGHT_EXECUTE;
-    ScopedZxHandle old_vmo(std::move(vmo));
-    status = zx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
+    status = vmo.replace(kNoExecFlags, &vmo);
     if (status != ZX_OK) {
-      ZX_DLOG(ERROR, status) << "zx_handle_replace()";
+      ZX_DLOG(ERROR, status) << "zx_handle_replace";
       return false;
     }
-    ignore_result(old_vmo.release());
   }
 
   shm_ = SharedMemoryHandle(vmo.release(), mapped_size_,
@@ -91,10 +88,10 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (!read_only_)
     flags |= ZX_VM_FLAG_PERM_WRITE;
   uintptr_t addr;
-  zx_status_t status = zx_vmar_map(zx_vmar_root_self(), 0, shm_.GetHandle(),
-                                   offset, bytes, flags, &addr);
+  zx_status_t status = zx::vmar::root_self().map(
+      0, *zx::unowned_vmo(shm_.GetHandle()), offset, bytes, flags, &addr);
   if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "zx_vmar_map failed";
+    ZX_DLOG(ERROR, status) << "zx_vmar_map";
     return false;
   }
   memory_ = reinterpret_cast<void*>(addr);
@@ -112,7 +109,7 @@ bool SharedMemory::Unmap() {
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
 
   uintptr_t addr = reinterpret_cast<uintptr_t>(memory_);
-  zx_status_t status = zx_vmar_unmap(zx_vmar_root_self(), addr, mapped_size_);
+  zx_status_t status = zx::vmar::root_self().unmap(addr, mapped_size_);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmar_unmap";
     return false;
@@ -148,16 +145,17 @@ SharedMemoryHandle SharedMemory::DuplicateHandle(
 }
 
 SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
-  zx_handle_t duped_handle;
+  zx::vmo duped_handle;
   const int kNoWriteOrExec =
       ZX_DEFAULT_VMO_RIGHTS &
       ~(ZX_RIGHT_WRITE | ZX_RIGHT_EXECUTE | ZX_RIGHT_SET_PROPERTY);
-  zx_status_t status =
-      zx_handle_duplicate(shm_.GetHandle(), kNoWriteOrExec, &duped_handle);
+  zx_status_t status = zx::unowned_vmo(shm_.GetHandle())
+                           ->duplicate(kNoWriteOrExec, &duped_handle);
   if (status != ZX_OK)
     return SharedMemoryHandle();
 
-  SharedMemoryHandle handle(duped_handle, shm_.GetSize(), shm_.GetGUID());
+  SharedMemoryHandle handle(duped_handle.release(), shm_.GetSize(),
+                            shm_.GetGUID());
   handle.SetOwnershipPassesToIPC(true);
   return handle;
 }

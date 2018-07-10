@@ -16,7 +16,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "base/fuchsia/scoped_zx_handle.h"
+#include <lib/zx/process.h>
 #endif
 
 #if defined(OS_MACOSX)
@@ -188,7 +188,7 @@ class BASE_EXPORT Process {
 #if defined(OS_WIN)
   win::ScopedHandle process_;
 #elif defined(OS_FUCHSIA)
-  ScopedZxHandle process_;
+  zx::process process_;
 #else
   ProcessHandle process_;
 #endif

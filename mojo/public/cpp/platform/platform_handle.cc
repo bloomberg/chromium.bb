@@ -15,9 +15,8 @@
 #include <lib/fdio/limits.h>
 #include <unistd.h>
 #include <zircon/status.h>
-#include <zircon/syscalls.h>
 
-#include "base/fuchsia/scoped_zx_handle.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach_vm.h>
 
@@ -49,14 +48,13 @@ base::win::ScopedHandle CloneHandle(const base::win::ScopedHandle& handle) {
   return base::win::ScopedHandle(dupe);
 }
 #elif defined(OS_FUCHSIA)
-base::ScopedZxHandle CloneHandle(const base::ScopedZxHandle& handle) {
+zx::handle CloneHandle(const zx::handle& handle) {
   DCHECK(handle.is_valid());
 
-  zx_handle_t dupe;
-  zx_status_t result =
-      zx_handle_duplicate(handle.get(), ZX_RIGHT_SAME_RIGHTS, &dupe);
-  DLOG_IF(ERROR, result != ZX_OK) << "zx_duplicate_handle failed: " << result;
-  return base::ScopedZxHandle(dupe);
+  zx::handle dupe;
+  zx_status_t result = handle.duplicate(ZX_RIGHT_SAME_RIGHTS, &dupe);
+  ZX_DLOG_IF(ERROR, result != ZX_OK, result) << "zx_duplicate_handle";
+  return std::move(dupe);
 }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 base::mac::ScopedMachSendRight CloneMachPort(
@@ -92,7 +90,7 @@ PlatformHandle::PlatformHandle(PlatformHandle&& other) {
 PlatformHandle::PlatformHandle(base::win::ScopedHandle handle)
     : type_(Type::kHandle), handle_(std::move(handle)) {}
 #elif defined(OS_FUCHSIA)
-PlatformHandle::PlatformHandle(base::ScopedZxHandle handle)
+PlatformHandle::PlatformHandle(zx::handle handle)
     : type_(Type::kHandle), handle_(std::move(handle)) {}
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 PlatformHandle::PlatformHandle(base::mac::ScopedMachSendRight mach_port)
@@ -187,7 +185,7 @@ PlatformHandle PlatformHandle::FromMojoPlatformHandle(
       base::win::ScopedHandle(LongToHandle(static_cast<long>(handle->value))));
 #elif defined(OS_FUCHSIA)
   if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE)
-    return PlatformHandle(base::ScopedZxHandle(handle->value));
+    return PlatformHandle(zx::handle(handle->value));
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT) {
     return PlatformHandle(base::mac::ScopedMachSendRight(

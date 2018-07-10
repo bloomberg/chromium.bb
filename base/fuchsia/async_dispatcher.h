@@ -6,9 +6,11 @@
 #define BASE_FUCHSIA_ASYNC_DISPATCHER_H_
 
 #include <lib/async/dispatcher.h>
+#include <lib/zx/event.h>
+#include <lib/zx/port.h>
+#include <lib/zx/timer.h>
 
 #include "base/containers/linked_list.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -64,9 +66,9 @@ class BASE_EXPORT AsyncDispatcher : public async_t {
 
   THREAD_CHECKER(thread_checker_);
 
-  ScopedZxHandle port_;
-  ScopedZxHandle timer_;
-  ScopedZxHandle stop_event_;
+  zx::port port_;
+  zx::timer timer_;
+  zx::event stop_event_;
 
   LinkedList<WaitState> wait_list_;
 

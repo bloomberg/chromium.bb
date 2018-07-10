@@ -30,13 +30,16 @@
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
+#include <lib/zx/event.h>
+#include <lib/zx/port.h>
+#include <lib/zx/process.h>
+#include <lib/zx/thread.h>
+#include <lib/zx/time.h>
 #include <zircon/process.h>
-#include <zircon/syscalls.h>
 #include <zircon/syscalls/debug.h>
-#include <zircon/syscalls/exception.h>
 #include <zircon/syscalls/port.h>
+#include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #endif
 
 namespace logging {
@@ -308,9 +311,9 @@ static const unsigned int kThreadEndedPortKey = 2u;
 
 struct thread_data_t {
   // For signaling the thread ended properly.
-  zx_handle_t event;
+  zx::unowned_event event;
   // For registering thread termination.
-  zx_handle_t port;
+  zx::unowned_port port;
   // Location where the thread is expected to crash.
   int death_location;
 };
@@ -322,10 +325,10 @@ void* CrashThread(void* arg) {
   int death_location = data->death_location;
 
   // Register the exception handler on the port.
-  status = zx_task_bind_exception_port(zx_thread_self(), data->port,
-                                       kExceptionPortKey, 0);
+  status =
+      zx::thread::self().bind_exception_port(*data->port, kExceptionPortKey, 0);
   if (status != ZX_OK) {
-    zx_object_signal(data->event, 0, ZX_USER_SIGNAL_0);
+    data->event->signal(0, ZX_USER_SIGNAL_0);
     return nullptr;
   }
 
@@ -335,47 +338,48 @@ void* CrashThread(void* arg) {
 
   // We should never reach this point, signal the thread incorrectly ended
   // properly.
-  zx_object_signal(data->event, 0, ZX_USER_SIGNAL_0);
+  data->event->signal(0, ZX_USER_SIGNAL_0);
   return nullptr;
 }
 
 // Runs the CrashThread function in a separate thread.
 void SpawnCrashThread(int death_location, uintptr_t* child_crash_addr) {
-  base::ScopedZxHandle port;
-  base::ScopedZxHandle event;
+  zx::port port;
+  zx::event event;
   zx_status_t status;
 
-  status = zx_port_create(0, port.receive());
+  status = zx::port::create(0, &port);
   ASSERT_EQ(status, ZX_OK);
-  status = zx_event_create(0, event.receive());
+  status = zx::event::create(0, &event);
   ASSERT_EQ(status, ZX_OK);
 
   // Register the thread ended event on the port.
-  status = zx_object_wait_async(event.get(), port.get(), kThreadEndedPortKey,
-                                ZX_USER_SIGNAL_0, ZX_WAIT_ASYNC_ONCE);
+  status = event.wait_async(port, kThreadEndedPortKey, ZX_USER_SIGNAL_0,
+                            ZX_WAIT_ASYNC_ONCE);
   ASSERT_EQ(status, ZX_OK);
 
   // Run the thread.
-  thread_data_t thread_data = {event.get(), port.get(), death_location};
+  thread_data_t thread_data = {zx::unowned_event(event), zx::unowned_port(port),
+                               death_location};
   pthread_t thread;
   int ret = pthread_create(&thread, nullptr, CrashThread, &thread_data);
   ASSERT_EQ(ret, 0);
 
   // Wait on the port.
   zx_port_packet_t packet;
-  status = zx_port_wait(port.get(), ZX_TIME_INFINITE, &packet);
+  status = port.wait(zx::time::infinite(), &packet);
   ASSERT_EQ(status, ZX_OK);
   // Check the thread did crash and not terminate.
   ASSERT_EQ(packet.key, kExceptionPortKey);
 
   // Get the crash address.
-  zx_handle_t zircon_thread;
-  status = zx_object_get_child(zx_process_self(), packet.exception.tid,
-                               ZX_RIGHT_SAME_RIGHTS, &zircon_thread);
+  zx::thread zircon_thread;
+  status = zx::process::self().get_child(packet.exception.tid,
+                                         ZX_RIGHT_SAME_RIGHTS, &zircon_thread);
   ASSERT_EQ(status, ZX_OK);
   zx_thread_state_general_regs_t buffer;
-  status = zx_thread_read_state(zircon_thread, ZX_THREAD_STATE_GENERAL_REGS,
-                                &buffer, sizeof(buffer));
+  status = zircon_thread.read_state(ZX_THREAD_STATE_GENERAL_REGS, &buffer,
+                                    sizeof(buffer));
   ASSERT_EQ(status, ZX_OK);
 #if defined(ARCH_CPU_X86_64)
   *child_crash_addr = static_cast<uintptr_t>(buffer.rip);
@@ -385,7 +389,7 @@ void SpawnCrashThread(int death_location, uintptr_t* child_crash_addr) {
 #error Unsupported architecture
 #endif
 
-  status = zx_task_kill(zircon_thread);
+  status = zircon_thread.kill();
   ASSERT_EQ(status, ZX_OK);
 }
 

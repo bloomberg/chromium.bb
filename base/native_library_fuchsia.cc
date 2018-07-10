@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <lib/fdio/io.h>
+#include <lib/zx/vmo.h>
 #include <stdio.h>
 #include <zircon/dlfcn.h>
 #include <zircon/status.h>
@@ -15,7 +16,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/safe_strerror.h"
@@ -53,9 +53,9 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
     return nullptr;
   }
 
-  base::ScopedZxHandle vmo;
-  zx_status_t status =
-      fdio_get_vmo_clone(library.GetPlatformFile(), vmo.receive());
+  zx::vmo vmo;
+  zx_status_t status = fdio_get_vmo_clone(library.GetPlatformFile(),
+                                          vmo.reset_and_get_address());
   if (status != ZX_OK) {
     if (error) {
       error->message = base::StringPrintf("fdio_get_vmo_clone: %s",

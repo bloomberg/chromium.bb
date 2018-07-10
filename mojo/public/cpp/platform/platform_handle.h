@@ -14,7 +14,7 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
 #elif defined(OS_FUCHSIA)
-#include "base/fuchsia/scoped_zx_handle.h"
+#include <lib/zx/handle.h>
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/scoped_mach_port.h"
 #endif
@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #if defined(OS_WIN)
   explicit PlatformHandle(base::win::ScopedHandle handle);
 #elif defined(OS_FUCHSIA)
-  explicit PlatformHandle(base::ScopedZxHandle handle);
+  explicit PlatformHandle(zx::handle handle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   explicit PlatformHandle(base::mac::ScopedMachSendRight mach_port);
 #endif
@@ -116,8 +116,8 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   bool is_valid() const { return is_valid_fd() || is_valid_handle(); }
   bool is_valid_handle() const { return handle_.is_valid(); }
   bool is_handle() const { return type_ == Type::kHandle; }
-  const base::ScopedZxHandle& GetHandle() const { return handle_; }
-  base::ScopedZxHandle TakeHandle() {
+  const zx::handle& GetHandle() const { return handle_; }
+  zx::handle TakeHandle() {
     if (type_ == Type::kHandle)
       type_ = Type::kNone;
     return std::move(handle_);
@@ -172,7 +172,7 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #if defined(OS_WIN)
   base::win::ScopedHandle handle_;
 #elif defined(OS_FUCHSIA)
-  base::ScopedZxHandle handle_;
+  zx::handle handle_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::mac::ScopedMachSendRight mach_port_;
 #endif
