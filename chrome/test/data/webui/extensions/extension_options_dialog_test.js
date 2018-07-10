@@ -40,11 +40,11 @@ cr.define('extension_options_dialog_tests', function() {
       // Try showing the dialog.
       assertFalse(isDialogVisible());
       optionsDialog.show(data);
-      const dialogElement = optionsDialog.$.dialog.getNative();
-      return test_util.whenAttributeIs(dialogElement, 'open', '')
+      return test_util.eventToPromise('cr-dialog-open', optionsDialog)
           .then(function() {
             assertTrue(isDialogVisible());
 
+            const dialogElement = optionsDialog.$.dialog.getNative();
             const rect = dialogElement.getBoundingClientRect();
             assertGE(rect.width, extensions.OptionsDialogMinWidth);
             assertLE(rect.height, extensions.OptionsDialogMaxHeight);

@@ -174,12 +174,10 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       ui.handleFindShortcut();
       assertTrue(ui.$$('cr-toolbar').getSearchField().isSearchFocused());
 
+      const whenDialogOpen = test_util.eventToPromise('cr-dialog-open', ui);
       settings.navigateTo(settings.routes.RESET_DIALOG);
-      Polymer.dom.flush();
 
-      let dialog = assert(ui.querySelector(
-          '* /deep/ settings-reset-profile-dialog /deep/ cr-dialog'));
-      return test_util.whenAttributeIs(dialog, 'open', '').then(function() {
+      return whenDialogOpen.then(function() {
         assertFalse(ui.canHandleFindShortcut());
       });
     });

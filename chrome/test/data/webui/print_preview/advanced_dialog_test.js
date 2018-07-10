@@ -61,7 +61,7 @@ cr.define('advanced_dialog_test', function() {
       dialog.destination = destination;
 
       document.body.appendChild(dialog);
-      return test_util.whenAttributeIs(dialog.$.dialog, 'open', '');
+      return test_util.eventToPromise('cr-dialog-open', dialog);
     }
 
     /**

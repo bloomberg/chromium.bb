@@ -165,18 +165,22 @@ Polymer({
 
   showModal: function() {
     this.$.dialog.showModal();
-    this.open = this.$.dialog.open;
+    assert(this.$.dialog.open);
+    this.open = true;
+    this.fire('cr-dialog-open');
   },
 
   cancel: function() {
     this.fire('cancel');
     this.$.dialog.close();
-    this.open = this.$.dialog.open;
+    assert(!this.$.dialog.open);
+    this.open = false;
   },
 
   close: function() {
     this.$.dialog.close('success');
-    this.open = this.$.dialog.open;
+    assert(!this.$.dialog.open);
+    this.open = false;
   },
 
   /**

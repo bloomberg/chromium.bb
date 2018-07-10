@@ -704,15 +704,15 @@ cr.define('certificate_manager', function() {
      */
     function testDialogOpensOnAction(dialogTagName, eventDetail) {
       assertFalse(!!page.shadowRoot.querySelector(dialogTagName));
+      const whenDialogOpen = test_util.eventToPromise('cr-dialog-open', page);
       page.fire(CertificateActionEvent, eventDetail);
-      Polymer.dom.flush();
-      const dialog = page.shadowRoot.querySelector(dialogTagName);
-      assertTrue(!!dialog);
 
       // Some dialogs are opened after some async operation to fetch initial
       // data. Ensure that the underlying cr-dialog is actually opened before
       // returning.
-      return test_util.whenAttributeIs(dialog.$.dialog, 'open', '');
+      return whenDialogOpen.then(() => {
+        assertTrue(!!page.shadowRoot.querySelector(dialogTagName));
+      });
     }
 
     test('OpensDialog_DeleteConfirmation', function() {
