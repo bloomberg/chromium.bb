@@ -22,17 +22,81 @@ var onMagicWindowXRFrameCallback = null;
 var onExclusiveXRFrameCallback = null;
 var shouldSubmitFrame = true;
 var hasPresentedFrame = false;
+var arSessionRequestWouldTriggerPermissionPrompt = null;
 
-var magicWindowSession = null;
-var magicWindowFrameOfRef = null;
-var exclusiveSession = null;
-var exclusiveFrameOfRef = null;
+var sessionTypes = Object.freeze({
+  EXCLUSIVE: 1,
+  AR: 2,
+  MAGIC_WINDOW: 3
+});
+var sessionTypeToRequest = sessionTypes.EXCLUSIVE;
+
+class SessionInfo {
+  constructor() {
+    this.session = null;
+    this.frameOfRef = null;
+  }
+
+  get currentSession() {
+    return this.session;
+  }
+
+  get currentFrameOfRef() {
+    return this.frameOfRef;
+  }
+
+  set currentSession(session) {
+    this.session = session;
+  }
+
+  set currentFrameOfRef(frameOfRef) {
+    this.frameOfRef = frameOfRef;
+  }
+
+  clearSession() {
+    this.session = null;
+    this.frameOfRef = null;
+  }
+}
+
+var sessionInfos = {}
+sessionInfos[sessionTypes.EXCLUSIVE] = new SessionInfo();
+sessionInfos[sessionTypes.AR] = new SessionInfo();
+sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
+
+function getSessionType(session) {
+  if (session.exclusive) {
+    return sessionTypes.EXCLUSIVE;
+  } else if (sessionInfos[sessionTypes.AR].currentSession == session) {
+    // TODO(bsheedy): Replace this check if there's ever something like
+    // session.ar for checking if the session is AR-capable.
+    return sessionTypes.AR;
+  } else {
+    return sessionTypes.MAGIC_WINDOW;
+  }
+}
 
 function onRequestSession() {
-  xrDevice.requestSession({exclusive: true}).then( (session) => {
-    exclusiveSession = session;
-    onSessionStarted(session);
-  });
+  switch (sessionTypeToRequest) {
+    case sessionTypes.EXCLUSIVE:
+      xrDevice.requestSession({exclusive: true}).then( (session) => {
+        sessionInfos[sessionTypes.EXCLUSIVE].currentSession = session;
+        onSessionStarted(session);
+      });
+      break;
+    case sessionTypes.AR:
+      let sessionOptions = {
+        requestAR: true,
+        outputContext: webglCanvas.getContext('xrpresent'),
+      };
+      xrDevice.requestSession(sessionOptions).then((session) => {
+        sessionInfos[sessionTypes.AR].currentSession = session;
+        onSessionStarted(session);
+      });
+      break;
+    default:
+      throw 'Given unsupported WebXR session type enum ' + sessionTypeToRequest;
+  }
 }
 
 function onSessionStarted(session) {
@@ -45,7 +109,7 @@ function onSessionStarted(session) {
     let offscreenCanvas = document.createElement('canvas');
     gl = offscreenCanvas.getContext('webgl', glAttribs);
     if (!gl) {
-      console.error('Failed to get WebGL context');
+      throw 'Failed to get WebGL context';
     }
     gl.clearColor(0.0, 1.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -55,28 +119,21 @@ function onSessionStarted(session) {
 
   session.baseLayer = new XRWebGLLayer(session, gl);
   session.requestFrameOfReference('eye-level').then( (frameOfRef) => {
-    if (session.exclusive) {
-      exclusiveFrameOfRef = frameOfRef;
-    } else {
-      magicWindowFrameOfRef = frameOfRef;
-    }
+    sessionInfos[getSessionType(session)].currentFrameOfRef = frameOfRef;
     session.requestAnimationFrame(onXRFrame);
   });
 }
 
 function onSessionEnded(event) {
-  if (event.session.exclusive)
-    exclusiveSession = null
-  else
-    magicWindowSession = null;
+  sessionInfos[getSessionType(event.session)].clearSession();
 }
 
 function onXRFrame(t, frame) {
   let session = frame.session;
   session.requestAnimationFrame(onXRFrame);
-  let frameOfRef = session.exclusive ?
-                   exclusiveFrameOfRef :
-                   magicWindowFrameOfRef;
+
+  let frameOfRef = null;
+  frameOfRef = sessionInfos[getSessionType(session)].currentFrameOfRef;
   let pose = frame.getDevicePose(frameOfRef);
 
   // Exiting the rAF callback without dirtying the GL context is interpreted
@@ -87,20 +144,38 @@ function onXRFrame(t, frame) {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
 
-  // If in an exclusive session, set canvas to blue. Otherwise, red.
-  if (session.exclusive) {
-    gl.clearColor(0.0, 0.0, 1.0, 1.0);
-    if (onExclusiveXRFrameCallback) {
-      onExclusiveXRFrameCallback(session, frame, gl);
-    }
-  } else {
-    if (onMagicWindowXRFrameCallback) {
-      onMagicWindowXRFrameCallback(session, frame);
-    }
-    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+  // If in an exclusive session, set canvas to blue.
+  // If in an AR session, just draw the camera.
+  // Otherwise, red.
+  switch (getSessionType(session)) {
+    case sessionTypes.EXCLUSIVE:
+      gl.clearColor(0.0, 0.0, 1.0, 1.0);
+      if (onExclusiveXRFrameCallback) {
+        onExclusiveXRFrameCallback(session, frame, gl);
+      }
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      break;
+    case sessionTypes.AR:
+      // Do nothing for now
+      break;
+    default:
+      if (onMagicWindowXRFrameCallback) {
+        onMagicWindowXRFrameCallback(session, frame);
+      }
+      gl.clearColor(1.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   hasPresentedFrame = true;
+}
+
+function checkIfArSessionWouldTriggerPermissionPrompt() {
+  arSessionRequestWouldTriggerPermissionPrompt = null;
+  navigator.permissions.query({name: 'camera'}).then( (permission) => {
+    arSessionRequestWouldTriggerPermissionPrompt = permission.state == 'prompt';
+  }, () => {
+    throw 'Permission query rejected';
+  });
 }
 
 // Try to get an XRDevice and set up a non-exclusive session with it
@@ -113,11 +188,22 @@ if (navigator.xr) {
     // Set up the device to have a non-exclusive session (magic window) drawing
     // into the full screen canvas on the page
     let ctx = webglCanvas.getContext('xrpresent');
-    device.requestSession({outputContext: ctx}).then( (session) => {
-      onSessionStarted(session);
-    }).then( () => {
+    // WebXR for VR tests want a non-exclusive session to be automatically
+    // created on page load to reduce the amount of boilerplate code necessary.
+    // However, doing so during AR tests currently fails due to AR sessions
+    // always requiring a user gesture. So, allow a page to set a variable
+    // before loading this JavaScript file if they wish to skip the automatic
+    // non-exclusive session creation.
+    if (typeof shouldAutoCreateNonExclusiveSession === 'undefined'
+        || shouldAutoCreateNonExclusiveSession === true) {
+      device.requestSession({outputContext: ctx}).then( (session) => {
+        onSessionStarted(session);
+      }).then( () => {
+        initializationSteps['magicWindowStarted'] = true;
+      });
+    } else {
       initializationSteps['magicWindowStarted'] = true;
-    });
+    }
   }).then( () => {
     initializationSteps['getXRDevice'] = true;
   });

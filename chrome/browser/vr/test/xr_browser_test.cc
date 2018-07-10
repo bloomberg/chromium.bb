@@ -24,19 +24,23 @@ void XrBrowserTestBase::EnterPresentation(content::WebContents* web_contents) {
 void XrBrowserTestBase::EnterPresentationOrFail(
     content::WebContents* web_contents) {
   EnterPresentation(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean("exclusiveSession!= null", kPollTimeoutLong,
-                                    web_contents));
+  EXPECT_TRUE(PollJavaScriptBoolean(
+      "sessionInfos[sessionTypes.EXCLUSIVE].currentSession != null",
+      kPollTimeoutLong, web_contents));
 }
 
 void XrBrowserTestBase::ExitPresentation(content::WebContents* web_contents) {
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "exclusiveSession.end()"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "sessionInfos[sessionTypes.EXCLUSIVE].currentSession.end()"));
 }
 
 void XrBrowserTestBase::ExitPresentationOrFail(
     content::WebContents* web_contents) {
   ExitPresentation(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean("exclusiveSession == null",
-                                    kPollTimeoutLong, web_contents));
+  EXPECT_TRUE(PollJavaScriptBoolean(
+      "sessionInfos[sessionTypes.EXCLUSIVE].currentSession == null",
+      kPollTimeoutLong, web_contents));
 }
 
 }  // namespace vr

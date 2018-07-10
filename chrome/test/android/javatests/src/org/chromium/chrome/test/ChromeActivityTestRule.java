@@ -56,6 +56,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.RenderProcessLimit;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.reflect.AnnotatedElement;
@@ -619,6 +620,13 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     public String getTestName() {
         return mCurrentTestName;
+    }
+
+    /**
+     * Gets the ChromeActivityTestRule's EmbeddedTestServer instance if it has one.
+     */
+    public EmbeddedTestServer getTestServer() {
+        return null;
     }
 
     /**
