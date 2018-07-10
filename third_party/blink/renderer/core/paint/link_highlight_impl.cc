@@ -205,10 +205,10 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
       absolute_quad.Move(ToScrollOffset(scroll_position));
     }
 
-    absolute_quad.SetP1(RoundedIntPoint(absolute_quad.P1()));
-    absolute_quad.SetP2(RoundedIntPoint(absolute_quad.P2()));
-    absolute_quad.SetP3(RoundedIntPoint(absolute_quad.P3()));
-    absolute_quad.SetP4(RoundedIntPoint(absolute_quad.P4()));
+    absolute_quad.SetP1(FloatPoint(RoundedIntPoint(absolute_quad.P1())));
+    absolute_quad.SetP2(FloatPoint(RoundedIntPoint(absolute_quad.P2())));
+    absolute_quad.SetP3(FloatPoint(RoundedIntPoint(absolute_quad.P3())));
+    absolute_quad.SetP4(FloatPoint(RoundedIntPoint(absolute_quad.P4())));
     FloatQuad transformed_quad =
         paint_invalidation_container.AbsoluteToLocalQuad(
             absolute_quad, kUseTransforms | kTraverseDocumentBoundaries);

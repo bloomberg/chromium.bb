@@ -75,7 +75,7 @@ static FloatRect ToNormalizedRect(const FloatRect& absolute_rect,
   // For overflow:scroll we need to get where the actual origin is independently
   // of the scroll.
   if (container->HasOverflowClip())
-    scrolled_origin = -IntPoint(container->ScrolledContentOffset());
+    scrolled_origin = -FloatPoint(container->ScrolledContentOffset());
 
   FloatRect overflow_rect(scrolled_origin,
                           FloatSize(container->MaxLayoutOverflow()));

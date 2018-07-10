@@ -2663,9 +2663,9 @@ static void CollectDrawableLayersForLayerListRecursively(
     // extraneous layers are still attached. In future we will disable all
     // those layer hierarchy code so we won't need this line.
     layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
-                       layer->CcLayer(), layer->GetOffsetFromTransformNode(),
-                       layer->Size());
+    RecordForeignLayer(
+        context, *layer, DisplayItem::kForeignLayerWrapper, layer->CcLayer(),
+        FloatPoint(layer->GetOffsetFromTransformNode()), layer->Size());
   }
 
   if (scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer()) {
@@ -2673,10 +2673,11 @@ static void CollectDrawableLayersForLayerListRecursively(
         context.GetPaintController(), layer->GetContentsPropertyTreeState(),
         *layer, DisplayItem::kForeignLayerContentsWrapper);
     auto size = contents_layer->bounds();
-    RecordForeignLayer(
-        context, *layer, DisplayItem::kForeignLayerContentsWrapper,
-        std::move(contents_layer), layer->GetContentsOffsetFromTransformNode(),
-        IntSize(size.width(), size.height()));
+    RecordForeignLayer(context, *layer,
+                       DisplayItem::kForeignLayerContentsWrapper,
+                       std::move(contents_layer),
+                       FloatPoint(layer->GetContentsOffsetFromTransformNode()),
+                       IntSize(size.width(), size.height()));
   }
 
   DCHECK(!layer->ContentsClippingMaskLayer());
@@ -3627,7 +3628,7 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
     const IntPoint& point_in_viewport) const {
   IntPoint point_in_root_frame = FlooredIntPoint(
       frame_->GetPage()->GetVisualViewport().ViewportCSSPixelsToRootFrame(
-          point_in_viewport));
+          FloatPoint(point_in_viewport)));
   return ConvertFromRootFrame(point_in_root_frame);
 }
 

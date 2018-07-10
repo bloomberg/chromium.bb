@@ -554,8 +554,8 @@ void CompositedLayerMapping::UpdateAfterPartResize() {
       FloatPoint parent_position = child_containment_layer_
                                        ? child_containment_layer_->GetPosition()
                                        : FloatPoint();
-      document_layer->SetPosition(FlooredIntPoint(
-          FloatPoint(ContentsBox().Location()) - parent_position));
+      document_layer->SetPosition(FloatPoint(FlooredIntPoint(
+          FloatPoint(ContentsBox().Location()) - parent_position)));
     }
   }
 }
@@ -1128,7 +1128,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     layers[i].paint_layer->SetSubpixelAccumulation(subpixel_accumulation);
   }
 
-  squashing_layer_->SetPosition(squash_layer_bounds.Location());
+  squashing_layer_->SetPosition(FloatPoint(squash_layer_bounds.Location()));
   squashing_layer_->SetSize(squash_layer_bounds.Size());
   // We can't squashing_layer_->SetOffsetFromLayoutObject().
   // Squashing layer has special paint and invalidation logic that already
@@ -2184,7 +2184,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
     Scrollbar* h_bar = owning_layer_.GetScrollableArea()->HorizontalScrollbar();
     if (h_bar) {
       IntRect frame_rect = h_bar->FrameRect();
-      layer->SetPosition(frame_rect.Location());
+      layer->SetPosition(FloatPoint(frame_rect.Location()));
       layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
       layer->SetSize(frame_rect.Size());
       if (layer->HasContentsLayer())
@@ -2197,7 +2197,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
     Scrollbar* v_bar = owning_layer_.GetScrollableArea()->VerticalScrollbar();
     if (v_bar) {
       IntRect frame_rect = v_bar->FrameRect();
-      layer->SetPosition(frame_rect.Location());
+      layer->SetPosition(FloatPoint(frame_rect.Location()));
       layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
       layer->SetSize(frame_rect.Size());
       if (layer->HasContentsLayer())

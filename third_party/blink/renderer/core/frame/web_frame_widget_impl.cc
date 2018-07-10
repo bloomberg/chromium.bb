@@ -94,7 +94,8 @@ const float kIdealPaddingRatio = 0.3f;
 // location and size.
 FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
   FloatRect result(to_normalize);
-  result.SetLocation(to_normalize.Location() + (-base_rect.Location()));
+  result.SetLocation(
+      FloatPoint(to_normalize.Location() + (-base_rect.Location())));
   result.Scale(1.0 / base_rect.Width(), 1.0 / base_rect.Height());
   return result;
 }

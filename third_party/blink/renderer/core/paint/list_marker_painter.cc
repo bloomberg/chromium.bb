@@ -147,10 +147,10 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   text_run_paint_info.bounds = FloatRect(EnclosingIntRect(marker));
   const SimpleFontData* font_data =
       layout_list_marker_.Style()->GetFont().PrimaryFont();
-  IntPoint text_origin =
-      IntPoint(marker.X().Round(),
-               marker.Y().Round() +
-                   (font_data ? font_data->GetFontMetrics().Ascent() : 0));
+  FloatPoint text_origin =
+      FloatPoint(marker.X().Round(),
+                 marker.Y().Round() +
+                     (font_data ? font_data->GetFontMetrics().Ascent() : 0));
 
   // Text is not arbitrary. We can judge whether it's RTL from the first
   // character, and we only need to handle the direction RightToLeft for now.
@@ -180,11 +180,13 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   if (layout_list_marker_.Style()->IsLeftToRightDirection()) {
     context.DrawText(font, text_run_paint_info, text_origin);
     context.DrawText(font, suffix_run_info,
-                     text_origin + IntSize(font.Width(text_run), 0));
+                     text_origin + FloatSize(IntSize(font.Width(text_run), 0)));
   } else {
     context.DrawText(font, suffix_run_info, text_origin);
-    context.DrawText(font, text_run_paint_info,
-                     text_origin + IntSize(font.Width(suffix_run), 0));
+    // Is the truncation to IntSize below meaningful or a bug?
+    context.DrawText(
+        font, text_run_paint_info,
+        text_origin + FloatSize(IntSize(font.Width(suffix_run), 0)));
   }
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.

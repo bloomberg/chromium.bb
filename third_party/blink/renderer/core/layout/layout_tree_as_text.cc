@@ -632,7 +632,7 @@ static void Write(WTF::TextStream& ts,
     PaintLayerScrollableArea* scrollable_area = layer.GetScrollableArea();
     ScrollOffset adjusted_scroll_offset =
         scrollable_area->GetScrollOffset() +
-        ToFloatSize(scrollable_area->ScrollOrigin());
+        ToFloatSize(FloatPoint(scrollable_area->ScrollOrigin()));
     if (adjusted_scroll_offset.Width())
       ts << " scrollX " << adjusted_scroll_offset.Width();
     if (adjusted_scroll_offset.Height())

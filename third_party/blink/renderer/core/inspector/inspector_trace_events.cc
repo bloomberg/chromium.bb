@@ -929,6 +929,11 @@ std::unique_ptr<TracedValue> InspectorXhrLoadEvent::Data(
   return value;
 }
 
+static FloatPoint LocalCoordToFloatPoint(LocalFrameView* view,
+                                         const FloatPoint& local) {
+  return FloatPoint(view->ConvertToRootFrame(RoundedIntPoint(local)));
+}
+
 static void LocalToPageQuad(const LayoutObject& layout_object,
                             const LayoutRect& rect,
                             FloatQuad* quad) {
@@ -936,10 +941,10 @@ static void LocalToPageQuad(const LayoutObject& layout_object,
   LocalFrameView* view = frame->View();
   FloatQuad absolute =
       layout_object.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)));
-  quad->SetP1(view->ConvertToRootFrame(RoundedIntPoint(absolute.P1())));
-  quad->SetP2(view->ConvertToRootFrame(RoundedIntPoint(absolute.P2())));
-  quad->SetP3(view->ConvertToRootFrame(RoundedIntPoint(absolute.P3())));
-  quad->SetP4(view->ConvertToRootFrame(RoundedIntPoint(absolute.P4())));
+  quad->SetP1(LocalCoordToFloatPoint(view, absolute.P1()));
+  quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
+  quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
+  quad->SetP4(LocalCoordToFloatPoint(view, absolute.P4()));
 }
 
 const char InspectorLayerInvalidationTrackingEvent::

@@ -627,8 +627,8 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   if (pen_style == kNoStroke)
     return;
 
-  FloatPoint p1 = point1;
-  FloatPoint p2 = point2;
+  FloatPoint p1 = FloatPoint(point1);
+  FloatPoint p2 = FloatPoint(point2);
   bool is_vertical_line = (p1.X() == p2.X());
   int width = roundf(StrokeThickness());
 

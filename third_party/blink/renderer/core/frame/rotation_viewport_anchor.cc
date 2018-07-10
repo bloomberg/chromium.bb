@@ -85,7 +85,7 @@ void MoveIntoRect(FloatRect& inner, const IntRect& outer) {
   // VisualViewport::maximumScrollPosition() does the same.
   // The value of minumumPosition is already adjusted since it is
   // constructed from an integer point.
-  maximum_position = FlooredIntPoint(maximum_position);
+  maximum_position = FloatPoint(FlooredIntPoint(maximum_position));
 
   FloatPoint inner_origin = inner.Location();
   inner_origin = inner_origin.ExpandedTo(minimum_position);
@@ -192,8 +192,8 @@ void RotationViewportAnchor::RestoreToAnchor() {
   ComputeOrigins(visual_viewport_size, main_frame_origin,
                  visual_viewport_origin);
 
-  LayoutViewport().SetScrollOffset(ToScrollOffset(main_frame_origin),
-                                   kProgrammaticScroll);
+  LayoutViewport().SetScrollOffset(
+      ToScrollOffset(FloatPoint(main_frame_origin)), kProgrammaticScroll);
 
   // Set scale before location, since location can be clamped on setting scale.
   visual_viewport_->SetScale(new_page_scale_factor);

@@ -473,7 +473,7 @@ bool ThemePainterMac::PaintSliderThumb(const Node* node,
   paint_info.context.FillEllipse(border_bounds);
   paint_info.context.SetDrawLooper(nullptr);
 
-  IntRect fill_bounds = EnclosedIntRect(unzoomed_rect);
+  FloatRect fill_bounds = FloatRect(EnclosedIntRect(unzoomed_rect));
   scoped_refptr<Gradient> fill_gradient = Gradient::CreateLinear(
       fill_bounds.MinXMinYCorner(), fill_bounds.MinXMaxYCorner());
   fill_gradient->AddColorStop(0.0, fill_gradient_top_color);

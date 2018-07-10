@@ -46,7 +46,7 @@ class RasterInvalidatorTest : public testing::Test {
     FloatRect r = rect;
     if (mapper)
       mapper(r);
-    r.MoveBy(layer_offset);
+    r.MoveBy(FloatPoint(layer_offset));
     return EnclosingIntRect(r);
   }
 
