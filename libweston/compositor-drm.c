@@ -1944,10 +1944,13 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
 	struct drm_output *output = output_state->output;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_plane *scanout_plane = output->scanout_plane;
 	struct drm_plane_state *state;
 	struct drm_fb *fb;
 	pixman_box32_t *extents;
+
+	assert(!b->sprites_are_broken);
 
 	/* Check the view spans exactly the output size, calculated in the
 	 * logical co-ordinate space. */
@@ -3004,8 +3007,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct drm_fb *fb;
 	unsigned int i;
 
-	if (b->sprites_are_broken)
-		return NULL;
+	assert(!b->sprites_are_broken);
 
 	fb = drm_fb_get_from_view(output_state, ev);
 	if (!fb)
@@ -3260,6 +3262,7 @@ drm_output_propose_state(struct weston_output *output_base,
 			 struct drm_pending_state *pending_state)
 {
 	struct drm_output *output = to_drm_output(output_base);
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_output_state *state;
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region, occluded_region;
@@ -3340,6 +3343,9 @@ drm_output_propose_state(struct weston_output *output_base,
 			next_plane = drm_output_prepare_cursor_view(state, ev);
 
 		if (next_plane == NULL && !drm_view_is_opaque(ev))
+			next_plane = primary;
+
+		if (next_plane == NULL && b->sprites_are_broken)
 			next_plane = primary;
 
 		if (next_plane == NULL)
