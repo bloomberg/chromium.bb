@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 234 tests; 166 PASS, 68 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS web-bluetooth interfaces.
 PASS Partial interface Navigator: original interface defined
 FAIL Bluetooth interface: existence and properties of interface object assert_equals: prototype of Bluetooth is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
@@ -14,7 +13,7 @@ FAIL Bluetooth interface: attribute onavailabilitychanged assert_true: The proto
 PASS Unscopable handled correctly for onavailabilitychanged property on Bluetooth
 FAIL Bluetooth interface: attribute referringDevice assert_true: The prototype object must have a property "referringDevice" expected true got false
 PASS Unscopable handled correctly for referringDevice property on Bluetooth
-FAIL Bluetooth interface: operation requestDevice(RequestDeviceOptions) assert_own_property: interface prototype object missing non-static operation expected property "requestDevice" missing
+PASS Bluetooth interface: operation requestDevice(RequestDeviceOptions)
 PASS Unscopable handled correctly for requestDevice(RequestDeviceOptions) on Bluetooth
 FAIL Bluetooth interface: attribute ongattserverdisconnected assert_true: The prototype object must have a property "ongattserverdisconnected" expected true got false
 PASS Unscopable handled correctly for ongattserverdisconnected property on Bluetooth
