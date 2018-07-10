@@ -90,6 +90,11 @@ void CastBrowserProcess::SetAccessibilityManager(
   DCHECK(!accessibility_manager_);
   accessibility_manager_ = std::move(accessibility_manager);
 }
+
+void CastBrowserProcess::ClearAccessibilityManager() {
+  accessibility_manager_.reset();
+}
+
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
 #endif  // defined(USE_AURA)

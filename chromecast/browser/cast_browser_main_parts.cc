@@ -646,6 +646,7 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   extensions::ExtensionsBrowserClient::Set(nullptr);
   extensions_browser_client_.reset();
   user_pref_service_.reset();
+  cast_browser_process_->ClearAccessibilityManager();
 #endif
 
 #if defined(OS_ANDROID)
