@@ -1101,12 +1101,7 @@ static void decode_token_recon_block(AV1Decoder *const pbi,
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &td->xd;
   const int num_planes = av1_num_planes(cm);
-  const int bw = mi_size_wide[bsize];
-  const int bh = mi_size_high[bsize];
-  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
-  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
 
-  set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   MB_MODE_INFO *mbmi = xd->mi[0];
   CFL_CTX *const cfl = &xd->cfl;
   cfl->is_chroma_reference = is_chroma_reference(
@@ -1389,10 +1384,37 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
+static void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
+                                           ThreadData *const td, int mi_row,
+                                           int mi_col, BLOCK_SIZE bsize) {
+  AV1_COMMON *const cm = &pbi->common;
+  MACROBLOCKD *const xd = &td->xd;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  const int num_planes = av1_num_planes(cm);
+
+  const int offset = mi_row * cm->mi_stride + mi_col;
+  const TileInfo *const tile = &xd->tile;
+
+  xd->mi = cm->mi_grid_visible + offset;
+  xd->cfl.mi_row = mi_row;
+  xd->cfl.mi_col = mi_col;
+
+  set_plane_n4(xd, bw, bh, num_planes);
+
+  // Distance of Mb to the various image edges. These are specified to 8th pel
+  // as they are always compared to values that are in 1/8th pel units
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+
+  av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                       mi_col, 0, num_planes);
+}
+
 static void decode_block(AV1Decoder *const pbi, ThreadData *const td,
                          int mi_row, int mi_col, aom_reader *r,
                          PARTITION_TYPE partition, BLOCK_SIZE bsize) {
   (void)partition;
+  set_offsets_for_pred_and_recon(pbi, td, mi_row, mi_col, bsize);
   decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
 }
 
