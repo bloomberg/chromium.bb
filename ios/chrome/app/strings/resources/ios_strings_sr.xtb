@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Штампање није успело.</translation>
 <translation id="1125564390852150847">Направи нову картицу.</translation>
 <translation id="1145536944570833626">Избришите постојеће податке</translation>
+<translation id="1157102636231978136">Подаци и активност прегледања, синхронизовани на Google налог</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1172898394251786223">Следеће поље</translation>
 <translation id="1176932207622159128">Није могуће сачувати слику</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Повезивање са интернетом није могуће.</translation>
 <translation id="1254117744268754948">Избор директоријума</translation>
 <translation id="1265739287306757398">Сазнајте како</translation>
+<translation id="127138278192656016">Користите синхронизацију и све услуге</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Нема ставки</translation>
 <translation id="1700629756560807968">Број изабраних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Додирните двапут да бисте инсталирали.</translation>
+<translation id="17513872634828108">Отворене картице</translation>
 <translation id="1752547299766512813">Сачуване лозинке</translation>
 <translation id="1753905327828125965">Најпосећеније</translation>
 <translation id="1809939268435598390">Избриши директоријум</translation>
@@ -262,6 +265,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5857090052475505287">Нови директоријум</translation>
 <translation id="5857770089550859117">За почетак синхронизације потребна је приступна фраза.</translation>
 <translation id="5860033963881614850">Искључено</translation>
+<translation id="5865733239029070421">Аутоматски шаље Google-у статистику коришћења и извештаје о отказивању</translation>
 <translation id="5869029295770560994">Важи</translation>
 <translation id="5871497086027727873">1 ставка је премештена</translation>
 <translation id="5911030830365207728">Google преводилац</translation>
@@ -385,6 +389,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="7961015016161918242">Никад</translation>
 <translation id="7971521879845308059">Блокирај искачуће прозоре</translation>
+<translation id="7981313251711023384">Странице се учитавају унапред ради бржег прегледања и претраживања</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="8019783059653722575">Ово вам омогућава да чувате и отпремате слике.</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>

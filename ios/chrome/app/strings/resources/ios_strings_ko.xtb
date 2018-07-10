@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">인쇄 실패</translation>
 <translation id="1125564390852150847">새 탭 만들기</translation>
 <translation id="1145536944570833626">기존 데이터 삭제</translation>
+<translation id="1157102636231978136">Google 계정에 동기화된 인터넷 사용 기록 및 활동입니다.</translation>
 <translation id="1165039591588034296">오류</translation>
 <translation id="1172898394251786223">다음 필드</translation>
 <translation id="1176932207622159128">이미지를 저장할 수 없음</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">인터넷에 연결할 수 없습니다.</translation>
 <translation id="1254117744268754948">폴더 선택</translation>
 <translation id="1265739287306757398">자세히 알아보기</translation>
+<translation id="127138278192656016">동기화 및 모든 서비스 사용</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1323735185997015385">삭제</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">항목 없음</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 선택됨</translation>
 <translation id="1740468249224277719">설치하려면 두 번 탭하세요.</translation>
+<translation id="17513872634828108">열린 탭</translation>
 <translation id="1752547299766512813">비밀번호 저장</translation>
 <translation id="1753905327828125965">자주 방문한 페이지</translation>
 <translation id="1809939268435598390">폴더 삭제</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5857770089550859117">동기화를 시작하려면 암호가 필요합니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
+<translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869029295770560994">확인</translation>
 <translation id="5871497086027727873">1개 항목 이동함</translation>
 <translation id="5911030830365207728">Google 번역</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7971521879845308059">팝업 차단</translation>
+<translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 새로고침</translation>
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="8019783059653722575">액세스를 허용하면 사진을 저장하고 업로드할 수 있습니다.</translation>
 <translation id="802154636333426148">다운로드 실패</translation>

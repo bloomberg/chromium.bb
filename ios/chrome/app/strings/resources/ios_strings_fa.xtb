@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">چاپ انجام نشد.</translation>
 <translation id="1125564390852150847">ایجاد برگه جدید</translation>
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
+<translation id="1157102636231978136">‏داده‌های محصول مرور و فعالیتتان با حساب Google شما همگام‌سازی شد</translation>
 <translation id="1165039591588034296">خطا</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
 <translation id="1176932207622159128">ذخیره تصویر ممکن نشد</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">اتصال به اینترنت امکان‌پذیر نیست.</translation>
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1265739287306757398">با نحوه انجام کار آشنا شوید</translation>
+<translation id="127138278192656016">استفاده از همگام‌سازی و همه سرویس‌ها</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
@@ -51,6 +53,7 @@
 <translation id="1690731385917361335">هیچ موردی وجود ندارد</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> نشانک انتخاب شده است</translation>
 <translation id="1740468249224277719">برای نصب دو ضربه سریع بزنید.</translation>
+<translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1752547299766512813">ذخیره گذرواژه‌ها</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
 <translation id="1809939268435598390">حذف پوشه</translation>
@@ -263,6 +266,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
 <translation id="5857770089550859117">برای شروع همگام‌سازی به عبارت عبور نیاز است.</translation>
 <translation id="5860033963881614850">خاموش</translation>
+<translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
 <translation id="5869029295770560994">بله متوجه شدم</translation>
 <translation id="5871497086027727873">۱ مورد منتقل شد</translation>
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
@@ -386,6 +390,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7971521879845308059">انسداد پنجره‌های بازشو</translation>
+<translation id="7981313251711023384">پیش‌بارگیری صفحه‌ها برای مرور و جستجوی سریع‌تر</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="8019783059653722575">این کار به شما اجازه می‌دهد عکس‌ها را ذخیره و بارگذاری کنید.</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>

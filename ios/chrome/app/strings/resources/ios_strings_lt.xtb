@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Nepav. atsp.</translation>
 <translation id="1125564390852150847">Kurti naują skirtuką.</translation>
 <translation id="1145536944570833626">Ištrinti esamus duomenis.</translation>
+<translation id="1157102636231978136">Su „Google“ paskyra sinchronizuojami jūsų naršymo duomenys ir veikla</translation>
 <translation id="1165039591588034296">Klaida</translation>
 <translation id="1172898394251786223">Kitas laukas</translation>
 <translation id="1176932207622159128">Nepav. išs. vaizdo</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Nepavyksta prisijungti prie interneto.</translation>
 <translation id="1254117744268754948">Pasirinkti aplanką</translation>
 <translation id="1265739287306757398">Sužinoti, kaip tai padaryti</translation>
+<translation id="127138278192656016">Sinchronizavimo ir visų paslaugų naudojimas</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1323735185997015385">Ištrinti</translation>
 <translation id="132683371494960526">Dukart palieskite, kad pakeistumėte viršaplankį.</translation>
@@ -50,6 +52,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="1690731385917361335">Nėra jokių elementų</translation>
 <translation id="1700629756560807968">Pasirinkta: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dukart palieskite, kad įdiegtumėte.</translation>
+<translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1752547299766512813">Išs. slaptažod.</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
 <translation id="1809939268435598390">Ištrinti aplanką</translation>
@@ -262,6 +265,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5857090052475505287">Naujas aplankas</translation>
 <translation id="5857770089550859117">Norint pradėti sinchronizuoti reikalinga slaptafrazė.</translation>
 <translation id="5860033963881614850">Išjungta</translation>
+<translation id="5865733239029070421">Automatiškai siunčia naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
 <translation id="5869029295770560994">Gerai, supratau</translation>
 <translation id="5871497086027727873">Perkelta elementų: 1</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
@@ -385,6 +389,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7971521879845308059">Blok. iššok. l.</translation>
+<translation id="7981313251711023384">Iš anksto įkelti puslapius, kad naršymo ir paieškos procesai vyktų greičiau</translation>
 <translation id="7982789257301363584">Tinklas</translation>
 <translation id="8019783059653722575">Taip galite išsaugoti ir įkelti nuotraukas.</translation>
 <translation id="802154636333426148">Įvyko atsisiuntimo klaida</translation>

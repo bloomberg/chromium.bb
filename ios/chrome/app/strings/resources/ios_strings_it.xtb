@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Stampa non riuscita.</translation>
 <translation id="1125564390852150847">Crea una nuova scheda.</translation>
 <translation id="1145536944570833626">Elimina dati esistenti.</translation>
+<translation id="1157102636231978136">L'attività e i dati di navigazione sincronizzati con il tuo account Google</translation>
 <translation id="1165039591588034296">Errore</translation>
 <translation id="1172898394251786223">Campo successivo</translation>
 <translation id="1176932207622159128">Impossibile salvare l'immagine</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Impossibile connettersi a Internet.</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
 <translation id="1265739287306757398">Scopri come</translation>
+<translation id="127138278192656016">Usa la sincronizzazione e tutti i servizi</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1323735185997015385">Elimina</translation>
 <translation id="132683371494960526">Tocca due volte per cambiare la cartella principale.</translation>
@@ -50,6 +52,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="1690731385917361335">Nessun elemento</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selezionati</translation>
 <translation id="1740468249224277719">Tocca due volte per installare.</translation>
+<translation id="17513872634828108">Schede aperte</translation>
 <translation id="1752547299766512813">Salva password</translation>
 <translation id="1753905327828125965">Più visitati</translation>
 <translation id="1809939268435598390">Elimina cartella</translation>
@@ -262,6 +265,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5857090052475505287">Nuova cartella</translation>
 <translation id="5857770089550859117">Per avviare la sincronizzazione è obbligatoria la passphrase.</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5865733239029070421">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 elemento spostato</translation>
 <translation id="5911030830365207728">Google Traduttore</translation>
@@ -385,6 +389,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Blocca popup</translation>
+<translation id="7981313251711023384">Le pagine vengono precaricate per velocizzare la navigazione e la ricerca</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="8019783059653722575">In questo modo puoi salvare e caricare foto.</translation>
 <translation id="802154636333426148">Download non riuscito</translation>

@@ -10,6 +10,7 @@
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Sign in to Chrome to get your bookmarks, passwords and more on all your devices.</translation>
 <translation id="2347208864470321755">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="2436117022029368436">Communicates with Google to improve browsing and Chrome</translation>
 <translation id="2441696206556358796">To save images, tap on Settings to let Chrome use your photos</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="257708665678654955">Would you like Google Chrome to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
@@ -28,6 +29,7 @@
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="415767770115540173">Get a better Google experience in Chrome based on your location.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
+<translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="4615174829807303908">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>

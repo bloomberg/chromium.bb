@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Η εκτύπωση απέτυχε.</translation>
 <translation id="1125564390852150847">Δημιουργία νέας καρτέλας.</translation>
 <translation id="1145536944570833626">Διαγραφή υπαρχόντων δεδομένων.</translation>
+<translation id="1157102636231978136">Τα δεδομένα και η δραστηριότητα περιήγησής σας, συγχρονισμένα με τον Λογαριασμό σας Google</translation>
 <translation id="1165039591588034296">Σφάλμα</translation>
 <translation id="1172898394251786223">Επόμενο πεδίο</translation>
 <translation id="1176932207622159128">Αδύνατη αποθ.εικόνας</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Δεν είναι δυνατή η σύνδεση στο διαδίκτυο.</translation>
 <translation id="1254117744268754948">Επιλογή φακέλου</translation>
 <translation id="1265739287306757398">Μάθετε με ποιον τρόπο</translation>
+<translation id="127138278192656016">Χρήση συγχρονισμού και όλων των υπηρεσιών</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1323735185997015385">Διαγραφή</translation>
 <translation id="132683371494960526">Πατήστε δύο φορές για να αλλάξετε τον γονικό φάκελο.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Κανένα στοιχείο</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία επιλεγμένα</translation>
 <translation id="1740468249224277719">Πατήστε δύο φορές για εγκατάσταση.</translation>
+<translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1752547299766512813">Απ. κωδ. πρόσβ.</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
 <translation id="1809939268435598390">Διαγραφή φακέλου</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">Νέος φάκελος</translation>
 <translation id="5857770089550859117">Απαιτείται φράση πρόσβασης για έναρξη του συγχρονισμού.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
+<translation id="5865733239029070421">Αποστέλλει αυτόματα στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων στην Google</translation>
 <translation id="5869029295770560994">OK, το κατάλαβα!</translation>
 <translation id="5871497086027727873">Μετακινήθηκε 1 στοιχείο</translation>
 <translation id="5911030830365207728">Μετάφραση Google</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="7961015016161918242">Ποτέ</translation>
 <translation id="7971521879845308059">Αποκ. αναδυόμ.</translation>
+<translation id="7981313251711023384">Προφόρτωση ιστοσελίδων για ταχύτερη περιήγηση και αναζήτηση</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
 <translation id="8019783059653722575">Σας επιτρέπει να αποθηκεύετε και να ανεβάζετε φωτογραφίες.</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>

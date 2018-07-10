@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Gagal mencetak.</translation>
 <translation id="1125564390852150847">Buat tab baru.</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
+<translation id="1157102636231978136">Data dan aktivitas browsing internet Anda disinkronkan ke Akun Google</translation>
 <translation id="1165039591588034296">Kesalahan</translation>
 <translation id="1172898394251786223">Bidang berikutnya</translation>
 <translation id="1176932207622159128">Gambar Tak Disimpan</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Tidak dapat tersambung ke internet.</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
+<translation id="127138278192656016">Menggunakan sinkronisasi dan semua layanan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
@@ -50,6 +52,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="1690731385917361335">Tidak ada item</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dipilih</translation>
 <translation id="1740468249224277719">Ketuk dua kali untuk memasang.</translation>
+<translation id="17513872634828108">Buka tab</translation>
 <translation id="1752547299766512813">Simpan Sandi</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
 <translation id="1809939268435598390">Hapus Folder</translation>
@@ -262,6 +265,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="5857090052475505287">Folder Baru</translation>
 <translation id="5857770089550859117">Perlu frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
+<translation id="5865733239029070421">Secara otomatis mengirimkan statistik penggunaan dan laporan kerusakan ke Google</translation>
 <translation id="5869029295770560994">Oke, Mengerti</translation>
 <translation id="5871497086027727873">1 item dipindah</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
@@ -385,6 +389,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7961015016161918242">Jangan pernah</translation>
 <translation id="7971521879845308059">Blokir Pop-up</translation>
+<translation id="7981313251711023384">Pramuat halaman agar browsing dan menelusuri lebih cepat</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="8019783059653722575">Hal ini memungkinkan Anda menyimpan dan mengupload foto.</translation>
 <translation id="802154636333426148">Download gagal</translation>

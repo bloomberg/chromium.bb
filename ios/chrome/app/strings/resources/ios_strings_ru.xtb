@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Ошибка печати</translation>
 <translation id="1125564390852150847">Создать вкладку</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
+<translation id="1157102636231978136">Данные о работе в браузере и о ваших действиях, синхронизированные с аккаунтом Google</translation>
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="1172898394251786223">Следующее поле</translation>
 <translation id="1176932207622159128">Не удалось сохранить</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Не удалось подключиться к Интернету.</translation>
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
+<translation id="127138278192656016">Включить синхронизацию и все сервисы Chrome</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1323735185997015385">Удалить</translation>
 <translation id="132683371494960526">Чтобы изменить родительскую папку, нажмите дважды.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">Закладок нет</translation>
 <translation id="1700629756560807968">Выбрано закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Нажмите дважды, чтобы установить</translation>
+<translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1752547299766512813">Сохр. пароли</translation>
 <translation id="1753905327828125965">Наиболее посещаемые</translation>
 <translation id="1809939268435598390">Удалить папку</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5857770089550859117">Чтобы начать синхронизацию, введите кодовую фразу.</translation>
 <translation id="5860033963881614850">Выкл.</translation>
+<translation id="5865733239029070421">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="5869029295770560994">ОК</translation>
 <translation id="5871497086027727873">Перемещено закладок: 1</translation>
 <translation id="5911030830365207728">Google Переводчик</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
+<translation id="7981313251711023384">Разрешить предварительную настройку страниц для повышения скорости работы и поиска</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="8019783059653722575">Это нужно, чтобы сохранять и загружать фотографии</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>

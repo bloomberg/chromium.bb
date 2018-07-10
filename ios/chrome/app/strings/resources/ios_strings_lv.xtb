@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Neizdevās drukāt.</translation>
 <translation id="1125564390852150847">Izveidot jaunu cilni.</translation>
 <translation id="1145536944570833626">Dzēst esošos datus.</translation>
+<translation id="1157102636231978136">Pārlūkošanas dati un darbības tiek sinhronizētas ar jūsu Google kontu</translation>
 <translation id="1165039591588034296">Kļūda</translation>
 <translation id="1172898394251786223">Nākamais lauks</translation>
 <translation id="1176932207622159128">Attēlu nevar sagl.</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Nevar izveidot savienojumu ar internetu.</translation>
 <translation id="1254117744268754948">Mapes izvēle</translation>
 <translation id="1265739287306757398">Uzzināt, kā to izdarīt</translation>
+<translation id="127138278192656016">Sinhronizēšanas un visu pakalpojumu izmantošana</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1323735185997015385">Dzēst</translation>
 <translation id="132683371494960526">Veiciet dubultskārienu, lai mainītu vecākmapi.</translation>
@@ -50,6 +52,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="1690731385917361335">Nav neviena vienuma</translation>
 <translation id="1700629756560807968">Atlasītas: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Divreiz pieskarieties, lai instalētu.</translation>
+<translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1752547299766512813">Sagl. paroles</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
 <translation id="1809939268435598390">Dzēst mapi</translation>
@@ -262,6 +265,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="5857090052475505287">Jauna mape</translation>
 <translation id="5857770089550859117">Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="5860033963881614850">Izsl.</translation>
+<translation id="5865733239029070421">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem</translation>
 <translation id="5869029295770560994">Labi, sapratu</translation>
 <translation id="5871497086027727873">Tika pārvietots 1 vienums.</translation>
 <translation id="5911030830365207728">Google tulkotājs</translation>
@@ -385,6 +389,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7971521879845308059">Bl. uzn. logus</translation>
+<translation id="7981313251711023384">Veikt lapu pirmsielādi, lai paātrinātu pārlūkošanu un meklēšanu</translation>
 <translation id="7982789257301363584">Tīkls</translation>
 <translation id="8019783059653722575">Varat saglabāt un augšupielādēt fotoattēlus.</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>

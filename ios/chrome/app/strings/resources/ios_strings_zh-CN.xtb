@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">打印操作失败。</translation>
 <translation id="1125564390852150847">创建新的标签页。</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
+<translation id="1157102636231978136">您的浏览数据和活动，会同步到您的 Google 帐号</translation>
 <translation id="1165039591588034296">错误</translation>
 <translation id="1172898394251786223">下一个字段</translation>
 <translation id="1176932207622159128">无法保存图片</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">无法连接到互联网。</translation>
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1265739287306757398">了解如何操作</translation>
+<translation id="127138278192656016">使用同步功能和所有服务</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1323735185997015385">删除</translation>
 <translation id="132683371494960526">点按两次即可更改父文件夹。</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">没有书签</translation>
 <translation id="1700629756560807968">已选中<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="1740468249224277719">点按两次即可安装。</translation>
+<translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1752547299766512813">保存密码</translation>
 <translation id="1753905327828125965">常去网站</translation>
 <translation id="1809939268435598390">删除文件夹</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5857770089550859117">必须输入密码才能开始同步。</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
 <translation id="5869029295770560994">知道了</translation>
 <translation id="5871497086027727873">移动了1项</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
+<translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="8019783059653722575">这样，您就可以保存并上传照片。</translation>
 <translation id="802154636333426148">下载失败</translation>

@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">การพิมพ์ล้มเหลว</translation>
 <translation id="1125564390852150847">สร้างแท็บใหม่</translation>
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
+<translation id="1157102636231978136">ข้อมูลและกิจกรรมการท่องเว็บซึ่งซิงค์กับบัญชี Google</translation>
 <translation id="1165039591588034296">ข้อผิดพลาด</translation>
 <translation id="1172898394251786223">ช่องถัดไป</translation>
 <translation id="1176932207622159128">ไม่สามารถบันทึกภาพ</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">ไม่สามารถเชื่อมต่อกับอินเทอร์เน็ต</translation>
 <translation id="1254117744268754948">เลือกโฟลเดอร์</translation>
 <translation id="1265739287306757398">เรียนรู้วิธี</translation>
+<translation id="127138278192656016">ใช้การซิงค์และบริการทั้งหมด</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1323735185997015385">ลบ</translation>
 <translation id="132683371494960526">แตะ 2 ครั้งเพื่อเปลี่ยนโฟลเดอร์ระดับบนสุด</translation>
@@ -48,6 +50,7 @@
 <translation id="1690731385917361335">ไม่มีรายการ</translation>
 <translation id="1700629756560807968">เลือก <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="1740468249224277719">แตะ 2 ครั้งเพื่อติดตั้ง</translation>
+<translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1752547299766512813">บันทึกรหัสผ่าน</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
 <translation id="1809939268435598390">ลบโฟลเดอร์</translation>
@@ -260,6 +263,7 @@
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
 <translation id="5857770089550859117">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="5865733239029070421">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
 <translation id="5869029295770560994">รับทราบ</translation>
 <translation id="5871497086027727873">ย้ายแล้ว 1 รายการ</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
@@ -383,6 +387,7 @@
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7971521879845308059">บล็อกป๊อปอัป</translation>
+<translation id="7981313251711023384">โหลดหน้าเว็บล่วงหน้าเพื่อให้เรียกดูและค้นหาได้เร็วขึ้น</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
 <translation id="8019783059653722575">ช่วยให้คุณบันทึกและอัปโหลดรูปภาพได้</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>

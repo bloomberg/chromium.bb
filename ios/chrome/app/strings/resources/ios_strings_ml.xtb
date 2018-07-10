@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">പ്രിന്റിംഗ് പരാജയപ്പെട്ടു.</translation>
 <translation id="1125564390852150847">പുതിയ ടാബ് സൃഷ്‌ടിക്കുക.</translation>
 <translation id="1145536944570833626">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക.</translation>
+<translation id="1157102636231978136">നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിച്ചിരിക്കുന്ന, നിങ്ങളുടെ ബ്രൗസിംഗ് ഡാറ്റയും ആക്‌റ്റിവിറ്റിയും</translation>
 <translation id="1165039591588034296">പിശക്</translation>
 <translation id="1172898394251786223">അടുത്ത ഫീൽഡ്</translation>
 <translation id="1176932207622159128">ചിത്രം സംരക്ഷിക്കാൻ കഴിയില്ല.</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">ഇന്‍റര്‍നെറ്റിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിയില്ല.</translation>
 <translation id="1254117744268754948">ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1265739287306757398">എങ്ങനെയെന്നറിയുക</translation>
+<translation id="127138278192656016">സമന്വയവും എല്ലാ സേവനങ്ങളും ഉപയോഗിക്കുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1323735185997015385">ഇല്ലാതാക്കുക</translation>
 <translation id="132683371494960526">പാരന്റ് ഫോൾഡർ മാറ്റാൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക.</translation>
@@ -50,6 +52,7 @@
 <translation id="1690731385917361335">ഇനങ്ങളൊന്നുമില്ല</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> തിരഞ്ഞെടുത്തു</translation>
 <translation id="1740468249224277719">ഇൻസ്‌റ്റാൾ ചെയ്യാൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക.</translation>
+<translation id="17513872634828108">ഓപ്പൺ ടാബുകൾ</translation>
 <translation id="1752547299766512813">സംരക്ഷിത പാസ്‌വേഡുകള്‍</translation>
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="1809939268435598390">ഫോൾഡർ ഇല്ലാതാക്കുക</translation>
@@ -262,6 +265,7 @@
 <translation id="5857090052475505287">പുതിയ ഫോള്‍ഡര്‍</translation>
 <translation id="5857770089550859117">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന്, പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്.</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
+<translation id="5865733239029070421">Google-ലേക്ക് സ്വമേധയാ ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോര്‍ട്ടുകളും അയയ്ക്കുന്നു</translation>
 <translation id="5869029295770560994">മനസ്സിലായി</translation>
 <translation id="5871497086027727873">ഒരിനം നീക്കി</translation>
 <translation id="5911030830365207728">Google വിവർത്തനം</translation>
@@ -385,6 +389,7 @@
 <translation id="7947953824732555851">അംഗീകരിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
 <translation id="7971521879845308059">പോപ്പ്-അപ്പുകൾ തടയുക</translation>
+<translation id="7981313251711023384">കൂടുതൽ വേഗത്തിൽ ബ്രൗസ് ചെയ്യാനും തിരയാനും പേജുകൾ റീലോഡ് ചെയ്യുക</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
 <translation id="8019783059653722575">ഇത് ഫോട്ടോകൾ സംരക്ഷിച്ച്, അപ്‌ലോഡുചെയ്യാൻ നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>

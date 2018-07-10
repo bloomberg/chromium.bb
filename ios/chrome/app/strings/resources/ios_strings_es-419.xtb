@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Se produjo un error en la impresión.</translation>
 <translation id="1125564390852150847">Crea una pestaña nueva.</translation>
 <translation id="1145536944570833626">Borra los datos existentes.</translation>
+<translation id="1157102636231978136">Tus datos de navegación y actividad, sincronizados con tu cuenta de Google</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Campo siguiente</translation>
 <translation id="1176932207622159128">Error al guardar imagen</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">No se puede establecer conexión con Internet.</translation>
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1265739287306757398">Más información</translation>
+<translation id="127138278192656016">Usar la sincronización y todos los servicios</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1323735185997015385">Borrar</translation>
 <translation id="132683371494960526">Presiona dos veces para cambiar la carpeta principal.</translation>
@@ -50,6 +52,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="1690731385917361335">Sin elementos</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
 <translation id="1740468249224277719">Presiona dos veces para instalar.</translation>
+<translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1752547299766512813">Guardar contraseñas</translation>
 <translation id="1753905327828125965">Más visitados</translation>
 <translation id="1809939268435598390">Eliminar carpeta</translation>
@@ -262,6 +265,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
+<translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 artículo movido</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
@@ -385,6 +389,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear ventanas emergentes</translation>
+<translation id="7981313251711023384">Cargar previamente las páginas para acelerar la navegación y las búsquedas</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8019783059653722575">Te permite guardar fotos y cargarlas.</translation>
 <translation id="802154636333426148">Error en la descarga</translation>

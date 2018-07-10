@@ -10,6 +10,7 @@
 <translation id="1112015203684611006">Hindi na-print.</translation>
 <translation id="1125564390852150847">Gumawa ng bagong tab.</translation>
 <translation id="1145536944570833626">I-delete ang kasalukuyang data.</translation>
+<translation id="1157102636231978136">Naka-sync sa iyong Google Account ang data mula sa pag-browse at aktibidad.</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Susunod na field</translation>
 <translation id="1176932207622159128">Di Ma-save Larawan</translation>
@@ -19,6 +20,7 @@
 <translation id="1219674500290482172">Hindi makakonekta sa Internet.</translation>
 <translation id="1254117744268754948">Pumili ng Folder</translation>
 <translation id="1265739287306757398">Alamin kung paano</translation>
+<translation id="127138278192656016">Gamitin ang pag-sync at ang lahat ng serbisyo</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1323735185997015385">I-delete</translation>
 <translation id="132683371494960526">I-double tap upang baguhin ang parent folder.</translation>
@@ -50,6 +52,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="1690731385917361335">Walang mga item</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ang napili</translation>
 <translation id="1740468249224277719">I-double tap upang i-install.</translation>
+<translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1752547299766512813">I-save ang Mga Password</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="1809939268435598390">I-delete ang Folder</translation>
@@ -262,6 +265,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5857090052475505287">Bagong Folder</translation>
 <translation id="5857770089550859117">Kinakailangan ang passphrase upang masimulan ang pag-sync.</translation>
 <translation id="5860033963881614850">Naka-off</translation>
+<translation id="5865733239029070421">Awtomatikong nagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash</translation>
 <translation id="5869029295770560994">OK, Nakuha Ko</translation>
 <translation id="5871497086027727873">1 item ang inilipat</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -385,6 +389,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7971521879845308059">I-block ang Mga Pop-up</translation>
+<translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="8019783059653722575">Binibigyang-daan ka nito upang makapag-save at makapag-upload ng mga larawan.</translation>
 <translation id="802154636333426148">Hindi na-download</translation>
