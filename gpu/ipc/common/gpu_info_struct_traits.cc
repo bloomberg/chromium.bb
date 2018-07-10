@@ -217,6 +217,56 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
          data.ReadMaxResolution(&out->max_resolution);
 }
 
+#if defined(OS_WIN)
+// static
+gpu::mojom::OverlayFormat
+EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::ToMojom(
+    gpu::OverlayFormat format) {
+  switch (format) {
+    case gpu::OverlayFormat::UNKNOWN:
+      return gpu::mojom::OverlayFormat::UNKNOWN;
+    case gpu::OverlayFormat::BGRA:
+      return gpu::mojom::OverlayFormat::BGRA;
+    case gpu::OverlayFormat::YUY2:
+      return gpu::mojom::OverlayFormat::YUY2;
+    case gpu::OverlayFormat::NV12:
+      return gpu::mojom::OverlayFormat::NV12;
+  }
+  NOTREACHED() << "Unknown overlay format: " << static_cast<int>(format);
+  return gpu::mojom::OverlayFormat::UNKNOWN;
+}
+
+bool EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::FromMojom(
+    gpu::mojom::OverlayFormat input,
+    gpu::OverlayFormat* out) {
+  switch (input) {
+    case gpu::mojom::OverlayFormat::UNKNOWN:
+      *out = gpu::OverlayFormat::UNKNOWN;
+      return true;
+    case gpu::mojom::OverlayFormat::BGRA:
+      *out = gpu::OverlayFormat::BGRA;
+      return true;
+    case gpu::mojom::OverlayFormat::YUY2:
+      *out = gpu::OverlayFormat::YUY2;
+      return true;
+    case gpu::mojom::OverlayFormat::NV12:
+      *out = gpu::OverlayFormat::NV12;
+      return true;
+  }
+  NOTREACHED() << "Unknown overlay format: " << input;
+  return false;
+}
+
+// static
+bool StructTraits<
+    gpu::mojom::OverlayCapabilityDataView,
+    gpu::OverlayCapability>::Read(gpu::mojom::OverlayCapabilityDataView data,
+                                  gpu::OverlayCapability* out) {
+  out->is_scaling_supported = data.is_scaling_supported();
+  return data.ReadFormat(&out->format);
+}
+#endif
+
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
     gpu::mojom::GpuInfoDataView data,
     gpu::GPUInfo* out) {
@@ -228,8 +278,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->sandboxed = data.sandboxed();
   out->in_process_gpu = data.in_process_gpu();
   out->passthrough_cmd_decoder = data.passthrough_cmd_decoder();
-  out->direct_composition = data.direct_composition();
-  out->supports_overlays = data.supports_overlays();
   out->can_support_threaded_texture_mailbox =
       data.can_support_threaded_texture_mailbox();
   out->jpeg_decode_accelerator_supported =
@@ -242,6 +290,8 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->oop_rasterization_supported = data.oop_rasterization_supported();
 
 #if defined(OS_WIN)
+  out->direct_composition = data.direct_composition();
+  out->supports_overlays = data.supports_overlays();
   out->supports_dx12 = data.supports_dx12();
   out->supports_vulkan = data.supports_vulkan();
   out->d3d12_feature_level = data.d3d12_feature_level();
@@ -264,6 +314,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsVersion(&out->gl_ws_version) &&
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
 #if defined(OS_WIN)
+         data.ReadOverlayCapabilities(&out->overlay_capabilities) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
 #endif
          data.ReadVideoDecodeAcceleratorCapabilities(

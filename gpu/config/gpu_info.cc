@@ -48,9 +48,39 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
   enumerator->EndVideoEncodeAcceleratorSupportedProfile();
 }
 
+#if defined(OS_WIN)
+void EnumerateOverlayCapability(const gpu::OverlayCapability& cap,
+                                gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginOverlayCapability();
+  enumerator->AddInt("format", static_cast<int>(cap.format));
+  enumerator->AddInt("isScalingSupported", cap.is_scaling_supported);
+  enumerator->EndOverlayCapability();
+}
+#endif
+
 }  // namespace
 
 namespace gpu {
+
+const char* OverlayFormatToString(OverlayFormat format) {
+  switch (format) {
+    case OverlayFormat::UNKNOWN:
+      return "UNKNOWN";
+    case OverlayFormat::BGRA:
+      return "BGRA";
+    case OverlayFormat::YUY2:
+      return "YUY2";
+    case OverlayFormat::NV12:
+      return "NV12";
+  }
+  NOTREACHED() << "Unknown overlay format: " << static_cast<int>(format);
+  return "UNKNOWN";
+}
+
+bool OverlayCapability::operator==(const OverlayCapability& other) const {
+  return format == other.format &&
+         is_scaling_supported == other.is_scaling_supported;
+}
 
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}
@@ -145,10 +175,11 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool sandboxed;
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
-    bool direct_composition;
-    bool supports_overlays;
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
+    bool direct_composition;
+    bool supports_overlays;
+    OverlayCapabilities overlay_capabilities;
     DxDiagNode dx_diagnostics;
     bool supports_dx12;
     bool supports_vulkan;
@@ -205,12 +236,14 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddBool("inProcessGpu", in_process_gpu);
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
-  enumerator->AddBool("directComposition", direct_composition);
-  enumerator->AddBool("supportsOverlays", supports_overlays);
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
+  enumerator->AddBool("directComposition", direct_composition);
+  enumerator->AddBool("supportsOverlays", supports_overlays);
+  for (const auto& cap : overlay_capabilities)
+    EnumerateOverlayCapability(cap, enumerator);
   enumerator->AddBool("supportsDX12", supports_dx12);
   enumerator->AddBool("supportsVulkan", supports_vulkan);
   enumerator->AddInt("d3dFeatureLevel", d3d12_feature_level);

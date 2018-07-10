@@ -90,6 +90,23 @@ struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
+// Subset of DXGI_FORMAT that we're interested in.
+enum class OverlayFormat {
+  UNKNOWN,
+  BGRA,  // DXGI_FORMAT_B8G8R8A8_UNORM
+  YUY2,  // DXGI_FORMAT_YUY2
+  NV12,  // DXGI_FORMAT_NV12
+};
+
+GPU_EXPORT const char* OverlayFormatToString(OverlayFormat format);
+
+struct GPU_EXPORT OverlayCapability {
+  OverlayFormat format;
+  bool is_scaling_supported;
+  bool operator==(const OverlayCapability& other) const;
+};
+using OverlayCapabilities = std::vector<OverlayCapability>;
+
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
     GPUDevice();
@@ -210,18 +227,20 @@ struct GPU_EXPORT GPUInfo {
   // True if the GPU process is using the passthrough command decoder.
   bool passthrough_cmd_decoder;
 
-  // True if we use direct composition surfaces on Windows.
-  bool direct_composition = false;
-
-  // True if the current set of outputs supports overlays.
-  bool supports_overlays = false;
-
   // True only on android when extensions for threaded mailbox sharing are
   // present. Threaded mailbox sharing is used on Android only, so this check
   // is only implemented on Android.
   bool can_support_threaded_texture_mailbox = false;
 
 #if defined(OS_WIN)
+  // True if we use direct composition surfaces on Windows.
+  bool direct_composition = false;
+
+  // True if the current set of outputs supports overlays.
+  bool supports_overlays = false;
+
+  OverlayCapabilities overlay_capabilities;
+
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 
@@ -288,6 +307,9 @@ struct GPU_EXPORT GPUInfo {
     // (according to the DevTools protocol) are being described.
     virtual void BeginAuxAttributes() = 0;
     virtual void EndAuxAttributes() = 0;
+
+    virtual void BeginOverlayCapability() = 0;
+    virtual void EndOverlayCapability() = 0;
 
    protected:
     virtual ~Enumerator() = default;

@@ -54,11 +54,10 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
       gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
     gpu_info->direct_composition = true;
-  }
-
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
-      DirectCompositionSurfaceWin::AreOverlaysSupported()) {
-    gpu_info->supports_overlays = true;
+    gpu_info->supports_overlays =
+        DirectCompositionSurfaceWin::AreOverlaysSupported();
+    gpu_info->overlay_capabilities =
+        DirectCompositionSurfaceWin::GetOverlayCapabilities();
   }
 #endif  // defined(OS_WIN)
 

@@ -75,6 +75,20 @@ struct VideoEncodeAcceleratorSupportedProfile {
   uint32 max_framerate_denominator;
 };
 
+// gpu::OverlayFormat
+enum OverlayFormat {
+  UNKNOWN,
+  BGRA,
+  YUY2,
+  NV12,
+};
+
+// gpu::OverlayCapability
+struct OverlayCapability {
+  OverlayFormat format;
+  bool is_scaling_supported;
+};
+
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
 struct GpuInfo {
   mojo_base.mojom.TimeDelta initialization_time;
@@ -100,9 +114,13 @@ struct GpuInfo {
   bool sandboxed;
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
-  bool direct_composition;
-  bool supports_overlays;
   bool can_support_threaded_texture_mailbox;
+  [EnableIf=is_win]
+  bool direct_composition;
+  [EnableIf=is_win]
+  bool supports_overlays;
+  [EnableIf=is_win]
+  array<OverlayCapability> overlay_capabilities;
   [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
   [EnableIf=is_win]

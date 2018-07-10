@@ -161,15 +161,9 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       "Passthrough Command Decoder",
       std::make_unique<base::Value>(gpu_info.passthrough_cmd_decoder)));
   basic_info->Append(NewDescriptionValuePair(
-      "Direct Composition",
-      std::make_unique<base::Value>(gpu_info.direct_composition)));
-  basic_info->Append(NewDescriptionValuePair(
-      "Supports overlays",
-      std::make_unique<base::Value>(gpu_info.supports_overlays)));
-  basic_info->Append(NewDescriptionValuePair(
       "Sandboxed", std::make_unique<base::Value>(gpu_info.sandboxed)));
-  basic_info->Append(NewDescriptionValuePair(
-      "GPU0", GPUDeviceToString(gpu_info.gpu)));
+  basic_info->Append(
+      NewDescriptionValuePair("GPU0", GPUDeviceToString(gpu_info.gpu)));
   for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
     basic_info->Append(NewDescriptionValuePair(
         base::StringPrintf("GPU%d", static_cast<int>(i + 1)),
@@ -185,6 +179,22 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
   basic_info->Append(
       NewDescriptionValuePair("Desktop compositing", compositor));
+
+  basic_info->Append(NewDescriptionValuePair(
+      "Direct Composition",
+      std::make_unique<base::Value>(gpu_info.direct_composition)));
+  basic_info->Append(NewDescriptionValuePair(
+      "Supports overlays",
+      std::make_unique<base::Value>(gpu_info.supports_overlays)));
+
+  auto overlay_capabilities = std::make_unique<base::ListValue>();
+  for (const auto& cap : gpu_info.overlay_capabilities) {
+    overlay_capabilities->Append(NewDescriptionValuePair(
+        gpu::OverlayFormatToString(cap.format),
+        cap.is_scaling_supported ? "SCALING" : "DIRECT"));
+  }
+  basic_info->Append(NewDescriptionValuePair("Overlay capabilities",
+                                             std::move(overlay_capabilities)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();
@@ -220,20 +230,19 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
                                              gpu_info.pixel_shader_version));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",
                                              gpu_info.vertex_shader_version));
-  basic_info->Append(NewDescriptionValuePair("Max. MSAA samples",
-                                             gpu_info.max_msaa_samples));
+  basic_info->Append(
+      NewDescriptionValuePair("Max. MSAA samples", gpu_info.max_msaa_samples));
   basic_info->Append(NewDescriptionValuePair("Machine model name",
                                              gpu_info.machine_model_name));
   basic_info->Append(NewDescriptionValuePair("Machine model version",
                                              gpu_info.machine_model_version));
-  basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
-                                             gpu_info.gl_vendor));
-  basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
-                                             gpu_info.gl_renderer));
-  basic_info->Append(NewDescriptionValuePair("GL_VERSION",
-                                             gpu_info.gl_version));
-  basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
-                                             gpu_info.gl_extensions));
+  basic_info->Append(NewDescriptionValuePair("GL_VENDOR", gpu_info.gl_vendor));
+  basic_info->Append(
+      NewDescriptionValuePair("GL_RENDERER", gpu_info.gl_renderer));
+  basic_info->Append(
+      NewDescriptionValuePair("GL_VERSION", gpu_info.gl_version));
+  basic_info->Append(
+      NewDescriptionValuePair("GL_EXTENSIONS", gpu_info.gl_extensions));
   basic_info->Append(NewDescriptionValuePair(
       "Disabled Extensions", gpu_feature_info.disabled_extensions));
   basic_info->Append(NewDescriptionValuePair(
@@ -245,8 +254,8 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
                                              gpu_info.gl_ws_extensions));
 #if defined(USE_X11)
-  basic_info->Append(NewDescriptionValuePair("Window manager",
-                                             ui::GuessWindowManagerName()));
+  basic_info->Append(
+      NewDescriptionValuePair("Window manager", ui::GuessWindowManagerName()));
   {
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     std::string value;
@@ -267,8 +276,8 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
 
   std::string reset_strategy =
       base::StringPrintf("0x%04x", gpu_info.gl_reset_notification_strategy);
-  basic_info->Append(NewDescriptionValuePair(
-      "Reset notification strategy", reset_strategy));
+  basic_info->Append(
+      NewDescriptionValuePair("Reset notification strategy", reset_strategy));
 
   basic_info->Append(NewDescriptionValuePair(
       "GPU process crash count",

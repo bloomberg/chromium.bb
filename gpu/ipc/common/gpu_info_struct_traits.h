@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_GPU_STRUCT_TRAITS_H_
-#define CC_IPC_GPU_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
+#define GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/dx_diag_node_struct_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
@@ -136,6 +137,28 @@ struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
 };
 
 template <>
+struct EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat> {
+  static gpu::mojom::OverlayFormat ToMojom(gpu::OverlayFormat format);
+  static bool FromMojom(gpu::mojom::OverlayFormat input,
+                        gpu::OverlayFormat* out);
+};
+
+template <>
+struct StructTraits<gpu::mojom::OverlayCapabilityDataView,
+                    gpu::OverlayCapability> {
+  static bool Read(gpu::mojom::OverlayCapabilityDataView data,
+                   gpu::OverlayCapability* out);
+
+  static gpu::OverlayFormat format(const gpu::OverlayCapability& input) {
+    return input.format;
+  }
+
+  static bool is_scaling_supported(const gpu::OverlayCapability& input) {
+    return input.is_scaling_supported;
+  }
+};
+
+template <>
 struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool Read(gpu::mojom::GpuInfoDataView data, gpu::GPUInfo* out);
 
@@ -228,6 +251,11 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.passthrough_cmd_decoder;
   }
 
+  static bool can_support_threaded_texture_mailbox(const gpu::GPUInfo& input) {
+    return input.can_support_threaded_texture_mailbox;
+  }
+
+#if defined(OS_WIN)
   static bool direct_composition(const gpu::GPUInfo& input) {
     return input.direct_composition;
   }
@@ -236,11 +264,11 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.supports_overlays;
   }
 
-  static bool can_support_threaded_texture_mailbox(const gpu::GPUInfo& input) {
-    return input.can_support_threaded_texture_mailbox;
+  static const gpu::OverlayCapabilities& overlay_capabilities(
+      const gpu::GPUInfo& input) {
+    return input.overlay_capabilities;
   }
 
-#if defined(OS_WIN)
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
   }
@@ -296,4 +324,4 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 };
 
 }  // namespace mojo
-#endif  // CC_IPC_GPU_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
