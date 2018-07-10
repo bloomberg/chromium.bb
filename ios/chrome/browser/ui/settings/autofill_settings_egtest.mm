@@ -217,13 +217,9 @@ NSString* GetTextFieldForID(int categoryId) {
                                           IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
 
-  // Check the "autofill" and "wallet" switches are disabled. Disabled switches
-  // are toggled off.
+  // Check the "autofill" switch is disabled. Disabled switches are toggled off.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
                                           @"autofillItem_switch", NO, NO)]
-      assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"walletItem_switch", NO, NO)]
       assertWithMatcher:grey_notNil()];
 }
 
