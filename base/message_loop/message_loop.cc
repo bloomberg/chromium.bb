@@ -582,8 +582,13 @@ bool MessageLoop::DoIdleWork() {
 //------------------------------------------------------------------------------
 // MessageLoopForUI
 
-MessageLoopForUI::MessageLoopForUI(std::unique_ptr<MessagePump> pump)
-    : MessageLoop(TYPE_UI, BindOnce(&ReturnPump, std::move(pump))) {}
+MessageLoopForUI::MessageLoopForUI(Type type) : MessageLoop(type) {
+#if defined(OS_ANDROID)
+  DCHECK(type == TYPE_UI || type == TYPE_JAVA);
+#else
+  DCHECK_EQ(type, TYPE_UI);
+#endif
+}
 
 // static
 MessageLoopCurrentForUI MessageLoopForUI::current() {
@@ -604,6 +609,15 @@ void MessageLoopForUI::Attach() {
 #if defined(OS_ANDROID)
 void MessageLoopForUI::Abort() {
   static_cast<MessagePumpForUI*>(pump_.get())->Abort();
+}
+
+bool MessageLoopForUI::IsAborted() {
+  return static_cast<MessagePumpForUI*>(pump_.get())->IsAborted();
+}
+
+void MessageLoopForUI::QuitWhenIdle(base::OnceClosure callback) {
+  static_cast<MessagePumpForUI*>(pump_.get())
+      ->QuitWhenIdle(std::move(callback));
 }
 #endif  // defined(OS_ANDROID)
 

@@ -221,10 +221,6 @@ class BASE_EXPORT IncomingTaskQueue
 
   debug::TaskAnnotator task_annotator_;
 
-  // True if we always need to call ScheduleWork when receiving a new task, even
-  // if the incoming queue was not empty.
-  const bool always_schedule_work_;
-
   // Queue for initial triaging of tasks on the |sequence_checker_| sequence.
   TriageQueue triage_tasks_;
 

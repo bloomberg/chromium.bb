@@ -36,13 +36,16 @@ class BASE_EXPORT JavaHandlerThread {
       const base::android::ScopedJavaLocalRef<jobject>& obj);
   virtual ~JavaHandlerThread();
 
-  base::MessageLoop* message_loop() const { return message_loop_; }
+  // Called from any thread.
+  base::MessageLoop* message_loop() const { return message_loop_.get(); }
 
   // Gets the TaskRunner associated with the message loop.
+  // Called from any thread.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
     return message_loop_ ? message_loop_->task_runner() : nullptr;
   }
 
+  // Called from the parent thread.
   void Start();
   void Stop();
 
@@ -51,16 +54,18 @@ class BASE_EXPORT JavaHandlerThread {
   void InitializeThread(JNIEnv* env,
                         const JavaParamRef<jobject>& obj,
                         jlong event);
-  void StopThread(JNIEnv* env, const JavaParamRef<jobject>& obj);
+  // Called from java on this thread.
   void OnLooperStopped(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
-  virtual void StopMessageLoop();
-
+  // Called from this thread.
   void StopMessageLoopForTesting();
+  // Called from this thread.
   void JoinForTesting();
 
+  // Called from this thread.
   // See comment in JavaHandlerThread.java regarding use of this function.
   void ListenForUncaughtExceptionsForTesting();
+  // Called from this thread.
   ScopedJavaLocalRef<jthrowable> GetUncaughtExceptionIfAny();
 
  protected:
@@ -73,9 +78,14 @@ class BASE_EXPORT JavaHandlerThread {
   // loop ends. The Android Looper will also have been quit by this point.
   virtual void CleanUp() {}
 
-  base::MessageLoop* message_loop_ = nullptr;
+  std::unique_ptr<base::MessageLoopForUI> message_loop_;
 
  private:
+  void StartMessageLoop();
+
+  void StopOnThread();
+  void QuitThreadSafely();
+
   ScopedJavaGlobalRef<jobject> java_thread_;
 };
 

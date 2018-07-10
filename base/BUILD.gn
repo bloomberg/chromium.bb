@@ -117,7 +117,10 @@ if (is_nacl_nonsfi) {
 
 if (is_android) {
   config("android_system_libs") {
-    libs = [ "log" ]  # Used by logging.cc.
+    libs = [
+      "android",
+      "log",  # Used by logging.cc.
+    ]
   }
 }
 
@@ -2789,7 +2792,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/PathUtils.java",
       "android/java/src/org/chromium/base/PowerMonitor.java",
       "android/java/src/org/chromium/base/SysUtils.java",
-      "android/java/src/org/chromium/base/SystemMessageHandler.java",
       "android/java/src/org/chromium/base/ThreadUtils.java",
       "android/java/src/org/chromium/base/ThrowUncaughtException.java",
       "android/java/src/org/chromium/base/TimeUtils.java",
@@ -2869,7 +2871,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/StrictModeContext.java",
       "android/java/src/org/chromium/base/Supplier.java",
       "android/java/src/org/chromium/base/SysUtils.java",
-      "android/java/src/org/chromium/base/SystemMessageHandler.java",
       "android/java/src/org/chromium/base/ThreadUtils.java",
       "android/java/src/org/chromium/base/ThrowUncaughtException.java",
       "android/java/src/org/chromium/base/TimeUtils.java",

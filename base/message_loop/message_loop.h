@@ -346,10 +346,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 //
 class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
-  MessageLoopForUI() : MessageLoop(TYPE_UI) {
-  }
-
-  explicit MessageLoopForUI(std::unique_ptr<MessagePump> pump);
+  explicit MessageLoopForUI(Type type = TYPE_UI);
 
   // TODO(gab): Mass migrate callers to MessageLoopCurrentForUI::Get()/IsSet().
   static MessageLoopCurrentForUI current();
@@ -363,9 +360,18 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 #endif
 
 #if defined(OS_ANDROID)
-  // In Android there are cases where we want to abort immediately without
+  // On Android there are cases where we want to abort immediately without
   // calling Quit(), in these cases we call Abort().
   void Abort();
+
+  // True if this message pump has been aborted.
+  bool IsAborted();
+
+  // Since Run() is never called on Android, and the message loop is run by the
+  // java Looper, quitting the RunLoop won't join the thread, so we need a
+  // callback to run when the RunLoop goes idle to let the Java thread know when
+  // it can safely quit.
+  void QuitWhenIdle(base::OnceClosure callback);
 #endif
 };
 

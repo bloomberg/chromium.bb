@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread_internal_posix.h"
@@ -34,6 +35,17 @@ JavaHandlerThread::JavaHandlerThread(
 JavaHandlerThread::~JavaHandlerThread() {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(!Java_JavaHandlerThread_isAlive(env, java_thread_));
+  DCHECK(!message_loop_ || message_loop_->IsAborted());
+  // TODO(mthiesse): We shouldn't leak the MessageLoop as this could affect
+  // future tests.
+  if (message_loop_ && message_loop_->IsAborted()) {
+    // When the message loop has been aborted due to a crash, we intentionally
+    // leak the message loop because the message loop hasn't been shut down
+    // properly and would trigger DCHECKS. This should only happen in tests,
+    // where we handle the exception instead of letting it take down the
+    // process.
+    message_loop_.release();
+  }
 }
 
 void JavaHandlerThread::Start() {
@@ -54,55 +66,66 @@ void JavaHandlerThread::Start() {
 }
 
 void JavaHandlerThread::Stop() {
+  DCHECK(!task_runner()->BelongsToCurrentThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&JavaHandlerThread::StopOnThread, base::Unretained(this)));
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_JavaHandlerThread_stop(env, java_thread_,
-                              reinterpret_cast<intptr_t>(this));
+  Java_JavaHandlerThread_joinThread(env, java_thread_);
 }
 
 void JavaHandlerThread::InitializeThread(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          jlong event) {
   // TYPE_JAVA to get the Android java style message loop.
-  message_loop_ = new base::MessageLoop(base::MessageLoop::TYPE_JAVA);
+  message_loop_ =
+      std::make_unique<MessageLoopForUI>(base::MessageLoop::TYPE_JAVA);
   Init();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 
-void JavaHandlerThread::StopThread(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
-  StopMessageLoop();
-}
-
 void JavaHandlerThread::OnLooperStopped(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
-  delete message_loop_;
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  message_loop_.reset();
   CleanUp();
 }
 
-void JavaHandlerThread::StopMessageLoop() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
-}
-
 void JavaHandlerThread::StopMessageLoopForTesting() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_JavaHandlerThread_stopOnThread(env, java_thread_,
-                                      reinterpret_cast<intptr_t>(this));
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  StopOnThread();
 }
 
 void JavaHandlerThread::JoinForTesting() {
+  DCHECK(!task_runner()->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JavaHandlerThread_joinThread(env, java_thread_);
 }
 
 void JavaHandlerThread::ListenForUncaughtExceptionsForTesting() {
+  DCHECK(!task_runner()->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JavaHandlerThread_listenForUncaughtExceptionsForTesting(env,
                                                                java_thread_);
 }
 
 ScopedJavaLocalRef<jthrowable> JavaHandlerThread::GetUncaughtExceptionIfAny() {
+  DCHECK(!task_runner()->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_JavaHandlerThread_getUncaughtExceptionIfAny(env, java_thread_);
+}
+
+void JavaHandlerThread::StopOnThread() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  message_loop_->QuitWhenIdle(base::BindOnce(
+      &JavaHandlerThread::QuitThreadSafely, base::Unretained(this)));
+}
+
+void JavaHandlerThread::QuitThreadSafely() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_JavaHandlerThread_quitThreadSafely(env, java_thread_,
+                                          reinterpret_cast<intptr_t>(this));
 }
 
 } // namespace android

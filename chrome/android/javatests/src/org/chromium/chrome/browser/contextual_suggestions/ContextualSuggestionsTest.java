@@ -942,8 +942,11 @@ public class ContextualSuggestionsTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
 
-        assertEquals("Tab URL should match snippet URL", expectedUrl,
-                mActivityTestRule.getActivity().getActivityTab().getUrl());
         assertFalse("Sheet should be closed.", mBottomSheet.isSheetOpen());
+
+        // URL may not have been updated yet when WebContentsObserver#didStartLoading is called.
+        CriteriaHelper.pollUiThread(() -> {
+            return mActivityTestRule.getActivity().getActivityTab().getUrl().equals(expectedUrl);
+        });
     }
 }
