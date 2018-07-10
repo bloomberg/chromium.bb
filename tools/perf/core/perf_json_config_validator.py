@@ -43,7 +43,12 @@ _SHARD_MAP_DIR = os.path.join(os.path.dirname(__file__), 'shard_maps')
 
 
 def _ValidateShardingData(builder_name, test_config):
+  num_shards = test_config['swarming'].get('shards', 1)
+  if num_shards == 1:
+    return
   shard_file_name = _ParseShardMapFileName(test_config['args'])
+  if not shard_file_name:
+    raise ValueError('Must specify the shard map for case num shard >= 2')
   shard_file_path = os.path.join(_SHARD_MAP_DIR, shard_file_name)
   if not os.path.exists(shard_file_path):
     raise ValueError(
@@ -55,7 +60,6 @@ def _ValidateShardingData(builder_name, test_config):
 
   shard_map_data.pop('extra_infos', None)
   shard_keys = set(shard_map_data.keys())
-  num_shards = test_config['swarming']['shards']
   expected_shard_keys = set([str(i) for i in xrange(num_shards)])
   if shard_keys != expected_shard_keys:
     raise ValueError(
