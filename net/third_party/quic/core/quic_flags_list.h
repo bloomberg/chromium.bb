@@ -88,7 +88,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
 // If true, limit quic stream length to be below 2^62.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, true)
 
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
