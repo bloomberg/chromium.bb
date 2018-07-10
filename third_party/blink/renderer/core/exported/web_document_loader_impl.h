@@ -73,11 +73,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   WebNavigationType GetNavigationType() const override;
   ExtraData* GetExtraData() const override;
   void SetExtraData(std::unique_ptr<ExtraData>) override;
-  void SetNavigationStartTime(base::TimeTicks) override;
-  void UpdateNavigation(base::TimeTicks redirect_start_time,
-                        base::TimeTicks redirect_end_time,
-                        base::TimeTicks fetch_start_time,
-                        bool has_redirect) override;
   void SetSubresourceFilter(WebDocumentSubresourceFilter*) override;
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>) override;

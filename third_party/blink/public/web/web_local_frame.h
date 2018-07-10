@@ -27,6 +27,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "v8/include/v8.h"
 
@@ -215,7 +216,8 @@ class WebLocalFrame : public WebFrame {
       const WebHistoryItem&,
       bool is_client_redirect,
       const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      const WebNavigationTimings& navigation_timings) = 0;
 
   // Commits a same-document navigation in the frame. For history navigations, a
   // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
@@ -248,13 +250,13 @@ class WebLocalFrame : public WebFrame {
       const WebString& mime_type,
       const WebString& text_encoding,
       const WebURL& base_url,
-      const WebURL& unreachable_url = WebURL(),
-      bool replace = false,
-      WebFrameLoadType = WebFrameLoadType::kStandard,
-      const WebHistoryItem& = WebHistoryItem(),
-      bool is_client_redirect = false,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data =
-          nullptr) = 0;
+      const WebURL& unreachable_url,
+      bool replace,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect,
+      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
+      const WebNavigationTimings& navigation_timings) = 0;
 
   // Returns the document loader that is currently loading.  May be null.
   virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;

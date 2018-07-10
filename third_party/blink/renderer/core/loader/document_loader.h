@@ -259,6 +259,16 @@ class CORE_EXPORT DocumentLoader
     return content_security_policy_.Get();
   }
 
+  // Updates navigation timings with provided values. This
+  // should be called before WebLocalFrameClient::didCommitProvisionalLoad.
+  // Calling it later may confuse users, because JavaScript may have run and
+  // the user may have already recorded the original value.
+  // Note: if |redirect_start_time| is null, redirect timings are not updated.
+  void UpdateNavigationTimings(base::TimeTicks navigation_start_time,
+                               base::TimeTicks redirect_start_time,
+                               base::TimeTicks redirect_end_time,
+                               base::TimeTicks fetch_start_time);
+
  protected:
   DocumentLoader(LocalFrame*,
                  const ResourceRequest&,

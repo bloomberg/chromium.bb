@@ -208,6 +208,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_media_stream_registry.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
@@ -481,22 +482,6 @@ WebURLRequest CreateURLRequestForNavigation(
   request.SetWasDiscarded(request_params.was_discarded);
 
   return request;
-}
-
-// Sanitizes the navigation_start timestamp for browser-initiated navigations,
-// where the browser possibly has a better notion of start time than the
-// renderer. In the case of cross-process navigations, this carries over the
-// time of finishing the onbeforeunload handler of the previous page.
-// TimeTicks is sometimes not monotonic across processes, and because
-// |browser_navigation_start| is likely before this process existed,
-// InterProcessTimeTicksConverter won't help. The timestamp is sanitized by
-// clamping it to renderer_navigation_start, initialized earlier in the call
-// stack.
-base::TimeTicks SanitizeNavigationTiming(
-    const base::TimeTicks& browser_navigation_start,
-    const base::TimeTicks& renderer_navigation_start) {
-  DCHECK(!browser_navigation_start.is_null());
-  return std::min(browser_navigation_start, renderer_navigation_start);
 }
 
 CommonNavigationParams MakeCommonNavigationParams(
@@ -909,16 +894,33 @@ void ApplyFilePathAlias(blink::WebURLRequest* request) {
   request->SetURL(blink::WebURL(GURL(path)));
 }
 
-// Sets the |navigation_start| time into the |document_state|'s NavigationState.
-void SetNavigationStartTimeInPendingParams(
+// Packs all navigation timings sent by the browser to a blink understandable
+// format, blink::WebNavigationTimings.
+blink::WebNavigationTimings BuildNavigationTimings(
     const base::TimeTicks& navigation_start,
-    PendingNavigationParams* pending_navigation_params) {
-  // Lower bound for browser initiated navigation start time.
-  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+    const NavigationTiming& browser_navigation_timings) {
+  blink::WebNavigationTimings renderer_navigation_timings;
 
-  // Sanitize navigation start and store it in |document_state|.
-  pending_navigation_params->common_params.navigation_start =
-      SanitizeNavigationTiming(navigation_start, renderer_navigation_start);
+  // Sanitizes the navigation_start timestamp for browser-initiated navigations,
+  // where the browser possibly has a better notion of start time than the
+  // renderer. In the case of cross-process navigations, this carries over the
+  // time of finishing the onbeforeunload handler of the previous page.
+  // TimeTicks is sometimes not monotonic across processes, and because
+  // |browser_navigation_start| is likely before this process existed,
+  // InterProcessTimeTicksConverter won't help. The timestamp is sanitized by
+  // clamping it to now.
+  DCHECK(!navigation_start.is_null());
+  renderer_navigation_timings.navigation_start =
+      std::min(navigation_start, base::TimeTicks::Now());
+
+  renderer_navigation_timings.redirect_start =
+      browser_navigation_timings.redirect_start;
+  renderer_navigation_timings.redirect_end =
+      browser_navigation_timings.redirect_end;
+  renderer_navigation_timings.fetch_start =
+      browser_navigation_timings.fetch_start;
+
+  return renderer_navigation_timings;
 }
 
 }  // namespace
@@ -2692,7 +2694,8 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
   frame_->CommitDataNavigation(error_html, WebString::FromUTF8("text/html"),
                                WebString::FromUTF8("UTF-8"), error_page_url,
                                error_url, replace, frame_load_type,
-                               history_item, false, std::move(navigation_data));
+                               history_item, false, std::move(navigation_data),
+                               blink::WebNavigationTimings());
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2818,7 +2821,8 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
   frame_->CommitDataNavigation(
       error_html, WebString::FromUTF8("text/html"),
       WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL), error.url(),
-      true, blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), true);
+      true, blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), true,
+      nullptr /* navigation_data */, blink::WebNavigationTimings());
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -3095,8 +3099,6 @@ void RenderFrameImpl::CommitNavigation(
       new PendingNavigationParams(common_params, request_params,
                                   base::TimeTicks::Now(), std::move(callback)));
   PrepareFrameForCommit(common_params.url, request_params);
-  SetNavigationStartTimeInPendingParams(common_params.navigation_start,
-                                        pending_navigation_params_.get());
   std::unique_ptr<DocumentState> document_state(
       BuildDocumentStateFromPending(pending_navigation_params_.get()));
 
@@ -3140,9 +3142,11 @@ void RenderFrameImpl::CommitNavigation(
       WebURLRequest request = CreateURLRequestForCommit(
           common_params, request_params, std::move(url_loader_client_endpoints),
           head);
-      frame_->CommitNavigation(request, load_type, item_for_history_navigation,
-                               is_client_redirect, devtools_navigation_token,
-                               std::move(document_state));
+      frame_->CommitNavigation(
+          request, load_type, item_for_history_navigation, is_client_redirect,
+          devtools_navigation_token, std::move(document_state),
+          BuildNavigationTimings(common_params.navigation_start,
+                                 request_params.navigation_timing));
       // The commit can result in this frame being removed. Use a
       // WeakPtr as an easy way to detect whether this has occured. If so, this
       // method should return immediately and not touch any part of the object,
@@ -4010,12 +4014,6 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     document_loader->SetExtraData(BuildDocumentState());
   }
 
-  // Set the navigation start time in blink.
-  document_loader->SetNavigationStartTime(
-      has_pending_params
-          ? pending_navigation_params->common_params.navigation_start
-          : base::TimeTicks::Now());
-
   // Create the serviceworker's per-document network observing object.
   // Same document navigation do not go through here so it should never exist.
   DCHECK(!document_loader->GetServiceWorkerNetworkProvider());
@@ -4037,19 +4035,6 @@ void RenderFrameImpl::DidCreateDocumentLoader(
       pending_navigation_params->common_params;
   const RequestNavigationParams& request_params =
       pending_navigation_params->request_params;
-
-  // Set timing of several events that happened during navigation.
-  // They will be used in blink for the Navigation Timing API.
-  if (!request_params.navigation_timing.fetch_start.is_null()) {
-    base::TimeTicks redirect_start =
-        request_params.navigation_timing.redirect_start;
-    base::TimeTicks redirect_end =
-        request_params.navigation_timing.redirect_end;
-    base::TimeTicks fetch_start = request_params.navigation_timing.fetch_start;
-
-    document_loader->UpdateNavigation(redirect_start, redirect_end, fetch_start,
-                                      !request_params.redirects.empty());
-  }
 
   // Update the source location before processing the navigation commit.
   if (pending_navigation_params->common_params.source_location.has_value()) {
@@ -6898,7 +6883,9 @@ void RenderFrameImpl::LoadDataURL(
         // Needed so that history-url-only changes don't become reloads.
         params.history_url_for_data_url, replace, load_type,
         item_for_history_navigation, is_client_redirect,
-        std::move(navigation_data));
+        std::move(navigation_data),
+        BuildNavigationTimings(params.navigation_start,
+                               request_params.navigation_timing));
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();

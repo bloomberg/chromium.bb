@@ -84,6 +84,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -849,10 +850,11 @@ void BlinkTestRunner::OnReset() {
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
-  main_frame->CommitNavigation(WebURLRequest(GURL(url::kAboutBlankURL)),
-                               blink::WebFrameLoadType::kStandard,
-                               blink::WebHistoryItem(), false,
-                               base::UnguessableToken::Create(), nullptr);
+  main_frame->CommitNavigation(
+      WebURLRequest(GURL(url::kAboutBlankURL)),
+      blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), false,
+      base::UnguessableToken::Create(), nullptr /* extra_data */,
+      blink::WebNavigationTimings());
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

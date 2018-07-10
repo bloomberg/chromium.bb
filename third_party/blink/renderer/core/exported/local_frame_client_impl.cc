@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/time/time.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
@@ -710,13 +711,16 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     const SubstituteData& data,
     ClientRedirectPolicy client_redirect_policy,
     const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    const WebNavigationTimings& navigation_timings) {
   DCHECK(frame);
 
   WebDocumentLoaderImpl* document_loader = WebDocumentLoaderImpl::Create(
       frame, request, data, client_redirect_policy, devtools_navigation_token);
   document_loader->SetExtraData(std::move(extra_data));
-
+  document_loader->UpdateNavigationTimings(
+      navigation_timings.navigation_start, navigation_timings.redirect_start,
+      navigation_timings.redirect_end, navigation_timings.fetch_start);
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);
   return document_loader;

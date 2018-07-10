@@ -1203,6 +1203,29 @@ void DocumentLoader::ResumeParser() {
   }
 }
 
+void DocumentLoader::UpdateNavigationTimings(
+    base::TimeTicks navigation_start_time,
+    base::TimeTicks redirect_start_time,
+    base::TimeTicks redirect_end_time,
+    base::TimeTicks fetch_start_time) {
+  // If we don't have any navigation timings yet, just start the navigation.
+  if (navigation_start_time.is_null()) {
+    GetTiming().SetNavigationStart(base::TimeTicks::Now());
+    return;
+  }
+
+  GetTiming().SetNavigationStart(navigation_start_time);
+  if (!redirect_start_time.is_null()) {
+    GetTiming().SetRedirectStart(redirect_start_time);
+    GetTiming().SetRedirectEnd(redirect_end_time);
+  }
+  if (!fetch_start_time.is_null()) {
+    // If we started fetching, we should have started the navigation.
+    DCHECK(!navigation_start_time.is_null());
+    GetTiming().SetFetchStart(fetch_start_time);
+  }
+}
+
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
 
 }  // namespace blink

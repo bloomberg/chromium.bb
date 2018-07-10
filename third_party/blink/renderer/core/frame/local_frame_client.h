@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
+#include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -231,7 +232,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const SubstituteData&,
       ClientRedirectPolicy,
       const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      const WebNavigationTimings& navigation_timings) = 0;
 
   virtual String UserAgent() = 0;
 
