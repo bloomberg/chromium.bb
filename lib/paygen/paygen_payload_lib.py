@@ -131,20 +131,18 @@ class _PaygenPayload(object):
       cros_build_lib.RunCommandError if the command exited with a nonzero code.
     """
 
-    # Run the command.
-    result = cros_build_lib.RunCommand(
-        cmd,
-        redirect_stdout=True,
-        enter_chroot=True,
-        combine_stdout_stderr=True,
-        error_code_ok=True)
-
-    # Dump error output and raise an exception if things went awry.
-    if result.returncode:
+    try:
+      # Run the command.
+      result = cros_build_lib.RunCommand(
+          cmd,
+          redirect_stdout=True,
+          enter_chroot=True,
+          combine_stdout_stderr=True)
+    except cros_build_lib.RunCommandError as e:
+      # Dump error output and re-raise the exception.
       logging.error('Nonzero exit code (%d), dumping command output:\n%s',
-                    result.returncode, result.output)
-      raise cros_build_lib.RunCommandError(
-          'Command failed: %s (cwd=%s)' % ' '.join(cmd), result)
+                    e.result.returncode, e.result.output)
+      raise
 
     self._StoreLog('Output of command: ' + ' '.join(cmd))
     self._StoreLog(result.output)

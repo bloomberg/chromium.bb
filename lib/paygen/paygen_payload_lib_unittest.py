@@ -166,8 +166,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         expected_cmd,
         redirect_stdout=True,
         enter_chroot=True,
-        combine_stdout_stderr=True,
-        error_code_ok=True).AndReturn(mock_result)
+        combine_stdout_stderr=True).AndReturn(mock_result)
 
     gen._StoreLog('Output of command: cmd bar jo nes')
     gen._StoreLog(mock_result.output)
