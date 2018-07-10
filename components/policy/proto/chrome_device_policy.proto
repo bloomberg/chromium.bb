@@ -267,6 +267,13 @@ message AutoUpdateSettingsProto {
   // automatic update checks. This is a JSON string, for details see
   // "DeviceAutoUpdateTimeRestrictions" in policy_templates.json.
   optional string disallowed_time_intervals = 12;
+
+  // Specifies the percent of the fleet to update per week. Each week is
+  // represented by an int in the list. For example, a list with values
+  // [5,20,100] means: by the end of week 1, 5% of devices should be updated. By
+  // the end of week 2, 20% of devices should be updated. By the end of week 3,
+  // 100% of devices should be updated.
+  repeated int32 staging_percent_of_fleet_per_week = 13;
 }
 
 message OBSOLETE_StartUpUrlsProto {

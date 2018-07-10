@@ -12447,7 +12447,33 @@
       Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
       For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
       '''
-    }
+    },
+    {
+      'name': 'DeviceUpdateStagingPercentOfFleetPerWeek',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'integer' },
+      },
+      'supported_on': ['chrome_os:69-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': [ 0, 20, 100 ],
+      'id': 458,
+      'caption': '''The staging schedule for applying a new update''',
+      'tags': ['system-security'],
+      'desc': '''This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices in the OU to update per week starting from the day the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update publishing until the device checks for updates.
+
+      The n-th value in the list will be used as the percentage of devices that should complete updating to the next version in the n-th week after the update has been discovered. For example, if an update is discovered today, then the first value in the list defines the percentage of devices in the OU that should update to that version by a week from today. The second value defines the percentage of devices in the OU that should update to that version by 2 weeks from today, and so on.
+
+      If there is a value defined for this policy, updates will ignore the <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME">DeviceUpdateScatterFactor</ph> policy and follow this policy instead.
+
+      If this list is empty, there will be no staging and updates will be applied according to other device policies.
+
+      This policy does not apply for channel switches.''',
+    },
   ],
 
   'messages': {
@@ -12589,5 +12615,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 457
+  'highest_id_currently_used': 458
 }
