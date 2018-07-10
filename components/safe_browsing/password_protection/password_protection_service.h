@@ -155,15 +155,21 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
+      ReusedPasswordType password_type,
       LoginReputationClientResponse* out_response);
 
   // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
-  // |verdict| and |receive_time|.
+  // reused |password_type|, |verdict| and |receive_time|.
   virtual void CacheVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
+      ReusedPasswordType password_type,
       LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
+
+  // Migrates cached password reuse verdicts such that verdicts of different
+  // reused password type are cached separately.
+  void MigrateCachedVerdicts();
 
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
@@ -230,6 +236,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                                 ReusedPasswordType password_type) = 0;
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
+                                   ReusedPasswordType password_type,
                                    content::WebContents* web_contents) = 0;
 
   // Log the |reason| to several UMA metrics, depending on the value
@@ -416,7 +423,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool RemoveExpiredVerdicts(LoginReputationClientRequest::TriggerType type,
                              base::DictionaryValue* cache_dictionary);
 
-  static bool ParseVerdictEntry(base::DictionaryValue* verdict_entry,
+  // Helper function called by RemoveExpiredVerdicts(..). Returns the number of
+  // expired entries removed.
+  size_t RemoveExpiredEntries(base::Value* verdict_dictionary);
+
+  static bool ParseVerdictEntry(base::Value* verdict_entry,
                                 int* out_verdict_received_time,
                                 LoginReputationClientResponse* out_verdict);
 
