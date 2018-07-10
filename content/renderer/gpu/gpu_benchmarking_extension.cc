@@ -61,6 +61,11 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN) && !defined(NDEBUG)
+// XpsObjectModel.h indirectly includes <wincrypt.h> which is
+// incompatible with Chromium's OpenSSL. By including wincrypt_shim.h
+// first, problems are avoided.
+#include "crypto/wincrypt_shim.h"
+
 #include <XpsObjectModel.h>
 #include <objbase.h>
 #include <wrl/client.h>
