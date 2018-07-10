@@ -249,8 +249,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
 
   ~BackspacePinButton() override = default;
 
-  void SetTimersForTesting(std::unique_ptr<base::Timer> delay_timer,
-                           std::unique_ptr<base::Timer> repeat_timer) {
+  void SetTimersForTesting(std::unique_ptr<base::OneShotTimer> delay_timer,
+                           std::unique_ptr<base::RepeatingTimer> repeat_timer) {
     delay_timer_ = std::move(delay_timer);
     repeat_timer_ = std::move(repeat_timer);
   }
@@ -341,8 +341,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
   }
 
   bool is_held_ = false;
-  std::unique_ptr<base::Timer> delay_timer_;
-  std::unique_ptr<base::Timer> repeat_timer_;
+  std::unique_ptr<base::OneShotTimer> delay_timer_;
+  std::unique_ptr<base::RepeatingTimer> repeat_timer_;
 
   views::ImageView* image_ = nullptr;
 
@@ -362,8 +362,8 @@ views::View* LoginPinView::TestApi::GetBackspaceButton() const {
 }
 
 void LoginPinView::TestApi::SetBackspaceTimers(
-    std::unique_ptr<base::Timer> delay_timer,
-    std::unique_ptr<base::Timer> repeat_timer) {
+    std::unique_ptr<base::OneShotTimer> delay_timer,
+    std::unique_ptr<base::RepeatingTimer> repeat_timer) {
   view_->backspace_->SetTimersForTesting(std::move(delay_timer),
                                          std::move(repeat_timer));
 }

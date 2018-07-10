@@ -105,10 +105,10 @@ void AutoclickControllerCommon::CancelAutoclick() {
 }
 
 void AutoclickControllerCommon::InitClickTimer() {
-  autoclick_timer_.reset(new base::Timer(
-      FROM_HERE, delay_, base::Bind(&AutoclickControllerCommon::DoAutoclick,
-                                    base::Unretained(this)),
-      false));
+  autoclick_timer_.reset(new base::RetainingOneShotTimer(
+      FROM_HERE, delay_,
+      base::Bind(&AutoclickControllerCommon::DoAutoclick,
+                 base::Unretained(this))));
 }
 
 void AutoclickControllerCommon::DoAutoclick() {

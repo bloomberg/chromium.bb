@@ -85,7 +85,6 @@ TabScrubber::TabScrubber()
       swipe_y_(-1),
       swipe_direction_(LEFT),
       highlighted_tab_(-1),
-      activate_timer_(true, false),
       activation_delay_(kActivationDelayMS),
       use_default_activation_delay_(true),
       weak_ptr_factory_(this) {

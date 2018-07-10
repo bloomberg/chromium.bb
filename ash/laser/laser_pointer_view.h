@@ -7,6 +7,7 @@
 
 #include "ash/components/fast_ink/fast_ink_points.h"
 #include "ash/components/fast_ink/fast_ink_view.h"
+#include "base/timer/timer.h"
 
 namespace ash {
 
@@ -42,7 +43,7 @@ class LaserPointerView : public fast_ink::FastInkView {
   const base::TimeDelta presentation_delay_;
   // Timer which will add a new stationary point when the stylus stops moving.
   // This will remove points that are too old.
-  std::unique_ptr<base::Timer> stationary_timer_;
+  base::RepeatingTimer stationary_timer_;
   gfx::PointF stationary_point_location_;
   // A callback for when the fadeout is complete.
   base::OnceClosure fadeout_done_;

@@ -24,12 +24,12 @@ const int kGetCertificatesTimeoutInMinutes = 5;
 
 // Holds state for a single certificate request.
 struct CertificateRequests::CertificateRequestState {
-  CertificateRequestState() : timeout(false, false) {}
+  CertificateRequestState() {}
 
   ~CertificateRequestState() {}
 
   // Extensions that are too slow are eventually dropped from a request.
-  base::Timer timeout;
+  base::OneShotTimer timeout;
 
   // Extensions that this request is still waiting for.
   std::set<std::string> pending_extensions;

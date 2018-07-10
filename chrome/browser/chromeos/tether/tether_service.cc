@@ -679,7 +679,7 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
 void TetherService::SetTestDoubles(
     std::unique_ptr<chromeos::tether::NotificationPresenter>
         notification_presenter,
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::OneShotTimer> timer) {
   notification_presenter_ = std::move(notification_presenter);
   timer_ = std::move(timer);
 }

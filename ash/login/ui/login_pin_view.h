@@ -14,7 +14,8 @@
 #include "ui/views/view.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
+class RepeatingTimer;
 }  // namespace base
 
 namespace ash {
@@ -58,8 +59,8 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
     // Sets the timers that are used for backspace auto-submit. |delay_timer| is
     // the initial delay before an auto-submit, and |repeat_timer| fires
     // whenever a new backspace event should run after the initial delay.
-    void SetBackspaceTimers(std::unique_ptr<base::Timer> delay_timer,
-                            std::unique_ptr<base::Timer> repeat_timer);
+    void SetBackspaceTimers(std::unique_ptr<base::OneShotTimer> delay_timer,
+                            std::unique_ptr<base::RepeatingTimer> repeat_timer);
 
    private:
     LoginPinView* const view_;

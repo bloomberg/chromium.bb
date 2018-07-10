@@ -164,12 +164,10 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
       laser_points_(life_duration),
       predicted_laser_points_(life_duration),
       presentation_delay_(presentation_delay),
-      stationary_timer_(
-          new base::Timer(FROM_HERE,
-                          stationary_point_delay,
-                          base::BindRepeating(&LaserPointerView::UpdateTime,
-                                              base::Unretained(this)),
-                          /*is_repeating=*/true)),
+      stationary_timer_(FROM_HERE,
+                        stationary_point_delay,
+                        base::BindRepeating(&LaserPointerView::UpdateTime,
+                                            base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
 LaserPointerView::~LaserPointerView() = default;
@@ -186,7 +184,7 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
                      : 0);
   AddPoint(new_point, new_time);
   stationary_point_location_ = new_point;
-  stationary_timer_->Reset();
+  stationary_timer_.Reset();
 }
 
 void LaserPointerView::FadeOut(base::OnceClosure done) {

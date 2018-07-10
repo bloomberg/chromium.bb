@@ -212,11 +212,10 @@ void UserImageScreen::Show() {
         return;
       }
       sync_observer->AddObserver(this);
-      sync_timer_.reset(new base::Timer(
+      sync_timer_.reset(new base::OneShotTimer());
+      sync_timer_->Start(
           FROM_HERE, base::TimeDelta::FromSeconds(kSyncTimeoutSeconds),
-          base::Bind(&UserImageScreen::OnSyncTimeout, base::Unretained(this)),
-          false));
-      sync_timer_->Reset();
+          base::Bind(&UserImageScreen::OnSyncTimeout, base::Unretained(this)));
     }
   }
   CameraPresenceNotifier::GetInstance()->AddObserver(this);
