@@ -156,13 +156,6 @@ class PLATFORM_EXPORT ScriptWrappable
     return main_world_wrapper_.NewLocal(isolate);
   }
 
-  // Only use when really necessary, i.e., when passing over this
-  // ScriptWrappable's reference to V8. Should only be needed by GC
-  // infrastructure.
-  const v8::Persistent<v8::Object>* RawMainWorldWrapper() const {
-    return &main_world_wrapper_.Get();
-  }
-
   TraceWrapperV8Reference<v8::Object> main_world_wrapper_;
 };
 
