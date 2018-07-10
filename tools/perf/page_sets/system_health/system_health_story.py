@@ -50,6 +50,9 @@ class SystemHealthStory(page.Page):
   NAME = NotImplemented
   URL = NotImplemented
   ABSTRACT_STORY = True
+  # TODO(crbug.com/862077): SKIP_LOGIN is a temporary hack to skip the login
+  # flow during replay. Switch this to False when recording.
+  SKIP_LOGIN = True
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   TAGS = None
   PLATFORM_SPECIFIC = False
@@ -98,7 +101,8 @@ class SystemHealthStory(page.Page):
     pass
 
   def RunNavigateSteps(self, action_runner):
-    self._Login(action_runner)
+    if not self.SKIP_LOGIN:
+      self._Login(action_runner)
     super(SystemHealthStory, self).RunNavigateSteps(action_runner)
 
   def RunPageInteractions(self, action_runner):
