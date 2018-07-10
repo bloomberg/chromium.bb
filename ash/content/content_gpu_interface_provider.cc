@@ -80,8 +80,7 @@ void ContentGpuInterfaceProvider::RegisterGpuInterfaces(
 }
 
 void ContentGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
-    service_manager::BinderRegistryWithArgs<
-        const service_manager::BindSourceInfo&>* registry) {
+    service_manager::BinderRegistry* registry) {
   // Registers the gpu-related interfaces needed by Ozone.
   // TODO(rjkroege): Adjust when Ozone/DRM/Mojo is complete.
   NOTIMPLEMENTED();

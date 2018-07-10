@@ -328,7 +328,7 @@ void Service::OnStart() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_with_source_info_);
+  ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_);
 #endif
 }
 

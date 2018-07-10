@@ -37,8 +37,7 @@ void AshGpuInterfaceProvider::RegisterGpuInterfaces(
 }
 
 void AshGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
-    service_manager::BinderRegistryWithArgs<
-        const service_manager::BindSourceInfo&>* registry) {
+    service_manager::BinderRegistry* registry) {
   ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
 }
 

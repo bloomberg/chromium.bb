@@ -118,8 +118,7 @@ void WindowService::OnStart() {
     gpu_interface_provider_->RegisterGpuInterfaces(&registry_);
 
 #if defined(USE_OZONE)
-    gpu_interface_provider_->RegisterOzoneGpuInterfaces(
-        &registry_with_source_info_);
+    gpu_interface_provider_->RegisterOzoneGpuInterfaces(&registry_);
 #endif
   }
 }
@@ -128,10 +127,7 @@ void WindowService::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
-  if (!registry_with_source_info_.TryBindInterface(interface_name, &handle,
-                                                   remote_info)) {
-    registry_.BindInterface(interface_name, std::move(handle));
-  }
+  registry_.BindInterface(interface_name, std::move(handle));
 }
 
 void WindowService::BindClipboardHostRequest(

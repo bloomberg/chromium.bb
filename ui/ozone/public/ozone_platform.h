@@ -155,8 +155,7 @@ class OZONE_EXPORT OzonePlatform {
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(service_manager::BinderRegistryWithArgs<
-                             const service_manager::BindSourceInfo&>* registry);
+  virtual void AddInterfaces(service_manager::BinderRegistry* registry);
 
   // The GPU-specific portion of Ozone would typically run in a sandboxed
   // process for additional security. Some startup might need to wait until
