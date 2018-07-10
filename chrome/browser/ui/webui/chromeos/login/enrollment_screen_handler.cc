@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -57,6 +58,9 @@ const char kEnrollmentStepWorking[] = "working";
 const char kEnrollmentModeUIForced[] = "forced";
 const char kEnrollmentModeUIManual[] = "manual";
 const char kEnrollmentModeUIRecovery[] = "recovery";
+
+constexpr char kActiveDirectoryJoinHistogram[] =
+    "Enterprise.ActiveDirectoryJoin";
 
 // Converts |mode| to a mode identifier for the UI.
 std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
@@ -244,9 +248,16 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
     const std::string& username,
     authpolicy::ErrorType error) {
   observe_network_failure_ = false;
+  if (active_directory_join_type_ == ActiveDirectoryDomainJoinType::COUNT) {
+    active_directory_join_type_ =
+        ActiveDirectoryDomainJoinType::WITHOUT_CONFIGURATION;
+  }
+
   if (!domain_join_config.empty()) {
     active_directory_domain_join_config_ = domain_join_config;
     show_unlock_password_ = true;
+    active_directory_join_type_ =
+        ActiveDirectoryDomainJoinType::NOT_USING_CONFIGURATION;
   }
   switch (error) {
     case authpolicy::ERROR_NONE: {
@@ -622,6 +633,8 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
       base::Value(l10n_util::GetStringUTF8(IDS_AD_CONFIG_SELECTION_CUSTOM)));
   options->GetList().push_back(std::move(custom));
   show_unlock_password_ = false;
+  active_directory_join_type_ =
+      ActiveDirectoryDomainJoinType::USING_CONFIGURATION;
   CallJS("setAdJoinConfiguration", *options);
 }
 
@@ -726,6 +739,16 @@ void EnrollmentScreenHandler::HandleToggleFakeEnrollment() {
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
+  if (active_directory_join_type_ != ActiveDirectoryDomainJoinType::COUNT) {
+    DCHECK(g_browser_process->platform_part()
+               ->browser_policy_connector_chromeos()
+               ->IsActiveDirectoryManaged());
+    // Record Active Directory join type in case of successful enrollment and
+    // domain join.
+    base::UmaHistogramEnumeration(kActiveDirectoryJoinHistogram,
+                                  active_directory_join_type_,
+                                  ActiveDirectoryDomainJoinType::COUNT);
+  }
 
   if (reason == "cancel") {
     controller_->OnCancel();
@@ -752,6 +775,7 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& user_name,
     const std::string& password) {
   observe_network_failure_ = false;
+  show_unlock_password_ = false;
   DCHECK(controller_);
   controller_->OnActiveDirectoryCredsProvided(
       machine_name, distinguished_name,
