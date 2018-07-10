@@ -248,8 +248,6 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkOrBankNameAndLastFourDigits() const;
   // Localized expiration for this card formatted as 'Exp: 06/17'.
   base::string16 AbbreviatedExpirationDateForDisplay() const;
-  // Returns the date when the card was last used in autofill.
-  base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
   // Formatted expiration date (e.g., 05/2020).
   base::string16 ExpirationDateForDisplay() const;
   // Expiration functions.

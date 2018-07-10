@@ -38,8 +38,6 @@ const base::Feature kAutofillCreditCardBankNameDisplay{
     "AutofillCreditCardBankNameDisplay", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardLastUsedDateDisplay{
-    "AutofillCreditCardLastUsedDateDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedAddresses{
     "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedCreditCards{
@@ -79,8 +77,6 @@ const base::Feature kAutofillVoteUsingInvalidProfileData{
     "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
-const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
-    "show_expiration_date";
 
 #if defined(OS_MACOSX)
 const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
@@ -105,19 +101,8 @@ bool IsAutofillCreditCardAssistEnabled() {
 #endif
 }
 
-bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillCreditCardLastUsedDateDisplay);
-}
-
 bool IsAutofillCreditCardBankNameDisplayExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardBankNameDisplay);
-}
-
-bool ShowExpirationDateInAutofillCreditCardLastUsedDate() {
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardLastUsedDateDisplay,
-      kAutofillCreditCardLastUsedDateShowExpirationDateKey);
-  return param_value == "true";
 }
 
 bool OfferStoreUnmaskedCards() {

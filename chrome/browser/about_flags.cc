@@ -879,17 +879,6 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-const FeatureEntry::FeatureParam
-    kAutofillCreditCardLastUsedDateFeatureVariationExpDate[] = {
-        {"show_expiration_date", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kAutofillCreditCardLastUsedDateFeatureVariations[] = {
-        {"Display expiration date",
-         kAutofillCreditCardLastUsedDateFeatureVariationExpDate,
-         arraysize(kAutofillCreditCardLastUsedDateFeatureVariationExpDate),
-         nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
     {"persistent_menu_item_enabled", "true"}};
@@ -2908,16 +2897,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayName,
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardBankNameDisplay)},
-    {"enable-autofill-credit-card-last-used-date-display",
-     flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayName,
-     flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::kAutofillCreditCardLastUsedDateDisplay,
-         kAutofillCreditCardLastUsedDateFeatureVariations,
-         // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
-         // when the flag is manually enabled in a local build.
-         "AutofillCreditCardDropdownVariations")},
     {"enable-autofill-credit-card-upload-editable-cardholder-name",
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameName,

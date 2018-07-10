@@ -28,7 +28,6 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
 extern const base::Feature kAutofillCreditCardBankNameDisplay;
-extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillExpandedPopupViews;
@@ -77,13 +76,6 @@ bool OfferStoreUnmaskedCards();
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
-
-// Returns whether Autofill credit card last used date display experiment is
-// enabled.
-bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled();
-
-// Returns whether Autofill credit card last used date shows expiration date.
-bool ShowExpirationDateInAutofillCreditCardLastUsedDate();
 
 // Returns whether Autofill credit card bank name display experiment is enabled.
 bool IsAutofillCreditCardBankNameDisplayExperimentEnabled();
