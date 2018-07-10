@@ -373,8 +373,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  interceptor()->PushJobCallback(
-      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
 
   ArcBridgeService* arc_bridge_service =
       ArcServiceManager::Get()->arc_bridge_service();
@@ -389,12 +387,12 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance.account_info());
-  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
-  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  EXPECT_TRUE(auth_instance.account_info()->account_name.value().empty());
+  EXPECT_TRUE(auth_instance.account_info()->auth_code.value().empty());
   EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
             auth_instance.account_info()->account_type);
   EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
-  EXPECT_FALSE(auth_instance.account_info()->is_managed);
+  EXPECT_TRUE(auth_instance.account_info()->is_managed);
 
   arc_bridge_service->auth()->CloseInstance(&auth_instance);
 }
