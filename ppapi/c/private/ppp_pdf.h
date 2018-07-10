@@ -53,7 +53,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintPresetOptions_Dev, 24);
 
 struct PP_PdfPrintSettings_Dev {
   // Used for N-up mode.
-  uint32_t num_pages_per_sheet;
+  uint32_t pages_per_sheet;
 
   // The scale factor percentage, where 100 indicates default scaling.
   uint32_t scale_factor;

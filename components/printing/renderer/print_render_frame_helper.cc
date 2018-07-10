@@ -323,7 +323,7 @@ void ComputeWebKitPrintParamsInDesiredDpi(
       ConvertUnit(print_params.page_size.height(), dpi, kPointsPerInch);
 
   // The following settings is for N-up mode.
-  webkit_print_params->num_pages_per_sheet = print_params.num_pages_per_sheet;
+  webkit_print_params->pages_per_sheet = print_params.pages_per_sheet;
 }
 
 blink::WebPlugin* GetPlugin(const blink::WebLocalFrame* frame) {

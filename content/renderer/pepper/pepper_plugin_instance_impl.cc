@@ -1981,7 +1981,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
 
   if (LoadPdfInterface()) {
     PP_PdfPrintSettings_Dev pdf_print_settings;
-    pdf_print_settings.num_pages_per_sheet = print_params.num_pages_per_sheet;
+    pdf_print_settings.pages_per_sheet = print_params.pages_per_sheet;
     pdf_print_settings.scale_factor = print_params.scale_factor;
 
     num_pages = plugin_pdf_interface_->PrintBegin(
