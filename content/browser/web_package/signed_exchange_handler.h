@@ -98,6 +98,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnCertReceived(
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
   void OnCertVerifyComplete(int result);
+  bool CheckCertExtension(const net::X509Certificate* verified_cert);
   bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);
   int VerifyCT(net::ct::CTVerifyResult* ct_verify_result);
 

@@ -418,6 +418,80 @@ TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
 }
 
+TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org-noext.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256-noext.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents =
+      GetTestFileContents("test.example.org_noext_test.htxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
+}
+
+TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionAllowedByFeatureFlag) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAllowSignedHTTPExchangeCertsWithoutExtension);
+
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org-noext.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256-noext.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents =
+      GetTestFileContents("test.example.org_noext_test.htxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(net::OK, error());
+  std::string payload;
+  int rv = ReadPayloadStream(&payload);
+  std::string expected_payload = GetTestFileContents("test.html");
+
+  EXPECT_EQ(expected_payload, payload);
+  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
+}
+
 TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   // The certificate is for "127.0.0.1". And the SHA 256 hash of the certificate
   // is different from the cert-sha256 of the signature in the htxg file. So the

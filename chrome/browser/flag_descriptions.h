@@ -49,6 +49,9 @@ extern const char kAllowInsecureLocalhostDescription[];
 extern const char kAllowNaclSocketApiName[];
 extern const char kAllowNaclSocketApiDescription[];
 
+extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
+extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
+
 extern const char kAndroidMessagesIntegrationName[];
 extern const char kAndroidMessagesIntegrationDescription[];
 

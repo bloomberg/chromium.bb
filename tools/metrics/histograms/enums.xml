@@ -27682,6 +27682,8 @@ from previous Chrome versions.
   <int value="-1391693054"
       label="ContentSuggestionsFaviconsFromNewServer:disabled"/>
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
+  <int value="-1385221197"
+      label="AllowSignedHTTPExchangeCertsWithoutExtension:enabled"/>
   <int value="-1383597259" label="SyncUserConsentSeparateType:disabled"/>
   <int value="-1382671832" label="OmniboxUIExperimentVerticalMargin:enabled"/>
   <int value="-1377186702" label="DesktopIOSPromotion:disabled"/>
@@ -29289,6 +29291,8 @@ from previous Chrome versions.
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
+  <int value="2069999572"
+      label="AllowSignedHTTPExchangeCertsWithoutExtension:disabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
   <int value="2075207488" label="AutomaticPasswordGeneration:disabled"/>

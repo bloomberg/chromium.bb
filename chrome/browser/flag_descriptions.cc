@@ -35,6 +35,14 @@ const char kAllowNaclSocketApiDescription[] =
     "Allows applications to use NaCl Socket API. Use only to test NaCl "
     "plugins.";
 
+const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[] =
+    "Allow Signed HTTP Exchange certificates without extension";
+const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
+    "Accepts Origin-Signed HTTP Exchanges to be signed with certificates "
+    "that do not have CanSignHttpExchangesDraft extension. Requires "
+    "#enable-signed-http-exchange. Warning: Enabling this may pose a security "
+    "risk.";
+
 const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
 const char kAndroidMessagesIntegrationDescription[] =
     "Enables Chrome OS integration with Android messages.";

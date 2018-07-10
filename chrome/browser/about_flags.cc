@@ -4042,6 +4042,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(arc::kSmartTextSelectionFeature)},
 #endif  // OS_CHROMEOS
 
+    {"allow-sxg-certs-without-extension",
+     flag_descriptions::kAllowSignedHTTPExchangeCertsWithoutExtensionName,
+     flag_descriptions::
+         kAllowSignedHTTPExchangeCertsWithoutExtensionDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         features::kAllowSignedHTTPExchangeCertsWithoutExtension)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
