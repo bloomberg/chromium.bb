@@ -157,7 +157,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
   NGConstraintSpaceBuilder builder(writing_mode, initial_containing_block_size);
 
-  if (!box.IsWritingModeRoot()) {
+  if (!box.IsWritingModeRoot() || box.IsGridItem()) {
     // Add all types because we don't know which baselines will be requested.
     FontBaseline baseline_type = box.StyleRef().GetFontBaseline();
     bool synthesize_inline_block_baseline =
