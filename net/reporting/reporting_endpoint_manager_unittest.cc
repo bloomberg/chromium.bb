@@ -21,6 +21,19 @@ namespace net {
 namespace {
 
 class ReportingEndpointManagerTest : public ReportingTestBase {
+ public:
+  ReportingEndpointManagerTest() {
+    ReportingPolicy policy;
+    policy.endpoint_backoff_policy.num_errors_to_ignore = 0;
+    policy.endpoint_backoff_policy.initial_delay_ms = 60000;
+    policy.endpoint_backoff_policy.multiply_factor = 2.0;
+    policy.endpoint_backoff_policy.jitter_factor = 0.0;
+    policy.endpoint_backoff_policy.maximum_backoff_ms = -1;
+    policy.endpoint_backoff_policy.entry_lifetime_ms = 0;
+    policy.endpoint_backoff_policy.always_use_initial_delay = false;
+    UsePolicy(policy);
+  }
+
  protected:
   void SetClient(const GURL& endpoint, int priority, int weight) {
     cache()->SetClient(kOrigin_, endpoint, ReportingClient::Subdomains::EXCLUDE,
@@ -58,23 +71,6 @@ TEST_F(ReportingEndpointManagerTest, ExpiredEndpoint) {
   const ReportingClient* client =
       endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
   EXPECT_TRUE(client == nullptr);
-}
-
-TEST_F(ReportingEndpointManagerTest, PendingEndpoint) {
-  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
-
-  endpoint_manager()->SetEndpointPending(kEndpoint_);
-
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
-
-  endpoint_manager()->ClearEndpointPending(kEndpoint_);
-
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kEndpoint_, client->endpoint);
 }
 
 TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
@@ -182,14 +178,17 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   ASSERT_TRUE(client != nullptr);
   EXPECT_EQ(kPrimaryEndpoint, client->endpoint);
 
-  endpoint_manager()->SetEndpointPending(kPrimaryEndpoint);
-
+  // The backoff policy we set up in the constructor means that a single failed
+  // upload will take the primary endpoint out of contention.  This should cause
+  // us to choose the backend endpoint.
+  endpoint_manager()->InformOfEndpointRequest(kPrimaryEndpoint, false);
   client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
   ASSERT_TRUE(client != nullptr);
   EXPECT_EQ(kBackupEndpoint, client->endpoint);
 
-  endpoint_manager()->ClearEndpointPending(kPrimaryEndpoint);
-
+  // Advance the current time far enough to clear out the primary endpoint's
+  // backoff clock.  This should bring the primary endpoint back into play.
+  tick_clock()->Advance(base::TimeDelta::FromMinutes(2));
   client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
   ASSERT_TRUE(client != nullptr);
   EXPECT_EQ(kPrimaryEndpoint, client->endpoint);
