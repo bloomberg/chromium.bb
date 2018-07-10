@@ -1055,7 +1055,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
   if (break_anywhere_if_overflow_ && !override_break_anywhere_) {
     override_break_anywhere_ = true;
     break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
-    Rewind(line_info, 0);
+    if (!item_results->IsEmpty())
+      Rewind(line_info, 0);
     return LineBreakState::kLeading;
   }
 
