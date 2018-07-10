@@ -37,6 +37,7 @@
 
 @implementation AdaptiveToolbarCoordinator
 @synthesize dispatcher = _dispatcher;
+@synthesize longPressDelegate = _longPressDelegate;
 @synthesize mediator = _mediator;
 @synthesize started = _started;
 @synthesize toolsMenuButtonObserverBridge = _toolsMenuButtonObserverBridge;
@@ -54,6 +55,8 @@
     return;
 
   self.started = YES;
+
+  self.viewController.longPressDelegate = self.longPressDelegate;
 
   self.mediator = [[ToolbarMediator alloc] init];
   self.mediator.consumer = self.viewController;
@@ -73,6 +76,13 @@
   self.toolsMenuButtonObserverBridge = nil;
   [self.mediator disconnect];
   self.mediator = nil;
+}
+
+#pragma mark - Properties
+
+- (void)setLongPressDelegate:(id<PopupMenuLongPressDelegate>)longPressDelegate {
+  _longPressDelegate = longPressDelegate;
+  self.viewController.longPressDelegate = longPressDelegate;
 }
 
 #pragma mark - SideSwipeToolbarSnapshotProviding

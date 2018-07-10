@@ -2117,6 +2117,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     topToolbarCoordinator.webStateList = [_model webStateList];
     topToolbarCoordinator.dispatcher = self.dispatcher;
     topToolbarCoordinator.commandDispatcher = _dispatcher;
+    topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
     [topToolbarCoordinator start];
 
     SecondaryToolbarCoordinator* bottomToolbarCoordinator = [
@@ -2124,6 +2125,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
     bottomToolbarCoordinator.webStateList = [_model webStateList];
     bottomToolbarCoordinator.dispatcher = self.dispatcher;
+    bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
     [bottomToolbarCoordinator start];
 
     _toolbarCoordinatorAdaptor =
@@ -2166,6 +2168,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.tabStripCoordinator.presentationProvider = self;
     self.tabStripCoordinator.animationWaitDuration =
         kLegacyFullscreenControllerToolbarAnimationDuration;
+    self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
 
     UILayoutGuide* guide =
         [[NamedGuide alloc] initWithName:kTabStripTabSwitcherGuide];
@@ -2361,6 +2364,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.popupMenuCoordinator.webStateList = [_model webStateList];
     self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
     [self.popupMenuCoordinator start];
+
+    // TODO(crbug.com/800266): Remove this cast once there is only one top
+    // toolbar.
+    AdaptiveToolbarCoordinator* topToolbarCoordinator =
+        base::mac::ObjCCastStrict<AdaptiveToolbarCoordinator>(
+            self.primaryToolbarCoordinator);
+    topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
+    self.secondaryToolbarCoordinator.longPressDelegate =
+        self.popupMenuCoordinator;
+    self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
   } else {
     _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
         initWithBaseViewController:self

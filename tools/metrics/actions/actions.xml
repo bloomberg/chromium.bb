@@ -12256,6 +12256,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePopupMenuSwipeToSelect">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user selected an option in the Popup Menu without lifting the finger
+    from the LongPress action.
+  </description>
+</action>
+
 <action name="MobilePreviewPageBack">
   <obsolete>Deprecated as of 7/2015</obsolete>
   <owner>ksimbili@chromium.org</owner>

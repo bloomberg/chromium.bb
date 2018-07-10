@@ -15,6 +15,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
+@protocol PopupMenuLongPressDelegate;
 class WebStateList;
 
 // Coordinator for the adaptive toolbar. This Coordinator is the super class of
@@ -41,6 +42,8 @@ class WebStateList;
         dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
+// Delegate for the long press gesture recognizer triggering popup menu.
+@property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
 
 @end
 

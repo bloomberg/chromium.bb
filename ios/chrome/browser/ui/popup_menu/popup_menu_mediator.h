@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
 
 namespace bookmarks {
@@ -38,7 +39,7 @@ class WebStateList;
 // WebState.
 @property(nonatomic, assign) WebStateList* webStateList;
 // The TableView to be configured with this mediator.
-@property(nonatomic, strong) PopupMenuTableViewController* popupMenu;
+@property(nonatomic, strong) id<PopupMenuConsumer> popupMenu;
 // Dispatcher.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
 // Records events for the use of in-product help. The mediator does not take

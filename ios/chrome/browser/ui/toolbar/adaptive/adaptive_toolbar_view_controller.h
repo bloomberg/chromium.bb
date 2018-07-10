@@ -14,6 +14,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol PopupMenuLongPressDelegate;
 @class ToolbarButtonFactory;
 @class ToolbarToolsMenuButton;
 
@@ -33,6 +34,8 @@
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 // Dispatcher for the ViewController.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+// Delegate for the long press gesture recognizer triggering popup menu.
+@property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
 
 // Returns the tools menu button.
 - (ToolbarToolsMenuButton*)toolsMenuButton;
