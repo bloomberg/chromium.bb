@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.signin.ChromeSigninController;
 
 /**
  * A monitor that is responsible for detecting changes to conditions required for contextual
@@ -44,6 +45,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
     /** Whether the user settings for contextual suggestions are enabled. */
     private boolean mSettingsEnabled;
 
+    private String mOriginalSignedInAccountName;
+
     /**
      * Construct a new {@link EnabledStateMonitor}.
      * @param observer The {@link Observer} to be notified of changes to enabled state.
@@ -64,6 +67,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         // every time the default search engine is updated.
         assert !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
 
+        mOriginalSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        ChromeSigninController.get().setSignedInAccountName("test@gmail.com");
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED, this);
         ProfileSyncService.get().addSyncStateChangedListener(this);
@@ -80,6 +85,7 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         ProfileSyncService.get().removeSyncStateChangedListener(this);
         SigninManager.get().removeSignInStateObserver(this);
         TemplateUrlService.getInstance().removeObserver(this);
+        ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
     }
 
     /** @return Whether the user settings for contextual suggestions should be shown. */
@@ -93,11 +99,11 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         if (sSettingsEnabledForTesting) return true;
 
         boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
-        // TODO(twellington): Update to also accept personalized activity collection
-        // ("Activity and interactions").
-        return ProfileSyncService.get().isUrlKeyedAnonymizedDataCollectionEnabled()
-                && isDSEConditionMet() && !isAccessibilityEnabled
-                && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy();
+        return isDSEConditionMet() && !isAccessibilityEnabled
+                && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy()
+                && ChromeSigninController.get().isSignedIn()
+                && (ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
+                           || ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true));
     }
 
     /** @return Whether the state is currently enabled. */

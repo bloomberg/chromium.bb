@@ -361,16 +361,25 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
   return sync_service_->HasUnrecoverableError();
 }
 
-jboolean ProfileSyncServiceAndroid::IsUrlKeyedAnonymizedDataCollectionEnabled(
+jboolean ProfileSyncServiceAndroid::IsUrlKeyedDataCollectionEnabled(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean personalized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile_);
-  PrefService* pref_service = profile_->GetPrefs();
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(is_unified_consent_enabled,
-                                                   pref_service, sync_service_);
+      unified_consent_url_helper;
+  if (personalized) {
+    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
+        NewPersonalizedDataCollectionConsentHelper(is_unified_consent_enabled,
+                                                   sync_service_);
+  } else {
+    PrefService* pref_service = profile_->GetPrefs();
+    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
+        NewAnonymizedDataCollectionConsentHelper(is_unified_consent_enabled,
+                                                 pref_service, sync_service_);
+  }
+
   return unified_consent_url_helper->IsEnabled();
 }
 

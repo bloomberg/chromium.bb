@@ -403,10 +403,15 @@ public class ProfileSyncService {
     }
 
     /**
-     * @return Whether URL-keyed anonymized data collection is enabled for the current profile.
+     * Returns whether either personalized or anonymized URL keyed data collection is enabled.
+     *
+     * @param personlized Whether to check for personalized data collection. If false, this will
+     *                    check for anonymized data collection.
+     * @return Whether URL-keyed data collection is enabled for the current profile.
      */
-    public boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
-        return nativeIsUrlKeyedAnonymizedDataCollectionEnabled(mNativeProfileSyncServiceAndroid);
+    public boolean isUrlKeyedDataCollectionEnabled(boolean personalized) {
+        return nativeIsUrlKeyedDataCollectionEnabled(
+                mNativeProfileSyncServiceAndroid, personalized);
     }
 
     /**
@@ -575,8 +580,8 @@ public class ProfileSyncService {
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsUrlKeyedAnonymizedDataCollectionEnabled(
-            long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsUrlKeyedDataCollectionEnabled(
+            long nativeProfileSyncServiceAndroid, boolean personalized);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPassphrasePrompted(long nativeProfileSyncServiceAndroid,
                                                     boolean prompted);

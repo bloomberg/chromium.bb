@@ -88,11 +88,13 @@ public class ContextualSuggestionsPreference
         // enabled, and the proper settings are already enabled, show nothing.
         boolean isUnifiedConsentEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
-        if (!isUnifiedConsentEnabled
-                || !ProfileSyncService.get().isUrlKeyedAnonymizedDataCollectionEnabled()) {
+        boolean isSignedIn = ChromeSigninController.get().isSignedIn();
+        if (!isUnifiedConsentEnabled || !isSignedIn
+                || (!ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
+                           && !ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true))) {
             final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
                 if (isUnifiedConsentEnabled) {
-                    if (ChromeSigninController.get().isSignedIn()) {
+                    if (isSignedIn) {
                         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                                 context, SyncAndServicesPreferences.class.getName());
                         IntentUtils.safeStartActivity(context, intent);
@@ -101,7 +103,7 @@ public class ContextualSuggestionsPreference
                                 context, SigninAccessPoint.SETTINGS, null));
                     }
                 } else {
-                    if (ChromeSigninController.get().isSignedIn()) {
+                    if (isSignedIn) {
                         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                                 context, SyncCustomizationFragment.class.getName());
                         IntentUtils.safeStartActivity(context, intent);
