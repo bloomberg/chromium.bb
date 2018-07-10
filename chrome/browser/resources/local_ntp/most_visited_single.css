@@ -414,11 +414,14 @@ body.dark-theme .md-tile:active {
 
 body.dark-theme .md-tile:active .md-title {
   color: rgba(33, 32, 36, 0.86);
-  text-shadow: none;
 }
 
 body.dark-theme .md-tile:active .md-menu::after {
   background-color: rgba(33, 32, 36, 0.71);
+}
+
+body.background-image .md-tile:active .md-title {
+  text-shadow: none;
 }
 
 .md-tile.blacklisted {
@@ -502,7 +505,10 @@ body.dark-theme .md-tile:active .md-menu::after {
 
 body.dark-theme .md-title {
   color: rgb(248, 249, 250);
-  text-shadow: 0 0 8px 0 rgba(0,0,0,0.5);
+}
+
+body.background-image .md-title {
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
 .md-menu {
