@@ -41,18 +41,19 @@
   };
 
   if (animated) {
-    UIViewPropertyAnimator* slowAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration1
-                   curve:UIViewAnimationCurveEaseInOut
-              animations:expansion];
+    // Use UIView animatieWithDuration instead of UIViewPropertyAnimator to
+    // avoid UIKit bug. See https://crbug.com/856155.
+    [UIView animateWithDuration:ios::material::kDuration1
+                          delay:0
+                        options:UIViewAnimationCurveEaseInOut
+                     animations:expansion
+                     completion:nil];
 
-    UIViewPropertyAnimator* fastAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration2
-                   curve:UIViewAnimationCurveEaseInOut
-              animations:hideControls];
-
-    [slowAnimator startAnimation];
-    [fastAnimator startAnimation];
+    [UIView animateWithDuration:ios::material::kDuration2
+                          delay:0
+                        options:UIViewAnimationCurveEaseInOut
+                     animations:hideControls
+                     completion:nil];
   } else {
     expansion();
     hideControls();
@@ -75,24 +76,31 @@
   };
 
   if (animated) {
-    UIViewPropertyAnimator* slowAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration1
-                   curve:UIViewAnimationCurveEaseInOut
-              animations:contraction];
-    [slowAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-      hideCancel();
-    }];
-
-    UIViewPropertyAnimator* fastAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration2
-                   curve:UIViewAnimationCurveEaseInOut
-              animations:showControls];
-
-    [slowAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-      [fastAnimator startAnimation];
-    }];
-
-    [slowAnimator startAnimation];
+    // Use UIView animatieWithDuration instead of UIViewPropertyAnimator to
+    // avoid UIKit bug. See https://crbug.com/856155.
+    CGFloat totalDuration =
+        ios::material::kDuration1 + ios::material::kDuration2;
+    CGFloat relativeDurationAnimation1 =
+        ios::material::kDuration1 / totalDuration;
+    [UIView animateKeyframesWithDuration:totalDuration
+        delay:0
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [UIView addKeyframeWithRelativeStartTime:0
+                                  relativeDuration:relativeDurationAnimation1
+                                        animations:^{
+                                          contraction();
+                                        }];
+          [UIView
+              addKeyframeWithRelativeStartTime:relativeDurationAnimation1
+                              relativeDuration:1 - relativeDurationAnimation1
+                                    animations:^{
+                                      showControls();
+                                    }];
+        }
+        completion:^(BOOL finished) {
+          hideCancel();
+        }];
   } else {
     contraction();
     showControls();
