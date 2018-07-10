@@ -91,8 +91,8 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
       KeyframeEffectId keyframe_effect_id);
   void AbortKeyframeModelForKeyframeEffect(int keyframe_model_id,
                                            KeyframeEffectId keyframe_effect_id);
-  void AbortKeyframeModels(TargetProperty::Type target_property,
-                           bool needs_completion);
+  void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
+                                       bool needs_completion);
 
   virtual void PushPropertiesTo(Animation* animation_impl);
 

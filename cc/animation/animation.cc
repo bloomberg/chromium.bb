@@ -230,10 +230,12 @@ void Animation::AbortKeyframeModelForKeyframeEffect(
       ->AbortKeyframeModel(keyframe_model_id);
 }
 
-void Animation::AbortKeyframeModels(TargetProperty::Type target_property,
-                                    bool needs_completion) {
+void Animation::AbortKeyframeModelsWithProperty(
+    TargetProperty::Type target_property,
+    bool needs_completion) {
   for (auto& keyframe_effect : keyframe_effects_)
-    keyframe_effect->AbortKeyframeModels(target_property, needs_completion);
+    keyframe_effect->AbortKeyframeModelsWithProperty(target_property,
+                                                     needs_completion);
 }
 
 void Animation::PushPropertiesTo(Animation* animation_impl) {
