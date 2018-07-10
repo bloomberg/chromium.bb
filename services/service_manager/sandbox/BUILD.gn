@@ -26,6 +26,7 @@ component("sandbox") {
   deps = [
     ":sanitizer_buildflags",
     "//base",
+    "//sandbox:common",
   ]
   if (is_linux) {
     sources += [
