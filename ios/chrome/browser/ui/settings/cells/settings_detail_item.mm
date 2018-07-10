@@ -6,7 +6,11 @@
 
 #include <algorithm>
 
+#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -23,6 +27,9 @@ const CGFloat kHorizontalPadding = 16;
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 
+// Size of the icon image.
+const CGFloat kIconImageSize = 28;
+
 // Minimum proportion of the available width to guarantee to the main and detail
 // labels.
 const CGFloat kMinTextWidthRatio = 0.75f;
@@ -32,6 +39,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 @implementation SettingsDetailItem
 
 @synthesize accessoryType = _accessoryType;
+@synthesize iconImageName = _iconImageName;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 
@@ -50,17 +58,28 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
   [cell cr_setAccessoryType:self.accessoryType];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
+
+  // Update the icon image, if one is present.
+  UIImage* iconImage = nil;
+  if ([self.iconImageName length]) {
+    iconImage = [UIImage imageNamed:self.iconImageName];
+  }
+  [cell setIconImage:iconImage];
 }
 
 @end
 
 @implementation SettingsDetailCell {
+  UIImageView* _iconImageView;
+  UILayoutGuide* _labelContainerGuide;
+  NSLayoutConstraint* _iconHiddenConstraint;
+  NSLayoutConstraint* _iconVisibleConstraint;
   NSLayoutConstraint* _textLabelWidthConstraint;
   NSLayoutConstraint* _detailTextLabelWidthConstraint;
 }
 
-@synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
+@synthesize textLabel = _textLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -68,21 +87,38 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     self.isAccessibilityElement = YES;
     UIView* contentView = self.contentView;
 
+    _iconImageView = [[UIImageView alloc] init];
+    _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _iconImageView.hidden = YES;
+    [contentView addSubview:_iconImageView];
+
+    // Constrain the labels inside a container view, to make width computations
+    // easier.
+    _labelContainerGuide = [[UILayoutGuide alloc] init];
+    [contentView addLayoutGuide:_labelContainerGuide];
+
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.backgroundColor = [UIColor clearColor];
     [contentView addSubview:_textLabel];
-
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
 
     _detailTextLabel = [[UILabel alloc] init];
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _detailTextLabel.backgroundColor = [UIColor clearColor];
     [contentView addSubview:_detailTextLabel];
 
-    _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
-    _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+    // Fonts and colors vary based on whether the settings reboot is enabled.
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+      _detailTextLabel.font = [UIFont systemFontOfSize:kUIKitDetailFontSize];
+      _detailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
+    } else {
+      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
+      _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+    }
 
     // Set up the width constraints. They are activated here and updated in
     // layoutSubviews.
@@ -91,29 +127,71 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     _detailTextLabelWidthConstraint =
         [_detailTextLabel.widthAnchor constraintEqualToConstant:0];
 
+    // Set up the constraints for when the icon is visible and hidden.  One of
+    // these will be active at a time, defaulting to hidden.
+    _iconHiddenConstraint = [_labelContainerGuide.leadingAnchor
+        constraintEqualToAnchor:contentView.leadingAnchor
+                       constant:kHorizontalPadding];
+    _iconVisibleConstraint = [_labelContainerGuide.leadingAnchor
+        constraintEqualToAnchor:_iconImageView.trailingAnchor
+                       constant:kHorizontalPadding];
+
     [NSLayoutConstraint activateConstraints:@[
-      // Fix the leading and trailing edges of the text labels.
-      [_textLabel.leadingAnchor
+      [_iconImageView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor
                          constant:kHorizontalPadding],
+      [_iconImageView.widthAnchor constraintEqualToConstant:kIconImageSize],
+      [_iconImageView.heightAnchor constraintEqualToConstant:kIconImageSize],
+
+      // Fix the edges of the text labels.
+      [_textLabel.leadingAnchor
+          constraintEqualToAnchor:_labelContainerGuide.leadingAnchor],
       [_detailTextLabel.trailingAnchor
+          constraintEqualToAnchor:_labelContainerGuide.trailingAnchor],
+      [_labelContainerGuide.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor
                          constant:-kHorizontalPadding],
 
-      // Set up the top and bottom constraints for |_textLabel| and align the
-      // baselines of the two text labels.
-      [_textLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                           constant:kVerticalPadding],
-      [_textLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                              constant:-kVerticalPadding],
+      // Set up the vertical constraints and align the baselines of the two text
+      // labels.
+      [_iconImageView.centerYAnchor
+          constraintEqualToAnchor:contentView.centerYAnchor],
+      [_textLabel.centerYAnchor
+          constraintEqualToAnchor:contentView.centerYAnchor],
       [_detailTextLabel.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
 
       _textLabelWidthConstraint,
       _detailTextLabelWidthConstraint,
+      _iconHiddenConstraint,
     ]];
+
+    AddOptionalVerticalPadding(contentView, _textLabel, kVerticalPadding);
   }
   return self;
+}
+
+- (void)setIconImage:(UIImage*)image {
+  BOOL hidden = (image == nil);
+
+  // If the settings reboot is not enabled, the icon must always be hidden.
+  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+    hidden = YES;
+  }
+
+  if (hidden == _iconImageView.hidden) {
+    return;
+  }
+
+  _iconImageView.image = image;
+  _iconImageView.hidden = hidden;
+  if (hidden) {
+    _iconVisibleConstraint.active = NO;
+    _iconHiddenConstraint.active = YES;
+  } else {
+    _iconHiddenConstraint.active = NO;
+    _iconVisibleConstraint.active = YES;
+  }
 }
 
 // Updates the layout constraints of the text labels and then calls the
@@ -134,9 +212,15 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
   [super layoutSubviews];
 }
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+
+  [self setIconImage:nil];
+}
+
 - (CGFloat)textLabelTargetWidth {
   CGFloat availableWidth =
-      self.contentView.bounds.size.width - (3 * kHorizontalPadding);
+      CGRectGetWidth(_labelContainerGuide.layoutFrame) - kHorizontalPadding;
   CGFloat textLabelWidth = self.textLabel.frame.size.width;
   CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
 
@@ -150,7 +234,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 - (CGFloat)detailTextLabelTargetWidth {
   CGFloat availableWidth =
-      self.contentView.bounds.size.width - (3 * kHorizontalPadding);
+      CGRectGetWidth(_labelContainerGuide.layoutFrame) - kHorizontalPadding;
   CGFloat textLabelWidth = self.textLabel.frame.size.width;
   CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
 

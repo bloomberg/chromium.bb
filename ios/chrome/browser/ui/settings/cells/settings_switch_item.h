@@ -12,6 +12,9 @@
 // SettingsSwitchCell.
 @interface SettingsSwitchItem : CollectionViewItem
 
+// The filename for the leading icon.  If empty, no icon will be shown.
+@property(nonatomic, copy) NSString* iconImageName;
+
 // The text to display.
 @property(nonatomic, copy) NSString* text;
 
@@ -36,6 +39,11 @@
 
 // Returns the default text color used for the given |state|.
 + (UIColor*)defaultTextColorForState:(UIControlState)state;
+
+// Sets the image that should be displayed at the leading edge of the cell. If
+// set to nil, the icon will be hidden and the remaining content will expand to
+// fill the full width of the cell.
+- (void)setIconImage:(UIImage*)image;
 
 @end
 

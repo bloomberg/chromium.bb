@@ -207,6 +207,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"This is a very long main text that is intended to overflow "
       @"except maybe on landscape but now it's longer so it won't fit.";
   detailLongLeft.detailText = @"Detail Text";
+  detailLongLeft.iconImageName = @"ntp_history_icon";
   [model addItem:detailLongLeft
       toSectionWithIdentifier:SectionIdentifierDetailCell];
   SettingsDetailItem* detailLongRight =
@@ -215,6 +216,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   detailLongRight.detailText =
       @"This is a very long detail text that is intended to overflow "
       @"except maybe on landscape but now it's longer so it won't fit.";
+  detailLongRight.iconImageName = @"ntp_history_icon";
   [model addItem:detailLongRight
       toSectionWithIdentifier:SectionIdentifierDetailCell];
   SettingsDetailItem* detailLongBoth =
@@ -225,6 +227,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   detailLongBoth.detailText =
       @"This is a very long detail text that is intended to overflow "
       @"except maybe on landscape but now it's longer so it won't fit.";
+  detailLongBoth.iconImageName = @"ntp_history_icon";
   [model addItem:detailLongBoth
       toSectionWithIdentifier:SectionIdentifierDetailCell];
 
