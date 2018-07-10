@@ -45,7 +45,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
-#include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -346,9 +345,6 @@ CreditCard CreateDisusedDeletableTestCreditCard(const std::string& locale) {
 }
 
 }  // namespace
-
-const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
-const char kFrecencyFieldTrialLimitParam[] = "limit";
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
     : database_(nullptr),
@@ -1155,18 +1151,6 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   DCHECK_EQ(unique_suggestions.size(), labels.size());
   for (size_t i = 0; i < labels.size(); i++)
     unique_suggestions[i].label = labels[i];
-
-  // Get the profile suggestions limit value set for the current frecency field
-  // trial group or SIZE_MAX if no limit is defined.
-  std::string limit_str = variations::GetVariationParamValue(
-      kFrecencyFieldTrialName, kFrecencyFieldTrialLimitParam);
-  size_t limit = SIZE_MAX;
-  // Reassign SIZE_MAX to |limit| is needed after calling base::StringToSizeT,
-  // as this method can modify |limit| even if it returns false.
-  if (!base::StringToSizeT(limit_str, &limit))
-    limit = SIZE_MAX;
-
-  unique_suggestions.resize(std::min(unique_suggestions.size(), limit));
 
   return unique_suggestions;
 }
