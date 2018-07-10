@@ -191,6 +191,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_AVX2
+              "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
@@ -207,6 +208,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_SSSE3
+              "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.h"
               "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
               "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.h"
               "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c"
