@@ -262,8 +262,6 @@ crbug.com/847274 external/wpt/css/css-contain/contain-paint-007.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
-crbug.com/819617 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Failure ]
-
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
