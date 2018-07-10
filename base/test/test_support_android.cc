@@ -36,7 +36,7 @@ struct RunState {
   bool should_quit;
 };
 
-RunState* g_state = NULL;
+RunState* g_state = nullptr;
 
 // A singleton WaitableEvent wrapper so we avoid a busy loop in
 // MessagePumpForUIStub. Other platforms use the native event loop which blocks
@@ -73,7 +73,11 @@ class Waitable {
 
 // The MessagePumpForUI implementation for test purpose.
 class MessagePumpForUIStub : public base::MessagePumpForUI {
+ public:
+  MessagePumpForUIStub() : base::MessagePumpForUI() { Waitable::GetInstance(); }
   ~MessagePumpForUIStub() override {}
+
+  bool IsTestImplementation() const override { return true; }
 
   // In tests, there isn't a native thread, as such RunLoop::Run() should be
   // used to run the loop instead of attaching and delegating to the native
@@ -88,6 +92,18 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
     RunState* previous_state = g_state;
     g_state = &state;
 
+    // When not nested we can use the real implementation, otherwise fall back
+    // to the stub implementation.
+    if (g_state->run_depth > 1) {
+      RunNested(delegate);
+    } else {
+      MessagePumpForUI::Run(delegate);
+    }
+
+    g_state = previous_state;
+  }
+
+  void RunNested(base::MessagePump::Delegate* delegate) {
     bool more_work_is_plausible = true;
 
     for (;;) {
@@ -116,16 +132,31 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
 
       more_work_is_plausible |= !delayed_work_time.is_null();
     }
-
-    g_state = previous_state;
   }
 
-  void Quit() override { Waitable::GetInstance()->Quit(); }
+  void Quit() override {
+    CHECK(g_state);
+    if (g_state->run_depth > 1) {
+      Waitable::GetInstance()->Quit();
+    } else {
+      MessagePumpForUI::Quit();
+    }
+  }
 
-  void ScheduleWork() override { Waitable::GetInstance()->Signal(); }
+  void ScheduleWork() override {
+    if (g_state && g_state->run_depth > 1) {
+      Waitable::GetInstance()->Signal();
+    } else {
+      MessagePumpForUI::ScheduleWork();
+    }
+  }
 
   void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override {
-    Waitable::GetInstance()->Signal();
+    if (g_state && g_state->run_depth > 1) {
+      Waitable::GetInstance()->Signal();
+    } else {
+      MessagePumpForUI::ScheduleDelayedWork(delayed_work_time);
+    }
   }
 };
 

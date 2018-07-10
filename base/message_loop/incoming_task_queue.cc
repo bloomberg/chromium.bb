@@ -27,19 +27,6 @@ namespace {
 constexpr TimeDelta kTaskDelayWarningThreshold = TimeDelta::FromDays(14);
 #endif
 
-// Returns true if MessagePump::ScheduleWork() must be called one
-// time for every task that is added to the MessageLoop incoming queue.
-bool AlwaysNotifyPump(MessageLoop::Type type) {
-#if defined(OS_ANDROID)
-  // The Android UI message loop needs to get notified each time a task is
-  // added
-  // to the incoming queue.
-  return type == MessageLoop::TYPE_UI || type == MessageLoop::TYPE_JAVA;
-#else
-  return false;
-#endif
-}
-
 TimeTicks CalculateDelayedRuntime(TimeDelta delay) {
   TimeTicks delayed_run_time;
   if (delay > TimeDelta())
@@ -52,9 +39,7 @@ TimeTicks CalculateDelayedRuntime(TimeDelta delay) {
 }  // namespace
 
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
-    : always_schedule_work_(AlwaysNotifyPump(message_loop->type())),
-      triage_tasks_(this),
-      message_loop_(message_loop) {
+    : triage_tasks_(this), message_loop_(message_loop) {
   // The constructing sequence is not necessarily the running sequence, e.g. in
   // the case of a MessageLoop created unbound.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -344,8 +329,7 @@ bool IncomingTaskQueue::PostPendingTaskLockRequired(PendingTask* pending_task) {
   bool was_empty = incoming_queue_.empty();
   incoming_queue_.push(std::move(*pending_task));
 
-  if (is_ready_for_scheduling_ &&
-      (always_schedule_work_ || (!message_loop_scheduled_ && was_empty))) {
+  if (is_ready_for_scheduling_ && !message_loop_scheduled_ && was_empty) {
     // After we've scheduled the message loop, we do not need to do so again
     // until we know it has processed all of the work in our queue and is
     // waiting for more work again. The message loop will always attempt to
