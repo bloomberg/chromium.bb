@@ -8,6 +8,7 @@ import v8_utilities
 
 
 UNION_CPP_INCLUDES = frozenset([
+    'base/stl_util.h',
     'bindings/core/v8/to_v8_for_core.h',
 ])
 

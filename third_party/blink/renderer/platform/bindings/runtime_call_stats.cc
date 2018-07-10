@@ -9,6 +9,8 @@
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -191,7 +193,18 @@ const char* const RuntimeCallStatsScopedTracer::s_category_group_ =
 const char* const RuntimeCallStatsScopedTracer::s_name_ =
     "BlinkRuntimeCallStats";
 
-void RuntimeCallStatsScopedTracer::AddBeginTraceEvent() {
+void RuntimeCallStatsScopedTracer::AddBeginTraceEventIfEnabled(
+    v8::Isolate* isolate) {
+  bool category_group_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(s_category_group_,
+                                     &category_group_enabled);
+  if (LIKELY(!category_group_enabled))
+    return;
+
+  RuntimeCallStats* stats = RuntimeCallStats::From(isolate);
+  if (stats->InUse())
+    return;
+  stats_ = stats;
   stats_->Reset();
   stats_->SetInUse(true);
   TRACE_EVENT_BEGIN0(s_category_group_, s_name_);
