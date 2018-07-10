@@ -247,6 +247,7 @@ class DriveIntegrationService::DriveFsHolder
  public:
   DriveFsHolder(Profile* profile,
                 base::RepeatingClosure on_drivefs_mounted,
+                base::RepeatingClosure on_drivefs_unmounted,
                 DriveFsMojoConnectionDelegateFactory
                     test_drivefs_mojo_connection_delegate_factory);
 
@@ -258,6 +259,7 @@ class DriveIntegrationService::DriveFsHolder
   service_manager::Connector* GetConnector() override;
   const AccountId& GetAccountId() override;
   void OnMounted(const base::FilePath& path) override;
+  void OnUnmounted() override;
   std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
   CreateMojoConnectionDelegate() override;
 
@@ -265,6 +267,7 @@ class DriveIntegrationService::DriveFsHolder
 
   // Invoked when DriveFS mounting is completed.
   const base::RepeatingClosure on_drivefs_mounted_;
+  const base::RepeatingClosure on_drivefs_unmounted_;
 
   const DriveFsMojoConnectionDelegateFactory
       test_drivefs_mojo_connection_delegate_factory_;
@@ -277,10 +280,12 @@ class DriveIntegrationService::DriveFsHolder
 DriveIntegrationService::DriveFsHolder::DriveFsHolder(
     Profile* profile,
     base::RepeatingClosure on_drivefs_mounted,
+    base::RepeatingClosure on_drivefs_unmounted,
     DriveFsMojoConnectionDelegateFactory
         test_drivefs_mojo_connection_delegate_factory)
     : profile_(profile),
       on_drivefs_mounted_(std::move(on_drivefs_mounted)),
+      on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
       test_drivefs_mojo_connection_delegate_factory_(
           std::move(test_drivefs_mojo_connection_delegate_factory)),
       drivefs_host_(profile_->GetPath(), this) {}
@@ -313,6 +318,10 @@ void DriveIntegrationService::DriveFsHolder::OnMounted(
   on_drivefs_mounted_.Run();
 }
 
+void DriveIntegrationService::DriveFsHolder::OnUnmounted() {
+  on_drivefs_unmounted_.Run();
+}
+
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
     PreferenceWatcher* preference_watcher,
@@ -337,6 +346,9 @@ DriveIntegrationService::DriveIntegrationService(
                     base::BindRepeating(&DriveIntegrationService::
                                             AddDriveMountPointAfterMounted,
                                         base::Unretained(this)),
+                    base::BindRepeating(
+                        &DriveIntegrationService::RemoveDriveMountPoint,
+                        base::Unretained(this)),
                     std::move(test_drivefs_mojo_connection_delegate_factory))
               : nullptr),
       weak_ptr_factory_(this) {
