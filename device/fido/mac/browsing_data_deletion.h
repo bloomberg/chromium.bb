@@ -23,6 +23,10 @@ namespace mac {
 //
 // Returns false if any attempt to delete a credential failed (but others may
 // still have succeeded), and true otherwise.
+//
+// On platforms where Touch ID is not supported, or when the Touch ID WebAuthn
+// authenticator feature flag is disabled, this method does nothing and returns
+// true.
 bool COMPONENT_EXPORT(DEVICE_FIDO)
     DeleteWebAuthnCredentials(const std::string& keychain_access_group,
                               const std::string& profile_metadata_secret,
