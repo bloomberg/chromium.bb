@@ -20,10 +20,8 @@
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
@@ -34,6 +32,15 @@
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
+#import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
+#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
+#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
+#import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -52,14 +59,18 @@ namespace {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierTextCell = kSectionIdentifierEnumZero,
   SectionIdentifierDetailCell,
+  SectionIdentifierMultilineCell,
   SectionIdentifierSwitchCell,
   SectionIdentifierNativeAppCell,
   SectionIdentifierAutofill,
   SectionIdentifierPayments,
   SectionIdentifierPaymentsNoBackground,
+  SectionIdentifierCopiedToChrome,
+  SectionIdentifierPasswordDetails,
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
+  SectionIdentifierSync,
   SectionIdentifierContentSuggestionsCell,
 };
 
@@ -74,6 +85,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeDetailLeftLong,
   ItemTypeDetailRightLong,
   ItemTypeDetailBothLong,
+  ItemTypeMultilineBasic,
+  ItemTypeImportDataMultiline,
   ItemTypeSwitchBasic,
   ItemTypeSwitchDynamicHeight,
   ItemTypeSwitchSync,
@@ -86,11 +99,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeApp,
   ItemTypePaymentsSingleLine,
   ItemTypePaymentsDynamicHeight,
+  ItemTypeCopiedToChrome,
+  ItemTypePasswordDetailsShortHidden,
+  ItemTypePasswordDetailsShortVisible,
+  ItemTypePasswordDetailsLong,
   ItemTypeAutofillDynamicHeight,
   ItemTypeAutofillCVC,
   ItemTypeAutofillStatus,
   ItemTypeAccountControlDynamicHeight,
   ItemTypeFooter,
+  ItemTypeSyncEncryption,
+  ItemTypeSyncEncryptionChecked,
+  ItemTypeSyncPassphraseError,
   ItemTypeContentSuggestions,
 };
 
@@ -123,34 +143,28 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   // Text cells.
   [model addSectionWithIdentifier:SectionIdentifierTextCell];
 
-  CollectionViewTextItem* textHeader =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-  textHeader.text = @"CollectionViewTextCell";
-  textHeader.textFont = [MDCTypography body2Font];
+  SettingsTextItem* textHeader =
+      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+  textHeader.text = @"SettingsTextCell";
+  textHeader.textFont = [textHeader.textFont fontWithSize:12];
   textHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:textHeader
       forSectionWithIdentifier:SectionIdentifierTextCell];
 
-  CollectionViewTextItem* textCell =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeTextCheckmark];
+  SettingsTextItem* textCell =
+      [[SettingsTextItem alloc] initWithType:ItemTypeTextCheckmark];
   textCell.text = @"Text cell 1";
   textCell.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
   [model addItem:textCell toSectionWithIdentifier:SectionIdentifierTextCell];
-  CollectionViewTextItem* textCell2 =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeTextDetail];
+  SettingsTextItem* textCell2 =
+      [[SettingsTextItem alloc] initWithType:ItemTypeTextDetail];
   textCell2.text =
-      @"Text cell with text that is so long it must truncate at some point";
+      @"Text cell with text that is so long it must truncate at some point "
+      @"except that maybe it sometimes doesn't in landscape mode.";
   textCell2.accessoryType = MDCCollectionViewCellAccessoryDetailButton;
   [model addItem:textCell2 toSectionWithIdentifier:SectionIdentifierTextCell];
-  CollectionViewTextItem* textCell3 =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeText];
-  textCell3.text = @"Truncated text cell with three lines:";
-  textCell3.detailText = @"One title line and two detail lines, so it should "
-                         @"wrap nicely at some point.";
-  textCell3.numberOfDetailTextLines = 0;
-  [model addItem:textCell3 toSectionWithIdentifier:SectionIdentifierTextCell];
-  CollectionViewTextItem* smallTextCell =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeText];
+  SettingsTextItem* smallTextCell =
+      [[SettingsTextItem alloc] initWithType:ItemTypeText];
   smallTextCell.text = @"Text cell with small font but height of 48.";
   smallTextCell.textFont = [smallTextCell.textFont fontWithSize:8];
   [model addItem:smallTextCell
@@ -168,47 +182,75 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
   // Detail cells.
   [model addSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailBasic =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailBasic];
+  SettingsDetailItem* detailBasic =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailBasic];
   detailBasic.text = @"Preload Webpages";
   detailBasic.detailText = @"Only on Wi-Fi";
   detailBasic.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   [model addItem:detailBasic
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailMediumLeft =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailLeftMedium];
+  SettingsDetailItem* detailMediumLeft =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailLeftMedium];
   detailMediumLeft.text = @"A long string but it should fit";
   detailMediumLeft.detailText = @"Detail";
   [model addItem:detailMediumLeft
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailMediumRight =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailRightMedium];
+  SettingsDetailItem* detailMediumRight =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailRightMedium];
   detailMediumRight.text = @"Main";
   detailMediumRight.detailText = @"A long string but it should fit";
   [model addItem:detailMediumRight
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailLongLeft =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailLeftLong];
+  SettingsDetailItem* detailLongLeft =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailLeftLong];
   detailLongLeft.text =
-      @"This is a very long main text that is intended to overflow";
+      @"This is a very long main text that is intended to overflow "
+      @"except maybe on landscape but now it's longer so it won't fit.";
   detailLongLeft.detailText = @"Detail Text";
   [model addItem:detailLongLeft
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailLongRight =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailRightLong];
+  SettingsDetailItem* detailLongRight =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailRightLong];
   detailLongRight.text = @"Main Text";
   detailLongRight.detailText =
-      @"This is a very long detail text that is intended to overflow";
+      @"This is a very long detail text that is intended to overflow "
+      @"except maybe on landscape but now it's longer so it won't fit.";
   [model addItem:detailLongRight
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-  CollectionViewDetailItem* detailLongBoth =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeDetailBothLong];
+  SettingsDetailItem* detailLongBoth =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeDetailBothLong];
   detailLongBoth.text =
-      @"This is a very long main text that is intended to overflow";
+      @"This is a very long main text that is intended to overflow "
+      @"except maybe on landscape but now it's longer so it won't fit.";
   detailLongBoth.detailText =
-      @"This is a very long detail text that is intended to overflow";
+      @"This is a very long detail text that is intended to overflow "
+      @"except maybe on landscape but now it's longer so it won't fit.";
   [model addItem:detailLongBoth
       toSectionWithIdentifier:SectionIdentifierDetailCell];
+
+  // Multiline cells.
+  [model addSectionWithIdentifier:SectionIdentifierMultilineCell];
+  CardMultilineItem* multilineItem =
+      [[CardMultilineItem alloc] initWithType:ItemTypeMultilineBasic];
+  multilineItem.text =
+      @"Lorem ipsum dolor sit amet, consectetur "
+      @"adipiscing elit, sed do eiusmod tempor "
+      @"incididunt ut labore et dolore magna aliqua.";
+  [model addItem:multilineItem
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
+  ImportDataMultilineDetailItem* multilineDetailItem =
+      [[ImportDataMultilineDetailItem alloc]
+          initWithType:ItemTypeImportDataMultiline];
+  multilineDetailItem.text =
+      @"Lorem ipsum dolor sit amet, consectetur "
+      @"adipiscing elit, sed do eiusmod tempor "
+      @"incididunt ut labore et dolore magna aliqua.";
+  multilineDetailItem.detailText =
+      @"Lorem ipsum dolor sit amet, consectetur "
+      @"adipiscing elit, sed do eiusmod tempor "
+      @"incididunt ut labore et dolore magna aliqua.";
+  [model addItem:multilineDetailItem
+      toSectionWithIdentifier:SectionIdentifierMultilineCell];
 
   // Switch cells.
   [model addSectionWithIdentifier:SectionIdentifierSwitchCell];
@@ -302,6 +344,22 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   [model addItem:[self acceptedPaymentMethodsItem]
       toSectionWithIdentifier:SectionIdentifierPaymentsNoBackground];
 
+  // CopiedToChrome cells.
+  [model addSectionWithIdentifier:SectionIdentifierCopiedToChrome];
+  CopiedToChromeItem* copiedToChromeItem =
+      [[CopiedToChromeItem alloc] initWithType:ItemTypeCopiedToChrome];
+  [model addItem:copiedToChromeItem
+      toSectionWithIdentifier:SectionIdentifierCopiedToChrome];
+
+  // Password Details cells.
+  [model addSectionWithIdentifier:SectionIdentifierPasswordDetails];
+  [model addItem:[self passwordDetailsShortHiddenItem]
+      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
+  [model addItem:[self passwordDetailsShortVisibleItem]
+      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
+  [model addItem:[self passwordDetailsLongItem]
+      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
+
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountItemDetailWithError]
@@ -314,6 +372,15 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self warmStateSigninPromoItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
+
+  // Sync cells.
+  [model addSectionWithIdentifier:SectionIdentifierSync];
+  [model addItem:[self syncEncryptionItem]
+      toSectionWithIdentifier:SectionIdentifierSync];
+  [model addItem:[self syncEncryptionCheckedItem]
+      toSectionWithIdentifier:SectionIdentifierSync];
+  [model addItem:[self syncPassphraseErrorItem]
+      toSectionWithIdentifier:SectionIdentifierSync];
 
   // Account control cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountControlCell];
@@ -340,9 +407,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.title = @"Collection Cell Catalog";
-
-  // Customize collection view settings.
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
@@ -361,12 +425,19 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeTextDetail:
     case ItemTypeText:
     case ItemTypeTextError:
+    case ItemTypeMultilineBasic:
+    case ItemTypeImportDataMultiline:
+    case ItemTypePasswordDetailsShortHidden:
+    case ItemTypePasswordDetailsShortVisible:
+    case ItemTypePasswordDetailsLong:
     case ItemTypeAutofillCVC:
     case ItemTypeAutofillStatus:
     case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
     case ItemTypeColdStateSigninPromo:
     case ItemTypeWarmStateSigninPromo:
+    case ItemTypeSyncEncryption:
+    case ItemTypeSyncEncryptionChecked:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -438,6 +509,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountItemDetailWithError {
   CollectionViewAccountItem* accountItemDetail =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccountDetail];
+  accountItemDetail.cellStyle = CollectionViewCellStyle::kUIKit;
   // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
   // internal repository. It should be used through a provider API instead.
   accountItemDetail.image = [UIImage imageNamed:@"ios_default_avatar"];
@@ -453,6 +525,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountItemCheckMark {
   CollectionViewAccountItem* accountItemCheckMark =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccountCheckMark];
+  accountItemCheckMark.cellStyle = CollectionViewCellStyle::kUIKit;
   // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
   // internal repository. It should be used through a provider API instead.
   accountItemCheckMark.image = [UIImage imageNamed:@"ios_default_avatar"];
@@ -523,16 +596,16 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 #pragma mark Private
 
 - (CollectionViewItem*)basicSwitchItem {
-  CollectionViewSwitchItem* item =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSwitchBasic];
+  SettingsSwitchItem* item =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitchBasic];
   item.text = @"Enable awesomeness.";
   item.on = YES;
   return item;
 }
 
 - (CollectionViewItem*)longTextSwitchItem {
-  CollectionViewSwitchItem* item = [[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeSwitchDynamicHeight];
+  SettingsSwitchItem* item =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitchDynamicHeight];
   item.text = @"Enable awesomeness. This is a very long text that is intended "
               @"to overflow.";
   item.on = YES;
@@ -615,6 +688,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)autofillEditItem {
   AutofillEditItem* item =
       [[AutofillEditItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.textFieldName = @"Required Card Number";
   item.textFieldValue = @"4111111111111111";
   item.textFieldEnabled = YES;
@@ -625,6 +699,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)autofillEditItemWithIcon {
   AutofillEditItem* item =
       [[AutofillEditItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.textFieldName = @"Card Number";
   item.textFieldValue = @"4111111111111111";
   item.textFieldEnabled = YES;
@@ -722,6 +797,59 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
                  title:@"Footer title"
               callback:nil];
   return footerItem;
+}
+
+- (EncryptionItem*)syncEncryptionItem {
+  EncryptionItem* item =
+      [[EncryptionItem alloc] initWithType:ItemTypeSyncEncryption];
+  item.text =
+      @"These two cells have exactly the same text, but one has a checkmark "
+      @"and the other does not.  They should lay out identically, and the "
+      @"presence of the checkmark should not cause the text to reflow.";
+  return item;
+}
+
+- (EncryptionItem*)syncEncryptionCheckedItem {
+  EncryptionItem* item =
+      [[EncryptionItem alloc] initWithType:ItemTypeSyncEncryptionChecked];
+  item.text =
+      @"These two cells have exactly the same text, but one has a checkmark "
+      @"and the other does not.  They should lay out identically, and the "
+      @"presence of the checkmark should not cause the text to reflow.";
+  item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+  return item;
+}
+
+- (PassphraseErrorItem*)syncPassphraseErrorItem {
+  PassphraseErrorItem* item =
+      [[PassphraseErrorItem alloc] initWithType:ItemTypeSyncPassphraseError];
+  item.text = @"Incorrect passphrase";
+  return item;
+}
+
+- (PasswordDetailsItem*)passwordDetailsShortHiddenItem {
+  PasswordDetailsItem* item = [[PasswordDetailsItem alloc]
+      initWithType:ItemTypePasswordDetailsShortHidden];
+  item.text = @"hunter2";
+  return item;
+}
+
+- (PasswordDetailsItem*)passwordDetailsShortVisibleItem {
+  PasswordDetailsItem* item = [[PasswordDetailsItem alloc]
+      initWithType:ItemTypePasswordDetailsShortVisible];
+  item.text = @"hunter2";
+  item.showingText = YES;
+  return item;
+}
+
+- (PasswordDetailsItem*)passwordDetailsLongItem {
+  PasswordDetailsItem* item =
+      [[PasswordDetailsItem alloc] initWithType:ItemTypePasswordDetailsLong];
+  item.text =
+      @"Lorem ipsum dolor sit amet, consectetur "
+      @"adipiscing elit, sed do eiusmod tempor "
+      @"incididunt ut labore et dolore magna aliqua.";
+  return item;
 }
 
 @end
