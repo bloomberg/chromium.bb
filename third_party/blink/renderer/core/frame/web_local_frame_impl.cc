@@ -938,7 +938,7 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
   CommitDataNavigation(data, WebString::FromUTF8("text/html"),
                        WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
                        replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr);
+                       false, nullptr, WebNavigationTimings());
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2026,7 +2026,8 @@ void WebLocalFrameImpl::CommitNavigation(
     const WebHistoryItem& item,
     bool is_client_redirect,
     const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    const WebNavigationTimings& navigation_timings) {
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
   DCHECK(!request.Url().ProtocolIs("javascript"));
@@ -2042,7 +2043,8 @@ void WebLocalFrameImpl::CommitNavigation(
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
   GetFrame()->Loader().CommitNavigation(frame_request, web_frame_load_type,
-                                        history_item, std::move(extra_data));
+                                        history_item, std::move(extra_data),
+                                        navigation_timings);
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2109,7 +2111,8 @@ void WebLocalFrameImpl::CommitDataNavigation(
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
     bool is_client_redirect,
-    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
+    const WebNavigationTimings& navigation_timings) {
   DCHECK(GetFrame());
 
   // If we are loading substitute data to replace an existing load, then
@@ -2145,9 +2148,9 @@ void WebLocalFrameImpl::CommitDataNavigation(
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
-  GetFrame()->Loader().CommitNavigation(frame_request, web_frame_load_type,
-                                        history_item,
-                                        std::move(navigation_data));
+  GetFrame()->Loader().CommitNavigation(
+      frame_request, web_frame_load_type, history_item,
+      std::move(navigation_data), navigation_timings);
 }
 
 WebLocalFrame::FallbackContentResult

@@ -218,7 +218,8 @@ void FrameLoader::Init() {
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, initial_request, SubstituteData(),
       ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create(), nullptr /* extra_data */);
+      base::UnguessableToken::Create(), nullptr /* extra_data */,
+      WebNavigationTimings());
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -836,7 +837,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   StartLoad(request, frame_load_type, policy, nullptr,
-            true /* check_with_client */, nullptr);
+            true /* check_with_client */, nullptr /* extra_data */,
+            WebNavigationTimings());
 
   // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
   // the check that the pages are equal, because consumption should not be
@@ -852,7 +854,8 @@ void FrameLoader::CommitNavigation(
     const FrameLoadRequest& passed_request,
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    const WebNavigationTimings& navigation_timings) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
   CHECK(!passed_request.Form());
@@ -887,7 +890,8 @@ void FrameLoader::CommitNavigation(
   //   with regards to the last commit.
   // In this rare case, we intentionally proceed as cross-document.
   StartLoad(request, frame_load_type, kNavigationPolicyCurrentTab, history_item,
-            false /* check_with_client */, std::move(extra_data));
+            false /* check_with_client */, std::move(extra_data),
+            navigation_timings);
 }
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
@@ -1404,7 +1408,8 @@ void FrameLoader::StartLoad(
     NavigationPolicy navigation_policy,
     HistoryItem* history_item,
     bool check_with_client,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    const WebNavigationTimings& navigation_timings) {
   DCHECK(Client()->HasWebView());
   ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
   WebNavigationType navigation_type = DetermineNavigationType(
@@ -1470,9 +1475,9 @@ void FrameLoader::StartLoad(
   if (!CancelProvisionalLoaderForNewNavigation(navigation_policy))
     return;
 
-  provisional_document_loader_ =
-      CreateDocumentLoader(resource_request, frame_load_request, type,
-                           navigation_type, std::move(extra_data));
+  provisional_document_loader_ = CreateDocumentLoader(
+      resource_request, frame_load_request, type, navigation_type,
+      std::move(extra_data), navigation_timings);
 
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
@@ -1757,14 +1762,16 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
     const FrameLoadRequest& frame_load_request,
     WebFrameLoadType load_type,
     WebNavigationType navigation_type,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    const WebNavigationTimings& navigation_timings) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
       frame_load_request.GetSubstituteData().IsValid()
           ? frame_load_request.GetSubstituteData()
           : DefaultSubstituteDataForURL(request.Url()),
       frame_load_request.ClientRedirect(),
-      frame_load_request.GetDevToolsNavigationToken(), std::move(extra_data));
+      frame_load_request.GetDevToolsNavigationToken(), std::move(extra_data),
+      navigation_timings);
 
   loader->SetLoadType(load_type);
   loader->SetNavigationType(navigation_type);

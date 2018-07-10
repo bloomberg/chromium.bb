@@ -44,6 +44,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
+#include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -100,6 +101,13 @@ std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
   return owned_client;
 }
 
+WebNavigationTimings BuildDummyWebNavigationTimings() {
+  WebNavigationTimings web_navigation_timings;
+  web_navigation_timings.navigation_start = base::TimeTicks::Now();
+  web_navigation_timings.fetch_start = base::TimeTicks::Now();
+  return web_navigation_timings;
+}
+
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
@@ -107,10 +115,10 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   if (web_url.ProtocolIs("javascript")) {
     frame->LoadJavaScriptURL(web_url);
   } else {
-    frame->CommitNavigation(WebURLRequest(web_url),
-                            blink::WebFrameLoadType::kStandard,
-                            blink::WebHistoryItem(), false,
-                            base::UnguessableToken::Create(), nullptr);
+    frame->CommitNavigation(
+        WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
+        blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
+        nullptr, BuildDummyWebNavigationTimings());
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -129,7 +137,8 @@ void LoadHistoryItem(WebLocalFrame* frame,
   frame->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
       WebFrameLoadType::kBackForward, item,
-      /*is_client_redirect=*/false, base::UnguessableToken::Create(), nullptr);
+      /*is_client_redirect=*/false, base::UnguessableToken::Create(), nullptr,
+      BuildDummyWebNavigationTimings());
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -448,12 +457,6 @@ void TestWebFrameClient::DidStopLoading() {
 
 void TestWebFrameClient::DidCreateDocumentLoader(
     WebDocumentLoader* document_loader) {
-  base::TimeTicks redirect_start;
-  base::TimeTicks redirect_end;
-  base::TimeTicks fetch_start = base::TimeTicks::Now();
-  bool has_redirect = false;
-  document_loader->UpdateNavigation(redirect_start, redirect_end, fetch_start,
-                                    has_redirect);
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;

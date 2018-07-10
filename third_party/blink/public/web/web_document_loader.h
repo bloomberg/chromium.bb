@@ -105,22 +105,6 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual ExtraData* GetExtraData() const = 0;
   virtual void SetExtraData(std::unique_ptr<ExtraData>) = 0;
 
-  // Sets the navigation start time for this datasource. Ordinarily,
-  // navigation start is determined in WebCore. But, in some situations,
-  // the embedder might have a better value and can override it here. This
-  // should be called before WebLocalFrameClient::didCommitProvisionalLoad.
-  // Calling it later may confuse users, because JavaScript may have run and
-  // the user may have already recorded the original value.
-  virtual void SetNavigationStartTime(base::TimeTicks) = 0;
-
-  // Sets timing and attributes of the navigation.
-  // Ordinarily, they are determined in WebCore, but when the navigation is
-  // handled by the client, they can be passed here.
-  virtual void UpdateNavigation(base::TimeTicks redirect_start_time,
-                                base::TimeTicks redirect_end_time,
-                                base::TimeTicks fetch_start_time,
-                                bool has_redirect) = 0;
-
   // Allows the embedder to inject a filter that will be consulted for each
   // subsequent subresource load, and gets the final say in deciding whether
   // or not to allow the load. The passed-in filter object is deleted when the

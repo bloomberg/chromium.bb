@@ -138,8 +138,11 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
       // Do not use WebFrame.LoadHTMLString because it assumes that input
       // html contents use UTF-8 encoding.
       WebData data(contents.data(), contents.length());
-      GetMainFrame()->CommitDataNavigation(data, "text/html", encoding_info,
-                                           base_url);
+      GetMainFrame()->CommitDataNavigation(
+          data, "text/html", encoding_info, base_url, WebURL(),
+          false /* replace */, blink::WebFrameLoadType::kStandard,
+          blink::WebHistoryItem(), false /* is_client_redirect */,
+          nullptr /* navigation_data */, blink::WebNavigationTimings());
     }
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();

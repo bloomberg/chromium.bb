@@ -84,20 +84,6 @@ void WebDocumentLoaderImpl::AppendRedirect(const WebURL& url) {
   DocumentLoader::AppendRedirect(url);
 }
 
-void WebDocumentLoaderImpl::UpdateNavigation(
-    base::TimeTicks redirect_start_time,
-    base::TimeTicks redirect_end_time,
-    base::TimeTicks fetch_start_time,
-    bool has_redirect) {
-  // Updates the redirection timing if there is at least one redirection
-  // (between two URLs).
-  if (has_redirect) {
-    GetTiming().SetRedirectStart(redirect_start_time);
-    GetTiming().SetRedirectEnd(redirect_end_time);
-  }
-  GetTiming().SetFetchStart(fetch_start_time);
-}
-
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
   result.Assign(redirect_chain_);
 }
@@ -121,11 +107,6 @@ WebDocumentLoader::ExtraData* WebDocumentLoaderImpl::GetExtraData() const {
 void WebDocumentLoaderImpl::SetExtraData(
     std::unique_ptr<ExtraData> extra_data) {
   extra_data_ = std::move(extra_data);
-}
-
-void WebDocumentLoaderImpl::SetNavigationStartTime(
-    base::TimeTicks navigation_start) {
-  GetTiming().SetNavigationStart(navigation_start);
 }
 
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(
