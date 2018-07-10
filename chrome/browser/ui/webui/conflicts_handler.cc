@@ -42,7 +42,7 @@ void ConflictsHandler::OnNewModuleFound(const ModuleInfoKey& module_key,
   data->SetInteger("status", kGoodStatus);
 
   base::string16 type_string;
-  if (module_data.module_types & ModuleInfoData::kTypeShellExtension)
+  if (module_data.module_properties & ModuleInfoData::kPropertyShellExtension)
     type_string = L"Shell extension";
   data->SetString("type_description", type_string);
 

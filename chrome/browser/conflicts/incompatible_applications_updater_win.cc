@@ -280,12 +280,14 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Only consider loaded modules that are not shell extensions or IMEs.
-  static constexpr uint32_t kModuleTypesBitmask =
-      ModuleInfoData::kTypeLoadedModule | ModuleInfoData::kTypeShellExtension |
-      ModuleInfoData::kTypeIme;
-  if ((module_data.module_types & kModuleTypesBitmask) !=
-      ModuleInfoData::kTypeLoadedModule) {
+  // Only consider loaded modules that are not shell extensions or IMEs, and
+  // that will not be blocked on the next browser launch.
+  static constexpr uint32_t kModulePropertiesBitmask =
+      ModuleInfoData::kPropertyLoadedModule |
+      ModuleInfoData::kPropertyShellExtension | ModuleInfoData::kPropertyIme |
+      ModuleInfoData::kPropertyAddedToBlacklist;
+  if ((module_data.module_properties & kModulePropertiesBitmask) !=
+      ModuleInfoData::kPropertyLoadedModule) {
     return;
   }
 

@@ -98,6 +98,12 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
                     uint32_t module_time_date_stamp,
                     uintptr_t module_load_address);
 
+  // Marks the module as added to the module blacklist cache, which means it
+  // will be blocked on the next browser launch.
+  void OnModuleAddedToBlacklist(const base::FilePath& module_path,
+                                uint32_t module_size,
+                                uint32_t module_time_date_stamp);
+
   // TODO(chrisha): Module analysis code, and various accessors for use by
   // chrome://conflicts.
 

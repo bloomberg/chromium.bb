@@ -48,7 +48,7 @@ constexpr base::FilePath::CharType kDllPath2[] =
 // empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
-  module_data.module_types |= ModuleInfoData::kTypeLoadedModule;
+  module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
   module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
   return module_data;
 }
@@ -295,11 +295,11 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   // Set the respective bit for registered modules.
   ModuleInfoKey module_key1(dll1_, 123u, 456u, 0);
   ModuleInfoData module_data1 = CreateLoadedModuleInfoData();
-  module_data1.module_types |= ModuleInfoData::kTypeIme;
+  module_data1.module_properties |= ModuleInfoData::kPropertyIme;
 
   ModuleInfoKey module_key2(dll2_, 456u, 789u, 0);
   ModuleInfoData module_data2 = CreateLoadedModuleInfoData();
-  module_data2.module_types |= ModuleInfoData::kTypeShellExtension;
+  module_data2.module_properties |= ModuleInfoData::kPropertyShellExtension;
 
   // Simulate the modules loading into the process.
   module_blacklist_cache_updater->OnNewModuleFound(module_key1, module_data1);

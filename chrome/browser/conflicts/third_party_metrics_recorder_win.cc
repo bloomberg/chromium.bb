@@ -48,7 +48,8 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
     } else {
       // Count modules that are neither signed by Google nor Microsoft.
       // These are considered "third party" modules.
-      if (module_data.module_types & ModuleInfoData::kTypeLoadedModule) {
+      if (module_data.module_properties &
+          ModuleInfoData::kPropertyLoadedModule) {
         ++loaded_third_party_module_count_;
       } else {
         ++not_loaded_third_party_module_count_;

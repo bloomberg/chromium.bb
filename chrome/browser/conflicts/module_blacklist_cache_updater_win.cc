@@ -192,10 +192,10 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
 
   // Only consider loaded modules that are not IMEs. Shell extensions are still
   // blocked.
-  static constexpr uint32_t kModuleTypesBitmask =
-      ModuleInfoData::kTypeLoadedModule | ModuleInfoData::kTypeIme;
-  if ((module_data.module_types & kModuleTypesBitmask) !=
-      ModuleInfoData::kTypeLoadedModule) {
+  static constexpr uint32_t kModulePropertiesBitmask =
+      ModuleInfoData::kPropertyLoadedModule | ModuleInfoData::kPropertyIme;
+  if ((module_data.module_properties & kModulePropertiesBitmask) !=
+      ModuleInfoData::kPropertyLoadedModule) {
     return;
   }
 
@@ -252,6 +252,18 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
                       module_code_id.length(), module.code_id_hash);
 
   module.time_date_stamp = CalculateTimeDateStamp(base::Time::Now());
+
+  // Signal the module database that this module will be added to the cache.
+  // Note that observers that care about this information should register to
+  // the Module Database's observer interface after the ModuleBlacklistCache
+  // instance.
+  // The Module Database can be null during tests.
+  auto* module_database = ModuleDatabase::GetInstance();
+  if (module_database) {
+    module_database->OnModuleAddedToBlacklist(
+        module_key.module_path, module_key.module_size,
+        module_key.module_time_date_stamp);
+  }
 }
 
 void ModuleBlacklistCacheUpdater::OnModuleDatabaseIdle() {

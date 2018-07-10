@@ -173,14 +173,14 @@ class ThirdPartyConflictsManager
   // Retrieves the list of installed applications.
   std::unique_ptr<InstalledApplications> installed_applications_;
 
+  // Maintains the module blacklist cache. This member is only initialized when
+  // the ThirdPartyModuleBlocking feature is enabled.
+  std::unique_ptr<ModuleBlacklistCacheUpdater> module_blacklist_cache_updater_;
+
   // Maintains the cache of incompatible applications. This member is only
   // initialized when the IncompatibleApplicationsWarning feature is enabled.
   std::unique_ptr<IncompatibleApplicationsUpdater>
       incompatible_applications_updater_;
-
-  // Maintains the module blacklist cache. This member is only initialized when
-  // the ThirdPartyModuleBlocking feature is enabled.
-  std::unique_ptr<ModuleBlacklistCacheUpdater> module_blacklist_cache_updater_;
 
   // The final state of this instance.
   base::Optional<State> terminal_state_;
