@@ -16,14 +16,6 @@ source_set("lib") {
     "service_process_launcher_factory.h",
   ]
 
-  if (!is_ios) {
-    sources += [
-      # iOS does not support launching services in their own processes.
-      "service_process_launcher.cc",
-      "service_process_launcher.h",
-    ]
-  }
-
   deps = [
     "//base:base_static",
     "//base:i18n",
@@ -39,11 +31,17 @@ source_set("lib") {
     "//mojo/public/cpp/system",
   ]
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     deps += [ "//sandbox/linux:sandbox_services" ]
   }
 
   if (!is_ios) {
+    sources += [
+      # iOS does not support launching services in their own processes.
+      "service_process_launcher.cc",
+      "service_process_launcher.h",
+    ]
+
     deps += [ "//services/service_manager/public/cpp/standalone_service" ]
   }
 }

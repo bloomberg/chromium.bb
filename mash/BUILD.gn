@@ -59,7 +59,7 @@ catalog("catalog") {
     ]
   }
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     standalone_services += [ "//components/services/font:manifest" ]
   }
 

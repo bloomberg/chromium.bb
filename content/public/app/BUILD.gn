@@ -198,7 +198,7 @@ service_manifest("packaged_services_manifest") {
     "//services/viz:manifest",
   ]
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     packaged_services += [ "//components/services/font:manifest" ]
   }
 }
