@@ -593,6 +593,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -3491,6 +3497,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -3752,6 +3764,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
       },
       {
         "swarming": {
@@ -5129,6 +5147,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
       },
       {
         "args": [
