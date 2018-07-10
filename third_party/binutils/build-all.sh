@@ -23,7 +23,7 @@ if [ ! -d "$OUTPUTDIR" ]; then
 fi
 
 # Download the source
-VERSION=2.29.1
+VERSION=2.30
 wget -c http://ftp.gnu.org/gnu/binutils/binutils-$VERSION.tar.bz2
 
 # Verify the signature
