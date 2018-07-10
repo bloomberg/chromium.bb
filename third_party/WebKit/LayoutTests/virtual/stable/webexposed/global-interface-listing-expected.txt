@@ -2007,6 +2007,7 @@ interface HTMLCanvasElement : HTMLElement
     method getContext
     method toBlob
     method toDataURL
+    method transferControlToOffscreen
     setter height
     setter width
 interface HTMLCollection
@@ -4184,6 +4185,99 @@ interface OfflineAudioContext : BaseAudioContext
     method startRendering
     method suspend
     setter oncomplete
+interface OffscreenCanvas : EventTarget
+    attribute @@toStringTag
+    getter height
+    getter width
+    method constructor
+    method convertToBlob
+    method getContext
+    method transferToImageBitmap
+    setter height
+    setter width
+interface OffscreenCanvasRenderingContext2D
+    attribute @@toStringTag
+    getter canvas
+    getter direction
+    getter fillStyle
+    getter filter
+    getter font
+    getter globalAlpha
+    getter globalCompositeOperation
+    getter imageSmoothingEnabled
+    getter imageSmoothingQuality
+    getter lineCap
+    getter lineDashOffset
+    getter lineJoin
+    getter lineWidth
+    getter miterLimit
+    getter shadowBlur
+    getter shadowColor
+    getter shadowOffsetX
+    getter shadowOffsetY
+    getter strokeStyle
+    getter textAlign
+    getter textBaseline
+    method arc
+    method arcTo
+    method beginPath
+    method bezierCurveTo
+    method clearRect
+    method clip
+    method closePath
+    method commit
+    method constructor
+    method createImageData
+    method createLinearGradient
+    method createPattern
+    method createRadialGradient
+    method drawImage
+    method ellipse
+    method fill
+    method fillRect
+    method fillText
+    method getImageData
+    method getLineDash
+    method isPointInPath
+    method isPointInStroke
+    method lineTo
+    method measureText
+    method moveTo
+    method putImageData
+    method quadraticCurveTo
+    method rect
+    method resetTransform
+    method restore
+    method rotate
+    method save
+    method scale
+    method setLineDash
+    method setTransform
+    method stroke
+    method strokeRect
+    method strokeText
+    method transform
+    method translate
+    setter direction
+    setter fillStyle
+    setter filter
+    setter font
+    setter globalAlpha
+    setter globalCompositeOperation
+    setter imageSmoothingEnabled
+    setter imageSmoothingQuality
+    setter lineCap
+    setter lineDashOffset
+    setter lineJoin
+    setter lineWidth
+    setter miterLimit
+    setter shadowBlur
+    setter shadowColor
+    setter shadowOffsetX
+    setter shadowOffsetY
+    setter strokeStyle
+    setter textAlign
+    setter textBaseline
 interface Option
     attribute @@toStringTag
     getter defaultSelected
@@ -7299,6 +7393,7 @@ interface WebGL2ComputeRenderingContext
     method clearStencil
     method clientWaitSync
     method colorMask
+    method commit
     method compileShader
     method compressedTexImage2D
     method compressedTexImage3D
@@ -8091,6 +8186,7 @@ interface WebGL2RenderingContext
     method clearStencil
     method clientWaitSync
     method colorMask
+    method commit
     method compileShader
     method compressedTexImage2D
     method compressedTexImage3D
@@ -8629,6 +8725,7 @@ interface WebGLRenderingContext
     method clearDepth
     method clearStencil
     method colorMask
+    method commit
     method compileShader
     method compressedTexImage2D
     method compressedTexSubImage2D

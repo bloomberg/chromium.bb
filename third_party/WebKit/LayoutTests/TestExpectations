@@ -4536,7 +4536,6 @@ crbug.com/850349 external/wpt/css/css-animations/CSSAnimation-getComputedTiming.
 crbug.com/520739 virtual/off-main-thread-websocket/http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html [ Pass Failure ]
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure ]
-crbug.com/850206 virtual/stable/webexposed/global-interface-listing.html [ Pass Failure ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]
 
 # Sheriff 2018-06-08
