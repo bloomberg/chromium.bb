@@ -167,7 +167,7 @@ def _TargetCpuToTargetArch(target_cpu):
 
 
 def _RunGdb(device, package_name, debug_process_name, pid, output_directory,
-            target_cpu, extra_args, verbose):
+            target_cpu, port, ide, verbose):
   if not pid:
     debug_process_name = _NormalizeProcessName(debug_process_name, package_name)
     pid = device.GetApplicationPids(debug_process_name, at_most_one=True)
@@ -186,16 +186,15 @@ def _RunGdb(device, package_name, debug_process_name, pid, output_directory,
       '--adb=%s' % adb_wrapper.AdbWrapper.GetAdbPath(),
       '--device=%s' % device.serial,
       '--pid=%s' % pid,
-      # Use one lib dir per device so that changing between devices does require
-      # refetching the device libs.
-      '--pull-libs-dir=/tmp/adb-gdb-libs-%s' % device.serial,
+      '--port=%d' % port,
   ]
+  if ide:
+    cmd.append('--ide')
   # Enable verbose output of adb_gdb if it's set for this script.
   if verbose:
     cmd.append('--verbose')
   if target_cpu:
     cmd.append('--target-arch=%s' % _TargetCpuToTargetArch(target_cpu))
-  cmd.extend(extra_args)
   logging.warning('Running: %s', ' '.join(pipes.quote(x) for x in cmd))
   print _Colorize(
       'All subsequent output is from adb_gdb script.', colorama.Fore.YELLOW)
@@ -1005,16 +1004,14 @@ If no apk process is currently running, sends a launch intent.
 """
   needs_package_name = True
   needs_output_directory = True
-  accepts_args = True
   calls_exec = True
   supports_multiple_devices = False
 
   def Run(self):
-    extra_args = shlex.split(self.args.args or '')
     _RunGdb(self.devices[0], self.args.package_name,
             self.args.debug_process_name, self.args.pid,
-            self.args.output_directory, self.args.target_cpu, extra_args,
-            bool(self.args.verbose_count))
+            self.args.output_directory, self.args.target_cpu, self.args.port,
+            self.args.ide, bool(self.args.verbose_count))
 
   def _RegisterExtraArgs(self, group):
     pid_group = group.add_mutually_exclusive_group()
@@ -1024,6 +1021,12 @@ If no apk process is currently running, sends a launch intent.
     pid_group.add_argument('--pid',
                            help='The process ID to attach to. Defaults to '
                                 'the main process for the package.')
+    pid_group.add_argument('--ide', action='store_true',
+                           help='Rather than enter a gdb prompt, set up the '
+                                'gdb connection and wait for an IDE to '
+                                'connect.')
+    pid_group.add_argument('--port', type=int, default=19631,
+                           help='Use the given port for the GDB connection')
 
 
 class _LogcatCommand(_Command):
