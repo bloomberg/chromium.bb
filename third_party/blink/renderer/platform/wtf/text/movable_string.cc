@@ -10,20 +10,13 @@ namespace WTF {
 
 namespace {
 
-enum class ParkingAction {
-  kParkedInBackground = 0,
-  kUnparkedInBackground = 1,
-  kUnparkedInForeground = 2,
-  kMaxValue = kUnparkedInForeground
-};
-
 bool IsLargeEnough(const StringImpl* impl) {
   // Don't attempt to park strings smaller than this size.
   static constexpr unsigned int kSizeThreshold = 10000;
   return impl && impl->length() > kSizeThreshold;
 }
 
-void RecordParkingAction(ParkingAction action) {
+void RecordParkingAction(MovableStringImpl::ParkingAction action) {
   UMA_HISTOGRAM_ENUMERATION("Memory.MovableStringParkingAction", action);
 }
 
@@ -70,7 +63,7 @@ void MovableStringImpl::Unpark() {
 
   bool backgrounded = MovableStringTable::Instance().IsRendererBackgrounded();
   RecordParkingAction(backgrounded ? ParkingAction::kUnparkedInBackground
-                                   : ParkingAction::kUnparkedInBackground);
+                                   : ParkingAction::kUnparkedInForeground);
   is_parked_ = false;
 }
 
