@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 class TestPaintWorklet : public PaintWorklet {

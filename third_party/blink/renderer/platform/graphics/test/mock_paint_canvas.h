@@ -8,6 +8,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 

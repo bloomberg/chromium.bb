@@ -26,6 +26,8 @@
 
 namespace blink {
 
+class GraphicsContext;
+
 // LayoutTextCombine uses different coordinate systems for layout and
 // inlineTextBox, because it is treated as 1em-box character in vertical flow
 // for the layout, while its inline box is in horizontal flow.

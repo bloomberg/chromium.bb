@@ -32,6 +32,7 @@
 
 namespace blink {
 
+class FloatRect;
 class SVGResourceClient;
 
 class CORE_EXPORT FilterOperations {

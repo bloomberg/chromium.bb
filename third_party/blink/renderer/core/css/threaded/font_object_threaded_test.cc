@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 
+#include "cc/paint/paint_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
