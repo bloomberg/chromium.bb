@@ -1,0 +1,134 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPaintFragment",
+          "rect": [380, 287, 286, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [70, 287, 286, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [391, 267, 264, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [81, 267, 264, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [393, 307, 260, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [83, 307, 260, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [305, 54, 126, 142],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [305, 397, 126, 116],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [316, 377, 104, 156],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [316, 74, 104, 102],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [318, 34, 100, 182],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [318, 417, 100, 76],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPaintFragment",
+      "reason": "style change"
+    }
+  ]
+}
+
