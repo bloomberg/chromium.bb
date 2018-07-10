@@ -121,8 +121,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
 
 #if defined(OS_ANDROID)
   void DidAccessGpu();
-  void OnApplicationBackgrounded();
+  void OnBackgroundCleanup();
 #endif
+
+  void OnApplicationBackgrounded();
 
   bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
 
@@ -200,7 +202,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   // The RasterDecoderContextState is shared across all RasterDecoders. Note
   // that this class needs to be ref-counted to conveniently manage the lifetime
   // of the shared context in the case of a context loss. While the
-  // RasterDecoders strictly outlive the GpuChannelManager, in the event of a
+  // GpuChannelManager strictly outlives the RasterDecoders, in the event of a
   // context loss the clients need to re-create the GpuChannel and command
   // buffers once notified. In this interim state we can have multiple instances
   // of the RasterDecoderContextState, for the lost and recovered clients. In

@@ -784,7 +784,7 @@ void GpuServiceImpl::OnBackgroundCleanup() {
     return;
   }
   DVLOG(1) << "GPU: Performing background cleanup";
-  gpu_channel_manager_->OnApplicationBackgrounded();
+  gpu_channel_manager_->OnBackgroundCleanup();
 #else
   NOTREACHED();
 #endif
@@ -793,6 +793,13 @@ void GpuServiceImpl::OnBackgroundCleanup() {
 void GpuServiceImpl::OnBackgrounded() {
   if (watchdog_thread_)
     watchdog_thread_->OnBackgrounded();
+
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnBackgrounded, weak_ptr_));
+    return;
+  }
+  gpu_channel_manager_->OnApplicationBackgrounded();
 }
 
 void GpuServiceImpl::OnForegrounded() {

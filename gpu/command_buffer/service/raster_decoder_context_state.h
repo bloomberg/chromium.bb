@@ -31,6 +31,7 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                             scoped_refptr<gl::GLContext> context,
                             bool use_virtualized_gl_contexts);
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds);
+  void PurgeGrCache();
 
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
