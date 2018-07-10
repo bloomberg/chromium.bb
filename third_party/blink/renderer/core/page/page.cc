@@ -163,10 +163,6 @@ Page::Page(PageClients& page_clients)
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
       main_frame_(nullptr),
       plugin_data_(nullptr),
-      use_counter_(page_clients.chrome_client &&
-                           page_clients.chrome_client->IsSVGImageChromeClient()
-                       ? UseCounter::kSVGImageContext
-                       : UseCounter::kDefaultContext),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
       paused_(false),
@@ -685,9 +681,8 @@ void Page::UpdateAcceleratedCompositingSettings() {
 void Page::DidCommitLoad(LocalFrame* frame) {
   if (main_frame_ == frame) {
     GetConsoleMessageStorage().Clear();
-    GetUseCounter().DidCommitLoad(frame);
-    // TODO(rbyers): Most of this doesn't appear to take into account that each
-    // SVGImage gets it's own Page instance.
+    // TODO(loonybear): Most of this doesn't appear to take into account that
+    // each SVGImage gets it's own Page instance.
     GetDeprecation().ClearSuppression();
     GetVisualViewport().SendUMAMetrics();
     // Need to reset visual viewport position here since before commit load we
@@ -733,7 +728,6 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(main_frame_);
   visitor->Trace(plugin_data_);
   visitor->Trace(validation_message_client_);
-  visitor->Trace(use_counter_);
   visitor->Trace(plugins_changed_observers_);
   visitor->Trace(next_related_page_);
   visitor->Trace(prev_related_page_);

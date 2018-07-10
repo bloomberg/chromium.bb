@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecation(const LocalFrame*, WebFeature);
   static void CountDeprecation(ExecutionContext*, WebFeature);
   static void CountDeprecation(const Document&, WebFeature);
+  static void CountDeprecation(DocumentLoader*, WebFeature);
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
@@ -60,6 +62,8 @@ class CORE_EXPORT Deprecation {
 
  protected:
   void Suppress(CSSPropertyID unresolved_property);
+  void SetReported(WebFeature feature);
+  bool GetReported(WebFeature feature) const;
   // CSSPropertyIDs that aren't deprecated return an empty string.
   static String DeprecationMessage(CSSPropertyID unresolved_property);
 
@@ -67,6 +71,9 @@ class CORE_EXPORT Deprecation {
   // ReportingObservers. Also sends the deprecation message to the console.
   static void GenerateReport(const LocalFrame*, WebFeature);
 
+  // To minimize the report/console spam from frames coming and going, report
+  // each deprecation at most once per page load per renderer process.
+  BitVector features_deprecation_bits_;
   BitVector css_property_deprecation_bits_;
   unsigned mute_count_;
 

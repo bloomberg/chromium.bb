@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -1226,9 +1226,10 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
   return 0;
 }
 
-UseCounter::UseCounter(Context context)
+UseCounter::UseCounter(Context context, CommitState commit_state)
     : mute_count_(0),
       context_(context),
+      commit_state_(commit_state),
       features_recorded_(static_cast<int>(WebFeature::kNumberOfFeatures)),
       css_recorded_(numCSSPropertyIDs),
       animated_css_recorded_(numCSSPropertyIDs) {}
@@ -1252,19 +1253,27 @@ void UseCounter::RecordMeasurement(WebFeature feature,
   DCHECK_GE(WebFeature::kNumberOfFeatures, feature);
 
   int feature_id = static_cast<int>(feature);
-  if (!features_recorded_.QuickGet(feature_id)) {
-    if (context_ != kDisabledContext) {
-      // Note that HTTPArchive tooling looks specifically for this event - see
-      // https://github.com/HTTPArchive/httparchive/issues/59
-      TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                   "FeatureFirstUsed", "feature", feature_id);
-      if (context_ != kDefaultContext)
-        FeaturesHistogram().Count(feature_id);
-      if (LocalFrameClient* client = source_frame.Client())
-        client->DidObserveNewFeatureUsage(feature);
-      NotifyFeatureCounted(feature);
-    }
-    features_recorded_.QuickSet(feature_id);
+  if (features_recorded_.QuickGet(feature_id))
+    return;
+  if (commit_state_ >= kCommited)
+    ReportAndTraceMeasurementByFeatureId(feature_id, source_frame);
+
+  features_recorded_.QuickSet(feature_id);
+}
+
+void UseCounter::ReportAndTraceMeasurementByFeatureId(
+    int feature_id,
+    const LocalFrame& source_frame) {
+  if (context_ != kDisabledContext) {
+    // Note that HTTPArchive tooling looks specifically for this event -
+    // see https://github.com/HTTPArchive/httparchive/issues/59
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
+                 "FeatureFirstUsed", "feature", feature_id);
+    if (context_ != kDefaultContext)
+      FeaturesHistogram().Count(feature_id);
+    if (LocalFrameClient* client = source_frame.Client())
+      client->DidObserveNewFeatureUsage(static_cast<WebFeature>(feature_id));
+    NotifyFeatureCounted(static_cast<WebFeature>(feature_id));
   }
 }
 
@@ -1315,91 +1324,53 @@ void UseCounter::Trace(blink::Visitor* visitor) {
 }
 
 void UseCounter::DidCommitLoad(const LocalFrame* frame) {
-  // Reset state from previous load.
-  // Use the protocol of the document being loaded into the main frame to
-  // decide whether this page is interesting from a metrics perspective.
-  // Drop usage tracking on view source and new-tab pages. This matches the
-  // policy of page_load_metrics.
-  // Note that SVGImage cases always have an about:blank URL
-  if (context_ != kSVGImageContext) {
-    // TODO(loonybear): remove all the filters when all histograms have been
-    // moved to the browser side.
-    // https://crbug.com/845986.
-    if (!frame->GetDocument() ||
-        !Page::OrdinaryPages().Contains(frame->GetPage())) {
-      context_ = kDisabledContext;
-      return;
+  const KURL url = frame->GetDocument()->Url();
+  if (url.ProtocolIs("chrome-extension"))
+    context_ = kExtensionContext;
+
+  DCHECK_EQ(kPreCommit, commit_state_);
+  commit_state_ = kCommited;
+  if (!mute_count_) {
+    // If any feature was recorded prior to navigation commits, flush to the
+    // browser side.
+    for (size_t feature_id = 0; feature_id < features_recorded_.size();
+         ++feature_id) {
+      if (features_recorded_.QuickGet(feature_id))
+        ReportAndTraceMeasurementByFeatureId(feature_id, *frame);
     }
-    const KURL url = frame->GetDocument()->Url();
-    if (url.ProtocolIs("chrome-extension"))
-      context_ = kExtensionContext;
-    else if (frame->GetDocument()->IsViewSource())
-      context_ = kDisabledContext;
-    else if (!frame->Client() || !frame->Client()->ShouldTrackUseCounter(url))
-      context_ = kDisabledContext;
-    else if (frame->GetDocument()->IsPrefetchOnly())
-      context_ = kDisabledContext;
-    // TODO(loonybear): Service worker and shared worker count feature usage on
-    // the blink side use counter. Once the blink side use counter is removed
-    // (crbug.com/811948), the checker for shadow pages should be removed.
-    else if (frame->GetSettings()->IsShadowPage())
-      context_ = kDisabledContext;
-    else if (SchemeRegistry::ShouldTrackUsageMetricsForScheme(url.Protocol()))
-      context_ = kDefaultContext;
-    else
-      context_ = kDisabledContext;
+    for (size_t sample_id = 0; sample_id < css_recorded_.size(); ++sample_id) {
+      if (css_recorded_.QuickGet(sample_id))
+        ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, false);
+      if (animated_css_recorded_.QuickGet(sample_id))
+        ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, true);
+    }
+
+    // TODO(loonybear): remove or move SVG histogram and extension histogram
+    // to the browser side.
+    if ((context_ == kSVGImageContext || context_ == kExtensionContext))
+      FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
   }
-
-  features_recorded_.ClearAll();
-  css_recorded_.ClearAll();
-  animated_css_recorded_.ClearAll();
-
-  // TODO(loonybear): Remove or move SVG features histogram and extension
-  // features histogram to the browser side.
-  if (!mute_count_ &&
-      (context_ == kSVGImageContext || context_ == kExtensionContext))
-    FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
 }
 
+// TODO(loonybear): Replace Count(LocalFrame*) by Count(DocumentLoader*).
 void UseCounter::Count(const LocalFrame* frame, WebFeature feature) {
   if (!frame)
     return;
-  Page* page = frame->GetPage();
-  if (!page)
-    return;
+  DocumentLoader* loader = frame->GetDocument()
+                               ? frame->GetDocument()->Loader()
+                               : frame->Loader().GetProvisionalDocumentLoader();
+  UseCounter::Count(loader, feature);
+}
 
-  page->GetUseCounter().Count(feature, frame);
+void UseCounter::Count(DocumentLoader* loader, WebFeature feature) {
+  if (!loader)
+    return;
+  loader->GetUseCounter().Count(feature, loader->GetFrame());
 }
 
 void UseCounter::Count(const Document& document, WebFeature feature) {
-  Count(document.GetFrame(), feature);
-}
-
-bool UseCounter::IsCounted(Document& document, WebFeature feature) {
-  Page* page = document.GetPage();
-  if (!page)
-    return false;
-  return page->GetUseCounter().HasRecordedMeasurement(feature);
-}
-
-bool UseCounter::IsCounted(CSSPropertyID unresolved_property) {
-  return css_recorded_.QuickGet(unresolved_property);
-}
-
-void UseCounter::AddObserver(Observer* observer) {
-  DCHECK(!observers_.Contains(observer));
-  observers_.insert(observer);
-}
-
-bool UseCounter::IsCounted(Document& document, const String& string) {
-  Page* page = document.GetPage();
-  if (!page)
-    return false;
-
-  CSSPropertyID unresolved_property = unresolvedCSSPropertyID(string);
-  if (unresolved_property == CSSPropertyInvalid)
-    return false;
-  return page->GetUseCounter().IsCounted(unresolved_property);
+  if (DocumentLoader* loader = document.Loader())
+    loader->GetUseCounter().Count(feature, document.GetFrame());
 }
 
 void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
@@ -1414,11 +1385,50 @@ void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
   }
 }
 
+bool UseCounter::IsCounted(Document& document, WebFeature feature) {
+  DocumentLoader* loader = document.Loader();
+  return loader ? loader->GetUseCounter().HasRecordedMeasurement(feature)
+                : false;
+}
+
+bool UseCounter::IsCounted(CSSPropertyID unresolved_property) {
+  return css_recorded_.QuickGet(
+      MapCSSPropertyIdToCSSSampleIdForHistogram(unresolved_property));
+}
+
+void UseCounter::AddObserver(Observer* observer) {
+  DCHECK(!observers_.Contains(observer));
+  observers_.insert(observer);
+}
+
+bool UseCounter::IsCounted(Document& document, const String& string) {
+  CSSPropertyID unresolved_property = unresolvedCSSPropertyID(string);
+  if (unresolved_property == CSSPropertyInvalid)
+    return false;
+  DocumentLoader* loader = document.Loader();
+  return loader ? loader->GetUseCounter().IsCounted(unresolved_property)
+                : false;
+}
+
 void UseCounter::CountCrossOriginIframe(const Document& document,
                                         WebFeature feature) {
   LocalFrame* frame = document.GetFrame();
   if (frame && frame->IsCrossOriginSubframe())
     Count(frame, feature);
+}
+
+void UseCounter::ReportAndTraceMeasurementByCSSSampleId(int sample_id,
+                                                        const LocalFrame* frame,
+                                                        bool is_animated) {
+  // Note that HTTPArchive tooling looks specifically for this event - see
+  // https://github.com/HTTPArchive/httparchive/issues/59
+  if (context_ != kDisabledContext && context_ != kExtensionContext) {
+    const char* name = is_animated ? "AnimatedCSSFirstUsed" : "CSSFirstUsed";
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), name,
+                 "feature", sample_id);
+    if (frame && frame->Client())
+      frame->Client()->DidObserveNewCssPropertyUsage(sample_id, is_animated);
+  }
 }
 
 void UseCounter::Count(CSSParserMode css_parser_mode,
@@ -1429,47 +1439,42 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
   if (!IsUseCounterEnabledForMode(css_parser_mode) || mute_count_)
     return;
 
-  if (!css_recorded_.QuickGet(property)) {
-    // Note that HTTPArchive tooling looks specifically for this event - see
-    // https://github.com/HTTPArchive/httparchive/issues/59
-    int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-    if (context_ != kDisabledContext && context_ != kExtensionContext) {
-      TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                   "CSSFirstUsed", "feature", sample_id);
-      if (source_frame && source_frame->Client())
-        source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, false);
-    }
-    css_recorded_.QuickSet(property);
-  }
+  int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
+  if (css_recorded_.QuickGet(sample_id))
+    return;
+  if (commit_state_ >= kCommited)
+    ReportAndTraceMeasurementByCSSSampleId(sample_id, source_frame, false);
+
+  css_recorded_.QuickSet(sample_id);
 }
 
 void UseCounter::Count(WebFeature feature, const LocalFrame* source_frame) {
+  if (!source_frame)
+    return;
   RecordMeasurement(feature, *source_frame);
 }
 
 bool UseCounter::IsCountedAnimatedCSS(CSSPropertyID unresolved_property) {
-  return animated_css_recorded_.QuickGet(unresolved_property);
+  return animated_css_recorded_.QuickGet(
+      MapCSSPropertyIdToCSSSampleIdForHistogram(unresolved_property));
 }
 
 bool UseCounter::IsCountedAnimatedCSS(Document& document,
                                       const String& string) {
-  Page* page = document.GetPage();
-  if (!page)
-    return false;
-
   CSSPropertyID unresolved_property = unresolvedCSSPropertyID(string);
   if (unresolved_property == CSSPropertyInvalid)
     return false;
-  return page->GetUseCounter().IsCountedAnimatedCSS(unresolved_property);
+  DocumentLoader* loader = document.Loader();
+  return loader
+             ? loader->GetUseCounter().IsCountedAnimatedCSS(unresolved_property)
+             : false;
 }
 
 void UseCounter::CountAnimatedCSS(const Document& document,
                                   CSSPropertyID property) {
-  Page* page = document.GetPage();
-  if (!page)
-    return;
-
-  page->GetUseCounter().CountAnimatedCSS(property, document.GetFrame());
+  DocumentLoader* loader = document.Loader();
+  if (loader)
+    loader->GetUseCounter().CountAnimatedCSS(property, document.GetFrame());
 }
 
 void UseCounter::CountAnimatedCSS(CSSPropertyID property,
@@ -1479,16 +1484,13 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property,
   if (mute_count_)
     return;
 
-  if (!animated_css_recorded_.QuickGet(property)) {
-    int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-    if (context_ != kDisabledContext && context_ != kExtensionContext) {
-      TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                   "AnimatedCSSFirstUsed", "feature", sample_id);
-      if (source_frame && source_frame->Client())
-        source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, true);
-    }
-    animated_css_recorded_.QuickSet(property);
-  }
+  int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
+  if (animated_css_recorded_.QuickGet(sample_id))
+    return;
+  if (commit_state_ >= kCommited)
+    ReportAndTraceMeasurementByCSSSampleId(sample_id, source_frame, true);
+
+  animated_css_recorded_.QuickSet(sample_id);
 }
 
 void UseCounter::NotifyFeatureCounted(WebFeature feature) {
