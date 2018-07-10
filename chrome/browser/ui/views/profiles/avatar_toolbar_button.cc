@@ -54,14 +54,11 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
         AccountTrackerServiceFactory::GetForProfile(profile_));
   }
 
-  SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                    VerticalAlignment::ALIGN_MIDDLE);
-
   // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
   // is hard to read for user avatars. This constant is correspondingly smaller
   // than GetLayoutInsets(TOOLBAR_BUTTON).
   if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(4)));
+    SetLayoutInsets(GetLayoutInsets(TOOLBAR_BUTTON) - gfx::Insets(2));
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
@@ -70,6 +67,10 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 
   set_tag(IDC_SHOW_AVATAR_MENU);
   set_id(VIEW_ID_AVATAR_BUTTON);
+
+  // The avatar should not flip with RTL UI. This does not affect text rendering
+  // and LabelButton image/label placement is still flipped like usual.
+  EnableCanvasFlippingForRTLUI(false);
 
   Init();
 
@@ -84,10 +85,10 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   SetEnabled(!IsIncognito());
 #endif  // !defined(OS_CHROMEOS)
 
-  // Set initial tooltip. UpdateIcon() needs to be called from the outside as
-  // GetThemeProvider() is not available until the button is added to
+  // Set initial text and tooltip. UpdateIcon() needs to be called from the
+  // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
-  UpdateTooltipText();
+  UpdateText();
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() = default;
@@ -96,7 +97,24 @@ void AvatarToolbarButton::UpdateIcon() {
   SetImage(views::Button::STATE_NORMAL, GetAvatarIcon());
 }
 
-void AvatarToolbarButton::UpdateTooltipText() {
+void AvatarToolbarButton::UpdateText() {
+  base::Optional<SkColor> color;
+  base::string16 text;
+  switch (GetSyncState()) {
+    case SyncState::kError:
+      color = gfx::kGoogleRed700;
+      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
+      break;
+    case SyncState::kPaused:
+      color = gfx::kGoogleBlue500;
+      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
+      break;
+    case SyncState::kNormal:
+      break;
+  }
+  SetHighlightColor(color);
+  SetText(text);
+
   SetTooltipText(GetAvatarTooltipText());
 }
 
@@ -113,7 +131,7 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {
   UpdateIcon();
-  UpdateTooltipText();
+  UpdateText();
 }
 
 void AvatarToolbarButton::OnProfileAdded(const base::FilePath& profile_path) {
@@ -143,7 +161,7 @@ void AvatarToolbarButton::OnProfileHighResAvatarLoaded(
 void AvatarToolbarButton::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
-  UpdateTooltipText();
+  UpdateText();
 }
 
 void AvatarToolbarButton::OnGaiaAccountsInCookieUpdated(
@@ -177,7 +195,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
          !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
 }
 
-base::string16 AvatarToolbarButton::GetAvatarTooltipText() {
+base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   if (IsIncognito())
     return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
 
@@ -193,10 +211,10 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() {
     case SyncState::kNormal:
       return profile_name;
     case SyncState::kPaused:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED,
+      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
                                         profile_name);
     case SyncState::kError:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR,
+      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
                                         profile_name);
   }
 
@@ -204,7 +222,7 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() {
   return base::string16();
 }
 
-gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() {
+gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
   const int icon_size =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 20;
 
@@ -218,19 +236,8 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() {
     return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
 
   gfx::Image avatar_icon;
-  if (!ShouldShowGenericIcon()) {
-    switch (GetSyncState()) {
-      case SyncState::kNormal:
-        avatar_icon = GetIconImageFromProfile();
-        break;
-      case SyncState::kPaused:
-        return gfx::CreateVectorIcon(kSyncPausedIcon, icon_size,
-                                     gfx::kGoogleBlue500);
-      case SyncState::kError:
-        return gfx::CreateVectorIcon(kSyncProblemIcon, icon_size,
-                                     gfx::kGoogleRed700);
-    }
-  }
+  if (!ShouldShowGenericIcon())
+    avatar_icon = GetIconImageFromProfile();
 
   if (!avatar_icon.IsEmpty()) {
     return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size, icon_size,
@@ -280,7 +287,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   return entry->GetAvatarIcon();
 }
 
-AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() {
+AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 #if !defined(OS_CHROMEOS)
   if (profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
@@ -293,9 +300,6 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() {
             &unused) == sync_ui_util::AUTH_ERROR;
     return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
   }
-  return SyncState::kNormal;
-#else
-  NOTREACHED();
-  return SyncState::kError;
 #endif  // !defined(OS_CHROMEOS)
+  return SyncState::kNormal;
 }

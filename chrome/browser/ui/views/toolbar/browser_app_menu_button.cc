@@ -336,7 +336,8 @@ BrowserAppMenuButton::CreateInkDropRipple() const {
   // FIXME: GetInkDropCenterBasedOnLastEvent() will always return the center
   // of this view. https://crbug.com/819878.
   return CreateToolbarInkDropRipple<MenuButton>(
-      this, GetInkDropCenterBasedOnLastEvent());
+      this, GetInkDropCenterBasedOnLastEvent(),
+      gfx::Insets(0, 0, 0, margin_trailing_));
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -347,5 +348,6 @@ BrowserAppMenuButton::CreateInkDropHighlight() const {
 
 std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
     const {
-  return CreateToolbarInkDropMask<MenuButton>(this);
+  return CreateToolbarInkDropMask<MenuButton>(
+      this, gfx::Insets(0, 0, 0, margin_trailing_));
 }

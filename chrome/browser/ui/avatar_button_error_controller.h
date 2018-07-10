@@ -19,7 +19,7 @@ class AvatarButtonErrorController {
                               Profile* profile);
   ~AvatarButtonErrorController();
 
-  bool HasAvatarError() { return has_signin_error_ || has_sync_error_; }
+  bool HasAvatarError() const { return has_signin_error_ || has_sync_error_; }
 
  private:
   friend class SigninErrorObserver;
