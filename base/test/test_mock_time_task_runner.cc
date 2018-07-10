@@ -87,24 +87,29 @@ class TestMockTimeTaskRunner::NonOwningProxyTaskRunner
       return target_->RunsTasksInCurrentSequence();
     return thread_checker_.CalledOnValidThread();
   }
+
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override {
     AutoLock scoped_lock(lock_);
-    CHECK(target_)
-        << "Attempt to post a task on a deleted TestMockTimeTaskRunner";
+    if (target_)
+      return target_->PostDelayedTask(from_here, std::move(task), delay);
 
-    return target_->PostDelayedTask(from_here, std::move(task), delay);
+    // The associated TestMockTimeTaskRunner is dead, so fail this PostTask.
+    return false;
   }
+
   bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override {
     AutoLock scoped_lock(lock_);
-    CHECK(target_)
-        << "Attempt to post a task on a deleted TestMockTimeTaskRunner";
+    if (target_) {
+      return target_->PostNonNestableDelayedTask(from_here, std::move(task),
+                                                 delay);
+    }
 
-    return target_->PostNonNestableDelayedTask(from_here, std::move(task),
-                                               delay);
+    // The associated TestMockTimeTaskRunner is dead, so fail this PostTask.
+    return false;
   }
 
  private:
