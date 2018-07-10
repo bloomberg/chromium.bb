@@ -7,7 +7,8 @@
 // Implement BluetoothDevice interface: http://crbug.com/421668
 
 [
-    RuntimeEnabled=WebBluetooth
+    RuntimeEnabled=WebBluetooth,
+    SecureContext
 ] interface BluetoothDevice : EventTarget
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers
