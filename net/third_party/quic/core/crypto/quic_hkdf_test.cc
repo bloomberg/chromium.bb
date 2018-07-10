@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quic/platform/api/quic_hkdf.h"
+#include "net/third_party/quic/core/crypto/quic_hkdf.h"
+
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -73,7 +74,7 @@ TEST_F(QuicHKDFTest, HKDF) {
 
     // We set the key_length to the length of the expected output and then take
     // the result from the first key, which is the client write key.
-    QuicHKDFImpl hkdf(key, salt, info, expected.size(), 0, 0);
+    QuicHKDF hkdf(key, salt, info, expected.size(), 0, 0);
 
     ASSERT_EQ(expected.size(), hkdf.client_write_key().size());
     EXPECT_EQ(0, memcmp(expected.data(), hkdf.client_write_key().data(),
