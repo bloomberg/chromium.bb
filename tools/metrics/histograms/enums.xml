@@ -11452,6 +11452,15 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Touch"/>
 </enum>
 
+<enum name="DrawResult">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Abort: checkerboard animation"/>
+  <int value="3" label="Abort: missing high res"/>
+  <int value="4" label="Abort: cannot draw"/>
+  <int value="5" label="Abort: draining pipeline"/>
+</enum>
+
 <enum name="DriveApiErrorCode">
 <!-- Generated from google_apis/drive/drive_api_error_codes.h -->
 
