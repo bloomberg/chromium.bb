@@ -73,6 +73,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     kContextWebgl2 = 4,
     kContextImageBitmap = 5,
     kContextXRPresent = 6,
+    kContextWebgl2Compute = 7,
     kContextTypeCount,
   };
 

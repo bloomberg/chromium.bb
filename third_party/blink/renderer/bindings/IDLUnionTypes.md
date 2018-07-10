@@ -25,7 +25,7 @@ name, but we use some aliases to avoid too-long file names
 Currently we use following alias(es).
 
 ```
-CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext -> RenderingContext
+CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext -> RenderingContext
 ```
 
 The paths for generated classes depend on the places union types are

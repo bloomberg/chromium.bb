@@ -454,6 +454,9 @@ const char kEnableVulkan[] = "enable-vulkan";
 // https://w3c.github.io/webauthn
 const char kEnableWebAuthTestingAPI[] = "enable-web-authentication-testing-api";
 
+// Enable WebGL2 Compute context.
+const char kEnableWebGL2ComputeContext[] = "enable-webgl2-compute-context";
+
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 

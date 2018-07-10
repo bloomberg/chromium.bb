@@ -433,13 +433,13 @@ def shorten_union_name(union_type):
         # modules/canvas2d/CanvasRenderingContext2D.idl
         'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
         # modules/canvas/HTMLCanvasElementModule.idl
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
         # core/imagebitmap/ImageBitmapFactories.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
         # modules/offscreencanvas/OffscreenCanvasModules.idl
-        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext': 'OffscreenRenderingContext',
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext': 'OffscreenRenderingContext',
     }
 
     idl_type = union_type
