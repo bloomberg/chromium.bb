@@ -107,6 +107,16 @@ cr.define('extensions', function() {
       'observeIdVisibility_(inDevMode, showingDetails_, data.id)',
     ],
 
+    /** @return {!HTMLElement} The "Details" button. */
+    getDetailsButton: function() {
+      return this.$.detailsButton;
+    },
+
+    /** @return {?HTMLElement} The "Errors" button, if it exists. */
+    getErrorsButton: function() {
+      return /** @type {?HTMLElement} */ (this.$$('#errors-button'));
+    },
+
     /** @private string */
     a11yAssociation_: function() {
       // Don't use I18nBehavior.i18n because of additional checks it performs.

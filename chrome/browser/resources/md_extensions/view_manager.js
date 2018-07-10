@@ -63,10 +63,12 @@ cr.define('extensions', function() {
 
       element.classList.remove('active');
       element.classList.add('closing');
-      element.dispatchEvent(new CustomEvent('view-exit-start'));
+      element.dispatchEvent(
+          new CustomEvent('view-exit-start', {bubbles: true, composed: true}));
       return animationFunction(element).then(function() {
         element.classList.remove('closing');
-        element.dispatchEvent(new CustomEvent('view-exit-finish'));
+        element.dispatchEvent(new CustomEvent(
+            'view-exit-finish', {bubbles: true, composed: true}));
       });
     },
 
@@ -83,9 +85,11 @@ cr.define('extensions', function() {
       let effectiveView = view.matches('cr-lazy-render') ? view.get() : view;
 
       effectiveView.classList.add('active');
-      effectiveView.dispatchEvent(new CustomEvent('view-enter-start'));
+      effectiveView.dispatchEvent(
+          new CustomEvent('view-enter-start', {bubbles: true, composed: true}));
       return animationFunction(effectiveView).then(() => {
-        effectiveView.dispatchEvent(new CustomEvent('view-enter-finish'));
+        effectiveView.dispatchEvent(new CustomEvent(
+            'view-enter-finish', {bubbles: true, composed: true}));
       });
     },
 

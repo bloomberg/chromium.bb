@@ -52,7 +52,7 @@ cr.define('extensions', function() {
      * @return {?Element}
      */
     getDetailsButton: function(id) {
-      return this.$$(`#${id} /deep/ #details-button`);
+      return this.$$(`#${id}`).getDetailsButton();
     },
 
     /**
@@ -60,7 +60,7 @@ cr.define('extensions', function() {
      * @return {?Element}
      */
     getErrorsButton: function(id) {
-      return this.$$(`#${id} /deep/ #errors-button`);
+      return this.$$(`#${id}`).getErrorsButton();
     },
 
     /**
