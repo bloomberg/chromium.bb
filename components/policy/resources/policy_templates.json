@@ -11617,7 +11617,7 @@
       If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
       If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
       If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their protected password on a phishing site.
-      If this policy is left unset, password protection warning will be triggered when the user reuses their protected password on a phishing site but the user will be able to change this setting.''',
+      If this policy is left unset, password protection service will only protect Google passwords but the user will be able to change this setting.''',
     },
     {
       'id': 419,
@@ -11756,10 +11756,10 @@
       'id': 424,
       'caption': '''Configure the change password URL.''',
       'tags': [],
-      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
+      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
       In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the new password fingerprint on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      If this setting is enabled, then password protection service will send users to this URL to change their passwords if they've been phished.
+      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
       If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
