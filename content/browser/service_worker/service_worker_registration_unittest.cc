@@ -368,13 +368,12 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_1->script_cache_map()->SetResources(records_1);
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> status;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
     // Give the active version a controllee.
     host_ = CreateProviderHostForWindow(
@@ -704,18 +703,18 @@ class ServiceWorkerRegistrationObjectHostTest
   blink::ServiceWorkerStatusCode FindRegistrationInStorage(
       int64_t registration_id,
       const GURL& scope) {
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> status;
     storage()->FindRegistrationForId(
         registration_id, scope,
         base::AdaptCallbackForRepeating(base::BindOnce(
-            [](blink::ServiceWorkerStatusCode* out_status,
+            [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
                blink::ServiceWorkerStatusCode status,
                scoped_refptr<ServiceWorkerRegistration> registration) {
               *out_status = status;
             },
             &status)));
-    return status;
+    base::RunLoop().RunUntilIdle();
+    return status.value();
   }
 
   int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
@@ -746,7 +745,7 @@ class ServiceWorkerRegistrationObjectHostTest
     // Make the registration findable via storage functions.
     bool called = false;
     blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kMax;
+        blink::ServiceWorkerStatusCode::kErrorFailed;
     storage()->StoreRegistration(registration.get(), version.get(),
                                  base::AdaptCallbackForRepeating(base::BindOnce(
                                      &SaveStatusCallback, &called, &status)));

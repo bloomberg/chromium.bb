@@ -76,7 +76,7 @@ void StatusAndQuitCallback(blink::ServiceWorkerStatusCode* result,
 }
 
 void StatusCallback(bool* was_called,
-                    blink::ServiceWorkerStatusCode* result,
+                    base::Optional<blink::ServiceWorkerStatusCode>* result,
                     blink::ServiceWorkerStatusCode status) {
   *was_called = true;
   *result = status;
@@ -84,12 +84,12 @@ void StatusCallback(bool* was_called,
 
 ServiceWorkerStorage::StatusCallback MakeStatusCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* result) {
+    base::Optional<blink::ServiceWorkerStatusCode>* result) {
   return base::BindOnce(&StatusCallback, was_called, result);
 }
 
 void FindCallback(bool* was_called,
-                  blink::ServiceWorkerStatusCode* result,
+                  base::Optional<blink::ServiceWorkerStatusCode>* result,
                   scoped_refptr<ServiceWorkerRegistration>* found,
                   blink::ServiceWorkerStatusCode status,
                   scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -100,14 +100,14 @@ void FindCallback(bool* was_called,
 
 ServiceWorkerStorage::FindRegistrationCallback MakeFindCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* result,
+    base::Optional<blink::ServiceWorkerStatusCode>* result,
     scoped_refptr<ServiceWorkerRegistration>* found) {
   return base::BindOnce(&FindCallback, was_called, result, found);
 }
 
 void GetAllCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* result,
+    base::Optional<blink::ServiceWorkerStatusCode>* result,
     std::vector<scoped_refptr<ServiceWorkerRegistration>>* all_out,
     blink::ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>& all) {
@@ -118,7 +118,7 @@ void GetAllCallback(
 
 void GetAllInfosCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* result,
+    base::Optional<blink::ServiceWorkerStatusCode>* result,
     std::vector<ServiceWorkerRegistrationInfo>* all_out,
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& all) {
@@ -129,7 +129,7 @@ void GetAllInfosCallback(
 
 ServiceWorkerStorage::GetRegistrationsCallback MakeGetRegistrationsCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* status,
+    base::Optional<blink::ServiceWorkerStatusCode>* status,
     std::vector<scoped_refptr<ServiceWorkerRegistration>>* all) {
   return base::BindOnce(&GetAllCallback, was_called, status, all);
 }
@@ -137,16 +137,17 @@ ServiceWorkerStorage::GetRegistrationsCallback MakeGetRegistrationsCallback(
 ServiceWorkerStorage::GetRegistrationsInfosCallback
 MakeGetRegistrationsInfosCallback(
     bool* was_called,
-    blink::ServiceWorkerStatusCode* status,
+    base::Optional<blink::ServiceWorkerStatusCode>* status,
     std::vector<ServiceWorkerRegistrationInfo>* all) {
   return base::BindOnce(&GetAllInfosCallback, was_called, status, all);
 }
 
-void GetUserDataCallback(bool* was_called,
-                         std::vector<std::string>* data_out,
-                         blink::ServiceWorkerStatusCode* status_out,
-                         const std::vector<std::string>& data,
-                         blink::ServiceWorkerStatusCode status) {
+void GetUserDataCallback(
+    bool* was_called,
+    std::vector<std::string>* data_out,
+    base::Optional<blink::ServiceWorkerStatusCode>* status_out,
+    const std::vector<std::string>& data,
+    blink::ServiceWorkerStatusCode status) {
   *was_called = true;
   *data_out = data;
   *status_out = status;
@@ -155,7 +156,7 @@ void GetUserDataCallback(bool* was_called,
 void GetUserDataForAllRegistrationsCallback(
     bool* was_called,
     std::vector<std::pair<int64_t, std::string>>* data_out,
-    blink::ServiceWorkerStatusCode* status_out,
+    base::Optional<blink::ServiceWorkerStatusCode>* status_out,
     const std::vector<std::pair<int64_t, std::string>>& data,
     blink::ServiceWorkerStatusCode status) {
   *was_called = true;
@@ -382,56 +383,52 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration> registration,
       scoped_refptr<ServiceWorkerVersion> version) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->StoreRegistration(registration.get(),
                                  version.get(),
                                  MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode DeleteRegistration(int64_t registration_id,
                                                     const GURL& origin) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->DeleteRegistration(
         registration_id, origin, MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode GetAllRegistrationsInfos(
       std::vector<ServiceWorkerRegistrationInfo>* registrations) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->GetAllRegistrationsInfos(
         MakeGetRegistrationsInfosCallback(&was_called, &result, registrations));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode GetRegistrationsForOrigin(
       const GURL& origin,
       std::vector<scoped_refptr<ServiceWorkerRegistration>>* registrations) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->GetRegistrationsForOrigin(
         origin,
         MakeGetRegistrationsCallback(&was_called, &result, registrations));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode GetUserData(
@@ -439,15 +436,14 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::vector<std::string>& keys,
       std::vector<std::string>* data) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->GetUserData(
         registration_id, keys,
         base::BindOnce(&GetUserDataCallback, &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode GetUserDataByKeyPrefix(
@@ -455,15 +451,14 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::string& key_prefix,
       std::vector<std::string>* data) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->GetUserDataByKeyPrefix(
         registration_id, key_prefix,
         base::BindOnce(&GetUserDataCallback, &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode StoreUserData(
@@ -471,71 +466,66 @@ class ServiceWorkerStorageTest : public testing::Test {
       const GURL& origin,
       const std::vector<std::pair<std::string, std::string>>& key_value_pairs) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->StoreUserData(registration_id, origin, key_value_pairs,
                              MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode ClearUserData(
       int64_t registration_id,
       const std::vector<std::string>& keys) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->ClearUserData(registration_id, keys,
                              MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode ClearUserDataByKeyPrefixes(
       int64_t registration_id,
       const std::vector<std::string>& key_prefixes) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->ClearUserDataByKeyPrefixes(
         registration_id, key_prefixes,
         MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode GetUserDataForAllRegistrations(
       const std::string& key,
       std::vector<std::pair<int64_t, std::string>>* data) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->GetUserDataForAllRegistrations(
         key, base::BindOnce(&GetUserDataForAllRegistrationsCallback,
                             &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode UpdateToActiveState(
       scoped_refptr<ServiceWorkerRegistration> registration) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->UpdateToActiveState(registration.get(),
                                    MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   void UpdateLastUpdateCheckTime(
@@ -548,27 +538,25 @@ class ServiceWorkerStorageTest : public testing::Test {
       const GURL& document_url,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->FindRegistrationForDocument(
         document_url, MakeFindCallback(&was_called, &result, registration));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode FindRegistrationForPattern(
       const GURL& scope,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->FindRegistrationForPattern(
         scope, MakeFindCallback(&was_called, &result, registration));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode FindRegistrationForId(
@@ -576,27 +564,25 @@ class ServiceWorkerStorageTest : public testing::Test {
       const GURL& origin,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->FindRegistrationForId(
         registration_id, origin,
         MakeFindCallback(&was_called, &result, registration));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode FindRegistrationForIdOnly(
       int64_t registration_id,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     bool was_called = false;
-    blink::ServiceWorkerStatusCode result =
-        blink::ServiceWorkerStatusCode::kMax;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->FindRegistrationForIdOnly(
         registration_id, MakeFindCallback(&was_called, &result, registration));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return result;
+    return result.value();
   }
 
   // Directly writes a registration using
@@ -1579,7 +1565,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
 
   base::RunLoop run_loop;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   storage()->DeleteAndStartOver(
       base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();
@@ -1604,7 +1591,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   ASSERT_TRUE(base::PathExists(file_path));
 
   base::RunLoop run_loop;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   storage()->DeleteAndStartOver(
       base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();
@@ -1630,7 +1618,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   ASSERT_TRUE(base::PathExists(file_path));
 
   base::RunLoop run_loop;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorNotFound;
   storage()->DeleteAndStartOver(
       base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();

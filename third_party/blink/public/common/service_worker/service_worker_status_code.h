@@ -75,9 +75,11 @@ enum class ServiceWorkerStatusCode {
   // Obsolete.
   // kErrorDisabledWorker = 19,
 
-  // Add new status codes here.
+  // Add new status codes here and update kMaxValue and enums.xml. The next new
+  // status code should be 20.
 
-  kMax = 20
+  // Note: kMaxValue is needed only for histograms.
+  kMaxValue = kErrorDisallowed
 };
 
 BLINK_COMMON_EXPORT const char* ServiceWorkerStatusToString(

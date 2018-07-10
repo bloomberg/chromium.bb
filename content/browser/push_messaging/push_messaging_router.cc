@@ -79,8 +79,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.FindServiceWorker",
-                            service_worker_status,
-                            blink::ServiceWorkerStatusCode::kMax);
+                            service_worker_status);
   if (service_worker_status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     RunDeliverCallback(deliver_message_callback,
                        mojom::PushDeliveryStatus::NO_SERVICE_WORKER);
@@ -138,8 +137,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
-                            service_worker_status,
-                            blink::ServiceWorkerStatusCode::kMax);
+                            service_worker_status);
   mojom::PushDeliveryStatus delivery_status =
       mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
@@ -170,7 +168,6 @@ void PushMessagingRouter::DeliverMessageEnd(
     case blink::ServiceWorkerStatusCode::kErrorNetwork:
     case blink::ServiceWorkerStatusCode::kErrorSecurity:
     case blink::ServiceWorkerStatusCode::kErrorState:
-    case blink::ServiceWorkerStatusCode::kMax:
       NOTREACHED() << "Got unexpected error code: "
                    << static_cast<uint32_t>(service_worker_status) << " "
                    << blink::ServiceWorkerStatusToString(service_worker_status);

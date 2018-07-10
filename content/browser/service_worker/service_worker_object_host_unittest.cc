@@ -144,13 +144,12 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
     // Make the registration findable via storage functions.
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kErrorFailed;
+    base::Optional<blink::ServiceWorkerStatusCode> status;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
   void TearDown() override {
@@ -259,7 +258,8 @@ TEST_F(ServiceWorkerObjectHostTest,
 
   // Make sure worker has a non-zero timeout.
   bool called = false;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
@@ -291,7 +291,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   called = false;
-  status = blink::ServiceWorkerStatusCode::kMax;
+  status = blink::ServiceWorkerStatusCode::kErrorFailed;
   CallDispatchExtendableMessageEvent(
       sender_worker_object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
@@ -354,7 +354,8 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   bool called = false;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   CallDispatchExtendableMessageEvent(
       object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
@@ -411,7 +412,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   bool called = false;
-  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kMax;
+  blink::ServiceWorkerStatusCode status = blink::ServiceWorkerStatusCode::kOk;
   CallDispatchExtendableMessageEvent(
       object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));

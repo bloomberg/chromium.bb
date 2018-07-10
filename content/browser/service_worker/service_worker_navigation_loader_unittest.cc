@@ -463,12 +463,11 @@ class ServiceWorkerNavigationLoaderTest
 
     // Make the registration findable via storage functions.
     registration_->set_last_update_check(base::Time::Now());
-    blink::ServiceWorkerStatusCode status =
-        blink::ServiceWorkerStatusCode::kErrorFailed;
+    base::Optional<blink::ServiceWorkerStatusCode> status;
     storage()->StoreRegistration(registration_.get(), version_.get(),
                                  CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
