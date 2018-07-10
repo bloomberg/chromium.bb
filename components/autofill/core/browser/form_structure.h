@@ -16,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -84,7 +83,8 @@ class FormStructure {
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
   static void ParseQueryResponse(std::string response,
-                                 const std::vector<FormStructure*>& forms);
+                                 const std::vector<FormStructure*>& forms,
+                                 AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
@@ -357,8 +357,10 @@ class FormStructure {
   // The rationalization is based on the visible fields, but should be applied
   // to the hidden select fields. This is because hidden 'select' fields are
   // also autofilled to take care of the synthetic fields.
-  void ApplyRationalizationsToHiddenSelects(size_t field_index,
-                                            ServerFieldType new_type);
+  void ApplyRationalizationsToHiddenSelects(
+      size_t field_index,
+      ServerFieldType new_type,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Returns true if we can replace server predictions with the heuristics one.
   bool HeuristicsPredictionsAreApplicable(size_t upper_index,
@@ -368,30 +370,40 @@ class FormStructure {
 
   // Applies upper type to upper field, and lower type to lower field, and
   // applies the rationalization also to hidden select fields if necessary.
-  void ApplyRationalizationsToFields(size_t upper_index,
-                                     size_t lower_index,
-                                     ServerFieldType upper_type,
-                                     ServerFieldType lower_type);
+  void ApplyRationalizationsToFields(
+      size_t upper_index,
+      size_t lower_index,
+      ServerFieldType upper_type,
+      ServerFieldType lower_type,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Returns true if the fields_[index] server type should be rationalized to
   // ADDRESS_HOME_COUNTRY.
   bool FieldShouldBeRationalizedToCountry(size_t index);
 
+  // Set fields_[|field_index|] to |new_type| and log this change.
+  void ApplyRationalizationsToFieldAndLog(
+      size_t field_index,
+      ServerFieldType new_type,
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
+
   // Two or three fields predicted as the whole address should be address lines
   // 1, 2 and 3 instead.
   void RationalizeAddressLineFields(
-      SectionedFieldsIndexes& sections_of_address_indexes);
+      SectionedFieldsIndexes& sections_of_address_indexes,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Rationalize state and country interdependently.
   void RationalizeAddressStateCountry(
       SectionedFieldsIndexes& sections_of_state_indexes,
-      SectionedFieldsIndexes& sections_of_country_indexes);
+      SectionedFieldsIndexes& sections_of_country_indexes,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Tunes the fields with identical predictions.
-  void RationalizeRepeatedFields();
+  void RationalizeRepeatedFields(AutofillMetrics::FormInteractionsUkmLogger*);
 
   // A helper function to review the predictions and do appropriate adjustments
-  // when it considers neccessary.
+  // when it considers necessary.
   void RationalizeFieldTypePredictions();
 
   // Encodes information about this form and its fields into |query_form|.

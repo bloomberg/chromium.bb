@@ -656,6 +656,10 @@ class AutofillManager : public AutofillHandler,
                            CreditCardCheckoutFlowUserActions);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            LogHiddenRepresentationalFieldSkipDecision);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
+                           LogRepeatedAddressTypeRationalized);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
+                           LogRepeatedStateCountryTypeRationalized);
 
   FRIEND_TEST_ALL_PREFIXES(
       AutofillMetricsTest,

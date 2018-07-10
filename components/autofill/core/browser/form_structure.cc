@@ -509,7 +509,8 @@ bool FormStructure::EncodeQueryRequest(
 // static
 void FormStructure::ParseQueryResponse(
     std::string payload,
-    const std::vector<FormStructure*>& forms) {
+    const std::vector<FormStructure*>& forms,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
@@ -577,7 +578,7 @@ void FormStructure::ParseQueryResponse(
     form->UpdateAutofillCount();
     if (base::FeatureList::IsEnabled(
             features::kAutofillRationalizeRepeatedServerPredictions))
-      form->RationalizeRepeatedFields();
+      form->RationalizeRepeatedFields(form_interactions_ukm_logger);
 
     if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
       form->RationalizeFieldTypePredictions();
@@ -1276,11 +1277,23 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
   phone_rationalized_[section] = true;
 }
 
-void FormStructure::RationalizeAddressLineFields(
-    SectionedFieldsIndexes& sections_of_address_indexes) {
-  // TODO(crbug.com/850552): Add UKM logging.
-  // Get the number of fields predicted as being the whole street address.
+void FormStructure::ApplyRationalizationsToFieldAndLog(
+    size_t field_index,
+    ServerFieldType new_type,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
+  if (field_index >= fields_.size())
+    return;
+  auto old_type = fields_[field_index]->Type().GetStorableType();
+  fields_[field_index]->SetTypeTo(AutofillType(new_type));
+  if (form_interactions_ukm_logger) {
+    form_interactions_ukm_logger->LogRepeatedServerTypePredictionRationalized(
+        form_signature_, *fields_[field_index], old_type);
+  }
+}
 
+void FormStructure::RationalizeAddressLineFields(
+    SectionedFieldsIndexes& sections_of_address_indexes,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // The rationalization happens within sections.
   for (sections_of_address_indexes.Reset();
        !sections_of_address_indexes.IsFinished();
@@ -1295,16 +1308,18 @@ void FormStructure::RationalizeAddressLineFields(
 
     int nb_address_rationalized = 0;
     for (auto field_index : current_section) {
-      auto& field = fields_[field_index];
       switch (nb_address_rationalized) {
         case 0:
-          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
+          ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE1,
+                                             form_interactions_ukm_logger);
           break;
         case 1:
-          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE2));
+          ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE2,
+                                             form_interactions_ukm_logger);
           break;
         case 2:
-          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE3));
+          ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE3,
+                                             form_interactions_ukm_logger);
           break;
         default:
           NOTREACHED();
@@ -1317,7 +1332,8 @@ void FormStructure::RationalizeAddressLineFields(
 
 void FormStructure::ApplyRationalizationsToHiddenSelects(
     size_t field_index,
-    ServerFieldType new_type) {
+    ServerFieldType new_type,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   ServerFieldType old_type = fields_[field_index]->Type().GetStorableType();
 
   // Walk on the hidden select fields right after the field_index which share
@@ -1329,7 +1345,8 @@ void FormStructure::ApplyRationalizationsToHiddenSelects(
         fields_[current_index]->form_control_type != "select-one" ||
         fields_[current_index]->Type().GetStorableType() != old_type)
       break;
-    fields_[current_index]->SetTypeTo(AutofillType(new_type));
+    ApplyRationalizationsToFieldAndLog(current_index, new_type,
+                                       form_interactions_ukm_logger);
   }
 
   // Same for the fields coming right before the field_index. (No need to check
@@ -1341,7 +1358,8 @@ void FormStructure::ApplyRationalizationsToHiddenSelects(
         fields_[current_index]->form_control_type != "select-one" ||
         fields_[current_index]->Type().GetStorableType() != old_type)
       break;
-    fields_[current_index]->SetTypeTo(AutofillType(new_type));
+    ApplyRationalizationsToFieldAndLog(current_index, new_type,
+                                       form_interactions_ukm_logger);
     if (current_index == 0)
       break;
   }
@@ -1365,20 +1383,26 @@ bool FormStructure::HeuristicsPredictionsAreApplicable(
   return false;
 }
 
-void FormStructure::ApplyRationalizationsToFields(size_t upper_index,
-                                                  size_t lower_index,
-                                                  ServerFieldType upper_type,
-                                                  ServerFieldType lower_type) {
+void FormStructure::ApplyRationalizationsToFields(
+    size_t upper_index,
+    size_t lower_index,
+    ServerFieldType upper_type,
+    ServerFieldType lower_type,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Hidden fields are ignored during the rationalization, but 'select' hidden
   // fields also get autofilled to support their corresponding visible
   // 'synthetic fields'. So, if a field's type is rationalized, we should make
   // sure that the rationalization is also applied to its corresponding hidden
   // fields, if any.
-  ApplyRationalizationsToHiddenSelects(upper_index, upper_type);
-  fields_[upper_index]->SetTypeTo(AutofillType(upper_type));
+  ApplyRationalizationsToHiddenSelects(upper_index, upper_type,
+                                       form_interactions_ukm_logger);
+  ApplyRationalizationsToFieldAndLog(upper_index, upper_type,
+                                     form_interactions_ukm_logger);
 
-  ApplyRationalizationsToHiddenSelects(lower_index, lower_type);
-  fields_[lower_index]->SetTypeTo(AutofillType(lower_type));
+  ApplyRationalizationsToHiddenSelects(lower_index, lower_type,
+                                       form_interactions_ukm_logger);
+  ApplyRationalizationsToFieldAndLog(lower_index, lower_type,
+                                     form_interactions_ukm_logger);
 }
 
 bool FormStructure::FieldShouldBeRationalizedToCountry(size_t upper_index) {
@@ -1398,7 +1422,8 @@ bool FormStructure::FieldShouldBeRationalizedToCountry(size_t upper_index) {
 
 void FormStructure::RationalizeAddressStateCountry(
     SectionedFieldsIndexes& sections_of_state_indexes,
-    SectionedFieldsIndexes& sections_of_country_indexes) {
+    SectionedFieldsIndexes& sections_of_country_indexes,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Walk on the sections of state and country indexes simultaneously. If they
   // both point to the same section, it means that that section includes both
   // the country and the state type. This means that no that rationalization is
@@ -1458,23 +1483,26 @@ void FormStructure::RationalizeAddressStateCountry(
     if (HeuristicsPredictionsAreApplicable(upper_index, lower_index,
                                            ADDRESS_HOME_STATE,
                                            ADDRESS_HOME_COUNTRY)) {
-      ApplyRationalizationsToFields(upper_index, lower_index,
-                                    fields_[upper_index]->heuristic_type(),
-                                    fields_[lower_index]->heuristic_type());
+      ApplyRationalizationsToFields(
+          upper_index, lower_index, fields_[upper_index]->heuristic_type(),
+          fields_[lower_index]->heuristic_type(), form_interactions_ukm_logger);
       continue;
     }
 
     if (FieldShouldBeRationalizedToCountry(upper_index)) {
       ApplyRationalizationsToFields(upper_index, lower_index,
-                                    ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE);
+                                    ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE,
+                                    form_interactions_ukm_logger);
     } else {
       ApplyRationalizationsToFields(upper_index, lower_index,
-                                    ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY);
+                                    ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
+                                    form_interactions_ukm_logger);
     }
   }
 }
 
-void FormStructure::RationalizeRepeatedFields() {
+void FormStructure::RationalizeRepeatedFields(
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // The type of every field whose index is in
   // sectioned_field_indexes_by_type[|type|] is predicted by server as |type|.
   // Example: sectioned_field_indexes_by_type[FULL_NAME] is a sectioned fields
@@ -1503,12 +1531,14 @@ void FormStructure::RationalizeRepeatedFields() {
   }
 
   RationalizeAddressLineFields(
-      sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]);
+      sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS],
+      form_interactions_ukm_logger);
   // Since the billing types are mapped to the non-billing ones, no need to
   // take care of ADDRESS_BILLING_STATE and .. .
   RationalizeAddressStateCountry(
       sectioned_field_indexes_by_type[ADDRESS_HOME_STATE],
-      sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]);
+      sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY],
+      form_interactions_ukm_logger);
 }
 
 void FormStructure::RationalizeFieldTypePredictions() {

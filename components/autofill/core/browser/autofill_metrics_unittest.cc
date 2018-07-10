@@ -69,6 +69,8 @@ using UkmSuggestionFilledType = ukm::builders::Autofill_SuggestionFilled;
 using UkmTextFieldDidChangeType = ukm::builders::Autofill_TextFieldDidChange;
 using UkmLogHiddenRepresentationalFieldSkipDecisionType =
     ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision;
+using UkmLogRepeatedServerTypePredictionRationalized =
+    ukm::builders::Autofill_RepeatedServerTypePredictionRationalized;
 using UkmFormSubmittedType = ukm::builders::Autofill_FormSubmitted;
 using UkmFieldTypeValidationType = ukm::builders::Autofill_FieldTypeValidation;
 using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
@@ -873,6 +875,248 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
          HTML_MODE_NONE},
         {UkmLogHiddenRepresentationalFieldSkipDecisionType::kIsSkippedName,
          false}}});
+}
+
+// Test that we log the address line fields whose server types are rationalized
+TEST_F(AutofillMetricsTest, LogRepeatedAddressTypeRationalized) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  int64_t field_signature[2];
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Street 1");
+  field.name = ASCIIToUTF16("street1");
+  form.fields.push_back(field);
+  field_signature[0] = Collapse(CalculateFieldSignatureForField(field));
+
+  field.label = ASCIIToUTF16("Street 2");
+  field.name = ASCIIToUTF16("street2");
+  form.fields.push_back(field);
+  field_signature[1] = Collapse(CalculateFieldSignatureForField(field));
+
+  int64_t form_signature = Collapse(CalculateFormSignature(form));
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  std::vector<ServerFieldType> field_types;
+  for (size_t i = 0; i < forms[0]->field_count(); ++i)
+    field_types.push_back(UNKNOWN_TYPE);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure::ParseQueryResponse(
+      response_string, forms,
+      autofill_manager_->form_interactions_ukm_logger());
+
+  ASSERT_EQ(test_ukm_recorder_
+                .GetEntriesByName(
+                    UkmLogRepeatedServerTypePredictionRationalized::kEntryName)
+                .size(),
+            (size_t)2);
+
+  VerifyFormInteractionUkm(
+      test_ukm_recorder_, form,
+      UkmLogRepeatedServerTypePredictionRationalized::kEntryName,
+      {{{UkmLogRepeatedServerTypePredictionRationalized::kFormSignatureName,
+         form_signature},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldSignatureName,
+         field_signature[0]},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldOldOverallTypeName,
+         ADDRESS_HOME_STREET_ADDRESS},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHeuristicTypeName,
+         UNKNOWN_TYPE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldNewOverallTypeName,
+         ADDRESS_HOME_LINE1},
+        {UkmLogRepeatedServerTypePredictionRationalized::kServerTypeName,
+         ADDRESS_HOME_STREET_ADDRESS}},
+       {{UkmLogRepeatedServerTypePredictionRationalized::kFormSignatureName,
+         form_signature},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldSignatureName,
+         field_signature[1]},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldOldOverallTypeName,
+         ADDRESS_HOME_STREET_ADDRESS},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHeuristicTypeName,
+         UNKNOWN_TYPE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldNewOverallTypeName,
+         ADDRESS_HOME_LINE2},
+        {UkmLogRepeatedServerTypePredictionRationalized::kServerTypeName,
+         ADDRESS_HOME_STREET_ADDRESS}}});
+}
+
+// Test that we log the state/country fields whose server types are rationalized
+TEST_F(AutofillMetricsTest, LogRepeatedStateCountryTypeRationalized) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  int64_t field_signature[3];
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+  field_signature[0] = Collapse(CalculateFieldSignatureForField(field));
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+  field_signature[2] = Collapse(CalculateFieldSignatureForField(field));
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  field.is_focusable = false;
+  field.form_control_type = "select-one";
+  form.fields.push_back(field);
+  // Regardless of the order of appearance, hidden fields are rationalized
+  // before their corresponding visible one.
+  field_signature[1] = Collapse(CalculateFieldSignatureForField(field));
+
+  int64_t form_signature = Collapse(CalculateFormSignature(form));
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  std::vector<ServerFieldType> field_types;
+  for (size_t i = 0; i < forms[0]->field_count(); ++i)
+    field_types.push_back(UNKNOWN_TYPE);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure::ParseQueryResponse(
+      response_string, forms,
+      autofill_manager_->form_interactions_ukm_logger());
+
+  ASSERT_EQ(test_ukm_recorder_
+                .GetEntriesByName(
+                    UkmLogRepeatedServerTypePredictionRationalized::kEntryName)
+                .size(),
+            (size_t)3);
+
+  VerifyFormInteractionUkm(
+      test_ukm_recorder_, form,
+      UkmLogRepeatedServerTypePredictionRationalized::kEntryName,
+      {{{UkmLogRepeatedServerTypePredictionRationalized::kFormSignatureName,
+         form_signature},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldSignatureName,
+         field_signature[0]},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldOldOverallTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHeuristicTypeName,
+         UNKNOWN_TYPE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kServerTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldNewOverallTypeName,
+         ADDRESS_HOME_COUNTRY}},
+       {{UkmLogRepeatedServerTypePredictionRationalized::kFormSignatureName,
+         form_signature},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldSignatureName,
+         field_signature[1]},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldOldOverallTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHeuristicTypeName,
+         UNKNOWN_TYPE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldNewOverallTypeName,
+         ADDRESS_HOME_STATE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kServerTypeName,
+         ADDRESS_HOME_COUNTRY}},
+       {{UkmLogRepeatedServerTypePredictionRationalized::kFormSignatureName,
+         form_signature},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldSignatureName,
+         field_signature[2]},
+        {UkmLogRepeatedServerTypePredictionRationalized::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldOldOverallTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHeuristicTypeName,
+         UNKNOWN_TYPE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogRepeatedServerTypePredictionRationalized::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogRepeatedServerTypePredictionRationalized::
+             kFieldNewOverallTypeName,
+         ADDRESS_HOME_STATE},
+        {UkmLogRepeatedServerTypePredictionRationalized::kServerTypeName,
+         ADDRESS_HOME_COUNTRY}}});
 }
 
 // Test that we log quality metrics appropriately with fields having
@@ -6993,7 +7237,7 @@ TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_);
+  FormStructure::ParseQueryResponse(response_string, forms_, nullptr);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(true, 2)));
@@ -7012,7 +7256,7 @@ TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_);
+  FormStructure::ParseQueryResponse(response_string, forms_, nullptr);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(false, 1), Bucket(true, 1)));
@@ -7030,7 +7274,7 @@ TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_);
+  FormStructure::ParseQueryResponse(response_string, forms_, nullptr);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(false, 2)));
@@ -7049,7 +7293,7 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_);
+  FormStructure::ParseQueryResponse(response_string, forms_, nullptr);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(true, 2)));

@@ -4124,7 +4124,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_UnknownType) {
 
   // Parse the response and update the field type predictions.
   std::vector<FormStructure*> forms{&form};
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
   ASSERT_EQ(form.field_count(), 3U);
 
   // Validate field 0.
@@ -4200,7 +4200,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -4248,7 +4248,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_AuthorDefinedTypes) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   // Server type is parsed from the response and is the end result type.
@@ -4302,7 +4302,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
     feature_list.InitAndEnableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
     EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
@@ -4317,7 +4317,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
     feature_list.InitAndDisableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
     EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
@@ -4364,7 +4364,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
     feature_list.InitAndEnableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(3U, forms[0]->field_count());
     EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
@@ -4378,7 +4378,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
     feature_list.InitAndDisableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(3U, forms[0]->field_count());
     EXPECT_EQ(CREDIT_CARD_NAME_FIRST,
@@ -4437,7 +4437,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
     feature_list.InitAndEnableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(5U, forms[0]->field_count());
     EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -4456,7 +4456,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
     feature_list.InitAndDisableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
 
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(5U, forms[0]->field_count());
     EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -4513,7 +4513,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
     EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -4529,7 +4529,7 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
         autofill::kAutofillRationalizeFieldTypePredictions);
-    FormStructure::ParseQueryResponse(response_string, forms);
+    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
     EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -4618,7 +4618,7 @@ TEST_F(FormStructureTest, RationalizePhoneNumber_RunsOncePerSection) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   EXPECT_FALSE(form_structure.phone_rationalized_["fullName_1-default"]);
   form_structure.RationalizePhoneNumbersInSection("fullName_1-default");
@@ -4674,7 +4674,7 @@ TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(3U, forms[0]->field_count());
@@ -4730,7 +4730,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -4792,7 +4792,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
@@ -4861,7 +4861,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -4940,7 +4940,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
   // Billing
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -5086,7 +5086,7 @@ TEST_F(
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(15U, forms[0]->field_count());
@@ -5176,7 +5176,7 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
   // Billing
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -5272,7 +5272,7 @@ TEST_F(
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(9U, forms[0]->field_count());
@@ -5371,7 +5371,7 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(10U, forms[0]->field_count());
@@ -5501,7 +5501,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_CountryStateNoHeuristics) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(14U, forms[0]->field_count());
@@ -5638,7 +5638,7 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(14U, forms[0]->field_count());
@@ -5716,7 +5716,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FirstFieldRationalized) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
@@ -5788,7 +5788,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
