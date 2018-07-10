@@ -4486,9 +4486,6 @@ crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [
 # This will break for now
 crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
 
-# Sheriff 2018-05-16
-crbug.com/843691 fast/css/opacity-float.html [ Failure ]
-
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
 
