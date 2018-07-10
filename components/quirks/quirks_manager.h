@@ -15,19 +15,13 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/quirks/quirks_export.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
-class GURL;
 class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
 class TaskRunner;
-}
-
-namespace net {
-class URLFetcher;
-class URLFetcherDelegate;
-class URLRequestContextGetter;
 }
 
 namespace quirks {
@@ -52,11 +46,6 @@ QUIRKS_EXPORT std::string IdToFileName(int64_t product_id);
 // blocking pool, etc), and owns clients and manages their life cycles.
 class QUIRKS_EXPORT QuirksManager {
  public:
-  // Passed function to create a URLFetcher for tests.
-  // Same parameters as URLFetcher::Create().
-  using FakeQuirksFetcherCreator = base::Callback<
-      std::unique_ptr<net::URLFetcher>(const GURL&, net::URLFetcherDelegate*)>;
-
   // Delegate class, so implementation can access browser functionality.
   class Delegate {
    public:
@@ -79,7 +68,7 @@ class QUIRKS_EXPORT QuirksManager {
   static void Initialize(
       std::unique_ptr<Delegate> delegate,
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> url_context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   static void Shutdown();
   static QuirksManager* Get();
 
@@ -96,29 +85,25 @@ class QUIRKS_EXPORT QuirksManager {
 
   void ClientFinished(QuirksClient* client);
 
-  // Creates a real URLFetcher for OS, and a fake one for tests.
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* delegate);
-
   Delegate* delegate() { return delegate_.get(); }
   base::TaskRunner* task_runner() { return task_runner_.get(); }
-  net::URLRequestContextGetter* url_context_getter() {
-    return url_context_getter_.get();
+  network::mojom::URLLoaderFactory* url_loader_factory() {
+    return url_loader_factory_.get();
   }
 
  protected:
   friend class QuirksBrowserTest;
 
-  void SetFakeQuirksFetcherCreatorForTests(
-      const FakeQuirksFetcherCreator& creator) {
-    fake_quirks_fetcher_creator_ = creator;
+  void SetURLLoaderFactoryForTests(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    url_loader_factory_ = std::move(url_loader_factory);
   }
 
  private:
-  QuirksManager(std::unique_ptr<Delegate> delegate,
-                PrefService* local_state,
-                scoped_refptr<net::URLRequestContextGetter> url_context_getter);
+  QuirksManager(
+      std::unique_ptr<Delegate> delegate,
+      PrefService* local_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~QuirksManager();
 
   // Callback after checking for existing icc file; proceed if not found.
@@ -147,9 +132,7 @@ class QUIRKS_EXPORT QuirksManager {
   std::unique_ptr<Delegate> delegate_;  // Impl runs from chrome/browser.
   scoped_refptr<base::TaskRunner> task_runner_;
   PrefService* local_state_;  // For local prefs.
-  scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
-
-  FakeQuirksFetcherCreator fake_quirks_fetcher_creator_;  // For tests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Factory for callbacks.
   base::WeakPtrFactory<QuirksManager> weak_ptr_factory_;

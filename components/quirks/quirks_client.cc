@@ -15,8 +15,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace quirks {
 
@@ -86,31 +85,56 @@ void QuirksClient::StartDownload() {
 
   url += "key=" + manager_->delegate()->GetApiKey();
 
-  url_fetcher_ = manager_->CreateURLFetcher(GURL(url), this);
-  url_fetcher_->SetRequestContext(manager_->url_context_getter());
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(url);
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("quirks_display_fetcher", R"(
+          semantics {
+            sender: "Quirks"
+            description: "Download custom display calibration file."
+            trigger:
+                "Chrome OS attempts to download monitor calibration files on"
+                "first device login, and then once every 30 days."
+            data: "ICC files to calibrate and improve the quality of a display."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+            chrome_policy {
+              DeviceQuirksDownloadEnabled {
+                  DeviceQuirksDownloadEnabled: false
+              }
+            }
+          }
+        )");
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      manager_->url_loader_factory(),
+      base::BindOnce(&QuirksClient::OnDownloadComplete,
+                     base::Unretained(this)));
 }
 
-void QuirksClient::OnURLFetchComplete(const net::URLFetcher* source) {
+void QuirksClient::OnDownloadComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(url_fetcher_.get(), source);
 
-  const int HTTP_INTERNAL_SERVER_ERROR_LAST =
-      net::HTTP_INTERNAL_SERVER_ERROR + 99;
-  const net::URLRequestStatus status = source->GetStatus();
-  const int response_code = source->GetResponseCode();
-  const bool server_error = !status.is_success() ||
-                            (response_code >= net::HTTP_INTERNAL_SERVER_ERROR &&
-                             response_code <= HTTP_INTERNAL_SERVER_ERROR_LAST);
+  // Take ownership of the loader in this scope.
+  std::unique_ptr<network::SimpleURLLoader> url_loader = std::move(url_loader_);
+
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
 
   VLOG(2) << "QuirksClient::OnURLFetchComplete():"
-          << "  status=" << status.status()
-          << ",  response_code=" << response_code
-          << ",  server_error=" << server_error;
+          << "  net_error=" << url_loader->NetError()
+          << ", response_code=" << response_code;
 
   if (response_code == net::HTTP_NOT_FOUND) {
     VLOG(1) << IdToFileName(product_id_) << " not found on Quirks server.";
@@ -118,25 +142,23 @@ void QuirksClient::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (server_error) {
+  if (url_loader->NetError() != net::OK) {
     if (backoff_entry_.failure_count() >= kMaxServerFailures) {
       // After 10 retires (5+ hours), give up, and try again in a month.
       VLOG(1) << "Too many retries; Quirks Client shutting down.";
       Shutdown(false);
       return;
     }
-    url_fetcher_.reset();
     Retry();
     return;
   }
 
-  std::string response;
-  url_fetcher_->GetResponseAsString(&response);
-  VLOG(2) << "Quirks server response:\n" << response;
+  DCHECK(response_body);  // Guaranteed to be valid if NetError() is net::OK.
+  VLOG(2) << "Quirks server response:\n" << *response_body;
 
   // Parse response data and write to file on file thread.
   std::string data;
-  if (!ParseResult(response, &data)) {
+  if (!ParseResult(*response_body, &data)) {
     Shutdown(false);
     return;
   }

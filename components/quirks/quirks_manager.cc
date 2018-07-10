@@ -20,8 +20,6 @@
 #include "components/quirks/pref_names.h"
 #include "components/quirks/quirks_client.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace quirks {
@@ -60,12 +58,12 @@ std::string IdToFileName(int64_t product_id) {
 QuirksManager::QuirksManager(
     std::unique_ptr<Delegate> delegate,
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> url_context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : waiting_for_login_(true),
       delegate_(std::move(delegate)),
       task_runner_(base::CreateTaskRunnerWithTraits({base::MayBlock()})),
       local_state_(local_state),
-      url_context_getter_(url_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       weak_ptr_factory_(this) {}
 
 QuirksManager::~QuirksManager() {
@@ -77,9 +75,9 @@ QuirksManager::~QuirksManager() {
 void QuirksManager::Initialize(
     std::unique_ptr<Delegate> delegate,
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> url_context_getter) {
-  manager_ =
-      new QuirksManager(std::move(delegate), local_state, url_context_getter);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  manager_ = new QuirksManager(std::move(delegate), local_state,
+                               std::move(url_loader_factory));
 }
 
 // static
@@ -150,37 +148,6 @@ void QuirksManager::ClientFinished(QuirksClient* client) {
                          });
   CHECK(it != clients_.end());
   clients_.erase(it);
-}
-
-std::unique_ptr<net::URLFetcher> QuirksManager::CreateURLFetcher(
-    const GURL& url,
-    net::URLFetcherDelegate* delegate) {
-  if (!fake_quirks_fetcher_creator_.is_null())
-    return fake_quirks_fetcher_creator_.Run(url, delegate);
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("quirks_display_fetcher", R"(
-          semantics {
-            sender: "Quirks"
-            description: "Download custom display calibration file."
-            trigger:
-                "Chrome OS attempts to download monitor calibration files on"
-                "first device login, and then once every 30 days."
-            data: "ICC files to calibrate and improve the quality of a display."
-            destination: GOOGLE_OWNED_SERVICE
-          }
-          policy {
-            cookies_allowed: NO
-            chrome_policy {
-              DeviceQuirksDownloadEnabled {
-                  DeviceQuirksDownloadEnabled: false
-              }
-            }
-          }
-        )");
-
-  return net::URLFetcher::Create(url, net::URLFetcher::GET, delegate,
-                                 traffic_annotation);
 }
 
 void QuirksManager::OnIccFilePathRequestCompleted(
