@@ -6,31 +6,13 @@
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
-- (void)beginWindowDragWithEvent:(NSEvent*)event
-    NS_DEPRECATED_MAC(10_10, 10_11, "Use performWindowDragWithEvent: instead.");
 @end
 
-// Weak lets Chrome launch even if a future macOS doesn't have NSThemeFrame.
-WEAK_IMPORT_ATTRIBUTE
-@interface NSThemeFrame : NSView
-@end
-
-@interface NativeWidgetMacFramelessNSWindowFrame : NSThemeFrame
+@interface NativeWidgetMacFramelessNSWindowFrame
+    : NativeWidgetMacNSWindowTitledFrame
 @end
 
 @implementation NativeWidgetMacFramelessNSWindowFrame
-
-// If a mouseDown: falls through to the frame view, turn it into a window drag.
-- (void)mouseDown:(NSEvent*)event {
-  if (@available(macOS 10.11, *))
-    [self.window performWindowDragWithEvent:event];
-  else if (@available(macOS 10.10, *))
-    [self.window beginWindowDragWithEvent:event];
-  else
-    NOTREACHED();
-  [super mouseDown:event];
-}
-
 - (BOOL)_hidingTitlebar {
   return YES;
 }
@@ -43,10 +25,6 @@ WEAK_IMPORT_ATTRIBUTE
     return [NativeWidgetMacFramelessNSWindowFrame class];
   }
   return [super frameViewClassForStyleMask:windowStyle];
-}
-
-- (BOOL)_usesCustomDrawing {
-  return NO;
 }
 
 @end
