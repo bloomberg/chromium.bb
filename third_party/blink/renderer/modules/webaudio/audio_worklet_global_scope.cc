@@ -289,10 +289,22 @@ bool AudioWorkletGlobalScope::Process(
   for (const auto& param : *param_value_map) {
     const String& param_name = param.key;
     const AudioFloatArray* param_array = param.value.get();
+
+    // If the AudioParam is constant, then the param array should have length 1.
+    // Manually check to see if the parameter is truly constant.
+    unsigned array_size = 1;
+
+    for (unsigned k = 1; k < param_array->size(); ++k) {
+      if (param_array->Data()[k] != param_array->Data()[0]) {
+        array_size = param_array->size();
+        break;
+      }
+    }
+
     v8::Local<v8::ArrayBuffer> array_buffer =
-        v8::ArrayBuffer::New(isolate, param_array->size() * sizeof(float));
+        v8::ArrayBuffer::New(isolate, array_size * sizeof(float));
     v8::Local<v8::Float32Array> float32_array =
-        v8::Float32Array::New(array_buffer, 0, param_array->size());
+        v8::Float32Array::New(array_buffer, 0, array_size);
     bool success;
     if (!param_values
              ->CreateDataProperty(current_context,
@@ -302,8 +314,7 @@ bool AudioWorkletGlobalScope::Process(
       return false;
     }
     const v8::ArrayBuffer::Contents& contents = array_buffer->GetContents();
-    memcpy(contents.Data(), param_array->Data(),
-           param_array->size() * sizeof(float));
+    memcpy(contents.Data(), param_array->Data(), array_size * sizeof(float));
   }
 
   v8::Local<v8::Value> argv[] = {inputs, outputs, param_values};
