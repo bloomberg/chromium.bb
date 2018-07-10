@@ -33,6 +33,19 @@ enum class ActiveDirectoryErrorState {
   BAD_UNLOCK_PASSWORD = 5,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ActiveDirectoryDomainJoinType {
+  // Configuration is not set on the domain.
+  WITHOUT_CONFIGURATION = 0,
+  // Configuration is set but was not unlocked during domain join.
+  NOT_USING_CONFIGURATION = 1,
+  // Configuration is set and was unlocked during domain join.
+  USING_CONFIGURATION = 2,
+  // Number of elements in the enum. Should be last.
+  COUNT,
+};
+
 // WebUIMessageHandler implementation which handles events occurring on the
 // page, such as the user pressing the signin button.
 class EnrollmentScreenHandler
@@ -146,6 +159,9 @@ class EnrollmentScreenHandler
 
   // Active Directory configuration in the form of encrypted binary data.
   std::string active_directory_domain_join_config_;
+
+  ActiveDirectoryDomainJoinType active_directory_join_type_ =
+      ActiveDirectoryDomainJoinType::COUNT;
 
   // Whether unlock password input step should be shown.
   bool show_unlock_password_ = false;
