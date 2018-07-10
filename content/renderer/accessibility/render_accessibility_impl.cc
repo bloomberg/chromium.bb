@@ -125,9 +125,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
     settings->SetInlineTextBoxAccessibilityEnabled(true);
 #endif
 
-  if (render_frame_->IsHidden())
-    tree_source_.WasHidden();
-
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     // It's possible that the webview has already loaded a webpage without
@@ -197,22 +194,8 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void RenderAccessibilityImpl::WasHidden() {
-  pending_events_.clear();
-  tree_source_.WasHidden();
-  HandleAXEvent(tree_source_.GetRoot(), ax::mojom::Event::kNone);
-}
-
-void RenderAccessibilityImpl::WasShown() {
-  pending_events_.clear();
-  tree_source_.WasShown();
-  HandleAXEvent(tree_source_.GetRoot(), ax::mojom::Event::kNone);
-}
-
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
     const blink::WebAXObject& obj, blink::WebAXEvent event) {
-  if (render_frame_->IsHidden())
-    return;
   HandleAXEvent(obj, AXEventFromBlink(event));
 }
 
