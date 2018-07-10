@@ -12,6 +12,22 @@
 
 namespace blink {
 
+BoxReflection::BoxReflection(ReflectionDirection direction, float offset)
+    : BoxReflection(direction, offset, nullptr, FloatRect()) {}
+
+BoxReflection::BoxReflection(ReflectionDirection direction,
+                             float offset,
+                             sk_sp<PaintRecord> mask,
+                             const FloatRect& mask_bounds)
+    : direction_(direction),
+      offset_(offset),
+      mask_(std::move(mask)),
+      mask_bounds_(mask_bounds) {}
+
+BoxReflection::BoxReflection(const BoxReflection& reflection) = default;
+
+BoxReflection::~BoxReflection() = default;
+
 SkMatrix BoxReflection::ReflectionMatrix() const {
   SkMatrix flip_matrix;
   switch (direction_) {

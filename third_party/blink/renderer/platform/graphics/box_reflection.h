@@ -6,13 +6,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BOX_REFLECTION_H_
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
 
+namespace cc {
+class PaintOpBuffer;
+using PaintRecord = PaintOpBuffer;
+}  // namespace cc
+
 namespace blink {
+
+using cc::PaintRecord;
 
 // A reflection, as created by -webkit-box-reflect. Consists of:
 // * a direction (either vertical or horizontal)
@@ -29,17 +35,13 @@ class PLATFORM_EXPORT BoxReflection {
     kHorizontalReflection,
   };
 
-  BoxReflection(ReflectionDirection direction, float offset)
-      : BoxReflection(direction, offset, nullptr, FloatRect()) {}
-
+  BoxReflection(ReflectionDirection direction, float offset);
   BoxReflection(ReflectionDirection direction,
                 float offset,
                 sk_sp<PaintRecord> mask,
-                const FloatRect& mask_bounds)
-      : direction_(direction),
-        offset_(offset),
-        mask_(std::move(mask)),
-        mask_bounds_(mask_bounds) {}
+                const FloatRect& mask_bounds);
+  BoxReflection(const BoxReflection& reflection);
+  ~BoxReflection();
 
   ReflectionDirection Direction() const { return direction_; }
   float Offset() const { return offset_; }

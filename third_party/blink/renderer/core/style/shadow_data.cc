@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 #include "third_party/blink/renderer/platform/graphics/color_blend.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 
@@ -46,6 +47,15 @@ ShadowData ShadowData::Blend(const ShadowData& from,
 ShadowData ShadowData::NeutralValue() {
   return ShadowData(FloatPoint(0, 0), 0, 0, kNormal,
                     StyleColor(Color::kTransparent));
+}
+
+FloatRectOutsets ShadowData::RectOutsets() const {
+  // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a
+  // blur. See also https://crbug.com/624175.
+  float blur_and_spread = ceil(3 * SkBlurRadiusToSigma(Blur())) + Spread();
+  return FloatRectOutsets(
+      blur_and_spread - Y() /* top */, blur_and_spread + X() /* right */,
+      blur_and_spread + Y() /* bottom */, blur_and_spread - X() /* left */);
 }
 
 }  // namespace blink

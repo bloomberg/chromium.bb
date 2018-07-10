@@ -21,7 +21,9 @@ class ComputedStyle;
 class Document;
 class FillLayer;
 class FloatRoundedRect;
+class GraphicsContext;
 class ImageResourceObserver;
+class IntRect;
 class LayoutRect;
 struct PaintInfo;
 
