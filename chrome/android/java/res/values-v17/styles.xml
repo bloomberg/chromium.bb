@@ -739,9 +739,9 @@
         <item name="android:padding">16dp</item>
     </style>
 
-    <!-- Photo Picker animations -->
+    <!-- Picker Dialog animations -->
 
-    <style name="PhotoPickerDialogAnimation">
+    <style name="PickerDialogAnimation">
         <item name="android:windowEnterAnimation">@anim/design_bottom_sheet_slide_in</item>
         <item name="android:windowExitAnimation">@null</item>
     </style>

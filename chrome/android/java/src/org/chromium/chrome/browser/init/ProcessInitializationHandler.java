@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
+import org.chromium.chrome.browser.contacts_picker.ContactsPickerDialog;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.download.DownloadController;
@@ -84,7 +85,6 @@ import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.SelectFileDialog;
-import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -221,7 +221,7 @@ public class ProcessInitializationHandler {
                         boolean allowMultiple, List<String> mimeTypes) {
                     mDialog = new PhotoPickerDialog(context, listener, allowMultiple, mimeTypes);
                     mDialog.getWindow().getAttributes().windowAnimations =
-                            R.style.PhotoPickerDialogAnimation;
+                            R.style.PickerDialogAnimation;
                     mDialog.show();
                 }
 
@@ -234,14 +234,21 @@ public class ProcessInitializationHandler {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_CONTACTS_PICKER)) {
             UiUtils.setContactsPickerDelegate(new UiUtils.ContactsPickerDelegate() {
+                private ContactsPickerDialog mDialog;
+
                 @Override
-                public void showContactsPicker(
-                        Context context, ContactsPickerListener listener, boolean allowMultiple) {
-                    Toast.makeText(context, "Not implemented!", Toast.LENGTH_SHORT).show();
+                public void showContactsPicker(Context context, ContactsPickerListener listener,
+                        boolean allowMultiple, List<String> mimeTypes) {
+                    mDialog = new ContactsPickerDialog(context, listener, allowMultiple, mimeTypes);
+                    mDialog.getWindow().getAttributes().windowAnimations =
+                            R.style.PickerDialogAnimation;
+                    mDialog.show();
                 }
 
                 @Override
-                public void onContactsPickerDismissed() {}
+                public void onContactsPickerDismissed() {
+                    mDialog = null;
+                }
             });
         }
 

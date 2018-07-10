@@ -145,11 +145,12 @@ public class UiUtils {
      * @param context  The context to use.
      * @param listener The listener that will be notified of the action the user took in the
      *                 picker.
+     * @param mimeTypes A list of mime types requested.
      */
-    public static boolean showContactsPicker(
-            Context context, ContactsPickerListener listener, boolean allowMultiple) {
+    public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
+            boolean allowMultiple, List<String> mimeTypes) {
         if (sContactsPickerDelegate == null) return false;
-        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple);
+        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, mimeTypes);
         return true;
     }
 
@@ -171,9 +172,10 @@ public class UiUtils {
          * @param listener The listener that will be notified of the action the user took in the
          *                 picker.
          * @param allowMultiple Whether to allow multiple contacts to be picked.
+         * @param mimeTypes A list of mime types requested.
          */
-        void showContactsPicker(
-                Context context, ContactsPickerListener listener, boolean allowMultiple);
+        void showContactsPicker(Context context, ContactsPickerListener listener,
+                boolean allowMultiple, List<String> mimeTypes);
 
         /**
          * Called when the contacts picker dialog has been dismissed.
