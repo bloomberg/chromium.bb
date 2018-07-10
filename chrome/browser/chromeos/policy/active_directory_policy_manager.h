@@ -175,8 +175,7 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
 
   // A timer that puts a hard limit on the maximum time to wait for the initial
   // policy fetch/load.
-  base::Timer initial_policy_timeout_{false /* retain_user_task */,
-                                      false /* is_repeating */};
+  base::OneShotTimer initial_policy_timeout_;
 
   // Callback to exit the session.
   base::OnceClosure exit_session_;

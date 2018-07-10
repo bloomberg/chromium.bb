@@ -237,8 +237,7 @@ class AutoEnrollmentController {
   // something goes wrong, the timer will ensure that a decision gets made
   // eventually, which is crucial to not block OOBE forever. See
   // http://crbug.com/433634 for background.
-  base::Timer safeguard_timer_{false /* retain_user_task */,
-                               false /* is_repeating */};
+  base::OneShotTimer safeguard_timer_;
 
   // Whether the forced re-enrollment check has to be applied.
   FRERequirement fre_requirement_ = FRERequirement::kRequired;
