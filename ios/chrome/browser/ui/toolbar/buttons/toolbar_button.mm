@@ -58,7 +58,7 @@ const CGFloat kSpotlightCornerRadius = 7;
   // If the UIButton title has text it will center it on top of the image,
   // this is currently used for the TabStripButton which displays the
   // total number of tabs.
-  if (self.titleLabel.text) {
+  if (!IsUIRefreshPhase1Enabled() && self.titleLabel.text) {
     CGSize size = self.bounds.size;
     CGPoint center = CGPointMake(size.width / 2, size.height / 2);
     self.imageView.center = center;
@@ -104,10 +104,10 @@ const CGFloat kSpotlightCornerRadius = 7;
     newHiddenValue = !self.enabled;
   }
 
-  // Update the hidden property of the buttons even if it is the same to
-  // prevent: https://crbug.com/828767.
-  self.hiddenInCurrentSizeClass = newHiddenValue;
-  [self setHiddenForCurrentStateAndSizeClass];
+  if (self.hiddenInCurrentSizeClass != newHiddenValue) {
+    self.hiddenInCurrentSizeClass = newHiddenValue;
+    [self setHiddenForCurrentStateAndSizeClass];
+  }
 }
 
 - (void)setHiddenInCurrentState:(BOOL)hiddenInCurrentState {
