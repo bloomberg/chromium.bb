@@ -28,35 +28,54 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
 
  protected:
   struct TaskForTest {
+    TaskForTest(uint64_t id, uint64_t start, uint64_t end);
+    bool operator==(const TaskForTest& rhs) const;
+
     uint64_t task_id;
     uint64_t start_time_ms;
     uint64_t end_time_ms;
-
-    TaskForTest(uint64_t id, uint64_t start, uint64_t end);
-    bool operator==(const TaskForTest& rhs) const;
   };
 
-  explicit SequenceManagerFuzzerProcessor(
-      const SequenceManagerTestDescription& description);
+  struct ActionForTest {
+    enum class ActionType { kCreateTaskQueue, kPostDelayedTask };
 
-  SequenceManagerFuzzerProcessor(
-      const SequenceManagerTestDescription& description,
-      bool log_tasks_for_testing);
+    ActionForTest(uint64_t id, ActionType type, uint64_t start);
+    bool operator==(const ActionForTest& rhs) const;
 
-  void RunTest();
+    uint64_t action_id;
+    ActionType action_type;
+    uint64_t start_time_ms;
+  };
+
+  SequenceManagerFuzzerProcessor();
+
+  explicit SequenceManagerFuzzerProcessor(bool log_for_testing);
+
+  void RunTest(const SequenceManagerTestDescription& description);
 
   void RunAction(const SequenceManagerTestDescription::Action& action);
 
   const std::vector<TaskForTest>& ordered_tasks() const;
+  const std::vector<ActionForTest>& ordered_actions() const;
 
  private:
   void CreateTaskQueueFromAction(
+      uint64_t action_id,
       const SequenceManagerTestDescription::CreateTaskQueueAction& action);
 
   void PostDelayedTaskFromAction(
+      uint64_t action_id,
       const SequenceManagerTestDescription::PostDelayedTaskAction& action);
 
   void ExecuteTask(const SequenceManagerTestDescription::Task& task);
+
+  void LogTaskForTesting(uint64_t task_id,
+                         TimeTicks start_time,
+                         TimeTicks end_time);
+
+  void LogActionForTesting(uint64_t action_id,
+                           ActionForTest::ActionType type,
+                           TimeTicks start_time);
 
   std::unique_ptr<SequenceManagerForTest> manager_;
 
@@ -66,12 +85,15 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
 
   std::vector<scoped_refptr<TestTaskQueue>> task_queues_;
 
-  const bool log_tasks_for_testing_;
+  const bool log_for_testing_;
 
   TimeTicks initial_time_;
 
   // For Testing. Used to log tasks in their order of execution.
   std::vector<TaskForTest> ordered_tasks_;
+
+  // For Testing. Used to log actions in their order of execution.
+  std::vector<ActionForTest> ordered_actions_;
 };
 
 }  // namespace sequence_manager
