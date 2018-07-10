@@ -177,7 +177,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private InternalsHolder mInternalsHolder;
 
     private static class WebContentsInternalsImpl implements WebContentsInternals {
-        public HashMap<Class, WebContentsUserData> userDataMap;
+        public HashMap<Class<?>, WebContentsUserData> userDataMap;
         public ViewAndroidDelegate viewAndroidDelegate;
     }
 
@@ -783,9 +783,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOrSetUserData(Class key, UserDataFactory<T> userDataFactory) {
-        Map<Class, WebContentsUserData> userDataMap = getUserDataMap();
+    public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory) {
+        Map<Class<?>, WebContentsUserData> userDataMap = getUserDataMap();
 
         // Map can be null after WebView gets gc'ed on its way to destruction.
         if (userDataMap == null) {
@@ -804,15 +803,14 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             // to store the object.
             data = userDataMap.get(key);
         }
-        // Casting Object to T is safe since we make sure the object was of type T upon creation.
-        return data != null ? (T) data.getObject() : null;
+        return data != null ? key.cast(data.getObject()) : null;
     }
 
     /**
      * @return {@code UserDataMap} that contains internal user data. {@code null} if
      *         the map is already gc'ed.
      */
-    private Map<Class, WebContentsUserData> getUserDataMap() {
+    private Map<Class<?>, WebContentsUserData> getUserDataMap() {
         WebContentsInternals internals = mInternalsHolder.get();
         if (internals == null) return null;
         return ((WebContentsInternalsImpl) internals).userDataMap;
