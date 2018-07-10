@@ -8,6 +8,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -27,6 +28,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,6 +39,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -96,6 +99,15 @@ class ImeMenuLabel : public views::Label {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuLabel);
+};
+
+class ImeMenuImageView : public views::ImageView {
+ public:
+  ImeMenuImageView() { SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 6))); }
+  ~ImeMenuImageView() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImeMenuImageView);
 };
 
 SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
@@ -310,7 +322,8 @@ class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
 ImeMenuTray::ImeMenuTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ime_controller_(Shell::Get()->ime_controller()),
-      label_(new ImeMenuLabel()),
+      label_(nullptr),
+      image_view_(nullptr),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false),
       is_emoji_enabled_(false),
@@ -319,10 +332,7 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       weak_ptr_factory_(this) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
-  SetupLabelForTray(label_);
-  label_->SetElideBehavior(gfx::TRUNCATE);
-  label_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-  tray_container()->AddChildView(label_);
+  CreateLabel();
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddIMEObserver(this);
   tray_notifier->AddVirtualKeyboardObserver(this);
@@ -514,11 +524,54 @@ void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
 void ImeMenuTray::UpdateTrayLabel() {
   const mojom::ImeInfo& current_ime = ime_controller_->current_ime();
 
+  // For ARC IMEs, we use the globe icon instead of the short name of the active
+  // IME.
+  if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
+    CreateImageView();
+    // TODO(yhanada): We may want to update the globe icon later.
+    //                https://crbug.com/845079.
+    image_view_->SetImage(
+        gfx::CreateVectorIcon(kKeyboardIcon, kTrayIconSize, kTrayIconColor));
+    return;
+  }
+
   // Updates the tray label based on the current input method.
+  CreateLabel();
   if (current_ime.third_party)
     label_->SetText(current_ime.short_name + base::UTF8ToUTF16("*"));
   else
     label_->SetText(current_ime.short_name);
+}
+
+void ImeMenuTray::CreateLabel() {
+  // Do nothing if label_ is already created.
+  if (label_)
+    return;
+  // Remove image_view_ at first if it's created.
+  if (image_view_) {
+    tray_container()->RemoveChildView(image_view_);
+    image_view_ = nullptr;
+  }
+  label_ = new ImeMenuLabel();
+  SetupLabelForTray(label_);
+  label_->SetElideBehavior(gfx::TRUNCATE);
+  label_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
+  tray_container()->AddChildView(label_);
+}
+
+void ImeMenuTray::CreateImageView() {
+  // Do nothing if image_view_ is already created.
+  if (image_view_)
+    return;
+  // Remove label_ at first if it's created.
+  if (label_) {
+    tray_container()->RemoveChildView(label_);
+    label_ = nullptr;
+  }
+  image_view_ = new ImeMenuImageView();
+  image_view_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
+  tray_container()->AddChildView(image_view_);
 }
 
 }  // namespace ash
