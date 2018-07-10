@@ -13,6 +13,9 @@
 // SettingsDetailItem is a model class that uses CollectionViewDetailCell.
 @interface SettingsDetailItem : CollectionViewItem
 
+// The filename for the leading icon.  If empty, no icon will be shown.
+@property(nonatomic, copy) NSString* iconImageName;
+
 // The accessory type to display on the trailing edge of the cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
@@ -24,15 +27,20 @@
 
 @end
 
-// CollectionViewDetailCell implements an MDCCollectionViewCell subclass
-// containing two text labels: a "main" label and a "detail" label.  The two
-// labels are laid out side-by-side and fill the full width of the cell.  Labels
-// are truncated as needed to fit in the cell.
+// SettingsDetailCell implements an MDCCollectionViewCell subclass containing an
+// optional leading icon and two text labels: a "main" label and a "detail"
+// label. The two labels are laid out side-by-side and fill the full width of
+// the cell. Labels are truncated as needed to fit in the cell.
 @interface SettingsDetailCell : MDCCollectionViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 @property(nonatomic, readonly, strong) UILabel* detailTextLabel;
+
+// Sets the image that should be displayed at the leading edge of the cell. If
+// set to nil, the icon will be hidden and the text labels will expand to fill
+// the full width of the cell.
+- (void)setIconImage:(UIImage*)image;
 
 // The amount of horizontal space to provide to each of the labels. These values
 // are determined with the following logic:

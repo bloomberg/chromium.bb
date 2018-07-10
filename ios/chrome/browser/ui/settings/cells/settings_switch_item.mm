@@ -4,7 +4,11 @@
 
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 
+#import "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -20,13 +24,17 @@ const CGFloat kHorizontalPadding = 16;
 
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
+
+// Size of the icon image.
+const CGFloat kIconImageSize = 28;
 }  // namespace
 
 @implementation SettingsSwitchItem
 
-@synthesize text = _text;
-@synthesize on = _on;
 @synthesize enabled = _enabled;
+@synthesize iconImageName = _iconImageName;
+@synthesize on = _on;
+@synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -49,61 +57,136 @@ const CGFloat kVerticalPadding = 16;
   cell.switchView.on = self.isOn && self.isEnabled;
   cell.textLabel.textColor =
       [SettingsSwitchCell defaultTextColorForState:cell.switchView.state];
+
+  // Update the icon image, if one is present.
+  UIImage* iconImage = nil;
+  if ([self.iconImageName length]) {
+    iconImage = [UIImage imageNamed:self.iconImageName];
+  }
+  [cell setIconImage:iconImage];
 }
+
+@end
+
+@interface SettingsSwitchCell ()
+
+// The image view for the leading icon.
+@property(nonatomic, readonly, strong) UIImageView* iconImageView;
+
+// Constraints that are used when the iconImageView is visible and hidden.
+@property(nonatomic, strong) NSLayoutConstraint* iconVisibleConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* iconHiddenConstraint;
 
 @end
 
 @implementation SettingsSwitchCell
 
-@synthesize textLabel = _textLabel;
+@synthesize iconHiddenConstraint = _iconHiddenConstraint;
+@synthesize iconImageView = _iconImageView;
+@synthesize iconVisibleConstraint = _iconVisibleConstraint;
 @synthesize switchView = _switchView;
+@synthesize textLabel = _textLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
 
+    _iconImageView = [[UIImageView alloc] init];
+    _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _iconImageView.hidden = YES;
+    [self.contentView addSubview:_iconImageView];
+
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:_textLabel];
-
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
     _textLabel.numberOfLines = 0;
+    [self.contentView addSubview:_textLabel];
 
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
-    _switchView.onTintColor = [[MDCPalette cr_bluePalette] tint500];
     _switchView.accessibilityHint = l10n_util::GetNSString(
         IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT);
     [self.contentView addSubview:_switchView];
 
-    // Set up the constraints.
+    // Fonts and colors vary depending on whether UIRefresh is enabled.
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+      _switchView.onTintColor = UIColorFromRGB(kUIKitSwitchTintColor);
+    } else {
+      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      _switchView.onTintColor = [[MDCPalette cr_bluePalette] tint500];
+    }
+
+    // Set up the constraints assuming that the icon image is hidden..
+    _iconVisibleConstraint = [_textLabel.leadingAnchor
+        constraintEqualToAnchor:_iconImageView.trailingAnchor
+                       constant:kHorizontalPadding];
+    _iconHiddenConstraint = [_textLabel.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kHorizontalPadding];
+
     [NSLayoutConstraint activateConstraints:@[
-      [_textLabel.leadingAnchor
+      [_iconImageView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kHorizontalPadding],
+      [_iconImageView.widthAnchor constraintEqualToConstant:kIconImageSize],
+      [_iconImageView.heightAnchor constraintEqualToConstant:kIconImageSize],
+
       [_switchView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kHorizontalPadding],
       [_textLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_switchView.leadingAnchor
                                    constant:-kHorizontalPadding],
-      [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                           constant:kVerticalPadding],
-      [_textLabel.bottomAnchor
-          constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kVerticalPadding],
+
+      [_iconImageView.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+      [_textLabel.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
       [_switchView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
+
+      _iconHiddenConstraint,
     ]];
+
+    AddOptionalVerticalPadding(self.contentView, _textLabel, kVerticalPadding);
   }
   return self;
 }
 
 + (UIColor*)defaultTextColorForState:(UIControlState)state {
-  MDCPalette* grey = [MDCPalette greyPalette];
-  return (state & UIControlStateDisabled) ? grey.tint500 : grey.tint900;
+  if (experimental_flags::IsSettingsUIRebootEnabled()) {
+    return (state & UIControlStateDisabled)
+               ? UIColorFromRGB(kUIKitDetailTextColor)
+               : UIColorFromRGB(kUIKitMainTextColor);
+  } else {
+    MDCPalette* grey = [MDCPalette greyPalette];
+    return (state & UIControlStateDisabled) ? grey.tint500 : grey.tint900;
+  }
+}
+
+- (void)setIconImage:(UIImage*)image {
+  BOOL hidden = (image == nil);
+
+  // If the settings reboot is not enabled, the icon must always be hidden.
+  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+    hidden = YES;
+  }
+
+  if (hidden == self.iconImageView.hidden) {
+    return;
+  }
+
+  self.iconImageView.hidden = hidden;
+  if (hidden) {
+    self.iconVisibleConstraint.active = NO;
+    self.iconHiddenConstraint.active = YES;
+  } else {
+    self.iconHiddenConstraint.active = NO;
+    self.iconVisibleConstraint.active = YES;
+  }
 }
 
 // Implement -layoutSubviews as per instructions in documentation for
@@ -124,6 +207,7 @@ const CGFloat kVerticalPadding = 16;
 - (void)prepareForReuse {
   [super prepareForReuse];
 
+  [self setIconImage:nil];
   [_switchView removeTarget:nil
                      action:nil
            forControlEvents:[_switchView allControlEvents]];
