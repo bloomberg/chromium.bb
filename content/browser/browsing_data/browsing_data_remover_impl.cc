@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,8 +68,7 @@ bool DoesOriginMatchMaskAndURLs(
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
   bool is_web_scheme =
-      (std::find(schemes.begin(), schemes.end(), origin.GetOrigin().scheme()) !=
-       schemes.end());
+      base::ContainsValue(schemes, origin.GetOrigin().scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
   if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
