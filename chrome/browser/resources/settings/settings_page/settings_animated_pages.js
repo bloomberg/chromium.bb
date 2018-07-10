@@ -208,32 +208,50 @@ Polymer({
     const routePath = settings.getCurrentRoute().path;
     /* TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
      * completed. */
-    const template = this.querySelector(
+    const domIf = this.querySelector(
         (Polymer.DomIf ? 'dom-if' : 'template') +
         `[route-path='${routePath}']`);
 
-    // Nothing to do if the subpage isn't wrapped in a <template> or the
-    // template is already stamped.
-    if (!template || template.if)
+    // Nothing to do if the subpage isn't wrapped in a <dom-if>
+    // (or <template is="dom-if" for Poylmer 1) or the template is already
+    // stamped.
+    if (!domIf || domIf.if)
       return;
 
     // Set the subpage's id for use by neon-animated-pages.
     // TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
     // completed.
     const content = Polymer.DomIf ?
-        Polymer.DomIf._contentForTemplate(template.firstChild) :
-        /** @type {{_content: DocumentFragment}} */ (template)._content;
+        Polymer.DomIf._contentForTemplate(domIf.firstElementChild) :
+        /** @type {{_content: DocumentFragment}} */ (domIf)._content;
     const subpage = content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 
-    // Carry over the 'no-search' attribute from the template to the stamped
-    // instance, such that the stamped instance will also be ignored by the
-    // searching algorithm.
-    if (template.hasAttribute('no-search'))
+    // Carry over the
+    //  1)'no-search' attribute or
+    //  2) 'noSearch' Polymer property
+    // template to the stamped instance (both cases are mapped to a 'no-search'
+    // attribute intentionally), such that the stamped instance will also be
+    // ignored by the searching algorithm.
+    //
+    // In the case were no-search is dynamically calculated use the following
+    // pattern:
+    //
+    // <template is="dom-if" route-path="/myPath"
+    //     no-search="[[shouldSkipSearch_(foo, bar)">
+    //   <settings-subpage
+    //     no-search$="[[shouldSkipSearch_(foo, bar)">
+    //     ...
+    //   </settings-subpage>
+    //  </template>
+    //
+    // Note that the dom-if should always use the property and settings-subpage
+    // should always use the attribute.
+    if (domIf.hasAttribute('no-search') || domIf.noSearch)
       subpage.setAttribute('no-search', '');
 
     // Render synchronously so neon-animated-pages can select the subpage.
-    template.if = true;
-    template.render();
+    domIf.if = true;
+    domIf.render();
   },
 });

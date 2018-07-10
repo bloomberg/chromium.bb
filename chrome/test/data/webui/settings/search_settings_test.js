@@ -132,6 +132,61 @@ cr.define('settings_test', function() {
       });
     });
 
+    test('no-search elements are ignored', function() {
+      // Define a dummy test element with the necessary structure for testing.
+      Polymer({
+        is: 'dummy-test-element',
+
+        properties: {
+          noSearch: {
+            type: Boolean,
+            value: true,
+          },
+        },
+      });
+
+      const text = 'hello';
+
+      document.body.innerHTML = `
+        <dom-module id="dummy-test-element">
+          <template>
+            <button></button>
+            <settings-section hidden-by-search>
+              <template is="dom-if" route-path="/myPath"
+                  no-search="[[noSearch]]">
+                <settings-subpage associated-control="[[$$('button')]]">
+                  ${text}
+                </settings-subpage>
+              </template>
+            </settings-section>
+          </template>
+        </dom-module>
+        <dummy-test-element></dummy-test-element>`;
+
+      const element = document.body.querySelector('dummy-test-element');
+      const section = element.$$('settings-section');
+
+      // Ensure that no settings-subpage instance exists.
+      assertEquals(null, element.$$('settings-subpage'));
+
+      return searchManager.search(text, section)
+          .then(function() {
+            assertTrue(section.hiddenBySearch);
+            // Check that searching did not cause a settings-subpage instance to
+            // be forced rendered.
+            assertEquals(null, element.$$('settings-subpage'));
+
+            element.noSearch = false;
+            return searchManager.search(text, section);
+          })
+          .then(function() {
+            // Check that searching caused a settings-subpage instance to be
+            // forced rendered.
+            assertFalse(section.hiddenBySearch);
+            assertTrue(!!element.$$('settings-subpage'));
+          });
+    });
+
     // Test that multiple requests for the same text correctly highlight their
     // corresponding part of the tree without affecting other parts of the tree.
     test('multiple simultaneous requests for the same text', function() {
