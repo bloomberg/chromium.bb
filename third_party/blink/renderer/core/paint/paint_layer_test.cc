@@ -410,6 +410,51 @@ TEST_P(PaintLayerTest, HasNonContainedAbsolutePositionDescendant) {
   EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
 }
 
+TEST_P(PaintLayerTest, HasSelfPaintingDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='position: relative'>
+      <div id='child' style='position: relative'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_TRUE(parent->HasSelfPaintingLayerDescendant());
+  EXPECT_FALSE(child->HasSelfPaintingLayerDescendant());
+}
+
+TEST_P(PaintLayerTest, HasSelfPaintingDescendantNotSelfPainting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='position: relative'>
+      <div id='child' style='overflow: auto'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_FALSE(parent->HasSelfPaintingLayerDescendant());
+  EXPECT_FALSE(child->HasSelfPaintingLayerDescendant());
+}
+
+TEST_P(PaintLayerTest, HasSelfPaintingParentNotSelfPainting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='position: relative'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_TRUE(parent->HasSelfPaintingLayerDescendant());
+  EXPECT_FALSE(child->HasSelfPaintingLayerDescendant());
+}
+
 TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>

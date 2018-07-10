@@ -138,9 +138,7 @@ PaintLayerRareData::PaintLayerRareData()
 PaintLayerRareData::~PaintLayerRareData() = default;
 
 PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
-    : has_self_painting_layer_descendant_(false),
-      has_self_painting_layer_descendant_dirty_(false),
-      is_root_layer_(layout_object.IsLayoutView()),
+    : is_root_layer_(layout_object.IsLayoutView()),
       has_visible_content_(false),
       needs_descendant_dependent_flags_update_(true),
       has_visible_descendant_(false),
@@ -177,6 +175,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       descendant_may_need_compositing_requirements_update_(false),
       needs_compositing_layer_assignment_(false),
       descendant_needs_compositing_layer_assignment_(false),
+      has_self_painting_layer_descendant_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -345,36 +344,6 @@ void PaintLayer::UpdateLayerPositionRecursive(
 
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->UpdateLayerPositionRecursive(behavior);
-}
-
-void PaintLayer::UpdateHasSelfPaintingLayerDescendant() const {
-  DCHECK(has_self_painting_layer_descendant_dirty_);
-
-  has_self_painting_layer_descendant_ = false;
-
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling()) {
-    if (child->IsSelfPaintingLayer() ||
-        child->HasSelfPaintingLayerDescendant()) {
-      has_self_painting_layer_descendant_ = true;
-      break;
-    }
-  }
-
-  has_self_painting_layer_descendant_dirty_ = false;
-}
-
-void PaintLayer::DirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
-  for (PaintLayer* layer = this; layer; layer = layer->Parent()) {
-    layer->has_self_painting_layer_descendant_dirty_ = true;
-    // If we have reached a self-painting layer, we know our parent should have
-    // a self-painting descendant in this case, there is no need to dirty our
-    // ancestors further.
-    if (layer->IsSelfPaintingLayer()) {
-      DCHECK(!Parent() || Parent()->has_self_painting_layer_descendant_dirty_ ||
-             Parent()->has_self_painting_layer_descendant_);
-      break;
-    }
-  }
 }
 
 bool PaintLayer::SticksToScroller() const {
@@ -772,6 +741,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_descendant_with_clip_path_ = false;
     has_descendant_with_sticky_or_fixed_ = false;
     has_non_contained_absolute_position_descendant_ = false;
+    has_self_painting_layer_descendant_ = false;
 
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
@@ -780,6 +750,8 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 
     for (PaintLayer* child = FirstChild(); child;
          child = child->NextSibling()) {
+      const ComputedStyle& child_style = child->GetLayoutObject().StyleRef();
+
       child->UpdateDescendantDependentFlags();
 
       if (child->has_visible_content_ || child->has_visible_descendant_)
@@ -795,19 +767,21 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 
       has_descendant_with_sticky_or_fixed_ |=
           child->HasDescendantWithStickyOrFixed() ||
-          child->GetLayoutObject().Style()->GetPosition() ==
-              EPosition::kSticky ||
-          child->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed;
+          child_style.GetPosition() == EPosition::kSticky ||
+          child_style.GetPosition() == EPosition::kFixed;
 
       if (!can_contain_abs) {
         has_non_contained_absolute_position_descendant_ |=
             (child->HasNonContainedAbsolutePositionDescendant() ||
-             child->GetLayoutObject().Style()->GetPosition() ==
-                 EPosition::kAbsolute);
+             child_style.GetPosition() == EPosition::kAbsolute);
       }
 
-      needs_stacking_node = needs_stacking_node ||
-                            !child->GetLayoutObject().StyleRef().IsStacked();
+      needs_stacking_node = needs_stacking_node || !child_style.IsStacked();
+
+      has_self_painting_layer_descendant_ =
+          has_self_painting_layer_descendant_ ||
+          child->HasSelfPaintingLayerDescendant() ||
+          child->IsSelfPaintingLayer();
     }
 
     UpdateStackingNode(needs_stacking_node);
@@ -1407,7 +1381,6 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
     DirtyVisibleContentStatus();
 
   MarkAncestorChainForDescendantDependentFlagsUpdate();
-  DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
   // Need to force requirements update, due to change of stacking order.
   SetNeedsCompositingRequirementsUpdate();
@@ -1451,8 +1424,6 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
   // Remove any ancestor overflow layers which descended into the removed child.
   if (old_child->AncestorOverflowLayer())
     old_child->RemoveAncestorOverflowLayer(old_child->AncestorOverflowLayer());
-
-  DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
   if (old_child->has_visible_content_ || old_child->has_visible_descendant_)
     MarkAncestorChainForDescendantDependentFlagsUpdate();
@@ -2960,7 +2931,7 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   SetNeedsRepaint();
 
   if (PaintLayer* parent = Parent()) {
-    parent->DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
+    parent->MarkAncestorChainForDescendantDependentFlagsUpdate();
 
     if (PaintLayer* enclosing_self_painting_layer =
             parent->EnclosingSelfPaintingLayer()) {
