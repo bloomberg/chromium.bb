@@ -19,7 +19,7 @@ std::string SigninClient::GenerateSigninScopedDeviceID(bool for_ephemeral) {
   return for_ephemeral ? kEphemeralUserDeviceIDPrefix + guid : guid;
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
 void SigninClient::RecreateSigninScopedDeviceId() {
   GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
                         GenerateSigninScopedDeviceID(false));

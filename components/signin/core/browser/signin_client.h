@@ -147,7 +147,7 @@ class SigninClient : public KeyedService {
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
   // Forces the generation of a new device ID, and stores it in the pref
   // service.
   void RecreateSigninScopedDeviceId();
