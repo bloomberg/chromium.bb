@@ -1361,7 +1361,11 @@ LayoutSize LayoutInline::OffsetFromContainerInternal(
 }
 
 PaintLayerType LayoutInline::LayerTypeRequired() const {
-  return StyleRef().IsStacked() ? kNormalPaintLayer : kNoPaintLayer;
+  return IsInFlowPositioned() || CreatesGroup() ||
+                 Style()->ShouldCompositeForCurrentAnimations() ||
+                 ShouldApplyPaintContainment()
+             ? kNormalPaintLayer
+             : kNoPaintLayer;
 }
 
 void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
