@@ -8,6 +8,23 @@
 
 namespace identity {
 
+namespace {
+
+// Local copy of the account ID used for supervised users (defined in //chrome
+// as supervised_users::kSupervisedUserPseudoEmail). Simply copied to avoid
+// plumbing it from //chrome all the way down through the Identity Service just
+// to handle the corner cases below.
+// TODO(860492): Remove this once supervised user support is removed.
+const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
+
+// A made-up Gaia ID to populate the supervised user's AccountInfo with in order
+// to maintain the invariant that the AccountInfos passed out by IdentityManager
+// always have an account ID, Gaia ID, and email set.
+// TODO(860492): Remove this once supervised user support is removed.
+const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
+
+}  // namespace
+
 IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service,
                                  AccountTrackerService* account_tracker_service)
@@ -23,7 +40,24 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
   for (std::string account_id : token_service->GetAccounts()) {
     AccountInfo account_info =
         account_tracker_service_->GetAccountInfo(account_id);
-    DCHECK(!account_info.IsEmpty());
+
+    // In the context of supervised users, the ProfileOAuth2TokenService is used
+    // without the AccountTrackerService being used. This is the only case in
+    // which the AccountTrackerService will potentially not know about the
+    // account. In this context, |account_id| is always set to
+    // kSupervisedUserPseudoEmail.
+    // TODO(860492): Remove this special case once supervised user support is
+    // removed.
+    DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
+
+    if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+      // Populate the information manually to maintain the invariant that the
+      // account ID, gaia ID, and email are always set.
+      account_info.account_id = account_id;
+      account_info.email = kSupervisedUserPseudoEmail;
+      account_info.gaia = kSupervisedUserPseudoGaiaID;
+    }
+
     accounts_with_refresh_tokens_.emplace(std::move(account_id),
                                           std::move(account_info));
   }
@@ -232,7 +266,22 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
     bool is_valid) {
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
-  DCHECK(!account_info.IsEmpty());
+
+  // In the context of supervised users, the ProfileOAuth2TokenService is used
+  // without the AccountTrackerService being used. This is the only case in
+  // which the AccountTrackerService will potentially not know about the
+  // account. In this context, |account_id| is always set to
+  // kSupervisedUserPseudoEmail.
+  // TODO(860492): Remove this special case once supervised user support is
+  // removed.
+  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
+  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+    // Populate the information manually to maintain the invariant that the
+    // account ID, gaia ID, and email are always set.
+    account_info.account_id = account_id;
+    account_info.email = kSupervisedUserPseudoEmail;
+    account_info.gaia = kSupervisedUserPseudoGaiaID;
+  }
 
   // Insert the account into |accounts_with_refresh_tokens_|.
   auto insertion_result = accounts_with_refresh_tokens_.emplace(
@@ -273,7 +322,23 @@ void IdentityManager::WillFireOnRefreshTokenRevoked(
 
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
-  DCHECK(!account_info.IsEmpty());
+
+  // In the context of supervised users, the ProfileOAuth2TokenService is used
+  // without the AccountTrackerService being used. This is the only case in
+  // which the AccountTrackerService will potentially not know about the
+  // account. In this context, |account_id| is always set to
+  // kSupervisedUserPseudoEmail.
+
+  // TODO(860492): Remove this special case once supervised user support is
+  // removed.
+  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
+  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+    // Populate the information manually to maintain the invariant that the
+    // account ID, gaia ID, and email are always set.
+    account_info.account_id = account_id;
+    account_info.email = account_id;
+    account_info.gaia = kSupervisedUserPseudoGaiaID;
+  }
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_info);
