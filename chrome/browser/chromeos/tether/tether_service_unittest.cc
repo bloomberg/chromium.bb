@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -773,7 +772,7 @@ TEST_F(TetherServiceTest, TestGet_PrimaryUser_FeatureFlagDisabled) {
 
 TEST_F(TetherServiceTest, TestGet_NotPrimaryUser_FeatureFlagEnabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kInstantTethering);
+  feature_list.InitAndEnableFeature(chromeos::features::kInstantTethering);
 
   EXPECT_FALSE(TetherService::Get(profile_.get()));
 }
@@ -782,7 +781,7 @@ TEST_F(TetherServiceTest, TestGet_PrimaryUser_FeatureFlagEnabled) {
   SetPrimaryUserLoggedIn();
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kInstantTethering);
+  feature_list.InitAndEnableFeature(chromeos::features::kInstantTethering);
 
   TetherService* tether_service = TetherService::Get(profile_.get());
   ASSERT_TRUE(tether_service);
@@ -800,7 +799,7 @@ TEST_F(TetherServiceTest,
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {features::kInstantTethering,
+      {chromeos::features::kInstantTethering,
        chromeos::features::kMultiDeviceApi} /* enabled_features */,
       {} /* disabled_features */);
 
