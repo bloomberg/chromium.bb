@@ -329,6 +329,9 @@
           '--no-sandbox',
           '--test-launcher-jobs=1',
         ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
       },
       'Cast Linux': {
         'args': [
@@ -337,6 +340,9 @@
           '--no-sandbox',
           '--test-launcher-jobs=1',
         ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
       },
     },
   },
