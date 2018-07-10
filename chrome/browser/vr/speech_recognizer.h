@@ -122,7 +122,7 @@ class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
                                std::string* auth_token);
 
   static void SetManagerForTest(content::SpeechRecognitionManager* manager);
-  void SetSpeechTimerForTest(std::unique_ptr<base::Timer> speech_timer);
+  void SetSpeechTimerForTest(std::unique_ptr<base::OneShotTimer> speech_timer);
 
  private:
   VoiceResultDelegate* delegate_;
