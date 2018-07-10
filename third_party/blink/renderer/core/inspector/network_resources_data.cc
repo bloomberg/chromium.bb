@@ -307,12 +307,8 @@ void NetworkResourcesData::MaybeAddResourceData(
   DCHECK(data);
   if (ResourceData* resource_data =
           PrepareToAddResourceData(request_id, data->size())) {
-    data->ForEachSegment([&resource_data](const char* segment,
-                                          size_t segment_size,
-                                          size_t segment_offset) {
-      resource_data->AppendData(segment, segment_size);
-      return true;
-    });
+    for (const auto& span : *data)
+      resource_data->AppendData(span.data(), span.size());
   }
 }
 

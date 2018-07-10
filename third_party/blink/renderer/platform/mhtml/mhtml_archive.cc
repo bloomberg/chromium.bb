@@ -302,12 +302,8 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
   output_buffer.Append(ascii_string.data(), ascii_string.length());
 
   if (!strcmp(content_encoding, kBinary)) {
-    const char* data;
-    size_t position = 0;
-    while (size_t length = resource.data->GetSomeData(data, position)) {
-      output_buffer.Append(data, length);
-      position += length;
-    }
+    for (const auto& span : *resource.data)
+      output_buffer.Append(span.data(), span.size());
   } else {
     // FIXME: ideally we would encode the content as a stream without having to
     // fetch it all.

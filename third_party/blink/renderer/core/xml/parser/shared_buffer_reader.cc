@@ -48,21 +48,19 @@ int SharedBufferReader::ReadData(char* output_buffer, int asked_to_read) {
     return 0;
 
   size_t bytes_copied = 0;
-  size_t bytes_left = buffer_->size() - current_offset_;
-  size_t len_to_copy = std::min(SafeCast<size_t>(asked_to_read), bytes_left);
-
-  while (bytes_copied < len_to_copy) {
-    const char* data;
-    size_t segment_size = buffer_->GetSomeData(data, current_offset_);
-    if (!segment_size)
+  size_t len_to_copy = std::min(SafeCast<size_t>(asked_to_read),
+                                buffer_->size() - current_offset_);
+  for (auto it = buffer_->GetIteratorAt(current_offset_); it != buffer_->cend();
+       ++it) {
+    if (bytes_copied >= len_to_copy)
       break;
+    size_t to_be_written = std::min(it->size(), len_to_copy - bytes_copied);
 
-    segment_size = std::min(segment_size, len_to_copy - bytes_copied);
-    memcpy(output_buffer + bytes_copied, data, segment_size);
-    bytes_copied += segment_size;
-    current_offset_ += segment_size;
+    memcpy(output_buffer + bytes_copied, it->data(), to_be_written);
+    bytes_copied += to_be_written;
   }
 
+  current_offset_ += bytes_copied;
   return SafeCast<int>(bytes_copied);
 }
 

@@ -55,7 +55,14 @@ size_t WebData::size() const {
 }
 
 size_t WebData::GetSomeData(const char*& data, size_t position) const {
-  return private_.IsNull() ? 0 : private_->GetSomeData(data, position);
+  data = nullptr;
+  if (private_.IsNull())
+    return 0;
+  const auto it = private_->GetIteratorAt(position);
+  if (it == private_->cend())
+    return 0;
+  data = it->data();
+  return it->size();
 }
 
 WebVector<char> WebData::Copy() const {

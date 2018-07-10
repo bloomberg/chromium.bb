@@ -90,12 +90,10 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
   if (UNLIKELY(!data))
     OOM_CRASH();
 
-  shared_buffer->ForEachSegment([&data](const char* segment,
-                                        size_t segment_size,
-                                        size_t segment_offset) -> bool {
-    memcpy(data + segment_offset, segment, segment_size);
-    return true;
-  });
+  for (const auto& span : *shared_buffer) {
+    memcpy(data, span.data(), span.size());
+    data += span.size();
+  }
 
   return Create(ArrayBuffer::Create(contents));
 }

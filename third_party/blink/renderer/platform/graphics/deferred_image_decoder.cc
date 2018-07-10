@@ -174,12 +174,11 @@ void DeferredImageDecoder::SetDataInternal(scoped_refptr<SharedBuffer> data,
     if (!rw_buffer_)
       rw_buffer_ = std::make_unique<SkRWBuffer>(data->size());
 
-    const char* segment = nullptr;
-    for (size_t length = data->GetSomeData(segment, rw_buffer_->size()); length;
-         length = data->GetSomeData(segment, rw_buffer_->size())) {
-      DCHECK_GE(data->size(), rw_buffer_->size() + length);
-      const size_t remaining = data->size() - rw_buffer_->size() - length;
-      rw_buffer_->append(segment, length, remaining);
+    for (auto it = data->GetIteratorAt(rw_buffer_->size()); it != data->cend();
+         ++it) {
+      DCHECK_GE(data->size(), rw_buffer_->size() + it->size());
+      const size_t remaining = data->size() - rw_buffer_->size() - it->size();
+      rw_buffer_->append(it->data(), it->size(), remaining);
     }
   }
 }

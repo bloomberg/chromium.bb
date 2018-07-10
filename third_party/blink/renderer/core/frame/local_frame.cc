@@ -1372,11 +1372,8 @@ void LocalFrame::ForceSynchronousDocumentInstall(
 
   GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
                                    AtomicString("UTF-8"));
-  data->ForEachSegment(
-      [this](const char* segment, size_t segment_size, size_t segment_offset) {
-        GetDocument()->Parser()->AppendBytes(segment, segment_size);
-        return true;
-      });
+  for (const auto& segment : *data)
+    GetDocument()->Parser()->AppendBytes(segment.data(), segment.size());
   GetDocument()->Parser()->Finish();
 
   // Upon loading of SVGIamges, log PageVisits in UseCounter.

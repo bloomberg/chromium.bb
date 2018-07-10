@@ -236,13 +236,12 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
     return Create();
 
   DataBufferPtr data_buffer = AllocateBuffer(buffer->size());
-  buffer->ForEachSegment([&data_buffer](const char* segment,
-                                        size_t segment_size,
-                                        size_t segment_offset) {
-    std::copy(segment, segment + segment_size,
-              data_buffer.get() + segment_offset);
-    return true;
-  });
+  size_t offset = 0;
+  for (const auto& span : *buffer) {
+    std::copy(span.data(), span.data() + span.size(),
+              data_buffer.get() + offset);
+    offset += span.size();
+  }
   SwapWiredDataIfNeeded(data_buffer.get(), buffer->size());
 
   return base::AdoptRef(

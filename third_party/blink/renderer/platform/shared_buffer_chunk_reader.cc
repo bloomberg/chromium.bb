@@ -98,13 +98,17 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
     // Read the next segment.
     segment_index_ = 0;
     buffer_position_ += segment_length_;
-    segment_length_ = buffer_->GetSomeData(segment_, buffer_position_);
-    if (!segment_length_) {
+    auto it = buffer_->GetIteratorAt(buffer_position_);
+    if (it == buffer_->cend()) {
+      segment_ = nullptr;
+      segment_length_ = 0;
       reached_end_of_file_ = true;
       if (separator_index_ > 0)
         chunk.Append(separator_.data(), separator_index_);
       return !chunk.IsEmpty();
     }
+    segment_ = it->data();
+    segment_length_ = it->size();
   }
   NOTREACHED();
   return false;
@@ -132,18 +136,15 @@ size_t SharedBufferChunkReader::Peek(Vector<char>& data,
   size_t read_bytes_count = segment_length_ - segment_index_;
   data.Append(segment_ + segment_index_, read_bytes_count);
 
-  size_t buffer_position = buffer_position_ + segment_length_;
-  const char* segment = nullptr;
-  while (size_t segment_length =
-             buffer_->GetSomeData(segment, buffer_position)) {
-    if (requested_size <= read_bytes_count + segment_length) {
-      data.Append(segment, requested_size - read_bytes_count);
+  for (auto it = buffer_->GetIteratorAt(buffer_position_ + segment_length_);
+       it != buffer_->cend(); ++it) {
+    if (requested_size <= read_bytes_count + it->size()) {
+      data.Append(it->data(), requested_size - read_bytes_count);
       read_bytes_count += (requested_size - read_bytes_count);
       break;
     }
-    data.Append(segment, segment_length);
-    read_bytes_count += segment_length;
-    buffer_position += segment_length;
+    data.Append(it->data(), it->size());
+    read_bytes_count += it->size();
   }
   return read_bytes_count;
 }

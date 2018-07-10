@@ -313,10 +313,8 @@ bool RawResource::MatchPreload(const FetchParameters& params,
       std::move(producer), task_runner);
 
   if (Data()) {
-    Data()->ForEachSegment(
-        [this](const char* segment, size_t size, size_t offset) -> bool {
-          return data_pipe_writer_->Write(segment, size);
-        });
+    for (const auto& span : *Data())
+      data_pipe_writer_->Write(span.data(), span.size());
   }
   SetDataBufferingPolicy(kDoNotBufferData);
 
