@@ -59,10 +59,11 @@ class CONTENT_EXPORT NetworkConnectionTracker
   void Initialize(network::mojom::NetworkService* network_service);
 
   // If connection type can be retrieved synchronously, returns true and |type|
-  // will contain the current connection type; Otherwise, returns false, in
-  // which case, |callback| will be called on the calling thread when connection
-  // type is ready. This method is thread safe. Please also refer to
-  // net::NetworkChangeNotifier::GetConnectionType() for documentation.
+  // will contain the current connection type; Otherwise, returns false and
+  // does not modify |type|, in which case, |callback| will be called on the
+  // calling thread when connection type is ready. This method is thread safe.
+  // Please also refer to net::NetworkChangeNotifier::GetConnectionType() for
+  // documentation.
   virtual bool GetConnectionType(network::mojom::ConnectionType* type,
                                  ConnectionTypeCallback callback);
 

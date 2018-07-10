@@ -246,6 +246,18 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
             getter3.connection_type());
 }
 
+// Tests that GetConnectionType returns false and doesn't modify its |type|
+// parameter when the connection type is unavailable.
+TEST_F(NetworkConnectionTrackerTest, GetConnectionTypeUnavailable) {
+  auto tracker = std::make_unique<NetworkConnectionTracker>();
+
+  auto type = network::mojom::ConnectionType::CONNECTION_3G;
+  bool sync = tracker->GetConnectionType(&type, base::DoNothing());
+
+  EXPECT_FALSE(sync);
+  EXPECT_EQ(type, network::mojom::ConnectionType::CONNECTION_3G);
+}
+
 // Tests GetConnectionType() on a different thread.
 class NetworkGetConnectionTest : public NetworkConnectionTrackerTest {
  public:
