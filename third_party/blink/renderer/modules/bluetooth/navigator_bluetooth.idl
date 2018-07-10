@@ -6,7 +6,8 @@
 
 [
     ImplementedAs=NavigatorBluetooth,
-    RuntimeEnabled=WebBluetooth
+    RuntimeEnabled=WebBluetooth,
+    SecureContext
 ] partial interface Navigator {
     [SameObject] readonly attribute Bluetooth bluetooth;
 };
