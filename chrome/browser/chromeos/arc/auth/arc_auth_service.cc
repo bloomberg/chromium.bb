@@ -261,12 +261,14 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   // No other auth code-related operation may be in progress.
   DCHECK(!fetcher_);
 
+  const mojom::ChromeAccountType account_type = GetAccountType(profile_);
+
   if (IsArcOptInVerificationDisabled()) {
     OnAccountInfoReady(
-        CreateAccountInfo(
-            false /* is_enforced */, std::string() /* auth_info */,
-            std::string() /* auth_name */, GetAccountType(profile_),
-            policy_util::IsAccountManaged(profile_)),
+        CreateAccountInfo(false /* is_enforced */,
+                          std::string() /* auth_info */,
+                          std::string() /* auth_name */, account_type,
+                          policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
     return;
   }
@@ -283,10 +285,22 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
     fetcher_ = std::move(enrollment_token_fetcher);
     return;
   }
+
+  if (account_type == mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT) {
+    // Skip account auth code fetch for offline enrolled demo mode.
+    OnAccountInfoReady(
+        CreateAccountInfo(true /* is_enforced */, std::string() /* auth_info */,
+                          std::string() /* auth_name */, account_type,
+                          true /* is_managed */),
+        mojom::ArcSignInStatus::SUCCESS);
+    return;
+  }
+
   // For non-AD enrolled devices an auth code is fetched.
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher;
-  if (IsRobotOrOfflineDemoAccountMode()) {
-    // In Kiosk and public session mode, use Robot auth code fetching.
+  if (account_type == mojom::ChromeAccountType::ROBOT_ACCOUNT) {
+    // For robot accounts, which are used in kiosk and public session mode
+    // (which includes online demo sessions), use Robot auth code fetching.
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   } else {
     // Optionally retrieve auth code in silent mode.
