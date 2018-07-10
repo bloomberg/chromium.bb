@@ -382,8 +382,8 @@ public class WebViewChromiumAwInit {
 
     public android.webkit.WebIconDatabase getWebIconDatabase() {
         synchronized (mLock) {
+            ensureChromiumStartedLocked(true);
             if (mWebIconDatabase == null) {
-                ensureChromiumStartedLocked(true);
                 mWebIconDatabase = new WebIconDatabaseAdapter();
             }
         }
@@ -401,8 +401,8 @@ public class WebViewChromiumAwInit {
 
     public WebViewDatabase getWebViewDatabase(final Context context) {
         synchronized (mLock) {
+            ensureChromiumStartedLocked(true);
             if (mWebViewDatabase == null) {
-                ensureChromiumStartedLocked(true);
                 mWebViewDatabase = new WebViewDatabaseAdapter(
                         mFactory, HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE));
             }
