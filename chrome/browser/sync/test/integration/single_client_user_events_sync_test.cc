@@ -103,6 +103,9 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
       // We don't expect to encounter id matching events with different values,
       // this isn't going to recover so fail the test case now.
       EXPECT_TRUE(expected_specifics_.end() != iter);
+      if (expected_specifics_.end() == iter) {
+        return false;
+      }
       // TODO(skym): This may need to change if we start updating navigation_id
       // based on what sessions data is committed, and end up committing the
       // same event multiple times.
@@ -122,6 +125,8 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
  private:
   FakeServer* fake_server_;
   std::multimap<int64_t, UserEventSpecifics> expected_specifics_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserEventEqualityChecker);
 };
 
 // A more simplistic version of UserEventEqualityChecker that only checks the
@@ -173,6 +178,8 @@ class UserEventCaseChecker : public SingleClientStatusChangeChecker {
  private:
   FakeServer* fake_server_;
   std::multiset<UserEventSpecifics::EventCase> expected_cases_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserEventCaseChecker);
 };
 
 class SingleClientUserEventsSyncTest : public SyncTest {
