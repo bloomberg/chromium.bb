@@ -1,6 +1,6 @@
 Name: binutils
 URL: http://www.gnu.org/software/binutils/
-Version: 2.29.1
+Version: 2.30
 License: GPL v2
 License File: NOT_SHIPPED
 Security Critical: no
@@ -9,7 +9,7 @@ Description:
 This directory contains i386 and amd64 binaries of the binutils tools
 (including gold linker).
 
-They were built from binutils-2.29.1 using the "build-all.sh" script on Debian
+They were built from binutils-2.30 using the "build-all.sh" script on Debian
 Testing.
 
 The script creates chroots for 32bit and 64bit Ubuntu Xenial and then builds
