@@ -38,6 +38,26 @@ class WebInputElement;
 }
 
 namespace autofill {
+// Used in UMA histograms, please do NOT reorder.
+// Metric: "PasswordManager.PrefilledUsernameFillOutcome".
+enum class PrefilledUsernameFillOutcome {
+  // This value is reported if all of the following three conditions are met:
+  // 1) the page has a username input element whose value was prefilled by the
+  //    website itself.
+  // 2) the prefilled value was found in a list of known placeholder values
+  //    (e.g. "username or email").
+  // 3) the user had a credential stored and the field content was overridden
+  //    with the username of this credential due to 2).
+  kPrefilledPlaceholderUsernameOverridden = 0,
+  // This value is reported if all of the following conditions are met:
+  // 1) as above.
+  // 2) the prefilled value was NOT found in the list of known placeholder
+  //    values.
+  // 3) the user had a credential stored for this site but the field content
+  //    was NOT overridden due to 2).
+  kPrefilledUsernameNotOverridden = 1,
+  kMaxValue = kPrefilledUsernameNotOverridden,
+};
 
 // Names of HTML attributes to show form and field signatures for debugging.
 extern const char kDebugAttributeForFormSignature[];
@@ -296,6 +316,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
       RendererSavePasswordProgressLogger* logger);
 
+  // Logs whether a username value that was prefilled by the website was
+  // overridden when trying to fill with an existing credential. This logs
+  // only one value per |PasswordAutofillAgent| instance.
+  void LogPrefilledUsernameFillOutcome(PrefilledUsernameFillOutcome outcome);
+
   // Attempts to fill |username_element| and |password_element| with the
   // |fill_data|. Will use the data corresponding to the preferred username,
   // unless the |username_element| already has a value set. In that case,
@@ -402,6 +427,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 
+  bool prefilled_username_metrics_logged_ = false;
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
 

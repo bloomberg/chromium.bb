@@ -1725,12 +1725,21 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // 3. Empty if username field doesn't exist or if username field is empty and
   // not autocompletable (no username case).
   base::string16 current_username;
+
+  // Whether the username element was prefilled with content that was not on a
+  // list of known placeholder texts (e.g. "username or email").
+  bool prefilled_not_placeholder_username = false;
+
   if (!username_element->IsNull()) {
     if (!username_element->Value().IsEmpty() &&
-        !PossiblePrefilledUsernameValue(username_element->Value().Utf8()))
+        !PossiblePrefilledUsernameValue(username_element->Value().Utf8())) {
+      // Username is filled with content that was not on a list of known
+      // placeholder texts (e.g. "username or email").
       current_username = username_element->Value().Utf16();
-    else if (IsElementAutocompletable(*username_element))
+      prefilled_not_placeholder_username = true;
+    } else if (IsElementAutocompletable(*username_element)) {
       current_username = fill_data.username_field.value;
+    }
   }
 
   // username and password will contain the match found if any.
@@ -1740,8 +1749,13 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   FindMatchesByUsername(fill_data, current_username, exact_username_match,
                         logger, &username, &password);
 
-  if (password.empty())
+  if (password.empty()) {
+    if (prefilled_not_placeholder_username) {
+      LogPrefilledUsernameFillOutcome(
+          PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden);
+    }
     return false;
+  }
 
   // Call OnFieldAutofilled before WebInputElement::SetAutofillState which may
   // cause frame closing.
@@ -1754,12 +1768,20 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     // Fill a non-empty username if it is safe to override the value of the
     // username element. It is safe to override if the value is empty or a known
     // placeholder value.
-    if (!username.empty() &&
-        (username_element->Value().IsEmpty() ||
-         PossiblePrefilledUsernameValue(username_element->Value().Utf8()))) {
-      username_element->SetSuggestedValue(
-          blink::WebString::FromUTF16(username));
-      gatekeeper_.RegisterElement(username_element);
+    if (!username.empty()) {
+      if (username_element->Value().IsEmpty()) {
+        username_element->SetSuggestedValue(
+            blink::WebString::FromUTF16(username));
+        gatekeeper_.RegisterElement(username_element);
+      } else if (PossiblePrefilledUsernameValue(
+                     username_element->Value().Utf8())) {
+        username_element->SetSuggestedValue(
+            blink::WebString::FromUTF16(username));
+        gatekeeper_.RegisterElement(username_element);
+        LogPrefilledUsernameFillOutcome(
+            PrefilledUsernameFillOutcome::
+                kPrefilledPlaceholderUsernameOverridden);
+      }
     }
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
@@ -1789,6 +1811,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);
   return true;
+}
+
+void PasswordAutofillAgent::LogPrefilledUsernameFillOutcome(
+    PrefilledUsernameFillOutcome outcome) {
+  if (prefilled_username_metrics_logged_)
+    return;
+  prefilled_username_metrics_logged_ = true;
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PrefilledUsernameFillOutcome",
+                            outcome);
 }
 
 bool PasswordAutofillAgent::FillFormOnPasswordReceived(

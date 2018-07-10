@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
@@ -705,6 +706,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   WebInputElement password_element_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgentTest);
 };
@@ -820,6 +824,28 @@ TEST_F(PasswordAutofillAgentTest, MAYBE_AutocompleteForPrefilledUsernameValue) {
 
   // The username and password should have been autocompleted.
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.PrefilledUsernameFillOutcome",
+      PrefilledUsernameFillOutcome::kPrefilledPlaceholderUsernameOverridden, 1);
+}
+
+// Tests that if filling is invoked twice for the same autofill agent the
+// prefilled username metrics are only logged once.
+TEST_F(PasswordAutofillAgentTest, PrefilledUsernameMetricsOnlyLoggedOnce) {
+  // Set the username element to a value from the prefilled values list.
+  // Comparison should be insensitive to leading and trailing whitespaces.
+  username_element_.SetValue(
+      WebString::FromUTF16(base::UTF8ToUTF16(" User Name ")));
+
+  // Simulate the browser sending back the login info multiple tims.
+  // This triggers the autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.PrefilledUsernameFillOutcome",
+      PrefilledUsernameFillOutcome::kPrefilledPlaceholderUsernameOverridden, 1);
 }
 
 // Fill a password field if the stored username is a prefix of username in
@@ -904,6 +930,11 @@ TEST_F(PasswordAutofillAgentTest, NoPartialMatchForPrefilledUsername) {
   CheckTextFieldsSuggestedState("", false, std::string(), false);
   CheckUsernameDOMStatePasswordSuggestedState("ali", false, std::string(),
                                               false);
+
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.PrefilledUsernameFillOutcome",
+      autofill::PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden,
+      1);
 }
 
 TEST_F(PasswordAutofillAgentTest, InputWithNoForms) {
