@@ -15,6 +15,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "ui/gfx/geometry/size.h"
@@ -119,6 +120,15 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
       continue;
     }
 
+    if (!net::registry_controlled_domains::SameDomainOrHost(
+            method_manifest_url, url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      WarnIfPossible("Installable payment app from " + url.spec() +
+                     " is not allowed for the method " +
+                     method_manifest_url.spec());
+      continue;
+    }
+
     if (permission_manager->GetPermissionStatus(
             content::PermissionType::PAYMENT_HANDLER, url.GetOrigin(),
             url.GetOrigin()) != blink::mojom::PermissionStatus::GRANTED) {
@@ -196,6 +206,14 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
           app_info->sw_js_url + ").");
       return false;
     }
+    if (!net::registry_controlled_domains::SameDomainOrHost(
+            method_manifest_url, absolute_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      WarnIfPossible("Installable payment app's js url " + absolute_url.spec() +
+                     " is not allowed for the method " +
+                     method_manifest_url.spec());
+      return false;
+    }
     app_info->sw_js_url = absolute_url.spec();
   }
 
@@ -207,6 +225,14 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
           "Failed to resolve the installable payment app's registration "
           "scope (" +
           app_info->sw_scope + ").");
+      return false;
+    }
+    if (!net::registry_controlled_domains::SameDomainOrHost(
+            method_manifest_url, absolute_scope,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      WarnIfPossible("Installable payment app's registration scope " +
+                     absolute_scope.spec() + " is not allowed for the method " +
+                     method_manifest_url.spec());
       return false;
     }
     app_info->sw_scope = absolute_scope.spec();
