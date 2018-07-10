@@ -24,7 +24,7 @@
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
