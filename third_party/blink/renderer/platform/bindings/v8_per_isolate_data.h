@@ -29,31 +29,31 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "base/time/default_tick_clock.h"
+#include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
-#include "gin/public/v8_idle_task_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
-#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
 class ActiveScriptWrappableBase;
-class DOMDataStore;
+class DOMWrapperWorld;
+class ScriptState;
 class StringCache;
 class V8PrivateProperty;
 struct WrapperTypeInfo;
-
-typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 
 // Used to hold data that is associated with a single v8::Isolate object, and
 // has a 1:1 relationship with v8::Isolate.
