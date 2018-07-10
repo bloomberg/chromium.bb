@@ -20,7 +20,6 @@ class GenerateSystemHealthCSVTest(unittest.TestCase):
         'browse:tools:earth': 'All Platforms',
         'browse:tools:maps': 'All Platforms',
         'play:media:google_play_music': 'All Platforms',
-        'play:media:pandora': 'All Platforms',
         'play:media:soundcloud': 'Win Platforms'}
     all_expects = [{
         'browse:news:cnn': [(
@@ -40,8 +39,6 @@ class GenerateSystemHealthCSVTest(unittest.TestCase):
             ['Win Platforms'], 'win:crbug.com/673775, mac:crbug.com/756027')],
         'browse:media:tumblr': [(
             ['Mac 10.11'], 'crbug.com/760966')],
-        'play:media:pandora': [(
-            ['All Platforms'], 'crbug.com/649392')],
     }]
     self.assertEquals(
         expected_result,

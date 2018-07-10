@@ -1,6 +1,6 @@
 Story name,Platform,Description,Disabled Platforms
 background:media:imgur,mobile,"Load http://imgur.com/gallery/hUita, then put the browser into the background.", 
-background:news:nytimes,mobile,"Load http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0, then put the browser into the background.", 
+background:news:nytimes,mobile,"Load http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0, then put the browser into the background.","Android, Android_One, Android_Go, Nexus_5X"
 background:search:google,mobile,"Load https://www.google.co.uk/#q=tom+cruise+movies, then put the browser into the background.", 
 background:social:facebook,mobile,"Load https://www.facebook.com/rihanna, then put the browser into the background.", 
 background:tools:gmail,mobile,Load https://mail.google.com/mail/,Nexus_5
@@ -10,30 +10,30 @@ browse:chrome:newtab,mobile,"Story that loads new tab page and performs searches
    - enter the search query on the new tab page search box
    - read results
    - navigates back to new tab page
-  ",Android_Webview
+  ","Android_Webview, Nexus_5, Android_One"
 browse:chrome:omnibox,mobile,"Story that peforms search by using omnibox search provider
 
   Loads a website and enters a search query on omnibox and navigates to default
   search provider (google).
-  ",Android_Webview
+  ","Android_Webview, Nexus_5X"
 browse:media:facebook_photos,mobile,"Load a photo page from Rihanna's facebook page then navigate a few next
   photos.
   ", 
-browse:media:flickr_infinite_scroll,desktop,Load https://www.flickr.com/explore then make a very long scroll., 
-browse:media:flickr_infinite_scroll,mobile,Load https://www.flickr.com/explore then make a very long scroll., 
+browse:media:flickr_infinite_scroll,desktop,Load https://www.flickr.com/explore then make a very long scroll.,Win
+browse:media:flickr_infinite_scroll,mobile,Load https://www.flickr.com/explore then make a very long scroll.,Win
 browse:media:imgur,desktop,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles., 
 browse:media:imgur,mobile,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles., 
 browse:media:pinterest,desktop,Load https://pinterest.com and navigate to some items/articles., 
-browse:media:tumblr,desktop,Load https://tumblr.com/search/gifs and navigate to some items/articles.,Win
+browse:media:tumblr,desktop,Load https://tumblr.com/search/gifs and navigate to some items/articles.,"All, Win, Linux"
 browse:media:youtube,desktop,"Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for a few seconds.
   ", 
 browse:media:youtube,mobile,"Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for few seconds.
   ", 
-browse:news:cnn,all,The second top website in http://www.alexa.com/topsites/category/News,Mac
+browse:news:cnn,all,The second top website in http://www.alexa.com/topsites/category/News,"Mac, Win"
 browse:news:cricbuzz,mobile,Load http://m.cricbuzz.com and navigate to some items/articles., 
-browse:news:flipboard,desktop,Load https://flipboard.com/explore and navigate to some items/articles., 
+browse:news:flipboard,desktop,Load https://flipboard.com/explore and navigate to some items/articles.,Linux
 browse:news:globo,mobile,Load http://www.globo.com and navigate to some items/articles.,Android
 browse:news:hackernews,desktop,Load https://news.ycombinator.com and navigate to some items/articles.,"Win, Mac"
 browse:news:nytimes,desktop,The third top website in http://www.alexa.com/topsites/category/News, 
@@ -71,14 +71,14 @@ browse:shopping:avito,mobile,Load https://www.avito.ru/rossiya and navigate to s
 browse:shopping:flipkart,mobile,Load https://flipkart.com/search?q=Sunglasses and navigate to some items/articles.,Android
 browse:shopping:lazada,mobile,Load https://www.lazada.co.id/catalog/?q=Wrist+watch and navigate to some items/articles., 
 browse:social:facebook,mobile,Load https://www.facebook.com/rihanna and navigate to some items/articles.,Nexus_5
-browse:social:facebook_infinite_scroll,desktop,Load https://www.facebook.com/shakira then make a very long scroll., 
-browse:social:facebook_infinite_scroll,mobile,Load https://m.facebook.com/shakira then make a very long scroll., 
+browse:social:facebook_infinite_scroll,desktop,Load https://www.facebook.com/shakira then make a very long scroll.,Android_One
+browse:social:facebook_infinite_scroll,mobile,Load https://m.facebook.com/shakira then make a very long scroll.,Android_One
 browse:social:instagram,mobile,Load https://www.instagram.com/badgalriri/ and navigate to some items/articles., 
-browse:social:pinterest_infinite_scroll,mobile,Load https://www.pinterest.com/all then make a very long scroll., 
-browse:social:tumblr_infinite_scroll,all,Load http://techcrunch.tumblr.com/ then make a very long scroll., 
+browse:social:pinterest_infinite_scroll,mobile,Load https://www.pinterest.com/all then make a very long scroll.,"Android_One, Nexus_5"
+browse:social:tumblr_infinite_scroll,all,Load http://techcrunch.tumblr.com/ then make a very long scroll.,"Android_One, Nexus_5X"
 browse:social:twitter,desktop,Load https://www.twitter.com/nasa and navigate to some items/articles., 
 browse:social:twitter,mobile,Load https://www.twitter.com/nasa and navigate to some items/articles., 
-browse:social:twitter_infinite_scroll,desktop,Load https://twitter.com/taylorswift13 then make a very long scroll.,Win
+browse:social:twitter_infinite_scroll,desktop,Load https://twitter.com/taylorswift13 then make a very long scroll.,"Win, Linux, All"
 browse:tech:discourse_infinite_scroll,desktop,Load https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482 then make a very long scroll., 
 browse:tech:discourse_infinite_scroll,mobile,Load https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482 then make a very long scroll., 
 browse:tools:earth,desktop,"
@@ -95,12 +95,12 @@ browse:tools:maps,desktop,"
     _ Click ZoomIn two times, waiting for 3 sec in between.
     _ Scroll the map horizontally and vertically.
     _ Pick a restaurant and ask for directions.
-  ",Mac
+  ","Mac, Linux"
 browse:tools:maps,mobile,"Story that browses google maps mobile page
 
   This story searches for nearby restaurants on google maps website and finds
   directions to a chosen restaurant from search results.
-  ",Mac
+  ","Mac, Linux"
 browse_accessibility:tech:codesearch,desktop,Tests scrolling an element within a page., 
 browse_accessibility:tools:gmail_compose,desktop,Tests typing a lot of text into a Gmail compose window.,All
 load:chrome:blank,all,Story that loads the about:blank page., 
@@ -108,7 +108,7 @@ load:games:alphabetty,desktop,Load https://king.com/play/alphabetty,
 load:games:bubbles,all,"Load ""smarty bubbles"" game on famobi.com", 
 load:games:lazors,all,Load http://www8.games.mobi/games/html5/lazors/lazors.html, 
 load:games:miniclip,desktop,Load http://www.miniclip.com/games/en/,Mac
-load:games:spychase,all,Load http://playstar.mobi/games/spychase/index.php, 
+load:games:spychase,all,Load http://playstar.mobi/games/spychase/index.php,Android_Webview
 load:media:9gag,desktop,Load https://www.9gag.com/, 
 load:media:dailymotion,all,Load https://www.dailymotion.com/video/x489k7d_street-performer-shows-off-slinky-skills_fun?autoplay=false, 
 load:media:facebook_photos,mobile,Load a page of rihanna's facebook with a photo., 
@@ -148,12 +148,11 @@ load:tools:gmail,mobile,Load https://mail.google.com/mail/,Android
 load:tools:stackoverflow,all,Load a typical question & answer page of stackoverflow.com, 
 load:tools:weather,all,Load https://weather.com/en-GB/weather/today/l/USCA0286:1:US, 
 load_accessibility:media:wikipedia,desktop,"Wikipedia page on Accessibility. Long, but very simple, clean layout.", 
-load_accessibility:shopping:amazon,desktop,Amazon results page. Good example of a site with a data table., 
-long_running:tools:gmail-background,desktop,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Svelte"
-long_running:tools:gmail-background,mobile,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Svelte"
-long_running:tools:gmail-foreground,desktop,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds., 
-long_running:tools:gmail-foreground,mobile,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds., 
-multitab:misc:typical24,desktop,"Load 24 different web sites in 24 tabs, then cycle through each tab.",Mac
+load_accessibility:shopping:amazon,desktop,Amazon results page. Good example of a site with a data table.,Linux
+long_running:tools:gmail-background,desktop,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Low_End"
+long_running:tools:gmail-background,mobile,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Low_End"
+long_running:tools:gmail-foreground,desktop,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds.,Android_Webview
+long_running:tools:gmail-foreground,mobile,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds.,Android_Webview
+multitab:misc:typical24,desktop,"Load 24 different web sites in 24 tabs, then cycle through each tab.","Mac, Linux, ChromeOS"
 play:media:google_play_music,desktop,"Browse the songs list in music.google.com, then play a song.",All
-play:media:pandora,desktop,"Load pandora.com, then play a song.",All
 play:media:soundcloud,desktop,"Load soundcloud.com, search for ""Smooth Jazz"", then play a song.",Win
