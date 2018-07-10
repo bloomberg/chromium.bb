@@ -68,10 +68,13 @@ class NGInlineItemsBuilderTest : public PageTestBase {
 
   const String& TestAppend(Vector<Input> inputs) {
     items_.clear();
+    Vector<LayoutText*> anonymous_objects;
     NGInlineItemsBuilderForOffsetMapping builder(&items_);
     for (Input& input : inputs) {
-      if (!input.layout_text)
+      if (!input.layout_text) {
         input.layout_text = LayoutText::CreateEmptyAnonymous(GetDocument());
+        anonymous_objects.push_back(input.layout_text);
+      }
       builder.Append(input.text, GetStyle(input.whitespace).get(),
                      input.layout_text);
     }
@@ -79,6 +82,8 @@ class NGInlineItemsBuilderTest : public PageTestBase {
     collapsed_ = GetCollapsed(builder.GetOffsetMappingBuilder());
     ValidateItems();
     CheckReuseItemsProducesSameResult(inputs);
+    for (LayoutObject* anonymous_object : anonymous_objects)
+      anonymous_object->Destroy();
     return text_;
   }
 
