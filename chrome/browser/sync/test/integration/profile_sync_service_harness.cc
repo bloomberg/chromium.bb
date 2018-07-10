@@ -77,18 +77,19 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    if (!service()->IsSyncActive())
-      return false;
-    if (service()->ConfigurationDone())
+    syncer::SyncService::State state = service()->GetState();
+    if (state == syncer::SyncService::State::ACTIVE)
       return true;
+    // Sync is blocked by an auth error.
+    if (HasAuthError(service()))
+      return true;
+    if (state != syncer::SyncService::State::CONFIGURING)
+      return false;
     // Sync is blocked because a custom passphrase is required.
     if (service()->passphrase_required_reason_for_test() ==
         syncer::REASON_DECRYPTION) {
       return true;
     }
-    // Sync is blocked by an auth error.
-    if (HasAuthError(service()))
-      return true;
     // Still waiting on sync setup.
     return false;
   }

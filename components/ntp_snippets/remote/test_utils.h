@@ -26,12 +26,10 @@ class FakeSyncService : public syncer::FakeSyncService {
 
   int GetDisableReasons() const override;
   bool IsSyncActive() const override;
-  bool ConfigurationDone() const override;
   bool IsEncryptEverythingEnabled() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
 
   bool is_sync_active_;
-  bool configuration_done_;
   bool is_encrypt_everything_enabled_;
   syncer::ModelTypeSet active_data_types_;
 };

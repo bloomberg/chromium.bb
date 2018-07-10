@@ -312,7 +312,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
     return;
   }
 
-  if (sync_service->IsSyncActive() && sync_service->ConfigurationDone()) {
+  if (sync_service->GetState() == syncer::SyncService::State::ACTIVE) {
     dict->SetBoolean("syncThemes",
                      sync_service->GetActiveDataTypes().Has(syncer::THEMES));
     Respond(OneArgument(std::move(dict)));

@@ -740,6 +740,8 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
 }
 
 int ProfileSyncService::GetDisableReasons() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   int result = DISABLE_REASON_NONE;
   if (!IsSyncAllowedByFlag() || !IsSyncAllowedByPlatform()) {
     result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
@@ -763,6 +765,8 @@ int ProfileSyncService::GetDisableReasons() const {
 }
 
 syncer::SyncService::State ProfileSyncService::GetState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (GetDisableReasons() != DISABLE_REASON_NONE) {
     // We shouldn't have an engine while in a disabled state, with one
     // exception: When encountering an unrecoverable error, we post a task to
@@ -808,7 +812,7 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   DCHECK(data_type_manager_);
 
   if (!IsFirstSetupComplete()) {
-    DCHECK(!ConfigurationDone());
+    DCHECK(data_type_manager_->state() != DataTypeManager::CONFIGURED);
     return State::WAITING_FOR_CONSENT;
   }
 
@@ -829,7 +833,7 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   }
 #endif  // DCHECK_IS_ON()
 
-  if (!ConfigurationDone()) {
+  if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return State::CONFIGURING;
   }
 
@@ -1351,12 +1355,6 @@ bool ProfileSyncService::IsSignedIn() const {
 bool ProfileSyncService::IsEngineInitialized() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return engine_initialized_;
-}
-
-bool ProfileSyncService::ConfigurationDone() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return data_type_manager_ &&
-         data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
