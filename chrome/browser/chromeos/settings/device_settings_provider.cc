@@ -33,6 +33,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/schema.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 
@@ -116,7 +117,50 @@ const char* const kKnownSettings[] = {
     kVariationsRestrictParameter,
     kVirtualMachinesAllowed,
     kSamlLoginAuthenticationType,
+    kDeviceAutoUpdateTimeRestrictions,
 };
+
+// Decodes a JSON string to a base::Value, and drops unknown properties
+// according to a policy schema. |policy_name| is the name of a policy schema
+// defined in policy_templates.json. Returns null in case the input is not a
+// valid JSON string.
+std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
+    const std::string& json_string,
+    const std::string& policy_name) {
+  std::string error;
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+      json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+
+  if (!root) {
+    LOG(WARNING) << "Invalid JSON string: " << error << ", ignoring.";
+    return nullptr;
+  }
+
+  const policy::Schema& schema = g_browser_process->browser_policy_connector()
+                                     ->GetChromeSchema()
+                                     .GetKnownProperty(policy_name);
+
+  if (!schema.valid()) {
+    LOG(WARNING) << "Unknown or invalid policy schema for " << policy_name
+                 << ".";
+    return nullptr;
+  }
+
+  std::string error_path;
+  bool changed = false;
+  if (!schema.Normalize(root.get(), policy::SCHEMA_ALLOW_UNKNOWN, &error_path,
+                        &error, &changed)) {
+    LOG(WARNING) << "Invalid policy value for " << policy_name << ": " << error
+                 << " at " << error_path << ".";
+    return nullptr;
+  }
+  if (changed) {
+    LOG(WARNING) << "Some properties in " << policy_name
+                 << " were dropped: " << error << " at " << error_path << ".";
+  }
+
+  return root;
+}
 
 void DecodeLoginPolicies(
     const em::ChromeDeviceSettingsProto& policy,
@@ -399,6 +443,17 @@ void DecodeAutoUpdatePolicies(
     if (!list->empty()) {
       new_values_cache->SetValue(kAllowedConnectionTypesForUpdate,
                                  std::move(list));
+    }
+
+    if (au_settings_proto.has_disallowed_time_intervals()) {
+      std::unique_ptr<base::Value> decoded_intervals =
+          DecodeJsonStringAndDropUnknownBySchema(
+              au_settings_proto.disallowed_time_intervals(),
+              "DeviceAutoUpdateTimeRestrictions");
+      if (decoded_intervals) {
+        new_values_cache->SetValue(kDeviceAutoUpdateTimeRestrictions,
+                                   std::move(decoded_intervals));
+      }
     }
   }
 }
