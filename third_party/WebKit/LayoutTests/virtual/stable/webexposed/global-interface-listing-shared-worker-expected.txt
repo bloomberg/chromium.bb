@@ -685,7 +685,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearRect
 [Worker]     method clip
 [Worker]     method closePath
-[Worker]     method commit
 [Worker]     method constructor
 [Worker]     method createImageData
 [Worker]     method createLinearGradient
@@ -1665,7 +1664,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearStencil
 [Worker]     method clientWaitSync
 [Worker]     method colorMask
-[Worker]     method commit
 [Worker]     method compileShader
 [Worker]     method compressedTexImage2D
 [Worker]     method compressedTexImage3D
@@ -2458,7 +2456,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearStencil
 [Worker]     method clientWaitSync
 [Worker]     method colorMask
-[Worker]     method commit
 [Worker]     method compileShader
 [Worker]     method compressedTexImage2D
 [Worker]     method compressedTexImage3D
@@ -2972,7 +2969,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearDepth
 [Worker]     method clearStencil
 [Worker]     method colorMask
-[Worker]     method commit
 [Worker]     method compileShader
 [Worker]     method compressedTexImage2D
 [Worker]     method compressedTexSubImage2D

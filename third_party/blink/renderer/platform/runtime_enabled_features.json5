@@ -865,6 +865,10 @@
       status: "stable",
     },
     {
+      name: "OffscreenCanvasCommit",
+      status: "experimental",
+    },
+    {
       name: "OffscreenCanvasText",
       status: "stable",
     },
