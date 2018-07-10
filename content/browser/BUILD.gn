@@ -577,6 +577,8 @@ jumbo_source_set("browser") {
     "cocoa/system_hotkey_helper_mac.mm",
     "cocoa/system_hotkey_map.h",
     "cocoa/system_hotkey_map.mm",
+    "startup_data_impl.cc",
+    "startup_data_impl.h",
 
     # NOTE: These files are here instead of in compositor_browser_sources
     # because the latter is not built on Android, whereas these files are

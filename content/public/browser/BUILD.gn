@@ -268,6 +268,7 @@ jumbo_source_set("browser_sources") {
     "ssl_host_state_delegate.h",
     "ssl_status.cc",
     "ssl_status.h",
+    "startup_data.h",
     "storage_partition.h",
     "stored_payment_app.cc",
     "stored_payment_app.h",
