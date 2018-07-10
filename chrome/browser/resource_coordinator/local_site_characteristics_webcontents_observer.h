@@ -92,7 +92,7 @@ class LocalSiteCharacteristicsWebContentsObserver
   bool first_time_title_set_ = false;
 
   // The PageSignalReceiver observed by this instance.
-  PageSignalReceiver* page_signal_receiver_;
+  PageSignalReceiver* page_signal_receiver_ = nullptr;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
