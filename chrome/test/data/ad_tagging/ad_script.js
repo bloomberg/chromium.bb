@@ -8,7 +8,7 @@ function createAdFrame(url, name) {
 }
 
 async function createDocWrittenAdFrame(name, base_url) {
-  let doc_body = await fetch('iframe.html');
+  let doc_body = await fetch('frame_factory.html');
   let doc_text = await doc_body.text();
 
   let frame = document.createElement('iframe');
