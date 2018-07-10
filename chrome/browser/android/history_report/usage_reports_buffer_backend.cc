@@ -55,12 +55,17 @@ bool UsageReportsBufferBackend::Init() {
     }
     status = leveldb_env::OpenDB(options, path, &db_);
   }
-  if (status.ok()) {
-    CHECK(db_);
-    return true;
+  if (!status.ok()) {
+    LOG(WARNING) << "Unable to open " << path << ": " << status.ToString();
+    return false;
   }
-  LOG(WARNING) << "Unable to open " << path << ": " << status.ToString();
-  return false;
+  CHECK(db_);
+
+  UMA_HISTOGRAM_COUNTS_1M(
+      "Search.HistoryReport.UsageReportsBuffer.LevelDBEntries",
+      usage_report_util::DatabaseEntries(db_.get()));
+
+  return true;
 }
 
 void UsageReportsBufferBackend::AddVisit(const std::string& id,
@@ -138,11 +143,7 @@ std::string UsageReportsBufferBackend::Dump() {
     return dump;
   }
   dump.append("num pending entries=");
-  leveldb::ReadOptions options;
-  int num_entries = 0;
-  std::unique_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
-  for (db_it->SeekToFirst(); db_it->Valid(); db_it->Next()) num_entries++;
-  dump.append(base::IntToString(num_entries));
+  dump.append(base::IntToString(usage_report_util::DatabaseEntries(db_.get())));
   dump.append("]");
   return dump;
 }
@@ -171,4 +172,3 @@ bool UsageReportsBufferBackend::OnMemoryDump(
 }
 
 }  // namespace history_report
-

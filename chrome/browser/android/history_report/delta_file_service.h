@@ -32,7 +32,7 @@ class DeltaFileService {
   explicit DeltaFileService(const base::FilePath& dir);
   virtual ~DeltaFileService();
 
-  // Adds new addtion entry to delta file.
+  // Adds new addition entry to delta file.
   virtual void PageAdded(const GURL& url);
   // Adds new deletion entry to delta file.
   void PageDeleted(const GURL& url);

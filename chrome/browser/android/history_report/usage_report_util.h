@@ -7,6 +7,7 @@
 
 #include<string>
 
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -22,6 +23,8 @@ std::string ReportToKey(const history_report::UsageReport& report);
 bool IsTypedVisit(ui::PageTransition visit_transition);
 
 bool ShouldIgnoreUrl(const GURL& url);
+
+int DatabaseEntries(leveldb::DB* db);
 
 }  // namespace usage_report_util
 }  // namespace history_report

@@ -1,4 +1,3 @@
-
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -10,6 +9,9 @@
 
 #include "chrome/browser/android/proto/delta_file.pb.h"
 #include "net/base/url_util.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "url/gurl.h"
 
 namespace history_report {
@@ -44,6 +46,16 @@ bool ShouldIgnoreUrl(const GURL& url) {
     return true;
 
   return false;
+}
+
+int DatabaseEntries(leveldb::DB* db) {
+  std::unique_ptr<leveldb::Iterator> db_iter(
+      db->NewIterator(leveldb::ReadOptions()));
+
+  int count = 0;
+  for (db_iter->SeekToFirst(); db_iter->Valid(); db_iter->Next())
+    count++;
+  return count;
 }
 
 }  // namespace usage_report_util
