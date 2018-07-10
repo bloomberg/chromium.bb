@@ -3088,6 +3088,10 @@ const char kEnableVirtualKeyboardMdUiName[] =
 const char kEnableVirtualKeyboardMdUiDescription[] =
     "If enabled, loads the Material Design UI for the virtual keyboard.";
 
+const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
+const char kEnableVirtualKeyboardUkmDescription[] =
+    "Enables UKM for virtual keyboard";
+
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
     "Enable the ability to archive files on Drive in the Files app";

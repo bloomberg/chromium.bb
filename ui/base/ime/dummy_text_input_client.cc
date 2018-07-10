@@ -131,8 +131,8 @@ bool DummyTextInputClient::IsTextEditCommandEnabled(
 void DummyTextInputClient::SetTextEditCommandForNextKeyEvent(
     TextEditCommand command) {}
 
-const std::string& DummyTextInputClient::GetClientSourceInfo() const {
-  return base::EmptyString();
+ukm::SourceId DummyTextInputClient::GetClientSourceForMetrics() const {
+  return ukm::SourceId{};
 }
 
 bool DummyTextInputClient::ShouldDoLearning() {

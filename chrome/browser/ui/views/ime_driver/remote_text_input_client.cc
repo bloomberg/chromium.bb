@@ -170,10 +170,10 @@ void RemoteTextInputClient::SetTextEditCommandForNextKeyEvent(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-const std::string& RemoteTextInputClient::GetClientSourceInfo() const {
+ukm::SourceId RemoteTextInputClient::GetClientSourceForMetrics() const {
   // TODO(moshayedi): crbug.com/631527.
   NOTIMPLEMENTED_LOG_ONCE();
-  return base::EmptyString();
+  return ukm::SourceId();
 }
 
 bool RemoteTextInputClient::ShouldDoLearning() {

@@ -39,6 +39,9 @@ const base::Feature kEnableStylusVirtualKeyboard = {
 const base::Feature kEnableVirtualKeyboardMdUi = {
     "EnableVirtualKeyboardMdUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableVirtualKeyboardUkm = {
+    "EnableVirtualKeyboardUkm", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables all upcoming UI features.
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

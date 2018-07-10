@@ -59,7 +59,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD1(EnsureCaretNotInRect, void(const gfx::Rect&));
   MOCK_CONST_METHOD1(IsTextEditCommandEnabled, bool(TextEditCommand));
   MOCK_METHOD1(SetTextEditCommandForNextKeyEvent, void(TextEditCommand));
-  MOCK_CONST_METHOD0(GetClientSourceInfo, const std::string&());
+  MOCK_CONST_METHOD0(GetClientSourceForMetrics, ukm::SourceId());
 };
 
 class MockStoreACPSink : public ITextStoreACPSink {

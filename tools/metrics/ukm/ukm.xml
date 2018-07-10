@@ -4329,4 +4329,17 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="VirtualKeyboard.Open">
+  <owner>shend@chromium.org</owner>
+  <summary>
+    Collects the used input types with the Virtual Keyboard.
+  </summary>
+  <metric name="TextInputType">
+    <summary>
+      Type of a input field which the user is trying to use the Virtual Keyboard
+      on.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

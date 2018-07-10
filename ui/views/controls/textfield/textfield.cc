@@ -1743,10 +1743,10 @@ void Textfield::SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) {
   scheduled_text_edit_command_ = command;
 }
 
-const std::string& Textfield::GetClientSourceInfo() const {
-  // TODO(yhanada): Implement this method.
+ukm::SourceId Textfield::GetClientSourceForMetrics() const {
+  // TODO(shend): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
-  return base::EmptyString();
+  return ukm::SourceId();
 }
 
 bool Textfield::ShouldDoLearning() {

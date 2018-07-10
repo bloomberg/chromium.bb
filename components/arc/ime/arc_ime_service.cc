@@ -522,10 +522,10 @@ bool ArcImeService::IsTextEditCommandEnabled(
   return false;
 }
 
-const std::string& ArcImeService::GetClientSourceInfo() const {
+ukm::SourceId ArcImeService::GetClientSourceForMetrics() const {
   // TODO(yhanada): Implement this method. crbug.com/752657
   NOTIMPLEMENTED_LOG_ONCE();
-  return base::EmptyString();
+  return ukm::SourceId();
 }
 
 bool ArcImeService::ShouldDoLearning() {

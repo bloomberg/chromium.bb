@@ -145,10 +145,10 @@ bool PrefixSelector::IsTextEditCommandEnabled(
 void PrefixSelector::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {}
 
-const std::string& PrefixSelector::GetClientSourceInfo() const {
-  // TODO(yhanada): Implement this method.
+ukm::SourceId PrefixSelector::GetClientSourceForMetrics() const {
+  // TODO(shend): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
-  return base::EmptyString();
+  return ukm::SourceId();
 }
 
 bool PrefixSelector::ShouldDoLearning() {
