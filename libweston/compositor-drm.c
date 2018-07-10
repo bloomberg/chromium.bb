@@ -3324,6 +3324,16 @@ drm_output_propose_state(struct weston_output *output_base,
 					  &clipped_view);
 		if (pixman_region32_not_empty(&surface_overlap))
 			next_plane = primary;
+
+		/* We do not control the stacking order of overlay planes;
+		 * the scanout plane is strictly stacked bottom and the cursor
+		 * plane top, but the ordering of overlay planes with respect
+		 * to each other is undefined. Make sure we do not have two
+		 * planes overlapping each other. */
+		pixman_region32_intersect(&surface_overlap, &occluded_region,
+					  &clipped_view);
+		if (pixman_region32_not_empty(&surface_overlap))
+			next_plane = primary;
 		pixman_region32_fini(&surface_overlap);
 
 		if (next_plane == NULL)
