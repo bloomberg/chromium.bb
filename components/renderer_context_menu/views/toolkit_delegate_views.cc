@@ -73,4 +73,9 @@ void ToolkitDelegateViews::UpdateMenuIcon(int command_id,
 
   parent->ChildrenChanged();
 }
+
+void ToolkitDelegateViews::AddSeparatorAt(int index) {
+  menu_view_->AddSeparatorAt(index);
+  menu_view_->ChildrenChanged();
+}
 #endif

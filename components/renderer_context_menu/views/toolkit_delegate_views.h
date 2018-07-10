@@ -48,6 +48,7 @@ class ToolkitDelegateViews : public RenderViewContextMenuBase::ToolkitDelegate {
                       const base::string16& title) override;
 #if defined(OS_CHROMEOS)
   void UpdateMenuIcon(int command_id, const gfx::Image& image) override;
+  void AddSeparatorAt(int index) override;
 #endif
 
   std::unique_ptr<views::MenuModelAdapter> menu_adapter_;

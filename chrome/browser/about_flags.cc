@@ -4032,6 +4032,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kBackgroundTaskComponentUpdate)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"smart-text-selection", flag_descriptions::kSmartTextSelectionName,
+     flag_descriptions::kSmartTextSelectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kSmartTextSelectionFeature)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

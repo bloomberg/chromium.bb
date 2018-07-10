@@ -239,6 +239,14 @@ void RenderViewContextMenuBase::UpdateMenuIcon(int command_id,
 #endif
 }
 
+void RenderViewContextMenuBase::AddSeparatorBelowMenuItem(int command_id) {
+#if defined(OS_CHROMEOS)
+  if (toolkit_delegate_)
+    toolkit_delegate_->AddSeparatorAt(
+        menu_model_.GetIndexOfCommandId(command_id) + 1);
+#endif
+}
+
 RenderViewHost* RenderViewContextMenuBase::GetRenderViewHost() const {
   return source_web_contents_->GetRenderViewHost();
 }

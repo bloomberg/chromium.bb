@@ -39,6 +39,12 @@ const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
+// Controls Smart Text Selection for Chrome.
+// When enabled, the context menu will show contextual quick actions based on
+// the current text selection.
+const base::Feature kSmartTextSelectionFeature{
+    "ArcSmartTextSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARC USB host integration.
 // When enabled, Android apps will be able to use usb host features.
 const base::Feature kUsbHostFeature{"ArcUsbHost",

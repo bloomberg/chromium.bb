@@ -3232,6 +3232,11 @@ const char kShowTouchHudDescription[] =
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
 
+const char kSmartTextSelectionName[] = "Smart Text Selection";
+const char kSmartTextSelectionDescription[] =
+    "Shows quick actions for text "
+    "selections in the context menu.";
+
 const char kSysInternalsName[] = "Enable Sys-Internals";
 const char kSysInternalsDescription[] =
     "If enabled, user can monitor system information at "
