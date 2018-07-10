@@ -5,6 +5,8 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace aura {
@@ -14,27 +16,28 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
     bool inject_gutter,
     const gfx::Insets& client_area_insets)
     : window_(window),
+      surface_layer_owner_(std::make_unique<ui::LayerOwner>(
+          std::make_unique<ui::Layer>(ui::LAYER_TEXTURED))),
       inject_gutter_(inject_gutter),
       client_area_insets_(client_area_insets) {
-  surface_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
-  surface_layer_->SetMasksToBounds(true);
+  surface_layer_owner_->layer()->SetMasksToBounds(true);
   // The frame provided by the parent window->layer() needs to show through
   // the surface layer.
-  surface_layer_->SetFillsBoundsOpaquely(false);
+  surface_layer_owner_->layer()->SetFillsBoundsOpaquely(false);
 
-  window_->layer()->Add(surface_layer_.get());
+  window_->layer()->Add(surface_layer_owner_->layer());
 
   // Window's layer may contain content from this client (the embedder), e.g.
   // this is the case with window decorations provided by Window Manager.
   // This content should appear underneath the content of the embedded client.
-  window_->layer()->StackAtTop(surface_layer_.get());
+  window_->layer()->StackAtTop(surface_layer_owner_->layer());
 }
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
 void ClientSurfaceEmbedder::SetPrimarySurfaceId(
     const viz::SurfaceId& surface_id) {
-  surface_layer_->SetShowPrimarySurface(
+  surface_layer_owner_->layer()->SetShowPrimarySurface(
       surface_id, window_->bounds().size(), SK_ColorWHITE,
       cc::DeadlinePolicy::UseDefaultDeadline(),
       false /* stretch_content_to_fill_bounds */);
@@ -43,12 +46,12 @@ void ClientSurfaceEmbedder::SetPrimarySurfaceId(
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   fallback_surface_info_ = surface_info;
-  surface_layer_->SetFallbackSurfaceId(surface_info.id());
+  surface_layer_owner_->layer()->SetFallbackSurfaceId(surface_info.id());
   UpdateSizeAndGutters();
 }
 
 void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
-  surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
+  surface_layer_owner_->layer()->SetBounds(gfx::Rect(window_->bounds().size()));
   if (!inject_gutter_)
     return;
 
@@ -62,41 +65,51 @@ void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
   gfx::Rect window_bounds(window_->bounds());
   if (!window_->transparent() &&
       fallback_surface_size_in_dip.width() < window_bounds.width()) {
-    right_gutter_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    right_gutter_owner_ = std::make_unique<ui::LayerOwner>(
+        std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
     // TODO(fsamuel): Use the embedded client's background color.
-    right_gutter_->SetColor(SK_ColorWHITE);
+    right_gutter_owner_->layer()->SetColor(SK_ColorWHITE);
     int width = window_bounds.width() - fallback_surface_size_in_dip.width();
     // The right gutter also includes the bottom-right corner, if necessary.
     int height = window_bounds.height() - client_area_insets_.height();
-    right_gutter_->SetBounds(gfx::Rect(
+    right_gutter_owner_->layer()->SetBounds(gfx::Rect(
         client_area_insets_.left() + fallback_surface_size_in_dip.width(),
         client_area_insets_.top(), width, height));
-    window_->layer()->Add(right_gutter_.get());
+    window_->layer()->Add(right_gutter_owner_->layer());
   } else {
-    right_gutter_.reset();
+    right_gutter_owner_.reset();
   }
 
   // Only create a bottom gutter if a fallback surface is available. Otherwise,
   // the right gutter will fill the whole window until a fallback is available.
   if (!window_->transparent() && !fallback_surface_size_in_dip.IsEmpty() &&
       fallback_surface_size_in_dip.height() < window_bounds.height()) {
-    bottom_gutter_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    bottom_gutter_owner_ = std::make_unique<ui::LayerOwner>(
+        std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
     // TODO(fsamuel): Use the embedded client's background color.
-    bottom_gutter_->SetColor(SK_ColorWHITE);
+    bottom_gutter_owner_->layer()->SetColor(SK_ColorWHITE);
     int width = fallback_surface_size_in_dip.width();
     int height = window_bounds.height() - fallback_surface_size_in_dip.height();
-    bottom_gutter_->SetBounds(
+    bottom_gutter_owner_->layer()->SetBounds(
         gfx::Rect(0, fallback_surface_size_in_dip.height(), width, height));
-    window_->layer()->Add(bottom_gutter_.get());
+    window_->layer()->Add(bottom_gutter_owner_->layer());
   } else {
-    bottom_gutter_.reset();
+    bottom_gutter_owner_.reset();
   }
-  window_->layer()->StackAtTop(surface_layer_.get());
+  window_->layer()->StackAtTop(surface_layer_owner_->layer());
+}
+
+ui::Layer* ClientSurfaceEmbedder::RightGutterForTesting() {
+  return right_gutter_owner_ ? right_gutter_owner_->layer() : nullptr;
+}
+
+ui::Layer* ClientSurfaceEmbedder::BottomGutterForTesting() {
+  return bottom_gutter_owner_ ? bottom_gutter_owner_->layer() : nullptr;
 }
 
 const viz::SurfaceId& ClientSurfaceEmbedder::GetPrimarySurfaceIdForTesting()
     const {
-  return *surface_layer_->GetPrimarySurfaceId();
+  return *surface_layer_owner_->layer()->GetPrimarySurfaceId();
 }
 
 }  // namespace aura

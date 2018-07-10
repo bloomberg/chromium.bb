@@ -16,7 +16,7 @@ namespace ui {
 
 class COMPOSITOR_EXPORT LayerOwner {
  public:
-  LayerOwner();
+  explicit LayerOwner(std::unique_ptr<Layer> layer = nullptr);
   virtual ~LayerOwner();
 
   // Releases the owning reference to its layer, and returns it.
@@ -50,7 +50,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   // the client may wish to animate the layer beyond the lifetime of the owner,
   // e.g. fading it out when it is destroyed.
   std::unique_ptr<Layer> layer_owner_;
-  Layer* layer_;
+  Layer* layer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LayerOwner);
 };
