@@ -917,9 +917,8 @@ def overloads_context(interface, overloads):
             for length, effective_overloads in effective_overloads_by_length:
                 runtime_enabled_feature_names = set(
                     method['runtime_enabled_feature_name']
-                    for method, _, _ in effective_overloads
-                    if method.get('runtime_enabled_feature_name'))
-                if not runtime_enabled_feature_names:
+                    for method, _, _ in effective_overloads)
+                if None in runtime_enabled_feature_names:
                     # This "length" is unconditionally enabled, so stop here.
                     runtime_determined_lengths.append((length, [None]))
                     break
