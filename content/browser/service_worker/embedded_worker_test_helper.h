@@ -249,9 +249,10 @@ class EmbeddedWorkerTestHelper {
   void SimulateWorkerScriptCached(int embedded_worker_id,
                                   base::OnceClosure callback);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
-  void SimulateWorkerThreadStarted(int thread_id, int embedded_worker_id);
+  void SimulateScriptEvaluationStart(int embedded_worker_id);
   void SimulateWorkerStarted(int embedded_worker_id,
-                             blink::mojom::ServiceWorkerStartStatus status);
+                             blink::mojom::ServiceWorkerStartStatus status,
+                             int thread_id);
   void SimulateWorkerStopped(int embedded_worker_id);
 
   EmbeddedWorkerRegistry* registry();

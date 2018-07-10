@@ -1575,6 +1575,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_new_script_loader.h",
     "service_worker/service_worker_object_host.cc",
     "service_worker/service_worker_object_host.h",
+    "service_worker/service_worker_ping_controller.cc",
+    "service_worker/service_worker_ping_controller.h",
     "service_worker/service_worker_process_manager.cc",
     "service_worker/service_worker_process_manager.h",
     "service_worker/service_worker_provider_host.cc",

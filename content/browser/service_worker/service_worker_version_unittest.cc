@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -185,6 +186,14 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_ = nullptr;
     registration_ = nullptr;
     helper_.reset();
+  }
+
+  bool IsPingActivated(ServiceWorkerVersion* version) const {
+    return version->ping_controller_.IsActivated();
+  }
+
+  void NotifyScriptEvaluationStart(ServiceWorkerVersion* version) {
+    version->OnScriptEvaluationStart();
   }
 
   void SimulateDispatchEvent(ServiceWorkerMetrics::EventType event_type) {
@@ -1230,6 +1239,22 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   // Request already failed, calling finsh should return false.
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
                                        base::Time::Now()));
+}
+
+TEST_F(ServiceWorkerVersionTest, PingController) {
+  // Start starting an worker. Ping should not be active.
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::DoNothing());
+  EXPECT_FALSE(IsPingActivated(version_.get()));
+
+  // Start script evaluation. Ping should be active.
+  NotifyScriptEvaluationStart(version_.get());
+  EXPECT_TRUE(IsPingActivated(version_.get()));
+
+  // Finish starting the worker. Ping should still be active.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+  EXPECT_TRUE(IsPingActivated(version_.get()));
 }
 
 // Test starting a service worker from a disallowed origin.

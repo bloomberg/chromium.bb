@@ -125,7 +125,11 @@ interface EmbeddedWorkerInstanceHost {
   // thread in the renderer process.
   CountFeature(blink.mojom.WebFeature feature);
 
-  // Indicates that the worker is ready for inspection.
+  // The following are called during startup:
+  //
+  // Indicates that the worker is ready for inspection. This message is needed
+  // because DevTools requires the shadow page to have been created before
+  // inspecting the worker.
   OnReadyForInspection();
   // Indicates that the worker has finished loading the script.
   //
@@ -133,17 +137,19 @@ interface EmbeddedWorkerInstanceHost {
   // browser process knows it can resume the paused worker via
   // ResumeAfterDownloaded().
   OnScriptLoaded();
-  // Indicates that the worker thread has started. |thread_id| is the actual
-  // platform thread id on which the worker runs.
-  // This is called after OnScriptLoaded.
-  OnThreadStarted(int32 thread_id);
-  // Indicates that the worker has started.
-  // This is called after OnThreadStarted.
+  // Indicates that initial JavaScript evaluation is starting. This is useful
+  // for the browser process to start enforcing timeouts on script execution.
+  OnScriptEvaluationStart();
+  // Indicates that the worker has started. |thread_id| is the platform
+  // thread id the worker runs on.
   OnStarted(blink.mojom.ServiceWorkerStartStatus status,
+            int32 thread_id,
             EmbeddedWorkerStartTiming start_timing);
+
   // Reports that an uncaught exception occurred in the worker.
   OnReportException(mojo_base.mojom.String16 error_message, int32 line_number,
                     int32 column_number, url.mojom.Url source_url);
+
   // Reports that a console message was emitted to the worker's console.
   OnReportConsoleMessage(int32 source_identifier, int32 message_level,
                          mojo_base.mojom.String16 message, int32 line_number,

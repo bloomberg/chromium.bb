@@ -11829,6 +11829,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="SCRIPT_READ_STARTED"/>
   <int value="9" label="SCRIPT_READ_FINISHED"/>
   <int value="10" label="SCRIPT_STREAMING"/>
+  <int value="11" label="SCRIPT_EVALUATION"/>
 </enum>
 
 <enum name="EmmcLifeUsed">

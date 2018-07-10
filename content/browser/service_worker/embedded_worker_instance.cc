@@ -236,7 +236,7 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
     case EmbeddedWorkerInstance::SCRIPT_READ_FINISHED:
     case EmbeddedWorkerInstance::SCRIPT_STREAMING:
     case EmbeddedWorkerInstance::SCRIPT_LOADED:
-    case EmbeddedWorkerInstance::THREAD_STARTED:
+    case EmbeddedWorkerInstance::SCRIPT_EVALUATION:
       return true;
     case EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
@@ -781,18 +781,18 @@ void EmbeddedWorkerInstance::OnWorkerVersionDoomed() {
     devtools_proxy_->NotifyWorkerVersionDoomed();
 }
 
-void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
+void EmbeddedWorkerInstance::OnScriptEvaluationStart() {
   if (!inflight_start_task_)
     return;
 
-  starting_phase_ = THREAD_STARTED;
-  thread_id_ = thread_id;
+  starting_phase_ = SCRIPT_EVALUATION;
   for (auto& observer : listener_list_)
-    observer.OnThreadStarted();
+    observer.OnScriptEvaluationStart();
 }
 
 void EmbeddedWorkerInstance::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
+    int thread_id,
     mojom::EmbeddedWorkerStartTimingPtr start_timing) {
   if (!(start_timing->start_worker_received_time <=
             start_timing->script_evaluation_start_time &&
@@ -829,6 +829,7 @@ void EmbeddedWorkerInstance::OnStarted(
 
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
   status_ = EmbeddedWorkerStatus::RUNNING;
+  thread_id_ = thread_id;
   inflight_start_task_.reset();
   for (auto& observer : listener_list_) {
     observer.OnStarted(start_status);
@@ -983,14 +984,14 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script downloading";
     case SCRIPT_LOADED:
       return "Script loaded";
-    case THREAD_STARTED:
-      return "Thread started";
     case SCRIPT_READ_STARTED:
       return "Script read started";
     case SCRIPT_READ_FINISHED:
       return "Script read finished";
     case SCRIPT_STREAMING:
       return "Script streaming";
+    case SCRIPT_EVALUATION:
+      return "Script evaluation";
     case STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
   }
