@@ -6,7 +6,7 @@
 # certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the full
 # format.
 
-version_id: 4
+version_id: 5
 
 # https://captive-portal.badssl.com leaf.
 # This is a test certificate, always keep it at the top.
@@ -275,4 +275,61 @@ mitm_software {
 mitm_software {
   name: "Zscaler",
   issuer_organization_regex: "Zscaler Inc\."
+}
+
+################################################################################
+# Dynamic interstitials
+
+# Potentially compromised Mitel keys.
+# https://www.mitel.com/support/security-advisories/mitel-product-security-advisory-17-0001
+#
+# These keys have been blacklisted but some of them are also weak signature
+# algorithms so may have already stopped working in Chrome. We trigger the MITM
+# interstitial for ERR_CERT_REVOKED and also for
+# ERR_CERT_WEAK_SIGNATURE_ALGORITHM when appropriate. (We're not guaranteed to
+# receive one error code or the other.)
+#
+# All fields for these entries should match except |cert_error| and
+# |sha256_hash|.
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/cH02TnKuUhQx3ZU4l/nEhG1bjDJCmP5T+9StofLRFX8=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_WEAK_SIGNATURE_ALGORITHM,
+  sha256_hash: "sha256/cH02TnKuUhQx3ZU4l/nEhG1bjDJCmP5T+9StofLRFX8=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/atuOPgVUYJItFQHLl/lMagLjnI8ndMpAiCW3tYN53BQ=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/SQtuxr6y1gNHILUUm2spzTVRWYjMFq+FQUiwe5sfihE=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/71UShHFSMt6S4kbDIzKTYrEySTuxa1ieR3VSC+uHGlY=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_WEAK_SIGNATURE_ALGORITHM,
+  sha256_hash: "sha256/71UShHFSMt6S4kbDIzKTYrEySTuxa1ieR3VSC+uHGlY=",
+  mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
 }
