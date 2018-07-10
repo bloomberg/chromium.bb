@@ -1607,10 +1607,10 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
   const int ssy = xd->plane[plane].subsampling_y;
   BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ssx, ssy);
   PREDICTION_MODE mode = interintra_to_intra_mode[xd->mi[0]->interintra_mode];
-  xd->mi[0]->angle_delta[PLANE_TYPE_Y] = 0;
-  xd->mi[0]->angle_delta[PLANE_TYPE_UV] = 0;
-  xd->mi[0]->filter_intra_mode_info.use_filter_intra = 0;
-  xd->mi[0]->use_intrabc = 0;
+  assert(xd->mi[0]->angle_delta[PLANE_TYPE_Y] == 0);
+  assert(xd->mi[0]->angle_delta[PLANE_TYPE_UV] == 0);
+  assert(xd->mi[0]->filter_intra_mode_info.use_filter_intra == 0);
+  assert(xd->mi[0]->use_intrabc == 0);
 
   av1_predict_intra_block(cm, xd, pd->width, pd->height,
                           max_txsize_rect_lookup[plane_bsize], mode, 0, 0,
