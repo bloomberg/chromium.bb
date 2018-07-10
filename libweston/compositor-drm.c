@@ -1944,6 +1944,7 @@ drm_output_assign_state(struct drm_output_state *state,
 enum drm_output_propose_state_mode {
 	DRM_OUTPUT_PROPOSE_STATE_MIXED, /**< mix renderer & planes */
 	DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY, /**< only assign to renderer & cursor */
+	DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY, /**< no renderer use, only planes */
 };
 
 static struct drm_plane_state *
@@ -3318,6 +3319,7 @@ drm_output_propose_state(struct weston_output *output_base,
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region, occluded_region;
 	bool planes_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
+	bool renderer_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
 	int ret;
 
 	assert(!output->state_last);
@@ -3431,6 +3433,14 @@ drm_output_propose_state(struct weston_output *output_base,
 			continue;
 		}
 
+		/* We have been assigned to the primary (renderer) plane:
+		 * check if this is OK, and add ourselves to the renderer
+		 * region if so. */
+		if (!renderer_ok) {
+			pixman_region32_fini(&clipped_view);
+			goto err_region;
+		}
+
 		pixman_region32_union(&renderer_region,
 				      &renderer_region,
 				      &clipped_view);
@@ -3446,6 +3456,9 @@ drm_output_propose_state(struct weston_output *output_base,
 
 	return state;
 
+err_region:
+	pixman_region32_fini(&renderer_region);
+	pixman_region32_fini(&occluded_region);
 err:
 	drm_output_state_free(state);
 	return NULL;
@@ -3462,9 +3475,13 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct weston_view *ev;
 	struct weston_plane *primary = &output_base->compositor->primary_plane;
 
-	if (!b->sprites_are_broken)
+	if (!b->sprites_are_broken) {
 		state = drm_output_propose_state(output_base, pending_state,
-						 DRM_OUTPUT_PROPOSE_STATE_MIXED);
+						 DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
+		if (!state)
+			state = drm_output_propose_state(output_base, pending_state,
+							 DRM_OUTPUT_PROPOSE_STATE_MIXED);
+	}
 
 	if (!state)
 		state = drm_output_propose_state(output_base, pending_state,
