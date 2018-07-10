@@ -154,6 +154,10 @@ bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
   return theme_service_.HasCustomImage(id);
 }
 
+bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
+  return theme_service_.HasCustomColor(id);
+}
+
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {
@@ -765,6 +769,11 @@ int ThemeService::GetDisplayProperty(int id) const {
     default:
       return -1;
   }
+}
+
+bool ThemeService::HasCustomColor(int id) const {
+  SkColor color;
+  return theme_supplier_ && theme_supplier_->GetColor(id, &color);
 }
 
 base::RefCountedMemory* ThemeService::GetRawData(

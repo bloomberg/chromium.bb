@@ -27,13 +27,13 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
   int GetDisplayProperty(int id) const override;
   bool ShouldUseNativeFrame() const override;
   bool HasCustomImage(int id) const override;
+  bool HasCustomColor(int id) const override;
   base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
       const override;
 
 #if defined(OS_MACOSX)
   bool UsingSystemTheme() const override;
   bool InIncognitoMode() const override;
-  bool HasCustomColor(int id) const override;
   NSImage* GetNSImageNamed(int id) const override;
   NSColor* GetNSImageColorNamed(int id) const override;
   NSColor* GetNSColor(int id) const override;

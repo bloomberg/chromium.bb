@@ -71,6 +71,9 @@ class UI_BASE_EXPORT ThemeProvider {
   // doesn't provide a certain image, but custom themes might (badges, etc).
   virtual bool HasCustomImage(int id) const = 0;
 
+  // Returns true if the theme has defined a custom color for color |id|.
+  virtual bool HasCustomColor(int id) const = 0;
+
   // Reads the image data from the theme file into the specified vector. Only
   // valid for un-themed resources and the themed IDR_THEME_NTP_* in most
   // implementations of ThemeProvider. Returns NULL on error.
@@ -90,9 +93,6 @@ class UI_BASE_EXPORT ThemeProvider {
 
   // Gets the NSImage with the specified |id|.
   virtual NSImage* GetNSImageNamed(int id) const = 0;
-
-  // Returns true if the theme has defined a custom color for color |id|.
-  virtual bool HasCustomColor(int id) const = 0;
 
   // Gets the NSImage that GetNSImageNamed (above) would return, but returns it
   // as a pattern color.
