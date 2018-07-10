@@ -385,6 +385,9 @@ void DesktopWindowTreeHostMus::Close() {
   // (otherwise events may be processed, which is unexpected).
   Hide();
 
+  // This has to happen *after* Hide() above, otherwise animations won't work.
+  content_window()->Hide();
+
   // Close doesn't delete this immediately, as 'this' may still be on the stack
   // resulting in possible crashes when the stack unwindes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

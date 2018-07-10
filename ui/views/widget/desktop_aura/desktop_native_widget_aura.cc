@@ -737,7 +737,6 @@ void DesktopNativeWidgetAura::Close() {
     return;
 
   content_window_->SuppressPaint();
-  content_window_->Hide();
 
   desktop_window_tree_host_->Close();
 }

@@ -174,6 +174,8 @@ DesktopWindowTreeHostWin::CreateDragDropClient(
 }
 
 void DesktopWindowTreeHostWin::Close() {
+  content_window()->Hide();
+
   // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;

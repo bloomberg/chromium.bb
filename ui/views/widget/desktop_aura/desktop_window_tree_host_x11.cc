@@ -450,6 +450,8 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
 }
 
 void DesktopWindowTreeHostX11::Close() {
+  content_window()->Hide();
+
   // TODO(erg): Might need to do additional hiding tasks here.
   delayed_resize_task_.Cancel();
 
