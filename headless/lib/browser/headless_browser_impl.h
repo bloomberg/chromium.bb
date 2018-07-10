@@ -46,7 +46,6 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
 
   // HeadlessBrowser implementation:
   HeadlessBrowserContext::Builder CreateBrowserContextBuilder() override;
-  scoped_refptr<base::SingleThreadTaskRunner> BrowserIOThread() const override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const override;
 

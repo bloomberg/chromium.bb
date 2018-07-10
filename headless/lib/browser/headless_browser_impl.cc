@@ -93,12 +93,6 @@ HeadlessBrowserImpl::CreateBrowserContextBuilder() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-HeadlessBrowserImpl::BrowserIOThread() const {
-  return content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessBrowserImpl::BrowserMainThread() const {
   return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::UI);
