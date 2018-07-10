@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -729,6 +730,11 @@ void ScriptLoader::FetchModuleScriptTree(
 PendingScript* ScriptLoader::TakePendingScript(
     ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
+
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, scheduling_type_histogram,
+      ("Blink.Script.SchedulingType", kLastScriptSchedulingType + 1));
+  scheduling_type_histogram.Count(static_cast<int>(scheduling_type));
 
   switch (scheduling_type) {
     case ScriptSchedulingType::kAsync:

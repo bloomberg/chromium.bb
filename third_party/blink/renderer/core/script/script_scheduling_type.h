@@ -12,6 +12,9 @@ namespace blink {
 // In the spec, this is determined which clause of Step 25 of
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 // is taken.
+//
+// The enum values are used in histograms and thus do not change existing
+// enum values when modifying.
 enum class ScriptSchedulingType {
   // Because the sheduling type is determined slightly after PendingScript
   // creation, it is set to kNotSet before ScriptLoader::TakePendingScript()
@@ -61,6 +64,9 @@ enum class ScriptSchedulingType {
   // Inline <script> executed immediately within prepare-a-script.
   kImmediate
 };
+
+static const int kLastScriptSchedulingType =
+    static_cast<int>(ScriptSchedulingType::kImmediate);
 
 }  // namespace blink
 
