@@ -48,8 +48,6 @@ struct EmbeddedWorkerStartParams {
   bool is_installed;
   // Determines how eagerly V8 creates the code cache.
   V8CacheOptions v8_cache_options;
-  // True if Data Saver is enabled.
-  bool data_saver_enabled;
 
   // Used to dispatch events from (via) the browser process.
   ServiceWorkerEventDispatcher& dispatcher_request;
