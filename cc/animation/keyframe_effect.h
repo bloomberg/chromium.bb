@@ -96,8 +96,8 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void PauseKeyframeModel(int keyframe_model_id, double time_offset);
   void RemoveKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModel(int keyframe_model_id);
-  void AbortKeyframeModels(TargetProperty::Type target_property,
-                           bool needs_completion);
+  void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
+                                       bool needs_completion);
 
   void ActivateKeyframeEffects();
 

@@ -7440,9 +7440,12 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  grand_parent_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
-  parent_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
-  child_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  grand_parent_animation->AbortKeyframeModelsWithProperty(
+      TargetProperty::TRANSFORM, false);
+  parent_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                    false);
+  child_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                   false);
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
@@ -7464,7 +7467,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  child_animation->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  child_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                   false);
 
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
@@ -9830,8 +9834,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   EXPECT_TRUE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
 
-  animation->AbortKeyframeModels(TargetProperty::OPACITY,
-                                 false /*needs_completion*/);
+  animation->AbortKeyframeModelsWithProperty(TargetProperty::OPACITY,
+                                             false /*needs_completion*/);
   node = tree.Node(animated->effect_tree_index());
   EXPECT_FALSE(node->is_currently_animating_opacity);
   EXPECT_FALSE(node->has_potential_opacity_animation);
@@ -9889,8 +9893,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   EXPECT_TRUE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);
 
-  animation->AbortKeyframeModels(TargetProperty::TRANSFORM,
-                                 false /*needs_completion*/);
+  animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                             false /*needs_completion*/);
   node = tree.Node(animated->transform_tree_index());
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_FALSE(node->has_potential_animation);

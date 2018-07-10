@@ -323,8 +323,9 @@ void KeyframeEffect::AbortKeyframeModel(int keyframe_model_id) {
   }
 }
 
-void KeyframeEffect::AbortKeyframeModels(TargetProperty::Type target_property,
-                                         bool needs_completion) {
+void KeyframeEffect::AbortKeyframeModelsWithProperty(
+    TargetProperty::Type target_property,
+    bool needs_completion) {
   if (needs_completion)
     DCHECK(target_property == TargetProperty::SCROLL_OFFSET);
 

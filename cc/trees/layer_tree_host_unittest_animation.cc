@@ -1296,9 +1296,12 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     EXPECT_EQ(KeyframeModel::RUNNING, child_keyframe_model->run_state());
     EXPECT_EQ(root_keyframe_model->start_time(),
               child_keyframe_model->start_time());
-    animation_impl->AbortKeyframeModels(TargetProperty::OPACITY, false);
-    animation_impl->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
-    animation_child_impl->AbortKeyframeModels(TargetProperty::OPACITY, false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::OPACITY,
+                                                    false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                    false);
+    animation_child_impl->AbortKeyframeModelsWithProperty(
+        TargetProperty::OPACITY, false);
     EndTest();
   }
 
@@ -1376,7 +1379,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
-    animation_impl->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                    false);
     EndTest();
   }
 
