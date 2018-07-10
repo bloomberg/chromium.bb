@@ -107,7 +107,6 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
       i.selection_end == selection_end &&
       i.composition_start == composition_start &&
       i.composition_end == composition_end) {
-    pending_text_input_info_ = TextInputInfo();
     pending_text_request_state_ = kNoPendingRequest;
     return;
   }
