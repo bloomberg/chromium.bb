@@ -4644,9 +4644,6 @@ crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/media
 crbug.com/859064 http/tests/devtools/console-resource-errors.js [ Pass Failure ]
 crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
 
-# Sheriff 2018-07-02
-crbug.com/859605 [ Mac10.10 ] external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-002.html [ Failure ]
-
 # Sheriff 2018-07-03
 crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
 
