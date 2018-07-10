@@ -10,6 +10,10 @@
 <div id="log"></div>
 <script>
   async_test(function (t) {
+    if (typeof PerformanceLongTaskTiming === 'undefined') {
+        assert_unreached("Longtasks are not supported.");
+        t.done();
+    }
     const scriptURL = 'resources/makelongtask.js';
     const lineColumn = '(0, 0)';
     const observer = new PerformanceObserver(
