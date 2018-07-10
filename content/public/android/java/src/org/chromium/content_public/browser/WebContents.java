@@ -131,7 +131,7 @@ public interface WebContents extends Parcelable {
      *         not created yet, or {@code userDataFactory} is null, or the internal data
      *         storage is already garbage-collected.
      */
-    public <T> T getOrSetUserData(Class key, UserDataFactory<T> userDataFactory);
+    public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory);
 
     /**
      * @return The navigation controller associated with this WebContents.

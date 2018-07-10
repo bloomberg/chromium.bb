@@ -64,7 +64,7 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public <T> T getOrSetUserData(Class key, UserDataFactory<T> userDataFactory) {
+    public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory) {
         return null;
     }
 
