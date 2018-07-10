@@ -153,10 +153,10 @@ is_windows_target() {
 # included in $tool_paths, or an empty string. Caller is responsible for testing
 # the string once the function returns.
 aom_tool_path() {
-  local readonly tool_name="$1"
-  local readonly root_path="${LIBAOM_BIN_PATH}"
-  local readonly suffix="${AOM_TEST_EXE_SUFFIX}"
-  local readonly tool_paths="\
+  local tool_name="$1"
+  local root_path="${LIBAOM_BIN_PATH}"
+  local suffix="${AOM_TEST_EXE_SUFFIX}"
+  local tool_paths="\
     ${root_path}/${tool_name}${suffix} \
     ${root_path}/../${tool_name}${suffix} \
     ${root_path}/tools/${tool_name}${suffix} \
@@ -338,8 +338,8 @@ yuv_raw_input() {
 # Do a small encode for testing decoders.
 encode_yuv_raw_input_av1() {
   if [ "$(av1_encode_available)" = "yes" ]; then
-    local readonly output="$1"
-    local readonly encoder="$(aom_tool_path aomenc)"
+    local output="$1"
+    local encoder="$(aom_tool_path aomenc)"
     shift
     eval "${encoder}" $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
