@@ -96,7 +96,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   void OnAudioStart(int session_id) override;
   void OnAudioEnd(int session_id) override;
 
-  void SetTimerForTest(std::unique_ptr<base::Timer> speech_timer);
+  void SetTimerForTest(std::unique_ptr<base::OneShotTimer> speech_timer);
 
  private:
   void NotifyRecognitionStateChanged(SpeechRecognitionState new_state);
@@ -109,7 +109,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   scoped_refptr<net::URLRequestContextGetter>
       deprecated_url_request_context_getter_;
   std::string locale_;
-  std::unique_ptr<base::Timer> speech_timeout_;
+  std::unique_ptr<base::OneShotTimer> speech_timeout_;
   int session_;
   base::string16 last_result_str_;
 
@@ -119,7 +119,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
 };
 
 SpeechRecognizerOnIO::SpeechRecognizerOnIO()
-    : speech_timeout_(new base::Timer(false, false)),
+    : speech_timeout_(new base::OneShotTimer()),
       session_(kInvalidSessionId),
       weak_factory_(this) {}
 
@@ -289,7 +289,7 @@ void SpeechRecognizerOnIO::OnAudioStart(int session_id) {
 void SpeechRecognizerOnIO::OnAudioEnd(int session_id) {}
 
 void SpeechRecognizerOnIO::SetTimerForTest(
-    std::unique_ptr<base::Timer> speech_timer) {
+    std::unique_ptr<base::OneShotTimer> speech_timer) {
   speech_timeout_ = std::move(speech_timer);
 }
 
@@ -422,7 +422,7 @@ void SpeechRecognizer::SetManagerForTest(
 
 // static
 void SpeechRecognizer::SetSpeechTimerForTest(
-    std::unique_ptr<base::Timer> speech_timer) {
+    std::unique_ptr<base::OneShotTimer> speech_timer) {
   if (!speech_recognizer_on_io_)
     return;
   speech_recognizer_on_io_->SetTimerForTest(std::move(speech_timer));

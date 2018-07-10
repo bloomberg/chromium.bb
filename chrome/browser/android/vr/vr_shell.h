@@ -369,7 +369,7 @@ class VrShell : device::GvrGamepadDataProvider,
   gl::SurfaceTexture* overlay_surface_texture_ = nullptr;
   gl::SurfaceTexture* ui_surface_texture_ = nullptr;
 
-  base::Timer waiting_for_assets_component_timer_;
+  base::OneShotTimer waiting_for_assets_component_timer_;
   bool can_load_new_assets_ = false;
 
   base::WaitableEvent gl_surface_created_event_;
