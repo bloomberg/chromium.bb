@@ -42,6 +42,10 @@ interface DriveFsDelegate {
   OnMounted();
 
   OnSyncingStatusUpdate(SyncingStatus status);
+
+  // Invoked when the mount is going away. If retry_delay is present the
+  // browser should try to mount DriveFs again after the specified interval.
+  OnUnmounted(mojo_base.mojom.TimeDelta? retry_delay);
 };
 
 struct DriveFsConfiguration {

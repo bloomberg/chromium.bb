@@ -119,6 +119,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
 
   // DriveFsHost::Delegate:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
+  MOCK_METHOD0(OnUnmounted, void());
 
  private:
   // DriveFsHost::Delegate:
@@ -295,6 +296,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 
   void SendOnMounted() { delegate_ptr_->OnMounted(); }
 
+  void SendOnUnmounted() { delegate_ptr_->OnUnmounted({}); }
+
   void DoMount() {
     auto token = StartMount();
     DispatchMountSuccessEvent(token);
@@ -470,6 +473,13 @@ TEST_F(DriveFsHostTest, MountError) {
 TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {
   DoMount();
   EXPECT_FALSE(host_->Mount());
+}
+
+TEST_F(DriveFsHostTest, UnmountByRemote) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_CALL(*host_delegate_, OnUnmounted());
+  SendOnUnmounted();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
