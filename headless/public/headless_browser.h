@@ -83,10 +83,6 @@ class HEADLESS_EXPORT HeadlessBrowser {
       HeadlessBrowserContext* browser_context) = 0;
   virtual HeadlessBrowserContext* GetDefaultBrowserContext() = 0;
 
-  // Returns a task runner for submitting work to the browser io thread.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserIOThread()
-      const = 0;
-
   // Returns a task runner for submitting work to the browser main thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const = 0;

@@ -96,10 +96,6 @@ class HeadlessJsBindingsTest
 
   void ConnectionEstablished(std::unique_ptr<EvaluateResult>) {
     connection_established_ = true;
-    if (complete_request_) {
-      browser()->BrowserIOThread()->PostTask(FROM_HERE, complete_request_);
-      complete_request_ = base::RepeatingClosure();
-    }
   }
 
   virtual void RunJsBindingsTest() = 0;
@@ -219,7 +215,6 @@ class HeadlessJsBindingsTest
   }
 
  protected:
-  base::RepeatingClosure complete_request_;
   bool connection_established_ = false;
   base::WeakPtrFactory<HeadlessJsBindingsTest> weak_factory_;
 };
