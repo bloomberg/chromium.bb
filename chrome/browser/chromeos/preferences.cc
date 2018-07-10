@@ -567,7 +567,11 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   // SetState() is modifying |current_input_method_| (via
   // PersistUserInputMethod() ). This way SetState() here may be called only
   // after ApplyPreferences().
-  input_method_manager_->SetState(ime_state_);
+  // As InputMethodManager only holds the active state for the active user,
+  // SetState() is only called if the preferences belongs to the active user.
+  // See https://crbug.com/841112.
+  if (user->is_active())
+    input_method_manager_->SetState(ime_state_);
 
   input_method_syncer_.reset(
       new input_method::InputMethodSyncer(prefs, ime_state_));
