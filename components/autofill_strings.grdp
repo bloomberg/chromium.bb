@@ -245,6 +245,12 @@
       </message>
     </else>
   </if>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME" desc="The label text for the cardholder name textfield.">
+    Cardholder name
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip text for the cardholder name textfield.">
+    This name will also be used when creating your Google payments account.
+  </message>
 
   <!-- Autofill credit card suggestion popup -->
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR" desc="Abbreviated label for credit card expiration date. [CHAR-LIMIT=32]">
@@ -388,9 +394,6 @@
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK" desc="Text for link that prompts user to update their credit card after it may have been re-issued." formatter_data="android_java">
     Update card
-  </message>
-  <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME" desc="The placeholder/label text for a cardholder name textfield.">
-    Cardholder name
   </message>
   <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
     CVC
