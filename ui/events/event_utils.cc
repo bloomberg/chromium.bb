@@ -67,25 +67,14 @@ bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
 }
 
 void ValidateEventTimeClock(base::TimeTicks* timestamp) {
-#if defined(USE_X11)
-
-  // Restrict this correction to X11 which is known to provide bogus timestamps
-  // that require correction (crbug.com/611950).
+  // Some fraction of devices, across all platforms provide bogus event
+  // timestamps. See https://crbug.com/650338#c1. Correct timestamps which are
+  // clearly bogus.
+  // TODO(861855): Replace this with an approach that doesn't require an extra
+  // read of the current time per event.
   base::TimeTicks now = EventTimeForNow();
   if (!IsValidTimebase(now, *timestamp))
     *timestamp = now;
-
-#elif DCHECK_IS_ON()
-
-  if (base::debug::BeingDebugged())
-    return;
-
-  base::TimeTicks now = EventTimeForNow();
-  DCHECK(IsValidTimebase(now, *timestamp))
-      << "Event timestamp (" << *timestamp << ") is not consistent with "
-      << "current time (" << now << ").";
-
-#endif
 }
 
 bool ShouldDefaultToNaturalScroll() {
