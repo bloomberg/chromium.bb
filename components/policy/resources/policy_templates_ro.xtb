@@ -687,6 +687,19 @@
 <translation id="2877225735001246144">Dezactivează căutarea CNAME la negocierea autentificării pentru Kerberos</translation>
 <translation id="2893546967669465276">Trimite jurnalele de sistem serverului de gestionare</translation>
 <translation id="2899002520262095963">Aplicațiile Android pot folosi configurațiile rețelei și certificatele CA stabilite prin această politică, dar nu au acces la anumite opțiuni de configurare.</translation>
+<translation id="290002216614278247">Îți permite să blochezi sesiunea utilizatorului în funcție de timpul clientului sau de cotele de folosire ale zilei.
+
+          |time_window_limit| specifică o fereastră zilnică în care trebuie blocată sesiunea utilizatorului. Acceptăm o singură regulă pentru fiecare zi a săptămânii, așa că matricea |entries| poate avea o dimensiune între 0 și 7. |starts_at| și |ends_at| reprezintă începutul și sfârșitul ferestrei; când |ends_at| este mai mic decât |starts_at| înseamnă că |time_limit_window| se încheie în ziua următoare. |last_updated_millis| este marcajul temporal UTC pentru ultima actualizare a intrării și este trimis ca șir, deoarece n-ar încăpea într-un întreg.
+
+          |time_usage_limit| specifică o cotă zilnică de folosire a dispozitivului, iar când utilizatorul o atinge, sesiunea se blochează. Există câte o proprietate pentru fiecare zi a săptămânii și aceasta trebuie setată doar dacă există o cotă activă pentru ziua respectivă. |usage_quota_mins| este timpul în care poate fi folosit dispozitivul gestionat într-o zi, iar |reset_at| este momentul când se reînnoiește cota de folosire. Valoarea prestabilită pentru |reset_at| este miezul nopții ({'hour': 0, 'minute': 0}). |last_updated_millis| este marcajul temporal UTC pentru ultima actualizare a intrării și este trimis ca șir, deoarece n-ar încăpea într-un întreg.
+
+          |overrides| se furnizează pentru a anula temporar una sau mai multe dintre regulile anterioare.
+          * Dacă nici time_window_limit și nici time_usage_limit nu sunt active, |LOCK| se poate folosi pentru a bloca dispozitivul.
+          * |LOCK| blochează temporar o sesiune de utilizator până când începe următoarea time_window_limit sau time_usage_limit.
+          * |UNLOCK| deblochează sesiunea unui utilizator care a fost blocată de time_window_limit sau time_usage_limit.
+          |created_time_millis| este marcajul temporal UTC pentru crearea modificării și este trimis ca șir, deoarece n-ar încăpea într-un întreg. Se folosește pentru a stabili dacă modificarea mai trebuie aplicată. Dacă funcția actuală de limitare a timpului (limita de timp de folosire sau limita ferestrei de timp) a început după crearea modificării, nu trebuie aplicată. Dacă modificarea a fost creată înainte de ultima modificare a valorii time_window_limit sau time_usage_window active, nu trebuie aplicată.
+
+          Pot fi trimise mai multe modificări, dintre care se va aplica cea mai nouă intrare validă.</translation>
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicații</translation>
 <translation id="2907992746861405243">Controlează care imprimante din <ph name="BULK_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
 
@@ -1378,6 +1391,14 @@
 <translation id="4980635395568992380">Tip de date:</translation>
 <translation id="4983201894483989687">Permite rularea pluginurilor învechite</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
+<translation id="4990301296093321860">Îți permite să controlezi declanșarea avertismentului privind protecția prin parolă. Protecția prin parolă îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
+
+      Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola protejată.
+
+      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția prin parolă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele protejate pe site-uri care nu sunt trecute în lista albă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele protejate pe site-uri de phishing.
+      Dacă această politică nu este configurată, avertismentul privind protecția prin parolă se va declanșa când utilizatorii refolosesc parolele protejate pe site-uri de phishing, dar utilizatorul poate modifica această setare.</translation>
 <translation id="4995548127349206948">Dacă este activată autentificarea NTLMv2.</translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
@@ -1756,6 +1777,12 @@
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
+<translation id="6164955668342404660">Opțiune învechită în versiunea M69. Folosește OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Politica specifică o listă de origini (adrese URL) care trebuie tratate drept context securizat. Scopul este să permită organizațiilor să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare.
+      Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
+      Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
           Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -1928,6 +1955,11 @@
 <translation id="6786967369487349613">Setează locația profilului de roaming</translation>
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
+<translation id="6832455357698286434">
+      Politica specifică o listă de origini (adrese URL) sau modele de nume de gazdă (precum „*.example.com”) care trebuie tratate drept contexte securizate. Scopul este să permită organizațiilor să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare.
+      Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
+      Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este recomandată</translation>
 <translation id="6838056959556423778">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
 
@@ -2267,6 +2299,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7617319494457709698">Această politică specifică extensiile cărora li se permite să folosească funcția <ph name="CHALLENGE_USER_KEY_FUNCTION" /> din <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
 
           Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
+<translation id="7620300057302654932">Origini sau modele de nume de gazdă care trebuie tratate drept context securizat.</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>

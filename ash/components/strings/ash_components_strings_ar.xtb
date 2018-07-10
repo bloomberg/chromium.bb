@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
 <translation id="2424073332829844142">‏تفعيل مفتاح Caps Lock وإيقافه</translation>
 <translation id="2441202986792279177">التبديل بين النوافذ بسرعة</translation>
+<translation id="2454251766545114447">تصغير العرض</translation>
 <translation id="2478303094958140141">‏تفعيل ChromeVox (التعليقات والملاحظات المنطوقة) أو إيقافه</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">التمرير إلى أسفل صفحة الويب</translation>
+<translation id="2574014812750545982">إعادة ضبط مستوى التكبير/التصغير في الصفحة</translation>
 <translation id="2596078834055697711">أخذ لقطة شاشة للنافذة</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="TAB" /> أو <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">التبديل إلى أسلوب إدخال اللغة التالية</translation>
@@ -48,7 +50,7 @@
 <translation id="2789868185375229787">التصغير في الصفحة</translation>
 <translation id="2804480015716812239">اضغط على <ph name="ALT" /> وانقر على رابط</translation>
 <translation id="2830827904629746450">إرساء نافذة على اليسار</translation>
-<translation id="2840766858109427815">الانتقال للأمام إلى الصفحة التالية</translation>
+<translation id="2840766858109427815">الانتقال إلى الصفحة التالية</translation>
 <translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
 <translation id="2914313326123580426">عرض لوحة أدوات المطوِّرين أو إخفاؤها</translation>
 <translation id="292495055542441795">تبديل وضع ملء الشاشة</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> أو <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">حفظ كل الصفحات المفتوحة في النافذة الحالية كإشارات مرجعية في مجلد جديد</translation>
 <translation id="355103131818127604">فتح الرابط في علامة تبويب جديدة في الخلفية</translation>
+<translation id="3622741593887335780">التكبير (عند تفعيل المكبّرات بملء الشاشة أو الإرساء)</translation>
 <translation id="3649256019230929621">تصغير النافذة</translation>
 <translation id="3655154169297074232">علامات التبويب والنوافذ</translation>
 <translation id="3668361878347172356">إعادة الإجراء الأخير</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 إلى 8</translation>
 <translation id="3837047332182291558">زيادة سطوع لوحة المفاتيح (للوحات المفاتيح المزودة بإضاءة خلفية فقط)</translation>
 <translation id="3976863468609830880">النقر على الرمز الأخير على الرف</translation>
+<translation id="3994783594793697310">إعادة ضبط مستوى تكبير/تصغير العرض</translation>
 <translation id="4026843240379844265">نقل نافذة نشطة بين شاشات العرض</translation>
 <translation id="4035482366624727273">تحديد كل محتوى الصفحة</translation>
 <translation id="4060703249685950734">إعادة فتح آخر علامة تبويب أو نافذة أغلقتها</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">تقليل السطوع</translation>
 <translation id="6276708887952587684">عرض مصدر الصفحة</translation>
 <translation id="6321940490215594447">فتح صفحة السجل</translation>
+<translation id="6340769215862220182">تكبير العرض</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">تحديد النص حتى نهاية السطر</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> أو <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">النقر على الرموز 1-8 على الرف</translation>
 <translation id="6435207348963613811">تحديد العنصر السابق على الرف</translation>
 <translation id="6445033640292336367">إرجاع علامة التبويب إلى موضعها الأصلي</translation>
+<translation id="6474744297082284761">التصغير (عند تفعيل المكبّرات بملء الشاشة أو الإرساء)</translation>
 <translation id="649811797655257835">حدِّد الملف، ثم اضغط على <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">فَتحُ النافذة غير المُستخدمة للفترة الأطول</translation>
 <translation id="666343722268997814">النقر بالزر الأيمن لفتح قائمة العنصر المُحدَّد</translation>

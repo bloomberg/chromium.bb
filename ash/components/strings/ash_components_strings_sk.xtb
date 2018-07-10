@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
 <translation id="2424073332829844142">Zapnutie a vypnutie klávesa Caps Lock</translation>
 <translation id="2441202986792279177">Rýchle prepínanie okien</translation>
+<translation id="2454251766545114447">Oddialenie zobrazenia</translation>
 <translation id="2478303094958140141">Zapnutie alebo vypnutie funkcie ChromeVox (hovorená spätná väzba)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Posunutie nadol na webovej stránke</translation>
+<translation id="2574014812750545982">Obnovenie úrovne priblíženia/oddialenia na stránke</translation>
 <translation id="2596078834055697711">Vytvorenie snímky obrazovky okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="TAB" /> alebo <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Prepnutie na metódu vstupu ďalšieho jazyka</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> alebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Uloženie všetkých otvorených stránok v aktuálnom okne ako záložiek v novom priečinku</translation>
 <translation id="355103131818127604">Otvorenie odkazu na novej karte na pozadí</translation>
+<translation id="3622741593887335780">Priblíženie (pri vložení do doku ALEBO povolení lúp na celú obrazovku)</translation>
 <translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="3655154169297074232">Karty a okná</translation>
 <translation id="3668361878347172356">Opakovanie poslednej akcie</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 až 8</translation>
 <translation id="3837047332182291558">Zvýšenie jasu klávesnice (iba v prípade podsvietených klávesníc)</translation>
 <translation id="3976863468609830880">Kliknutie na poslednú ikonu na poličke</translation>
+<translation id="3994783594793697310">Obnovenie úrovne priblíženia/oddialenia zobrazenia</translation>
 <translation id="4026843240379844265">Presun aktívneho okna medzi obrazovkami</translation>
 <translation id="4035482366624727273">Výber celého obsahu stránky</translation>
 <translation id="4060703249685950734">Opätovné otvorenie poslednej zatvorenej karty alebo okna</translation>
@@ -86,7 +90,7 @@
 <translation id="4141203561740478845">Zvýraznenie riadka s panelom s adresou</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> alebo <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Režim prehľadu</translation>
-<translation id="4382340674111381977">Prejsť na predchádzajúcu stránku</translation>
+<translation id="4382340674111381977">Prejsť na predchádzajúcu stranu</translation>
 <translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Zníženie jasu</translation>
 <translation id="6276708887952587684">Zobrazenie zdrojového kódu stránky</translation>
 <translation id="6321940490215594447">Otvorenie stránky História</translation>
+<translation id="6340769215862220182">Priblíženie zobrazenia</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Výber textu do konca riadka</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> alebo <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Kliknutie na ikony 1 až 8 na poličke</translation>
 <translation id="6435207348963613811">Zvýraznenie predchádzajúcej položky na poličke</translation>
 <translation id="6445033640292336367">Vrátenie karty do pôvodnej pozície</translation>
+<translation id="6474744297082284761">Oddialenie (pri vložení do doku ALEBO povolení lúp na celú obrazovku)</translation>
 <translation id="649811797655257835">Výber súboru a stlačenie klávesa <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Otvorenie okna, ktoré bolo najdlhšie nepoužívané</translation>
 <translation id="666343722268997814">Otvorenie ponuky prístupnej kliknutím pravým tlačidlom myši pre zvýraznenú položku</translation>

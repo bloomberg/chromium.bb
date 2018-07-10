@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Show Chrome menu</translation>
 <translation id="2424073332829844142">Turn Caps Lock on and off</translation>
 <translation id="2441202986792279177">Switch quickly between windows</translation>
+<translation id="2454251766545114447">Display zoom out</translation>
 <translation id="2478303094958140141">Turn ChromeVox (spoken feedback) on or off</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Scroll down the web page</translation>
+<translation id="2574014812750545982">Reset zoom level on the page</translation>
 <translation id="2596078834055697711">Take window screenshot</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="TAB" /> or <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Switch to the input method of the next language</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> or <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Save all open pages in your current window as bookmarks in a new folder</translation>
 <translation id="355103131818127604">Open the link in a new tab in the background</translation>
+<translation id="3622741593887335780">Zoom in (when docked OR full-screen magnifiers enabled)</translation>
 <translation id="3649256019230929621">Minimise window</translation>
 <translation id="3655154169297074232">Tabs &amp; Windows</translation>
 <translation id="3668361878347172356">Redo your last action</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 to 8</translation>
 <translation id="3837047332182291558">Make keyboard brighter (for backlit keyboards only)</translation>
 <translation id="3976863468609830880">Click the last icon on your shelf</translation>
+<translation id="3994783594793697310">Reset display zoom level</translation>
 <translation id="4026843240379844265">Move active window between displays</translation>
 <translation id="4035482366624727273">Select everything on the page</translation>
 <translation id="4060703249685950734">Reopen the last tab or window that you closed</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Turn brightness down</translation>
 <translation id="6276708887952587684">View page source</translation>
 <translation id="6321940490215594447">Open the History page</translation>
+<translation id="6340769215862220182">Display zoom in</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Select text to the end of the line</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> or <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Click icons 1-8 on your shelf</translation>
 <translation id="6435207348963613811">Highlight the previous item on your shelf</translation>
 <translation id="6445033640292336367">Return the tab to its original position</translation>
+<translation id="6474744297082284761">Zoom out (when docked OR full-screen magnifiers enabled)</translation>
 <translation id="649811797655257835">Select the file, then press <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Open the window that has not been used for the longest time</translation>
 <translation id="666343722268997814">Open right-click menu for highlighted item</translation>

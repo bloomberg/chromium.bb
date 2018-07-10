@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
 <translation id="2424073332829844142">Ieslēgt un izslēgt taustiņu Caps Lock</translation>
 <translation id="2441202986792279177">Ātri pārslēgt logus</translation>
+<translation id="2454251766545114447">Tālināt displeja attēlu</translation>
 <translation id="2478303094958140141">Ieslēgt vai izslēgt ChromeVox (balss komentārus)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Ritināt tīmekļa lapu uz leju</translation>
+<translation id="2574014812750545982">Atiestatīt lapas tālummaiņas līmeni</translation>
 <translation id="2596078834055697711">Uzņemt loga ekrānuzņēmumu</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pēc tam <ph name="TAB" /> vai <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Pārslēgties uz nākamās valodas ievades metodi</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> vai <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Saglabāt visas atvērtās lapas pašreizējā logā kā grāmatzīmes jaunā mapē</translation>
 <translation id="355103131818127604">Atvērt saiti jaunā cilnē fonā</translation>
+<translation id="3622741593887335780">Tuvināt (ierīcei esot dokotai VAI esot iespējotām pilnekrāna lupām)</translation>
 <translation id="3649256019230929621">Minimizēt logu</translation>
 <translation id="3655154169297074232">Cilnes un logi</translation>
 <translation id="3668361878347172356">Atcelt pēdējās darbības atsaukšanu</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> no 1 līdz 8</translation>
 <translation id="3837047332182291558">Paspilgtināt tastatūras apgaismojumu (tikai tastatūrām ar aizmugures apgaismojumu)</translation>
 <translation id="3976863468609830880">Noklikšķināt uz pēdējās plaukta ikonas</translation>
+<translation id="3994783594793697310">Atiestatīt displeja tālummaiņas līmeni</translation>
 <translation id="4026843240379844265">Aktīvā loga pārvietošana starp attēlojumiem</translation>
 <translation id="4035482366624727273">Atlasīt visu lapas saturu</translation>
 <translation id="4060703249685950734">Atkārtoti atvērt pēdējo aizvērto cilni vai logu</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Samazināt spilgtumu</translation>
 <translation id="6276708887952587684">Skatīt lapas avotu</translation>
 <translation id="6321940490215594447">Atvērt lapu Vēsture</translation>
+<translation id="6340769215862220182">Tuvināt displeja attēlu</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Atlasīt tekstu līdz rindiņas beigām</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> vai <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Noklikšķināt uz 1.–8. ikonas plauktā</translation>
 <translation id="6435207348963613811">Izcelt iepriekšējo plauktā esošo vienumu</translation>
 <translation id="6445033640292336367">Novietot cilni sākotnējā pozīcijā</translation>
+<translation id="6474744297082284761">Tālināt (ierīcei esot dokotai VAI esot iespējotām pilnekrāna lupām)</translation>
 <translation id="649811797655257835">Atlasiet failu un pēc tam nospiediet <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Atvērt visilgāk neizmantoto logu</translation>
 <translation id="666343722268997814">Atvērt izceltā vienuma labās pogas izvēlni</translation>

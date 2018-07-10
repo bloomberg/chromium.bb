@@ -382,7 +382,7 @@
       이를 자유롭게 변경할 수 있습니다. 이 경우 재시작 시 기본값이
       다시 적용되지 않습니다.</translation>
 <translation id="2156132677421487971">사용자가 탭, 사이트 또는 데스크톱의 콘텐츠를 브라우저에서 원격 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 <ph name="PRODUCT_NAME" />의 정책을 설정합니다.</translation>
-<translation id="2166472654199325139">사이트를 성인용 콘텐츠로 필터링하지 않음</translation>
+<translation id="2166472654199325139">사이트에 성인용 콘텐츠 필터링을 적용하지 않음</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
 <translation id="2176565653304920879">이 정책을 설정하면 설정 값에 따라 자동 시간대 감지 절차가 다음 방법 중 한 가지로 진행됩니다.
@@ -538,9 +538,9 @@
 <translation id="2484208301968418871">이 정책은 SafeSites URL 필터 적용 방식을 제어합니다.
       이 필터는 Google Safe Search API를 사용하여 음란물이 포함된 URL인지 아닌지 분류합니다.
 
-      이 정책이 구성되지 않거나 '사이트를 성인용 콘텐츠로 필터링하지 않음'으로 설정되면 사이트가 필터링되지 않습니다.
+      이 정책이 구성되지 않거나 '사이트에 성인용 콘텐츠 필터링을 적용하지 않음'으로 설정되면 사이트가 필터링되지 않습니다.
 
-      이 정책이 '최상위 사이트(삽입된 iframe 제외)를 성인용 콘텐츠로 필터링함'으로 설정되면 음란물 사이트로 분류된 사이트는 필터링됩니다.</translation>
+      이 정책이 '최상위 사이트(삽입된 iframe 제외)에 성인용 콘텐츠 필터링을 적용함'으로 설정되면 음란물 사이트로 분류된 사이트는 필터링됩니다.</translation>
 <translation id="2485721741875148980">이 정책이 true로 설정되어 있으면 사용자가 브라우저를 사용하기 전에 자신의 프로필을 사용해 <ph name="PRODUCT_NAME" />에 로그인해야 합니다. BrowserGuestModeEnabled의 기본값은 false로 설정됩니다. 이 정책을 사용하도록 설정하고 나면 로그인되지 않은 기존 프로필은 잠겨 액세스할 수 없게 됩니다. 자세한 내용은 고객센터 도움말을 참조하세요.
 
       이 정책이 false로 설정되거나 설정되어 있지 않은 경우 사용자는 <ph name="PRODUCT_NAME" />에 로그인하지 않고도 브라우저를 사용할 수 있습니다.</translation>
@@ -706,6 +706,19 @@
 <translation id="2877225735001246144">Kerberos 인증을 협상할 때 CNAME 조회 사용 중지</translation>
 <translation id="2893546967669465276">시스템 로그를 관리 서버로 전송합니다.</translation>
 <translation id="2899002520262095963">Android 앱은 이 정책을 통해 설정된 네트워크 구성 및 CA 인증서를 사용할 수 있지만 일부 구성 옵션에는 액세스할 권한이 없습니다.</translation>
+<translation id="290002216614278247">클라이언트 시간 또는 그날의 사용 할당량에 따라 사용자의 세션을 잠글 수 있습니다.
+
+          |time_window_limit|은 사용자의 세션을 잠글 일별 시간대를 지정합니다. Google에서는 요일당 하나의 규칙만 지원하므로, |entries| 배열의 크기는 0부터 7까지로 지정할 수 있습니다. |starts_at| 및 |ends_at|은 시간대의 시작과 끝이며, |ends_at|이 |starts_at|보다 작은 경우 |time_limit_window|가 다음 날 종료된다는 의미입니다. |last_updated_millis|는 이 항목이 마지막으로 업데이트된 시간의 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다.
+
+          |time_usage_limit|은 일일 사용 할당량을 지정합니다. 따라서 사용자가 이 할당량에 도달하면 사용자의 세션이 잠기게 됩니다. 요일별로 속성이 있으며, 해당 요일에 활성 할당량이 있는 경우에만 속성을 설정해야 합니다. |usage_quota_mins|는 관리되는 기기가 하루 동안 사용할 수 있는 시간의 양이며, |reset_at|은 사용 할당량이 갱신되는 시간입니다. |reset_at|의 기본값은 자정({'hour': 0, 'minute': 0})입니다. |last_updated_millis|는 이 항목이 마지막으로 업데이트된 시간의 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다.
+
+          |overrides|는 하나 이상의 이전 규칙을 일시적으로 무효화하기 위해 제공됩니다.
+          * time_window_limit과 time_usage_limit이 둘 다 활성화되어 있지 않은 경우, |LOCK|을 사용하여 기기를 잠글 수 있습니다.
+          * |LOCK|은 다음 time_window_limit 또는 time_usage_limit이 시작될 때까지 일시적으로 사용자 세션을 잠급니다.
+          * |UNLOCK|은 time_window_limit 또는 time_usage_limit에 의해 잠긴 사용자 세션을 잠금 해제합니다.
+          |created_time_millis|는 재정의를 생성하기 위한 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다. |created_time_millis|는 이 재정의가 계속 적용되어야 하는지 결정하는 데 사용됩니다. 현재 활성화된 시간제한 기능(시간 사용량 제한 또는 시간대 제한)이 재정의가 생성된 후 시작된 경우, 이 기능은 실행되지 않습니다. 또한 활성화된 time_window_limit 또는 time_usage_window가 마지막으로 변경되기 전에 재정의가 생성된 경우에도 적용되지 않습니다.
+
+          여러 개의 재정의가 전송될 수 있으며 가장 최근에 전송된 유효한 항목이 적용됩니다.</translation>
 <translation id="2906874737073861391">AppPack 확장 프로그램 목록</translation>
 <translation id="2907992746861405243"><ph name="BULK_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터를 사용자에게 제공할지 관리합니다.
 
@@ -1409,6 +1422,14 @@
 <translation id="4980635395568992380">데이터 유형:</translation>
 <translation id="4983201894483989687">오래된 플러그인 실행 허용</translation>
 <translation id="4988291787868618635">유휴 지연 시간에 도달하면 수행할 작업</translation>
+<translation id="4990301296093321860">비밀번호 보호 경고 실행을 제어할 수 있습니다. 비밀번호 보호 알림은 사용자가 의심스러워 보이는 사이트에서 보호된 비밀번호를 재사용할 때 사용자에게 경고를 표시하는 기능입니다.
+
+      'PasswordProtectionLoginURLs' 및 'PasswordProtectionChangePasswordURL' 정책을 사용하여 어떤 비밀번호를 보호할지 구성할 수 있습니다.
+
+      이 정책이 'PasswordProtectionWarningOff'로 설정되어 있으면 비밀번호 보호 경고가 표시되지 않습니다.
+      이 정책이 'PasswordProtectionWarningOnPasswordReuse'로 설정되어 있으면 허용되지 않은 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 표시됩니다.
+      이 정책이 'PasswordProtectionWarningOnPhishingReuse'로 설정되어 있으면 피싱 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 표시됩니다.
+      이 정책이 설정되어 있지 않으면 피싱 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 실행되지만, 사용자가 이 설정을 변경할 수 있습니다.</translation>
 <translation id="4995548127349206948">NTLMv2 인증의 사용 설정 여부입니다.</translation>
 <translation id="5047604665028708335">콘텐츠 팩 외부 사이트에 대한 액세스를 허용합니다.</translation>
 <translation id="5052081091120171147">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 강제로 인터넷 사용기록을 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
@@ -1812,6 +1833,12 @@
 <translation id="6155936611791017817">로그인 화면에서 큰 커서의 기본 상태를 설정</translation>
 <translation id="6157537876488211233">쉼표로 구분된 프록시 우회 규칙 목록</translation>
 <translation id="6158324314836466367">엔터프라이즈 웹 스토어 이름(지원 중단됨)</translation>
+<translation id="6164955668342404660">M69에서 지원이 중단되었습니다. 대신 OverrideSecurityRestrictionsOnInsecureOrigin을 사용하세요.
+
+      이 정책에서는 안전한 컨텍스트로 처리될 출처(URL)의 목록을 지정합니다. 이 정책을 통해 조직은 내부 웹 개발을 위한 스테이징 서버를 설정하여 개발자가 스테이징 서버에서 TLS를 배포하지 않고도 안전한 컨텍스트에 필요한 기능을 테스트할 수 있도록 구성할 수 있습니다.
+      이 정책에서 URL 목록을 설정하면 같은 URL의 쉼표로 구분된 목록에 명령줄 플래그 '--unsafely-treat-insecure-origin-as-secure'를 설정하는 것과 같은 효과를 가집니다. 이 정책이 설정되면 명령줄 플래그를 재정의합니다.
+      안전한 컨텍스트에 관해 자세히 알아보려면 https://www.w3.org/TR/secure-contexts/를 참조하세요.
+      </translation>
 <translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행을 허용하지 않을 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
           이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.</translation>
@@ -1957,7 +1984,7 @@
       이 정책을 사용 중지하거나 설정하지 않으면 일반 로컬 프로필만 사용됩니다.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 정책은 모든 데이터 동기화를 사용 중지하며 RoamingProfileSupportEnabled를 무시합니다.</translation>
-<translation id="6731757988219967594">최상위 사이트(삽입된 iframe 제외)를 성인용 콘텐츠로 필터링함</translation>
+<translation id="6731757988219967594">최상위 사이트(삽입된 iframe 제외)에 성인용 콘텐츠 필터링을 적용함</translation>
 <translation id="6735701345096330595">언어 맞춤법 검사 강제 사용</translation>
 <translation id="673699536430961464">이 설정은 사용자가 <ph name="PRODUCT_OS_NAME" /> 기기에 로그인한 후 브라우저 창의 콘텐츠 영역 내에서 Google 계정 사이에 전환하도록 허용합니다.
 
@@ -1993,6 +2020,11 @@
 <translation id="6786967369487349613">로밍 프로필 디렉토리를 설정합니다.</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
+<translation id="6832455357698286434">
+      이 정책에서는 안전한 컨텍스트로 처리될 출처(URL) 또는 호스트 이름 패턴('*.example.com' 등)의 목록을 지정합니다. 이 정책을 통해 조직은 내부 웹 개발을 위한 스테이징 서버를 설정하여 개발자가 스테이징 서버에서 TLS를 배포하지 않고도 안전한 컨텍스트에 필요한 기능을 테스트할 수 있도록 구성할 수 있습니다.
+      이 정책에서 URL 목록을 설정하면 같은 URL의 쉼표로 구분된 목록에 명령줄 플래그 '--unsafely-treat-insecure-origin-as-secure'를 설정하는 것과 같은 효과를 가집니다. 이 정책이 설정되면 명령줄 플래그를 재정의합니다.
+      안전한 컨텍스트에 관해 자세히 알아보려면 https://www.w3.org/TR/secure-contexts/를 참조하세요.
+      </translation>
 <translation id="6835883744948188639">사용자에게 재실행하는 것이 좋다는 메시지를 반복하여 표시</translation>
 <translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> 기본 프린터 선택 규칙을 재정의합니다.
 
@@ -2214,7 +2246,7 @@
 
       정책을 사용 설정하면 Chrome 정리도구에서 원치 않는 소프트웨어를 감지했을 때 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터가 전송될 수 있습니다. 또한 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되며 사용자는 결과가 전송되지 않도록 할 수 없습니다.
 
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 연결되지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7258823566580374486">원격 액세스 호스트 차단을 사용하도록 설정합니다.</translation>
 <translation id="7260277299188117560">p2p 자동 업데이트 사용</translation>
 <translation id="7261252191178797385">기기 배경화면 이미지</translation>
@@ -2280,11 +2312,11 @@
       이 설정을 사용 중지하거나 구성하지 않으면 사용자가 경고 페이지를 무시하고 신고된 사이트로 이동할 수 있습니다.
 
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
-<translation id="7417728346887499628">정책을 사용 중지하면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 검사하여 정리를 실행하지 않습니다. chrome://settings/cleanup에서 Chrome 정리도구를 수동으로 실행할 수도 없게 됩니다.
+<translation id="7417728346887499628">정책을 사용 중지하면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 검사하지 않으며 정리를 실행하지 않습니다. chrome://settings/cleanup에서 Chrome 정리도구를 수동으로 실행할 수도 없습니다.
 
       정책을 사용 설정하거나 설정하지 않으면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 정기적으로 검사하여 이러한 소프트웨어가 발견될 경우 사용자에게 삭제할 것인지 묻습니다. chrome://settings에서 Chrome 정리도구를 수동으로 실행할 수도 있습니다.
 
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 연결되지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7417972229667085380">프레젠테이션 모드에서 유휴 지연 시간이 조정되는 비율(지원 중단됨)</translation>
 <translation id="7421483919690710988">미디어 디스크 캐시 크기 설정(바이트)</translation>
 <translation id="7424751532654212117">사용 중지된 플러그인 목록에 대한 예외 목록</translation>
@@ -2350,6 +2382,7 @@
 <translation id="7617319494457709698">이 정책은 원격 인증에 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> 기능 <ph name="CHALLENGE_USER_KEY_FUNCTION" />을(를) 사용하도록 허용된 확장 프로그램을 지정합니다. API를 사용하려면 확장 프로그램을 이 목록에 추가해야 합니다.
 
           확장 프로그램이 목록에 없거나 목록이 설정되지 않은 경우, API에 호출 시 오류 코드가 표시되며 호출에 실패합니다.</translation>
+<translation id="7620300057302654932">안전한 컨텍스트로 처리될 출처 또는 호스트 이름 패턴입니다.</translation>
 <translation id="7625444193696794922">기기에서 사용해야 할 특정 배포 채널을 지정합니다.</translation>
 <translation id="7632724434767231364">GSSAPI 라이브러리 이름</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" />에서 애플리케이션 언어를 설정하고 사용자가 언어를 변경할 수 없게 합니다.

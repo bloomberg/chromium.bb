@@ -132,7 +132,6 @@
 <translation id="1787142507584202372">Отворене картице се појављују овде</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Име власника картице</translation>
-<translation id="1806541873155184440">Додато је: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Неважећи захтев или параметри захтева</translation>
 <translation id="1826516787628120939">Провера</translation>
 <translation id="1834321415901700177">Овај сајт садржи штетне програме</translation>
@@ -285,7 +284,6 @@
 <translation id="2948083400971632585">На страници Подешавања можете да онемогућите све проксије конфигурисане за везу.</translation>
 <translation id="2955913368246107853">Затворите траку за проналажење</translation>
 <translation id="2958431318199492670">Конфигурација мреже није у складу са ONC стандардом. Делови конфигурације не могу да се увезу.</translation>
-<translation id="2966678944701946121">Истиче: <ph name="EXPIRATION_DATE_ABBR" />, додато је: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Да бисте успоставили безбедну везу, сат на уређају мора да буде тачан. То је зато што сертификати које веб-сајтови користе за идентификацију важе само за одређене временске периоде. Пошто сат на вашем уређају није тачан, Google Chrome не може да верификује те сертификате.</translation>
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, тренутно изабрано. <ph name="ROW_CONTENT" /></translation>
@@ -341,7 +339,6 @@
 <translation id="3305707030755673451">Подаци су шифровани помоћу приступне фразе за синхронизацију <ph name="TIME" />. Унесите је да бисте започели синхронизацију.</translation>
 <translation id="3320021301628644560">Додајте адресу за обрачун</translation>
 <translation id="3338095232262050444">Безбедан</translation>
-<translation id="3340978935015468852">подешавања</translation>
 <translation id="3345135638360864351">Слање захтева за приступ овом сајту кориснику <ph name="NAME" /> није успело. Пробајте поново.</translation>
 <translation id="3355823806454867987">Промени подешавања проксија...</translation>
 <translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />не чува<ph name="END_EMPHASIS" /> следеће информације:
@@ -375,7 +372,6 @@
 <translation id="3528171143076753409">Сертификат сервера није поуздан.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Најмање 1 ставка на синхронизованим уређајима}=1{1 ставка (и још ставки на синхронизованим уређајима)}one{# ставка (и још ставки на синхронизованим уређајима)}few{# ставке (и још ставки на синхронизованим уређајима)}other{# ставки (и још ставки на синхронизованим уређајима)}}</translation>
 <translation id="3539171420378717834">Задржи копију ове картице на овом уређају</translation>
-<translation id="3542684924769048008">Користи лозинку за:</translation>
 <translation id="3549644494707163724">Шифруј све синхронизоване податке помоћу моје приступне фразе за синхронизацију</translation>
 <translation id="3556433843310711081">Менаџер може да га деблокира за вас</translation>
 <translation id="3566021033012934673">Веза није приватна</translation>
@@ -539,7 +535,6 @@
 <translation id="4736825316280949806">Поново покрените Chromium</translation>
 <translation id="4742407542027196863">Управљај лозинкама...</translation>
 <translation id="4744603770635761495">Путања извршне датотеке</translation>
-<translation id="4749685221585524849">Последњи пут коришћено: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Информације (на пример, лозинке или бројеви кредитних картица) су приватне када се шаљу овом сајту.</translation>
 <translation id="4756388243121344051">&amp;Историја</translation>
 <translation id="4758311279753947758">Додај контакт информације</translation>
@@ -634,7 +629,6 @@
 <translation id="5377026284221673050">„Сат касни“ или „Сат жури“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
 <translation id="5387961145478138773">Брзо приступајте омиљеним Google апликацијама</translation>
-<translation id="5402410679244714488">Истиче: <ph name="EXPIRATION_DATE_ABBR" />, последњи пут коришћено пре више од годину дана</translation>
 <translation id="540969355065856584">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат тренутно није важећи. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="5421136146218899937">Обриши податке прегледања...</translation>
 <translation id="5430298929874300616">Уклоните обележивач</translation>
@@ -750,7 +744,6 @@
 <translation id="6282194474023008486">Поштански број</translation>
 <translation id="6290238015253830360">Предложени чланци се приказују овде</translation>
 <translation id="6305205051461490394">URL <ph name="URL" /> није доступан.</translation>
-<translation id="6319915415804115995">Последњи пут коришћено пре више од годину дана</translation>
 <translation id="6321917430147971392">Проверите DNS подешавања</translation>
 <translation id="6328639280570009161">Покушајте да онемогућите предвиђање мреже</translation>
 <translation id="6328786501058569169">Овај сајт је обмањујућ</translation>
@@ -780,7 +773,6 @@
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6534179046333460208">Предлози Интернета око нас</translation>
 <translation id="6550675742724504774">Опције</translation>
-<translation id="6556915248009097796">Истиче: <ph name="EXPIRATION_DATE_ABBR" />, последњи пут коришћено: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Менаџер га још увек није одобрио</translation>
 <translation id="6569060085658103619">Прегледате страницу додатка.</translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
@@ -1053,11 +1045,9 @@
 <translation id="860043288473659153">Име власника картице</translation>
 <translation id="8620436878122366504">Родитељи га још увек нису одобрили</translation>
 <translation id="8625384913736129811">Сачувај ову картицу на овом уређају</translation>
-<translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
 <translation id="8663226718884576429">Резиме поруџбине, <ph name="TOTAL_LABEL" />, још детаља</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, одговор, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
-<translation id="8713137585425162364">Тренутно не можемо да верификујемо ову картицу.</translation>
 <translation id="8718314106902482036">Плаћање није довршено</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8728672262656704056">Прешли сте у режим Без архивирања</translation>

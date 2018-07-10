@@ -688,6 +688,19 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2877225735001246144">Zakázať hľadanie záznamov CNAME pri absolvovaní overenia Kerberos</translation>
 <translation id="2893546967669465276">Odosielanie denníkov systému na správcovský server</translation>
 <translation id="2899002520262095963">Aplikácie pre Android môžu používať konfigurácie siete a certifikáty CA nastavené prostredníctvom tohto pravidla, nemajú však prístup k rovnakým možnostiam konfigurácie.</translation>
+<translation id="290002216614278247">Umožňuje uzamknúť reláciu používateľa na základe času klienta alebo dennej kvóty využitia.
+
+          Možnosť |time_window_limit| určuje denné časové okno, v ktorom by mala byť relácia používateľa uzamknutá. Pre každý deň týždňa podporujeme iba jedno pravidlo, preto veľkosť poľa |entries| môže byť od 0 do 7. |starts_at| a |ends_at| sú začiatočný a konečný limit časového okna. Keď je údaj |ends_at| nižší ako |starts_at|, znamená to, že sa časové okno |time_limit_window| končí nasledujúci deň. Možnosť |last_updated_millis| je časová pečiatka UTC poslednej aktualizácie tohto záznamu. Odosiela sa ako reťazec, pretože by sa nezmestila ako celé číslo.
+
+          Možnosť |time_usage_limit| určuje dennú kvótu obrazovky a keď ju používateľ dosiahne, jeho relácia sa uzamkne. Každý deň týždňa má svoju vlastnosť a mala by byť nastavená iba v prípade, ak je pre daný deň stanovená aktívna kvóta. Možnosť |usage_quota_mins| predstavuje časovú hodnotu toho, ako dlho sa môže spravované zariadenie v určitom dni používať, a možnosť |reset_at| je čas, keď sa kvóta využitia obnoví. Predvolená hodnota možnosti |reset_at| je polnoc ({'hour': 0, 'minute': 0}). Možnosť |last_updated_millis| je časová pečiatka UTC poslednej aktualizácie tohto záznamu. Odosiela sa ako reťazec, pretože by sa nezmestila ako celé číslo.
+
+          Možnosť |overrides| sa poskytuje na dočasné zrušenie platnosti jedného alebo viacerých predchádzajúcich pravidiel.
+          * Ak nie je aktívna možnosť time_window_limit ani time_usage_limit, na uzamknutie zariadenia môžete použiť |LOCK|.
+          * Možnosť |LOCK| dočasne uzamkne reláciu používateľa, dokým sa nezačne najbližšia možnosť time_window_limit alebo time_usage_limit.
+          * Možnosť |UNLOCK| odomkne reláciu používateľa uzamknutú možnosťou time_window_limit alebo time_usage_limit.
+          Možnosť |created_time_millis| je časová pečiatka UTC vytvorenia prepísania. Odosiela sa ako reťazec, pretože by sa nezmestila ako celé číslo. Používa sa na učenie toho, či má toto prepísanie stále platiť. Ak sa aktuálna aktívna funkcia časového limitu (časový limit používania alebo limit časového okna) začala po vytvorení prepísania, nemala by vykonať žiadnu akciu. Ak bolo prepísanie vytvorené pred poslednou zmenou aktívnej možnosti time_window_limit alebo time_usage_window, nemalo by platiť.
+
+          Môže byť odoslaných viacero prepísaní, ale použije sa najnovší platný záznam.</translation>
 <translation id="2906874737073861391">Zoznam rozšírení AppPack</translation>
 <translation id="2907992746861405243">Umožňuje ovládať, ktoré tlačiarne z pravidla <ph name="BULK_PRINTERS_POLICY" /> majú používatelia k dispozícii.
 
@@ -1392,6 +1405,14 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4980635395568992380">Typ údajov:</translation>
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
+<translation id="4990301296093321860">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
+
+      Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
+
+      Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo na webe, ktorý nebol pridaný na bielu listinu.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPhishingReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije chránené heslo na phishingovom webe.
+      Ak toto pravidlo nenastavíte, upozornenie v rámci ochrany heslom sa spustí, keď používateľ opätovne použije chránené heslo na phishingovom webe. Nastavenie však bude môcť zmeniť.</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
@@ -1793,6 +1814,12 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
+<translation id="6164955668342404660">Podpora tohto pravidla bola ukončená vo verzii M69. Použite namiesto neho OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Toto pravidlo umožňuje určiť zoznam zdrojov (webových adries), ktoré sa majú považovať za zabezpečený kontext. Cieľom je povoliť organizáciám nastaviť pracovný server na interný vývoj webu, aby ich vývojári mohli testovať funkcie vyžadujúce zabezpečené kontexty bez nutnosti nasadenia protokolu TLS na pracovnom serveri.
+      Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účinok ako nastavenie príznaku príkazového riadka --unsafely-treat-insecure-origin-as-secure do zoznamu rovnakých webových adries oddelených čiarkou. Ak toto pravidlo nastavíte, prepíše príznak príkazového riadka.
+      Ďalšie informácie o zabezpečených kontextoch nájdete na adrese https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré majú zakázané spustiť doplnok <ph name="FLASH_PLUGIN_NAME" />.
 
           Ak toto pravidlo nenastavíte, pre všetky weby sa použije globálna predvolená hodnota, ktorá je určená buď pravidlom DefaultCookiesSetting (ak je nastavené), alebo inou osobnou konfiguráciou od používateľa.</translation>
@@ -1974,6 +2001,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6786967369487349613">Nastaviť adresár roamingového profilu</translation>
 <translation id="6810445994095397827">Blokovať jazyk JavaScript na týchto webových stránkach</translation>
 <translation id="681446116407619279">Podporované schémy overenia</translation>
+<translation id="6832455357698286434">
+      Toto pravidlo umožňuje určiť zoznam zdrojov (webových adries) alebo vzorov názvov hostiteľa (napríklad *.example.com), ktoré sa majú považovať za zabezpečené kontexty. Cieľom je povoliť organizáciám nastaviť pracovný server na interný vývoj webu, aby ich vývojári mohli testovať funkcie vyžadujúce zabezpečené kontexty bez nutnosti nasadenia protokolu TLS na pracovnom serveri.
+      Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účinok ako nastavenie príznaku príkazového riadka --unsafely-treat-insecure-origin-as-secure do zoznamu rovnakých webových adries oddelených čiarkou. Ak toto pravidlo nastavíte, prepíše príznak príkazového riadka.
+      Ďalšie informácie o zabezpečených kontextoch nájdete na adrese https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Zobrazovať používateľovi opakovanú výzvu, že sa vyžaduje opätovné spustenie</translation>
 <translation id="6838056959556423778">Umožňuje prepísať pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" />.
 
@@ -2333,6 +2365,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7617319494457709698">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy <ph name="CHALLENGE_USER_KEY_FUNCTION" /> rozhrania <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozšírenia môžu používať toto rozhranie API, keď sú pridané do tohto zoznamu.
 
           Ak sa rozšírenie v zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
+<translation id="7620300057302654932">Zdroje alebo vzory názvov hostiteľa, ktoré sa majú považovať za zabezpečený kontext</translation>
 <translation id="7625444193696794922">Určuje, aký kanál verzie by mal byť v zariadení uzamknutý.</translation>
 <translation id="7632724434767231364">Názov knižnice GSSAPI</translation>
 <translation id="7635471475589566552">Slúži na konfiguráciu miestneho nastavenia aplikácie v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom miestne nastavenie zmeniť.

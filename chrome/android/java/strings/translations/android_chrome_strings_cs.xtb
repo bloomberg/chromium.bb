@@ -325,7 +325,6 @@
 <translation id="3819178904835489326">Počet smazaných stažených souborů: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>
-<translation id="3871936494901781193">Při posunutí nahoru zobrazit rychlé odkazy na související stránky.</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
 <translation id="3895926599014793903">Vynutit aktivaci přiblížení</translation>
 <translation id="3927692899758076493">Bezpatková</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">Hlasové vyhledávání není k dispozici</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="395206256282351086">Návrhy vyhledávacích dotazů a webů jsou vypnuty</translation>
-<translation id="3952533382939530115">Tato funkce používá <ph name="BEGIN_LINK" />synchronizaci<ph name="END_LINK" />. Adresy URL navštívených stránek se odesílají do Googlu.</translation>
 <translation id="3967822245660637423">Stahování bylo dokončeno</translation>
 <translation id="397583555483684758">Synchronizace přestala fungovat</translation>
 <translation id="3976396876660209797">Odstraňte tuto zkratku a znovu ji vytvořte</translation>
@@ -821,6 +819,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7942131818088350342">Aplikace <ph name="PRODUCT_NAME" /> je zastaralá.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
+<translation id="7981313251711023384">Předběžně načítat stránky pro rychlejší procházení a vyhledávání</translation>
 <translation id="79859296434321399">Chcete-li zobrazit obsah pro rozšířenou realitu, nainstalujte ARCore</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
@@ -831,6 +830,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="802154636333426148">Stažení se nezdařilo</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8035133914807600019">Nová složka…</translation>
+<translation id="8037686209485537503">Další podobné návrhy</translation>
 <translation id="8037750541064988519">Zbývá: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta nenalezena</translation>
 <translation id="805047784848435650">Na základě vaší historie prohlížení</translation>

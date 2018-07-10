@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Chrome ಮೆನು ತೋರಿಸು</translation>
 <translation id="2424073332829844142">Caps Lock ಆನ್‌ ಅಥವಾ ಆಫ್‌ ಮಾಡಿ</translation>
 <translation id="2441202986792279177">ವಿಂಡೋಗಳ ನಡುವೆ ತ್ವರಿತವಾಗಿ ಬದಲಿಸಿ</translation>
+<translation id="2454251766545114447">ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಝೂಮ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2478303094958140141">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ) ಆನ್‌ ಅಥವಾ ಆಫ್‌ ಮಾಡಿ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ವೆಬ್‌ ಪುಟವನ್ನು ಸ್ಕ್ರಾಲ್ ಡೌನ್ ಮಾಡಿ</translation>
+<translation id="2574014812750545982">ಪುಟದಲ್ಲಿನ ಝೂಮ್ ಮಟ್ಟವನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="2596078834055697711">ವಿಂಡೋ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="TAB" /> ಅಥವಾ <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">ಮುಂದಿನ ಭಾಷೆಯ ಇನ್‌ಪುಟ್‌ ವಿಧಾನಕ್ಕೆ ಬದಲಿಸಿ</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> ಅಥವಾ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆದಿರುವ ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಹೊಸ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳಂತೆ ಉಳಿಸಿ</translation>
 <translation id="355103131818127604">ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಲಿಂಕ್‌ ಅನ್ನು ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="3622741593887335780">ಝೂಮ್ ಇನ್ ಮಾಡಿ (ಡಾಕ್ ಆಗಿರುವಾಗ ಅಥವಾ ಪೂರ್ಣಪರದೆ ವರ್ಧಕಗಳು ಸಕ್ರಿಯಗೊಂಡಿರುವಾಗ)</translation>
 <translation id="3649256019230929621">ವಿಂಡೋ ಕಿರಿದಾಗಿಸಿ</translation>
 <translation id="3655154169297074232">ಟ್ಯಾಬ್‌ಗಳು ಮತ್ತು ವಿಂಡೋಗಳು</translation>
 <translation id="3668361878347172356">ನಿಮ್ಮ ಕೊನೆಯ ಕ್ರಿಯೆಯನ್ನು ಪುನಃ ಲೋಡ್‌ ಮಾಡಿ</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 ರಿಂದ 8 ರವರೆಗೆ</translation>
 <translation id="3837047332182291558">ಕೀಬೋರ್ಡ್ ಅನ್ನು ಪ್ರಕಾಶಮಾನವಾಗಿ ಮಾಡಿ (ಬ್ಯಾಕ್‌‌ಲಿಟ್‌‌ ಕೀಬೋರ್ಡ್‌ಗಳಿಗಾಗಿ ಮಾತ್ರ)</translation>
 <translation id="3976863468609830880">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಕೊನೆಯ ಐಕಾನ್ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
+<translation id="3994783594793697310">ಡಿಸ್‌ಪ್ಲೇ ಝೂಮ್‌ ಮಟ್ಟವನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="4026843240379844265">ಸಕ್ರಿಯ ವಿಂಡೋವನ್ನು ಡಿಸ್‌ಪ್ಲೇಗಳ ನಡುವೆ ಸರಿಸಿ</translation>
 <translation id="4035482366624727273">ಪುಟದಲ್ಲಿರುವ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="4060703249685950734">ನೀವು ಮುಚ್ಚಿದ ಕೊನೆಯ ಟ್ಯಾಬ್‌ ಅಥವಾ ವಿಂಡೋವನ್ನು ಮರುತೆರೆಯಿರಿ</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">ಪ್ರಖರತೆ ಕಡಿಮೆ ಮಾಡುವಿಕೆಯನ್ನು ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="6276708887952587684">ಪುಟದ ಮೂಲವನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="6321940490215594447">ಇತಿಹಾಸದ ಪುಟ ತೆರೆಯಿರಿ</translation>
+<translation id="6340769215862220182">ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಝೂಮ್‌ ಇನ್‌ ಮಾಡಿ</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">ಸಾಲಿನ ಕೊನೆಯವರೆಗಿನ ಪಠ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> ಅಥವಾ <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ 1-8 ಐಟಂಗಳನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="6435207348963613811">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಹಿಂದಿನ ಐಟಂ ಅನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="6445033640292336367">ಟ್ಯಾಬ್ ಅನ್ನು ಅದರ ಮೂಲ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸಿ</translation>
+<translation id="6474744297082284761">ಝೂಮ್ ಔಟ್ ಮಾಡಿ (ಡಾಕ್ ಆಗಿರುವಾಗ ಅಥವಾ ಪೂರ್ಣಪರದೆ ವರ್ಧಕಗಳು ಸಕ್ರಿಯಗೊಂಡಿರುವಾಗ)</translation>
 <translation id="649811797655257835">ಫೈಲ್‌ ಆಯ್ಕೆ ಮಾಡಿ, ನಂತರ <ph name="SPACE" /> ಅನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="6556040137485212400">ದೀರ್ಘಕಾಲದವರೆಗೆ ಬಳಕೆಯಾಗದ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="666343722268997814">ಹೈಲೈಟ್ ಮಾಡಿದ ಐಟಂಗಾಗಿ ಬಲ-ಕ್ಲಿಕ್ ಮೆನು ತೆರೆಯಿರಿ</translation>

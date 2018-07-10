@@ -683,6 +683,19 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
 <translation id="2893546967669465276">Lähetä järjestelmälokeja hallintapalvelimelle</translation>
 <translation id="2899002520262095963">Android-sovellukset voivat käyttää tämän käytännön kautta asetettuja verkkomäärityksiä ja CA-varmenteita, mutta ne eivät voi käyttää joitain määritysasetuksia.</translation>
+<translation id="290002216614278247">Sallii sinun lukita käyttäjän käyttökerran perustuen asiakasaikaan tai päivän käyttökiintiöön
+
+          |time_window_limit| määrittää päivittäisen aikaikkunan, jolloin käyttäjän käyttökerta pitäisi lukita. Tuemme vain yhtä sääntöä viikonpäivää kohti, minkä vuoksi |entries|-joukko voi olla kooltaan 0–7. |starts_at| ja |ends_at| ovat aikaikkunan aloitus- ja päättymisajat. Jos |ends_at| on aiemmin kuin |starts_at|, |time_limit_window| päättyy seuraavana päivänä. |last_updated_millis| on tämän merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
+
+          |time_usage_limit| määrittää päivittäisen näyttökiintiön, joten käyttäjän saavuttaessa sen hänen käyttökertansa lukitaan. Jokaiselle viikonpäivälle on ominaisuus, ja se pitäisi määrittää vain, jos kyseiselle päivälle on aktiivinen kiintiö. |usage_quota_mins| on aika, jonka verran hallinnoitua laitetta voi käyttää päivässä ja |reset_at| on aika, jolloin käyttökiintiö uusitaan. |reset_at|-oletusarvo on keskiyö ({'hour': 0, 'minute': 0}). |last_updated_millis| on merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
+
+          |overrides| mitätöi väliaikaisesti yhden tai useamman aiemmista säännöistä.
+          * Jos time_window_limit tai time_usage_limit ei ole aktiivinen, laite voidaan lukita |LOCK|-toiminnon avulla.
+          * |LOCK| lukitsee väliaikaisesti käyttökerran, kunnes seuraava time_window_limit tai time_usage_limit alkaa.
+          * |UNLOCK| avaa käyttäjän käyttökerran lukituksen time_window_limit- tai time_usage_limit-aikaan mennessä.
+          |created_time_millis| on mitätöinnin luonnin UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun. Sen avulla määritetään, pitäisikö tätä mitätöintiä käyttää. Jos nykyinen aktiivinen aikarajaominaisuus (ajankäyttöraja tai aikaikkunaraja) alkoi mitätöinnin luomisen jälkeen, sen ei pitäisi käynnistyä. Jos mitätöinti luotiin ennen viimeisen active time_window_limit- tai time_usage_window-arvon luontia, sitä ei pitäisi käyttää.
+
+          Useita mitätöintejä voidaan lähettää, uusinta kelvollista käytetään.</translation>
 <translation id="2906874737073861391">AppPack-laajennusten luettelo</translation>
 <translation id="2907992746861405243">Hallinnoi, mitkä tulostimet <ph name="BULK_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä
 
@@ -1368,6 +1381,14 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4980635395568992380">Tietotyyppi:</translation>
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
+<translation id="4990301296093321860">Sallii salasanasuojauksen varoituksen käynnistyksen hallinnan. Salasanasuojaus ilmoittaa käyttäjille, jos nämä käyttävät suojattuja salasanoja uudelleen mahdollisesti haitallisilla sivustoilla.
+
+      PasswordProtectionLoginURLs- ja PasswordProtectionChangePasswordURL-käytäntöjen avulla voit määrittää, mitä salasanoja suojataan.
+
+      Jos tämän käytännön arvo on PasswordProtectionWarningOff, salasanasuojauksen varoitusta ei näytetä.
+      Jos tämän käytännön arvo on PasswordProtectionWarningOnPasswordReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
+      Jos tämän käytännön arvo on PasswordProtectionWarningOnPhishingReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
+      Jos tätä käytäntöä ei ole määritetty, salasanasuojauksen varoitus käynnistyy käyttäjien käyttäessä Google-salasanojaan tietojenkalastelusivustoilla. Käyttäjä voi kuitenkin muuttaa tämän asetuksen.</translation>
 <translation id="4995548127349206948">Onko NTLMv2-todennus käytössä</translation>
 <translation id="5047604665028708335">Salli sisältöpaketteihin kuulumattomien sivustojen käyttö</translation>
 <translation id="5052081091120171147">Tämä käytäntö pakottaa selaushistorian tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, selaushistoriaa ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda selaushistorian, tai historia voidaan tuoda automaattisesti.</translation>
@@ -1740,6 +1761,12 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
+<translation id="6164955668342404660">Poistettu käytöstä M69:ssä. Käytä OverrideSecurityRestrictionsOnInsecureOrigin-käytäntöä sen sijaan.
+
+      Käytäntö määrittelee ne alkuperät (URL-osoitteet), joita kohdellaan turvallisena kontekstina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen sisäistä verkkokehitystä varten ja kehittäjät voivat testata turvallista kontekstia edellyttäviä ominaisuuksia ilman TLS:n käyttöä valmistelupalvelimella. 
+      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa komentorivimerkinnän.
+      Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6181608880636987460">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot eivät saa suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennusta.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
@@ -1913,6 +1940,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
+<translation id="6832455357698286434">
+      Käytäntö määrittelee ne alkuperät (URL-osoitteet) tai isäntänimimallit (esim. "*.example.com"), joita kohdellaan turvallisina konteksteina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen sisäistä verkkokehitystä varten ja kehittäjät voivat testata turvallista kontekstia edellyttäviä ominaisuuksia ilman TLS:n käyttöä valmistelupalvelimella.
+      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa komentorivimerkinnän.
+      Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6835883744948188639">Näytä käyttäjälle toistuva kehote suositellusta uudelleenkäynnistyksestä</translation>
 <translation id="6838056959556423778">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt.
 
@@ -2252,6 +2284,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7617319494457709698">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää <ph name="ENTERPRISE_PLATFORM_KEYS_API" />n funktiota <ph name="CHALLENGE_USER_KEY_FUNCTION" /> etätodennukseen. Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
 
           Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
+<translation id="7620300057302654932">Turvallisena kontekstina kohdeltavat alkuperät tai isäntänimimallit</translation>
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>

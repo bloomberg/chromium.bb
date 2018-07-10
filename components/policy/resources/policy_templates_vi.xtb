@@ -42,7 +42,7 @@
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì thư mục bộ nhớ đệm mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
-<translation id="1135264353752122851">Định cấu hình cho phép bố cục bàn phím nào trong các phiên người dùng <ph name="PRODUCT_OS_NAME" />.
+<translation id="1135264353752122851">Định cấu hình bố cục bàn phím được phép trong các phiên người dùng <ph name="PRODUCT_OS_NAME" />.
 
       Nếu đặt chính sách này, thì người dùng chỉ có thể chọn một trong số các phương thức nhập do chính sách này chỉ định. Nếu chưa đặt chính sách này hoặc đặt thành danh sách trống, người dùng có thể chọn tất cả các phương thức nhập được hỗ trợ. Nếu chính sách này không cho phép phương thức nhập hiện tại, phương thức nhập đó sẽ chuyển sang bố cục bàn phím phần cứng (nếu được phép) hoặc mục nhập hợp lệ đầu tiên trong danh sách này. Bỏ qua tất cả các phương thức nhập không hợp lệ hoặc chưa được hỗ trợ trong danh sách này.</translation>
 <translation id="1138294736309071213">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
@@ -707,6 +707,19 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
 <translation id="2893546967669465276">Gửi nhật ký hệ thống đến máy chủ quản lý</translation>
 <translation id="2899002520262095963">Các ứng dụng Android có thể sử dụng cấu hình mạng và chứng chỉ CA được đặt qua chính sách này nhưng không có quyền truy cập vào một số tùy chọn cấu hình.</translation>
+<translation id="290002216614278247">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc hạn mức sử dụng trong ngày.
+
+          |time_window_limit| chỉ định thời lượng khóa phiên người dùng hàng ngày. Chúng tôi chỉ hỗ trợ một quy tắc mỗi ngày trong tuần, do đó, kích thước mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian cập nhật mục này gần đây nhất, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+
+          |time_usage_limit| chỉ định định mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có định mức hoạt động cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi gia hạn định mức sử dụng. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần cập nhật mục này gần đây nhất, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+
+          |overrides| được cung cấp để tạm thời vô hiệu hóa một hoặc nhiều quy tắc trước đó.
+          * Nếu time_window_limit hoặc time_usage_limit đều không hoạt động, thì |LOCK| có thể được dùng để khóa thiết bị.
+          * |LOCK| sẽ tạm thời khóa phiên người dùng cho tới khi time_window_limit hoặc time_usage_limit tiếp theo bắt đầu.
+          * |UNLOCK| sẽ mở khóa phiên người dùng bị khóa bằng time_window_limit hoặc time_usage_limit.
+          |created_time_millis| là dấu thời gian UTC để tạo nội dung ghi đè, dấu thời gian này được gửi dưới dạng Chuỗi vì số nguyên sẽ không phù hợp. Dấu thời gian này dùng để xác định có tiếp tục áp dụng nội dung ghi đè này hay không. Nếu tính năng giới hạn thời gian hiện đang hoạt động (giới hạn mức sử dụng thời gian hoặc giới hạn khoảng thời gian) khởi động sau khi tạo nội dung ghi đè, thì nội dung ghi đè sẽ không có hiệu lực. Ngoài ra, nếu nội dung ghi đè được tạo trước lần thay đổi gần đây nhất của time_window_limit hoặc time_usage_window đang hoạt động, thì nội dung ghi đè này cũng sẽ không được áp dụng.
+
+          Nhiều ghi đè có thể được gửi, mục nhập hợp lệ mới nhất là mục sẽ được áp dụng.</translation>
 <translation id="2906874737073861391">Danh sách tiện ích trong AppPack</translation>
 <translation id="2907992746861405243">Kiểm soát máy in người dùng được phép sử dụng từ <ph name="BULK_PRINTERS_POLICY" />.
 
@@ -1407,6 +1420,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4980635395568992380">Loại dữ liệu:</translation>
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
+<translation id="4990301296093321860">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Tính năng bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
+
+      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.
+
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì sẽ không có cảnh báo bảo vệ nào hiển thị.
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web nằm ngoài danh sách cho phép.
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web lừa đảo.
+      Nếu bạn không đặt chính sách này, thì cảnh báo bảo vệ mật khẩu sẽ được kích hoạt khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web lừa đảo nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
@@ -1814,6 +1835,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6155936611791017817">Đặt trạng thái của con trỏ lớn mặc định trên màn hình đăng nhập</translation>
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="6158324314836466367">Tên cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
+<translation id="6164955668342404660">Không còn dùng trong M69. Hãy sử dụng tùy chọn OverrideSecurityRestrictionsOnInsecureOrigin để thay thế.
+
+      Chính sách này xác định danh sách các URL gốc cần được coi là ngữ cảnh an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ theo giai đoạn để phát triển web nội bộ để các nhà phát triển có thể thử nghiệm các tính năng cần ngữ cảnh an toàn mà không cần phải triển khai TLS trên máy chủ theo giai đoạn.
+      Việc đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một danh sách được phân tách bằng dấu phẩy gồm các URL tương tự. Nếu bạn đặt chính sách này, thì chính sách này sẽ ghi đè cờ dòng lệnh.
+      Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web không được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
@@ -1990,6 +2017,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
+<translation id="6832455357698286434">
+      Chính sách này xác định danh sách (các URL) gốc hoặc mẫu tên máy chủ (chẳng hạn như "*.example.com") được coi là ngữ cảnh an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ theo giai đoạn để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng yêu cầu ngữ cảnh an toàn mà không phải triển khai TLS trên máy chủ theo giai đoạn.
+      Việc đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một danh sách được phân tách bằng dấu phẩy gồm các URL tương tự. Nếu bạn đặt chính sách này, thì chính sách này sẽ ghi đè cờ dòng lệnh.
+      Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="6838056959556423778">Ghi đè các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
 
@@ -2346,6 +2378,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7617319494457709698">Chính sách này nêu rõ các tiện ích được phép sử dụng chức năng <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> cho chứng thực từ xa. Các tiện ích phải được thêm vào danh sách này để sử dụng API.
 
           Nếu tiện ích không có trong danh sách hoặc danh sách không được đặt thì lệnh gọi đến API sẽ không thực hiện được với mã lỗi.</translation>
+<translation id="7620300057302654932">Các URL gốc hoặc mẫu tên máy chủ được coi là ngữ cảnh an toàn.</translation>
 <translation id="7625444193696794922">Chỉ định kênh phát hành mà thiết bị này phải bị khóa.</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>

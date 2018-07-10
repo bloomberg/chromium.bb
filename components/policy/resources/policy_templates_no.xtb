@@ -44,7 +44,7 @@
       Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
 <translation id="1135264353752122851">Konfigurerer hvilke tastaturoppsett som er tillatt for <ph name="PRODUCT_OS_NAME" />-brukerøkter.
 
-      Hvis denne regelen er satt, kan brukeren kun velge én av inndatametodene som regelen spesifiserer. Hvis denne regelen ikke tillater den gjeldende inndatametoden, byttes inndatametoden til maskinvaretastaturoppsettet (hvis det er tillatt), eller den første gyldige oppføringen i denne listen. Alle inndatametoder i denne listen som er ugyldige eller ikke støttes, ignoreres.</translation>
+      Hvis denne regelen er angitt, kan brukeren kun velge én av inndatametodene som regelen spesifiserer. Hvis denne regelen ikke er angitt, eller hvis den er angitt med en tom liste, kan brukeren velge alle kompatible inndatametoder. Hvis denne regelen ikke tillater den gjeldende inndatametoden, byttes inndatametoden til oppsettet for det fysiske tastaturet (hvis det er tillatt) eller den første gyldige oppføringen i denne listen. Alle inndatametoder i denne listen som er ugyldige eller ikke støttes, ignoreres.</translation>
 <translation id="1138294736309071213">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør varighet før skjermspareren vises på påloggingssiden for enheter i detaljistmodus.
@@ -72,7 +72,7 @@
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="1223789468190631420">Safe Browsing-aktiveringsstatus for pålitelige kilder</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
-<translation id="1243570869342663665">Kontroller SafeSites-filtrering for seksuelt innhold.</translation>
+<translation id="1243570869342663665">Kontrollér SafeSites-filtrering for seksuelt innhold.</translation>
 <translation id="1257550411839719984">Angi standard nedlastingskatalog</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
@@ -268,7 +268,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Formatet på verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan angis som «kontinent/stor_by» eller «hav/stor_by».
 
       Hvis du spesifiserer denne regelen, blir den automatiske påvisningen av tidssoner basert på enhetens posisjon slått av. Regelen SystemTimezoneAutomaticDetection overstyres også.</translation>
-<translation id="1885782360784839335">Aktiver visning av reklameinnhold i hele fanen</translation>
+<translation id="1885782360784839335">Aktivér visning av reklameinnhold i hele fanen</translation>
 <translation id="1888871729456797026">Registreringstokenet for retningslinjer for nettskyen på datamaskiner</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
 <translation id="1906888171268104594">Kontrollerer om bruksberegninger og diagnostikkdata, inkludert programstopprapporter, rapporteres til Google.
@@ -530,10 +530,10 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2466131534462628618">Autentisering via obligatoriske sider ignorerer proxy-tjenere</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="2483146640187052324">Forutsi nettverkshandlinger på alle nettverkstilkoblinger</translation>
-<translation id="2484208301968418871">Denne regelen kontrollerer bruken av SafeSites nettadressefilter.
-      Dette filteret bruker Google Sikkert søk-API-en til å klassifisere nettadresser som pornografiske eller ikke pornografiske.
+<translation id="2484208301968418871">Denne regelen kontrollerer bruken av SafeSites-nettadressefilteret.
+      Dette filteret bruker Google Safe Search API til å klassifisere nettadresser som pornografiske eller ikke-pornografiske.
 
-      Når denne regelen ikke er konfigurert, eller er satt til «Ikke filtrer nettsteder for seksuelt innhold», filtreres nettstedene ikke.
+      Når denne regelen ikke er konfigurert eller er satt til «Ikke filtrer nettsteder for seksuelt innhold», filtreres ikke nettsteder.
 
       Når denne regelen er satt til «Filtrer toppnivånettsteder for seksuelt innhold», filtreres nettsteder som er klassifisert som pornografiske.</translation>
 <translation id="2485721741875148980">Hvis denne regelen er angitt som «sann», må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled er «usann». Vær oppmerksom på at eksisterende usignerte profiler blir låst og utilgjengelige etter at denne regelen aktiveres. Hvis du vil ha mer informasjon, kan du gå til artikkelen i brukerstøtten.
@@ -734,6 +734,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
 <translation id="3038323923255997294">Fortsett å kjøre bakgrunnsprogrammer når <ph name="PRODUCT_NAME" /> er lukket</translation>
 <translation id="3046192273793919231">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen</translation>
+<translation id="3047732214002457234">Kontrollerer hvordan Opprydning for Chrome rapporterer data til Google</translation>
 <translation id="3048744057455266684">Hvis denne innstillingen er angitt og en nettadresse som blir foreslått av søkefeltet inneholder denne parameteren i søkestrengen eller fragmentidentifikatoren, viser forslaget søkeordene og søkeleverandøren i stedet for søkenettadressen.
 
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
@@ -1055,6 +1056,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne regelen er satt til true (sann), sendes nettverkspakker for
       overvåking (såkalte <ph name="HEARTBEATS_TERM" />).
       Hvis den settes til false (usann) eller ikke angis, sendes det ingen pakker.</translation>
+<translation id="3950239119790560549">Oppdater tidsbegrensninger</translation>
 <translation id="3958586912393694012">Tillat bruk av Smart Lock</translation>
 <translation id="3963602271515417124">Hvis denne regelen er angitt som «true» (sann), tillates ekstern attestering for enheten, og et sertifikat genereres automatisk og lastes opp til administreringstjeneren for enheten.
 
@@ -1314,6 +1316,10 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis du ikke spesifiserer denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.</translation>
 <translation id="4752880493649142945">Klientsertifikatet for tilkobling til RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Hvis denne regelen er angitt som sann eller ikke er angitt, foreslår <ph name="PRODUCT_NAME" /> sider som er relatert til den aktive siden.
+      Forslagene hentes fra Googles tjenere.
+
+      Hvis innstillingen er angitt som usann, verken hentes eller vises forslag.</translation>
 <translation id="4791031774429044540">Aktiver tilgjengelighetsfunksjonen for den store musepekeren.
 
           Hvis denne innstillingen angis til «true», er den store musepekeren alltid aktivert.
@@ -1934,7 +1940,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
-<translation id="6731757988219967594">Filtrer toppnivånettsteder (men ikke innebygde iframer) for seksuelt innhold</translation>
+<translation id="6731757988219967594">Filtrer toppnivånettsteder (men ikke innebygde iframe-elementer) for seksuelt innhold</translation>
 <translation id="6735701345096330595">Tving aktivering av språk med stavekontroll</translation>
 <translation id="673699536430961464">Denne innstillingen lar brukere bytte mellom Google-kontoer i innholdsområdet i nettleservinduet når de har logget på <ph name="PRODUCT_OS_NAME" />-enhetene sine.
 
@@ -1959,11 +1965,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
 <translation id="6762235610019366960">Lar deg kontrollere fremvisningen av reklame- og/eller utdanningsinnhold i hele fanen i <ph name="PRODUCT_NAME" />.
 
-      Hvis den ikke er konfigurert eller aktivert (satt til sann), kan <ph name="PRODUCT_NAME" /> vise innhold i hele fanen til brukere for å levere produktinformasjon.
+      Hvis den ikke er konfigurert eller aktivert (satt til true/sant), kan <ph name="PRODUCT_NAME" /> vise innhold i hele fanen til brukere for å levere produktinformasjon.
 
-      Hvis den er deaktivert (satt til usann), viser <ph name="PRODUCT_NAME" /> ikke innhold i hele fanen til brukere for å levere produktinformasjon.
+      Hvis den er deaktivert (satt til false/usant), viser <ph name="PRODUCT_NAME" /> ikke innhold i hele fanen til brukere for å levere produktinformasjon.
 
-      Denne innstillingen kontrollerer fremvisningen av velkomstsidene som hjelper brukerne med å logge på <ph name="PRODUCT_NAME" /> eller velge den som standardnettleser, eller på annet vis informerer dem om produktfunksjoner.</translation>
+      Denne innstillingen kontrollerer fremvisningen av velkomstsidene som hjelper brukerne med å logge på <ph name="PRODUCT_NAME" />, velge den som standardnettleser eller på annet vis informerer dem om produktfunksjoner.</translation>
 <translation id="6766216162565713893">La nettsteder be brukeren om tilgang til Bluetooth-enheter i nærheten</translation>
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
@@ -2181,6 +2187,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis innstillingen ikke angis, slås lupen av når påloggingssiden vises for første gang. Brukere kan slå lupen på eller av når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="7249828445670652637">Slå på CA-sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
+<translation id="725322441686394886">Hvis regelen ikke er angitt og Opprydning for Chrome oppdager uønsket programvare, kan metadata om skanningen rapporteres til Google i samsvar med retningslinjene som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør da brukeren om den uønskede programvaren skal fjernes. Brukeren kan velge å dele resultatene av opprydningen med Google for å bistå med gjenkjenning av uønsket programvare i fremtiden. Disse resultatene inneholder filmetadata, automatisk installerte utvidelser og registernøkler som beskrevet av det tekniske dokumentet om personvern i Chrome.
+
+      Hvis regelen er deaktivert og Opprydning for Chrome oppdager uønsket programvare, rapporteres ikke metadata om skanningen til Google. Dette overstyrer enhver regel som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør ikke brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres ikke til Google, og brukeren har ikke muligheten til å gjøre det.
+
+      Hvis regelen er aktivert og Opprydning for Chrome oppdager uønsket programvare, kan metadata om skanningen rapporteres til Google i samsvar med retningslinjene som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke mulighet til å forhindre det.
+
+      Denne regelen er ikke tilgjengelig i forekomster av Windows som ikke er tilknyttet et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
@@ -2246,6 +2259,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne velge å gå videre til det rapporterte nettstedet etter å ha sett advarselen.
 
       Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Hvis denne regelen er deaktivert, hindres Opprydning for Chrome i å gjennomsøke systemet etter uønsket programvare og gjennomføre opprydning. Manuell utløsing av Opprydning for Chrome via chrome://settings/cleanup er deaktivert.
+
+      Hvis regelen er aktivert eller ikke er angitt, gjennomsøker Opprydning for Chrome systemet regelmessig etter uønsket programvare, og hvis det blir oppdaget, blir brukeren spurt om det skal fjernes. Manuell utløsing av Opprydning for Chrome via chrome://settings/cleanup er aktivert.
+
+      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>
@@ -2634,6 +2652,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8339420913453596618">Bruk av tofaktorautentisering er slått av</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
+<translation id="8367209241899435947">Aktiver Opprydning for Chrome på Windows</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
@@ -2897,6 +2916,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne retningslinjen ikke angis, vil dette aktiveres, og brukeren vil kunne bruke inkognitomodus.</translation>
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
+<translation id="9152473318295429890">Aktiver kontekstavhengige forslag for lignende nettsider</translation>
 <translation id="9158929520101169054">Tillat multipålogging i nettleseren</translation>
 <translation id="9165792353046089850">Gjør det mulig å velge om nettsteder kan få tilgang til tilkoblede USB-enheter. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til tilkoblede USB-enheter.
 
@@ -2932,4 +2952,9 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
 <translation id="981346395360763138">Googles posisjonstjenester er deaktivert</translation>
 <translation id="982497069985795632">Aktiver stavekontrollen</translation>
+<translation id="988537626274109600">Denne regelen styrer tidsrammer der <ph name="PRODUCT_OS_NAME" />-enheten ikke har lov til å se etter oppdateringer automatisk. 
+      Når denne regelen er satt til en ikke-tom liste med tidsintervaller:
+      Enheter kan ikke se etter oppdateringer automatisk i de angitte tidsintervallene. På grunn av potensielle sikkerhetsproblemer påvirkes ikke enheter som krever rollback eller er under minstekravet til <ph name="PRODUCT_OS_NAME" />-versjon, av denne regelen. Videre blokkerer ikke denne regelen oppdateringssjekker forespurt av brukere eller administratorer.
+      Når denne regelen ikke er angitt eller ikke inneholder tidsintervaller:
+      Ingen automatiske oppdateringssjekker blokkeres av denne regelen, men de kan blokkeres av andre regler.</translation>
 </translationbundle>

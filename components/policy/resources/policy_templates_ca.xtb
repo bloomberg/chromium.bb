@@ -44,7 +44,7 @@
       Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
 <translation id="1135264353752122851">Configura quines disposicions de teclat s'admeten per a les sessions d'usuari de <ph name="PRODUCT_OS_NAME" />.
 
-      Si aquesta política s'estableix, l'usuari només pot seleccionar un dels mètodes d'entrada que especifica la política. Si aquesta política no s'estableix o s'estableix en una llista buida, l'usuari pot seleccionar tots els mètodes d'entrada admesos. Si aquesta política no admet el mètode d'entrada actual, el mètode d'entrada canviarà a la disposició de teclat de maquinari (si es permet) o a la primera entrada vàlida de la llista. S'ignoraran tots els mètodes d'entrada d'aquesta llista que no siguin vàlids o que no s'admetin.</translation>
+      Si aquesta política s'estableix, l'usuari només pot seleccionar un dels mètodes d'entrada que especifica la política. Si aquesta política no s'estableix o s'estableix en una llista buida, l'usuari pot seleccionar tots els mètodes d'entrada admesos. Si aquesta política no admet el mètode d'entrada actual, el mètode d'entrada canviarà a la disposició de teclat del maquinari (si es permet) o a la primera entrada vàlida de la llista. S'ignoraran tots els mètodes d'entrada d'aquesta llista que no siguin vàlids o que no s'admetin.</translation>
 <translation id="1138294736309071213">Aquesta política només està activa en mode de venta.
 
       Determina la durada abans no es mostri l'estalvi de pantalla a la pantalla d'inici de sessió per als dispositius en mode de venta.
@@ -675,6 +675,19 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
 <translation id="2893546967669465276">Envia registres del sistema al servidor de gestió</translation>
 <translation id="2899002520262095963">Les aplicacions per a Android poden utilitzar les configuracions de xarxa i els certificats de CA establerts a través d'aquesta política, però no tenen accés a algunes opcions de configuració.</translation>
+<translation id="290002216614278247">Et permet bloquejar la sessió de l'usuari en funció de l'hora del client o de la quota d'ús del dia.
+
+          |time_window_limit| especifica un període de temps diari en què s'ha de bloquejar la sessió de l'usuari. Com que només admetem una regla per dia de la setmana, la mida de la matriu |entries| pot variar entre 0-7. |starts_at| i |ends_at| són l'inici i el final del límit de temps. Si |ends_at| és inferior a |starts_at|, vol dir que |time_limit_window| finalitza el dia següent. |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
+
+          |time_usage_limit| especifica una quota de pantalla diària. Quan l'usuari hi arriba, se'n bloqueja la sessió. Hi ha una propietat per a cada dia de la setmana i només s'ha de definir si hi ha una quota activa per al dia en qüestió. |usage_quota_mins| és el temps que es pot fer servir el dispositiu gestionat cada dia i |reset_at| és l'hora en què es reinicialitza la quota d'ús. El valor predeterminat de |reset_at| és la mitjanit ({'hour': 0, 'minute': 0}). |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter. 
+
+          |overrides| es proporciona per invalidar temporalment una o més de les regles anteriors.
+          * Si no s'activa time_window_limit ni time_usage_limit, es pot fer servir |LOCK| per bloquejar el dispositiu.
+          * |LOCK| bloqueja temporalment una sessió d'usuari fins que s'inicia la instància següent de time_window_limit o time_usage_limit.
+          * |UNLOCK| desbloqueja una sessió d'usuari bloquejada per time_window_limit o time_usage_limit.
+          |created_time_millis| és la marca de temps en format UTC per a la creació d'una hora de substitució. S'envia com a cadena perquè la marca de temps no cap en un nombre enter. Serveix per determinar si cal aplicar la substitució. Si la funció de límit de temps que està activa actualment (límit de temps d'ús o límit de marge de temps) ha començat després de crear la substitució, no fa cap efecte. A més, si la substitució s'ha creat abans de canviar el valor de time_window_limit o time_usage_window per última vegada, no s'aplica.
+
+          Es poden enviar diverses hores de substitució, però només s'aplicarà l'entrada vàlida més recent.</translation>
 <translation id="2906874737073861391">Llista d'extensions d'AppPack</translation>
 <translation id="2907992746861405243">Controla quines impressores de la política <ph name="BULK_PRINTERS_POLICY" /> tenen disponibles els usuaris.
 
@@ -1357,6 +1370,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4980635395568992380">Tipus de dades:</translation>
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
+<translation id="4990301296093321860">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
+
+      Pots utilitzar les polítiques PasswordProtectionLoginURLs i PasswordProtectionChangePasswordURL per configurar quina contrasenya vols protegir.
+
+      Si aquesta política s'estableix en "PasswordProtectionWarningOff", no es mostrarà cap advertiment sobre la protecció de contrasenyes.
+      Si aquesta política s'estableix en "PasswordProtectionWarningOnPasswordReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web que no es trobi a la llista blanca.
+      Si aquesta política s'estableix en "PasswordProtectionWarningOnPhishingReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca.
+      Si aquesta política no es configura, l'advertiment sobre la protecció de contrasenyes s'activarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca, però l'usuari podrà canviar aquesta opció de configuració.</translation>
 <translation id="4995548127349206948">Si l'autenticació NTLMv2 està activada.</translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
@@ -1727,6 +1748,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
+<translation id="6164955668342404660">Aquesta política es considera obsoleta a M69. Pots fer servir OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      La política especifica una llista d'orígens (URL) que s'han de tractar com a context segur. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
+      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista d'URL separats per comes.
+      Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6181608880636987460">Permet definir una llista de patrons d'URL que especifiquin llocs que no poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1864,7 +1891,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política es desactiva o no es defineix, només s'utilitzaran els perfils locals habituals.
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactiva la sincronització de totes les dades i substitueix RoamingProfileSupportEnabled.</translation>
-<translation id="6731757988219967594">Filtra el contingut per a adults dels llocs web de nivell superior (però no els iframes inserits)</translation>
+<translation id="6731757988219967594">Filtra els llocs web de nivell superior amb contingut per a adults (però no els iframes inserits)</translation>
 <translation id="6735701345096330595">Força l'activació del corrector ortogràfic d'idiomes</translation>
 <translation id="673699536430961464">Aquesta opció de configuració permet que els usuaris canviïn d'un compte de Google a un altre des de l'àrea de contingut de la finestra del navegador després que hagin iniciat la sessió al dispositiu <ph name="PRODUCT_OS_NAME" />.
 
@@ -1889,7 +1916,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="6762235610019366960">Et permet controlar la presentació de contingut educatiu o promocional en tota la pestanya a <ph name="PRODUCT_NAME" />.
 
-      Si no es configura o no s'activa (s'estableix en "true"), pot ser que <ph name="PRODUCT_NAME" /> mostri contingut en tota la pestanya a tots els usuaris per proporcionar informació sobre el producte.
+      Si no es configura o s'activa (s'estableix en "true"), pot ser que <ph name="PRODUCT_NAME" /> mostri als usuaris contingut en tota la pestanya per proporcionar informació sobre el producte.
 
       Si es desactiva (s'estableix en "false"), <ph name="PRODUCT_NAME" /> no mostrarà als usuaris contingut en tota la pestanya per proporcionar informació sobre el producte.
 
@@ -1900,6 +1927,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6786967369487349613">Estableix el directori de perfils itinerants</translation>
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
+<translation id="6832455357698286434">
+      La política especifica una llista d'orígens (URLs) o de patrons de nom d'amfitrió (com ara "*.example.com")que s'han de tractar com a contexts segurs. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
+      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista d'URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
+      Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6835883744948188639">Mostra una sol·licitud periòdica a l'usuari per indicar-li que es recomana reiniciar el navegador</translation>
 <translation id="6838056959556423778">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
 
@@ -2232,6 +2264,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7617319494457709698">Aquesta política especifica les extensions que tenen permís per utilitzar la funció <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
 
           Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
+<translation id="7620300057302654932">Orígens o patrons de nom d'amfitrió que s'han de tractar com a context segur.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>

@@ -325,7 +325,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads deleted</translation>
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="3859306556332390985">Seek forward</translation>
-<translation id="3871936494901781193">When you scroll up, show quick links to related pages.</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">No enabled voice search available</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="395206256282351086">Search and site suggestions disabled</translation>
-<translation id="3952533382939530115">This feature uses <ph name="BEGIN_LINK" />sync<ph name="END_LINK" />. The URLs of pages that you visit are sent to Google.</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
 <translation id="3976396876660209797">Remove and recreate this shortcut</translation>
@@ -821,6 +819,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="79859296434321399">To view augmented reality content, install ARCore</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
@@ -831,6 +830,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8035133914807600019">New folder…</translation>
+<translation id="8037686209485537503">More like this</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="804335162455518893">SD card not found</translation>
 <translation id="805047784848435650">Based on your browsing history</translation>

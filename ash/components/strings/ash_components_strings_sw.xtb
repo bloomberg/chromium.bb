@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Onyesha Menyu ya Chrome</translation>
 <translation id="2424073332829844142">Washa au uzime Caps Lock</translation>
 <translation id="2441202986792279177">Badilisha madirisha haraka</translation>
+<translation id="2454251766545114447">Sogeza onyesho mbali</translation>
 <translation id="2478303094958140141">Washa au uzime ChromeVox (maelezo yanayotamkwa)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Sogeza chini ukurasa wa wavuti</translation>
+<translation id="2574014812750545982">Badilisha kiwango cha kukuza ukurasa</translation>
 <translation id="2596078834055697711">Piga picha ya skrini ya dirisha</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="TAB" /> au <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Badili utumie mbinu ya kuingiza maandishi ya lugha inayofuata</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> au <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Hifadhi kurasa zote ambazo zimefunguliwa katika dirisha la sasa ziwe alamisho katika folda mpya</translation>
 <translation id="355103131818127604">Fungua kiungo kwenye kichupo kipya chinichini</translation>
+<translation id="3622741593887335780">Vuta karibu (wakati umeambatisha AU umewasha vikuzaji vya skrini nzima)</translation>
 <translation id="3649256019230929621">Punguza dirisha</translation>
 <translation id="3655154169297074232">Vichupo na Madirisha</translation>
 <translation id="3668361878347172356">Rejesha kitendo chako cha mwisho</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 hadi 8</translation>
 <translation id="3837047332182291558">Ongeza mwangaza wa kibodi (katika kibodi zenye mwanga wa nyuma pekee)</translation>
 <translation id="3976863468609830880">Bofya aikoni ya mwisho kwenye rafu yako</translation>
+<translation id="3994783594793697310">Badilisha kiwango cha kukuza onyesho</translation>
 <translation id="4026843240379844265">Sogeza dirisha linalotumika kati ya skrini</translation>
 <translation id="4035482366624727273">Chagua kila kitu kwenye ukurasa</translation>
 <translation id="4060703249685950734">Fungua tena kichupo au dirisha la mwisho ulilofunga</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Punguza mwangaza</translation>
 <translation id="6276708887952587684">Tazama chanzo cha ukurasa</translation>
 <translation id="6321940490215594447">Fungua Ukurasa wa Historia</translation>
+<translation id="6340769215862220182">Vuta onyesho karibu</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Chagua maandishi katika sehemu ya mwisho wa mstari</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> au <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Bofya aikoni za 1-8 kwenye rafu yako</translation>
 <translation id="6435207348963613811">Angazia kipengee cha awali kwenye rafu yako</translation>
 <translation id="6445033640292336367">Rudisha kichupo kwenye nafasi yake halisi</translation>
+<translation id="6474744297082284761">Sogeza mbali (wakati umeambatisha AU umewasha vikuzaji vya skrini nzima)</translation>
 <translation id="649811797655257835">Chagua faili, kisha ubofye <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Fungua dirisha ambalo halijatumika kwa muda mrefu zaidi</translation>
 <translation id="666343722268997814">Fungua menyu ya kipengee kinachoangaziwa kwa kubofya kulia</translation>

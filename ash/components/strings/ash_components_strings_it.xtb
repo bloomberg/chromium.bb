@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2424073332829844142">Attiva e disattiva BLOC MAIUSC</translation>
 <translation id="2441202986792279177">Passa velocemente da una finestra all'altra</translation>
+<translation id="2454251766545114447">Diminuisci lo zoom dello schermo</translation>
 <translation id="2478303094958140141">Attiva o disattiva ChromeVox (funzione di lettura vocale)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Scorre la pagina web verso il basso</translation>
+<translation id="2574014812750545982">Reimposta il livello di zoom nella pagina</translation>
 <translation id="2596078834055697711">Consente di acquisire uno screenshot della finestra</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Consente di passare al metodo di immissione della lingua successiva</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Salva tutte le pagine aperte nella finestra corrente come Preferiti in una nuova cartella</translation>
 <translation id="355103131818127604">Apre il link in una nuova scheda in background</translation>
+<translation id="3622741593887335780">Aumenta lo zoom (quando inserito nel dock O con le lenti d'ingrandimento a schermo intero attive)</translation>
 <translation id="3649256019230929621">Riduci la finestra</translation>
 <translation id="3655154169297074232">Schede e finestre</translation>
 <translation id="3668361878347172356">Ripete l'ultima azione</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126">Da <ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumenta la luminosità della tastiera (soltanto per tastiere retroilluminate)</translation>
 <translation id="3976863468609830880">Seleziona l'ultima icona nella shelf</translation>
+<translation id="3994783594793697310">Reimposta il livello di zoom dello schermo</translation>
 <translation id="4026843240379844265">Sposta la finestra attiva tra gli schermi</translation>
 <translation id="4035482366624727273">Seleziona tutti i contenuti della pagina</translation>
 <translation id="4060703249685950734">Riapre l'ultima scheda o finestra chiusa</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Diminuisce la luminosità</translation>
 <translation id="6276708887952587684">Visualizza il codice sorgente della pagina</translation>
 <translation id="6321940490215594447">Apre la pagina Cronologia</translation>
+<translation id="6340769215862220182">Aumenta lo zoom dello schermo</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Seleziona il testo alla fine della riga</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> o <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Consente di fare clic sulle icone 1-8 nella shelf</translation>
 <translation id="6435207348963613811">Mette in evidenza l'elemento precedente sulla shelf</translation>
 <translation id="6445033640292336367">Ripristina la posizione originale della scheda</translation>
+<translation id="6474744297082284761">Diminuisci lo zoom (quando inserito nel dock O con le lenti d'ingrandimento a schermo intero attive)</translation>
 <translation id="649811797655257835">Seleziona il file, quindi premi <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Consente di aprire la finestra rimasta inutilizzata per più tempo</translation>
 <translation id="666343722268997814">Apre il menu di scelta rapida per l'elemento evidenziato</translation>

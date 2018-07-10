@@ -19,7 +19,7 @@
 <translation id="1145536944570833626">मौजूदा डेटा हटाएं.</translation>
 <translation id="1146678959555564648">VR डालें</translation>
 <translation id="114721135501989771">Chrome में Google स्मार्ट पाएं</translation>
-<translation id="1157102636231978136">आपके Google खाते में सिंक किए गया आपका ब्राउज़िंग डेटा और गतिविधि</translation>
+<translation id="1157102636231978136">आपके 'Google खाते' में सिंक किए गया आपका ब्राउज़िंग डेटा और गतिविधि</translation>
 <translation id="116280672541001035">उपयोग किया गया</translation>
 <translation id="1172593791219290334">शुरुआती पन्ना</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
@@ -119,7 +119,7 @@
 <translation id="1944384637046898011"><ph name="TIME" /> तक का सभी डेटा Google पासवर्ड से एन्‍क्रिप्‍ट करें</translation>
 <translation id="1946005195648379376">नियंत्रित करें कि खोज और अन्य Google सेवाओं को वैयक्तिकृत करने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कैसे करता है.</translation>
 <translation id="1952172573699511566">जब संभव होगा, वेबसाइटें आपकी पसंदीदा भाषा में लेख दिखाएंगी.</translation>
-<translation id="195283394249132567">दर्शकों की पसंद के मुताबिक बनाई गई Google सेवाएं</translation>
+<translation id="195283394249132567">दर्शक के मुताबिक बनाई गई Google सेवाएं</translation>
 <translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="1974060860693918893">उन्नत</translation>
 <translation id="1984937141057606926">तृतीय-पक्ष को छोड़कर अनुमति है</translation>
@@ -181,7 +181,7 @@
 <translation id="2426805022920575512">दूसरा खाता चुनें</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
 <translation id="2434158240863470628">डाउनलोड हो गया <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2436117022029368436">ब्राउज़िंग और Chrome को बेहतर बनाने के लिए Google से संचार करता है</translation>
+<translation id="2436117022029368436">ब्राउज़िंग और Chrome को बेहतर बनाने के लिए Google से संपर्क करता है</translation>
 <translation id="2440823041667407902">स्‍थान की एक्‍सेस</translation>
 <translation id="2450083983707403292">क्या आप <ph name="FILE_NAME" /> को डाउनलोड करना फिर से शुरू करना चाहते हैं?</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
@@ -325,7 +325,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटाए गए</translation>
 <translation id="3822502789641063741">साइट मेमोरी साफ़ करें?</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
-<translation id="3871936494901781193">जब आप स्क्रोल करें, तो मिलते-जुलते पेज के तेज़ी से पहुंचने वाले लिंक दिखाएं.</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
 <translation id="395206256282351086">सर्च और साइट सुझाव बंद हैं</translation>
-<translation id="3952533382939530115">यह फ़ीचर <ph name="BEGIN_LINK" />सिंक<ph name="END_LINK" /> का इस्तेमाल करता है. आप जिस पेज पर जाते हैं उसके यूआरएल Google को भेजे जाते हैं.</translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण</translation>
 <translation id="397583555483684758">समन्‍वयन ने कार्य करना बंद कर दिया है</translation>
 <translation id="3976396876660209797">इस शॉर्टकट को निकालें और इसे फिर से बनाएं</translation>
@@ -821,6 +819,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> पुराना है.</translation>
 <translation id="7947953824732555851">स्वीकार करें और प्रवेश करें</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
+<translation id="7981313251711023384">ज़्यादा तेज़ी से ब्राउज़ करने और खोजने के लिए पेज पहले से लोड करें</translation>
 <translation id="79859296434321399">'बढ़ी हुई वास्तविकता' की सामग्री देखने के लिए, ARCore इंस्टॉल करें</translation>
 <translation id="7987073022710626672">Chrome सेवा की शर्तें</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
@@ -831,6 +830,7 @@
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
+<translation id="8037686209485537503">ऐसे ही और</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन शेष</translation>
 <translation id="804335162455518893">SD कार्ड नहीं मिला</translation>
 <translation id="805047784848435650">आपके ब्राउज़िंग इतिहास के आधार पर</translation>

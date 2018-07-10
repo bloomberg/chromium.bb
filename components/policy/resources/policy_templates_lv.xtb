@@ -709,6 +709,19 @@
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
 <translation id="2893546967669465276">Sistēmas žurnālu sūtīšana pārvaldības serverim</translation>
 <translation id="2899002520262095963">Android lietotnes var izmantot tīkla konfigurācijas un CA sertifikātus, kas iestatīti, izmantojot šo politiku, bet lietotnēm nav piekļuves dažām konfigurācijas opcijām.</translation>
+<translation id="290002216614278247">Ļauj bloķēt lietotāja sesiju atbilstoši iestatītajam klienta laikam vai dienas lietojuma kvotai.
+
+          Elements |time_window_limit| norāda diennakts laika periodu, kurā lietotāja sesija ir jābloķē. Katrai nedēļas dienai tiek atbalstīta tikai viena kārtula, tāpēc elementa |entries| vērtību diapazons ir 0–7. Elementos |starts_at| un |ends_at| tiek norādītas laika perioda ierobežojuma sākuma un beigu vērtības: ja elementa |ends_at| vērtība ir mazāka par |starts_at| vērtību, tas nozīmē, ka laika periods |time_limit_window| beidzas nākamajā dienā. Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim.
+
+          Elements |time_usage_limit| norāda ierīces lietojuma ilguma dienas kvotu — lietojuma ilgumam sasniedzot šo vērtību, lietotāja sesija tiek bloķēta. Katrai nedēļas dienai ir atsevišķs rekvizīts — tas ir jāiestata tikai tad, ja attiecīgajai dienai ir iestatīta aktīva kvota. Elements |usage_quota_mins| norāda dienā atļauto pārvaldītās ierīces lietošanas ilgumu, bet elements |reset_at| norāda laiku, kad lietojuma kvota tiek atjaunota. Noklusējuma vērtība elementam |reset_at| ir pusnakts ({'hour': 0, 'minute': 0}). Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilst veselam skaitlim.
+
+          |overrides| var izmantot, lai norādītu īslaicīgi ignorējamu vienu vai vairākas iepriekšējās kārtulas.
+          * Ja elements “time_window_limit” vai “time_usage_limit” nav aktīvs, ierīces bloķēšanai var izmantot elementu |LOCK|.
+          * Elements |LOCK| īslaicīgi bloķē lietotāja sesiju līdz nākamajam elementā “time_window_limit” vai “time_usage_limit” norādītajam laika periodam.
+          * Elements |UNLOCK| atver lietotāja sesiju, kuru aizvēršanu aktivizēja elementā “time_window_limit” vai “time_usage_limit” iestatītās vērtības.
+          Elements |created_time_millis| ir ignorēšanas kārtulas izveides UTC laikspiedols, kas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim. Šī vērtība tiek izmantota, lai noteiktu ignorēšanas ilgumu. Ja pašreizējā aktīvā laika ierobežojuma funkcija (lietošanas ilguma ierobežojums vai lietošanas perioda ierobežojums) tika aktivizēta pēc ignorēšanas vērtības izveides, ignorēšanas vērtība netiks aktivizēta. Ja ignorēšanas vērtība tika izveidota pirms pēdējo izmaiņu ieviešanas aktīvajā elementā “time_window_limit” vai “time_usage_window”, ignorēšanas vērtība netiek piemērota.
+
+          Var tikt nosūtītas vairākas ignorēšanas vērtības; tiks izmantota jaunākā derīgā vērtība.</translation>
 <translation id="2906874737073861391">AppPack paplašinājumu saraksts</translation>
 <translation id="2907992746861405243">Kontrolē, kuri printeri no politikas <ph name="BULK_PRINTERS_POLICY" /> ir pieejami lietotājiem.
 
@@ -1412,6 +1425,14 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4980635395568992380">Datu tips:</translation>
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
+<translation id="4990301296093321860">Ļauj kontrolēt, kad aktivizēt paroles brīdinājuma rādīšanu. Paroles aizsardzība brīdina lietotājus, ja tie atkārtoti izmanto savu aizsargāto paroli aizdomīgās vietnēs.
+
+      Varat izmantot politiku “PasswordProtectionLoginURLs” un “'PasswordProtectionChangePasswordURL”, lai konfigurētu, kuru paroli aizsargāt.
+
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOff”, paroles aizsardzības brīdinājums netiks rādīts.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPasswordReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotāji Google pakalpojumu paroles izmantos vietnēs, kas nav iekļautas baltajā sarakstā.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPhishingReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotāji Google pakalpojumu paroles izmantos pikšķerēšanas vietnē.
+      Ja šī politika nav iestatīta, paroles aizsardzības brīdinājums tiks aktivizēts, kad lietotāji Google pakalpojumu paroles izmantos pikšķerēšanas vietnēs (lietotāji to var mainīt).</translation>
 <translation id="4995548127349206948">Vai ir iespējota NTLMv2 autentifikācija.</translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
@@ -1820,6 +1841,12 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>
+<translation id="6164955668342404660">Novecojusi versijā M69. Izmantojiet “OverrideSecurityRestrictionsOnInsecureOrigin”.
+
+      Šī politika nosaka tādu avotu (vietrāžu URL) sarakstu, kuri ir jāapstrādā kā drošs konteksts. Nolūks ir atļaut organizācijām iestatīt izstādīšanas serveri iekšējai tīmekļa izstrādei, lai organizācijas izstrādātāji varētu izmēģināt funkcijas, kuru darbībai nepieciešams drošs konteksts, izvairoties no TLS izmantošanas izstādīšanas serverī.
+      Politikas vietrāžu URL saraksta noteikšanai ir tāds pats rezultāts kā komandrindas atzīmes “--unsafely-treat-insecure-origin-as-secure” mainīšanai uz komatatdalītu sarakstu, kurā ietverti tie paši URL. Ja politika ir iestatīta, tiks ignorēta komandrindas atzīme.
+      Plašāku informāciju par drošu kontekstu skatiet vietnē https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6181608880636987460">Ļauj iestatīt to vietrāžu URL struktūru sarakstu, kas norāda vietnes, kurās nav atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
@@ -1996,6 +2023,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6786967369487349613">Iestatīt viesabonēšanas profila direktoriju</translation>
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
 <translation id="681446116407619279">Atbalstītās autentifikācijas shēmas</translation>
+<translation id="6832455357698286434">
+      Šī politika nosaka tādu avotu (vietrāžu URL) vai saimniekdatora nosaukuma rakstu sarakstu (piemēram, *.example.com), kuri ir jāapstrādā kā drošs konteksts. Nolūks ir atļaut organizācijām iestatīt izstādīšanas serveri iekšējai tīmekļa izstrādei, lai organizācijas izstrādātāji varētu izmēģināt funkcijas, kuru darbībai nepieciešams drošs konteksts, izvairoties no TLS izmantošanas izstādīšanas serverī.
+      Politikas vietrāžu URL saraksta noteikšanai ir tāds pats rezultāts kā komandrindas atzīmes “--unsafely-treat-insecure-origin-as-secure” mainīšanai uz komatatdalītu sarakstu, kurā ietverti tie paši URL. Ja politika ir iestatīta, tā ignorēs komandrindas atzīmi.
+      Plašāku informāciju par drošu kontekstu skatiet vietnē https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="6835883744948188639">Periodiski rādīt lietotājam uzvedni par ieteicamu atkārtotu palaišanu</translation>
 <translation id="6838056959556423778">Tiek ignorētas <ph name="PRODUCT_NAME" /> noklusējuma printera atlasīšanas kārtulas.
 
@@ -2354,6 +2386,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7617319494457709698">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālajai apstiprināšanai izmantot platformas <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funkciju <ph name="CHALLENGE_USER_KEY_FUNCTION" />. Lai varētu izmantot API, šim sarakstam ir jāpievieno paplašinājumi.
 
           Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukums neizdosies un tiks rādīts kļūdas kods.</translation>
+<translation id="7620300057302654932">Avoti vai saimniekdatora nosaukuma raksti, kas jāapstrādā kā drošs konteksts.</translation>
 <translation id="7625444193696794922">Norāda atbrīvošanas kanālu, pie kura jābūt piesaistītai šai ierīcei.</translation>
 <translation id="7632724434767231364">GSSAPI bibliotēkas nosaukums</translation>
 <translation id="7635471475589566552">Konfigurē produktā <ph name="PRODUCT_NAME" /> izmantoto lietojumprogrammas lokalizāciju un neļauj lietotājiem mainīt šo lokalizāciju.

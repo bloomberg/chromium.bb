@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
 <translation id="2424073332829844142">A Caps Lock be- és kikapcsolása</translation>
 <translation id="2441202986792279177">Gyors váltás ablakok között</translation>
+<translation id="2454251766545114447">Képernyő kicsinyítése</translation>
 <translation id="2478303094958140141">A ChromeVox (hangos visszajelzés) be- vagy kikapcsolása</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">A weboldal lefelé görgetése</translation>
+<translation id="2574014812750545982">Nagyítási szint visszaállítása az oldalon</translation>
 <translation id="2596078834055697711">Képernyőkép készítése az ablakról</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="TAB" /> vagy <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Váltás a következő nyelv beviteli módszerére</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Az aktuális ablakban megnyitott összes oldal elmentése könyvjelzőként új mappába</translation>
 <translation id="355103131818127604">Link megnyitása új lapon a háttérben</translation>
+<translation id="3622741593887335780">Nagyítás (dokkolt állapotban VAGY ha engedélyezve van a teljes képernyős nagyító)</translation>
 <translation id="3649256019230929621">Ablak kis méretre állítása</translation>
 <translation id="3655154169297074232">Lapok és ablakok</translation>
 <translation id="3668361878347172356">Az utolsó művelet ismételt végrehajtása</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1-től 8-ig</translation>
 <translation id="3837047332182291558">Billentyűzet megvilágításának erősítése (csak háttérvilágítással rendelkező billentyűzeteknél)</translation>
 <translation id="3976863468609830880">A polcon lévő utolsó ikonra kattintás</translation>
+<translation id="3994783594793697310">Kijelző nagyítási szintjének visszaállítása</translation>
 <translation id="4026843240379844265">Aktív ablak áthelyezése egyik kijelzőről a másikra</translation>
 <translation id="4035482366624727273">Minden kijelölése az oldalon</translation>
 <translation id="4060703249685950734">A legutóbb bezárt lap vagy ablak újbóli megnyitása</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">A fényerő csökkentése</translation>
 <translation id="6276708887952587684">Az oldal forrásának megtekintése</translation>
 <translation id="6321940490215594447">Az Előzmények oldal megnyitása</translation>
+<translation id="6340769215862220182">Kijelző nagyítása</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Szöveg kijelölése a sor végéig</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> vagy <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">A polcon lévő ikonokra kattintás (1–8-ig)</translation>
 <translation id="6435207348963613811">Az előző elem kiemelése a polcon</translation>
 <translation id="6445033640292336367">A lap visszahelyezése az eredeti helyére</translation>
+<translation id="6474744297082284761">Kicsinyítés (dokkolt állapotban VAGY ha engedélyezve van a teljes képernyős nagyító)</translation>
 <translation id="649811797655257835">Válassza ki a fájlt, majd nyomja meg a <ph name="SPACE" /> billentyűt</translation>
 <translation id="6556040137485212400">A leghosszabb ideje nem használt ablak megnyitása</translation>
 <translation id="666343722268997814">A kiemelt elem jobb egérgombbal előhívható menüjének megnyitása</translation>

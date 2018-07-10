@@ -325,7 +325,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
-<translation id="3871936494901781193">Visar snabblänkar till relaterade sidor när du rullar uppåt.</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">Röstsökning är inte tillgängligt</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="395206256282351086">Sök- och webbplatsförslag har inaktiverats</translation>
-<translation id="3952533382939530115">Den här funktionen använder <ph name="BEGIN_LINK" />synkronisering<ph name="END_LINK" />. Webbadresserna till sidor du besöker skickas till Google.</translation>
 <translation id="3967822245660637423">Nedladdning slutförd</translation>
 <translation id="397583555483684758">Synkroniseringen har slutat fungera</translation>
 <translation id="3976396876660209797">Ta bort och återskapa den här genvägen</translation>
@@ -821,6 +819,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
+<translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
 <translation id="79859296434321399">Installera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
@@ -831,6 +830,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
+<translation id="8037686209485537503">Fler liknande</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
 <translation id="804335162455518893">Det gick inte att hitta SD-kortet</translation>
 <translation id="805047784848435650">Utifrån din webbhistorik</translation>

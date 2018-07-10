@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Prikaži izbornik Chrome</translation>
 <translation id="2424073332829844142">Uključivanje i isključivanje tipke Caps Lock</translation>
 <translation id="2441202986792279177">Brzo prebacivanje na druge prozore</translation>
+<translation id="2454251766545114447">Smanjenje prikaza</translation>
 <translation id="2478303094958140141">Uključivanje ili isključivanje ChromeVoxa (govornih povratnih informacija)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Pomicanje prema dolje po web-stranici</translation>
+<translation id="2574014812750545982">Vraćanje razine zumiranja na stranici na zadano</translation>
 <translation id="2596078834055697711">Snimanje snimke zaslona prozora</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a zatim <ph name="TAB" /> ili <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Prelazak na način unosa sljedećeg jezika</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> ili <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Spremanje svih otvorenih stranica u trenutačnom prozoru kao oznaka u novoj mapi</translation>
 <translation id="355103131818127604">Otvaranje veze u novoj kartici u pozadini</translation>
+<translation id="3622741593887335780">Povećanje (kada je fiksirano ILI kada su omogućena povećala cijelog zaslona)</translation>
 <translation id="3649256019230929621">Minimiziranje prozora</translation>
 <translation id="3655154169297074232">Kartice i prozori</translation>
 <translation id="3668361878347172356">Ponavljanje posljednje radnje</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> od 1 do 8</translation>
 <translation id="3837047332182291558">Pojačavanje osvjetljenja tipkovnice (samo za tipkovnice s pozadinskim osvjetljenjem)</translation>
 <translation id="3976863468609830880">Klik na posljednju ikonu na polici</translation>
+<translation id="3994783594793697310">Vraćanje razine zumiranja prikaza na zadano</translation>
 <translation id="4026843240379844265">Premještanje aktivnog prozora s jednog zaslona na drugi</translation>
 <translation id="4035482366624727273">Odabir svega na stranici</translation>
 <translation id="4060703249685950734">Ponovno otvaranje zadnje zatvorene kartice ili prozora</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Smanjivanje svjetline</translation>
 <translation id="6276708887952587684">Prikaz izvora stranice</translation>
 <translation id="6321940490215594447">Otvaranje stranice povijesti</translation>
+<translation id="6340769215862220182">Povećanje prikaza</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Odabir teksta do kraja retka</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> ili <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Klik na ikone od 1 do 8 na polici</translation>
 <translation id="6435207348963613811">Isticanje prethodne stavke na polici</translation>
 <translation id="6445033640292336367">Vraćanje kartice na izvorni položaj</translation>
+<translation id="6474744297082284761">Smanjenje (kada je fiksirano ILI kada su omogućena povećala cijelog zaslona)</translation>
 <translation id="649811797655257835">Odaberite datoteku i pritisnite <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Otvori prozor koji najdulje nije korišten</translation>
 <translation id="666343722268997814">Otvaranje izbornika dostupnog desnim klikom za istaknutu stavku</translation>

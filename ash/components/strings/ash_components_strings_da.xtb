@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
 <translation id="2424073332829844142">Slå Caps Lock til og fra</translation>
 <translation id="2441202986792279177">Skift hurtigt mellem vinduer</translation>
+<translation id="2454251766545114447">Zoom ud på skærmen</translation>
 <translation id="2478303094958140141">Slå ChromeVox (oplæsning) til eller fra</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Rul ned på websiden</translation>
+<translation id="2574014812750545982">Nulstil zoomniveauet på siden</translation>
 <translation id="2596078834055697711">Tag screenshot af vinduet</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Skift til næste sprogs indtastningsmetode</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Gem alle åbne sider i dit nuværende vindue som bogmærker i en ny mappe</translation>
 <translation id="355103131818127604">Åbn linket på en ny fane i baggrunden</translation>
+<translation id="3622741593887335780">Zoom ind (når lupvinduet er fastgjort, ELLER forstørrelse af fuld skærm er aktiveret)</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="3655154169297074232">Faner og vinduer</translation>
 <translation id="3668361878347172356">Gentag den sidste handling</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til 8</translation>
 <translation id="3837047332182291558">Skru op for tastaturets lys (gælder kun for tastaturer med bagbelyste taster)</translation>
 <translation id="3976863468609830880">Klik på det sidste ikon på din hylde</translation>
+<translation id="3994783594793697310">Nulstil zoomniveauet på skærmen</translation>
 <translation id="4026843240379844265">Flyt det aktive vindue fra skærm til skærm</translation>
 <translation id="4035482366624727273">Markér alt på siden</translation>
 <translation id="4060703249685950734">Genåbn den sidste fane eller det sidste vindue, du lukkede</translation>
@@ -125,19 +129,21 @@
 <translation id="6228457605945141550">Skru ned for lysstyrken</translation>
 <translation id="6276708887952587684">Se sidekilden</translation>
 <translation id="6321940490215594447">Åbn siden Historik</translation>
+<translation id="6340769215862220182">Zoom ind på skærmen</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Markér teksten til slutningen af linjen</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> eller <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Klik på ikon 1-8 på din hylde</translation>
 <translation id="6435207348963613811">Fremhæv det forrige element på din hylde</translation>
 <translation id="6445033640292336367">Flyt fanen tilbage til sin udgangsposition</translation>
+<translation id="6474744297082284761">Zoom ud (når lupvinduet er fastgjort, ELLER forstørrelse af fuld skærm er aktiveret)</translation>
 <translation id="649811797655257835">Vælg filen, og tryk på <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Åbn det vindue, der ikke har været brugt i længst tid</translation>
 <translation id="666343722268997814">Åbn højrekliksmenuen for det fremhævede element</translation>
 <translation id="6671538777808758331">Gå til det næste match for din søgning</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> eller <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">Fastgør et vindue i venstre side</translation>
-<translation id="6692847073476874842">Se eksempel på en fil i appen Filer</translation>
+<translation id="6692847073476874842">Se forhåndsvisning af en fil i appen Filer</translation>
 <translation id="671928215901716392">Lås skærmen</translation>
 <translation id="6727005317916125192">Forrige rude</translation>
 <translation id="6740781404993465795">Markér det næste ord eller bogstav</translation>

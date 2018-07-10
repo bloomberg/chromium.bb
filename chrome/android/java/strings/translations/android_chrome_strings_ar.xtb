@@ -50,7 +50,7 @@
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">توقف التنزيل مؤقتًا</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
-<translation id="1395084944394113895">عرض المحتوى بلا اتصال بالإنترنتت</translation>
+<translation id="1395084944394113895">عرض المحتوى بلا اتصال بالإنترنت</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">المزامنة والتخصيص</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
@@ -181,7 +181,7 @@
 <translation id="2426805022920575512">اختيار حساب آخر</translation>
 <translation id="2433507940547922241">المظهر</translation>
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2436117022029368436">‏التواصل مع Google لتحسين التصفُّح وChrome</translation>
+<translation id="2436117022029368436">‏التواصل مع Google لتحسين التصفُّح وخدمات Chrome</translation>
 <translation id="2440823041667407902">الدخول إلى الموقع</translation>
 <translation id="2450083983707403292">هل ترغب في بدء تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
 <translation id="2476578072172137802">إعدادات الموقع</translation>
@@ -325,7 +325,6 @@
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
-<translation id="3871936494901781193">عند التمرير للأعلى، يتم عرض روابط سريعة للصفحات ذات الصلة.</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
 <translation id="3895926599014793903">فرض تفعيل التكبير/التصغير</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -333,7 +332,6 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="395206256282351086">اقتراحات البحث ومواقع الويب غير مفعّلة</translation>
-<translation id="3952533382939530115">‏تستخدم هذه الميزة <ph name="BEGIN_LINK" />المزامنة<ph name="END_LINK" />. ويتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3976396876660209797">إزالة هذا الاختصار وإعادة إنشائه</translation>
@@ -406,7 +404,7 @@
 <translation id="4532845899244822526">اختيار مجلد</translation>
 <translation id="4550003330909367850">عيّن قفل الشاشة على هذا الجهاز لعرض كلمة المرور أو نسخها هنا.</translation>
 <translation id="4558311620361989323">اختصارات صفحة الويب</translation>
-<translation id="4561979708150884304">لا يتوفر اتصال</translation>
+<translation id="4561979708150884304">لا يتوفّر اتصال بالإنترنت</translation>
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
 <translation id="4570913071927164677">التفاصيل</translation>
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
@@ -822,6 +820,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع للتصفح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
@@ -832,6 +831,7 @@
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
+<translation id="8037686209485537503">المزيد من النتائج المشابهة</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">‏لم يتم العثور على بطاقة SD.</translation>
 <translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>

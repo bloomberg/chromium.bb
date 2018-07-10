@@ -7,7 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> נוסף</translation>
 <translation id="1056775291175587022">אין רשתות</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
-<translation id="1104621072296271835">המכשירים שלך עובדים יחד אפילו טוב יותר</translation>
+<translation id="1104621072296271835">ביחד, המכשירים שלך יוכלו לעבוד עוד יותר טוב</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
@@ -115,7 +115,7 @@
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2961963223658824723">משהו השתבש. אפשר לנסות שוב בעוד כמה שניות.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה יש להקיש שוב על Ctrl+Search+D.</translation>
+<translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה, יש להקיש שוב על Ctrl+Search+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> היא הפעלה ציבורית המנוהלת על ידי <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
