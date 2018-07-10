@@ -261,11 +261,10 @@ class ContextualSuggestionsMediator
             prepareModel(clusters, suggestionsResult.getPeekText());
 
             if (mToolbarButtonEnabled) {
-                mToolbarManager.enableExperimentalButton(view -> {
-                    maybeShowContentInSheet();
-                    mCoordinator.showSuggestions(mSuggestionsSource);
-                    mCoordinator.expandBottomSheet();
-                }, R.drawable.btn_star_filled, R.string.contextual_suggestions_button_description);
+                mToolbarManager.enableExperimentalButton(
+                        view -> onToolbarButtonClicked(),
+                        R.drawable.contextual_suggestions,
+                        R.string.contextual_suggestions_button_description);
                 reportToolbarButtonShown();
             } else {
                 setPeekConditions(suggestionsResult);
@@ -274,6 +273,12 @@ class ContextualSuggestionsMediator
                 maybeShowContentInSheet();
             }
         });
+    }
+
+    private void onToolbarButtonClicked() {
+        maybeShowContentInSheet();
+        mCoordinator.showSuggestions(mSuggestionsSource);
+        mCoordinator.expandBottomSheet();
     }
 
     private void setPeekConditions(ContextualSuggestionsResult suggestionsResult) {
