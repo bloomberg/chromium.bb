@@ -8,22 +8,21 @@
 
 namespace resource_coordinator {
 
-UsageClock::UsageClock() {
-#if defined(OS_CHROMEOS)
-  // DesktopSessionDurationTracker isn't implemented on ChromeOS. Consider that
-  // Chrome is always in an active session.
-  current_usage_session_start_time_ = NowTicks();
-#else
-  metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
-
-  if (metrics::DesktopSessionDurationTracker::Get()->in_session())
-    current_usage_session_start_time_ = NowTicks();
+UsageClock::UsageClock() : current_usage_session_start_time_(NowTicks()) {
+#if !defined(OS_CHROMEOS)
+  if (metrics::DesktopSessionDurationTracker::IsInitialized()) {
+    auto* tracker = metrics::DesktopSessionDurationTracker::Get();
+    tracker->AddObserver(this);
+    if (!tracker->in_session())
+      current_usage_session_start_time_ = base::TimeTicks();
+  }
 #endif  // defined(OS_CHROMEOS)
 }
 
 UsageClock::~UsageClock() {
 #if !defined(OS_CHROMEOS)
-  metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
+  if (metrics::DesktopSessionDurationTracker::IsInitialized())
+    metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
 #endif
 }
 
