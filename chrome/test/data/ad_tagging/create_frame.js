@@ -7,17 +7,15 @@ function createFrame(url, name) {
   document.body.appendChild(frame);
 }
 
-function createDocWrittenFrame(name, base_url) {
-  let iframe_src = `<!DOCTYPE HTML>
-  <script src="${base_url}create_frame.js"></script>
-  <script src="${base_url}ad_script.js"></script>
-`
+async function createDocWrittenFrame(name, base_url) {
+  let doc_body = await fetch('frame_factory.html');
+  let doc_text = await doc_body.text();
 
   let frame = document.createElement('iframe');
   frame.name = name;
   document.body.appendChild(frame);
 
   frame.contentDocument.open();
-  frame.contentDocument.write(iframe_src);
+  frame.contentDocument.write(doc_text);
   frame.contentDocument.close();
 }
