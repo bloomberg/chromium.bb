@@ -276,7 +276,7 @@ void URLLoaderInterceptor::WriteResponse(
   client->OnReceiveResponse(response);
 
   uint32_t bytes_written = body.size();
-  mojo::DataPipe data_pipe;
+  mojo::DataPipe data_pipe(body.size());
   CHECK_EQ(MOJO_RESULT_OK,
            data_pipe.producer_handle->WriteData(
                body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));

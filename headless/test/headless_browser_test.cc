@@ -158,7 +158,6 @@ HeadlessBrowserTest::~HeadlessBrowserTest() = default;
 
 void HeadlessBrowserTest::PreRunTestOnMainThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
   // Pump startup related events.
   base::RunLoop().RunUntilIdle();
 }
@@ -253,9 +252,9 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
+  interceptor_ = std::make_unique<TestNetworkInterceptor>();
   HeadlessBrowserContext::Builder builder =
       browser()->CreateBrowserContextBuilder();
-  builder.SetProtocolHandlers(GetProtocolHandlers());
   CustomizeHeadlessBrowserContext(builder);
   browser_context_ = builder.Build();
 
@@ -271,7 +270,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   web_contents_->AddObserver(this);
 
   RunAsynchronousTest();
-
+  interceptor_.reset();
   if (!render_process_exited_)
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   web_contents_->RemoveObserver(this);
@@ -280,10 +279,6 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser()->GetDevToolsTarget()->DetachClient(browser_devtools_client_.get());
   browser_context_->Close();
   browser_context_ = nullptr;
-}
-
-ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
-  return ProtocolHandlerMap();
 }
 
 bool HeadlessAsyncDevTooledBrowserTest::GetEnableBeginFrameControl() {
