@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/manifest_icon_selector.h"
+#include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace blink {
 
 using Purpose = blink::Manifest::ImageResource::Purpose;
 
@@ -497,4 +497,4 @@ TEST(ManifestIconSelector, UseAnyIfNoIdealSize) {
   }
 }
 
-}  // namespace content
+}  // namespace blink

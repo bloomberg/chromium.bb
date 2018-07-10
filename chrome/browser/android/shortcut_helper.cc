@@ -24,10 +24,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
-#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/color_analysis.h"
@@ -158,7 +158,7 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
   shortcut_info->minimum_splash_image_size_in_px =
       GetMinimumSplashImageSizeInPx();
   shortcut_info->splash_image_url =
-      content::ManifestIconSelector::FindBestMatchingIcon(
+      blink::ManifestIconSelector::FindBestMatchingIcon(
           manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
           shortcut_info->minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);

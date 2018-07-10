@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/manifest_icon_selector.h"
+#include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 
 #include <limits>
 
@@ -10,10 +10,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
-namespace content {
+namespace blink {
 
 // static
-GURL ManifestIconSelector::FindBestMatchingIcon(
+BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
     const std::vector<blink::Manifest::ImageResource>& icons,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
@@ -77,10 +77,9 @@ GURL ManifestIconSelector::FindBestMatchingIcon(
 
   if (latest_size_any_index != -1)
     return icons[latest_size_any_index].src;
-  else if (closest_size_match_index != -1)
+  if (closest_size_match_index != -1)
     return icons[closest_size_match_index].src;
-  else
-    return GURL();
+  return GURL();
 }
 
-}  // namespace content
+}  // namespace blink
