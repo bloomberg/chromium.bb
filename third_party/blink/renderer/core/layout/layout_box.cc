@@ -113,14 +113,10 @@ LayoutBox::LayoutBox(ContainerNode* node)
 }
 
 PaintLayerType LayoutBox::LayerTypeRequired() const {
-  // hasAutoZIndex only returns true if the element is positioned or a flex-item
-  // since position:static elements that are not flex-items get their z-index
-  // coerced to auto.
-  if (IsPositioned() || CreatesGroup() || HasTransformRelatedProperty() ||
-      HasHiddenBackface() || HasReflection() || Style()->SpecifiesColumns() ||
-      Style()->IsStackingContext() ||
-      Style()->ShouldCompositeForCurrentAnimations() ||
-      RootScrollerUtil::IsEffective(*this))
+  if (StyleRef().IsStacked() || RootScrollerUtil::IsEffective(*this))
+    return kNormalPaintLayer;
+
+  if (StyleRef().SpecifiesColumns())
     return kNormalPaintLayer;
 
   if (HasOverflowClip())

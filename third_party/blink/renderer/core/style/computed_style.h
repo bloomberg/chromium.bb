@@ -2072,9 +2072,7 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT void UpdateIsStackingContext(bool is_document_element,
                                            bool is_in_top_layer,
                                            bool is_svg_stacking);
-  bool IsStacked() const {
-    return IsStackingContext() || GetPosition() != EPosition::kStatic;
-  }
+  CORE_EXPORT bool IsStacked() const;
 
   // Pseudo-styles
   bool HasAnyPublicPseudoStyles() const;
