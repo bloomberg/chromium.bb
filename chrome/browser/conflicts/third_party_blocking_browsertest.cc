@@ -5,7 +5,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -13,35 +12,35 @@
 #include "base/scoped_native_library.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace {
 
-// This classes watches the module blacklist cache directory to detect when the
-// cache file is created.
-class ModuleBlacklistCacheObserver {
+// This classes watches the third-party blocking key to detect when the path to
+// the freshly created cache is written into the registry.
+class ThirdPartyRegistryKeyObserver {
  public:
-  ModuleBlacklistCacheObserver(
-      const base::FilePath& module_blacklist_cache_path)
-      : module_blacklist_cache_path_(module_blacklist_cache_path) {}
+  ThirdPartyRegistryKeyObserver()
+      : registry_key_(HKEY_CURRENT_USER,
+                      GetRegistryKeyPath().c_str(),
+                      KEY_CREATE_SUB_KEY | KEY_READ | KEY_NOTIFY) {}
 
   bool StartWatching() {
-    return file_path_watcher_.Watch(
-        module_blacklist_cache_path_.DirName(), false,
-        base::Bind(
-            &ModuleBlacklistCacheObserver::OnModuleBlacklistCachePathChanged,
-            base::Unretained(this)));
+    return registry_key_.StartWatching(base::Bind(
+        &ThirdPartyRegistryKeyObserver::OnChange, base::Unretained(this)));
   }
 
-  void WaitForModuleBlacklistCacheCreated() {
-    if (module_blacklist_cache_created_)
+  void WaitForCachePathWritten() {
+    if (path_written_)
       return;
 
     base::RunLoop run_loop;
@@ -49,33 +48,31 @@ class ModuleBlacklistCacheObserver {
     run_loop.Run();
   }
 
- private:
-  void OnModuleBlacklistCachePathChanged(const base::FilePath& path,
-                                         bool error) {
-    if (!base::PathExists(module_blacklist_cache_path_))
+  void OnChange() {
+    if (!registry_key_.HasValue(third_party_dlls::kBlFilePathRegValue))
       return;
 
-    module_blacklist_cache_created_ = true;
+    path_written_ = true;
 
     if (run_loop_quit_closure_)
       std::move(run_loop_quit_closure_).Run();
   }
 
-  // Needed to watch a file on main thread.
-  base::ScopedAllowBlockingForTesting scoped_allow_blocking_;
+ private:
+  base::string16 GetRegistryKeyPath() {
+    return install_static::GetRegistryPath().append(
+        third_party_dlls::kThirdPartyRegKeyName);
+  }
 
-  // The path to the module_blacklist_cache.
-  base::FilePath module_blacklist_cache_path_;
+  base::win::RegKey registry_key_;
 
-  base::FilePathWatcher file_path_watcher_;
-
-  // Remembers if the cache was created in case the callback is invoked before
-  // WaitForModuleBlacklistCacheCreated() was called.
-  bool module_blacklist_cache_created_ = false;
+  // Remembers if the path of the cache was written in the registry in case the
+  // callback is invoked before WaitForCachePathWritten() was called.
+  bool path_written_ = false;
 
   base::Closure run_loop_quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModuleBlacklistCacheObserver);
+  DISALLOW_COPY_AND_ASSIGN(ThirdPartyRegistryKeyObserver);
 };
 
 class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
@@ -90,6 +87,8 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
         features::kThirdPartyModulesBlocking);
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     InProcessBrowserTest::SetUp();
   }
@@ -136,6 +135,8 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
   // Enables the ThirdPartyModulesBlocking feature.
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  registry_util::RegistryOverrideManager registry_override_manager_;
+
   // Temp directory where the third-party module is located.
   base::ScopedTempDir scoped_temp_dir_;
 
@@ -147,7 +148,8 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
 // This is an integration test for the blocking of third-party modules.
 //
 // This test makes sure that all the different classes interact together
-// correctly to produce a valid module blacklist cache.
+// correctly to produce a valid module blacklist cache and to write its path in
+// the registry.
 //
 // Note: This doesn't test that the modules are actually blocked on the next
 //       browser launch.
@@ -162,14 +164,9 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
   // Speed up the test.
   module_database->IncreaseInspectionPriority();
 
-  base::FilePath module_blacklist_cache_path =
-      ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath();
-  ASSERT_FALSE(module_blacklist_cache_path.empty());
-
   // Create the observer early so the change is guaranteed to be observed.
-  ModuleBlacklistCacheObserver module_blacklist_cache_observer(
-      module_blacklist_cache_path);
-  ASSERT_TRUE(module_blacklist_cache_observer.StartWatching());
+  ThirdPartyRegistryKeyObserver third_party_registry_key_observer;
+  ASSERT_TRUE(third_party_registry_key_observer.StartWatching());
 
   // Simulate the download of the module list component.
   module_database->third_party_conflicts_manager()->LoadModuleList(
@@ -180,11 +177,18 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
   ASSERT_NO_FATAL_FAILURE(CreateThirdPartyModule(&third_party_module_path));
   ASSERT_FALSE(third_party_module_path.empty());
 
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
   base::ScopedNativeLibrary dll(third_party_module_path);
   ASSERT_TRUE(dll.is_valid());
 
-  // Now the module blacklist cache will eventually be created.
-  module_blacklist_cache_observer.WaitForModuleBlacklistCacheCreated();
+  // Now the module blacklist cache will eventually be created and its path
+  // written in the registry.
+  third_party_registry_key_observer.WaitForCachePathWritten();
+
+  base::FilePath module_blacklist_cache_path =
+      ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath();
+  ASSERT_FALSE(module_blacklist_cache_path.empty());
+  ASSERT_TRUE(base::PathExists(module_blacklist_cache_path));
 
   // Now check that the third-party DLL was added to the module blacklist cache.
   third_party_dlls::PackedListMetadata metadata;

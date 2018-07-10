@@ -12,6 +12,7 @@
 
 #include "base/containers/span.h"
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
@@ -69,6 +70,14 @@ base::MD5Digest CalculateModuleBlacklistCacheMD5(
 }
 
 }  // namespace
+
+const base::FilePath::CharType kModuleListComponentRelativePath[] =
+    FILE_PATH_LITERAL("ThirdPartyModuleList")
+#ifdef _WIN64
+        FILE_PATH_LITERAL("64");
+#else
+        FILE_PATH_LITERAL("32");
+#endif
 
 uint32_t CalculateTimeDateStamp(base::Time time) {
   const auto delta = time.ToDeltaSinceWindowsEpoch();

@@ -40,6 +40,28 @@ class SequencedTaskRunner;
 // To coalesce these events and reduce the number of updates, a timer is started
 // when the load attempt log is drained. Once expired, an update is triggered
 // unless one was already done because of newly blacklisted modules.
+//
+//
+// Additional implementation details about the module blacklist cache file:
+//
+// Because the file is written under the User Data directory, it is not possible
+// for chrome_elf to find it by itself (see https://crbug.com/748949). So the
+// path to the file is written into a registry key, which solves the problem by
+// making the already expanded path available.
+//
+// A consequence of this solution is that in some circumstances, multiple
+// browser process will race to write the path to their blacklist file into a
+// single registry key because the same registry key is shared between all User
+// Data directories.
+//
+// This means that a browser instance launch using one User Data directory can
+// potentially use the cache from another User Data directory instead of their
+// own.
+//
+// This is acceptable given that all the caches contains more or less the same
+// information and are interchangeable. Also, updates to the cache file and to
+// the registry are atomic, guaranteeing that chrome_elf always reads a valid
+// blacklist.
 class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
  public:
   struct CacheUpdateResult {

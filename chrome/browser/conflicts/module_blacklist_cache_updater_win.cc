@@ -21,12 +21,14 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
+#include "base/win/registry.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/install_static/install_util.h"
 
 #if !defined(OFFICIAL_BUILD)
 #include "base/base_paths.h"
@@ -102,6 +104,22 @@ ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
                                 blacklisted_modules, &result.new_md5_digest);
   UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.WriteResult", write_result);
 
+  if (write_result) {
+    // Write the path of the cache into the registry so that chrome_elf can find
+    // it on its own.
+    base::string16 cache_path_registry_key =
+        install_static::GetRegistryPath().append(
+            third_party_dlls::kThirdPartyRegKeyName);
+    base::win::RegKey registry_key(
+        HKEY_CURRENT_USER, cache_path_registry_key.c_str(), KEY_SET_VALUE);
+
+    bool cache_path_updated = SUCCEEDED(
+        registry_key.WriteValue(third_party_dlls::kBlFilePathRegValue,
+                                module_blacklist_cache_path.value().c_str()));
+    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.BlacklistPathUpdated",
+                          cache_path_updated);
+  }
+
   return result;
 }
 
@@ -152,24 +170,12 @@ bool ModuleBlacklistCacheUpdater::IsThirdPartyModuleBlockingEnabled() {
 
 // static
 base::FilePath ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath() {
-  // Subdir relative to UserDataDirectory.
-  constexpr base::FilePath::CharType kFileSubdir[] =
-      FILE_PATH_LITERAL("ThirdPartyModuleList")
-#if defined(_WIN64)
-          FILE_PATH_LITERAL("64");
-#else
-          FILE_PATH_LITERAL("32");
-#endif
-
-  // Packed module data cache file.
-  constexpr base::FilePath::CharType kBlFileName[] =
-      FILE_PATH_LITERAL("bldata");
-
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return base::FilePath();
 
-  return user_data_dir.Append(kFileSubdir).Append(kBlFileName);
+  return user_data_dir.Append(kModuleListComponentRelativePath)
+      .Append(L"bldata");
 }
 
 // static
