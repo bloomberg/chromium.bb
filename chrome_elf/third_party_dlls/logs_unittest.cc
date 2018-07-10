@@ -148,7 +148,7 @@ DWORD WINAPI NotificationHandler(LPVOID parameter) {
 // Test successful initialization and module lookup.
 TEST(ThirdParty, Logs) {
   // Init.
-  ASSERT_EQ(InitLogs(), LogStatus::kSuccess);
+  ASSERT_EQ(InitLogs(), ThirdPartyStatus::kSuccess);
 
   for (size_t i = 0; i < arraysize(kTestLogs); ++i) {
     std::string fingerprint_hash(
@@ -184,7 +184,7 @@ TEST(ThirdParty, Logs) {
 // Test notifications.
 TEST(ThirdParty, LogNotifications) {
   // Init.
-  ASSERT_EQ(InitLogs(), LogStatus::kSuccess);
+  ASSERT_EQ(InitLogs(), ThirdPartyStatus::kSuccess);
 
   uint32_t initial_log = 0;
   DrainLog(nullptr, 0, &initial_log);

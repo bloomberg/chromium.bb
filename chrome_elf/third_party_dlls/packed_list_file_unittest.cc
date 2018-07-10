@@ -196,7 +196,7 @@ TEST_F(ThirdPartyFileTest, Success) {
   ASSERT_NO_FATAL_FAILURE(CreateTestFile());
 
   // Init.
-  ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
+  ASSERT_EQ(InitFromFile(), ThirdPartyStatus::kSuccess);
 
   std::string fingerprint_hash;
   std::string name_hash;
@@ -219,7 +219,8 @@ TEST_F(ThirdPartyFileTest, Success) {
 
 // Test successful initialization with no packed files.
 TEST_F(ThirdPartyFileTest, NoFiles) {
-  ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
+  // kFileNotFound is a non-fatal status code.
+  ASSERT_EQ(InitFromFile(), ThirdPartyStatus::kFileNotFound);
 
   std::string fingerprint_hash = GetFingerprintString(1337, 0x12345678);
   fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
@@ -237,13 +238,13 @@ TEST_F(ThirdPartyFileTest, CorruptFile) {
   PackedListMetadata meta = {kCurrent, static_cast<uint32_t>(50)};
   ASSERT_EQ(file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
             static_cast<int>(sizeof(meta)));
-  EXPECT_EQ(InitFromFile(), FileStatus::kArrayReadFail);
+  EXPECT_EQ(InitFromFile(), ThirdPartyStatus::kFileArrayReadFailure);
 
   // 2) Corrupt data or just unsupported metadata version.
   meta = {kUnsupported, static_cast<uint32_t>(50)};
   ASSERT_EQ(file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
             static_cast<int>(sizeof(meta)));
-  EXPECT_EQ(InitFromFile(), FileStatus::kInvalidFormatVersion);
+  EXPECT_EQ(InitFromFile(), ThirdPartyStatus::kFileInvalidFormatVersion);
 
   // 3) Not enough data for metadata.
   meta = {kCurrent, static_cast<uint32_t>(10)};
@@ -251,7 +252,7 @@ TEST_F(ThirdPartyFileTest, CorruptFile) {
       file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta) / 2),
       static_cast<int>(sizeof(meta) / 2));
   ASSERT_TRUE(file->SetLength(sizeof(meta) / 2));
-  EXPECT_EQ(InitFromFile(), FileStatus::kMetadataReadFail);
+  EXPECT_EQ(InitFromFile(), ThirdPartyStatus::kFileMetadataReadFailure);
 }
 
 // Test successful initialization, getting the file path from registry.
@@ -271,7 +272,7 @@ TEST_F(ThirdPartyFileTest, SuccessFromRegistry) {
   OverrideFilePathForTesting(std::wstring());
 
   // 4. Run the test.
-  EXPECT_EQ(InitFromFile(), FileStatus::kSuccess);
+  EXPECT_EQ(InitFromFile(), ThirdPartyStatus::kSuccess);
 
   // 5. Disable reg override.
   ASSERT_NO_FATAL_FAILURE(CancelRegRedirect(nt::HKCU));

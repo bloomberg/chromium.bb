@@ -228,8 +228,6 @@ static_library("third_party_dlls") {
   sources = [
     "third_party_dlls/hook.cc",
     "third_party_dlls/hook.h",
-    "third_party_dlls/imes.cc",
-    "third_party_dlls/imes.h",
     "third_party_dlls/logs.cc",
     "third_party_dlls/logs.h",
     "third_party_dlls/main.cc",
@@ -260,6 +258,8 @@ source_set("third_party_shared_defines") {
     "third_party_dlls/logging_api.h",
     "third_party_dlls/packed_list_format.cc",
     "third_party_dlls/packed_list_format.h",
+    "third_party_dlls/status_codes.cc",
+    "third_party_dlls/status_codes.h",
   ]
 }
 
@@ -277,7 +277,6 @@ test("chrome_elf_unittests") {
     "pe_image_safe/pe_image_safe_unittest.cc",
     "run_all_unittests.cc",
     "sha1/sha1_unittest.cc",
-    "third_party_dlls/imes_unittest.cc",
     "third_party_dlls/logs_unittest.cc",
     "third_party_dlls/main_unittest.cc",
     "third_party_dlls/main_unittest_exe.h",
@@ -404,6 +403,7 @@ executable("third_party_dlls_test_exe") {
   deps = [
     ":third_party_dlls",
     "//base",
+    "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",
     "//components/crash/content/app:crash_export_stubs",

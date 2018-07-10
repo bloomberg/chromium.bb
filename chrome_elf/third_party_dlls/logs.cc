@@ -192,16 +192,16 @@ void LogLoadAttempt(LogType log_type,
   ::ReleaseMutex(g_log_mutex);
 }
 
-LogStatus InitLogs() {
+ThirdPartyStatus InitLogs() {
   // Debug check: InitLogs should not be called more than once.
   assert(!g_log_mutex);
 
   // Create unnamed mutex for log access.
   g_log_mutex = ::CreateMutex(nullptr, false, nullptr);
   if (!g_log_mutex)
-    return LogStatus::kCreateMutexFailure;
+    return ThirdPartyStatus::kLogsCreateMutexFailure;
 
-  return LogStatus::kSuccess;
+  return ThirdPartyStatus::kSuccess;
 }
 
 void DeinitLogs() {

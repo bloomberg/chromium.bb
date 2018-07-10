@@ -12,8 +12,10 @@
 #include "base/files/file.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_reg_util_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
+#include "chrome_elf/nt_registry/nt_registry.h"
 #include "chrome_elf/third_party_dlls/logging_api.h"
 #include "chrome_elf/third_party_dlls/main.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
@@ -36,6 +38,13 @@ ExitCode LoadDll(std::wstring name) {
     return kDllLoadFailed;
 
   return kDllLoadSuccess;
+}
+
+// Utility function to protect the local registry.
+void RegRedirect(registry_util::RegistryOverrideManager* rom) {
+  base::string16 temp;
+  rom->OverrideRegistry(HKEY_CURRENT_USER, &temp);
+  nt::SetTestingOverride(nt::HKCU, temp);
 }
 
 }  // namespace
@@ -87,6 +96,10 @@ int main() {
 
   // Override blacklist path before initializing.
   third_party_dlls::OverrideFilePathForTesting(blacklist_path);
+
+  // Enable a registry test net before initializing.
+  registry_util::RegistryOverrideManager rom;
+  RegRedirect(&rom);
 
   if (!third_party_dlls::Init())
     return kThirdPartyInitFailure;

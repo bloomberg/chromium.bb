@@ -12,11 +12,9 @@
 #include <string>
 
 #include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/status_codes.h"
 
 namespace third_party_dlls {
-
-// "static_cast<int>(LogStatus::value)" to access underlying value.
-enum class LogStatus { kSuccess = 0, kCreateMutexFailure = 1, COUNT };
 
 // Adds a module load attempt to the internal load log.
 // - |log_type| indicates the type of logging.
@@ -31,7 +29,7 @@ void LogLoadAttempt(LogType log_type,
                     const std::string& full_image_path);
 
 // Initialize internal logs.
-LogStatus InitLogs();
+ThirdPartyStatus InitLogs();
 
 // Removes initialization for use by tests, or cleanup on failure.
 void DeinitLogs();
