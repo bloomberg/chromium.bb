@@ -137,7 +137,8 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   std::unique_ptr<LoginReputationClientResponse> cached_response =
       std::make_unique<LoginReputationClientResponse>();
   auto verdict = password_protection_service_->GetCachedVerdict(
-      main_frame_url_, trigger_type_, cached_response.get());
+      main_frame_url_, trigger_type_, reused_password_type_,
+      cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
     Finish(PasswordProtectionService::RESPONSE_ALREADY_CACHED,
            std::move(cached_response));

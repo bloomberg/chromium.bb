@@ -47,8 +47,10 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                void(content::WebContents*,
                     const std::string&,
                     ReusedPasswordType));
-  MOCK_METHOD2(UpdateSecurityState,
-               void(safe_browsing::SBThreatType, content::WebContents*));
+  MOCK_METHOD3(UpdateSecurityState,
+               void(safe_browsing::SBThreatType,
+                    ReusedPasswordType,
+                    content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                void(bool, const history::URLRows&));
   MOCK_METHOD2(OnPolicySpecifiedPasswordReuseDetected, void(const GURL&, bool));

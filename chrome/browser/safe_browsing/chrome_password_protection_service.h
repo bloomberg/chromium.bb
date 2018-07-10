@@ -222,9 +222,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       const LoginReputationClientResponse* response) override;
 
   // Updates security state for the current |web_contents| based on
-  // |threat_type|, such that page info bubble will show appropriate status
-  // when user clicks on the security chip.
+  // |threat_type| and reused |password_type|, such that page info bubble will
+  // show appropriate status when user clicks on the security chip.
   void UpdateSecurityState(SBThreatType threat_type,
+                           ReusedPasswordType password_type,
                            content::WebContents* web_contents) override;
 
   void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(

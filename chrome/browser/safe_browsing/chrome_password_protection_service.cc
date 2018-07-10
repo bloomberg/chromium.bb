@@ -369,7 +369,8 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
       base::Value(
           base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
 
-  UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE, web_contents);
+  UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
+                      PasswordReuseEvent::SIGN_IN_PASSWORD, web_contents);
 
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token,
@@ -383,7 +384,8 @@ void ChromePasswordProtectionService::OnModalWarningShownForEnterprisePassword(
                       PasswordProtectionService::SHOWN,
                       PasswordReuseEvent::ENTERPRISE_PASSWORD);
   web_contents_with_unhandled_enterprise_reuses_.insert(web_contents);
-  UpdateSecurityState(SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE, web_contents);
+  UpdateSecurityState(SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
+                      PasswordReuseEvent::ENTERPRISE_PASSWORD, web_contents);
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token,
                                     PasswordReuseEvent::ENTERPRISE_PASSWORD);
@@ -772,6 +774,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
 
 void ChromePasswordProtectionService::UpdateSecurityState(
     SBThreatType threat_type,
+    ReusedPasswordType password_type,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const GURL url = web_contents->GetLastCommittedURL();
@@ -785,11 +788,11 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     // Overrides cached verdicts.
     LoginReputationClientResponse verdict;
     GetCachedVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                     &verdict);
+                     password_type, &verdict);
     verdict.set_verdict_type(LoginReputationClientResponse::SAFE);
     verdict.set_cache_duration_sec(kOverrideVerdictCacheDurationSec);
     CacheVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 &verdict, base::Time::Now());
+                 password_type, &verdict, base::Time::Now());
     return;
   }
 
@@ -1004,7 +1007,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   if (action == PasswordProtectionService::MARK_AS_LEGITIMATE) {
     // TODO(vakh): There's no good enum to report this dialog interaction.
     // This needs to be investigated.
-    UpdateSecurityState(SB_THREAT_TYPE_SAFE, web_contents);
+    UpdateSecurityState(SB_THREAT_TYPE_SAFE, password_type, web_contents);
     if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
     } else {

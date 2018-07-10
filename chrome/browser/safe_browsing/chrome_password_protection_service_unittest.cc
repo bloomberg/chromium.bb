@@ -455,11 +455,12 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   verdict_proto.set_verdict_type(LoginReputationClientResponse::PHISHING);
   verdict_proto.set_cache_duration_sec(600);
   verdict_proto.set_cache_expression("password_reuse_url.com/");
-  service_->CacheVerdict(url,
-                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         &verdict_proto, base::Time::Now());
+  service_->CacheVerdict(
+      url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &verdict_proto, base::Time::Now());
 
   service_->UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
+                                PasswordReuseEvent::SIGN_IN_PASSWORD,
                                 web_contents());
   ASSERT_TRUE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
       url, false, web_contents()->GetController().GetLastCommittedEntry(),
@@ -467,6 +468,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   EXPECT_EQ(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE, current_threat_type);
 
   service_->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_SAFE,
+                                PasswordReuseEvent::SIGN_IN_PASSWORD,
                                 web_contents());
   current_threat_type = SB_THREAT_TYPE_UNUSED;
   service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
@@ -474,10 +476,10 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
       web_contents(), false, &current_threat_type);
   EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
   LoginReputationClientResponse verdict;
-  EXPECT_EQ(
-      LoginReputationClientResponse::SAFE,
-      service_->GetCachedVerdict(
-          url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &verdict));
+  EXPECT_EQ(LoginReputationClientResponse::SAFE,
+            service_->GetCachedVerdict(
+                url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                PasswordReuseEvent::SIGN_IN_PASSWORD, &verdict));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,

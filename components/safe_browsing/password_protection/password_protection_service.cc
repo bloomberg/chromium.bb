@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -138,6 +139,9 @@ PasswordProtectionService::PasswordProtectionService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
     history_service_observer_.Add(history_service);
+
+  // TODO(jialiul): Remove this code when migration is done.
+  MigrateCachedVerdicts();
 }
 
 PasswordProtectionService::~PasswordProtectionService() {
@@ -249,15 +253,17 @@ bool PasswordProtectionService::ShouldShowModalWarning(
 // verdicts are only enabled on extended reporting users, we cache them one
 // layer lower in the content setting DictionaryValue than PASSWORD_REUSE_EVENT
 // verdicts.
-// In other words, to cache a UNFAMILIAR_LOGIN_PAGE verdict we needs two levels
-// of keys: (1) origin, (2) cache expression returned in verdict.
-// To cache a PASSWORD_REUSE_EVENT, three levels of keys are used:
+// In other words, to cache a PASSWORD_REUSE_EVENT verdict we needs three levels
+// of keys: (1) origin, (2) password type, (3) cache expression
+// returned in verdict.
+// To cache a UNFAMILIAR_LOGIN_PAGE, three levels of keys are used:
 // (1) origin, (2) 2nd level key is always |kPasswordOnFocusCacheKey|,
 // (3) cache expression.
 LoginReputationClientResponse::VerdictType
 PasswordProtectionService::GetCachedVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordType password_type,
     LoginReputationClientResponse* out_response) {
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
@@ -274,16 +280,18 @@ PasswordProtectionService::GetCachedVerdict(
   if (!cache_dictionary || cache_dictionary->empty())
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 
-  base::DictionaryValue* verdict_dictionary = nullptr;
+  base::Value* verdict_dictionary = nullptr;
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     // All UNFAMILIAR_LOGIN_PAGE verdicts (a.k.a password on focus ping)
     // are cached under |kPasswordOnFocusCacheKey|.
-    if (!cache_dictionary->GetDictionaryWithoutPathExpansion(
-            base::StringPiece(kPasswordOnFocusCacheKey), &verdict_dictionary)) {
+    verdict_dictionary = cache_dictionary->FindKey(kPasswordOnFocusCacheKey);
+    if (!verdict_dictionary)
       return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-    }
   } else {
-    verdict_dictionary = cache_dictionary.get();
+    verdict_dictionary =
+        cache_dictionary->FindKey(base::NumberToString(password_type));
+    if (!verdict_dictionary)
+      return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
   }
 
   std::vector<std::string> paths;
@@ -294,20 +302,12 @@ PasswordProtectionService::GetCachedVerdict(
   // For all the verdicts of the same origin, we key them by |cache_expression|.
   // Its corresponding value is a DictionaryValue contains its creation time and
   // the serialized verdict proto.
-  for (base::DictionaryValue::Iterator it(*verdict_dictionary); !it.IsAtEnd();
-       it.Advance()) {
-    if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-        it.key() == base::StringPiece(kPasswordOnFocusCacheKey)) {
-      continue;
-    }
-    base::DictionaryValue* verdict_entry = nullptr;
-    verdict_dictionary->GetDictionaryWithoutPathExpansion(
-        it.key() /* cache_expression */, &verdict_entry);
+  for (const auto& item : verdict_dictionary->DictItems()) {
     int verdict_received_time;
     LoginReputationClientResponse verdict;
     // Ignore any entry that we cannot parse. These invalid entries will be
     // cleaned up during shutdown.
-    if (!ParseVerdictEntry(verdict_entry, &verdict_received_time, &verdict))
+    if (!ParseVerdictEntry(&item.second, &verdict_received_time, &verdict))
       continue;
     // Since password protection content settings are keyed by origin, we only
     // need to compare the path part of the cache_expression and the given url.
@@ -334,6 +334,7 @@ PasswordProtectionService::GetCachedVerdict(
 void PasswordProtectionService::CacheVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordType password_type,
     LoginReputationClientResponse* verdict,
     const base::Time& receive_time) {
   DCHECK(verdict);
@@ -368,7 +369,13 @@ void PasswordProtectionService::CacheVerdict(
           kPasswordOnFocusCacheKey, base::Value(base::Value::Type::DICTIONARY));
     }
   } else {
-    verdict_dictionary = cache_dictionary.get();
+    std::string password_type_key = base::NumberToString(password_type);
+    verdict_dictionary = cache_dictionary->FindKeyOfType(
+        password_type_key, base::Value::Type::DICTIONARY);
+    if (!verdict_dictionary) {
+      verdict_dictionary = cache_dictionary->SetKey(
+          password_type_key, base::Value(base::Value::Type::DICTIONARY));
+    }
   }
 
   // Increases stored verdict count if we haven't seen this cache expression
@@ -419,11 +426,11 @@ void PasswordProtectionService::CleanUpExpiredVerdicts() {
       content_settings_->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
           base::Time::Max(),
-          base::Bind(&OriginMatchPrimaryPattern, primary_pattern_url));
+          base::BindRepeating(&OriginMatchPrimaryPattern, primary_pattern_url));
     } else if (has_expired_password_on_focus_entry ||
                has_expired_password_reuse_entry) {
       // Set the website setting of this origin with the updated
-      // |verdict_diectionary|.
+      // |cache_dictionary|.
       content_settings_->SetWebsiteSettingDefaultScope(
           primary_pattern_url, GURL(),
           CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
@@ -520,7 +527,8 @@ void PasswordProtectionService::RequestFinished(
   if (response) {
     if (!already_cached) {
       CacheVerdict(request->main_frame_url(), request->trigger_type(),
-                   response.get(), base::Time::Now());
+                   request->reused_password_type(), response.get(),
+                   base::Time::Now());
     }
     if (ShouldShowModalWarning(request->trigger_type(),
                                request->reused_password_type(),
@@ -600,17 +608,12 @@ int PasswordProtectionService::GetStoredVerdictCount(
             GURL(source.primary_pattern.ToString()), GURL(),
             CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
     if (cache_dictionary.get() && !cache_dictionary->empty()) {
-      stored_verdict_count_password_entry_ +=
-          static_cast<int>(cache_dictionary->size());
-      base::DictionaryValue* password_on_focus_dict = nullptr;
-      if (cache_dictionary->GetDictionaryWithoutPathExpansion(
-              base::StringPiece(kPasswordOnFocusCacheKey),
-              &password_on_focus_dict)) {
-        // Substracts 1 from password_entry count if |kPasswordOnFocusCacheKey|
-        // presents.
-        stored_verdict_count_password_entry_ -= 1;
-        stored_verdict_count_password_on_focus_ +=
-            static_cast<int>(password_on_focus_dict->size());
+      for (const auto& item : cache_dictionary->DictItems()) {
+        if (item.first == base::StringPiece(kPasswordOnFocusCacheKey)) {
+          stored_verdict_count_password_on_focus_ += item.second.DictSize();
+        } else {
+          stored_verdict_count_password_entry_ += item.second.DictSize();
+        }
       }
     }
   }
@@ -638,15 +641,16 @@ void PasswordProtectionService::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,
-                 GetWeakPtr(), deletion_info.IsAllHistory(),
-                 deletion_info.deleted_rows()));
+      base::BindRepeating(
+          &PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,
+          GetWeakPtr(), deletion_info.IsAllHistory(),
+          deletion_info.deleted_rows()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PasswordProtectionService::
-                     RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
-                 GetWeakPtr(), deletion_info.IsAllHistory(),
-                 deletion_info.deleted_rows()));
+      base::BindRepeating(&PasswordProtectionService::
+                              RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
+                          GetWeakPtr(), deletion_info.IsAllHistory(),
+                          deletion_info.deleted_rows()));
 }
 
 void PasswordProtectionService::HistoryServiceBeingDeleted(
@@ -689,7 +693,8 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
             url_key, LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
     content_settings_->ClearSettingsForOneTypeWithPredicate(
         CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
-        base::Time::Max(), base::Bind(&OriginMatchPrimaryPattern, url_key));
+        base::Time::Max(),
+        base::BindRepeating(&OriginMatchPrimaryPattern, url_key));
   }
 }
 
@@ -705,18 +710,21 @@ int PasswordProtectionService::GetVerdictCountForURL(
   if (!cache_dictionary || cache_dictionary->empty())
     return 0;
 
+  int verdict_cnt = 0;
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    base::DictionaryValue* password_on_focus_dict = nullptr;
-    return cache_dictionary->GetDictionaryWithoutPathExpansion(
-               base::StringPiece(kPasswordOnFocusCacheKey),
-               &password_on_focus_dict)
-               ? password_on_focus_dict->size()
-               : 0;
+    base::Value* password_on_focus_dict = nullptr;
+    password_on_focus_dict =
+        cache_dictionary->FindKey(kPasswordOnFocusCacheKey);
+    verdict_cnt +=
+        password_on_focus_dict ? password_on_focus_dict->DictSize() : 0;
   } else {
-    return cache_dictionary->HasKey(base::StringPiece(kPasswordOnFocusCacheKey))
-               ? cache_dictionary->size() - 1
-               : cache_dictionary->size();
+    for (const auto& item : cache_dictionary->DictItems()) {
+      if (item.first == kPasswordOnFocusCacheKey)
+        continue;
+      verdict_cnt += item.second.DictSize();
+    }
   }
+  return verdict_cnt;
 }
 
 bool PasswordProtectionService::RemoveExpiredVerdicts(
@@ -724,69 +732,73 @@ bool PasswordProtectionService::RemoveExpiredVerdicts(
     base::DictionaryValue* cache_dictionary) {
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
-  base::DictionaryValue* verdict_dictionary = nullptr;
-  if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
-    verdict_dictionary = cache_dictionary;
-  } else {
-    if (!cache_dictionary->GetDictionaryWithoutPathExpansion(
-            base::StringPiece(kPasswordOnFocusCacheKey), &verdict_dictionary)) {
-      return false;
-    }
-  }
-
-  if (!verdict_dictionary || verdict_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->empty())
     return false;
 
-  std::vector<std::string> expired_keys;
-  for (base::DictionaryValue::Iterator it(*verdict_dictionary); !it.IsAtEnd();
-       it.Advance()) {
-    if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-        it.key() == std::string(kPasswordOnFocusCacheKey))
-      continue;
+  size_t verdicts_removed = 0;
+  std::vector<std::string> empty_keys;
+  for (auto item : cache_dictionary->DictItems()) {
+    if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
+        item.first == std::string(kPasswordOnFocusCacheKey)) {
+      size_t removed_cnt = RemoveExpiredEntries(&item.second);
+      verdicts_removed += removed_cnt;
+      stored_verdict_count_password_on_focus_ -= removed_cnt;
+    } else {
+      size_t removed_cnt = RemoveExpiredEntries(&item.second);
+      verdicts_removed += removed_cnt;
+      stored_verdict_count_password_entry_ -= removed_cnt;
+    }
 
-    base::DictionaryValue* verdict_entry = nullptr;
-    verdict_dictionary->GetDictionaryWithoutPathExpansion(it.key(),
-                                                          &verdict_entry);
+    if (item.second.DictSize() == 0U)
+      empty_keys.push_back(item.first);
+  }
+  for (const auto& key : empty_keys)
+    cache_dictionary->RemoveKey(key);
+
+  return verdicts_removed > 0U;
+}
+
+size_t PasswordProtectionService::RemoveExpiredEntries(
+    base::Value* verdict_dictionary) {
+  std::vector<std::string> expired_keys;
+  for (const auto& item : verdict_dictionary->DictItems()) {
     int verdict_received_time;
     LoginReputationClientResponse verdict;
-
-    if (!ParseVerdictEntry(verdict_entry, &verdict_received_time, &verdict) ||
-        IsCacheExpired(verdict_received_time, verdict.cache_duration_sec())) {
-      // Since DictionaryValue::Iterator cannot be used to modify the
-      // dictionary, we record the keys of expired verdicts in |expired_keys|
-      // and remove them in the next for-loop.
-      expired_keys.push_back(it.key());
+    if (!PasswordProtectionService::ParseVerdictEntry(
+            &item.second, &verdict_received_time, &verdict) ||
+        PasswordProtectionService::IsCacheExpired(
+            verdict_received_time, verdict.cache_duration_sec())) {
+      expired_keys.push_back(item.first);
     }
   }
 
-  for (const std::string& key : expired_keys) {
-    verdict_dictionary->RemoveWithoutPathExpansion(key, nullptr);
-    if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT)
-      stored_verdict_count_password_entry_--;
-    else
-      stored_verdict_count_password_on_focus_--;
-  }
+  for (const std::string& key : expired_keys)
+    verdict_dictionary->RemoveKey(key);
 
-  if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
-      verdict_dictionary->size() == 0U) {
-    cache_dictionary->RemoveWithoutPathExpansion(
-        base::StringPiece(kPasswordOnFocusCacheKey), nullptr);
-  }
-
-  return expired_keys.size() > 0U;
+  return expired_keys.size();
 }
 
 // static
 bool PasswordProtectionService::ParseVerdictEntry(
-    base::DictionaryValue* verdict_entry,
+    base::Value* verdict_entry,
     int* out_verdict_received_time,
     LoginReputationClientResponse* out_verdict) {
   std::string serialized_verdict_proto;
-  return verdict_entry && out_verdict &&
-         verdict_entry->GetInteger(kCacheCreationTime,
-                                   out_verdict_received_time) &&
-         verdict_entry->GetString(kVerdictProto, &serialized_verdict_proto) &&
-         base::Base64Decode(serialized_verdict_proto,
+  if (!verdict_entry || !out_verdict)
+    return false;
+  base::Value* cache_creation_time_value =
+      verdict_entry->FindKey(kCacheCreationTime);
+
+  if (!cache_creation_time_value || !cache_creation_time_value->is_int())
+    return false;
+  *out_verdict_received_time = cache_creation_time_value->GetInt();
+
+  base::Value* verdict_proto_value = verdict_entry->FindKey(kVerdictProto);
+  if (!verdict_proto_value || !verdict_proto_value->is_string())
+    return false;
+  serialized_verdict_proto = verdict_proto_value->GetString();
+
+  return base::Base64Decode(serialized_verdict_proto,
                             &serialized_verdict_proto) &&
          out_verdict->ParseFromString(serialized_verdict_proto);
 }
@@ -979,6 +991,63 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
     ReusedPasswordType reused_password_type) const {
   return reused_password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
          reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD;
+}
+
+void PasswordProtectionService::MigrateCachedVerdicts() {
+  // |content_settings_| can be null in tests.
+  if (!content_settings_)
+    return;
+
+  ContentSettingsForOneType password_protection_settings;
+  content_settings_->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      &password_protection_settings);
+
+  size_t verdicts_migrated = 0;
+  for (const ContentSettingPatternSource& source :
+       password_protection_settings) {
+    GURL primary_pattern_url = GURL(source.primary_pattern.ToString());
+    // Find all verdicts associated with this origin.
+    std::unique_ptr<base::DictionaryValue> cache_dictionary =
+        base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
+            primary_pattern_url, GURL(),
+            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+
+    std::vector<std::string> removed_keys;
+    for (const auto& item : cache_dictionary->DictItems()) {
+      int password_type_int = -1;
+      if (item.first == kPasswordOnFocusCacheKey ||
+          (base::StringToInt(item.first, &password_type_int) &&
+           password_type_int >= PasswordReuseEvent::ReusedPasswordType_MIN &&
+           password_type_int <= PasswordReuseEvent::ReusedPasswordType_MAX)) {
+        continue;
+      }
+      // Removes value if its key is not kPasswordOnFocusCacheKey or a valid
+      // reused password type.
+      removed_keys.push_back(item.first);
+    }
+
+    verdicts_migrated += removed_keys.size();
+    for (const std::string& key : removed_keys)
+      cache_dictionary->RemoveKey(key);
+
+    if (cache_dictionary->size() == 0u) {
+      content_settings_->ClearSettingsForOneTypeWithPredicate(
+          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+          base::Time::Max(),
+          base::BindRepeating(&OriginMatchPrimaryPattern, primary_pattern_url));
+    } else {
+      // Set the website setting of this origin with the updated
+      // |cache_dictionary|.
+      content_settings_->SetWebsiteSettingDefaultScope(
+          primary_pattern_url, GURL(),
+          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+          std::move(cache_dictionary));
+    }
+  }
+  UMA_HISTOGRAM_COUNTS_100(
+      "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization",
+      verdicts_migrated);
 }
 
 }  // namespace safe_browsing
