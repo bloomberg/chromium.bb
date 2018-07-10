@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
@@ -36,18 +35,47 @@ ServerGpuMemoryBufferManager::BufferInfo::~BufferInfo() = default;
 ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
     mojom::GpuService* gpu_service,
     int client_id,
-    std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support)
+    std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : gpu_service_(gpu_service),
       client_id_(client_id),
       gpu_memory_buffer_support_(std::move(gpu_memory_buffer_support)),
       native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations(
           gpu_memory_buffer_support_.get())),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
-  weak_ptr_ = weak_factory_.GetWeakPtr();
+      task_runner_(std::move(task_runner)),
+      weak_factory_(this) {}
+
+ServerGpuMemoryBufferManager::~ServerGpuMemoryBufferManager() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-ServerGpuMemoryBufferManager::~ServerGpuMemoryBufferManager() {}
+void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
+    gfx::GpuMemoryBufferId id,
+    int client_id,
+    const gpu::SyncToken& sync_token) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  auto iter = allocated_buffers_[client_id].find(id);
+  if (iter == allocated_buffers_[client_id].end())
+    return;
+  DCHECK_NE(gfx::EMPTY_BUFFER, iter->second.type);
+  if (iter->second.type != gfx::SHARED_MEMORY_BUFFER)
+    gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
+  allocated_buffers_[client_id].erase(iter);
+}
+
+void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
+    int client_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  for (auto pair : allocated_buffers_[client_id]) {
+    DCHECK_NE(gfx::EMPTY_BUFFER, pair.second.type);
+    if (pair.second.type != gfx::SHARED_MEMORY_BUFFER) {
+      gpu_service_->DestroyGpuMemoryBuffer(pair.first, client_id,
+                                           gpu::SyncToken());
+    }
+  }
+  allocated_buffers_.erase(client_id);
+  pending_buffers_.erase(client_id);
+}
 
 void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
@@ -57,7 +85,9 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle,
     base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!weak_ptr_)
+    weak_ptr_ = weak_factory_.GetWeakPtr();
   if (gpu_memory_buffer_support_->GetNativeGpuMemoryBufferType() !=
       gfx::EMPTY_BUFFER) {
     const bool is_native = native_configurations_.find(std::make_pair(
@@ -108,7 +138,7 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   base::WaitableEvent wait_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!task_runner_->BelongsToCurrentThread());
   auto reply_callback = base::BindOnce(
       [](gfx::GpuMemoryBufferHandle* handle, base::WaitableEvent* wait_event,
          gfx::GpuMemoryBufferHandle allocated_buffer_handle) {
@@ -148,7 +178,7 @@ void ServerGpuMemoryBufferManager::SetDestructionSyncToken(
 bool ServerGpuMemoryBufferManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   for (const auto& pair : allocated_buffers_) {
     int client_id = pair.first;
     for (const auto& buffer_pair : pair.second) {
@@ -183,34 +213,6 @@ bool ServerGpuMemoryBufferManager::OnMemoryDump(
   return true;
 }
 
-void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    const gpu::SyncToken& sync_token) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  auto iter = allocated_buffers_[client_id].find(id);
-  if (iter == allocated_buffers_[client_id].end())
-    return;
-  DCHECK_NE(gfx::EMPTY_BUFFER, iter->second.type);
-  if (iter->second.type != gfx::SHARED_MEMORY_BUFFER)
-    gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
-  allocated_buffers_[client_id].erase(id);
-}
-
-void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
-    int client_id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  for (auto pair : allocated_buffers_[client_id]) {
-    DCHECK_NE(gfx::EMPTY_BUFFER, pair.second.type);
-    if (pair.second.type != gfx::SHARED_MEMORY_BUFFER) {
-      gpu_service_->DestroyGpuMemoryBuffer(pair.first, client_id,
-                                           gpu::SyncToken());
-    }
-  }
-  allocated_buffers_.erase(client_id);
-  pending_buffers_.erase(client_id);
-}
-
 uint64_t ServerGpuMemoryBufferManager::ClientIdToTracingId(
     int client_id) const {
   if (client_id == client_id_) {
@@ -228,7 +230,7 @@ void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     size_t buffer_size_in_bytes,
     base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback,
     gfx::GpuMemoryBufferHandle handle) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (pending_buffers_.find(client_id) == pending_buffers_.end()) {
     // The client has been destroyed since the allocation request was made.
     if (!handle.is_null()) {
