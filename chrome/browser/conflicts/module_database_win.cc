@@ -96,7 +96,8 @@ void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
 
   auto* module_info =
       FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
-  module_info->second.module_types |= ModuleInfoData::kTypeShellExtension;
+  module_info->second.module_properties |=
+      ModuleInfoData::kPropertyShellExtension;
 }
 
 void ModuleDatabase::OnShellExtensionEnumerationFinished() {
@@ -118,7 +119,7 @@ void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
 
   auto* module_info =
       FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
-  module_info->second.module_types |= ModuleInfoData::kTypeIme;
+  module_info->second.module_properties |= ModuleInfoData::kPropertyIme;
 }
 
 void ModuleDatabase::OnImeEnumerationFinished() {
@@ -152,10 +153,23 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
   auto* module_info =
       FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp);
 
-  module_info->second.module_types |= ModuleInfoData::kTypeLoadedModule;
+  module_info->second.module_properties |=
+      ModuleInfoData::kPropertyLoadedModule;
 
   // Update the list of process types that this module has been seen in.
   module_info->second.process_types |= ProcessTypeToBit(process_type);
+}
+
+void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
+                                              uint32_t module_size,
+                                              uint32_t module_time_date_stamp) {
+  auto iter = modules_.find(
+      ModuleInfoKey(module_path, module_size, module_time_date_stamp, 0));
+
+  // Only known modules should be added to the blacklist.
+  DCHECK(iter != modules_.end());
+
+  iter->second.module_properties |= ModuleInfoData::kPropertyAddedToBlacklist;
 }
 
 void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {

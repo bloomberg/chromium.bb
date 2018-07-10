@@ -82,7 +82,7 @@ constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
 // empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
-  module_data.module_types |= ModuleInfoData::kTypeLoadedModule;
+  module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
   module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
   return module_data;
 }
@@ -330,15 +330,37 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
 
   // Set the respective bit for registered modules.
   auto module_data1 = CreateLoadedModuleInfoData();
-  module_data1.module_types |= ModuleInfoData::kTypeShellExtension;
+  module_data1.module_properties |= ModuleInfoData::kPropertyShellExtension;
   auto module_data2 = CreateLoadedModuleInfoData();
-  module_data2.module_types |= ModuleInfoData::kTypeIme;
+  module_data2.module_properties |= ModuleInfoData::kPropertyIme;
 
   // Simulate the modules loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll1_, 0, 0, 0), module_data1);
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll2_, 0, 0, 0), module_data2);
+  incompatible_applications_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  auto application_names =
+      IncompatibleApplicationsUpdater::GetCachedApplications();
+  ASSERT_EQ(0u, application_names.size());
+}
+
+TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
+  AddIncompatibleApplication(dll1_, L"Blacklisted Application",
+                             Option::ADD_REGISTRY_ENTRY);
+
+  auto incompatible_applications_updater =
+      CreateIncompatibleApplicationsUpdater();
+
+  // Set the respective bit for the module.
+  auto module_data = CreateLoadedModuleInfoData();
+  module_data.module_properties |= ModuleInfoData::kPropertyAddedToBlacklist;
+
+  // Simulate the module loading into the process.
+  incompatible_applications_updater->OnNewModuleFound(
+      ModuleInfoKey(dll1_, 0, 0, 0), module_data);
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());

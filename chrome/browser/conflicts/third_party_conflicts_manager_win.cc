@@ -281,13 +281,6 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
     return;
   }
 
-  if (installed_applications_) {
-    incompatible_applications_updater_ =
-        std::make_unique<IncompatibleApplicationsUpdater>(
-            module_database_event_source_, *exe_certificate_info_,
-            module_list_filter_, *installed_applications_);
-  }
-
   if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
     // It is safe to use base::Unretained() since the callback will not be
     // invoked if the updater is freed.
@@ -298,6 +291,18 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
             base::BindRepeating(
                 &ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated,
                 base::Unretained(this)));
+  }
+
+  // The |incompatible_applications_updater_| instance must be created last so
+  // that it is registered to the Module Database observer's API after the
+  // ModuleBlacklistCacheUpdater instance. This way, it knows about which
+  // modules were added to the module blacklist cache so that it's possible to
+  // not warn about them.
+  if (installed_applications_) {
+    incompatible_applications_updater_ =
+        std::make_unique<IncompatibleApplicationsUpdater>(
+            module_database_event_source_, *exe_certificate_info_,
+            module_list_filter_, *installed_applications_);
   }
 
   SetTerminalState(State::kInitialized);
