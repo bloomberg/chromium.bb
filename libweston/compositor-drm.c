@@ -3357,6 +3357,9 @@ drm_output_propose_state(struct weston_output *output_base,
 		if (ev->output_mask != (1u << output->base.id))
 			force_renderer = true;
 
+		if (!ev->surface->buffer_ref.buffer)
+			force_renderer = true;
+
 		/* Ignore views we know to be totally occluded. */
 		pixman_region32_init(&clipped_view);
 		pixman_region32_intersect(&clipped_view,
