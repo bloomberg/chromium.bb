@@ -45,6 +45,7 @@ class NetworkConnectionTracker;
 
 namespace network {
 class NetworkQualityTracker;
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -154,6 +155,8 @@ class BrowserProcess {
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  shared_url_loader_factory() = 0;
   virtual variations::VariationsService* variations_service() = 0;
 
   virtual BrowserProcessPlatformPart* platform_part() = 0;
