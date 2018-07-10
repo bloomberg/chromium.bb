@@ -5,6 +5,7 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/stl_util.h"
+#include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "url/url_util.h"
@@ -147,6 +148,16 @@ void CORSURLLoader::FollowRedirect(
   if (request_finalizer_)
     request_finalizer_.Run(request_id_);
   network_client_binding_.Unbind();
+
+  if (request_.fetch_credentials_mode ==
+      mojom::FetchCredentialsMode::kSameOrigin) {
+    // If the credentials mode is "same-origin" and CORS flag is set, we must
+    // not send credentials. As network::URLLoaderImpl doesn't understand
+    // |fetch_credentials_mode|, we need to set the load flags here.
+    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+    request_.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
   StartRequest();
 }
 
