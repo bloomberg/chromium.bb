@@ -97,6 +97,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewFooterItem* item =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = footerText;
   item.linkURL = learnMoreURL;
   item.linkDelegate = self;

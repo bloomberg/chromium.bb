@@ -408,6 +408,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     CollectionViewFooterItem* collectionFooterItem =
         [[CollectionViewFooterItem alloc]
             initWithType:ItemTypeFooterGoogleAccount];
+    collectionFooterItem.cellStyle = CollectionViewCellStyle::kUIKit;
     collectionFooterItem.text =
         l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
     UIImage* image = ios::GetChromeBrowserProvider()
@@ -468,6 +469,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     CollectionViewFooterItem* collectionFooterItem =
         [[CollectionViewFooterItem alloc] initWithType:itemType];
+    collectionFooterItem.cellStyle = CollectionViewCellStyle::kUIKit;
     collectionFooterItem.text = l10n_util::GetNSString(titleMessageID);
     collectionFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
         GURL(URL), GetApplicationContext()->GetApplicationLocale());

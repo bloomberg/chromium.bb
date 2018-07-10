@@ -483,6 +483,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (CollectionViewItem*)accountCellItem {
   CollectionViewAccountItem* identityAccountItem =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
+  identityAccountItem.cellStyle = CollectionViewCellStyle::kUIKit;
   identityAccountItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
   identityAccountItem.accessibilityIdentifier = kSettingsAccountCellId;

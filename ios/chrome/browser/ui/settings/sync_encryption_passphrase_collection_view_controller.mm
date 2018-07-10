@@ -262,6 +262,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 - (CollectionViewItem*)footerItem {
   CollectionViewFooterItem* footerItem =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
+  footerItem.cellStyle = CollectionViewCellStyle::kUIKit;
   footerItem.text = self.footerMessage;
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(
       GURL(kSyncGoogleDashboardURL),

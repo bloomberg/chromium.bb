@@ -342,6 +342,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK([self shouldDisplaySyncError]);
   CollectionViewAccountItem* syncErrorItem =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeSyncError];
+  syncErrorItem.cellStyle = CollectionViewCellStyle::kUIKit;
   syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.image = [UIImage imageNamed:@"settings_error"];
   syncErrorItem.detailText = GetSyncErrorMessageForBrowserState(_browserState);
@@ -351,6 +352,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
   CollectionViewAccountItem* identityAccountItem =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
+  identityAccountItem.cellStyle = CollectionViewCellStyle::kUIKit;
   [self updateAccountItem:identityAccountItem withIdentity:identity];
 
   identityAccountItem.enabled = _syncSetupService->IsSyncEnabled();

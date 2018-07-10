@@ -125,6 +125,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewFooterItem* item =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
 
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = l10n_util::GetNSString(
       IDS_IOS_BANDWIDTH_MANAGEMENT_DESCRIPTION_LEARN_MORE);
   item.linkURL =

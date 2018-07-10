@@ -257,6 +257,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
   CollectionViewAccountItem* item =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   [self updateAccountItem:item withIdentity:identity];
   return item;
 }
@@ -272,6 +273,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)addAccountItem {
   CollectionViewAccountItem* item =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAddAccount];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
   item.accessibilityIdentifier = kSettingsAccountsAddAccountCellId;

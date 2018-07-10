@@ -145,6 +145,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierFields];
   AutofillEditItem* cardholderNameitem =
       [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
+  cardholderNameitem.cellStyle = CollectionViewCellStyle::kUIKit;
   cardholderNameitem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
   cardholderNameitem.textFieldValue = autofill::GetCreditCardName(
@@ -157,6 +158,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Card number (PAN).
   AutofillEditItem* cardNumberItem =
       [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
+  cardNumberItem.cellStyle = CollectionViewCellStyle::kUIKit;
   cardNumberItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
   // Never show full card number for Wallet cards, even if copied locally.
@@ -176,6 +178,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Expiration month.
   AutofillEditItem* expirationMonthItem =
       [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
+  expirationMonthItem.cellStyle = CollectionViewCellStyle::kUIKit;
   expirationMonthItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
   expirationMonthItem.textFieldValue =
@@ -189,6 +192,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Expiration year.
   AutofillEditItem* expirationYearItem =
       [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
+  expirationYearItem.cellStyle = CollectionViewCellStyle::kUIKit;
   expirationYearItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
   expirationYearItem.textFieldValue =
