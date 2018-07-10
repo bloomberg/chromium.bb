@@ -627,6 +627,11 @@ BrowserProcessImpl::system_network_context_manager() {
   return system_network_context_manager_.get();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+BrowserProcessImpl::shared_url_loader_factory() {
+  return system_network_context_manager()->GetSharedURLLoaderFactory();
+}
+
 content::NetworkConnectionTracker*
 BrowserProcessImpl::network_connection_tracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

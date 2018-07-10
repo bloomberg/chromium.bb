@@ -164,6 +164,11 @@ TestingBrowserProcess::system_network_context_manager() {
   return nullptr;
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestingBrowserProcess::shared_url_loader_factory() {
+  return shared_url_loader_factory_;
+}
+
 content::NetworkConnectionTracker*
 TestingBrowserProcess::network_connection_tracker() {
   if (!network_connection_tracker_) {
@@ -449,6 +454,11 @@ TestingBrowserProcess::pref_service_factory() const {
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;
+}
+
+void TestingBrowserProcess::SetSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
+  shared_url_loader_factory_ = shared_url_loader_factory;
 }
 
 void TestingBrowserProcess::SetNetworkConnectionTracker(
