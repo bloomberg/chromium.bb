@@ -2130,8 +2130,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self restoreStateFromHistory];
   // Placeholder and restore session URLs are implementation details so should
-  // not notify WebStateObservers.
-  if (!context || !IsWKInternalUrl(context->GetUrl())) {
+  // not notify WebStateObservers. If |context| is nullptr, don't skip
+  // placeholder URLs because this may be the only opportunity to update
+  // |isLoading| for native view reload.
+  if ((context && !IsWKInternalUrl(context->GetUrl())) ||
+      (!context && !IsRestoreSessionUrl(net::GURLWithNSURL(_webView.URL)))) {
     _webStateImpl->SetIsLoading(false);
     _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   }
