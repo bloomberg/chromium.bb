@@ -1959,6 +1959,7 @@ enum WebFeature {
   kV8FunctionTokenOffsetTooLongForToString = 2497,
   kServiceWorkerImportScriptNotInstalled = 2498,
   kNestedDedicatedWorker = 2499,
+  kClientHintsMetaAcceptCHLifetime = 3000,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
