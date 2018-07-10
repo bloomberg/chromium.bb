@@ -10,6 +10,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -77,7 +78,7 @@ const int kCloseOnExitTime = 1200;
 
 // If a context menu is invoked by touch, we shift the menu by this offset so
 // that the finger does not obscure the menu.
-const int kCenteredContextMenuYOffset = -15;
+const int kTouchYPadding = 15;
 
 // The spacing offset for the bubble tip.
 const int kBubbleTipSizeLeftRight = 12;
@@ -2002,133 +2003,33 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   SubmenuView* submenu = item->GetSubmenu();
   DCHECK(submenu);
 
-  gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
+  gfx::Rect menu_bounds =
+      gfx::Rect(submenu->GetScrollViewContainer()->GetPreferredSize());
+
+  const gfx::Rect& monitor_bounds = state_.monitor_bounds;
+  const gfx::Rect& anchor_bounds = state_.initial_bounds;
 
   // For comboboxes, ensure the menu is at least as wide as the anchor.
   if (is_combobox_)
-    pref.set_width(std::max(pref.width(), state_.initial_bounds.width()));
+    menu_bounds.set_width(std::max(menu_bounds.width(), anchor_bounds.width()));
 
-  // Don't let the menu go too wide.
-  pref.set_width(
-      std::min(pref.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
-  if (!state_.monitor_bounds.IsEmpty())
-    pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
+  // Don't let the menu go too wide or too tall.
+  menu_bounds.set_width(std::min(
+      menu_bounds.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
+  if (!monitor_bounds.IsEmpty()) {
+    menu_bounds.set_width(
+        std::min(menu_bounds.width(), monitor_bounds.width()));
+    menu_bounds.set_height(
+        std::min(menu_bounds.height(), monitor_bounds.height()));
+  }
 
   // Assume we can honor prefer_leading.
   *is_leading = prefer_leading;
 
-  int x, y;
-
   const MenuConfig& menu_config = MenuConfig::instance();
 
-  if (!item->GetParentMenuItem()) {
-    // First item, position relative to initial location.
-    x = state_.initial_bounds.x();
-
-    // Offsets for context menu prevent menu items being selected by
-    // simply opening the menu (bug 142992).
-    if (menu_config.offset_context_menus && state_.context_menu)
-      x += 1;
-
-    y = state_.initial_bounds.bottom();
-    if (state_.anchor == MENU_ANCHOR_TOPRIGHT) {
-      x = x + state_.initial_bounds.width() - pref.width();
-      if (menu_config.offset_context_menus && state_.context_menu)
-        x -= 1;
-    } else if (state_.anchor == MENU_ANCHOR_BOTTOMCENTER) {
-      x += (state_.initial_bounds.width() - pref.width()) / 2;
-      if (pref.height() >
-          state_.initial_bounds.y() + kCenteredContextMenuYOffset) {
-        // Place the menu below if it does not fit above.
-        y = state_.initial_bounds.y() - kCenteredContextMenuYOffset;
-      } else {
-        y = std::max(0, state_.initial_bounds.y() - pref.height()) +
-            kCenteredContextMenuYOffset;
-      }
-    } else if (state_.anchor == MENU_ANCHOR_FIXED_BOTTOMCENTER) {
-      x += (state_.initial_bounds.width() - pref.width()) / 2;
-    } else if (state_.anchor == MENU_ANCHOR_FIXED_SIDECENTER) {
-      y += (state_.initial_bounds.height() - pref.height()) / 2;
-    }
-
-    if (!state_.monitor_bounds.IsEmpty() &&
-        y + pref.height() > state_.monitor_bounds.bottom()) {
-      // The menu doesn't fit fully below the button on the screen. The menu
-      // position with respect to the bounds will be preserved if it has
-      // already been drawn. When the requested positioning is below the bounds
-      // it will shrink the menu to make it fit below.
-      // If the requested positioning is best fit, it will first try to fit the
-      // menu below. If that does not fit it will try to place it above. If
-      // that will not fit it will place it at the bottom of the work area and
-      // moving it off the initial_bounds region to avoid overlap.
-      // In all other requested position styles it will be flipped above and
-      // the height will be shrunken to the usable height.
-      if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS) {
-        pref.set_height(
-            std::min(pref.height(), state_.monitor_bounds.bottom() - y));
-      } else if (item->actual_menu_position() ==
-                 MenuItemView::POSITION_BEST_FIT) {
-        MenuItemView::MenuPosition orientation =
-            MenuItemView::POSITION_BEST_FIT;
-        if (state_.monitor_bounds.height() < pref.height()) {
-          // Handle very tall menus.
-          pref.set_height(state_.monitor_bounds.height());
-          y = state_.monitor_bounds.y();
-        } else if (state_.monitor_bounds.y() + pref.height() <
-                   state_.initial_bounds.y()) {
-          // Flipping upwards if there is enough space.
-          y = state_.initial_bounds.y() - pref.height();
-          orientation = MenuItemView::POSITION_ABOVE_BOUNDS;
-        } else {
-          // It is allowed to move the menu a bit around in order to get the
-          // best fit and to avoid showing scroll elements.
-          y = state_.monitor_bounds.bottom() - pref.height();
-        }
-        if (orientation == MenuItemView::POSITION_BEST_FIT) {
-          // The menu should never overlap the owning button. So move it.
-          // We use the anchor view style to determine the preferred position
-          // relative to the owning button.
-          if (state_.anchor == MENU_ANCHOR_TOPLEFT) {
-            // The menu starts with the same x coordinate as the owning button.
-            if (x + state_.initial_bounds.width() + pref.width() >
-                state_.monitor_bounds.right())
-              x -= pref.width();  // Move the menu to the left of the button.
-            else
-              x += state_.initial_bounds.width();  // Move the menu right.
-          } else {
-            // The menu should end with the same x coordinate as the owning
-            // button.
-            if (state_.monitor_bounds.x() >
-                state_.initial_bounds.x() - pref.width())
-              x = state_.initial_bounds.right();  // Move right of the button.
-            else
-              x = state_.initial_bounds.x() - pref.width();  // Move left.
-          }
-        }
-        item->set_actual_menu_position(orientation);
-      } else {
-        pref.set_height(std::min(pref.height(), state_.initial_bounds.y() -
-                                                    state_.monitor_bounds.y()));
-        y = state_.initial_bounds.y() - pref.height();
-        item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
-      }
-    } else if (item->actual_menu_position() ==
-               MenuItemView::POSITION_ABOVE_BOUNDS) {
-      pref.set_height(std::min(pref.height(), state_.initial_bounds.y() -
-                                                  state_.monitor_bounds.y()));
-      y = state_.initial_bounds.y() - pref.height();
-    } else {
-      item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
-    }
-    if (state_.monitor_bounds.width() != 0 &&
-        menu_config.offset_context_menus && state_.context_menu) {
-      if (x + pref.width() > state_.monitor_bounds.right())
-        x = state_.initial_bounds.x() - pref.width() - 1;
-      if (x < state_.monitor_bounds.x())
-        x = state_.monitor_bounds.x();
-    }
-  } else {
-    // Not the first menu; position it relative to the bounds of the menu
+  if (item->GetParentMenuItem()) {
+    // Not the first menu; position it relative to the bounds of its parent menu
     // item.
     gfx::Point item_loc;
     View::ConvertPointToScreen(item, &item_loc);
@@ -2136,48 +2037,117 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     // We must make sure we take into account the UI layout. If the layout is
     // RTL, then a 'leading' menu is positioned to the left of the parent menu
     // item and not to the right.
-    bool layout_is_rtl = base::i18n::IsRTL();
-    bool create_on_the_right = (prefer_leading && !layout_is_rtl) ||
-                               (!prefer_leading && layout_is_rtl);
-    int submenu_horizontal_inset = menu_config.submenu_horizontal_inset;
+    const bool layout_is_rtl = base::i18n::IsRTL();
+    const bool create_on_right = prefer_leading != layout_is_rtl;
+    const int submenu_horizontal_inset = menu_config.submenu_horizontal_inset;
 
-    if (create_on_the_right) {
-      x = item_loc.x() + item->width() - submenu_horizontal_inset;
-      if (state_.monitor_bounds.width() != 0 &&
-          x + pref.width() > state_.monitor_bounds.right()) {
-        if (layout_is_rtl)
-          *is_leading = true;
-        else
-          *is_leading = false;
-        x = item_loc.x() - pref.width() + submenu_horizontal_inset;
-      }
+    const int left_of_parent =
+        item_loc.x() - menu_bounds.width() + submenu_horizontal_inset;
+    const int right_of_parent =
+        item_loc.x() + item->width() - submenu_horizontal_inset;
+
+    menu_bounds.set_y(item_loc.y() - menu_config.menu_vertical_border_size);
+
+    // Assume the menu can be placed in the preferred location.
+    menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
+
+    // Everything after this check requires monitor bounds to be non-empty.
+    if (monitor_bounds.IsEmpty())
+      return menu_bounds;
+
+    // Menu does not actually fit where it was placed, move it to the other side
+    // and update |is_leading|.
+    if (menu_bounds.x() < monitor_bounds.x()) {
+      *is_leading = !layout_is_rtl;
+      menu_bounds.set_x(right_of_parent);
+    } else if (menu_bounds.right() > monitor_bounds.right()) {
+      *is_leading = layout_is_rtl;
+      menu_bounds.set_x(left_of_parent);
+    }
+  } else {
+    // First item, align top left corner of menu with bottom left corner of
+    // anchor bounds.
+    menu_bounds.set_x(anchor_bounds.x());
+    menu_bounds.set_y(anchor_bounds.bottom());
+
+    const int above_anchor = anchor_bounds.y() - menu_bounds.height();
+    const int horizontally_centered =
+        anchor_bounds.x() + (anchor_bounds.width() - menu_bounds.width()) / 2;
+    const int vertically_centered =
+        anchor_bounds.y() + (anchor_bounds.height() - menu_bounds.height()) / 2;
+
+    if (state_.anchor == MENU_ANCHOR_TOPRIGHT) {
+      // Move the menu so that its right edge is aligned with the anchor
+      // bounds right edge.
+      menu_bounds.set_x(anchor_bounds.right() - menu_bounds.width());
+    } else if (state_.anchor == MENU_ANCHOR_BOTTOMCENTER) {
+      // Try to fit the menu above the anchor bounds. If it doesn't fit, place
+      // it below.
+      menu_bounds.set_x(horizontally_centered);
+      menu_bounds.set_y(above_anchor - kTouchYPadding);
+      if (menu_bounds.y() < monitor_bounds.y())
+        menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
+    } else if (state_.anchor == MENU_ANCHOR_FIXED_BOTTOMCENTER) {
+      menu_bounds.set_x(horizontally_centered);
+    } else if (state_.anchor == MENU_ANCHOR_FIXED_SIDECENTER) {
+      menu_bounds.set_y(vertically_centered);
+    }
+
+    if (item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
+      // Menu has already been drawn above, put it above the anchor bounds.
+      menu_bounds.set_y(above_anchor);
+    }
+
+    // Everything beyond this point requires monitor bounds to be non-empty.
+    if (monitor_bounds.IsEmpty())
+      return menu_bounds;
+
+    // If the menu position is below or above the anchor bounds, force it to fit
+    // on the screen. Otherwise, try to fit the menu in the following locations:
+    //   1.) Below the anchor bounds
+    //   2.) Above the anchor bounds
+    //   3.) At the bottom of the monitor and off the side of the anchor bounds
+    if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS ||
+        item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
+      // Menu has been drawn below/above the anchor bounds, make sure it fits
+      // on the screen in its current location.
+      menu_bounds.Intersect(monitor_bounds);
+    } else if (menu_bounds.bottom() <= monitor_bounds.bottom()) {
+      // Menu fits below anchor bounds.
+      item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+    } else if (above_anchor >= monitor_bounds.y()) {
+      // Menu fits above anchor bounds.
+      menu_bounds.set_y(above_anchor);
+      item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
     } else {
-      x = item_loc.x() - pref.width() + submenu_horizontal_inset;
-      if (state_.monitor_bounds.width() != 0 && x < state_.monitor_bounds.x()) {
-        if (layout_is_rtl)
-          *is_leading = false;
-        else
-          *is_leading = true;
-        x = item_loc.x() + item->width() - submenu_horizontal_inset;
+      const int left_of_anchor = anchor_bounds.x() - menu_bounds.width();
+      const int right_of_anchor = anchor_bounds.right();
+
+      menu_bounds.set_y(monitor_bounds.bottom() - menu_bounds.height());
+      if (state_.anchor == MENU_ANCHOR_TOPLEFT) {
+        // Prefer menu to right of anchor bounds but move it to left if it
+        // doesn't fit.
+        menu_bounds.set_x(right_of_anchor);
+        if (menu_bounds.right() > monitor_bounds.right())
+          menu_bounds.set_x(left_of_anchor);
+      } else {
+        // Prefer menu to left of anchor bounds but move it to right if it
+        // doesn't fit.
+        menu_bounds.set_x(left_of_anchor);
+        if (menu_bounds.x() < monitor_bounds.x())
+          menu_bounds.set_x(right_of_anchor);
       }
-    }
-    y = item_loc.y() - menu_config.menu_vertical_border_size;
-    if (state_.monitor_bounds.width() != 0) {
-      pref.set_height(std::min(pref.height(), state_.monitor_bounds.height()));
-      if (y + pref.height() > state_.monitor_bounds.bottom())
-        y = state_.monitor_bounds.bottom() - pref.height();
-      if (y < state_.monitor_bounds.y())
-        y = state_.monitor_bounds.y();
     }
   }
 
-  if (state_.monitor_bounds.width() != 0) {
-    if (x + pref.width() > state_.monitor_bounds.right())
-      x = state_.monitor_bounds.right() - pref.width();
-    if (x < state_.monitor_bounds.x())
-      x = state_.monitor_bounds.x();
-  }
-  return gfx::Rect(x, y, pref.width(), pref.height());
+  menu_bounds.set_x(
+      base::ClampToRange(menu_bounds.x(), monitor_bounds.x(),
+                         monitor_bounds.right() - menu_bounds.width()));
+  menu_bounds.set_y(
+      base::ClampToRange(menu_bounds.y(), monitor_bounds.y(),
+                         monitor_bounds.bottom() - menu_bounds.height()));
+
+  return menu_bounds;
 }
 
 gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
