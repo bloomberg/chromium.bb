@@ -335,13 +335,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
-  def WaitUntilReady(self):
-    # Don't wait for anything in testing.
-    return True
-
   def PerformStage(self):
-    # TODO (xixuan): Remove this hardcoded build info after testing.
-    build = 'nyan_blaze-release/R69-10763.0.0'
+    build = '/'.join([self._bot_id, self.version])
 
     # TODO (xixuan): Only allow to run provision & bvt-inline suite.
     if self.suite_config.suite not in [constants.HWTEST_PROVISION_SUITE,

@@ -154,8 +154,10 @@ class SimpleBuilder(generic_builders.Builder):
       else:
         stage_class = test_stages.HWTestStage
 
-      # TODO (xixuan): Add AsyncSkylabHWTestStage & SkylabHWTestStage here at
-      # the end of launch testing..
+      # TODO (xixuan): Add AsyncSkylabHWTestStage here at
+      # the end of launch testing.
+      if builder_run.config.enable_skylab_hw_tests:
+        stage_class = test_stages.SkylabHWTestStage
 
       result = self._GetStageInstance(stage_class,
                                       board,
@@ -419,26 +421,10 @@ class SimpleBuilder(generic_builders.Builder):
         # Kick off our background stages.
         queue.put([builder_run, board])
 
-  def _RunSkylabStages(self):
-    """Run stages only for testing with Skylab."""
-    for board in self._run.config.boards:
-      models = [config_lib.ModelTestConfig(None, board)]
-      if self._run.config.models:
-        models = self._run.config.models
-
-      for model in models:
-        for suite_config in self._run.config.hw_tests:
-          self._RunStage(test_stages.SkylabHWTestStage, board,
-                         model.name, suite_config, builder_run=self._run)
-
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self.RunEarlySyncAndSetupStages()
     self.RunBuildTestStages()
-    if self._run.config.enable_skylab_hw_tests:
-      self._RunSkylabStages()
-      return
-
     self.RunBuildStages()
 
   def RunStages(self):
