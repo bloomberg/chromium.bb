@@ -40,7 +40,12 @@ size_t SharedBufferSegmentReader::size() const {
 
 size_t SharedBufferSegmentReader::GetSomeData(const char*& data,
                                               size_t position) const {
-  return shared_buffer_->GetSomeData(data, position);
+  data = nullptr;
+  auto it = shared_buffer_->GetIteratorAt(position);
+  if (it == shared_buffer_->cend())
+    return 0;
+  data = it->data();
+  return it->size();
 }
 
 sk_sp<SkData> SharedBufferSegmentReader::GetAsSkData() const {

@@ -602,13 +602,12 @@ String Resource::ReasonNotDeletable() const {
 
 void Resource::DidAddClient(ResourceClient* c) {
   if (scoped_refptr<SharedBuffer> data = Data()) {
-    data->ForEachSegment([this, &c](const char* segment, size_t segment_size,
-                                    size_t segment_offset) -> bool {
-      c->DataReceived(this, segment, segment_size);
-
+    for (const auto& span : *data) {
+      c->DataReceived(this, span.data(), span.size());
       // Stop pushing data if the client removed itself.
-      return HasClient(c);
-    });
+      if (!HasClient(c))
+        break;
+    }
   }
   if (!HasClient(c))
     return;

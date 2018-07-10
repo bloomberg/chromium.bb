@@ -293,11 +293,10 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     uint8_t* const copied_data = new uint8_t[length];
     size_t pos = 0;
 
-    const char* data = nullptr;
-    while (size_t segment_size = resource_buffer_->GetSomeData(
-               data, queue_tail_position_ + pos)) {
-      memcpy(copied_data + pos, data, segment_size);
-      pos += segment_size;
+    for (auto it = resource_buffer_->GetIteratorAt(queue_tail_position_);
+         it != resource_buffer_->end(); ++it) {
+      memcpy(copied_data + pos, it->data(), it->size());
+      pos += it->size();
     }
     DCHECK_EQ(pos, length);
     queue_tail_position_ = resource_buffer_->size();

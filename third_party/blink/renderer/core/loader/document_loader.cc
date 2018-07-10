@@ -770,12 +770,8 @@ void DocumentLoader::ProcessDataBuffer() {
   // Process data received in reentrant invocations. Note that the invocations
   // of processData() may queue more data in reentrant invocations, so iterate
   // until it's empty.
-  const char* segment;
-  size_t pos = 0;
-  while (size_t length = data_buffer_->GetSomeData(segment, pos)) {
-    ProcessData(segment, length);
-    pos += length;
-  }
+  for (const auto& span : *data_buffer_)
+    ProcessData(span.data(), span.size());
   // All data has been consumed, so flush the buffer.
   data_buffer_->Clear();
 }
@@ -843,11 +839,8 @@ bool DocumentLoader::MaybeCreateArchive() {
     return false;
 
   scoped_refptr<SharedBuffer> data(main_resource->Data());
-  data->ForEachSegment(
-      [this](const char* segment, size_t segment_size, size_t segment_offset) {
-        CommitData(segment, segment_size);
-        return true;
-      });
+  for (const auto& span : *data)
+    CommitData(span.data(), span.size());
   return true;
 }
 
@@ -1192,12 +1185,8 @@ void DocumentLoader::ResumeParser() {
 
     // Append data to the parser that may have been received while the parser
     // was blocked.
-    const char* segment;
-    size_t pos = 0;
-    while (size_t length = committed_data_buffer_->GetSomeData(segment, pos)) {
-      parser_->AppendBytes(segment, length);
-      pos += length;
-    }
+    for (const auto& span : *committed_data_buffer_)
+      parser_->AppendBytes(span.data(), span.size());
     committed_data_buffer_->Clear();
 
     // DataReceived may be called in a nested message loop.

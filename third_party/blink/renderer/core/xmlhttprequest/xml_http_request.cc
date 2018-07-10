@@ -417,12 +417,8 @@ Blob* XMLHttpRequest::ResponseBlob() {
     blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
     size_t size = 0;
     if (binary_response_builder_ && binary_response_builder_->size()) {
-      binary_response_builder_->ForEachSegment(
-          [&blob_data](const char* segment, size_t segment_size,
-                       size_t segment_offset) -> bool {
-            blob_data->AppendBytes(segment, segment_size);
-            return true;
-          });
+      for (const auto& span : *binary_response_builder_)
+        blob_data->AppendBytes(span.data(), span.size());
       size = binary_response_builder_->size();
       binary_response_builder_ = nullptr;
       ReportMemoryUsageToV8();
