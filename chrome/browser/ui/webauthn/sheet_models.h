@@ -54,6 +54,10 @@ class AuthenticatorInitialSheetModel : public AuthenticatorSheetModelBase {
   // AuthenticatorSheetModelBase:
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
 };
 
 // The sheet shown for selecting the transport over which the security key

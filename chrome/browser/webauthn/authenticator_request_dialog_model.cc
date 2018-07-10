@@ -23,6 +23,9 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     case AuthenticatorTransport::kUsb:
       SetCurrentStep(Step::kUsbInsertAndActivateOnRegister);
       break;
+    case AuthenticatorTransport::kBluetoothLowEnergy:
+      SetCurrentStep(Step::kBlePowerOnManual);
+      break;
     default:
       break;
   }
