@@ -82,6 +82,9 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
+  if (context->IsWorkerGlobalScope())
+    UseCounter::Count(context, WebFeature::kNestedDedicatedWorker);
+
   DedicatedWorker* worker = new DedicatedWorker(context, script_url, options);
   worker->Start();
   return worker;

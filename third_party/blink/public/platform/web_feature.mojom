@@ -1958,6 +1958,7 @@ enum WebFeature {
   kDocumentOpenThreeArgs = 2496,
   kV8FunctionTokenOffsetTooLongForToString = 2497,
   kServiceWorkerImportScriptNotInstalled = 2498,
+  kNestedDedicatedWorker = 2499,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
