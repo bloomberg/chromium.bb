@@ -44,7 +44,6 @@ class PolicyCertVerifier : public net::CertVerifier {
   void SetTrustAnchors(const net::CertificateList& trust_anchors);
 
   // CertVerifier:
-  // Note: |callback| can be null.
   int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
