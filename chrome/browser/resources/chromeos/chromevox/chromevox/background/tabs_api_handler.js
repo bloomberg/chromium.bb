@@ -34,7 +34,6 @@ cvox.TabsApiHandler = function() {
   chrome.tabs.onRemoved.addListener(this.onRemoved.bind(this));
   chrome.tabs.onActivated.addListener(this.onActivated.bind(this));
   chrome.tabs.onUpdated.addListener(this.onUpdated.bind(this));
-  chrome.windows.onFocusChanged.addListener(this.onFocusChanged.bind(this));
 
   /**
    * @type {?number} The window.setInterval ID for checking the loading
@@ -160,42 +159,6 @@ cvox.TabsApiHandler.prototype = {
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
         this.cancelPageLoadTimer_();
       }
-    }.bind(this));
-  },
-
-  /**
-   * Handles chrome.windows.onFocusChanged.
-   * @param {number} windowId
-   */
-  onFocusChanged: function(windowId) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-    if (windowId == chrome.windows.WINDOW_ID_NONE) {
-      return;
-    }
-    chrome.windows.get(windowId, function(window) {
-      chrome.tabs.query({active: true, windowId: windowId}, function(tabs) {
-        if (tabs[0])
-          this.updateLoadingSoundsWhenTabFocusChanges_(tabs[0].id);
-
-        var tab = tabs[0] || {};
-        if (tab.status == 'loading') {
-          return;
-        }
-
-        if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
-          var msgId = window.incognito ? 'chrome_incognito_window_selected' :
-                                         'chrome_normal_window_selected';
-          var title = tab.title ? tab.title : tab.url;
-          cvox.ChromeVox.tts.speak(
-              this.msg_(msgId, [title]), cvox.QueueMode.FLUSH,
-              cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-          cvox.ChromeVox.braille.write(
-              cvox.NavBraille.fromText(this.msg_(msgId, [title])));
-        }
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
-      }.bind(this));
     }.bind(this));
   },
 
