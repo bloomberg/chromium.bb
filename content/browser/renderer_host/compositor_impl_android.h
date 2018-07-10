@@ -166,9 +166,7 @@ class CONTENT_EXPORT CompositorImpl
 
   void HandlePendingLayerTreeFrameSinkRequest();
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  void CreateVulkanOutputSurface();
-#endif
+  bool CreateVulkanOutputSurface();
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
   void InitializeDisplay(

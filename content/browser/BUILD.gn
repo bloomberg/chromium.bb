@@ -2213,6 +2213,9 @@ jumbo_source_set("browser") {
       "//ui/compositor",
       "//ui/compositor/host",
     ]
+    if (enable_vulkan) {
+      deps += [ "//gpu/vulkan/init" ]
+    }
     defines += [
       "APPCACHE_USE_SIMPLE_CACHE",
       "ENABLE_SCREEN_CAPTURE=1",

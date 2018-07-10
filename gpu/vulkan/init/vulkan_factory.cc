@@ -8,11 +8,11 @@
 #include <memory>
 
 #if defined(OS_ANDROID)
-#include "gpu/vulkan/vulkan_implementation_android.h"
+#include "gpu/vulkan/android/vulkan_implementation_android.h"
 #endif
 
 #if defined(USE_X11)
-#include "gpu/vulkan/x/vulkan_implementation_x11.h"  // nogncheck
+#include "gpu/vulkan/x/vulkan_implementation_x11.h"
 #endif
 
 #if defined(USE_OZONE)

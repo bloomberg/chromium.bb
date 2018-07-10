@@ -63,28 +63,31 @@ if (enable_vulkan) {
     ]
   }
 
-  test("vulkan_tests") {
-    sources = [
-      "tests/basic_vulkan_test.cc",
-      "tests/basic_vulkan_test.h",
-      "tests/native_window.h",
-      "tests/vulkan_test.cc",
-      "tests/vulkan_tests_main.cc",
-    ]
+  # TODO(cblume): These tests should run on each platform -- crbug.com/858614
+  if (use_x11) {
+    test("vulkan_tests") {
+      sources = [
+        "tests/basic_vulkan_test.cc",
+        "tests/basic_vulkan_test.h",
+        "tests/native_window.h",
+        "tests/vulkan_test.cc",
+        "tests/vulkan_tests_main.cc",
+      ]
 
-    deps = [
-      "//base/test:test_support",
-      "//gpu/vulkan/init",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gfx:native_widget_types",
-      "//ui/gfx/geometry",
-    ]
+      deps = [
+        "//base/test:test_support",
+        "//gpu/vulkan/init",
+        "//testing/gmock",
+        "//testing/gtest",
+        "//ui/gfx:native_widget_types",
+        "//ui/gfx/geometry",
+      ]
 
-    if (use_x11) {
-      sources += [ "tests/native_window_x11.cc" ]
-      deps += [ "//ui/gfx/x" ]
-      configs += [ "//build/config/linux:x11" ]
+      if (use_x11) {
+        sources += [ "tests/native_window_x11.cc" ]
+        deps += [ "//ui/gfx/x" ]
+        configs += [ "//build/config/linux:x11" ]
+      }
     }
   }
 }
