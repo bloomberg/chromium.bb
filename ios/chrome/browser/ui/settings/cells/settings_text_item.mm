@@ -8,7 +8,11 @@
 #error "This file requires ARC support."
 #endif
 
+#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -63,28 +67,44 @@ const CGFloat kMinimalHeight = 48;
 
 - (UIFont*)textFont {
   if (!_textFont) {
-    _textFont = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _textFont = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    } else {
+      _textFont = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    }
   }
   return _textFont;
 }
 
 - (UIColor*)textColor {
   if (!_textColor) {
-    _textColor = [[MDCPalette greyPalette] tint900];
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _textColor = UIColorFromRGB(kUIKitMainTextColor);
+    } else {
+      _textColor = [[MDCPalette greyPalette] tint900];
+    }
   }
   return _textColor;
 }
 
 - (UIFont*)detailTextFont {
   if (!_detailTextFont) {
-    _detailTextFont = [[MDCTypography fontLoader] regularFontOfSize:14];
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _detailTextFont = [UIFont systemFontOfSize:kUIKitDetailFontSize];
+    } else {
+      _detailTextFont = [[MDCTypography fontLoader] regularFontOfSize:14];
+    }
   }
   return _detailTextFont;
 }
 
 - (UIColor*)detailTextColor {
   if (!_detailTextColor) {
-    _detailTextColor = [[MDCPalette greyPalette] tint500];
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      _detailTextColor = UIColorFromRGB(kUIKitDetailTextColor);
+    } else {
+      _detailTextColor = [[MDCPalette greyPalette] tint500];
+    }
   }
   return _detailTextColor;
 }
@@ -154,12 +174,6 @@ const CGFloat kMinimalHeight = 48;
       [containerView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-margin],
-      [containerView.topAnchor
-          constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:margin],
-      [containerView.bottomAnchor
-          constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-margin],
       [containerView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -178,6 +192,8 @@ const CGFloat kMinimalHeight = 48;
       [_detailTextLabel.bottomAnchor
           constraintLessThanOrEqualToAnchor:containerView.bottomAnchor],
     ]];
+
+    AddOptionalVerticalPadding(self.contentView, containerView, margin);
   }
   return self;
 }

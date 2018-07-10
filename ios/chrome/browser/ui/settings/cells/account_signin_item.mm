@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 
+#import "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -23,6 +26,12 @@ const CGFloat kHorizontalPaddingBetweenImageAndText = 10;
 
 // Image fixed horizontal size.
 const CGFloat kHorizontalImageFixedSize = 40;
+
+// Font size for the main text.
+const CGFloat kMainTextFontSize = 14;
+
+// Font size for detail text.
+const CGFloat kDetailTextFontSize = 14;
 }
 
 @implementation AccountSignInItem
@@ -91,19 +100,26 @@ const CGFloat kHorizontalImageFixedSize = 40;
   _imageView.contentMode = UIViewContentModeCenter;
   _imageView.layer.masksToBounds = YES;
   _imageView.contentMode = UIViewContentModeScaleAspectFit;
-  _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-  _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-  _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
-  _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+
+  if (experimental_flags::IsSettingsUIRebootEnabled()) {
+    _textLabel.font = [UIFont systemFontOfSize:kMainTextFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+    _detailTextLabel.font = [UIFont systemFontOfSize:kDetailTextFontSize];
+    _detailTextLabel.textColor = UIColorFromRGB(kUIKitMultilineDetailTextColor);
+  } else {
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
+    _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+  }
 }
 
 - (void)setViewConstraints {
   UIView* contentView = self.contentView;
 
-  // This view is used to center the two leading textLabels.
-  UIView* verticalCenteringView = [[UIView alloc] init];
-  verticalCenteringView.translatesAutoresizingMaskIntoConstraints = NO;
-  [contentView addSubview:verticalCenteringView];
+  // This guide is used to center the two leading textLabels.
+  UILayoutGuide* verticalCenteringGuide = [[UILayoutGuide alloc] init];
+  [contentView addLayoutGuide:verticalCenteringGuide];
 
   [NSLayoutConstraint activateConstraints:@[
     // Set leading anchors.
@@ -125,12 +141,12 @@ const CGFloat kHorizontalImageFixedSize = 40;
     [_imageView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
     [_textLabel.topAnchor
-        constraintEqualToAnchor:verticalCenteringView.topAnchor],
+        constraintEqualToAnchor:verticalCenteringGuide.topAnchor],
     [_textLabel.bottomAnchor
         constraintEqualToAnchor:_detailTextLabel.topAnchor],
     [_detailTextLabel.bottomAnchor
-        constraintEqualToAnchor:verticalCenteringView.bottomAnchor],
-    [verticalCenteringView.centerYAnchor
+        constraintEqualToAnchor:verticalCenteringGuide.bottomAnchor],
+    [verticalCenteringGuide.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
     // Set trailing anchors.
     [_detailTextLabel.trailingAnchor
