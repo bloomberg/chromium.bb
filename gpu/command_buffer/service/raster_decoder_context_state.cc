@@ -79,5 +79,13 @@ bool RasterDecoderContextState::OnMemoryDump(
   return true;
 }
 
+void RasterDecoderContextState::PurgeGrCache() {
+  if (!gr_context)
+    return;
+
+  context->MakeCurrent(surface.get());
+  gr_context->freeGpuResources();
+}
+
 }  // namespace raster
 }  // namespace gpu

@@ -275,7 +275,7 @@ void GpuChannelManager::DoWakeUpGpu() {
   DidAccessGpu();
 }
 
-void GpuChannelManager::OnApplicationBackgrounded() {
+void GpuChannelManager::OnBackgroundCleanup() {
   // Delete all the GL contexts when the channel does not use WebGL and Chrome
   // goes to background on low-end devices.
   std::vector<int> channels_to_clear;
@@ -299,6 +299,12 @@ void GpuChannelManager::OnApplicationBackgrounded() {
   }
 }
 #endif
+
+void GpuChannelManager::OnApplicationBackgrounded() {
+  if (raster_decoder_context_state_) {
+    raster_decoder_context_state_->PurgeGrCache();
+  }
+}
 
 void GpuChannelManager::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {

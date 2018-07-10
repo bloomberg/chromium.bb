@@ -601,6 +601,11 @@ class VulkanOutputSurface : public viz::OutputSurface {
   DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
 };
 
+// TODO(khushalsagar): These are being sent based on the CompositorImpl
+// visiblity which bakes in the assumption that there is a single CompositorImpl
+// instance per application, while the embedder could potentially create
+// multiple compositor instances. We should use the ApplicationStateListener to
+// send these notifications to the GPU instead. See crbug.com/859723.
 void SendOnBackgroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
       content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,

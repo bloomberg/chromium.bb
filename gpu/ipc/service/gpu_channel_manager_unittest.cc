@@ -56,7 +56,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
     EXPECT_TRUE(stub);
 
-    channel_manager()->OnApplicationBackgrounded();
+    channel_manager()->OnBackgroundCleanup();
 
     channel = channel_manager()->LookupChannel(kClientId);
     if (should_destroy_channel) {
