@@ -260,6 +260,11 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                     onClosingPaymentAppWindow(webContents);
                 }
             }
+
+            @Override
+            public void onDidAttachInterstitialPage(Tab tab) {
+                onClosingPaymentAppWindow(tab.getWebContents());
+            }
         });
     }
 
