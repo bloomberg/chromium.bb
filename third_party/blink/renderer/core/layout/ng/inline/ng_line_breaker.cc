@@ -992,6 +992,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
   NGInlineItemResults* item_results = &line_info->Results();
   LayoutUnit width_to_rewind = line_.position - available_width;
   DCHECK_GT(width_to_rewind, 0);
+  bool position_maybe_changed = false;
 
   // Keep track of the shortest break opportunity.
   unsigned break_before = 0;
@@ -1045,6 +1046,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
         }
         return LineBreakState::kTrailing;
       }
+      position_maybe_changed = true;
     }
 
     width_to_rewind = next_width_to_rewind;
@@ -1065,6 +1067,10 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
   if (break_before) {
     Rewind(line_info, break_before);
     return LineBreakState::kTrailing;
+  }
+
+  if (position_maybe_changed) {
+    UpdatePosition(*line_info);
   }
 
   return LineBreakState::kTrailing;
