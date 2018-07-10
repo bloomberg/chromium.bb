@@ -296,11 +296,8 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
 
   // While playing, timeupdate should fire every 250 ms -> 4x per second as long
   // as media player's CurrentTime continues to advance.
-  EXPECT_CALL(*timeupdate_handler, handleEvent(_, _)).Times(3);
+  EXPECT_CALL(*timeupdate_handler, handleEvent(_, _)).Times(4);
   platform_->RunForPeriodSeconds(1);
-  // The 4th event was scheduled, but needs one more scheduler cycle to fire.
-  EXPECT_CALL(*timeupdate_handler, handleEvent(_, _)).Times(1);
-  platform_->RunUntilIdle();
 
   // If media playback time is fixed, periodic timeupdate's should not continue
   // to fire.

@@ -522,10 +522,6 @@ TEST_F(TimerTest, AugmentRepeatInterval) {
   EXPECT_FLOAT_EQ(20.0, timer.RepeatInterval());
   EXPECT_FLOAT_EQ(18.0, timer.NextFireInterval());
 
-  // NOTE setAutoAdvanceNowToPendingTasks(true) (which uses
-  // cc::OrderedSimpleTaskRunner) results in somewhat strange behavior of the
-  // test clock which breaks this test.  Specifically the test clock advancing
-  // logic ignores newly posted delayed tasks and advances too far.
   RunUntilDeadline(start_time_ + 50.0);
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 20.0, start_time_ + 40.0));
 }
