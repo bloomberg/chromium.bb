@@ -121,15 +121,25 @@ class PerfBenchmark(benchmark.Benchmark):
         [self._FixupTargetOS(possible_browser.target_os)])
 
   def _GetOutDirectoryEstimate(self, options):
+    """Gets an estimate of the output directory for this build
+
+    Note that as an estimate, this may be incorrect. Callers should be aware of
+    this and ensure that in the case that this returns an existing but
+    incorrect directory, nothing should critically break."""
     finder_options = options.finder_options
     if finder_options.chromium_output_dir is not None:
       return finder_options.chromium_output_dir
 
+    release_path = None
     for path in path_module.GetBuildDirectories(finder_options.chrome_root):
       browser_type = os.path.basename(path).lower()
       if options.browser_type == browser_type and os.path.exists(path):
         return path
-    return None
+      if browser_type == "release" and os.path.exists(path):
+        release_path = path
+
+    # As a last resort, just try out/Release if it exists.
+    return release_path
 
   @staticmethod
   def IsSvelte(possible_browser):
