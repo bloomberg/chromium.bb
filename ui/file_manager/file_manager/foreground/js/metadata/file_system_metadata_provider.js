@@ -38,7 +38,11 @@ FileSystemMetadataProvider.prototype.get = function(requests) {
       item.present = true;
       item.availableOffline = true;
       return item;
-    }, function() {
+    }, function(error) {
+      // Can't use console.error because some tests hit this line and
+      // console.error causes them to fail because of JSErrorCount. This error
+      // is an acceptable condition.
+      console.warn('getMetadata failure for: ' + request.entry.fullPath, error);
       return new MetadataItem();
     });
   }));
