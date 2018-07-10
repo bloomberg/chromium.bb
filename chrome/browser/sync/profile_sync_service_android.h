@@ -122,9 +122,10 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   jboolean HasUnrecoverableError(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsUrlKeyedAnonymizedDataCollectionEnabled(
+  jboolean IsUrlKeyedDataCollectionEnabled(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean personalized);
 
   // Gets SyncProtocolError.ClientAction.
   jint GetProtocolErrorClientAction(

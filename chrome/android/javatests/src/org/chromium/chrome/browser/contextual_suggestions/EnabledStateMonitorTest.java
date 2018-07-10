@@ -50,7 +50,7 @@ public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
         }
 
         @Override
-        public boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
+        public boolean isUrlKeyedDataCollectionEnabled(boolean personalized) {
             return true;
         }
     }
