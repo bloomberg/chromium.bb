@@ -267,7 +267,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--board', 'x86-alex',
            '--version', '1620.0.0',
            '--kern_path', '/work/new_kernel.dat',
-           '--root_path', '/work/new_rootfs.dat',
+           '--root_path', '/work/new_root.dat',
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
@@ -294,7 +294,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--board', 'x86-alex',
            '--version', '4171.0.0',
            '--kern_path', '/work/new_kernel.dat',
-           '--root_path', '/work/new_rootfs.dat',
+           '--root_path', '/work/new_root.dat',
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
            '--build_version', '4171.0.0',
@@ -303,7 +303,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_board', 'x86-alex',
            '--src_version', '1620.0.0',
            '--src_kern_path', '/work/old_kernel.dat',
-           '--src_root_path', '/work/old_rootfs.dat',
+           '--src_root_path', '/work/old_root.dat',
            '--src_key', 'mp-v3',
            '--src_build_channel', 'dev-channel',
            '--src_build_version', '1620.0.0']
@@ -331,7 +331,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--board', 'x86-alex',
            '--version', '1620.0.0',
            '--kern_path', '/work/new_kernel.dat',
-           '--root_path', '/work/new_rootfs.dat',
+           '--root_path', '/work/new_root.dat',
            '--key', 'test',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
@@ -359,7 +359,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--board', 'x86-alex',
            '--version', '4171.0.0',
            '--kern_path', '/work/new_kernel.dat',
-           '--root_path', '/work/new_rootfs.dat',
+           '--root_path', '/work/new_root.dat',
            '--key', 'test',
            '--build_channel', 'dev-channel',
            '--build_version', '4171.0.0',
@@ -368,7 +368,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_board', 'x86-alex',
            '--src_version', '1620.0.0',
            '--src_kern_path', '/work/old_kernel.dat',
-           '--src_root_path', '/work/old_rootfs.dat',
+           '--src_root_path', '/work/old_root.dat',
            '--src_key', 'test',
            '--src_build_channel', 'dev-channel',
            '--src_build_version', '1620.0.0']
@@ -471,16 +471,15 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['check_update_payload',
+           gen.signed_payload_file,
            '--check',
            '--type', 'delta',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--dst_kern', '/work/new_kernel.dat',
-           '--dst_root', '/work/new_rootfs.dat',
+           '--part_names', 'kernel', 'root',
+           '--dst_part_paths', '/work/new_kernel.dat', '/work/new_root.dat',
            '--meta-sig', gen.metadata_signature_file,
            '--metadata-size', "10",
-           '--src_kern', '/work/old_kernel.dat',
-           '--src_root', '/work/old_rootfs.dat',
-           gen.signed_payload_file]
+           '--src_part_paths', '/work/old_kernel.dat', '/work/old_root.dat']
 
     gen._RunGeneratorCmd(cmd)
 
@@ -499,14 +498,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['check_update_payload',
+           gen.signed_payload_file,
            '--check',
            '--type', 'full',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--dst_kern', '/work/new_kernel.dat',
-           '--dst_root', '/work/new_rootfs.dat',
+           '--part_names', 'kernel', 'root',
+           '--dst_part_paths', '/work/new_kernel.dat', '/work/new_root.dat',
            '--meta-sig', gen.metadata_signature_file,
-           '--metadata-size', "10",
-           gen.signed_payload_file]
+           '--metadata-size', "10"]
 
     gen._RunGeneratorCmd(cmd)
 

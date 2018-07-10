@@ -53,7 +53,7 @@ class _PaygenPayload(object):
   BASE_IMAGE_NAME = 'chromiumos_base_image.bin'
 
   _KERNEL = 'kernel'
-  _ROOTFS = 'rootfs'
+  _ROOTFS = 'root'
 
   def __init__(self, payload, cache, work_dir, sign, verify, dry_run=False):
     """Init for _PaygenPayload.
@@ -562,12 +562,12 @@ class _PaygenPayload(object):
 
     # This command checks both the payload integrity and applies the payload
     # to source and target partitions.
-    cmd = ['check_update_payload', '--check',
-           '--type', 'delta' if is_delta else 'full',
+    cmd = ['check_update_payload', path_util.ToChrootPath(payload_file_name),
+           '--check', '--type', 'delta' if is_delta else 'full',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--dst_kern',
+           '--part_names', self._KERNEL, self._ROOTFS,
+           '--dst_part_paths',
            path_util.ToChrootPath(self.tgt_partitions[self._KERNEL]),
-           '--dst_root',
            path_util.ToChrootPath(self.tgt_partitions[self._ROOTFS])]
     if metadata_sig_file_name:
       cmd += ['--meta-sig', path_util.ToChrootPath(metadata_sig_file_name)]
@@ -575,11 +575,9 @@ class _PaygenPayload(object):
     cmd += ['--metadata-size', str(self.metadata_size)]
 
     if is_delta:
-      cmd += ['--src_kern',
+      cmd += ['--src_part_paths',
               path_util.ToChrootPath(self.src_partitions[self._KERNEL]),
-              '--src_root',
               path_util.ToChrootPath(self.src_partitions[self._ROOTFS])]
-    cmd += [path_util.ToChrootPath(payload_file_name)]
 
     self._RunGeneratorCmd(cmd)
 
