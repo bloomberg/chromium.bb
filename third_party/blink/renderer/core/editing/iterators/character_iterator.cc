@@ -134,6 +134,8 @@ void CharacterIteratorAlgorithm<Strategy>::Advance(int count) {
     return;
   }
 
+  DCHECK(!AtEnd());
+
   at_break_ = false;
 
   // easy if there is enough left in the current m_textIterator run

@@ -108,11 +108,21 @@ void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   DCHECK(root_editable_);
 
   const Position editable_end = Position::LastPositionInNode(*root_editable_);
+  const int remaining_length = TextIterator::RangeLength(
+      EphemeralRange(last_chunk_end_, editable_end),
+      // Same behavior used in |CalculateCharacterSubrange()|
+      TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
+  if (remaining_length == 0) {
+    // Fully checked.
+    last_chunk_end_ = Position::LastPositionInNode(*root_editable_);
+    return;
+  }
+
   const int chunk_index = last_chunk_index_;
   const Position chunk_start = last_chunk_end_;
   const Position chunk_end =
       CalculateCharacterSubrange(EphemeralRange(chunk_start, editable_end), 0,
-                                 kColdModeChunkSize)
+                                 std::min(remaining_length, kColdModeChunkSize))
           .EndPosition();
 
   // Chromium spellchecker requires complete sentences to be checked. However,
@@ -124,11 +134,7 @@ void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
       extended_end.IsNull() ? chunk_end : std::min(extended_end, editable_end);
   const EphemeralRange check_range(chunk_start, check_end);
 
-  if (!GetSpellCheckRequester().RequestCheckingFor(check_range, chunk_index)) {
-    // Fully checked.
-    last_chunk_end_ = Position::LastPositionInNode(*root_editable_);
-    return;
-  }
+  GetSpellCheckRequester().RequestCheckingFor(check_range, chunk_index);
 
   last_chunk_index_ = chunk_index;
   last_chunk_end_ = check_range.EndPosition();
