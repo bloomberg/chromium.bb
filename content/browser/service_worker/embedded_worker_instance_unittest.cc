@@ -996,10 +996,11 @@ class AbruptCompletionHelper : public EmbeddedWorkerTestHelper {
   ~AbruptCompletionHelper() override = default;
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
-    SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+    SimulateScriptEvaluationStart(embedded_worker_id);
     SimulateWorkerStarted(
         embedded_worker_id,
-        blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion);
+        blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
+        GetNextThreadId());
   }
 };
 

@@ -566,10 +566,11 @@ void EmbeddedWorkerTestHelper::DidSimulateWorkerScriptCached(
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownload(int embedded_worker_id) {
-  SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+  SimulateScriptEvaluationStart(embedded_worker_id);
   SimulateWorkerStarted(
       embedded_worker_id,
-      blink::mojom::ServiceWorkerStartStatus::kNormalCompletion);
+      blink::mojom::ServiceWorkerStartStatus::kNormalCompletion,
+      GetNextThreadId());
 }
 
 void EmbeddedWorkerTestHelper::OnStopWorker(int embedded_worker_id) {
@@ -774,25 +775,25 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(
   base::RunLoop().RunUntilIdle();
 }
 
-void EmbeddedWorkerTestHelper::SimulateWorkerThreadStarted(
-    int thread_id,
+void EmbeddedWorkerTestHelper::SimulateScriptEvaluationStart(
     int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
   embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
-      ->OnThreadStarted(thread_id);
+      ->OnScriptEvaluationStart();
   base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStarted(
     int embedded_worker_id,
-    blink::mojom::ServiceWorkerStartStatus status) {
+    blink::mojom::ServiceWorkerStartStatus status,
+    int thread_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
   embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStarted(
-      status, mojom::EmbeddedWorkerStartTiming::New());
+      status, thread_id, mojom::EmbeddedWorkerStartTiming::New());
   base::RunLoop().RunUntilIdle();
 }
 

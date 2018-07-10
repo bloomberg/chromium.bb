@@ -32,6 +32,7 @@
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
@@ -481,10 +482,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
+  friend class ServiceWorkerPingController;
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerVersionBrowserTest;
   friend class service_worker_registration_unittest::
       ServiceWorkerActivationTest;
+  friend class service_worker_version_unittest::ServiceWorkerVersionTest;
 
   FRIEND_TEST_ALL_PREFIXES(service_worker_controllee_request_handler_unittest::
                                ServiceWorkerControlleeRequestHandlerTest,
@@ -553,8 +556,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
 
-  class PingController;
-
   // Contains timeout info for InflightRequest.
   struct InflightRequestTimeoutInfo {
     InflightRequestTimeoutInfo(int id,
@@ -607,7 +608,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeDelta GetTickDuration(const base::TimeTicks& time) const;
 
   // EmbeddedWorkerInstance::Listener overrides:
-  void OnThreadStarted() override;
+  void OnScriptEvaluationStart() override;
   void OnStarting() override;
   void OnStarted(blink::mojom::ServiceWorkerStartStatus status) override;
   void OnStopping() override;
@@ -681,7 +682,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnTimeoutTimer();
   void SetTimeoutTimerInterval(base::TimeDelta interval);
 
-  // Called by PingController for ping protocol.
+  // Called by ServiceWorkerPingController for ping protocol.
   void PingWorker();
   void OnPingTimeout();
 
@@ -850,7 +851,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // The clock used for actual (wall clock) time
   base::Clock* clock_;
 
-  std::unique_ptr<PingController> ping_controller_;
+  ServiceWorkerPingController ping_controller_;
 
   // Used for recording worker activities while this service worker is running
   // (i.e., after it starts up until it stops). Created only when the service

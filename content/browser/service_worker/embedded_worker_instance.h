@@ -67,13 +67,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     SCRIPT_DOWNLOADING = 4,
     SCRIPT_LOADED = 5,
     // SCRIPT_EVALUATED = 6,  // Obsolete
-    // THREAD_STARTED happens after SCRIPT_LOADED
-    THREAD_STARTED = 7,
+    // THREAD_STARTED = 7,  // Obsolete
     // Script read happens after SENT_START_WORKER and before SCRIPT_LOADED
     // (installed scripts only)
     SCRIPT_READ_STARTED = 8,
     SCRIPT_READ_FINISHED = 9,
     SCRIPT_STREAMING = 10,
+    SCRIPT_EVALUATION = 11,
     // Add new values here and update enums.xml.
     STARTING_PHASE_MAX_VALUE,
   };
@@ -91,7 +91,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     virtual void OnProcessAllocated() {}
     virtual void OnRegisteredToDevToolsManager() {}
     virtual void OnStartWorkerMessageSent() {}
-    virtual void OnThreadStarted() {}
+    virtual void OnScriptEvaluationStart() {}
     virtual void OnStarted(blink::mojom::ServiceWorkerStartStatus status) {}
 
     // Called when status changed to STOPPING. The renderer has been sent a Stop
@@ -267,13 +267,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void CountFeature(blink::mojom::WebFeature feature) override;
   void OnReadyForInspection() override;
   void OnScriptLoaded() override;
-  // Notifies the corresponding provider host that the thread has started and is
-  // ready to receive messages.
-  void OnThreadStarted(int thread_id) override;
+  void OnScriptEvaluationStart() override;
   // Changes the internal worker status from STARTING to RUNNING.
   void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
+                 int thread_id,
                  mojom::EmbeddedWorkerStartTimingPtr start_timing) override;
-  // Resets the embedded worker instance to the initial state. This will change
+  // Resets the embedded worker instance to the initial state. Changes
   // the internal status from STARTING or RUNNING to STOPPED.
   void OnStopped() override;
   void OnReportException(const base::string16& error_message,

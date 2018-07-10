@@ -850,8 +850,6 @@ void ServiceWorkerContextClient::WorkerContextStarted(
         std::move(pending_controller_request_), GetWeakPtr());
   }
 
-  (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
-
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "START_WORKER_CONTEXT",
                                   this);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
@@ -860,6 +858,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 void ServiceWorkerContextClient::WillEvaluateClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
+  (*instance_host_)->OnScriptEvaluationStart();
 }
 
 void ServiceWorkerContextClient::DidEvaluateClassicScript(bool success) {
@@ -1488,7 +1487,9 @@ void ServiceWorkerContextClient::SendWorkerStarted(
     blink::mojom::ServiceWorkerStartStatus status) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
 
-  (*instance_host_)->OnStarted(status, std::move(start_timing_));
+  (*instance_host_)
+      ->OnStarted(status, WorkerThread::GetCurrentId(),
+                  std::move(start_timing_));
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
 

@@ -62,9 +62,6 @@ constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
 // Time to wait until stopping an idle worker.
 constexpr base::TimeDelta kIdleWorkerTimeout = base::TimeDelta::FromSeconds(30);
 
-// Timeout for waiting for a response to a ping.
-constexpr base::TimeDelta kPingTimeout = base::TimeDelta::FromSeconds(30);
-
 // Default delay for scheduled update.
 constexpr base::TimeDelta kUpdateDelay = base::TimeDelta::FromSeconds(1);
 
@@ -264,57 +261,6 @@ base::TimeDelta ServiceWorkerVersion::GetTickDuration(
   return tick_clock_->NowTicks() - time;
 }
 
-// A controller for periodically sending a ping to the worker to see
-// if the worker is not stalling.
-class ServiceWorkerVersion::PingController {
- public:
-  explicit PingController(ServiceWorkerVersion* version) : version_(version) {}
-  ~PingController() {}
-
-  void Activate() { ping_state_ = PINGING; }
-
-  void Deactivate() {
-    ClearTick(&ping_time_);
-    ping_state_ = NOT_PINGING;
-  }
-
-  void OnPongReceived() { ClearTick(&ping_time_); }
-
-  bool IsTimedOut() { return ping_state_ == PING_TIMED_OUT; }
-
-  // Checks ping status. This is supposed to be called periodically.
-  // This may call:
-  // - OnPingTimeout() if the worker hasn't reponded within a certain period.
-  // - PingWorker() if we're running ping timer and can send next ping.
-  void CheckPingStatus() {
-    if (version_->GetTickDuration(ping_time_) > kPingTimeout) {
-      ping_state_ = PING_TIMED_OUT;
-      version_->OnPingTimeout();
-      return;
-    }
-
-    // Check if we want to send a next ping.
-    if (ping_state_ != PINGING || !ping_time_.is_null())
-      return;
-
-    version_->PingWorker();
-    version_->RestartTick(&ping_time_);
-  }
-
-  void SimulateTimeoutForTesting() {
-    version_->PingWorker();
-    ping_state_ = PING_TIMED_OUT;
-    version_->OnPingTimeout();
-  }
-
- private:
-  enum PingState { NOT_PINGING, PINGING, PING_TIMED_OUT };
-  ServiceWorkerVersion* version_;  // Not owned.
-  base::TimeTicks ping_time_;
-  PingState ping_state_ = NOT_PINGING;
-  DISALLOW_COPY_AND_ASSIGN(PingController);
-};
-
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
     const GURL& script_url,
@@ -332,7 +278,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       script_cache_map_(this, context),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       clock_(base::DefaultClock::GetInstance()),
-      ping_controller_(new PingController(this)),
+      ping_controller_(this),
       validator_(std::make_unique<blink::TrialTokenValidator>()),
       weak_factory_(this) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
@@ -889,7 +835,7 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
 }
 
 void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
-  ping_controller_->SimulateTimeoutForTesting();
+  ping_controller_.SimulateTimeoutForTesting();
 }
 
 void ServiceWorkerVersion::SetTickClockForTesting(
@@ -938,10 +884,10 @@ ServiceWorkerVersion::InflightRequest::InflightRequest(
 
 ServiceWorkerVersion::InflightRequest::~InflightRequest() {}
 
-void ServiceWorkerVersion::OnThreadStarted() {
+void ServiceWorkerVersion::OnScriptEvaluationStart() {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
   // Activate ping/pong now that JavaScript execution will start.
-  ping_controller_->Activate();
+  ping_controller_.Activate();
 }
 
 void ServiceWorkerVersion::OnStarting() {
@@ -1410,7 +1356,7 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
-  ping_controller_->OnPongReceived();
+  ping_controller_.OnPongReceived();
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
@@ -1582,8 +1528,8 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
   // The worker is starting up and not yet idle.
   ClearTick(&idle_time_);
 
-  // Ping will be activated in OnThreadStarted.
-  ping_controller_->Deactivate();
+  // Ping will be activated in OnScriptEvaluationStart.
+  ping_controller_.Deactivate();
 
   timeout_timer_.Start(FROM_HERE, kTimeoutTimerDelay, this,
                        &ServiceWorkerVersion::OnTimeoutTimer);
@@ -1703,7 +1649,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   }
 
   // Check ping status.
-  ping_controller_->CheckPingStatus();
+  ping_controller_.CheckPingStatus();
 }
 
 void ServiceWorkerVersion::PingWorker() {
@@ -1736,7 +1682,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
     // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
     // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if
     // the worker really is idle.
-    if (!ping_controller_->IsTimedOut() && HasWorkInBrowser())
+    if (!ping_controller_.IsTimedOut() && HasWorkInBrowser())
       return;
     embedded_worker_->StopIfNotAttachedToDevTools();
     return;
@@ -1744,7 +1690,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
 
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   // Ping timeout
-  if (ping_controller_->IsTimedOut()) {
+  if (ping_controller_.IsTimedOut()) {
     DCHECK(!requested_from_renderer);
     embedded_worker_->StopIfNotAttachedToDevTools();
     return;
@@ -1859,7 +1805,7 @@ void ServiceWorkerVersion::SetAllRequestExpirations(
 blink::ServiceWorkerStatusCode
 ServiceWorkerVersion::DeduceStartWorkerFailureReason(
     blink::ServiceWorkerStatusCode default_code) {
-  if (ping_controller_->IsTimedOut())
+  if (ping_controller_.IsTimedOut())
     return blink::ServiceWorkerStatusCode::kErrorTimeout;
 
   if (start_worker_status_ != blink::ServiceWorkerStatusCode::kOk)
@@ -1933,8 +1879,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   if (is_redundant() || in_dtor_) {
     // This worker will be destroyed soon.
     should_restart = false;
-  } else if (ping_controller_->IsTimedOut()) {
-    // This worker is unresponsive and restart may fail.
+  } else if (ping_controller_.IsTimedOut()) {
+    // This worker exhausted its time to run, don't let it restart.
     should_restart = false;
   } else if (old_status == EmbeddedWorkerStatus::STARTING) {
     // This worker unexpectedly stopped because start failed.  Attempting to

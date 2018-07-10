@@ -1261,7 +1261,7 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
  public:
   explicit WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
 
-  void OnThreadStarted() override {
+  void OnScriptEvaluationStart() override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
   }

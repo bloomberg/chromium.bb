@@ -1028,10 +1028,11 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
     if (force_start_worker_failure_) {
-      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+      SimulateScriptEvaluationStart(embedded_worker_id);
       SimulateWorkerStarted(
           embedded_worker_id,
-          blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion);
+          blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
+          GetNextThreadId());
       return;
     }
     EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
