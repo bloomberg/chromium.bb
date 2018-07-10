@@ -104,12 +104,12 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   bool has_received_completion_ = false;
   bool has_received_connection_error_ = false;
 
-  base::Closure quit_closure_for_on_receive_response_;
-  base::Closure quit_closure_for_on_receive_redirect_;
-  base::Closure quit_closure_for_on_receive_cached_metadata_;
-  base::Closure quit_closure_for_on_start_loading_response_body_;
-  base::Closure quit_closure_for_on_complete_;
-  base::Closure quit_closure_for_on_connection_error_;
+  base::OnceClosure quit_closure_for_on_receive_response_;
+  base::OnceClosure quit_closure_for_on_receive_redirect_;
+  base::OnceClosure quit_closure_for_on_receive_cached_metadata_;
+  base::OnceClosure quit_closure_for_on_start_loading_response_body_;
+  base::OnceClosure quit_closure_for_on_complete_;
+  base::OnceClosure quit_closure_for_on_connection_error_;
 
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   int64_t body_transfer_size_ = 0;
