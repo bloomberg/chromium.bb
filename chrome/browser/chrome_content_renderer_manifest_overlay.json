@@ -19,7 +19,6 @@
 	  "blink.mojom.DisplayCutoutClient",
           "blink.mojom.document_metadata.CopylessPaste",
           "blink.mojom.PauseSubresourceLoadingHandle",
-          "blink.mojom.PreviewsResourceLoadingHintsReceiver",
           "chrome.mojom.ChromeRenderFrame",
           "chrome.mojom.ContentSettingsRenderer",
           "chrome.mojom.PrerenderDispatcher",

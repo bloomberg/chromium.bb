@@ -245,8 +245,6 @@
 # Added in r519342.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledButNoTransformDirective
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelisted
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
 
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
