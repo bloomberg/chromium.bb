@@ -26,7 +26,6 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/window_manager.h"
 #include "ash/window_manager_service.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
@@ -203,10 +202,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::InitializeInputMethodForTesting();
-
-  // Overview mode normally hides the title bar and waits for the first
-  // composit to start animating its windows. Disable the waiting for tests.
-  WindowSelectorItem::SetDisallowDelayedAnimationForTests();
 
   // Creates Shell and hook with Desktop.
   if (!test_shell_delegate_)

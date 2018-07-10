@@ -64,23 +64,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
   };
 
-  // The different ways the overview header can fade in or out and be laid out.
-  enum class HeaderFadeAndLayoutMode {
-    // Used when entering overview mode, to fade in the header background color.
-    kEnter,
-    // Used when the overview header bounds change for the first time, to
-    // skip animating when in tablet mode.
-    kFirstUpdate,
-    // Used when the overview header bounds change, to animate or move the
-    // header to the desired bounds.
-    kUpdate,
-    // Used when exiting overview mode, to fade out the header background color.
-    kExit,
-  };
-
-  // Do not waiting for first compositing commit when testing.
-  static void SetDisallowDelayedAnimationForTests();
-
   WindowSelectorItem(aura::Window* window,
                      WindowSelector* window_selector,
                      WindowGrid* window_grid);
@@ -233,12 +216,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
 
-  // Called after SetItemBounds to update the header, shadow and backdrop. Also
-  // called by ScopedOverviewTransformWindow if we need to delay the animation
-  // until after the title bar gets hidden.
-  void UpdateHeaderShadowBackdrop(OverviewAnimationType animation_type,
-                                  HeaderFadeAndLayoutMode mode);
-
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);
   float GetOpacity();
@@ -283,11 +260,25 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            OverviewUnsnappableIndicatorVisibility);
 
+  // The different ways the overview header can fade in and be laid out.
+  enum class HeaderFadeInMode {
+    // Used when entering overview mode, to fade in the header background color.
+    kEnter,
+    // Used when the overview header bounds change for the first time, to
+    // skip animating when in tablet mode.
+    kFirstUpdate,
+    // Used when the overview header bounds change, to animate or move the
+    // header
+    // to the desired bounds.
+    kUpdate,
+    // Used when exiting overview mode, to fade out the header background color.
+    kExit,
+  };
+
   // Sets the bounds of this selector's items to |target_bounds| in
   // |root_window_|. The bounds change will be animated as specified
-  // by |animation_type|. Returns true if we want to delay the animation by one
-  // frame while the header gets hidden.
-  bool SetItemBounds(const gfx::Rect& target_bounds,
+  // by |animation_type|.
+  void SetItemBounds(const gfx::Rect& target_bounds,
                      OverviewAnimationType animation_type);
 
   // Creates the window label.
@@ -298,7 +289,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |animation_type|. |mode| allows distinguishing the first time update which
   // allows setting the initial bounds properly or exiting overview to fade out
   // gradually.
-  void UpdateHeaderLayout(HeaderFadeAndLayoutMode mode,
+  void UpdateHeaderLayout(HeaderFadeInMode mode,
                           OverviewAnimationType animation_type);
 
   // Animates opacity of the |transform_window_| and its caption to |opacity|
@@ -408,11 +399,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // These windows should not be used in calculations for
   // WindowGrid::PositionWindows.
   bool animating_to_close_ = false;
-
-  // If this is true, windows which are showing their title bars, should hide
-  // the title bar on entering overview mode, and wait for the first compositor
-  // commit before animation everything else.
-  bool maybe_delay_animation_ = true;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the
