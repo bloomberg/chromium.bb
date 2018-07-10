@@ -183,10 +183,39 @@ enum class OptInFlowResult : int {
   SIZE,
 };
 
+enum class ArcEnabledState {
+  // ARC++ is enabled for non-managed case.
+  ENABLED_NOT_MANAGED = 0,
+
+  // ARC++ is disabled for non-managed case.
+  DISABLED_NOT_MANAGED = 1,
+
+  // ARC++ is enabled for managed case when ARC++ is forced on.
+  ENABLED_MANAGED_ON = 2,
+
+  // ARC++ is disabled for managed case when ARC++ is forced on. This can happen
+  // when user declines ToS even if ARC++ is forced on.
+  DISABLED_MANAGED_ON = 3,
+
+  // ARC++ is disabled for managed case when ARC++ is forced off.
+  DISABLED_MANAGED_OFF = 4,
+
+  // ARC++ is enabled in case ARC++ is not allowed for the device. This can
+  // happen for ARC++ kiosk mode.
+  ENABLED_NOT_ALLOWED = 5,
+
+  // ARC++ is disabled and ARC++ is not allowed for the device.
+  DISABLED_NOT_ALLOWED = 6,
+
+  // The size of this enum; keep last.
+  SIZE,
+};
+
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
 void UpdateOptInFlowResultUMA(OptInFlowResult result);
 void UpdateEnabledStateUMA(bool enabled);
+void UpdateEnabledStateByUserTypeUMA(bool enabled, const Profile* profile);
 void UpdateProvisioningResultUMA(ProvisioningResult result,
                                  const Profile* profile);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
