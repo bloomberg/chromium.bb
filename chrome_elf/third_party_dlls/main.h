@@ -13,6 +13,8 @@
 #ifndef CHROME_ELF_THIRD_PARTY_DLLS_MAIN_H_
 #define CHROME_ELF_THIRD_PARTY_DLLS_MAIN_H_
 
+#include "chrome_elf/third_party_dlls/status_codes.h"
+
 namespace third_party_dlls {
 
 // Third-party DLL control is enabled and initialized in this process.
@@ -27,6 +29,13 @@ bool IsThirdPartyInitialized();
 // - Ensure elf_crash component has been initialized before calling.
 // - This initialization will fail on unsupported versions of Windows.
 bool Init();
+
+//------------------------------------------------------------------------------
+// Testing-only access to status code APIs.
+//------------------------------------------------------------------------------
+bool ResetStatusCodesForTesting();
+
+void AddStatusCodeForTesting(ThirdPartyStatus code);
 
 }  // namespace third_party_dlls
 

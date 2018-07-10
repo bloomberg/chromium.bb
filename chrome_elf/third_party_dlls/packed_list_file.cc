@@ -46,11 +46,9 @@ bool HashBinaryPredicate(const PackedListModule& lhs,
 }
 
 // Given a file opened for read, pull in the packed list.
-//
-// - Returns kSuccess or kArraySizeZero on success.
-FileStatus ReadInArray(HANDLE file,
-                       size_t* array_size,
-                       PackedListModule** array_ptr) {
+ThirdPartyStatus ReadInArray(HANDLE file,
+                             size_t* array_size,
+                             PackedListModule** array_ptr) {
   PackedListMetadata metadata;
   DWORD bytes_read = 0;
 
@@ -58,27 +56,25 @@ FileStatus ReadInArray(HANDLE file,
                   FALSE) ||
       bytes_read != sizeof(PackedListMetadata)) {
     // If |bytes_read| is actually 0, then the file was empty.
-    // A decision was made to return kArraySizeZero here, instead of a
-    // full failure.
     if (!bytes_read)
-      return FileStatus::kArraySizeZero;
-    return FileStatus::kMetadataReadFail;
+      return ThirdPartyStatus::kFileEmpty;
+    return ThirdPartyStatus::kFileMetadataReadFailure;
   }
 
   // Careful of versioning.  For now, only support the latest version.
   if (metadata.version != PackedListVersion::kCurrent)
-    return FileStatus::kInvalidFormatVersion;
+    return ThirdPartyStatus::kFileInvalidFormatVersion;
 
   *array_size = metadata.module_count;
   // Check for size 0.
   if (!*array_size)
-    return FileStatus::kArraySizeZero;
+    return ThirdPartyStatus::kFileArraySizeZero;
 
   // Sanity check the array fits in a DWORD.
   if (*array_size >
       (std::numeric_limits<DWORD>::max() / sizeof(PackedListModule))) {
     assert(false);
-    return FileStatus::kArrayTooBig;
+    return ThirdPartyStatus::kFileArrayTooBig;
   }
 
   DWORD buffer_size =
@@ -92,7 +88,7 @@ FileStatus ReadInArray(HANDLE file,
     delete[] * array_ptr;
     *array_ptr = nullptr;
     *array_size = 0;
-    return FileStatus::kArrayReadFail;
+    return ThirdPartyStatus::kFileArrayReadFailure;
   }
 
   // Ensure array is sorted (as expected).
@@ -101,10 +97,10 @@ FileStatus ReadInArray(HANDLE file,
     delete[] * array_ptr;
     *array_ptr = nullptr;
     *array_size = 0;
-    return FileStatus::kArrayNotSorted;
+    return ThirdPartyStatus::kFileArrayNotSorted;
   }
 
-  return FileStatus::kSuccess;
+  return ThirdPartyStatus::kSuccess;
 }
 
 // Reads the path to the blacklist file from the registry into |file_path|.
@@ -114,7 +110,6 @@ bool GetFilePathFromRegistry(std::wstring* file_path) {
   file_path->clear();
   HANDLE key_handle = nullptr;
 
-  // If the ThirdParty registry key does not exist, it will be created.
   if (!nt::CreateRegKey(nt::HKCU,
                         install_static::GetRegistryPath()
                             .append(kThirdPartyRegKeyName)
@@ -130,15 +125,13 @@ bool GetFilePathFromRegistry(std::wstring* file_path) {
 }
 
 // Open a packed data file.
-//
-// - Returns kSuccess, kFilePathNotFoundInRegistry, or kFileNotFound on success.
-FileStatus OpenDataFile(HANDLE* file_handle) {
+ThirdPartyStatus OpenDataFile(HANDLE* file_handle) {
   *file_handle = INVALID_HANDLE_VALUE;
   std::wstring& file_path = GetBlFilePath();
 
   // The path may have been overridden for testing.
   if (file_path.empty() && !GetFilePathFromRegistry(&file_path))
-    return FileStatus::kFilePathNotFoundInRegistry;
+    return ThirdPartyStatus::kFilePathNotFoundInRegistry;
 
   // See if file exists.  INVALID_HANDLE_VALUE alert!
   *file_handle =
@@ -149,34 +142,27 @@ FileStatus OpenDataFile(HANDLE* file_handle) {
     switch (::GetLastError()) {
       case ERROR_FILE_NOT_FOUND:
       case ERROR_PATH_NOT_FOUND:
-        return FileStatus::kFileNotFound;
+        return ThirdPartyStatus::kFileNotFound;
       case ERROR_ACCESS_DENIED:
-        return FileStatus::kFileAccessDenied;
+        return ThirdPartyStatus::kFileAccessDenied;
       default:
-        return FileStatus::kFileUnexpectedFailure;
+        return ThirdPartyStatus::kFileUnexpectedFailure;
     }
   }
 
-  return FileStatus::kSuccess;
+  return ThirdPartyStatus::kSuccess;
 }
 
 // Find the packed blacklist file and read in the array.
-// - NOTE: kFilePathNotFoundInRegistry, kFileNotFound, and kArraySizeZero are
-//         treated as kSuccess.
-FileStatus InitInternal() {
+ThirdPartyStatus InitInternal() {
   HANDLE handle = INVALID_HANDLE_VALUE;
-  FileStatus status = OpenDataFile(&handle);
-  if (status == FileStatus::kFilePathNotFoundInRegistry ||
-      status == FileStatus::kFileNotFound) {
-    return FileStatus::kSuccess;
-  }
-  if (status == FileStatus::kSuccess) {
-    status = ReadInArray(handle, &g_bl_module_array_size, &g_bl_module_array);
-    ::CloseHandle(handle);
-  }
+  ThirdPartyStatus status = OpenDataFile(&handle);
+  if (status != ThirdPartyStatus::kSuccess)
+    return status;
 
-  if (status == FileStatus::kArraySizeZero)
-    return FileStatus::kSuccess;
+  status = ReadInArray(handle, &g_bl_module_array_size, &g_bl_module_array);
+  ::CloseHandle(handle);
+
   return status;
 }
 
@@ -221,18 +207,28 @@ std::wstring GetBlFilePathUsed() {
   return GetBlFilePath();
 }
 
-// Grab the latest module list(s) from file.
-FileStatus InitFromFile() {
+ThirdPartyStatus InitFromFile() {
   // Debug check: InitFromFile should not be called more than once.
   assert(!g_initialized);
 
-  // TODO(pennymac): Possible UMA log for unexpected failures.
-  FileStatus status = InitInternal();
+  ThirdPartyStatus status = InitInternal();
 
-  if (status == FileStatus::kSuccess)
+  if (IsStatusCodeSuccessful(status))
     g_initialized = true;
 
   return status;
+}
+
+bool IsStatusCodeSuccessful(ThirdPartyStatus code) {
+  if (code == ThirdPartyStatus::kSuccess ||
+      code == ThirdPartyStatus::kFilePathNotFoundInRegistry ||
+      code == ThirdPartyStatus::kFileNotFound ||
+      code == ThirdPartyStatus::kFileEmpty ||
+      code == ThirdPartyStatus::kFileArraySizeZero) {
+    return true;
+  }
+
+  return false;
 }
 
 void DeinitFromFile() {

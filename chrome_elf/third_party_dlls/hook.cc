@@ -236,9 +236,8 @@ bool GetDataFromImage(PVOID buffer,
 // 3) Mine the data needed out of the PE headers.
 // 4) Lookup module in local cache (blocking).
 // 5) Temporarily check old (deprecated) blacklist.
-// 6) IME check (rare).
-// 7) Unmap view if blocking required.
-// 8) Log the result either way.
+// 6) Unmap view if blocking required.
+// 7) Log the result either way.
 //------------------------------------------------------------------------------
 
 NTSTATUS NewNtMapViewOfSectionImpl(
@@ -324,8 +323,6 @@ NTSTATUS NewNtMapViewOfSectionImpl(
     name_matched =
         section_basename.empty() ? &image_name_hash : &section_basename_hash;
   }
-  // IME is an explicit whitelist.
-  // TODO(pennymac): create an explicit allow LogType?
 
   // UNMAP the view.  This image is being blocked.
   if (block) {
@@ -395,18 +392,18 @@ NTSTATUS WINAPI NewNtMapViewOfSection64(HANDLE section,
 }
 #endif
 
-HookStatus ApplyHook() {
+ThirdPartyStatus ApplyHook() {
   // Debug check: ApplyHook() should not be called more than once.
   assert(!g_hook_active);
 
   if (!InitImports())
-    return HookStatus::kInitImportsFailure;
+    return ThirdPartyStatus::kHookInitImportsFailure;
 
   // Prep system-service thunk via the appropriate ServiceResolver instance.
   std::unique_ptr<sandbox::ServiceResolverThunk> thunk(
       elf_hook::HookSystemService(false));
   if (!thunk)
-    return HookStatus::kUnsupportedOs;
+    return ThirdPartyStatus::kHookUnsupportedOs;
 
   // Set target process to self.
   thunk->AllowLocalPatches();
@@ -416,7 +413,7 @@ HookStatus ApplyHook() {
   DWORD old_protect = 0;
   if (!::VirtualProtect(&g_thunk_storage, sizeof(g_thunk_storage),
                         PAGE_EXECUTE_READWRITE, &old_protect)) {
-    return HookStatus::kVirtualProtectFail;
+    return ThirdPartyStatus::kHookVirtualProtectFailure;
   }
 
   // Replace the default NtMapViewOfSection system service with our patched
@@ -454,7 +451,7 @@ HookStatus ApplyHook() {
 #endif  // defined(_WIN64)
 
   if (!NT_SUCCESS(ntstatus))
-    return HookStatus::kApplyHookFail;
+    return ThirdPartyStatus::kHookApplyFailure;
 
   // Mark the thunk storage (original system service) as executable and prevent
   // any future writes to it.
@@ -466,7 +463,7 @@ HookStatus ApplyHook() {
 
   g_hook_active = true;
 
-  return HookStatus::kSuccess;
+  return ThirdPartyStatus::kSuccess;
 }
 
 bool GetDataFromImageForTesting(PVOID mapped_image,
