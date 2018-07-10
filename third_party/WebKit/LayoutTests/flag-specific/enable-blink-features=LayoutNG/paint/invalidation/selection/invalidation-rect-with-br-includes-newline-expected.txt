@@ -18,17 +18,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\n'",
           "rect": [24, 8, 16, 16],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'b'",
           "rect": [8, 24, 16, 16],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'a'",
           "rect": [8, 8, 16, 16],
           "reason": "selection"
         }
@@ -37,15 +37,15 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'a'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\n'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'b'",
       "reason": "selection"
     }
   ]

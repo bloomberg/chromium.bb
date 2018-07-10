@@ -33,22 +33,22 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ROW2'",
           "rect": [3, 400, 46, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ROW1'",
           "rect": [3, 161, 46, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ROW2'",
           "rect": [3, 115, 46, 19],
           "reason": "disappeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'ROW1'",
           "rect": [3, 66, 46, 19],
           "reason": "disappeared"
         }
@@ -65,11 +65,11 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'ROW1'",
       "reason": "subtree"
     },
     {
@@ -77,11 +77,11 @@
       "reason": "geometry"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'ROW2'",
       "reason": "subtree"
     }
   ]

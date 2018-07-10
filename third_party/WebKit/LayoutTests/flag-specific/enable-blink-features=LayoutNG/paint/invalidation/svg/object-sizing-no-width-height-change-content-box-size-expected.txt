@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 8, 402, 402],
           "reason": "appeared"
         },
@@ -33,7 +33,7 @@
           "reason": "paint property change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 8, 202, 402],
           "reason": "disappeared"
         },
@@ -47,7 +47,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
       "reason": "subtree"
     },
     {

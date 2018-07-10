@@ -18,62 +18,62 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'text in the reflection'",
           "rect": [380, 287, 286, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'text in the reflection'",
           "rect": [70, 287, 286, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'The color of this'",
           "rect": [391, 267, 264, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'The color of this'",
           "rect": [81, 267, 264, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'should be green'",
           "rect": [393, 307, 260, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'should be green'",
           "rect": [83, 307, 260, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'text in the reflection'",
           "rect": [305, 54, 126, 142],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'text in the reflection'",
           "rect": [305, 397, 126, 116],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'The color of this'",
           "rect": [316, 377, 104, 156],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'The color of this'",
           "rect": [316, 74, 104, 102],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'should be green'",
           "rect": [318, 34, 100, 182],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'should be green'",
           "rect": [318, 417, 100, 76],
           "reason": "style change"
         }
@@ -82,51 +82,51 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'The color of this'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'text in the reflection'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'should be green'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'The color of this'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'text in the reflection'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'should be green'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'The color of this'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'text in the reflection'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'should be green'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'The color of this'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'text in the reflection'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'should be green'",
       "reason": "style change"
     }
   ]

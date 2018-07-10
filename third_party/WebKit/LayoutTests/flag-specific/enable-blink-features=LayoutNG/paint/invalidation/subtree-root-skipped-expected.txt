@@ -23,12 +23,12 @@
           "reason": "subtree"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Selection is here'",
           "rect": [8, 30, 103, 19],
           "reason": "chunk appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Selection is here'",
           "rect": [8, 30, 103, 19],
           "reason": "chunk disappeared"
         },
@@ -52,7 +52,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
       "reason": "subtree"
     },
     {
@@ -76,11 +76,11 @@
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='selection'",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Selection is here'",
       "reason": "subtree"
     },
     {

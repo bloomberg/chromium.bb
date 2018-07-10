@@ -18,32 +18,32 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' text is invalidated and '",
           "rect": [164, 8, 145, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' passes if '",
           "rect": [75, 8, 61, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'This test '",
           "rect": [8, 8, 57, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' images.'",
           "rect": [353, 8, 52, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'only'",
           "rect": [136, 8, 28, 19],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' no '",
           "rect": [319, 8, 24, 19],
           "reason": "style change"
         }
@@ -52,27 +52,27 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'This test '",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' passes if '",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'only'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' text is invalidated and '",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' no '",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' images.'",
       "reason": "style change"
     }
   ]

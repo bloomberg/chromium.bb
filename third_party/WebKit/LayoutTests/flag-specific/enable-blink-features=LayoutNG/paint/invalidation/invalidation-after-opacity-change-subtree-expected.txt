@@ -48,27 +48,27 @@
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'This test checks that switching opacity'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'invalidates the full subtree.'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'This text should be visible in the'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'output.'",
       "reason": "style change"
     }
   ]

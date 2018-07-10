@@ -24,22 +24,22 @@
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor'",
           "rect": [580, 0, 20, 340],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'adipiscing elit.'",
           "rect": [520, 0, 20, 320],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'consectetur'",
           "rect": [540, 0, 20, 220],
           "reason": "style change"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment 'sit amet,'",
           "rect": [560, 0, 20, 180],
           "reason": "style change"
         }
@@ -48,19 +48,19 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'Lorem ipsum dolor'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'sit amet,'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'consectetur'",
       "reason": "style change"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'adipiscing elit.'",
       "reason": "style change"
     }
   ]

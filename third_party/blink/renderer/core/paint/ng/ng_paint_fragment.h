@@ -116,7 +116,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
                                     NGPhysicalOffset = {}) const;
 
   // DisplayItemClient methods.
-  String DebugName() const override { return "NGPaintFragment"; }
+  String DebugName() const override;
 
   // Commonly used functions for NGPhysicalFragment.
   Node* GetNode() const { return PhysicalFragment().GetNode(); }

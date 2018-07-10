@@ -27,7 +27,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "subtree"
     },
     {

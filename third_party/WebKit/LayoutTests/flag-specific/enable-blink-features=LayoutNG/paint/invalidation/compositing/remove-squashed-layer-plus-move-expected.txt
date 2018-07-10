@@ -59,7 +59,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container'",
       "reason": "subtree"
     },
     {
@@ -67,7 +67,7 @@
       "reason": "compositing update"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
       "reason": "subtree"
     },
     {

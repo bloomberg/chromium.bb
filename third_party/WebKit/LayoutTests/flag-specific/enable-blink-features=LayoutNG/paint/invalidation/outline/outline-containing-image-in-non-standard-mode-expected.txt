@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
           "rect": [6, 41, 204, 23],
           "reason": "appeared"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
           "rect": [6, 41, 204, 23],
           "reason": "disappeared"
         },
@@ -37,15 +37,15 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "subtree"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
       "reason": "outline"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
       "reason": "subtree"
     },
     {

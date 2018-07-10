@@ -659,4 +659,29 @@ NGPaintFragment& NGPaintFragment::FragmentRange::back() const {
   return *last;
 }
 
+String NGPaintFragment::DebugName() const {
+  StringBuilder name;
+
+  DCHECK(physical_fragment_);
+  const NGPhysicalFragment& physical_fragment = *physical_fragment_;
+  if (physical_fragment.IsBox()) {
+    name.Append("NGPhysicalBoxFragment");
+    if (LayoutObject* layout_object = physical_fragment.GetLayoutObject()) {
+      DCHECK(physical_fragment.IsBox());
+      name.Append(' ');
+      name.Append(layout_object->DebugName());
+    }
+  } else if (physical_fragment.IsText()) {
+    name.Append("NGPhysicalTextFragment '");
+    name.Append(ToNGPhysicalTextFragment(physical_fragment).Text());
+    name.Append('\'');
+  } else if (physical_fragment.IsLineBox()) {
+    name.Append("NGPhysicalLineBoxFragment");
+  } else {
+    NOTREACHED();
+  }
+
+  return name.ToString();
+}
+
 }  // namespace blink

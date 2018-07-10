@@ -18,297 +18,297 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\u305B\u3063\u304B\u304F'",
           "rect": [617, 123, 32, 294],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\u305B\u3063\u304B\u304F'",
           "rect": [425, 207, 32, 294],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E'",
           "rect": [489, 354, 32, 173],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059\u3070\u3089\u3057\u3044'",
           "rect": [745, 228, 32, 168],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u304C\u3069\u3053\u306B\u3042\u3063\u305F\u304B'",
           "rect": [585, 249, 32, 168],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059\u3070\u3089\u3057\u3044'",
           "rect": [393, 123, 32, 168],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306F\u3042\u308A\u307E\u3059\u304B'",
           "rect": [713, 396, 32, 131],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
           "rect": [521, 396, 32, 131],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u308C\u3066\u3057\u307E\u3063\u305F'",
           "rect": [713, 228, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3060\u3051\u3067\u306A\u304F\u3001'",
           "rect": [681, 354, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
           "rect": [649, 165, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306F\u3042\u308A\u307E\u3059\u304B'",
           "rect": [553, 207, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3060\u3051\u3067\u306A\u304F\u3001'",
           "rect": [521, 186, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
           "rect": [457, 249, 32, 126],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
           "rect": [649, 312, 32, 105],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
           "rect": [489, 144, 32, 105],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
           "rect": [457, 396, 32, 105],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u304C\u3069\u3053\u306B'",
           "rect": [745, 438, 32, 89],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059'",
           "rect": [617, 438, 32, 89],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u308C\u3066\u3057\u307E'",
           "rect": [585, 438, 32, 89],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3042\u3063\u305F\u304B'",
           "rect": [713, 123, 32, 84],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30A2\u30C9\u30EC\u30B9'",
           "rect": [681, 270, 32, 84],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30BF\u30A4\u30C8\u30EB'",
           "rect": [681, 165, 32, 84],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3070\u3089\u3057\u3044'",
           "rect": [585, 123, 32, 84],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30BF\u30A4\u30C8\u30EB'",
           "rect": [553, 380, 32, 84],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u304B\u3089\u3082'",
           "rect": [649, 417, 32, 63],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30C9\u30EC\u30B9'",
           "rect": [521, 123, 32, 63],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u304B\u3089\u3082'",
           "rect": [489, 249, 32, 63],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
           "rect": [681, 480, 32, 47],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u691C\u7D22'",
           "rect": [649, 480, 32, 47],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u8A18\u4E8B'",
           "rect": [745, 396, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u7D4C\u9A13'",
           "rect": [713, 354, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u8A18\u4E8B'",
           "rect": [585, 207, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u7D4C\u9A13'",
           "rect": [553, 165, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
           "rect": [521, 312, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u691C\u7D22'",
           "rect": [489, 312, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
           "rect": [457, 165, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u691C\u7D22'",
           "rect": [425, 165, 32, 43],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306A\u3089'",
           "rect": [681, 123, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3057\u305F'",
           "rect": [649, 123, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306A\u3089'",
           "rect": [553, 338, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3063\u305F'",
           "rect": [553, 123, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3057\u305F'",
           "rect": [521, 354, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3057\u305F'",
           "rect": [457, 207, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3059\u3002'",
           "rect": [457, 123, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3089\u3082'",
           "rect": [425, 123, 32, 42],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u30A2'",
           "rect": [553, 485, 32, 26],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u304B'",
           "rect": [457, 501, 32, 26],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u898B'",
           "rect": [425, 501, 32, 26],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u898B'",
           "rect": [745, 207, 32, 22],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u898B'",
           "rect": [617, 417, 32, 22],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u5FD8'",
           "rect": [713, 207, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3068'",
           "rect": [681, 249, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306E'",
           "rect": [649, 291, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u5FD8'",
           "rect": [585, 417, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u3068'",
           "rect": [553, 464, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306E'",
           "rect": [489, 123, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment '\u306E'",
           "rect": [457, 375, 32, 21],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [553, 333, 32, 5],
           "reason": "selection"
         }
@@ -317,239 +317,239 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u898B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059\u3070\u3089\u3057\u3044'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u8A18\u4E8B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u304C\u3069\u3053\u306B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3042\u3063\u305F\u304B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u5FD8'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u308C\u3066\u3057\u307E\u3063\u305F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u7D4C\u9A13'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306F\u3042\u308A\u307E\u3059\u304B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306A\u3089'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30BF\u30A4\u30C8\u30EB'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3068'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30A2\u30C9\u30EC\u30B9'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3060\u3051\u3067\u306A\u304F\u3001'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3057\u305F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306E'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u304B\u3089\u3082'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u691C\u7D22'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\u305B\u3063\u304B\u304F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u898B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3070\u3089\u3057\u3044'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u8A18\u4E8B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u304C\u3069\u3053\u306B\u3042\u3063\u305F\u304B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u5FD8'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u308C\u3066\u3057\u307E'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3063\u305F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u7D4C\u9A13'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306F\u3042\u308A\u307E\u3059\u304B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment ' '",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306A\u3089'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30BF\u30A4\u30C8\u30EB'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3068'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30A2'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30C9\u30EC\u30B9'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3060\u3051\u3067\u306A\u304F\u3001'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3057\u305F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306E'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u304B\u3089\u3082'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u691C\u7D22'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3059\u3002'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u8A2A\u554F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3057\u305F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30A6\u30A7\u30D6\u30DA\u30FC\u30B8'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u306E'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u30B3\u30F3\u30C6\u30F3\u30C4'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u304B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3089\u3082'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u691C\u7D22'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\u305B\u3063\u304B\u304F'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u898B'",
       "reason": "selection"
     },
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment '\u3064\u3051\u305F\u3059\u3070\u3089\u3057\u3044'",
       "reason": "selection"
     }
   ]
