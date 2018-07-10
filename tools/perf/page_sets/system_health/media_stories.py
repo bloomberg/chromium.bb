@@ -6,7 +6,6 @@ from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import google_login
-from page_sets.login_helpers import pandora_login
 
 
 class _MediaStory(system_health_story.SystemHealthStory):
@@ -93,20 +92,3 @@ class SoundCloudDesktopStory(_MediaStory):
     action_runner.Wait(1)  # Add 1 second wait to make the browsing realistic.
     action_runner.EnterText(self.SEARCH_QUERY)
     action_runner.PressKey('Return')
-
-
-class PandoraDesktopStory(_MediaStory):
-  """Load pandora.com, then play a song."""
-  NAME = 'play:media:pandora'
-  URL = 'https://pandora.com'
-
-  PLAY_SELECTOR = None
-  STOP_SELECTOR = '.pauseButton'
-  TIME_SELECTOR = '.elapsedTime'
-  SEARCH_SELECTOR = '.searchInput'
-
-  def _Login(self, action_runner):
-    pandora_login.LoginAccount(action_runner, 'pandora')
-
-  def _NavigateToMedia(self, action_runner):
-    pass  # Audio autoplays on Pandora, no need to search.
