@@ -20,6 +20,8 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",
+  "media.mojom.BitstreamBufferMetadata=media::BitstreamBufferMetadata",
   "media.mojom.VideoBitrateAllocation=media::VideoBitrateAllocation",
+  "media.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",
+  "media.mojom.Vp8Metadata=media::Vp8Metadata",
 ]

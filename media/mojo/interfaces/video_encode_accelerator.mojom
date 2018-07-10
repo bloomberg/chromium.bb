@@ -71,14 +71,27 @@ interface VideoEncodeAccelerator {
     uint32 framerate);
 };
 
+struct Vp8Metadata {
+  bool non_reference;
+  uint8 temporal_idx;
+  bool layer_sync;
+};
+
+struct BitstreamBufferMetadata {
+  uint32 payload_size_bytes;
+  bool key_frame;
+  mojo_base.mojom.TimeDelta timestamp;
+  Vp8Metadata? vp8;
+};
+
 interface VideoEncodeAcceleratorClient {
   // Response to VideoEncodeAccelerator.Initialize().
   RequireBitstreamBuffers(uint32 input_count,
                           gfx.mojom.Size input_coded_size,
                           uint32 output_buffer_size);
 
-  BitstreamBufferReady(int32 bitstream_buffer_id, uint32 payload_size,
-                       bool key_frame, mojo_base.mojom.TimeDelta timestamp);
+  BitstreamBufferReady(int32 bitstream_buffer_id,
+                       BitstreamBufferMetadata metadata);
 
   NotifyError(VideoEncodeAccelerator.Error error);
 };

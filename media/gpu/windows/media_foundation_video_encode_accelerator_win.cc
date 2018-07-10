@@ -671,8 +671,9 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   }
 
   main_client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, main_client_,
-                            buffer_ref->id, size, keyframe, timestamp));
+      FROM_HERE,
+      base::Bind(&Client::BitstreamBufferReady, main_client_, buffer_ref->id,
+                 BitstreamBufferMetadata(size, keyframe, timestamp)));
 
   // Keep calling ProcessOutput recursively until MF_E_TRANSFORM_NEED_MORE_INPUT
   // is returned to flush out all the output.
@@ -708,8 +709,9 @@ void MediaFoundationVideoEncodeAccelerator::ReturnBitstreamBuffer(
   main_client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Client::BitstreamBufferReady, main_client_, buffer_ref->id,
-                 encode_output->size(), encode_output->keyframe,
-                 encode_output->capture_timestamp));
+                 BitstreamBufferMetadata(encode_output->size(),
+                                         encode_output->keyframe,
+                                         encode_output->capture_timestamp)));
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(

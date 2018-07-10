@@ -100,14 +100,14 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
     UseOutputBitstreamBufferId(i);
 }
 
-void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
-                                      size_t payload_size,
-                                      bool keyframe,
-                                      base::TimeDelta timestamp) {
+void VEAEncoder::BitstreamBufferReady(
+    int32_t bitstream_buffer_id,
+    const media::BitstreamBufferMetadata& metadata) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
-  num_frames_after_keyframe_ = keyframe ? 0 : num_frames_after_keyframe_ + 1;
+  num_frames_after_keyframe_ =
+      metadata.key_frame ? 0 : num_frames_after_keyframe_ + 1;
   if (num_frames_after_keyframe_ > kMaxKeyframeInterval) {
     force_next_frame_to_be_keyframe_ = true;
     num_frames_after_keyframe_ = 0;
@@ -116,7 +116,8 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
   base::SharedMemory* output_buffer =
       output_buffers_[bitstream_buffer_id].get();
   std::unique_ptr<std::string> data(new std::string);
-  data->append(reinterpret_cast<char*>(output_buffer->memory()), payload_size);
+  data->append(reinterpret_cast<char*>(output_buffer->memory()),
+               metadata.payload_size_bytes);
 
   const auto front_frame = frames_in_encode_.front();
   frames_in_encode_.pop();
@@ -124,7 +125,7 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
       FROM_HERE,
       base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
                      front_frame.first, std::move(data), nullptr,
-                     front_frame.second, keyframe));
+                     front_frame.second, metadata.key_frame));
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 }
 

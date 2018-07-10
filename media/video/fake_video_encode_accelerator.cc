@@ -136,8 +136,10 @@ void FakeVideoEncodeAccelerator::DoBitstreamBufferReady(
     int32_t bitstream_buffer_id,
     size_t payload_size,
     bool key_frame) const {
-  client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
-                                base::Time::Now() - base::Time());
+  client_->BitstreamBufferReady(
+      bitstream_buffer_id,
+      BitstreamBufferMetadata(payload_size, key_frame,
+                              base::Time::Now().since_origin()));
 }
 
 }  // namespace media

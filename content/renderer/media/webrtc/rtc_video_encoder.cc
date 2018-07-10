@@ -163,10 +163,9 @@ class RTCVideoEncoder::Impl
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32_t bitstream_buffer_id,
-                            size_t payload_size,
-                            bool key_frame,
-                            base::TimeDelta timestamp) override;
+  void BitstreamBufferReady(
+      int32_t bitstream_buffer_id,
+      const media::BitstreamBufferMetadata& metadata) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
  private:
@@ -504,13 +503,13 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
-void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
-                                                 size_t payload_size,
-                                                 bool key_frame,
-                                                 base::TimeDelta timestamp) {
+void RTCVideoEncoder::Impl::BitstreamBufferReady(
+    int32_t bitstream_buffer_id,
+    const media::BitstreamBufferMetadata& metadata) {
   DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id
-           << ", payload_size=" << payload_size << ", key_frame=" << key_frame
-           << ", timestamp ms=" << timestamp.InMilliseconds();
+           << ", payload_size=" << metadata.payload_size_bytes
+           << ", key_frame=" << metadata.key_frame
+           << ", timestamp ms=" << metadata.timestamp.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (bitstream_buffer_id < 0 ||
@@ -521,7 +520,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   }
   base::SharedMemory* output_buffer =
       output_buffers_[bitstream_buffer_id].get();
-  if (payload_size > output_buffer->mapped_size()) {
+  if (metadata.payload_size_bytes > output_buffer->mapped_size()) {
     LogAndNotifyError(FROM_HERE, "invalid payload_size",
                       media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
@@ -536,7 +535,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
     // Pop timestamps until we have a match.
     while (!pending_timestamps_.empty()) {
       const auto& front_timestamps = pending_timestamps_.front();
-      if (front_timestamps.media_timestamp_ == timestamp) {
+      if (front_timestamps.media_timestamp_ == metadata.timestamp) {
         rtp_timestamp = front_timestamps.rtp_timestamp;
         capture_timestamp_ms = front_timestamps.capture_time_ms;
         pending_timestamps_.pop_front();
@@ -557,14 +556,14 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   }
 
   webrtc::EncodedImage image(
-      reinterpret_cast<uint8_t*>(output_buffer->memory()), payload_size,
-      output_buffer->mapped_size());
+      reinterpret_cast<uint8_t*>(output_buffer->memory()),
+      metadata.payload_size_bytes, output_buffer->mapped_size());
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image._timeStamp = rtp_timestamp.value();
   image.capture_time_ms_ = capture_timestamp_ms.value();
   image._frameType =
-      (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
+      (metadata.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
   image.content_type_ = video_content_type_;
   image._completeFrame = true;
 

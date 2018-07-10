@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/video_bitrate_allocation.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
 
@@ -91,4 +92,26 @@ bool StructTraits<media::mojom::VideoBitrateAllocationDataView,
   return true;
 }
 
+// static
+bool StructTraits<media::mojom::BitstreamBufferMetadataDataView,
+                  media::BitstreamBufferMetadata>::
+    Read(media::mojom::BitstreamBufferMetadataDataView data,
+         media::BitstreamBufferMetadata* out_metadata) {
+  out_metadata->payload_size_bytes = data.payload_size_bytes();
+  out_metadata->key_frame = data.key_frame();
+  if (!data.ReadTimestamp(&out_metadata->timestamp)) {
+    return false;
+  }
+  return data.ReadVp8(&out_metadata->vp8);
+}
+
+// static
+bool StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata>::Read(
+    media::mojom::Vp8MetadataDataView data,
+    media::Vp8Metadata* out_metadata) {
+  out_metadata->non_reference = data.non_reference();
+  out_metadata->temporal_idx = data.temporal_idx();
+  out_metadata->layer_sync = data.layer_sync();
+  return true;
+}
 }  // namespace mojo

@@ -172,15 +172,14 @@ void WebrtcVideoEncoderGpu::RequireBitstreamBuffers(
   RunAnyPendingEncode();
 }
 
-void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
-                                                 size_t payload_size,
-                                                 bool key_frame,
-                                                 base::TimeDelta timestamp) {
+void WebrtcVideoEncoderGpu::BitstreamBufferReady(
+    int32_t bitstream_buffer_id,
+    const media::BitstreamBufferMetadata& metadata) {
   DVLOG(3) << __func__ << " bitstream_buffer_id = " << bitstream_buffer_id
            << ", "
-           << "payload_size = " << payload_size << ", "
-           << "key_frame = " << key_frame << ", "
-           << "timestamp ms = " << timestamp.InMilliseconds();
+           << "payload_size = " << metadata.payload_size_bytes << ", "
+           << "key_frame = " << metadata.key_frame << ", "
+           << "timestamp ms = " << metadata.timestamp.InMilliseconds();
 
   std::unique_ptr<EncodedFrame> encoded_frame =
       std::make_unique<EncodedFrame>();
@@ -188,8 +187,8 @@ void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
       output_buffers_[bitstream_buffer_id].get();
   DCHECK(output_buffer->memory());
   encoded_frame->data.assign(reinterpret_cast<char*>(output_buffer->memory()),
-                             payload_size);
-  encoded_frame->key_frame = key_frame;
+                             metadata.payload_size_bytes);
+  encoded_frame->key_frame = metadata.key_frame;
   encoded_frame->size = webrtc::DesktopSize(input_coded_size_.width(),
                                             input_coded_size_.height());
   encoded_frame->quantizer = 0;
@@ -197,12 +196,12 @@ void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
 
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 
-  auto callback_it = callbacks_.find(timestamp);
+  auto callback_it = callbacks_.find(metadata.timestamp);
   DCHECK(callback_it != callbacks_.end())
-      << "Callback not found for timestamp " << timestamp;
+      << "Callback not found for timestamp " << metadata.timestamp;
   std::move(std::get<1>(*callback_it)).Run(
       EncodeResult::SUCCEEDED, std::move(encoded_frame));
-  callbacks_.erase(timestamp);
+  callbacks_.erase(metadata.timestamp);
 }
 
 void WebrtcVideoEncoderGpu::NotifyError(

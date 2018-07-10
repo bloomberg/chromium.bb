@@ -19,6 +19,7 @@
 
 namespace media {
 
+struct BitstreamBufferMetadata;
 class VaapiEncodeJob;
 class VideoFrame;
 
@@ -83,6 +84,8 @@ class AcceleratedVideoEncoder {
 
     // Returns the timestamp associated with this job.
     base::TimeDelta timestamp() const { return timestamp_; }
+
+    virtual BitstreamBufferMetadata Metadata(size_t payload_size) const;
 
     virtual VaapiEncodeJob* AsVaapiEncodeJob();
 

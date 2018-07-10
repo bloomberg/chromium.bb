@@ -52,8 +52,8 @@ class MockMojoVideoEncodeAcceleratorClient
 
   MOCK_METHOD3(RequireBitstreamBuffers,
                void(uint32_t, const gfx::Size&, uint32_t));
-  MOCK_METHOD4(BitstreamBufferReady,
-               void(int32_t, uint32_t, bool, base::TimeDelta));
+  MOCK_METHOD2(BitstreamBufferReady,
+               void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
 
  private:
@@ -158,7 +158,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, EncodeOneFrame) {
   {
     const auto video_frame = VideoFrame::CreateBlackFrame(kInputVisibleSize);
     EXPECT_CALL(*mock_mojo_vea_client(),
-                BitstreamBufferReady(kBitstreamBufferId, _, _, _));
+                BitstreamBufferReady(kBitstreamBufferId, _));
 
     mojo_vea_service()->Encode(video_frame, true /* is_keyframe */,
                                base::DoNothing());
