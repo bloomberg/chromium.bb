@@ -23,10 +23,11 @@ class CSSPendingSubstitutionValue;
 class CSSVariableData;
 class CSSVariableReferenceValue;
 class KURL;
+class PropertyRegistration;
 class PropertyRegistry;
-class StyleResolverState;
 class StyleInheritedVariables;
 class StyleNonInheritedVariables;
+class StyleResolverState;
 
 class CSSVariableResolver {
   STACK_ALLOCATED();
@@ -58,6 +59,25 @@ class CSSVariableResolver {
     // animation-tainted custom properties are not allowed for properties
     // that affect animations.
     bool disallow_animation_tainted = false;
+
+    // Treat any references to registered custom properties with font-relative
+    // units as invalid.
+    //
+    // This is used when resolving variable references for 'font-size', where
+    // registered custom properties with font-relative units may not be used.
+    //
+    // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles-via-relative-units
+    bool disallow_registered_font_units = false;
+
+    // Treat any references to registered custom properties with
+    // root-font-relative units as invalid.
+    //
+    // This is used when resolving variable references for 'font-size' on the
+    // root element, where registered custom properties with root-font-relative
+    // units may not be used.
+    //
+    // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles-via-relative-units
+    bool disallow_registered_root_font_units = false;
   };
 
   struct Result {
@@ -66,6 +86,8 @@ class CSSVariableResolver {
     Vector<CSSParserToken> tokens;
     Vector<String> backing_strings;
     bool is_animation_tainted = false;
+    bool has_font_units = false;
+    bool has_root_font_units = false;
   };
 
   const CSSValue* ResolvePendingSubstitutions(
@@ -111,6 +133,10 @@ class CSSVariableResolver {
 
   bool ShouldResolveRelativeUrls(const AtomicString& name,
                                  const CSSVariableData&);
+
+  bool IsVariableDisallowed(const CSSVariableData&,
+                            const Options&,
+                            const PropertyRegistration*);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
