@@ -104,9 +104,12 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     private static boolean isDisabledByCommandLine() {
-        CommandLine cli = CommandLine.getInstance();
-        // Disable flag has higher precedence than the default
-        return cli.hasSwitch(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT);
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "AwSafeBrowsingConfigHelper.isDisabledByCommandLine")) {
+            CommandLine cli = CommandLine.getInstance();
+            // Disable flag has higher precedence than the default
+            return cli.hasSwitch(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT);
+        }
     }
 
     /**
@@ -117,7 +120,8 @@ public class AwSafeBrowsingConfigHelper {
      */
     @Nullable
     private static Boolean getAppOptInPreference(Context appContext) {
-        try {
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "AwSafeBrowsingConfigHelper.getAppOptInPreference")) {
             ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(
                     appContext.getPackageName(), PackageManager.GET_META_DATA);
             if (info.metaData == null) {
