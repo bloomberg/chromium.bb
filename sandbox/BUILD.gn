@@ -14,6 +14,12 @@ source_set("sandbox_export") {
   ]
 }
 
+source_set("common") {
+  sources = [
+    "constants.h",
+  ]
+}
+
 # Meta-target that forwards to the proper platform one.
 group("sandbox") {
   if (is_win) {

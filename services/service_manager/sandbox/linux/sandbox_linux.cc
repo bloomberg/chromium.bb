@@ -32,6 +32,7 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "sandbox/constants.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -434,20 +435,8 @@ bool SandboxLinux::LimitAddressSpace(int* error) {
   // using integer overflows that require large allocations, heap spray, or
   // other memory-hungry attack modes.
 
-  // By default, add a limit to the VmData memory area that would prevent
-  // allocations that can't be indexed by an int.
-  rlim_t rlimit_data = std::numeric_limits<int>::max();
-
-  if (sizeof(rlim_t) == 8) {
-    // mmap-ed memory did not count against RLIMIT_DATA until
-    // https://github.com/torvalds/linux/commit/84638335900f1995495838fe1bd4870c43ec1f6.
-    // On devices with kernels that count mmap-ed memory against RLIMIT_DATA,
-    // Chrome will OOM very easily unless we increase the limit to 8 GiB on
-    // 64-bit platforms. See https://crbug.com/752185.
-    rlimit_data = 1ULL << 33;
-  }
-
-  *error = sandbox::ResourceLimits::Lower(RLIMIT_DATA, rlimit_data);
+  *error = sandbox::ResourceLimits::Lower(
+      RLIMIT_DATA, static_cast<rlim_t>(sandbox::kDataSizeLimit));
 
   // Cache the resource limit before turning on the sandbox.
   base::SysInfo::AmountOfVirtualMemory();
