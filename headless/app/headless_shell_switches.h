@@ -13,7 +13,6 @@ namespace switches {
 extern const char kCrashDumpsDir[];
 extern const char kDefaultBackgroundColor[];
 extern const char kDeterministicMode[];
-extern const char kDeterministicFetch[];
 extern const char kDisableCrashReporter[];
 extern const char kDumpDom[];
 extern const char kEnableBeginFrameControl[];

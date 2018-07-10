@@ -348,34 +348,11 @@ component("headless") {
     "public/internal/headless_devtools_client_impl.h",
     "public/internal/message_dispatcher.h",
     "public/internal/value_conversions.h",
-    "public/util/black_hole_protocol_handler.cc",
-    "public/util/black_hole_protocol_handler.h",
     "public/util/compositor_controller.cc",
     "public/util/compositor_controller.h",
-    "public/util/deterministic_dispatcher.cc",
-    "public/util/deterministic_dispatcher.h",
-    "public/util/deterministic_http_protocol_handler.cc",
-    "public/util/deterministic_http_protocol_handler.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
-    "public/util/expedited_dispatcher.cc",
-    "public/util/expedited_dispatcher.h",
-    "public/util/generic_url_request_job.cc",
-    "public/util/generic_url_request_job.h",
-    "public/util/http_url_fetcher.cc",
-    "public/util/http_url_fetcher.h",
-    "public/util/in_memory_protocol_handler.cc",
-    "public/util/in_memory_protocol_handler.h",
-    "public/util/in_memory_request_job.cc",
-    "public/util/in_memory_request_job.h",
-    "public/util/managed_dispatch_url_request_job.cc",
-    "public/util/managed_dispatch_url_request_job.h",
     "public/util/navigation_request.h",
-    "public/util/throttled_dispatcher.cc",
-    "public/util/throttled_dispatcher.h",
-    "public/util/url_fetcher.cc",
-    "public/util/url_fetcher.h",
-    "public/util/url_request_dispatcher.h",
     "public/util/user_agent.cc",
     "public/util/user_agent.h",
     "public/util/virtual_time_controller.cc",
@@ -574,23 +551,6 @@ if (!is_component_build) {
   }
 }
 
-static_library("headless_url_mocks") {
-  testonly = true
-
-  sources = [
-    "public/util/testing/fake_managed_dispatch_url_request_job.cc",
-    "public/util/testing/fake_managed_dispatch_url_request_job.h",
-    "public/util/testing/generic_url_request_mocks.cc",
-    "public/util/testing/generic_url_request_mocks.h",
-  ]
-
-  public_deps = [
-    ":headless_renderer",
-    "//base",
-    "//net",
-  ]
-}
-
 group("headless_tests") {
   testonly = true
 
@@ -605,11 +565,7 @@ test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
     "public/util/compositor_controller_unittest.cc",
-    "public/util/deterministic_dispatcher_test.cc",
     "public/util/error_reporter_unittest.cc",
-    "public/util/expedited_dispatcher_test.cc",
-    "public/util/generic_url_request_job_test.cc",
-    "public/util/throttled_dispatcher_test.cc",
     "public/util/virtual_time_controller_test.cc",
   ]
 
@@ -624,7 +580,6 @@ test("headless_unittests") {
 
   deps = [
     ":headless_renderer",
-    ":headless_url_mocks",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
@@ -739,8 +694,6 @@ test("headless_browsertests") {
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
     "public/util/compositor_controller_browsertest.cc",
-    "public/util/testing/fake_managed_dispatch_url_request_job.cc",
-    "public/util/testing/fake_managed_dispatch_url_request_job.h",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_client_browsertest.cc",
@@ -748,10 +701,6 @@ test("headless_browsertests") {
     "test/headless_test_launcher.cc",
     "test/test_network_interceptor.cc",
     "test/test_network_interceptor.h",
-    "test/test_protocol_handler.cc",
-    "test/test_protocol_handler.h",
-    "test/test_url_request_job.cc",
-    "test/test_url_request_job.h",
   ]
 
   data = [
@@ -785,7 +734,6 @@ test("headless_browsertests") {
 
   deps = [
     ":headless_renderer",
-    ":headless_url_mocks",
     "//base",
     "//components/security_state/content",
     "//content/test:test_support",

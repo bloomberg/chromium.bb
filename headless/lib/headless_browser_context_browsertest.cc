@@ -18,11 +18,6 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
-#include "headless/test/test_protocol_handler.h"
-#include "net/base/io_buffer.h"
-#include "net/http/http_response_headers.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
-#include "net/url_request/url_request_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -153,50 +148,6 @@ class HeadlessBrowserContextIsolationTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessBrowserContextIsolationTest);
-
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
-  const std::string kResponseBody = "<p>HTTP response body</p>";
-  ProtocolHandlerMap protocol_handlers;
-  protocol_handlers[url::kHttpScheme] =
-      std::make_unique<TestProtocolHandler>(kResponseBody);
-
-  // Load a page which doesn't actually exist, but which is fetched by our
-  // custom protocol handler.
-  HeadlessBrowserContext* browser_context =
-      browser()
-          ->CreateBrowserContextBuilder()
-          .SetProtocolHandlers(std::move(protocol_handlers))
-          .Build();
-  HeadlessWebContents* web_contents =
-      browser_context->CreateWebContentsBuilder()
-          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
-          .Build();
-  EXPECT_TRUE(WaitForLoad(web_contents));
-
-  EXPECT_EQ(kResponseBody,
-            EvaluateScript(web_contents, "document.body.innerHTML")
-                ->GetResult()
-                ->GetValue()
-                ->GetString());
-  web_contents->Close();
-
-  HeadlessBrowserContext* another_browser_context =
-      browser()->CreateBrowserContextBuilder().Build();
-
-  // Loading the same non-existent page using a tab with a different context
-  // should not work since the protocol handler only exists on the custom
-  // context.
-  web_contents =
-      another_browser_context->CreateWebContentsBuilder()
-          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
-          .Build();
-  EXPECT_FALSE(WaitForLoad(web_contents));
-  EXPECT_EQ("", EvaluateScript(web_contents, "document.body.innerHTML")
-                    ->GetResult()
-                    ->GetValue()
-                    ->GetString());
-  web_contents->Close();
-}
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // We do not want to bother with posting tasks to create a temp dir.

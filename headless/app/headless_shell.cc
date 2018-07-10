@@ -34,7 +34,6 @@
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_devtools.h"
 #include "headless/public/headless_devtools_target.h"
-#include "headless/public/util/deterministic_http_protocol_handler.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -172,33 +171,7 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             ::switches::kLang));
   }
-  DeterministicHttpProtocolHandler* http_handler = nullptr;
-  DeterministicHttpProtocolHandler* https_handler = nullptr;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDeterministicFetch)) {
-    deterministic_dispatcher_ =
-        std::make_unique<DeterministicDispatcher>(browser_->BrowserIOThread());
-
-    ProtocolHandlerMap protocol_handlers;
-    protocol_handlers[url::kHttpScheme] =
-        std::make_unique<DeterministicHttpProtocolHandler>(
-            deterministic_dispatcher_.get(), browser->BrowserIOThread());
-    http_handler = static_cast<DeterministicHttpProtocolHandler*>(
-        protocol_handlers[url::kHttpScheme].get());
-    protocol_handlers[url::kHttpsScheme] =
-        std::make_unique<DeterministicHttpProtocolHandler>(
-            deterministic_dispatcher_.get(), browser->BrowserIOThread());
-    https_handler = static_cast<DeterministicHttpProtocolHandler*>(
-        protocol_handlers[url::kHttpsScheme].get());
-
-    context_builder.SetProtocolHandlers(std::move(protocol_handlers));
-  }
   browser_context_ = context_builder.Build();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDeterministicFetch)) {
-    http_handler->SetHeadlessBrowserContext(browser_context_);
-    https_handler->SetHeadlessBrowserContext(browser_context_);
-  }
   browser_->SetDefaultBrowserContext(browser_context_);
 
   base::CommandLine::StringVector args =
@@ -249,10 +222,6 @@ void HeadlessShell::Shutdown() {
       web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     }
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDeterministicFetch)) {
-    devtools_client_->GetNetwork()->GetExperimental()->RemoveObserver(this);
-  }
   web_contents_->RemoveObserver(this);
   web_contents_ = nullptr;
   browser_context_->Close();
@@ -268,18 +237,6 @@ void HeadlessShell::DevToolsTargetReady() {
 
   devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDeterministicFetch)) {
-    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
-    std::unique_ptr<headless::network::RequestPattern> match_all =
-        headless::network::RequestPattern::Builder().SetUrlPattern("*").Build();
-    std::vector<std::unique_ptr<headless::network::RequestPattern>> patterns;
-    patterns.push_back(std::move(match_all));
-    devtools_client_->GetNetwork()->GetExperimental()->SetRequestInterception(
-        network::SetRequestInterceptionParams::Builder()
-            .SetPatterns(std::move(patterns))
-            .Build());
-  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDefaultBackgroundColor)) {
     std::string color_hex =
@@ -392,22 +349,6 @@ void HeadlessShell::OnLoadEventFired(const page::LoadEventFiredParams& params) {
     return;
   }
   OnPageReady();
-}
-
-// network::Observer implementation:
-void HeadlessShell::OnRequestIntercepted(
-    const network::RequestInterceptedParams& params) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (params.GetIsNavigationRequest()) {
-    deterministic_dispatcher_->NavigationRequested(
-        std::make_unique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
-                                                 params.GetInterceptionId()));
-    return;
-  }
-  devtools_client_->GetNetwork()->GetExperimental()->ContinueInterceptedRequest(
-      network::ContinueInterceptedRequestParams::Builder()
-          .SetInterceptionId(params.GetInterceptionId())
-          .Build());
 }
 
 void HeadlessShell::OnPageReady() {
@@ -698,7 +639,6 @@ int HeadlessShellMain(int argc, const char** argv) {
 
   if (command_line.HasSwitch(switches::kDeterministicMode)) {
     command_line.AppendSwitch(switches::kEnableBeginFrameControl);
-    command_line.AppendSwitch(switches::kDeterministicFetch);
 
     // Compositor flags
     command_line.AppendSwitch(::switches::kRunAllCompositorStagesBeforeDraw);

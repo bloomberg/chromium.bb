@@ -31,11 +31,6 @@ const char kCrashDumpsDir[] = "crash-dumps-dir";
 // (experimental).
 const char kDeterministicMode[] = "deterministic-mode";
 
-// Instructs headless_shell to cause network fetches to complete in order of
-// creation. This removes a significant source of network related
-// non-determinism at the cost of slower page loads.
-const char kDeterministicFetch[] = "deterministic-fetch";
-
 // Instructs headless_shell to print document.body.innerHTML to stdout.
 const char kDumpDom[] = "dump-dom";
 

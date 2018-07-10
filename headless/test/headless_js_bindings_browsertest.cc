@@ -66,11 +66,6 @@ class HeadlessJsBindingsTest
         pak_path, ui::SCALE_FACTOR_NONE);
   }
 
-  void CustomizeHeadlessBrowserContext(
-      HeadlessBrowserContext::Builder& builder) override {
-    builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
-  }
-
   void CustomizeHeadlessWebContents(
       HeadlessWebContents::Builder& builder) override {
     builder.SetWindowSize(gfx::Size(0, 0));
