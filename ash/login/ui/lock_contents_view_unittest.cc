@@ -1346,26 +1346,68 @@ TEST_F(LockContentsViewUnitTest, AuthUserSwapFocusesPassword) {
   AddUsers(2);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
-  LoginAuthUserView::TestApi primary_test_api =
-      MakeLoginAuthTestApi(contents, AuthTarget::kPrimary);
-  LoginAuthUserView::TestApi secondary_test_api =
-      MakeLoginAuthTestApi(contents, AuthTarget::kSecondary);
+  auto do_test = [&](AuthTarget auth_target) {
+    SCOPED_TRACE(AuthTargetToString(auth_target));
 
-  // Focus second user view, verify password does not have focus, activate it,
-  // verify password does have focus.
-  LoginPasswordView* secondary_password = secondary_test_api.password_view();
-  secondary_test_api.user_view()->RequestFocus();
-  EXPECT_FALSE(HasFocusInAnyChildView(secondary_password));
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_TRUE(HasFocusInAnyChildView(secondary_password));
+    LoginAuthUserView::TestApi test_api =
+        MakeLoginAuthTestApi(contents, auth_target);
+    LoginPasswordView* password = test_api.password_view();
 
-  // Focus primary user view, verify password does not have focus, activate it,
-  // verify password does have focus.
-  LoginPasswordView* primary_password = primary_test_api.password_view();
-  primary_test_api.user_view()->RequestFocus();
-  EXPECT_FALSE(HasFocusInAnyChildView(primary_password));
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_TRUE(HasFocusInAnyChildView(primary_password));
+    // Focus user, validate password did not get focused, then activate the
+    // user, which shows and focuses the password.
+    test_api.user_view()->RequestFocus();
+    EXPECT_FALSE(HasFocusInAnyChildView(password));
+    GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+    EXPECT_TRUE(HasFocusInAnyChildView(password));
+  };
+
+  // do_test requires that the auth target is not active, so do secondary before
+  // primary.
+  do_test(AuthTarget::kSecondary);
+  do_test(AuthTarget::kPrimary);
+}
+
+// Validates that tapping on an auth user will refocus the password.
+TEST_F(LockContentsViewUnitTest, TapOnAuthUserFocusesPassword) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  auto do_test = [&](AuthTarget auth_target) {
+    SCOPED_TRACE(testing::Message()
+                 << "users=" << users().size()
+                 << ", auth_target=" << AuthTargetToString(auth_target));
+
+    LoginAuthUserView::TestApi auth_user_test_api =
+        MakeLoginAuthTestApi(contents, auth_target);
+    LoginPasswordView* password = auth_user_test_api.password_view();
+
+    // Activate |auth_target|.
+    auth_user_test_api.user_view()->RequestFocus();
+    GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+    // Move focus off of |auth_target|'s password.
+    ASSERT_TRUE(HasFocusInAnyChildView(password));
+    GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+    EXPECT_FALSE(HasFocusInAnyChildView(password));
+
+    // Click the user view, verify the password was focused.
+    GetEventGenerator()->MoveMouseTo(
+        auth_user_test_api.user_view()->GetBoundsInScreen().CenterPoint());
+    GetEventGenerator()->ClickLeftButton();
+    EXPECT_TRUE(HasFocusInAnyChildView(password));
+  };
+
+  SetUserCount(1);
+  do_test(AuthTarget::kPrimary);
+
+  SetUserCount(2);
+  do_test(AuthTarget::kPrimary);
+  do_test(AuthTarget::kSecondary);
+
+  SetUserCount(3);
+  do_test(AuthTarget::kPrimary);
 }
 
 // Validates that swapping between users in user lists maintains password focus.
