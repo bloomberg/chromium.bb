@@ -478,29 +478,6 @@
             ]
         }
     ],
-    "AutofillProfileOrderByFrecency": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledLimitTo3",
-                    "params": {
-                        "limit": "3"
-                    }
-                },
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "AutofillResetFullServerCardsOnAuthError": [
         {
             "platforms": [

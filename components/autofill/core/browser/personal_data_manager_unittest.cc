@@ -50,7 +50,6 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service_utils.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -303,8 +302,6 @@ class PersonalDataManagerTestBase {
   AutofillTable* autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
   std::unique_ptr<PersonalDataManager> personal_data_;
-
-  variations::testing::VariationParamsManager variation_params_;
 };
 
 class PersonalDataManagerTest : public PersonalDataManagerTestBase,
@@ -1784,8 +1781,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
   EXPECT_EQ(suggestions[2].value, base::ASCIIToUTF16("Marion3"));
 }
 
-// Tests that GetProfileSuggestions returns all profiles suggestions by default
-// and only two if the appropriate field trial is set.
+// Tests that GetProfileSuggestions returns all profiles suggestions.
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
   // Set up 3 different profiles.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
@@ -1816,46 +1812,6 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
       AutofillType(NAME_FIRST), base::string16(), false,
       std::vector<ServerFieldType>());
   EXPECT_EQ(3U, suggestions.size());
-
-  // Verify that only two profiles are suggested.
-  variation_params_.SetVariationParams(kFrecencyFieldTrialName,
-                                       {{kFrecencyFieldTrialLimitParam, "2"}});
-
-  suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), base::string16(), false,
-      std::vector<ServerFieldType>());
-  EXPECT_EQ(2U, suggestions.size());
-}
-
-// Tests that GetProfileSuggestions returns the right number of profile
-// suggestions when the limit to three field trial is set and there are less
-// than three profiles.
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_LimitIsMoreThanProfileSuggestions) {
-  variation_params_.SetVariationParams(kFrecencyFieldTrialName,
-                                       {{kFrecencyFieldTrialLimitParam, "3"}});
-
-  // Set up 2 different profiles.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  personal_data_->AddProfile(profile1);
-
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  personal_data_->AddProfile(profile2);
-
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), base::string16(), false,
-      std::vector<ServerFieldType>());
-  EXPECT_EQ(2U, suggestions.size());
 }
 
 // Tests that disused profiles are suppressed when supression is enabled and
