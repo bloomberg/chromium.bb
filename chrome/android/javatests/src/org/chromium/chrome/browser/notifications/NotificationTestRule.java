@@ -61,7 +61,6 @@ public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedAct
     }
 
     /** Returns the test server. */
-    @Override
     public EmbeddedTestServer getTestServer() {
         return mTestServer;
     }

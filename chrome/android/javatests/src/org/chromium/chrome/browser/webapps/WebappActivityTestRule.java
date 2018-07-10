@@ -80,7 +80,6 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         super(WebappActivity0.class);
     }
 
-    @Override
     public EmbeddedTestServer getTestServer() {
         return mTestServerRule.getServer();
     }

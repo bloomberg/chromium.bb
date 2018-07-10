@@ -62,10 +62,9 @@ that Daydream controller input is registered when using Daydream View.
 
       function stepSetupListeners(numIterations) {
         iterations = numIterations;
-        let currentSession = sessionInfos[sessionTypes.EXCLUSIVE].currentSession;
-        currentSession.addEventListener('selectstart', onSelectStart, false);
-        currentSession.addEventListener('selectend', onSelectEnd, false);
-        currentSession.addEventListener('select', onSelect, false);
+        exclusiveSession.addEventListener('selectstart', onSelectStart, false);
+        exclusiveSession.addEventListener('selectend', onSelectEnd, false);
+        exclusiveSession.addEventListener('select', onSelect, false);
       }
     </script>
   </body>

@@ -27,7 +27,7 @@ Tests that WebXR doesn't update frame data when the tab is not focused
             return;
           }
           onMagicWindowXRFrameCallback = null;
-          pose = frame.getDevicePose(sessionInfos[sessionTypes.MAGIC_WINDOW].currentFrameOfRef);
+          pose = frame.getDevicePose(magicWindowFrameOfRef);
           t.step( () => {
             assert_true(pose != null,
                 "getDevicePose returned a non-null object");
