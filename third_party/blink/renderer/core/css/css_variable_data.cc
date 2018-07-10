@@ -31,6 +31,24 @@ static void UpdateTokens(const CSSParserTokenRange& range,
                                backing_string.length());
 }
 
+static bool IsFontUnitToken(CSSParserToken token) {
+  if (token.GetType() != kDimensionToken)
+    return false;
+  switch (token.GetUnitType()) {
+    case CSSPrimitiveValue::UnitType::kEms:
+    case CSSPrimitiveValue::UnitType::kChs:
+    case CSSPrimitiveValue::UnitType::kExs:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool IsRootFontUnitToken(CSSParserToken token) {
+  return token.GetType() == kDimensionToken &&
+         token.GetUnitType() == CSSPrimitiveValue::UnitType::kRems;
+}
+
 bool CSSVariableData::operator==(const CSSVariableData& other) const {
   return Tokens() == other.Tokens();
 }
@@ -47,6 +65,8 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
       string_builder.Append(token.Value());
     needs_url_resolution_ |=
         (token.GetType() == kUrlToken || token.FunctionId() == CSSValueUrl);
+    has_font_units_ |= IsFontUnitToken(token);
+    has_root_font_units_ |= IsRootFontUnitToken(token);
   }
   String backing_string = string_builder.ToString();
   backing_strings_.push_back(backing_string);
@@ -64,6 +84,8 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
     : is_animation_tainted_(is_animation_tainted),
       needs_variable_resolution_(needs_variable_resolution),
       needs_url_resolution_(needs_variable_resolution_),
+      has_font_units_(false),
+      has_root_font_units_(false),
       base_url_(base_url),
       charset_(charset) {
   DCHECK(!range.AtEnd());

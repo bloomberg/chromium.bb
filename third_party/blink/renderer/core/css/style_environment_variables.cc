@@ -106,8 +106,8 @@ void StyleEnvironmentVariables::SetVariable(const AtomicString& name,
   Vector<String> backing_strings;
   backing_strings.push_back(value);
 
-  SetVariable(name,
-              CSSVariableData::CreateResolved(tokens, backing_strings, false));
+  SetVariable(name, CSSVariableData::CreateResolved(tokens, backing_strings,
+                                                    false, false, false));
 }
 
 void StyleEnvironmentVariables::SetVariable(const UADefinedVariable name,
