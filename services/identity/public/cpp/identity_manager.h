@@ -113,26 +113,26 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // Provides access to the latest cached information of the user's primary
   // account.
-  AccountInfo GetPrimaryAccountInfo();
+  AccountInfo GetPrimaryAccountInfo() const;
 
   // Returns whether the primary account is available, according to the latest
   // cached information. Simple convenience wrapper over checking whether the
   // primary account info has a valid account ID.
-  bool HasPrimaryAccount();
+  bool HasPrimaryAccount() const;
 
   // Provides access to the latest cached information of all accounts that have
   // refresh tokens.
   // NOTE: The accounts should not be assumed to be in any particular order; in
   // particular, they are not guaranteed to be in the order in which the
   // refresh tokens were added.
-  std::vector<AccountInfo> GetAccountsWithRefreshTokens();
+  std::vector<AccountInfo> GetAccountsWithRefreshTokens() const;
 
   // Returns true if a refresh token exists for |account_id|.
-  bool HasAccountWithRefreshToken(const std::string& account_id);
+  bool HasAccountWithRefreshToken(const std::string& account_id) const;
 
   // Returns true if (a) the primary account exists, and (b) a refresh token
   // exists for the primary account.
-  bool HasPrimaryAccountWithRefreshToken();
+  bool HasPrimaryAccountWithRefreshToken() const;
 
   // Creates an AccessTokenFetcher given the passed-in information.
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
@@ -230,7 +230,14 @@ class IdentityManager : public SigninManagerBase::Observer,
   AccountTrackerService* account_tracker_service_;
 
   // The latest (cached) value of the primary account.
+#if defined(OS_CHROMEOS)
+  // On ChromeOS the primary account's email address needs to be modified from
+  // within  GetPrimaryAccountInfo(). TODO(842670): Remove this field being
+  // mutable if possible as part of solving the larger issue.
+  mutable AccountInfo primary_account_info_;
+#else
   AccountInfo primary_account_info_;
+#endif
 
   // The latest (cached) value of the accounts with refresh tokens.
   using AccountIDToAccountInfoMap = std::map<std::string, AccountInfo>;
