@@ -143,7 +143,6 @@ TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(
                           style_->GetWritingMode(), *style_, sizes));
 
-  expected = MinMaxSize{LayoutUnit(), LayoutUnit()};
   style_->SetLogicalWidth(Length(kFillAvailable));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(
                           style_->GetWritingMode(), *style_, sizes));
