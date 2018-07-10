@@ -10,14 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_id.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -26,8 +23,10 @@ class BrowserContext;
 namespace extensions {
 class InfoMap;
 class ExtensionPrefs;
+class ExtensionRegistry;
 
 namespace declarative_net_request {
+class RulesetMatcher;
 
 // Observes loading and unloading of extensions to load and unload their
 // rulesets for the Declarative Net Request API. Lives on the UI thread. Note: A
@@ -46,6 +45,10 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   bool HasRegisteredRuleset(const Extension* extension) const;
 
  private:
+  struct LoadRulesetInfo;
+  class FileSequenceState;
+  class FileSequenceBridge;
+
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
 
   // The constructor is kept private since this should only be created by the
@@ -65,15 +68,27 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  // Callback invoked when we have loaded the ruleset for |info| on
+  // |file_task_runner_|. |matcher| is null iff the ruleset loading failed.
+  void OnRulesetLoaded(LoadRulesetInfo info,
+                       std::unique_ptr<RulesetMatcher> matcher);
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   std::set<ExtensionId> extensions_with_rulesets_;
+
+  // Helper to bridge tasks to a sequence which allows file IO.
+  std::unique_ptr<const FileSequenceBridge> file_sequence_bridge_;
 
   // Guaranteed to be valid through-out the lifetime of this instance.
   InfoMap* const info_map_;
   const ExtensionPrefs* const prefs_;
+  ExtensionRegistry* const extension_registry_;
+
+  // Must be the last member variable. See WeakPtrFactory documentation for
+  // details.
+  base::WeakPtrFactory<RulesMonitorService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesMonitorService);
 };
