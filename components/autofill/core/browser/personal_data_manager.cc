@@ -1757,13 +1757,8 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
         suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
-        if (IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled()) {
-          suggestion->label =
-              credit_card->GetLastUsedDateForDisplay(app_locale_);
-        } else {
-          suggestion->label = credit_card->GetInfo(
-              AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
-        }
+        suggestion->label = credit_card->GetInfo(
+            AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
