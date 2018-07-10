@@ -866,6 +866,14 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
                                          0x0d, 0x01, 0x80, 0x08, 0x03, 0x01}))
           .Deserialize()
           ->IsNull());
+
+  // ECDH key with invalid key data.
+  EXPECT_TRUE(
+      V8ScriptValueDeserializerForModules(
+          script_state, SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x4b, 0x05,
+                                         0x0e, 0x01, 0x01, 0x4b, 0x00, 0x00}))
+          .Deserialize()
+          ->IsNull());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
