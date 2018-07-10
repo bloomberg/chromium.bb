@@ -843,7 +843,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldUseNewSettingName) {
 #if !defined(OS_ANDROID)
       base::string16(),
 #endif
-      base::string16(), l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTINGS_POPUP));
+      base::string16(), l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE));
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorValuesAre(element_values),
                                 false, _));
