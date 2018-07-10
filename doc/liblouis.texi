@@ -663,7 +663,12 @@ capsletter 6
 @opcode{begcapsword, dots}
 The dot pattern which begins a block of capital letters at the
 beginning or within a word. The block is automatically terminated
-by any character that is not a capital letter, e.g. small letters, punctuation, numbers etc.
+by any character that is not a capital letter, e.g. small letters,
+punctuation, numbers etc.
+
+Apart from capital letters, you can define a list of characters that
+can appear within a word in capitals without terminating the block.
+Do this by using the @opcoderef{capsmodechars} opcode.
 
 Example:
 
@@ -674,11 +679,26 @@ begcapsword 6-6
 @opcode{endcapsword, dots}
 The dot pattern which ends a block of capital letters within a word.
 It is used in cases where the block is not terminated automatically
-by a word boundary, a number or punctuation.
+by a word boundary, a number or punctuation, usually when a small
+letter appears later in the same word.
 For example:
 
 @example
 endcapsword 6-3
+@end example
+
+@opcode{capsmodechars, characters}
+
+Normally, any character other than a capital letter will cancel the
+@opcoderef{begcapsword} indicator. However, by using the
+@code{capsmodechars} opcode, you can specify a list of characters
+that are legal within a capitalized word. In some Braille codes,
+this might be the case for the hyphen character, @samp{-}.
+
+Example:
+
+@example
+capsmodechars -
 @end example
 
 @opcode{begcaps, dots}
@@ -759,12 +779,44 @@ space, a letter or any other none-@opcoderef{litdigit} character is
 encountered.
 
 You can define characters or strings to be part of a number by using
-the @opcoderef{midnum} opcode.
+the @opcoderef{midnum} opcode or the @opcoderef{numericmodechars}
+opcode.
 
 Example:
 
 @example
 numsign 3456
+@end example
+
+@opcode{numericnocontchars, characters}
+
+This opcode specifies the characters that require a
+@opcoderef{nocontractsign} if they appear after a number with no
+intervening space, e.g. @samp{1a} or @samp{2-B}.
+
+These characters will typically be the letters a-j, which usually
+constitute the literary digits (see @opcoderef{litdigit}). However,
+in some Braille codes, all letters fall in this category.
+
+Example:
+
+@example
+numericnocontchars abcdefghij
+@end example
+
+@opcode{numericmodechars, characters}
+
+Any of these characters can appear within a number without terminating
+the effect of the number sign (see the @opcoderef{numsign} opcode).
+
+it works like the @opcoderef{midnum} opcode, but instead of specifying
+a character string and its corresponding dot pattern, you just specify
+the list of characters that can appear within a number
+
+Example:
+
+@example
+numericmodechars -/
 @end example
 
 @end table
