@@ -30,10 +30,6 @@ crbug.com/854889 accessibility/css-styles.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
 
-# An DCHECK related to HandleOverflow and rewinding? Details in bug.
-crbug.com/860516 http/tests/devtools/console/console-correct-suggestions.js [ Crash ]
-crbug.com/860516 http/tests/devtools/console/console-smart-enter.js [ Crash Pass ]
-
 # Fails due to incorrect offset mapping using cache.
 crbug.com/636993 external/wpt/css/css-text/word-break/word-break-break-all-005.html [ Failure ]
 crbug.com/636993 external/wpt/css/css-text/word-break/word-break-normal-hi-000.html [ Failure ]
