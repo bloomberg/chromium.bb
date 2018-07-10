@@ -340,7 +340,7 @@ html[dir=rtl] #fakebox > input {
   right: 0;
 }
 
-.md html[dir=rtl] #fakebox > input {
+html[dir=rtl] .md  #fakebox > input {
   padding-right: 20px;
 }
 
@@ -375,6 +375,11 @@ html[dir=rtl] #fakebox-text {
   right: 13px;
 }
 
+html[dir=rtl] .md #fakebox-text {
+  padding-right: 20px;
+  right: 0;
+}
+
 #fakebox-cursor {
   background: #333;
   bottom: 12px;
@@ -394,7 +399,7 @@ html[dir=rtl] #fakebox-cursor {
   right: 13px;
 }
 
-.md html[dir=rtl] #fakebox-cursor {
+html[dir=rtl] .md #fakebox-cursor {
   right: 20px;
 }
 
@@ -418,6 +423,10 @@ html[dir=rtl] #fakebox-cursor {
 html[dir=rtl] #fakebox-microphone {
   left: 0;
   right: auto;
+}
+
+html[dir=rtl] .md #fakebox-microphone {
+  margin-left: 12px;
 }
 
 @keyframes blink {
