@@ -167,7 +167,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
     pic->set_visible_rect(new_render_rect);
     pic->set_bitstream_id(stream_id_);
-    pic->frame_hdr.reset(curr_frame_hdr_.release());
+    pic->frame_hdr = std::move(curr_frame_hdr_);
 
     if (!DecodeAndOutputPicture(pic)) {
       SetError();
