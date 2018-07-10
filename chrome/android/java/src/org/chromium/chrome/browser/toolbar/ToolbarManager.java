@@ -638,6 +638,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The coordinator for the bottom toolbar if it exists.
+     */
+    public BottomToolbarCoordinator getBottomToolbarCoordinator() {
+        return mBottomToolbarCoordinator;
+    }
+
+    /**
      * Show the download page in-product-help bubble. Also used by download page screenshot IPH.
      * @param tab The current tab.
      * @param featureName The associated feature name.

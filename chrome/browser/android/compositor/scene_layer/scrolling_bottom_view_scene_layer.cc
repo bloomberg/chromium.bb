@@ -39,6 +39,7 @@ void ScrollingBottomViewSceneLayer::UpdateScrollingBottomViewLayer(
     const JavaParamRef<jobject>& jresource_manager,
     jint view_resource_id,
     jint shadow_height,
+    jfloat x_offset,
     jfloat y_offset,
     bool show_shadow) {
   ui::ResourceManager* resource_manager =
@@ -70,7 +71,7 @@ void ScrollingBottomViewSceneLayer::UpdateScrollingBottomViewLayer(
   // The view's layer should be the same size as the texture.
   view_layer_->SetBounds(gfx::Size(bottom_view_resource->size().width(),
                                    bottom_view_resource->size().height()));
-  view_layer_->SetPosition(gfx::PointF(0, texture_y_offset));
+  view_layer_->SetPosition(gfx::PointF(x_offset, texture_y_offset));
 }
 
 void ScrollingBottomViewSceneLayer::SetContentTree(

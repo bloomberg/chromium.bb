@@ -872,6 +872,8 @@ public class ChromeTabbedActivity
                     mLayoutManager, mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
                     bookmarkClickHandler, null, incognitoClickHandler);
 
+            mLayoutManager.setToolbarManager(getToolbarManager());
+
             if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
                         getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,

@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
@@ -33,6 +34,10 @@ public class BottomToolbarModel extends PropertyModel {
     /** A {@link LayoutManager} to attach overlays to. */
     public static final ObjectPropertyKey<LayoutManager> LAYOUT_MANAGER = new ObjectPropertyKey<>();
 
+    /** The browser's {@link ToolbarSwipeLayout}. */
+    public static final ObjectPropertyKey<ToolbarSwipeLayout> TOOLBAR_SWIPE_LAYOUT =
+            new ObjectPropertyKey<>();
+
     /** A {@link ResourceManager} for loading textures into the compositor. */
     public static final ObjectPropertyKey<ResourceManager> RESOURCE_MANAGER =
             new ObjectPropertyKey<>();
@@ -50,7 +55,7 @@ public class BottomToolbarModel extends PropertyModel {
     /** Default constructor. */
     public BottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, MENU_BUTTON_LISTENER,
-                LAYOUT_MANAGER, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE, UPDATE_BADGE_VISIBLE,
-                TOOLBAR_SWIPE_HANDLER);
+                LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
+                UPDATE_BADGE_VISIBLE, TOOLBAR_SWIPE_HANDLER);
     }
 }

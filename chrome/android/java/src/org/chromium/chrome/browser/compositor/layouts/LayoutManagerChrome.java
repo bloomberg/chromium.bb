@@ -27,7 +27,9 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -113,6 +115,16 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
 
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
                 dynamicResourceLoader);
+    }
+
+    /**
+     * Set the toolbar manager for layouts that need draw to different toolbars.
+     * @param manager The {@link ToolbarManager} for accessing toolbar textures.
+     */
+    public void setToolbarManager(ToolbarManager manager) {
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            manager.getBottomToolbarCoordinator().setToolbarSwipeLayout(mToolbarSwipeLayout);
+        }
     }
 
     @Override

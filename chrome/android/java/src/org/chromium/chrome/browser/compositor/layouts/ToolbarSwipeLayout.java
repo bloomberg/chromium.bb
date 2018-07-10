@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEvent
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -67,6 +68,10 @@ public class ToolbarSwipeLayout extends Layout {
     private final TabListSceneLayer mSceneLayer;
 
     private final Interpolator mEdgeInterpolator = new DecelerateInterpolator();
+
+    /** The left and right scene layer responsible for drawing bottom toolbars for each tab. */
+    private ScrollingBottomViewSceneLayer mLeftBottomToolbarSceneLayer;
+    private ScrollingBottomViewSceneLayer mRightBottomToolbarSceneLayer;
 
     /**
      * @param context             The current Android's context.
@@ -306,13 +311,40 @@ public class ToolbarSwipeLayout extends Layout {
         if (mLeftTab != null) {
             mLeftTab.setX(leftX);
             needUpdate = mLeftTab.updateSnap(dt) || needUpdate;
+            if (mLeftBottomToolbarSceneLayer != null) {
+                mLeftBottomToolbarSceneLayer.setIsVisibile(true);
+                mLeftBottomToolbarSceneLayer.setXOffset((int) (mLeftTab.getX() * mDpToPx));
+            }
+        } else if (mLeftBottomToolbarSceneLayer != null) {
+            mLeftBottomToolbarSceneLayer.setIsVisibile(false);
         }
 
         if (mRightTab != null) {
             mRightTab.setX(rightX);
             needUpdate = mRightTab.updateSnap(dt) || needUpdate;
+            if (mRightBottomToolbarSceneLayer != null) {
+                mRightBottomToolbarSceneLayer.setIsVisibile(true);
+                mRightBottomToolbarSceneLayer.setXOffset((int) (mRightTab.getX() * mDpToPx));
+            }
+        } else if (mRightBottomToolbarSceneLayer != null) {
+            mRightBottomToolbarSceneLayer.setIsVisibile(false);
         }
+
         if (needUpdate) requestUpdate();
+    }
+
+    /**
+     * Provide this layout access to two {@link ScrollingBottomViewSceneLayer}s to draw for each tab
+     * in this layout.
+     * @param left The toolbar to draw with the left tab.
+     * @param right The toolbar to draw with the right tab.
+     */
+    public void setBottomToolbarSceneLayers(
+            ScrollingBottomViewSceneLayer left, ScrollingBottomViewSceneLayer right) {
+        mLeftBottomToolbarSceneLayer = left;
+        addSceneOverlay(mLeftBottomToolbarSceneLayer);
+        mRightBottomToolbarSceneLayer = right;
+        addSceneOverlay(mRightBottomToolbarSceneLayer);
     }
 
     /**

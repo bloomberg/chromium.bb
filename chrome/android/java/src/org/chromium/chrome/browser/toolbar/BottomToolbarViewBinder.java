@@ -67,6 +67,11 @@ public class BottomToolbarViewBinder
                     view.toolbarRoot, view.toolbarRoot.getTopShadowHeight());
             model.getValue(BottomToolbarModel.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
+        } else if (BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT == propertyKey) {
+            assert view.sceneLayer != null;
+            model.getValue(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT)
+                    .setBottomToolbarSceneLayers(new ScrollingBottomViewSceneLayer(view.sceneLayer),
+                            new ScrollingBottomViewSceneLayer(view.sceneLayer));
         } else if (BottomToolbarModel.RESOURCE_MANAGER == propertyKey) {
             model.getValue(BottomToolbarModel.RESOURCE_MANAGER)
                     .getDynamicResourceLoader()
