@@ -233,6 +233,7 @@ var showTiles = function(info) {
 var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
+  document.body.classList.toggle('background-image', info.hasBackgroundImage);
 };
 
 
