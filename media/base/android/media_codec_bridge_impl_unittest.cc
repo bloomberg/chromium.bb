@@ -444,14 +444,12 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   const int bit_rate = 300000;
   const int frame_rate = 30;
   const int i_frame_interval = 20;
-  const std::set<int> supported_color_formats =
-      MediaCodecUtil::GetEncoderColorFormats("video/avc");
-  ASSERT_TRUE(supported_color_formats.size() != 0);
+  const int color_format = COLOR_FORMAT_YUV420_SEMIPLANAR;
 
   std::unique_ptr<MediaCodecBridge> media_codec(
       MediaCodecBridgeImpl::CreateVideoEncoder(
           kCodecH264, gfx::Size(width, height), bit_rate, frame_rate,
-          i_frame_interval, *supported_color_formats.begin()));
+          i_frame_interval, color_format));
   ASSERT_THAT(media_codec, NotNull());
 
   const char* src_filename = "bear_320x192_40frames.yuv";
