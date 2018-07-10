@@ -40,9 +40,12 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   static scoped_refptr<CSSVariableData> CreateResolved(
       const Vector<CSSParserToken>& resolved_tokens,
       Vector<String> backing_strings,
-      bool is_animation_tainted) {
+      bool is_animation_tainted,
+      bool has_font_units,
+      bool has_root_font_units) {
     return base::AdoptRef(new CSSVariableData(
-        resolved_tokens, std::move(backing_strings), is_animation_tainted));
+        resolved_tokens, std::move(backing_strings), is_animation_tainted,
+        has_font_units, has_root_font_units));
   }
 
   CSSParserTokenRange TokenRange() const { return tokens_; }
@@ -58,6 +61,14 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   bool NeedsUrlResolution() const { return needs_url_resolution_; }
 
+  // True if the CSSVariableData has tokens with units that are relative to the
+  // font-size of the current element, e.g. 'em'.
+  bool HasFontUnits() const { return has_font_units_; }
+
+  // True if the CSSVariableData has tokens with units that are relative to the
+  // font-size of the root element, e.g. 'rem'.
+  bool HasRootFontUnits() const { return has_root_font_units_; }
+
   const KURL& BaseURL() const { return base_url_; }
 
   const WTF::TextEncoding& Charset() const { return charset_; }
@@ -69,7 +80,9 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   CSSVariableData()
       : is_animation_tainted_(false),
         needs_variable_resolution_(false),
-        needs_url_resolution_(false){};
+        needs_url_resolution_(false),
+        has_font_units_(false),
+        has_root_font_units_(false){};
 
   CSSVariableData(const CSSParserTokenRange&,
                   bool is_animation_tainted,
@@ -79,12 +92,16 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   CSSVariableData(const Vector<CSSParserToken>& resolved_tokens,
                   Vector<String> backing_strings,
-                  bool is_animation_tainted)
+                  bool is_animation_tainted,
+                  bool has_font_units,
+                  bool has_root_font_units)
       : backing_strings_(std::move(backing_strings)),
         tokens_(resolved_tokens),
         is_animation_tainted_(is_animation_tainted),
         needs_variable_resolution_(false),
-        needs_url_resolution_(false) {}
+        needs_url_resolution_(false),
+        has_font_units_(false),
+        has_root_font_units_(false) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 
@@ -96,6 +113,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   const bool is_animation_tainted_;
   const bool needs_variable_resolution_;
   bool needs_url_resolution_;
+  bool has_font_units_;
+  bool has_root_font_units_;
   KURL base_url_;
   WTF::TextEncoding charset_;
   DISALLOW_COPY_AND_ASSIGN(CSSVariableData);

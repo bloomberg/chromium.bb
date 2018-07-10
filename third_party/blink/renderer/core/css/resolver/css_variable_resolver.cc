@@ -147,9 +147,12 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
                         variable_data.BaseURL(), variable_data.Charset());
   }
 
-  return CSSVariableData::CreateResolved(result.tokens,
-                                         std::move(result.backing_strings),
-                                         result.is_animation_tainted);
+  // TODO(andruud): Actually provide real value for has[_root]_font_unit.
+  bool has_font_unit = false;
+  bool has_root_font_unit = false;
+  return CSSVariableData::CreateResolved(
+      result.tokens, std::move(result.backing_strings),
+      result.is_animation_tainted, has_font_unit, has_root_font_unit);
 }
 
 void CSSVariableResolver::ResolveRelativeUrls(
