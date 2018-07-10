@@ -336,8 +336,8 @@ void RenderViewTest::SetUp() {
   view_params->renderer_preferences = RendererPreferences();
   view_params->web_preferences = WebPreferences();
   view_params->view_id = render_thread_->GetNextRoutingID();
-  // For now these two must be equal. See: https://crbug.com/545684.
-  view_params->main_frame_widget_routing_id = view_params->view_id;
+  view_params->main_frame_widget_routing_id =
+      render_thread_->GetNextRoutingID();
   view_params->main_frame_routing_id = render_thread_->GetNextRoutingID();
   render_thread_->PassInitialInterfaceProviderRequestForFrame(
       view_params->main_frame_routing_id,

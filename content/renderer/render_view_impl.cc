@@ -427,7 +427,7 @@ RenderViewImpl::RenderViewImpl(
     CompositorDependencies* compositor_deps,
     const mojom::CreateViewParams& params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : RenderWidget(params.view_id,
+    : RenderWidget(params.main_frame_widget_routing_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
                    params.visual_properties.screen_info,
@@ -435,6 +435,7 @@ RenderViewImpl::RenderViewImpl(
                    params.hidden,
                    params.never_visible,
                    task_runner),
+      routing_id_(params.view_id),
       webkit_preferences_(params.web_preferences),
       send_content_state_immediately_(false),
       send_preferred_size_changes_(false),
@@ -461,6 +462,7 @@ RenderViewImpl::RenderViewImpl(
       renderer_wide_named_frame_lookup_(false),
       weak_ptr_factory_(this) {
   GetWidget()->set_owner_delegate(this);
+  RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
 void RenderViewImpl::Initialize(
@@ -593,6 +595,7 @@ void RenderViewImpl::Initialize(
 
 RenderViewImpl::~RenderViewImpl() {
   DCHECK(!frame_widget_);
+  RenderThread::Get()->RemoveRoute(routing_id_);
 
 #if defined(OS_ANDROID)
   // The date/time picker client is both a std::unique_ptr member of this class
@@ -995,6 +998,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const RenderWidget::ShowCallback& show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(params->view_id != MSG_ROUTING_NONE);
+  DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(compositor_deps, *params);
@@ -1040,6 +1044,24 @@ bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
+void RenderViewImpl::SetActive(bool active) {
+  if (webview())
+    webview()->SetIsActive(active);
+}
+
+void RenderViewImpl::SetBackgroundOpaque(bool opaque) {
+  if (!frame_widget_)
+    return;
+
+  if (opaque) {
+    frame_widget_->ClearBaseBackgroundColorOverride();
+    frame_widget_->ClearBackgroundColorOverride();
+  } else {
+    frame_widget_->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+    frame_widget_->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
+  }
+}
+
 // IPC::Listener implementation ----------------------------------------------
 
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
@@ -1067,17 +1089,14 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_ResolveTapDisambiguation,
                         OnResolveTapDisambiguation)
-    IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
 
     // Page messages.
@@ -1107,6 +1126,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnSelectWordAroundCaret() {
+  // TODO(ajwong): Move this into RenderWidget. http://crbug.com/545684
   // Set default values for the ACK
   bool did_select = false;
   int start_adjust = 0;
@@ -1128,8 +1148,8 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
       input_handler_->set_handling_input_event(false);
     }
   }
-  Send(new ViewHostMsg_SelectWordAroundCaretAck(GetRoutingID(), did_select,
-                                                start_adjust, end_adjust));
+  Send(new ViewHostMsg_SelectWordAroundCaretAck(
+      GetWidget()->routing_id(), did_select, start_adjust, end_adjust));
 }
 
 void RenderViewImpl::OnUpdateTargetURLAck() {
@@ -1202,15 +1222,6 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
     blink::WebView* web_view,
     CompositorDependencies* compositor_deps) {
   ApplyWebPreferences(prefs, web_view);
-}
-
-void RenderViewImpl::OnForceRedraw(int snapshot_id) {
-  if (LayerTreeView* ltv = layer_tree_view()) {
-    ltv->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        base::BindOnce(&RenderViewImpl::OnForceDrawFramePresented,
-                       weak_ptr_factory_.GetWeakPtr(), snapshot_id));
-    ltv->SetNeedsForcedRedraw();
-  }
 }
 
 // blink::WebViewClient ------------------------------------------------------
@@ -1749,12 +1760,6 @@ void RenderViewImpl::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
-void RenderViewImpl::OnForceDrawFramePresented(
-    int snapshot_id,
-    const gfx::PresentationFeedback& feedback) {
-  Send(new ViewHostMsg_ForceRedrawComplete(GetRoutingID(), snapshot_id));
-}
-
 blink::WebString RenderViewImpl::AcceptLanguages() {
   return WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
@@ -1774,7 +1779,7 @@ RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
 }
 
 int RenderViewImpl::GetRoutingID() const {
-  return routing_id();
+  return routing_id_;
 }
 
 gfx::Size RenderViewImpl::GetSize() const {
@@ -1912,11 +1917,13 @@ void RenderViewImpl::OnClosePage() {
   Send(new ViewHostMsg_ClosePage_ACK(GetRoutingID()));
 }
 
+#if defined(OS_MACOSX)
 void RenderViewImpl::OnClose() {
   if (closing_)
     RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
   RenderWidget::OnClose();
 }
+#endif
 
 void RenderViewImpl::OnMoveOrResizeStarted() {
   if (webview())
@@ -1998,24 +2005,6 @@ void RenderViewImpl::OnSynchronizeVisualProperties(
         ->FrameWidget()
         ->ScrollFocusedEditableElementIntoView();
   }
-}
-
-void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
-  if (!frame_widget_)
-    return;
-
-  if (opaque) {
-    frame_widget_->ClearBaseBackgroundColorOverride();
-    frame_widget_->ClearBackgroundColorOverride();
-  } else {
-    frame_widget_->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
-    frame_widget_->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
-  }
-}
-
-void RenderViewImpl::OnSetActive(bool active) {
-  if (webview())
-    webview()->SetIsActive(active);
 }
 
 blink::WebWidget* RenderViewImpl::GetWebWidget() const {
@@ -2261,7 +2250,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
       // A SharedMemoryHandle is sent to the browser process, which is
       // responsible for freeing the shared memory when no longer needed.
       Send(new ViewHostMsg_ShowDisambiguationPopup(
-          GetRoutingID(), physical_window_zoom_rect, canvas_size,
+          GetWidget()->routing_id(), physical_window_zoom_rect, canvas_size,
           shm->TakeHandle()));
 
       handled = true;
@@ -2305,13 +2294,13 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
   if (enable) {
     if (has_focus())
       return;
-    OnSetActive(true);
+    SetActive(true);
     OnSetFocus(true);
   } else {
     if (!has_focus())
       return;
     OnSetFocus(false);
-    OnSetActive(false);
+    SetActive(false);
   }
 }
 

@@ -25,6 +25,12 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   virtual bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) = 0;
 
+  // See comment in RenderWidgetHost::SetActive().
+  virtual void SetActive(bool active) = 0;
+
+  // See comment in RenderWidgetHostImpl::SetBackgroundOpaque().
+  virtual void SetBackgroundOpaque(bool opaque) = 0;
+
  protected:
   virtual ~RenderWidgetOwnerDelegate() {}
 };

@@ -202,6 +202,7 @@ class TestRenderViewHost
   TestRenderViewHost(SiteInstance* instance,
                      std::unique_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
+                     int32_t routing_id,
                      int32_t main_frame_routing_id,
                      bool swapped_out);
   ~TestRenderViewHost() override;
