@@ -23,11 +23,11 @@ namespace resource_coordinator {
 namespace {
 
 const char kInitStatusHistogramLabel[] =
-    "TabManager.Discarding.LocalDatabase.DatabaseInit";
+    "ResourceCoordinator.LocalDB.DatabaseInit";
 const char kInitStatusAfterRepairHistogramLabel[] =
-    "TabManager.Discarding.LocalDatabase.DatabaseInitAfterRepair";
+    "ResourceCoordinator.LocalDB.DatabaseInitAfterRepair";
 const char kInitStatusAfterDeleteHistogramLabel[] =
-    "TabManager.Discarding.LocalDatabase.DatabaseInitAfterDelete";
+    "ResourceCoordinator.LocalDB.DatabaseInitAfterDelete";
 
 enum class InitStatus {
   kInitStatusOk,
@@ -64,7 +64,7 @@ bool RepairDatabase(const std::string& db_path) {
   options.reuse_logs = false;
   options.max_open_files = 0;
   bool repair_succeeded = leveldb::RepairDB(db_path, options).ok();
-  UMA_HISTOGRAM_BOOLEAN("TabManager.Discarding.LocalDatabase.DatabaseRepair",
+  UMA_HISTOGRAM_BOOLEAN("ResourceCoordinator.LocalDB.DatabaseRepair",
                         repair_succeeded);
   return repair_succeeded;
 }
