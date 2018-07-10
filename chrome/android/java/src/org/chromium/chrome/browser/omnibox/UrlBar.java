@@ -39,6 +39,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.UiUtils;
 
@@ -249,12 +250,14 @@ public class UrlBar extends AutocompleteEditText {
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public void onLongPress(MotionEvent e) {
+                        ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OMNIBOX_LONG_PRESS);
                         performLongClick();
                     }
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
                         requestFocus();
+                        ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OMNIBOX_TAP);
                         return true;
                     }
                 }, ThreadUtils.getUiThreadHandler());

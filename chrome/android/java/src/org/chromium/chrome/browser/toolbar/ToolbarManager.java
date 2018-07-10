@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
@@ -21,6 +22,7 @@ import android.view.View.OnClickListener;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -90,6 +92,8 @@ import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.ViewRectProvider;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -111,6 +115,20 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
          */
         void updateReloadButtonState(boolean isLoading);
     }
+
+    /** A means of tracking which mechanism is being used to focus the omnibox. */
+    @IntDef({OMNIBOX_TAP, OMNIBOX_LONG_PRESS, FAKE_BOX_TAP, FAKE_BOX_LONG_PRESS, ACCELERATOR_TAP,
+            FOCUS_REASON_BOUNDARY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OmniboxFocusReason {}
+    public static final int OMNIBOX_TAP = 0;
+    public static final int OMNIBOX_LONG_PRESS = 1;
+    public static final int FAKE_BOX_TAP = 2;
+    public static final int FAKE_BOX_LONG_PRESS = 3;
+    public static final int ACCELERATOR_TAP = 4;
+    private static final int FOCUS_REASON_BOUNDARY = 5;
+    private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
+            new EnumeratedHistogramSample("Android.OmniboxFocusReason", FOCUS_REASON_BOUNDARY);
 
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
@@ -600,6 +618,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @param reason A {@link OmniboxFocusReason} that the omnibox was focused.
+     */
+    public static void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
+        ENUMERATED_FOCUS_REASON.record(reason);
+    }
+
+    /**
      * Enable the bottom toolbar.
      */
     public void enableBottomToolbar() {
@@ -712,7 +737,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
 
         if (mBottomToolbarCoordinator != null) {
-            final OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
+            final OnClickListener searchAcceleratorListener = v -> {
+                recordOmniboxFocusReason(ACCELERATOR_TAP);
+                setUrlBarFocus(true);
+            };
             final OnClickListener homeButtonListener = v -> openHomepage();
             mBottomToolbarCoordinator.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),

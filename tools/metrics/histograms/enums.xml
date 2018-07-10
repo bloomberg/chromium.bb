@@ -35063,6 +35063,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="tap gesture on hint view"/>
 </enum>
 
+<enum name="OmniboxFocusReason">
+  <int value="0" label="Omnibox tapped."/>
+  <int value="1" label="Omnibox long-pressed."/>
+  <int value="2" label="NTP omnibox tapped."/>
+  <int value="3" label="NTP omnibox long-pressed (from paste action)."/>
+  <int value="4" label="Accelerator tapped."/>
+</enum>
+
 <enum name="OmniboxInputType">
   <int value="0" label="invalid"/>
   <int value="1" label="unknown"/>
