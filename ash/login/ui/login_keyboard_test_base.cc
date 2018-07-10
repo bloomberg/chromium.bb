@@ -99,26 +99,19 @@ void LoginKeyboardTestBase::ShowLoginScreen() {
 }
 
 void LoginKeyboardTestBase::LoadUsers(int count) {
+  std::vector<mojom::LoginUserInfoPtr> users;
   for (int i = 0; i < count; ++i) {
     std::string email =
         base::StrCat({"user", std::to_string(i), "@domain.com "});
-    users_.push_back(CreateUser(email));
+    users.push_back(CreateUser(email));
   }
-  ash::LockScreen::Get()->data_dispatcher()->NotifyUsers(users_);
-}
-
-void LoginKeyboardTestBase::LoadPublicAccountUsers(int count) {
-  for (int i = 0; i < count; ++i) {
-    std::string email =
-        base::StrCat({"publicuser", std::to_string(i), "@domain.com"});
-    users_.push_back(CreatePublicAccountUser(email));
-  }
-  ash::LockScreen::Get()->data_dispatcher()->NotifyUsers(users_);
+  login_controller_->LoadUsers(std::move(users), false);
 }
 
 void LoginKeyboardTestBase::LoadUser(const std::string& email) {
-  users_.push_back(CreateUser(email));
-  ash::LockScreen::Get()->data_dispatcher()->NotifyUsers(users_);
+  std::vector<mojom::LoginUserInfoPtr> users;
+  users.push_back(CreateUser(email));
+  login_controller_->LoadUsers(std::move(users), false);
 }
 
 }  // namespace ash

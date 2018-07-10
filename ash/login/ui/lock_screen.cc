@@ -170,14 +170,6 @@ LoginDataDispatcher* LockScreen::data_dispatcher() {
   return window_->data_dispatcher();
 }
 
-void LockScreen::FocusNextUser() {
-  contents_view_->FocusNextUser();
-}
-
-void LockScreen::FocusPreviousUser() {
-  contents_view_->FocusPreviousUser();
-}
-
 void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {
   if (data_dispatcher())
     data_dispatcher()->SetLockScreenNoteState(state);

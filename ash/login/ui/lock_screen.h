@@ -74,9 +74,6 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // Returns if the screen has been shown (i.e. |LockWindow::Show| was called).
   bool is_shown() const { return is_shown_; }
 
-  void FocusNextUser();
-  void FocusPreviousUser();
-
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 

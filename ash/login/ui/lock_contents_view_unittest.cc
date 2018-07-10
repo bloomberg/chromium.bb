@@ -25,7 +25,6 @@
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
-#include "ash/login/ui/views_utils.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1393,37 +1392,6 @@ TEST_F(LockContentsViewUnitTest, UserListUserSwapFocusesPassword) {
   EXPECT_TRUE(HasFocusInAnyChildView(password_view));
 }
 
-TEST_F(LockContentsViewUnitTest, BadDetachableBaseUnfocusesPasswordView) {
-  auto fake_detachable_base_model =
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher());
-  FakeLoginDetachableBaseModel* detachable_base_model =
-      fake_detachable_base_model.get();
-  auto* contents = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(), std::move(fake_detachable_base_model));
-  SetUserCount(3);
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
-
-  LockContentsView::TestApi test_api(contents);
-  LoginBigUserView* primary_view = test_api.primary_big_view();
-  LoginPasswordView* primary_password_view =
-      LoginAuthUserView::TestApi(primary_view->auth_user()).password_view();
-
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  detachable_base_model->SetPairingStatus(
-      DetachableBasePairingStatus::kNotAuthenticated, "");
-  EXPECT_FALSE(
-      login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  // Swapping to another user should still not focus password view.
-  LoginUserView* first_list_user = test_api.users_list()->user_view_at(0);
-  first_list_user->RequestFocus();
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(
-      login_views_utils::HasFocusInAnyChildView(primary_password_view));
-}
-
 TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
   // Build lock screen with 3 users: one public account user and two regular
   // users.
@@ -1580,104 +1548,6 @@ TEST_F(LockContentsViewKeyboardUnitTest, PasswordClearedOnSuspend) {
   EXPECT_FALSE(textfield->text().empty());
   contents->SuspendImminent(power_manager::SuspendImminent_Reason_LID_CLOSED);
   EXPECT_TRUE(textfield->text().empty());
-}
-
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavSingleUser) {
-  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(1);
-  LockContentsView* lock_contents =
-      LockScreen::TestApi(LockScreen::Get()).contents_view();
-
-  LoginBigUserView* primary_big_view =
-      LockContentsView::TestApi(lock_contents).primary_big_view();
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_big_view));
-
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_big_view));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_big_view));
-}
-
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavTwoUsers) {
-  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(1);
-  LoadPublicAccountUsers(1);
-  LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
-      LockScreen::TestApi(LockScreen::Get()).contents_view());
-
-  LoginPasswordView* primary_password_view =
-      LoginAuthUserView::TestApi(lock_contents.primary_big_view()->auth_user())
-          .password_view();
-  LoginBigUserView* secondary_user_view =
-      lock_contents.opt_secondary_big_view();
-
-  ASSERT_NE(nullptr, secondary_user_view);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(secondary_user_view));
-
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(secondary_user_view));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-}
-
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavThreeUsers) {
-  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(3);
-  LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
-      LockScreen::TestApi(LockScreen::Get()).contents_view());
-
-  LoginPasswordView* primary_password_view =
-      LoginAuthUserView::TestApi(lock_contents.primary_big_view()->auth_user())
-          .password_view();
-  LoginUserView* first_list_user = lock_contents.users_list()->user_view_at(0);
-  LoginUserView* second_list_user = lock_contents.users_list()->user_view_at(1);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(first_list_user));
-
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(second_list_user));
-
-  generator->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(second_list_user));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(first_list_user));
-
-  generator->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-}
-
-TEST_F(LockContentsViewKeyboardUnitTest, UserSwapFocusesBigView) {
-  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(3);
-  LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
-      LockScreen::TestApi(LockScreen::Get()).contents_view());
-
-  LoginPasswordView* primary_password_view =
-      LoginAuthUserView::TestApi(lock_contents.primary_big_view()->auth_user())
-          .password_view();
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
-
-  lock_contents.users_list()->user_view_at(0)->RequestFocus();
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_RETURN, 0);
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
 }
 
 }  // namespace ash

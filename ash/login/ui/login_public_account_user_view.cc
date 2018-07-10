@@ -8,8 +8,8 @@
 
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/hover_notifier.h"
+#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/login_display_style.h"
-#include "ash/login/ui/views_utils.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -74,7 +74,7 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   views::View* wrapped_user_view =
-      login_views_utils::WrapViewForPreferredSize(user_view_);
+      login_layout_util::WrapViewForPreferredSize(user_view_);
 
   auto add_padding = [&](int amount) {
     auto* padding = new NonAccessibleView();

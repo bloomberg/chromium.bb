@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
-#include "ash/login/ui/lock_screen.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "base/scoped_observer.h"
@@ -116,8 +115,6 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
-  bool HandleKeyEvent(views::Textfield* sender,
-                      const ui::KeyEvent& key_event) override;
 
   // ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;

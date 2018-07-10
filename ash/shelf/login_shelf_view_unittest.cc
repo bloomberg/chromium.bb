@@ -12,7 +12,6 @@
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
-#include "ash/login/ui/views_utils.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -38,14 +37,25 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
+// Returns true if |view| or any child of it has focus.
+bool HasFocusInAnyChildView(views::View* view) {
+  if (view->HasFocus())
+    return true;
+  for (int i = 0; i < view->child_count(); ++i) {
+    if (HasFocusInAnyChildView(view->child_at(i)))
+      return true;
+  }
+  return false;
+}
+
 void ExpectFocused(views::View* view) {
   EXPECT_TRUE(view->GetWidget()->IsActive());
-  EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(view));
+  EXPECT_TRUE(HasFocusInAnyChildView(view));
 }
 
 void ExpectNotFocused(views::View* view) {
   EXPECT_FALSE(view->GetWidget()->IsActive());
-  EXPECT_FALSE(login_views_utils::HasFocusInAnyChildView(view));
+  EXPECT_FALSE(HasFocusInAnyChildView(view));
 }
 
 class LoginShelfViewTest : public LoginTestBase {
