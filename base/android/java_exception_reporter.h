@@ -20,6 +20,13 @@ BASE_EXPORT void InitJavaExceptionReporter();
 // DumpWithoutCrashing does not work for child processes on Android.
 BASE_EXPORT void InitJavaExceptionReporterForChildProcess();
 
+// Sets a callback to be called with the contents of a Java exception, which may
+// be nullptr.
+BASE_EXPORT void SetJavaExceptionCallback(void (*)(const char* exception));
+
+// Calls the Java exception callback, if any, with exception.
+void SetJavaException(const char* exception);
+
 }  // namespace android
 }  // namespace base
 

@@ -76,23 +76,11 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       custom_themes_(StrDupParam(params, 19)),
       resources_version_(StrDupParam(params, 20)),
       extracted_file_suffix_(params[21]),
-      is_at_least_p_(GetIntParam(params, 22)),
-      java_exception_info_(NULL) {}
+      is_at_least_p_(GetIntParam(params, 22)) {}
 
 // static
 BuildInfo* BuildInfo::GetInstance() {
   return Singleton<BuildInfo, BuildInfoSingletonTraits >::get();
-}
-
-void BuildInfo::SetJavaExceptionInfo(const std::string& info) {
-  DCHECK(!java_exception_info_) << "info should be set only once.";
-  // Java stacks can be really long!
-  java_exception_info_ = strndup(info.c_str(), 5 * 4096);
-}
-
-void BuildInfo::ClearJavaExceptionInfo() {
-  delete java_exception_info_;
-  java_exception_info_ = nullptr;
 }
 
 }  // namespace android

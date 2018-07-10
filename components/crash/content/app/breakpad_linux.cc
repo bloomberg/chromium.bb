@@ -55,6 +55,7 @@
 #include <sys/stat.h>
 
 #include "base/android/build_info.h"
+#include "base/android/java_exception_reporter.h"
 #include "base/android/path_utils.h"
 #include "base/debug/leak_annotations.h"
 #endif
@@ -109,6 +110,21 @@ uint32_t g_dumps_suppressed = 0;
 char* g_process_type = nullptr;
 ExceptionHandler* g_microdump = nullptr;
 int g_signal_code_pipe_fd = -1;
+char* g_java_exception_info = nullptr;
+
+void SetJavaExceptionInfo(const char* exception) {
+  if (g_java_exception_info) {
+    // The old exception should be cleared before setting a new one.
+    DCHECK(!exception);
+    free(g_java_exception_info);
+  }
+
+  if (exception) {
+    g_java_exception_info = strndup(exception, 5 * 4096);
+  } else {
+    g_java_exception_info = nullptr;
+  }
+}
 
 class MicrodumpInfo {
  public:
@@ -1745,9 +1761,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
       WriteAndroidPackage(writer, android_build_info);
       writer.AddBoundary();
     }
-    if (android_build_info->java_exception_info() != nullptr) {
-      writer.AddPairString(exception_info,
-                           android_build_info->java_exception_info());
+    if (g_java_exception_info != nullptr) {
+      writer.AddPairString(exception_info, g_java_exception_info);
       writer.AddBoundary();
     }
 #endif
@@ -1942,6 +1957,8 @@ void InitCrashReporter(const std::string& process_type,
 void InitCrashReporter(const std::string& process_type) {
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
+  base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
+
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.
   base::android::BuildInfo::GetInstance();
@@ -2028,6 +2045,8 @@ void InitNonBrowserCrashReporterForAndroid(
     const SanitizationInfo& sanitization_info) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
 
   // Handler registration is LIFO. Install the microdump handler first, such
   // that if conventional minidump crash reporting is enabled below, it takes

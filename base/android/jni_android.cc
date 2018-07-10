@@ -9,7 +9,7 @@
 
 #include <map>
 
-#include "base/android/build_info.h"
+#include "base/android/java_exception_reporter.h"
 #include "base/android/jni_string.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/lazy_instance.h"
@@ -234,7 +234,6 @@ void CheckException(JNIEnv* env) {
   if (!HasException(env))
     return;
 
-  // Exception has been found, might as well tell breakpad about it.
   jthrowable java_throwable = env->ExceptionOccurred();
   if (java_throwable) {
     // Clear the pending exception, since a local reference is now held.
@@ -243,14 +242,13 @@ void CheckException(JNIEnv* env) {
 
     if (g_fatal_exception_occurred) {
       // Another exception (probably OOM) occurred during GetJavaExceptionInfo.
-      base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
+      base::android::SetJavaException(
           "Java OOM'ed in exception handling, check logcat");
     } else {
       g_fatal_exception_occurred = true;
-      // Set the exception_string in BuildInfo so that breakpad can read it.
       // RVO should avoid any extra copies of the exception string.
-      base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
-          GetJavaExceptionInfo(env, java_throwable));
+      base::android::SetJavaException(
+          GetJavaExceptionInfo(env, java_throwable).c_str());
     }
   }
 
