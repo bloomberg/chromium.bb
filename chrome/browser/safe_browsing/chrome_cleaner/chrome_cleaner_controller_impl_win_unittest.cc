@@ -15,6 +15,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -47,7 +48,7 @@ using ::testing::Values;
 using ::testing::_;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
 using IdleReason = ChromeCleanerController::IdleReason;
-using RegistryKeysReporting = MockChromeCleanerProcess::RegistryKeysReporting;
+using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
 using State = ChromeCleanerController::State;
 using UserResponse = ChromeCleanerController::UserResponse;
 
@@ -226,7 +227,8 @@ enum class UwsFoundStatus {
 typedef std::tuple<CleanerProcessStatus,
                    CrashPoint,
                    UwsFoundStatus,
-                   RegistryKeysReporting,
+                   ItemsReporting,
+                   ItemsReporting,
                    UserResponse>
     ChromeCleanerControllerTestParams;
 
@@ -242,11 +244,12 @@ class ChromeCleanerControllerTest
 
   void SetUp() override {
     std::tie(process_status_, crash_point_, uws_found_status_,
-             registry_keys_reporting_, user_response_) = GetParam();
+             registry_keys_reporting_, extensions_reporting_, user_response_) =
+        GetParam();
 
     cleaner_process_options_.SetReportedResults(
         uws_found_status_ != UwsFoundStatus::kNoUwsFound,
-        registry_keys_reporting_);
+        registry_keys_reporting_, extensions_reporting_);
     cleaner_process_options_.set_reboot_required(
         uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired);
     cleaner_process_options_.set_crash_point(crash_point_);
@@ -366,7 +369,12 @@ class ChromeCleanerControllerTest
 
   bool ExpectedRegistryKeysReported() {
     return ExpectedOnInfectedCalled() &&
-           registry_keys_reporting_ == RegistryKeysReporting::kReported;
+           registry_keys_reporting_ == ItemsReporting::kReported;
+  }
+
+  bool ExpectedExtensionsReported() {
+    return ExpectedOnInfectedCalled() &&
+           extensions_reporting_ == ItemsReporting::kReported;
   }
 
   bool ExpectedPromptAccepted() {
@@ -436,7 +444,8 @@ class ChromeCleanerControllerTest
   CleanerProcessStatus process_status_;
   MockChromeCleanerProcess::CrashPoint crash_point_;
   UwsFoundStatus uws_found_status_;
-  RegistryKeysReporting registry_keys_reporting_;
+  ItemsReporting registry_keys_reporting_;
+  ItemsReporting extensions_reporting_;
   ChromeCleanerController::UserResponse user_response_;
 
   MockChromeCleanerProcess::Options cleaner_process_options_;
@@ -483,6 +492,10 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   ASSERT_TRUE(profile1);
   Profile* profile2 = profile_manager.CreateTestingProfile(kTestProfileName2);
   ASSERT_TRUE(profile2);
+
+  // Set the last used profile so that it can be found by
+  // ProfileManager::GetLastUsedProfile().
+  profile_manager.UpdateLastUser(profile1);
 
   const int num_profiles =
       profile_manager.profile_manager()->GetNumberOfProfiles();
@@ -572,6 +585,22 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
         UnorderedElementsAreArray(scanner_results_on_infected.registry_keys()));
   }
 
+// Extension names only reported on Windows Chrome build.
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  EXPECT_EQ(!scanner_results_on_infected.extension_names().empty(),
+            ExpectedExtensionsReported());
+  EXPECT_EQ(!scanner_results_on_cleaning.extension_names().empty(),
+            ExpectedExtensionsReported() && ExpectedOnCleaningCalled());
+  if (!scanner_results_on_cleaning.extension_names().empty()) {
+    EXPECT_THAT(scanner_results_on_cleaning.extension_names(),
+                UnorderedElementsAreArray(
+                    scanner_results_on_infected.extension_names()));
+  }
+#else
+  EXPECT_TRUE(scanner_results_on_infected.extension_names().empty());
+  EXPECT_TRUE(scanner_results_on_cleaning.extension_names().empty());
+#endif
+
   EXPECT_EQ(ExpectedRebootFlowStarted(), reboot_flow_started_);
 
   std::vector<Profile*> expected_tagged;
@@ -638,18 +667,17 @@ std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
   }
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         RegistryKeysReporting registry_keys_reporting) {
-  switch (registry_keys_reporting) {
-    case RegistryKeysReporting::kUnsupported:
+std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {
+  switch (items_reporting) {
+    case ItemsReporting::kUnsupported:
       return out << "kUnsupported";
-    case RegistryKeysReporting::kNotReported:
+    case ItemsReporting::kNotReported:
       return out << "kNotReported";
-    case RegistryKeysReporting::kReported:
+    case ItemsReporting::kReported:
       return out << "kReported";
     default:
       NOTREACHED();
-      return out << "UnknownRegistryKeysReporting";
+      return out << "UnknownItemsReporting";
   }
 }
 
@@ -681,7 +709,8 @@ struct ChromeCleanerControllerTestParamsToString {
     param_name << std::get<1>(info.param) << "_";
     param_name << std::get<2>(info.param) << "_";
     param_name << std::get<3>(info.param) << "_";
-    param_name << std::get<4>(info.param);
+    param_name << std::get<4>(info.param) << "_";
+    param_name << std::get<5>(info.param);
     return param_name.str();
   }
 };
@@ -702,9 +731,12 @@ INSTANTIATE_TEST_CASE_P(
             Values(UwsFoundStatus::kNoUwsFound,
                    UwsFoundStatus::kUwsFoundRebootRequired,
                    UwsFoundStatus::kUwsFoundNoRebootRequired),
-            Values(RegistryKeysReporting::kUnsupported,
-                   RegistryKeysReporting::kNotReported,
-                   RegistryKeysReporting::kReported),
+            Values(ItemsReporting::kUnsupported,
+                   ItemsReporting::kNotReported,
+                   ItemsReporting::kReported),
+            Values(ItemsReporting::kUnsupported,
+                   ItemsReporting::kNotReported,
+                   ItemsReporting::kReported),
             Values(UserResponse::kAcceptedWithLogs,
                    UserResponse::kAcceptedWithoutLogs,
                    UserResponse::kDenied,

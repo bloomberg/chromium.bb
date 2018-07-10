@@ -7,7 +7,9 @@ public_headers = [
   "//base/files/file_path.h",
   "//base/strings/string16.h",
 ]
-traits_headers = [ "//components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.h" ]
+traits_headers = [
+  "//components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.h",
+]
 sources = [
   "//components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.cc",
 ]
@@ -15,4 +17,5 @@ sources = [
 type_mappings = [
   "chrome_cleaner.mojom.FilePath=base::FilePath",
   "chrome_cleaner.mojom.RegistryKey=base::string16",
+  "chrome_cleaner.mojom.ExtensionId=base::string16",
 ]

@@ -27,6 +27,14 @@ struct StructTraits<chrome_cleaner::mojom::RegistryKeyDataView,
                    base::string16* out);
 };
 
+template <>
+struct StructTraits<chrome_cleaner::mojom::ExtensionIdDataView,
+                    base::string16> {
+  static base::span<const uint16_t> value(const base::string16& extension_id);
+  static bool Read(chrome_cleaner::mojom::ExtensionIdDataView extension_id_view,
+                   base::string16* out);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_CLEANER_STRUCT_TRAITS_H_
