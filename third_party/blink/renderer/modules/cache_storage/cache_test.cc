@@ -14,7 +14,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"

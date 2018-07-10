@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_CLIENT_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

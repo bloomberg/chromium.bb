@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration_proxy.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"

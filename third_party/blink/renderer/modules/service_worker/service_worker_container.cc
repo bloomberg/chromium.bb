@@ -32,9 +32,9 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"

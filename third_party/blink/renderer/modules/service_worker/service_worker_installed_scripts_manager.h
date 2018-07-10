@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 
 namespace blink {

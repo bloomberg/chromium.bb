@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"

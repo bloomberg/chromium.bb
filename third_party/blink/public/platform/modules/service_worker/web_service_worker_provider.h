@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_PROVIDER_H_
 
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_vector.h"
 

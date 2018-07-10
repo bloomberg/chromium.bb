@@ -9,7 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -105,12 +105,13 @@ String ServiceWorkerRegistration::updateViaCache() const {
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   ServiceWorkerContainerClient* client =
       ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider())
+  if (!client || !client->Provider()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -124,13 +125,14 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
   ServiceWorkerContainerClient* client =
       ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider())
+  if (!client || !client->Provider()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to unregister a "
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();

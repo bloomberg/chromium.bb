@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

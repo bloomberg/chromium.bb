@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_error.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"

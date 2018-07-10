@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"

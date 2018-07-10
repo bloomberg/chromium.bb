@@ -21,7 +21,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 
 namespace base {
 class SingleThreadTaskRunner;

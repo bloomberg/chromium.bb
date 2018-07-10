@@ -33,8 +33,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_proxy.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"

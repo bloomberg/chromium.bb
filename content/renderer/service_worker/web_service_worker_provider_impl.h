@@ -15,7 +15,7 @@
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
 namespace blink {

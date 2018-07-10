@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_WINDOW_CLIENT_CALLBACK_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {

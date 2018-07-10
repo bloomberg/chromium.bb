@@ -40,7 +40,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"

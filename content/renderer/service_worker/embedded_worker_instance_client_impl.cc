@@ -14,7 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
