@@ -107,6 +107,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
+// There is no need to update the table view when other view controllers
+// are obscuring the table view. Bookkeeping is based on |-viewWillAppear:|
+// and |-viewWillDisappear methods. Note that the |Did| methods are not reliably
+// called (e.g., edge case in multitasking).
+@property(nonatomic, assign) BOOL updatesTableView;
 // The service that manages the recently closed tabs
 @property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 // The sync state.
@@ -126,6 +131,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @synthesize loader = _loader;
 @synthesize sessionState = _sessionState;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
+@synthesize updatesTableView = _updatesTableView;
 @synthesize tabRestoreService = _tabRestoreService;
 
 #pragma mark - Public Interface
@@ -146,7 +152,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  [self loadModel];
   self.view.accessibilityIdentifier =
       kRecentTabsTableViewControllerAccessibilityIdentifier;
   [self.tableView setDelegate:self];
@@ -155,6 +160,20 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionFooterHeight = 0.0;
   self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  self.updatesTableView = YES;
+  // The table view might get stale while hidden, so we need to forcibly refresh
+  // it here.
+  [self loadModel];
+  [self.tableView reloadData];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  self.updatesTableView = NO;
+  [super viewWillDisappear:animated];
 }
 
 #pragma mark - TableViewModel
@@ -318,15 +337,16 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   NSInteger sectionToDelete = kNumberOfSectionsBeforeSessions;
   while ([self.tableViewModel numberOfSections] >
          kNumberOfSectionsBeforeSessions) {
-    if ([self.tableViewModel
-            hasSectionForSectionIdentifier:sectionIdentifierToRemove]) {
-      [self.tableView
-            deleteSections:[NSIndexSet indexSetWithIndex:sectionToDelete]
-          withRowAnimation:UITableViewRowAnimationNone];
-      sectionToDelete++;
-      [self.tableViewModel
-          removeSectionWithIdentifier:sectionIdentifierToRemove];
-    }
+    // Without this DCHECK, |sectionIdentifierToRemove| can continue to
+    // increment indefinitely. It is a programmer error for the model not to
+    // have an expected session section.
+    DCHECK([self.tableViewModel
+        hasSectionForSectionIdentifier:sectionIdentifierToRemove]);
+    [self.tableView
+          deleteSections:[NSIndexSet indexSetWithIndex:sectionToDelete]
+        withRowAnimation:UITableViewRowAnimationNone];
+    sectionToDelete++;
+    [self.tableViewModel removeSectionWithIdentifier:sectionIdentifierToRemove];
     sectionIdentifierToRemove++;
   }
 }
@@ -519,36 +539,40 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
 
-  // Update the TableView and TableViewModel sections to match the new
-  // sessionState.
-  // Turn Off animations since UITableViewRowAnimationNone still animates.
-  [UIView setAnimationsEnabled:NO];
-  // If iOS11+ use performBatchUpdates: instead of begin/endUpdates.
-  if (@available(iOS 11, *)) {
-    if (newSessionState ==
-        SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
-      [self.tableView performBatchUpdates:^{
-        [self updateSessionSections];
+  if (self.updatesTableView) {
+    // Update the TableView and TableViewModel sections to match the new
+    // sessionState.
+    // Turn Off animations since UITableViewRowAnimationNone still animates.
+    [UIView setAnimationsEnabled:NO];
+    // If iOS11+ use performBatchUpdates: instead of begin/endUpdates.
+    if (@available(iOS 11, *)) {
+      if (newSessionState ==
+          SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+        [self.tableView performBatchUpdates:^{
+          [self updateSessionSections];
+        }
+                                 completion:nil];
+      } else {
+        [self.tableView performBatchUpdates:^{
+          [self updateOtherDevicesSectionForState:newSessionState];
+        }
+                                 completion:nil];
       }
-                               completion:nil];
     } else {
-      [self.tableView performBatchUpdates:^{
+      [self.tableView beginUpdates];
+      if (newSessionState ==
+          SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+        [self updateSessionSections];
+      } else {
         [self updateOtherDevicesSectionForState:newSessionState];
       }
-                               completion:nil];
+      [self.tableView endUpdates];
     }
-  } else {
-    [self.tableView beginUpdates];
-    if (newSessionState ==
-        SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
-      [self updateSessionSections];
-    } else {
-      [self updateOtherDevicesSectionForState:newSessionState];
-    }
-    [self.tableView endUpdates];
+    [UIView setAnimationsEnabled:YES];
   }
-  [UIView setAnimationsEnabled:YES];
 
+  // Table updates must happen before |sessionState| gets updated, since some
+  // table updates rely on knowing the previous state.
   self.sessionState = newSessionState;
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
     [self.signinPromoViewMediator signinPromoViewRemoved];
@@ -558,6 +582,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)refreshRecentlyClosedTabs {
+  if (!self.updatesTableView)
+    return;
+
   if (@available(iOS 11, *)) {
     [self.tableView performBatchUpdates:^{
       [self updateRecentlyClosedSection];
