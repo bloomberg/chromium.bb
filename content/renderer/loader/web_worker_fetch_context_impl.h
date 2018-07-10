@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_WORKER_FETCH_CONTEXT_IMPL_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_WORKER_FETCH_CONTEXT_IMPL_H_
+#ifndef CONTENT_RENDERER_LOADER_WEB_WORKER_FETCH_CONTEXT_IMPL_H_
+#define CONTENT_RENDERER_LOADER_WEB_WORKER_FETCH_CONTEXT_IMPL_H_
+
+#include <memory>
+#include <string>
 
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
@@ -31,11 +34,11 @@ class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
-// This class is used while fetching resource requests on workers (dedicated
+// This class is used for fetching resource requests from workers (dedicated
 // worker and shared worker). This class is created on the main thread and
 // passed to the worker thread. This class is not used for service workers. For
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
-class CONTENT_EXPORT WorkerFetchContextImpl
+class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
       public mojom::ServiceWorkerWorkerClient {
  public:
@@ -57,7 +60,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // |fallback_factory_info| might not be simply the direct network factory,
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
-  WorkerFetchContextImpl(
+  WebWorkerFetchContextImpl(
       RendererPreferences renderer_preferences,
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       mojom::ServiceWorkerWorkerClientRegistryPtrInfo
@@ -72,7 +75,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
       std::unique_ptr<service_manager::Connector> service_manager_connection);
-  ~WorkerFetchContextImpl() override;
+  ~WebWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
   std::unique_ptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
@@ -211,4 +214,4 @@ class CONTENT_EXPORT WorkerFetchContextImpl
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_WORKER_FETCH_CONTEXT_IMPL_H_
+#endif  // CONTENT_RENDERER_LOADER_WEB_WORKER_FETCH_CONTEXT_IMPL_H_

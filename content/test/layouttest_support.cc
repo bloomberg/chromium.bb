@@ -36,12 +36,12 @@
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/test_runner/test_common.h"
@@ -254,7 +254,7 @@ void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
 }
 
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {
-  WorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
+  WebWorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
 }
 
 namespace {
