@@ -28,6 +28,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -297,21 +298,55 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       card.AbbreviatedExpirationDateForDisplay(), CONTEXT_BODY_TEXT_LARGE,
       ChromeTextStyle::STYLE_SECONDARY));
 
-  // If necessary, add the cardholder name textfield to the upload save dialog.
+  // If necessary, add the cardholder name label and textfield to the upload
+  // save dialog.
   if (controller_->ShouldRequestNameFromUser()) {
+    std::unique_ptr<views::View> cardholder_name_label_row =
+        std::make_unique<views::View>();
+
+    // Set up cardholder name label.
+    cardholder_name_label_row->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kHorizontal, gfx::Insets(),
+            provider->GetDistanceMetric(
+                views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+    std::unique_ptr<views::Label> cardholder_name_label =
+        std::make_unique<views::Label>(
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME),
+            CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+    cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    cardholder_name_label_row->AddChildView(cardholder_name_label.release());
+
+    // Set up cardholder name label tooltip.
+    std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
+        std::make_unique<views::TooltipIcon>(l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP));
+    cardholder_name_label_row->AddChildView(cardholder_name_tooltip.release());
+
+    // Set up cardholder name textfield.
     DCHECK(!cardholder_name_textfield_);
     cardholder_name_textfield_ = new views::Textfield();
     cardholder_name_textfield_->set_controller(this);
     cardholder_name_textfield_->set_id(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
-    cardholder_name_textfield_->set_placeholder_text(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME));
+    cardholder_name_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME));
     cardholder_name_textfield_->SetTextInputType(
         ui::TextInputType::TEXT_INPUT_TYPE_TEXT);
     cardholder_name_textfield_->SetText(
         base::ASCIIToUTF16(controller_->GetAccountInfo().full_name));
     AutofillMetrics::LogSaveCardCardholderNamePrefilled(
         !cardholder_name_textfield_->text().empty());
-    view->AddChildView(cardholder_name_textfield_);
+
+    // Add cardholder name elements to a single view, then to the final dialog.
+    std::unique_ptr<views::View> cardholder_name_view =
+        std::make_unique<views::View>();
+    cardholder_name_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical, gfx::Insets(),
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+    cardholder_name_view->AddChildView(cardholder_name_label_row.release());
+    cardholder_name_view->AddChildView(cardholder_name_textfield_);
+    view->AddChildView(cardholder_name_view.release());
   }
 
   return view;
