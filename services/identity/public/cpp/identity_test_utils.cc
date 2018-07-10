@@ -202,6 +202,8 @@ void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
   // synchronously with IdentityManager.
   NOTREACHED();
 #else
+  DCHECK(identity_manager->HasPrimaryAccount());
+
   base::RunLoop run_loop;
   OneShotIdentityManagerObserver signout_observer(
       identity_manager, run_loop.QuitClosure(),
@@ -251,6 +253,8 @@ void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
 void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
                                   IdentityManager* identity_manager,
                                   const std::string& account_id) {
+  DCHECK(identity_manager->HasAccountWithRefreshToken(account_id));
+
   base::RunLoop run_loop;
   OneShotIdentityManagerObserver token_updated_observer(
       identity_manager, run_loop.QuitClosure(),
