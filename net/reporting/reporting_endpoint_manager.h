@@ -47,13 +47,6 @@ class NET_EXPORT ReportingEndpointManager {
       const url::Origin& origin,
       const std::string& group) = 0;
 
-  // Adds |endpoint| to the set of pending endpoints, preventing it from being
-  // chosen for a second parallel delivery attempt.
-  virtual void SetEndpointPending(const GURL& endpoint) = 0;
-
-  // Removes |endpoint| from the set of pending endpoints.
-  virtual void ClearEndpointPending(const GURL& endpoint) = 0;
-
   // Informs the EndpointManager of a successful or unsuccessful request made to
   // |endpoint| so it can manage exponential backoff of failing endpoints.
   virtual void InformOfEndpointRequest(const GURL& endpoint,

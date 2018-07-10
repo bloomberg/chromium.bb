@@ -95,6 +95,15 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
 
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(1, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(1, stats.successful_reports);
+  }
+
   // TODO(dcreager): Check that BackoffEntry was informed of success.
 }
 
@@ -134,6 +143,15 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
 
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(1, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(1, stats.successful_reports);
+  }
+
   // TODO(dcreager): Check that BackoffEntry was informed of success.
 }
 
@@ -154,6 +172,15 @@ TEST_F(ReportingDeliveryAgentTest,
   SetClient(kOrigin_, kEndpoint_, kGroup_,
             ReportingClient::Subdomains::EXCLUDE);
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
+
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(1, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(1, stats.successful_reports);
+  }
 
   // Successful upload should remove delivered reports.
   std::vector<const ReportingReport*> reports;
@@ -416,31 +443,39 @@ TEST_F(ReportingDeliveryAgentTest,
   SetClient(kOrigin_, kEndpoint_, kGroup_);
   SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
 
+  // Trigger and complete an upload to start the delivery timer.
+  cache()->AddReport(kUrl_, kGroup_, kType_,
+                     std::make_unique<base::DictionaryValue>(), 0,
+                     tick_clock()->NowTicks(), 0);
+  pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
+
+  // Now that the delivery timer is running, these reports won't be immediately
+  // uploaded.
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   cache()->AddReport(kDifferentUrl, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
+  EXPECT_EQ(0u, pending_uploads().size());
 
+  // When we fire the delivery timer, we should NOT batch these two reports into
+  // a single upload, since each upload must only contain reports about a single
+  // origin.
   EXPECT_TRUE(delivery_timer()->IsRunning());
   delivery_timer()->Fire();
-  ASSERT_EQ(1u, pending_uploads().size());
+  ASSERT_EQ(2u, pending_uploads().size());
 
+  pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
   EXPECT_EQ(0u, pending_uploads().size());
 }
 
-// Test that the agent won't start a second upload to the same endpoint (even
-// for a different origin) while one is pending, but will once it is no longer
+// Test that the agent won't start a second upload to the same endpoint for a
+// particular origin while one is pending, but will once it is no longer
 // pending.
 TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
-  static const GURL kDifferentUrl("https://origin2/path");
-  static const url::Origin kDifferentOrigin =
-      url::Origin::Create(kDifferentUrl);
-
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
@@ -450,7 +485,7 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
   delivery_timer()->Fire();
   EXPECT_EQ(1u, pending_uploads().size());
 
-  cache()->AddReport(kDifferentUrl, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 

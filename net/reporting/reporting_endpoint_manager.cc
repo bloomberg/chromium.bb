@@ -51,8 +51,6 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     for (const ReportingClient* client : clients) {
       if (client->expires < now)
         continue;
-      if (base::ContainsKey(pending_endpoints_, client->endpoint))
-        continue;
       if (base::ContainsKey(endpoint_backoff_, client->endpoint) &&
           endpoint_backoff_[client->endpoint]->ShouldRejectRequest()) {
         continue;
@@ -97,16 +95,6 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     return nullptr;
   }
 
-  void SetEndpointPending(const GURL& endpoint) override {
-    DCHECK(!base::ContainsKey(pending_endpoints_, endpoint));
-    pending_endpoints_.insert(endpoint);
-  }
-
-  void ClearEndpointPending(const GURL& endpoint) override {
-    DCHECK(base::ContainsKey(pending_endpoints_, endpoint));
-    pending_endpoints_.erase(endpoint);
-  }
-
   void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {
     if (!base::ContainsKey(endpoint_backoff_, endpoint)) {
       endpoint_backoff_[endpoint] = std::make_unique<BackoffEntry>(
@@ -124,8 +112,6 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   ReportingContext* context_;
 
   RandIntCallback rand_callback_;
-
-  std::set<GURL> pending_endpoints_;
 
   // Note: Currently the ReportingBrowsingDataRemover does not clear this data
   // because it's not persisted to disk. If it's ever persisted, it will need
