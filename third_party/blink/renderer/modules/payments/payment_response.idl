@@ -28,5 +28,5 @@ enum PaymentComplete {
     readonly attribute DOMString? payerEmail;
     readonly attribute DOMString? payerPhone;
 
-    [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "unknown");
+    [CallWith=ScriptState, NewObject] Promise<void> complete(optional PaymentComplete paymentResult = "unknown");
 };

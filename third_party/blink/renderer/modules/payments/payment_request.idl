@@ -14,9 +14,9 @@
     Exposed=Window,
     ActiveScriptWrappable
 ] interface PaymentRequest : EventTarget {
-    [CallWith=ScriptState] Promise<PaymentResponse> show();
-    [CallWith=ScriptState] Promise<void> abort();
-    [CallWith=ScriptState] Promise<boolean> canMakePayment();
+    [CallWith=ScriptState, NewObject] Promise<PaymentResponse> show();
+    [CallWith=ScriptState, NewObject] Promise<void> abort();
+    [CallWith=ScriptState, NewObject] Promise<boolean> canMakePayment();
 
     readonly attribute DOMString id;
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
