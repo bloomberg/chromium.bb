@@ -123,7 +123,7 @@ public class ContextualSuggestionsPreference
                 (TextMessagePreference) findPreference(PREF_CONTEXTUAL_SUGGESTIONS_DESCRIPTION);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
             TintedDrawable drawable = TintedDrawable.constructTintedDrawable(
-                    context, R.drawable.btn_star_filled, R.color.default_icon_color);
+                    context, R.drawable.contextual_suggestions, R.color.default_icon_color);
             drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
             final ImageSpan imageSpan = new ImageSpan(drawable);
             final SpannableString imageSpannable = SpanApplier.applySpans(
