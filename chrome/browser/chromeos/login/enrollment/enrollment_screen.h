@@ -110,13 +110,13 @@ class EnrollmentScreen
                            TestAttributePromptPageGetsLoaded);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAuthCodeGetsProperlyReceivedFromGaia);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
                            TestActiveDirectoryEnrollment_Success);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
                            TestActiveDirectoryEnrollment_DistinguishedName);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
                            TestActiveDirectoryEnrollment_UIErrors);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
                            TestActiveDirectoryEnrollment_ErrorCard);
   FRIEND_TEST_ALL_PREFIXES(HandsOffWelcomeScreenTest, RequiresNoInput);
   FRIEND_TEST_ALL_PREFIXES(HandsOffWelcomeScreenTest, ContinueClickedOnlyOnce);
