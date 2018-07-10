@@ -9,6 +9,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
@@ -29,6 +30,9 @@ UnifiedConsentService::UnifiedConsentService(
   DCHECK(sync_service_);
   identity_manager_->AddObserver(this);
 
+  if (GetMigrationState() == MigrationState::NOT_INITIALIZED)
+    MigrateProfileToUnifiedConsent();
+
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);
   pref_change_registrar_->Add(
@@ -45,6 +49,36 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kUnifiedConsentGiven, false);
+  registry->RegisterIntegerPref(
+      prefs::kUnifiedConsentMigrationState,
+      static_cast<int>(MigrationState::NOT_INITIALIZED));
+}
+
+void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
+  pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, unified_consent_given);
+}
+
+bool UnifiedConsentService::IsUnifiedConsentGiven() {
+  return pref_service_->GetBoolean(prefs::kUnifiedConsentGiven);
+}
+
+MigrationState UnifiedConsentService::GetMigrationState() {
+  int migration_state_int =
+      pref_service_->GetInteger(prefs::kUnifiedConsentMigrationState);
+  DCHECK_LE(static_cast<int>(MigrationState::NOT_INITIALIZED),
+            migration_state_int);
+  DCHECK_GE(static_cast<int>(MigrationState::COMPLETED), migration_state_int);
+  return static_cast<MigrationState>(migration_state_int);
+}
+
+bool UnifiedConsentService::ShouldShowConsentBump() {
+  return GetMigrationState() ==
+         MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP;
+}
+
+void UnifiedConsentService::MarkMigrationComplete() {
+  pref_service_->SetInteger(prefs::kUnifiedConsentMigrationState,
+                            static_cast<int>(MigrationState::COMPLETED));
 }
 
 void UnifiedConsentService::Shutdown() {
@@ -59,6 +93,20 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
                             false);
   // When signing out, the unfied consent is revoked.
   pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, false);
+
+  switch (GetMigrationState()) {
+    case MigrationState::NOT_INITIALIZED:
+      NOTREACHED();
+      break;
+    case MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP:
+      // Only users that were signed in and have opted into sync before unified
+      // consent are eligible to see the unified consent bump. Since the user
+      // signs out of Chrome, mark the migration to unified consent as complete.
+      MarkMigrationComplete();
+      break;
+    case MigrationState::COMPLETED:
+      break;
+  }
 }
 
 void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
@@ -75,6 +123,12 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 
   DCHECK(sync_service_->IsSyncAllowed());
   DCHECK(identity_manager_->HasPrimaryAccount());
+  DCHECK_LT(MigrationState::NOT_INITIALIZED, GetMigrationState());
+
+  // If the user opts into unified consent throught settings, the consent bump
+  // doesn't need to be shown. Therefore mark the migration as complete.
+  if (GetMigrationState() != MigrationState::COMPLETED)
+    MarkMigrationComplete();
 
   // Enable all sync data types.
   pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
@@ -93,6 +147,28 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   service_client_->SetSafeBrowsingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetNetworkPredictionEnabled(true);
+}
+
+void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
+  DCHECK_EQ(GetMigrationState(), MigrationState::NOT_INITIALIZED);
+  DCHECK(!IsUnifiedConsentGiven());
+
+  syncer::SyncPrefs sync_prefs(pref_service_);
+  if (identity_manager_->HasPrimaryAccount() &&
+      sync_prefs.HasKeepEverythingSynced()) {
+    // Set keep-everything-synced pref to false to match |kUnifiedConsentGiven|.
+    sync_prefs.SetKeepEverythingSynced(false);
+    // When the user was syncing everything, the consent bump should be shown
+    // when this is possible.
+    pref_service_->SetInteger(
+        prefs::kUnifiedConsentMigrationState,
+        static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
+    return;
+  }
+
+  // When the user isn't signed in or doesn't sync everything, nothing has to be
+  // done. Mark migration as complete.
+  MarkMigrationComplete();
 }
 
 }  //  namespace unified_consent

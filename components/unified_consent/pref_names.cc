@@ -7,7 +7,12 @@
 namespace unified_consent {
 namespace prefs {
 
+// Boolean that is true when the user opted into unified consent.
 const char kUnifiedConsentGiven[] = "unified_consent_given";
+
+// Integer indicating the migration state of unified consent, defined in
+// unified_consent::MigrationState.
+const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
 
 const char kUrlKeyedAnonymizedDataCollectionEnabled[] =
     "url_keyed_anonymized_data_collection.enabled";
