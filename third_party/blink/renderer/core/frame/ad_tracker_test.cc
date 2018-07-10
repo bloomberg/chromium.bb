@@ -244,4 +244,48 @@ TEST_F(AdTrackerSimTest, Contexts) {
                                String("https://example.com/library.js")));
 }
 
+TEST_F(AdTrackerSimTest, SameOriginSubframeFromAdScript) {
+  SimRequest ad_resource("https://example.com/ad_script.js", "text/javascript");
+  SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete(R"HTML(
+    <body></body><script src=ad_script.js></script>
+    )HTML");
+  ad_resource.Complete(R"SCRIPT(
+    var iframe = document.createElement("iframe");
+    iframe.src = "iframe.html";
+    document.body.appendChild(iframe);
+    )SCRIPT");
+
+  iframe_resource.Complete("iframe data");
+
+  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
+  ASSERT_TRUE(subframe->IsLocalFrame());
+  LocalFrame* local_subframe = ToLocalFrame(subframe);
+  EXPECT_TRUE(local_subframe->IsAdSubframe());
+}
+
+TEST_F(AdTrackerSimTest, SameOriginDocWrittenSubframeFromAdScript) {
+  SimRequest ad_resource("https://example.com/ad_script.js", "text/javascript");
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete(R"HTML(
+    <body></body><script src=ad_script.js></script>
+    )HTML");
+  ad_resource.Complete(R"SCRIPT(
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    var iframeDocument = iframe.contentWindow.document;
+    iframeDocument.open();
+    iframeDocument.write("iframe data");
+    iframeDocument.close();
+    )SCRIPT");
+
+  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
+  ASSERT_TRUE(subframe->IsLocalFrame());
+  LocalFrame* local_subframe = ToLocalFrame(subframe);
+  EXPECT_TRUE(local_subframe->IsAdSubframe());
+}
+
 }  // namespace blink
