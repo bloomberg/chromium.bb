@@ -327,12 +327,13 @@ void WindowPerformance::RegisterEventTiming(String event_type,
   DCHECK(!processing_start.is_null());
   DCHECK(!processing_end.is_null());
   DCHECK_GE(processing_end, processing_start);
+  if (!GetFrame())
+    return;
+
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable);
-
-  DCHECK(GetFrame());
   event_timings_.push_back(entry);
   WebLayerTreeView* layerTreeView =
       GetFrame()->GetChromeClient().GetWebLayerTreeView(GetFrame());
