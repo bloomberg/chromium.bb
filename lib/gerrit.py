@@ -18,9 +18,6 @@ from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 
 
-site_config = config_lib.GetConfig()
-
-
 class GerritException(Exception):
   """Base exception, thrown for gerrit failures"""
 
@@ -64,6 +61,7 @@ class GerritHelper(object):
 
   @classmethod
   def FromRemote(cls, remote, **kwargs):
+    site_config = config_lib.GetConfig()
     if remote == site_config.params.INTERNAL_REMOTE:
       host = site_config.params.INTERNAL_GERRIT_HOST
     elif remote == site_config.params.EXTERNAL_REMOTE:
@@ -75,6 +73,7 @@ class GerritHelper(object):
   @classmethod
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
+    site_config = config_lib.GetConfig()
     host = site_config.params.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
@@ -498,6 +497,7 @@ def GetGerritPatchInfoWithPatchQueries(patches):
   Raises:
     PatchException if a patch can't be found.
   """
+  site_config = config_lib.GetConfig()
   seen = set()
   results = []
   order = {k.ToGerritQueryText(): idx for (idx, k) in enumerate(patches)}
@@ -535,11 +535,13 @@ def GetGerritHelperForChange(change):
 
 def GetCrosInternal(**kwargs):
   """Convenience method for accessing private ChromeOS gerrit."""
+  site_config = config_lib.GetConfig()
   return GetGerritHelper(site_config.params.INTERNAL_REMOTE, **kwargs)
 
 
 def GetCrosExternal(**kwargs):
   """Convenience method for accessing public ChromiumOS gerrit."""
+  site_config = config_lib.GetConfig()
   return GetGerritHelper(site_config.params.EXTERNAL_REMOTE, **kwargs)
 
 

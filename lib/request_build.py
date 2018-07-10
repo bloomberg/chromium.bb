@@ -17,8 +17,6 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import tree_status
 
-site_config = config_lib.GetConfig()
-
 
 class RemoteRequestFailure(Exception):
   """Thrown when requesting a tryjob fails."""
@@ -83,6 +81,7 @@ class RequestBuild(object):
     """
     self.bucket = bucket
 
+    site_config = config_lib.GetConfig()
     if build_config in site_config:
       # Extract from build_config, if possible.
       self.luci_builder = site_config[build_config].luci_builder

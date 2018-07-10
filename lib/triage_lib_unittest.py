@@ -23,7 +23,6 @@ from chromite.lib import portage_util
 from chromite.lib import triage_lib
 
 
-site_config = config_lib.GetConfig()
 failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper()
 
 
@@ -103,6 +102,7 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
   """Tests CalculateSuspects."""
 
   def setUp(self):
+    site_config = config_lib.GetConfig()
     overlay = 'chromiumos/overlays/chromiumos-overlay'
     self._patch_factory = patch_unittest.MockPatchFactory()
     self.overlay_patch = self._patch_factory.GetPatches(project=overlay)

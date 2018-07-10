@@ -46,9 +46,6 @@ from chromite.lib import terminal
 from chromite.lib import timeout_util
 
 
-site_config = config_lib.GetConfig()
-
-
 # Unit tests should never connect to the live prod or debug instances
 # of the cidb. This call ensures that they will not accidentally
 # do so through the normal cidb SetUp / GetConnectionForBuilder factory.
@@ -1282,6 +1279,8 @@ class GerritTestCase(MockTempDirTestCase):
 
       self.PatchObject(gob_util, 'GetCookies', GetCookies)
 
+    site_config = config_lib.GetConfig()
+
     # Make all chromite code point to the test server.
     self.patched_params = {
         'EXTERNAL_GOB_HOST': gi.git_host,
@@ -1318,6 +1317,7 @@ class GerritTestCase(MockTempDirTestCase):
 
   def tearDown(self):
     # Restore the 'patched' site parameters.
+    site_config = config_lib.GetConfig()
     site_config._site_params.update(self.saved_params)
 
   def createProject(self, suffix, description='Test project', owners=None,

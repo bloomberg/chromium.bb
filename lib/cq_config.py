@@ -10,14 +10,10 @@ from __future__ import print_function
 import ConfigParser
 import os
 
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-
-
-site_config = config_lib.GetConfig()
 
 
 class MalformedCQConfigException(Exception):
