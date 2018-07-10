@@ -77,12 +77,24 @@ cr.define('destination_dialog_test', function() {
           'print-preview-destination-list-item');
       const printerItems = lists[1].shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
+      // Check that list titles have the correct text color.
+      lists.forEach(list => {
+        assertEquals(
+            'rgb(51, 51, 51)',
+            window.getComputedStyle(list.$$('.title')).color);
+      });
 
       assertEquals(1, recentItems.length);
 
       const getDisplayedName = item => item.$$('.name').textContent;
 
-      assertEquals('FooName', getDisplayedName(recentItems[0]));
+      // Check FooName is most recent and has the correct text color.
+      const mostRecent = recentItems[0];
+      assertEquals('FooName', getDisplayedName(mostRecent));
+      assertEquals(
+          'rgb(51, 51, 51)',
+          window.getComputedStyle(mostRecent.$$('.name')).color);
+
       // 5 printers + Save as PDF
       assertEquals(6, printerItems.length);
       // Save as PDF shows up first.
