@@ -24,8 +24,7 @@ class ASH_WITH_CONTENT_EXPORT ContentGpuInterfaceProvider
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
   void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistryWithArgs<
-          const service_manager::BindSourceInfo&>* registry) override;
+      service_manager::BinderRegistry* registry) override;
 
  private:
   class InterfaceBinderImpl;

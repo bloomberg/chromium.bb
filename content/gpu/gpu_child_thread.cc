@@ -91,8 +91,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
 
   void AddInterfaces() {
 #if defined(USE_OZONE)
-    ui::OzonePlatform::GetInstance()->AddInterfaces(
-        &registry_with_source_info_);
+    ui::OzonePlatform::GetInstance()->AddInterfaces(registry_.get());
 #endif
   }
 
@@ -108,10 +107,6 @@ class QueueingConnectionFilter : public ConnectionFilter {
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    if (registry_with_source_info_.TryBindInterface(
-            interface_name, interface_pipe, source_info)) {
-      return;
-    }
 
     if (registry_->CanBindInterface(interface_name)) {
       if (released_) {
@@ -140,9 +135,6 @@ class QueueingConnectionFilter : public ConnectionFilter {
   bool released_ = false;
   std::vector<std::unique_ptr<PendingRequest>> pending_requests_;
   std::unique_ptr<service_manager::BinderRegistry> registry_;
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_with_source_info_;
 
   base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_;
 

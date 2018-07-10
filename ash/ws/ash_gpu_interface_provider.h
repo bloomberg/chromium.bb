@@ -34,8 +34,7 @@ class AshGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
   void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistryWithArgs<
-          const service_manager::BindSourceInfo&>* registry) override;
+      service_manager::BinderRegistry* registry) override;
 
  private:
   void BindArcRequest(ui::mojom::ArcRequest request);

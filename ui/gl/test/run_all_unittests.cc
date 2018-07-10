@@ -30,24 +30,16 @@ class OzoneDrmTestService : public service_manager::Service {
   OzoneDrmTestService() = default;
   ~OzoneDrmTestService() override = default;
 
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>*
-  registry() {
-    return &registry_;
-  }
+  service_manager::BinderRegistry* registry() { return &registry_; }
 
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe),
-                            source_info);
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
  private:
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_;
-
+  service_manager::BinderRegistry registry_;
   std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(OzoneDrmTestService);

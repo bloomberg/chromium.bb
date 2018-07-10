@@ -123,10 +123,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   service_manager::BinderRegistry registry_;
 
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_with_source_info_;
-
   std::unique_ptr<UserActivityMonitor> user_activity_monitor_;
 
   std::unique_ptr<WindowTreeFactory> window_tree_factory_;
