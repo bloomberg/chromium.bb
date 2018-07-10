@@ -152,7 +152,7 @@ class PlaceholderImageSource : public gfx::CanvasImageSource {
   PlaceholderImageSource(const gfx::Size& canvas_size, SkColor color);
   ~PlaceholderImageSource() override;
 
-  // CanvasImageSource override:
+  // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override;
 
  private:
@@ -188,6 +188,7 @@ class EncircledImageSource : public gfx::CanvasImageSource {
   EncircledImageSource(const int radius,
                        const SkColor color,
                        const gfx::ImageSkia& image);
+  ~EncircledImageSource() override;
 
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override;
@@ -207,6 +208,8 @@ EncircledImageSource::EncircledImageSource(const int radius,
       radius_(radius),
       color_(color),
       image_(image) {}
+
+EncircledImageSource::~EncircledImageSource() = default;
 
 void EncircledImageSource::Draw(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
