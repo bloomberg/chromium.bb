@@ -4,28 +4,54 @@
 
 package org.chromium.mojo;
 
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import android.support.annotation.IntDef;
+
+import org.junit.rules.ExternalResource;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Base class to test mojo. Setup the environment.
  */
 @JNINamespace("mojo::android")
-public class MojoTestRule implements TestRule {
+public class MojoTestRule extends ExternalResource {
+    @IntDef({MojoCore.SKIP_INITIALIZATION, MojoCore.INITIALIZE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MojoCore {
+        int SKIP_INITIALIZATION = 0;
+        int INITIALIZE = 1;
+    }
+
+    private static boolean sIsCoreInitialized = false;
+    private final boolean mShouldInitCore;
     private long mTestEnvironmentPointer;
 
-    public void ruleSetUp() throws Exception {
+    public MojoTestRule() {
+        this(MojoCore.SKIP_INITIALIZATION);
+    }
+
+    public MojoTestRule(@MojoCore int shouldInitMojoCore) {
+        mShouldInitCore = shouldInitMojoCore == MojoCore.INITIALIZE;
+    }
+
+    @Override
+    protected void before() throws Throwable {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        if (mShouldInitCore && !sIsCoreInitialized) {
+            nativeInitCore();
+            sIsCoreInitialized = true;
+        }
         nativeInit();
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
     }
 
-    public void ruleTearDown() throws Exception {
+    @Override
+    protected void after() {
         nativeTearDownTestEnvironment(mTestEnvironmentPointer);
     }
 
@@ -43,17 +69,7 @@ public class MojoTestRule implements TestRule {
         nativeRunLoop(0);
     }
 
-    @Override
-    public Statement apply(final Statement base, Description desc) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                ruleSetUp();
-                base.evaluate();
-                ruleTearDown();
-            }
-        };
-    }
+    private static native void nativeInitCore();
 
     private native void nativeInit();
 

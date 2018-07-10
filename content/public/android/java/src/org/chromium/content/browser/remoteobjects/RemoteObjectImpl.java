@@ -50,6 +50,15 @@ class RemoteObjectImpl implements RemoteObject {
     }
 
     /**
+     * Provides numeric identifier for Java objects to be exposed.
+     * These identifiers must not collide.
+     */
+    interface ObjectIdAllocator {
+        int getObjectId(Object object);
+        Object getObjectById(int id);
+    }
+
+    /**
      * Method which may not be called.
      */
     private static final Method sGetClassMethod;
@@ -71,6 +80,14 @@ class RemoteObjectImpl implements RemoteObject {
     private final WeakReference<Object> mTarget;
 
     /**
+     * Allocates IDs for other Java objects.
+     *
+     * Cannot be held strongly, because it may (via the objects it holds) contain
+     * references which form an uncollectable cycle.
+     */
+    private final WeakReference<ObjectIdAllocator> mObjectIdAllocator;
+
+    /**
      * Receives notification about events for auditing.
      */
     private final Auditor mAuditor;
@@ -80,14 +97,11 @@ class RemoteObjectImpl implements RemoteObject {
      */
     private final SortedMap<String, List<Method>> mMethods = new TreeMap<>();
 
-    public RemoteObjectImpl(Object target, Class<? extends Annotation> safeAnnotationClass) {
-        this(target, safeAnnotationClass, null);
-    }
-
-    public RemoteObjectImpl(
-            Object target, Class<? extends Annotation> safeAnnotationClass, Auditor auditor) {
+    public RemoteObjectImpl(Object target, Class<? extends Annotation> safeAnnotationClass,
+            Auditor auditor, ObjectIdAllocator objectIdAllocator) {
         mTarget = new WeakReference<>(target);
         mAuditor = auditor;
+        mObjectIdAllocator = new WeakReference<>(objectIdAllocator);
 
         for (Method method : target.getClass().getMethods()) {
             if (safeAnnotationClass != null && !method.isAnnotationPresent(safeAnnotationClass)) {
@@ -119,7 +133,8 @@ class RemoteObjectImpl implements RemoteObject {
     public void invokeMethod(
             String name, RemoteInvocationArgument[] arguments, InvokeMethodResponse callback) {
         Object target = mTarget.get();
-        if (target == null) {
+        ObjectIdAllocator objectIdAllocator = mObjectIdAllocator.get();
+        if (target == null || objectIdAllocator == null) {
             // TODO(jbroman): Handle this.
             return;
         }
@@ -167,7 +182,6 @@ class RemoteObjectImpl implements RemoteObject {
             // IllegalArgumentException:
             //   Argument coercion logic is responsible for creating objects of a suitable Java
             //   type.
-            //   TODO(jbroman): Actually write said coercion logic.
             //
             // NullPointerException:
             //   A user of this class is responsible for ensuring that the target is not collected.
@@ -178,13 +192,14 @@ class RemoteObjectImpl implements RemoteObject {
             return;
         }
 
-        RemoteInvocationResult mojoResult = convertResult(result, method.getReturnType());
+        RemoteInvocationResult mojoResult =
+                convertResult(result, method.getReturnType(), objectIdAllocator);
         callback.call(mojoResult);
     }
 
     @Override
     public void close() {
-        // TODO(jbroman): Handle this.
+        mTarget.clear();
     }
 
     @Override
@@ -220,7 +235,7 @@ class RemoteObjectImpl implements RemoteObject {
         int COERCE = 1;
     }
 
-    private Object convertArgument(RemoteInvocationArgument argument, Class<?> parameterType,
+    private static Object convertArgument(RemoteInvocationArgument argument, Class<?> parameterType,
             @StringCoercionMode int stringCoercionMode) {
         switch (argument.which()) {
             case RemoteInvocationArgument.Tag.NumberValue:
@@ -358,7 +373,8 @@ class RemoteObjectImpl implements RemoteObject {
         }
     }
 
-    private RemoteInvocationResult convertResult(Object result, Class<?> returnType) {
+    private static RemoteInvocationResult convertResult(
+            Object result, Class<?> returnType, ObjectIdAllocator objectIdAllocator) {
         // Methods returning arrays should not be called (for legacy reasons).
         assert !returnType.isArray();
 
@@ -385,7 +401,8 @@ class RemoteObjectImpl implements RemoteObject {
                 resultValue.setStringValue(javaStringToMojoString((String) result));
             }
         } else {
-            // TODO(jbroman): Implement handling for other objects.
+            int objectId = objectIdAllocator.getObjectId(result);
+            resultValue.setObjectId(objectId);
         }
         RemoteInvocationResult mojoResult = new RemoteInvocationResult();
         mojoResult.value = resultValue;

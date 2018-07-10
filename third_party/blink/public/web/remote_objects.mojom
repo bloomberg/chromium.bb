@@ -12,6 +12,19 @@ import "mojo/public/mojom/base/string16.mojom";
 // See also this design doc:
 //   https://docs.google.com/document/d/1T8Zj_gZK7jHsy80Etk-Rw4hXMIW4QeaTtXjy5ZKP3X0/edit
 
+// Implemented in the process hosting the remote objects.
+// Allows access to an object graph.
+//
+// Identifiers used by this object apply only within this RemoteObjectHost.
+interface RemoteObjectHost {
+  GetObject(int32 object_id, RemoteObject& request);
+
+  // Ideally lifetime would be scoped to an associated RemoteObject pipe. This
+  // is complicated by the fact that the missing support for associated
+  // interfaces in the Mojo Java bindings.
+  ReleaseObject(int32 object_id);
+};
+
 // Implemented in the process hosting the remote object.
 // Allows methods to be synchronously invoked on the object.
 interface RemoteObject {
@@ -46,6 +59,11 @@ union RemoteInvocationResultValue {
   bool boolean_value;
   mojo_base.mojom.String16 string_value;
   SingletonJavaScriptValue singleton_value;
+
+  // Scoped to the RemoteObjectHost that manages the callee object.
+  // The caller is expected to use RemoteObjectHost.GetObject to obtain a pipe,
+  // if it does not already have one.
+  int32 object_id;
 };
 
 struct RemoteInvocationResult {

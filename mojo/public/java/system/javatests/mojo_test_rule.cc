@@ -14,6 +14,7 @@
 #include "base/test/test_support_android.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/MojoTestRule_jni.h"
+#include "mojo/core/embedder/embedder.h"
 
 using base::android::JavaParamRef;
 
@@ -30,6 +31,11 @@ struct TestEnvironment {
 
 namespace mojo {
 namespace android {
+
+static void JNI_MojoTestRule_InitCore(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz) {
+  mojo::core::Init();
+}
 
 static void JNI_MojoTestRule_Init(JNIEnv* env,
                                   const JavaParamRef<jobject>& jcaller) {
