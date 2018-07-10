@@ -705,6 +705,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::flat_map<int, int> pending_embeds_;
 #endif
 
+  base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
+
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);

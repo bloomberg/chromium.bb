@@ -302,17 +302,39 @@ void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
   if (!event.NeedsWheelEvent())
     return;
 
-  if (event.GetType() == blink::WebInputEvent::kGesturePinchUpdate &&
-      (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
-       event.data.pinch_update.zoom_disabled))
-    return;
-
-  // Now that the synthetic wheel event has gone unconsumed, we have the pinch
-  // event actually change the page scale.
-  blink::WebGestureEvent pinch_event(event);
-  pinch_event.SetNeedsWheelEvent(false);
-
-  host()->ForwardGestureEvent(pinch_event);
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kGesturePinchBegin:
+      // Don't send the begin event until we get the first unconsumed update, so
+      // that we elide pinch gesture steams consisting of only a begin and end.
+      pending_touchpad_pinch_begin_ = event;
+      pending_touchpad_pinch_begin_->SetNeedsWheelEvent(false);
+      break;
+    case blink::WebInputEvent::kGesturePinchUpdate:
+      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
+          !event.data.pinch_update.zoom_disabled) {
+        if (pending_touchpad_pinch_begin_) {
+          host()->ForwardGestureEvent(*pending_touchpad_pinch_begin_);
+          pending_touchpad_pinch_begin_.reset();
+        }
+        // Now that the synthetic wheel event has gone unconsumed, we have the
+        // pinch event actually change the page scale.
+        blink::WebGestureEvent pinch_event(event);
+        pinch_event.SetNeedsWheelEvent(false);
+        host()->ForwardGestureEvent(pinch_event);
+      }
+      break;
+    case blink::WebInputEvent::kGesturePinchEnd:
+      if (pending_touchpad_pinch_begin_) {
+        pending_touchpad_pinch_begin_.reset();
+      } else {
+        blink::WebGestureEvent pinch_end_event(event);
+        pinch_end_event.SetNeedsWheelEvent(false);
+        host()->ForwardGestureEvent(pinch_end_event);
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
