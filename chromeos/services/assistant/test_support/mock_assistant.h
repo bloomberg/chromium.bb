@@ -27,8 +27,13 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD1(SendTextQuery, void(const std::string&));
 
-  MOCK_METHOD1(AddAssistantEventSubscriber,
-               void(chromeos::assistant::mojom::AssistantEventSubscriberPtr));
+  MOCK_METHOD1(
+      AddAssistantInteractionSubscriber,
+      void(chromeos::assistant::mojom::AssistantInteractionSubscriberPtr));
+
+  MOCK_METHOD1(
+      AddAssistantNotificationSubscriber,
+      void(chromeos::assistant::mojom::AssistantNotificationSubscriberPtr));
 
   MOCK_METHOD2(RequestScreenContext, void(const gfx::Rect&, base::OnceClosure));
 

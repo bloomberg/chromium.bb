@@ -5,6 +5,7 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
@@ -17,7 +18,7 @@ namespace ash {
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_event_subscriber_binding_(this) {
+      assistant_interaction_subscriber_binding_(this) {
   AddModelObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
@@ -31,10 +32,10 @@ void AssistantInteractionController::SetAssistant(
     chromeos::assistant::mojom::Assistant* assistant) {
   assistant_ = assistant;
 
-  // Subscribe to Assistant events.
-  chromeos::assistant::mojom::AssistantEventSubscriberPtr ptr;
-  assistant_event_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_->AddAssistantEventSubscriber(std::move(ptr));
+  // Subscribe to Assistant interaction events.
+  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;
+  assistant_interaction_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
+  assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
 }
 
 void AssistantInteractionController::SetAssistantUiController(

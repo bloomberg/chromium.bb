@@ -20,12 +20,17 @@ interface Assistant {
   StopActiveInteraction();
 
   // Send text query to assistant. Result will be returned through registered
-  // |AssistantEventSubscriber|.
+  // |AssistantInteractionSubscriber|.
   SendTextQuery(string query);
 
-  // Registers assistant event subscriber. Subscribers' implementation is
-  // responsible for selecting events of interest.
-  AddAssistantEventSubscriber(AssistantEventSubscriber subscriber);
+  // Registers assistant interaction event subscriber. Subscribers'
+  // implementation is responsible for selecting events of interest.
+  AddAssistantInteractionSubscriber(AssistantInteractionSubscriber subscriber);
+
+  // Registers assistant notification event subscriber. Subscribers'
+  // implementation is responsible for selecting events of interest.
+  AddAssistantNotificationSubscriber(
+      AssistantNotificationSubscriber subscriber);
 
   // Asks assistant to grab screen context. |region| controls the part of the
   // screen to snapshot. If |region| is empty, it takes fullscreen screenshot.
@@ -33,10 +38,10 @@ interface Assistant {
   RequestScreenContext(gfx.mojom.Rect region) => ();
 };
 
-// Subscribes to assistant's event. Responses from the assistant may contain
-// untrusted third-party content. Subscriber implementations must be sure to
-// handle the response data appropriately.
-interface AssistantEventSubscriber {
+// Subscribes to assistant's interaction event. Responses from the assistant may
+// contain untrusted third-party content. Subscriber implementations must be
+// sure to handle the response data appropriately.
+interface AssistantInteractionSubscriber {
   // Assistant interaction has started.
   OnInteractionStarted();
 
@@ -70,6 +75,12 @@ interface AssistantEventSubscriber {
 
   // Assistant got an instantaneous speech level update in dB.
   OnSpeechLevelUpdated(float speech_level);
+};
+
+// Subscribes to assistant's notification event.
+interface AssistantNotificationSubscriber {
+  // Assistant got notification from server.
+  OnShowNotification(AssistantNotification notification);
 };
 
 // Interface for browser to bind and start assistant.
@@ -138,4 +149,29 @@ struct AssistantSuggestion {
   // Optional URL for action. e.g.
   // "https://www.google.com/search?query=action".
   url.mojom.Url action_url;
+};
+
+// Models an Assistant notification.
+struct AssistantNotification {
+  // Title of the notification.
+  string title;
+
+  // Body text of the notification.
+  string message;
+
+  // URL to open when the tap action is invoked on the notification.
+  url.mojom.Url action_url;
+
+  // An id that uniquely identifies a notification.
+  string notification_id;
+
+  // Used to fetch notification contents.
+  string consistency_token;
+  string opaque_token;
+
+  // Key that can be used to group multiple notifications together.
+  string grouping_key;
+
+  // Obfuscated Gaia id of the intended recipient of the user.
+  string obfuscated_gaia_id;
 };

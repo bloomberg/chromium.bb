@@ -208,9 +208,14 @@ void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
   assistant_manager_internal_->SendTextQuery(query);
 }
 
-void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
-    mojom::AssistantEventSubscriberPtr subscriber) {
-  subscribers_.AddPtr(std::move(subscriber));
+void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
+    mojom::AssistantInteractionSubscriberPtr subscriber) {
+  interaction_subscribers_.AddPtr(std::move(subscriber));
+}
+
+void AssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
+    mojom::AssistantNotificationSubscriberPtr subscriber) {
+  notification_subscribers_.AddPtr(std::move(subscriber));
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStarted() {
@@ -268,6 +273,26 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::OnOpenUrlOnMainThread,
                      weak_factory_.GetWeakPtr(), url));
+}
+
+void AssistantManagerServiceImpl::OnShowNotification(
+    const action::Notification& notification) {
+  mojom::AssistantNotificationPtr notification_ptr =
+      mojom::AssistantNotification::New();
+  notification_ptr->title = notification.title;
+  notification_ptr->message = notification.text;
+  notification_ptr->action_url = GURL(notification.action_url);
+  notification_ptr->notification_id = notification.notification_id;
+  notification_ptr->consistency_token = notification.consistency_token;
+  notification_ptr->opaque_token = notification.opaque_token;
+  notification_ptr->grouping_key = notification.grouping_key;
+  notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnShowNotificationOnMainThread,
+          weak_factory_.GetWeakPtr(), std::move(notification_ptr)));
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChanged(
@@ -482,7 +507,8 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {
-  subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnInteractionStarted(); });
+  interaction_subscribers_.ForAllPtrs(
+      [](auto* ptr) { ptr->OnInteractionStarted(); });
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
@@ -496,7 +522,7 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     case assistant_client::ConversationStateListener::Resolution::
         NORMAL_WITH_FOLLOW_ON:
     case assistant_client::ConversationStateListener::Resolution::TIMEOUT:
-      subscribers_.ForAllPtrs([](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kNormal);
       });
@@ -504,14 +530,14 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     // Interaction ended due to interruption.
     case assistant_client::ConversationStateListener::Resolution::BARGE_IN:
     case assistant_client::ConversationStateListener::Resolution::CANCELLED:
-      subscribers_.ForAllPtrs([](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kInterruption);
       });
       break;
     // Interaction ended due to multi-device hotword loss.
     case assistant_client::ConversationStateListener::Resolution::NO_RESPONSE:
-      subscribers_.ForAllPtrs([](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
       });
@@ -519,7 +545,7 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     // Interaction ended due to error.
     case assistant_client::ConversationStateListener::Resolution::
         COMMUNICATION_ERROR:
-      subscribers_.ForAllPtrs([](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kError);
       });
@@ -529,25 +555,34 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
 
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
     const std::string& html) {
-  subscribers_.ForAllPtrs([&html](auto* ptr) { ptr->OnHtmlResponse(html); });
+  interaction_subscribers_.ForAllPtrs(
+      [&html](auto* ptr) { ptr->OnHtmlResponse(html); });
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(
     const std::vector<mojom::AssistantSuggestionPtr>& suggestions) {
-  subscribers_.ForAllPtrs([&suggestions](auto* ptr) {
+  interaction_subscribers_.ForAllPtrs([&suggestions](auto* ptr) {
     ptr->OnSuggestionsResponse(mojo::Clone(suggestions));
   });
 }
 
 void AssistantManagerServiceImpl::OnShowTextOnMainThread(
     const std::string& text) {
-  subscribers_.ForAllPtrs([&text](auto* ptr) { ptr->OnTextResponse(text); });
+  interaction_subscribers_.ForAllPtrs(
+      [&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
 void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
     const std::string& url) {
-  subscribers_.ForAllPtrs(
+  interaction_subscribers_.ForAllPtrs(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+}
+
+void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
+    const mojom::AssistantNotificationPtr& notification) {
+  notification_subscribers_.ForAllPtrs([&notification](auto* ptr) {
+    ptr->OnShowNotification(mojo::Clone(notification));
+  });
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
@@ -556,12 +591,12 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
         recognition_result) {
   switch (state) {
     case assistant_client::ConversationStateListener::RecognitionState::STARTED:
-      subscribers_.ForAllPtrs(
+      interaction_subscribers_.ForAllPtrs(
           [](auto* ptr) { ptr->OnSpeechRecognitionStarted(); });
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         INTERMEDIATE_RESULT:
-      subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
         ptr->OnSpeechRecognitionIntermediateResult(
             recognition_result.high_confidence_text,
             recognition_result.low_confidence_text);
@@ -569,12 +604,12 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         END_OF_UTTERANCE:
-      subscribers_.ForAllPtrs(
+      interaction_subscribers_.ForAllPtrs(
           [](auto* ptr) { ptr->OnSpeechRecognitionEndOfUtterance(); });
       break;
     case assistant_client::ConversationStateListener::RecognitionState::
         FINAL_RESULT:
-      subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
+      interaction_subscribers_.ForAllPtrs([&recognition_result](auto* ptr) {
         ptr->OnSpeechRecognitionFinalResult(
             recognition_result.recognized_speech);
       });
@@ -584,7 +619,7 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
     const float speech_level) {
-  subscribers_.ForAllPtrs(
+  interaction_subscribers_.ForAllPtrs(
       [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
 }
 

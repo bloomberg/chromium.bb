@@ -84,8 +84,10 @@ class AssistantManagerServiceImpl
   void StartVoiceInteraction() override;
   void StopActiveInteraction() override;
   void SendTextQuery(const std::string& query) override;
-  void AddAssistantEventSubscriber(
-      mojom::AssistantEventSubscriberPtr subscriber) override;
+  void AddAssistantInteractionSubscriber(
+      mojom::AssistantInteractionSubscriberPtr subscriber) override;
+  void AddAssistantNotificationSubscriber(
+      mojom::AssistantNotificationSubscriberPtr subscriber) override;
   void RequestScreenContext(const gfx::Rect& region,
                             RequestScreenContextCallback callback) override;
 
@@ -95,6 +97,7 @@ class AssistantManagerServiceImpl
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url) override;
+  void OnShowNotification(const action::Notification& notification) override;
 
   // AssistantEventObserver overrides:
   void OnSpeechLevelUpdated(float speech_level) override;
@@ -156,6 +159,8 @@ class AssistantManagerServiceImpl
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
   void OnOpenUrlOnMainThread(const std::string& url);
+  void OnShowNotificationOnMainThread(
+      const mojom::AssistantNotificationPtr& notification);
   void OnRecognitionStateChangedOnMainThread(
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
@@ -186,7 +191,10 @@ class AssistantManagerServiceImpl
   // same ownership as assistant_manager_.
   assistant_client::AssistantManagerInternal* assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
-  mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
+  mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
+      interaction_subscribers_;
+  mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
+      notification_subscribers_;
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
