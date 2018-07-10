@@ -36,8 +36,10 @@ extern "C" {
 
 #if USE_SYMM_MULTI_LAYER
 #define MATCH_OLD_BITRATE 1
+#define SHIFT_BWDREF_BUF 1
 #else
 #define MATCH_OLD_BITRATE 0
+#define SHIFT_BWDREF_BUF 0
 #endif
 
 #define MIN_GF_INTERVAL 4

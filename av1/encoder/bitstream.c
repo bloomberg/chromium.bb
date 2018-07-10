@@ -2258,9 +2258,15 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   //     LAST3_FRAME.
   refresh_mask |=
       (cpi->refresh_last_frame << cpi->ref_fb_idx[LAST_REF_FRAMES - 1]);
-
+#if SHIFT_BWDREF_BUF
+  refresh_mask |=
+      (cpi->new_bwdref_update_rule == 1)
+          ? (cpi->refresh_bwd_ref_frame << cpi->ref_fb_idx[EXTREF_FRAME - 1])
+          : (cpi->refresh_bwd_ref_frame << cpi->ref_fb_idx[BWDREF_FRAME - 1]);
+#else
   refresh_mask |=
       (cpi->refresh_bwd_ref_frame << cpi->ref_fb_idx[BWDREF_FRAME - 1]);
+#endif
   refresh_mask |=
       (cpi->refresh_alt2_ref_frame << cpi->ref_fb_idx[ALTREF2_FRAME - 1]);
 

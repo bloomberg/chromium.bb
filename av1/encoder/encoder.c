@@ -3311,6 +3311,48 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
   }
 }
 
+#if SHIFT_BWDREF_BUF
+// This function is used to shift the virtual indices of bwd reference
+// frames as follows:
+// BWD_REF -> ALT2_REF -> EXT_REF
+// to clear a space to store the closest bwdref
+static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
+  // TODO(isbs): shift the scaled indices as well
+  static const int ordered_bwd[3] = { BWDREF_FRAME - 1, ALTREF2_FRAME - 1,
+                                      EXTREF_FRAME - 1 };
+
+  for (int i = 2; i > 0; --i) {
+    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i - 1]];
+
+    // [0] is allocated to the current coded frame, i.e. bwdref
+    memcpy(
+        cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
+        cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME],
+        sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME]));
+  }
+}
+
+// This function is used to shift the virtual indices of bwd reference
+// frames as follows:
+// BWD_REF <- ALT2_REF <- EXT_REF
+// to update the bwd reference frame for coding the next frame.
+static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
+  // TODO(isbs): shift the scaled indices as well
+  static const int ordered_bwd[3] = { BWDREF_FRAME - 1, ALTREF2_FRAME - 1,
+                                      EXTREF_FRAME - 1 };
+
+  for (int i = 0; i < 2; ++i) {
+    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i + 1]];
+
+    // [0] is allocated to the current coded frame, i.e. bwdref
+    memcpy(
+        cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
+        cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME],
+        sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME]));
+  }
+}
+#endif  // SHIFT_BWDREF_BUF
+
 #if USE_GF16_MULTI_LAYER
 static void update_reference_frames_gf16(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3415,11 +3457,22 @@ static void update_reference_frames(AV1_COMP *cpi) {
     shift_last_ref_frames(cpi);
 
     cpi->ref_fb_idx[LAST_FRAME - 1] = cpi->ref_fb_idx[bwdref_to_show - 1];
-    cpi->ref_fb_idx[bwdref_to_show - 1] = tmp;
 
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[bwdref_to_show],
            sizeof(cpi->interp_filter_selected[bwdref_to_show]));
+#if SHIFT_BWDREF_BUF
+    if (cpi->new_bwdref_update_rule == 1) {
+      lshift_bwd_ref_frames(cpi);
+      // pass outdated forward reference frame (previous LAST3) to the
+      // spared space
+      cpi->ref_fb_idx[EXTREF_FRAME - 1] = tmp;
+    } else {
+#endif
+      cpi->ref_fb_idx[bwdref_to_show - 1] = tmp;
+#if SHIFT_BWDREF_BUF
+    }
+#endif
   } else { /* For non key/golden frames */
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
@@ -3444,10 +3497,25 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === BWDREF_FRAME ===
     if (cpi->refresh_bwd_ref_frame) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
-                 cm->new_fb_idx);
+#if SHIFT_BWDREF_BUF
+      if (cpi->new_bwdref_update_rule) {
+        // We shift the backward reference frame as follows:
+        // BWDREF -> ALTREF2 -> EXTREF
+        // and assign the newly coded frame to BWDREF so that it always
+        // keeps the nearest future frame
+        int tmp = cpi->ref_fb_idx[EXTREF_FRAME - 1];
+        ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[tmp], cm->new_fb_idx);
 
+        rshift_bwd_ref_frames(cpi);
+        cpi->ref_fb_idx[BWDREF_FRAME - 1] = tmp;
+      } else {
+#endif  // SHIFT_BWDREF_BUF
+        ref_cnt_fb(pool->frame_bufs,
+                   &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
+                   cm->new_fb_idx);
+#if SHIFT_BWDREF_BUF
+      }
+#endif
       memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
              cpi->interp_filter_selected[0],
              sizeof(cpi->interp_filter_selected[0]));
