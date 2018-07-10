@@ -35,7 +35,6 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -367,9 +366,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return client_hints_preferences_;
   }
 
-  void BindPreviewsResourceLoadingHintsRequest(
-      blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request);
-
  private:
   friend class FrameNavigationDisabler;
 
@@ -461,9 +457,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
-
-  std::unique_ptr<mojom::blink::PreviewsResourceLoadingHintsReceiver>
-      previews_resource_loading_hints_receiver_;
 
   blink::mojom::blink::PrefetchURLLoaderServicePtr prefetch_loader_service_;
   ClientHintsPreferences client_hints_preferences_;
