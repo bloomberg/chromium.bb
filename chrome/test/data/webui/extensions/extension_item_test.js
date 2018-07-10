@@ -16,7 +16,7 @@ cr.define('extension_item_tests', function() {
     {selector: '#icon'},
     {selector: '#description', text: extensionData.description},
     {selector: '#enable-toggle'},
-    {selector: '#details-button'},
+    {selector: '#detailsButton'},
     {selector: '#remove-button'},
   ];
   // The developer elements, which should only be shown if in developer
@@ -153,7 +153,7 @@ cr.define('extension_item_tests', function() {
         currentPage = newPage;
       });
 
-      MockInteractions.tap(item.$$('#details-button'));
+      MockInteractions.tap(item.$$('#detailsButton'));
       expectDeepEquals(
           currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
