@@ -316,4 +316,9 @@ const char kVirtualMachinesAllowed[] = "cros.device.virtual_machines_allowed";
 const char kSamlLoginAuthenticationType[] =
     "cros.device.saml_login_authentication_type";
 
+// A list of time intervals during which the admin has disallowed automatic
+// update checks.
+const char kDeviceAutoUpdateTimeRestrictions[] =
+    "cros.system.autoUpdateTimeRestrictions";
+
 }  // namespace chromeos

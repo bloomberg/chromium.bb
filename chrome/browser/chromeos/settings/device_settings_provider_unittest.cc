@@ -79,9 +79,16 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   void TearDown() override { DeviceSettingsTestBase::TearDown(); }
 
+  void BuildAndInstallDevicePolicy() {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
   // Helper routine to enable/disable all reporting settings in policy.
   void SetReportingSettings(bool enable_reporting, int frequency) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::DeviceReportingProto* proto =
         device_policy_.payload().mutable_device_reporting();
     proto->set_report_version_info(enable_reporting);
@@ -95,53 +102,38 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_device_status_frequency(frequency);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to enable/disable all reporting settings in policy.
   void SetHeartbeatSettings(bool enable_heartbeat, int frequency) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::DeviceHeartbeatSettingsProto* proto =
         device_policy_.payload().mutable_device_heartbeat_settings();
     proto->set_heartbeat_enabled(enable_heartbeat);
     proto->set_heartbeat_frequency(frequency);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to enable/disable log upload settings in policy.
   void SetLogUploadSettings(bool enable_system_log_upload) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::DeviceLogUploadSettingsProto* proto =
         device_policy_.payload().mutable_device_log_upload_settings();
     proto->set_system_log_upload_enabled(enable_system_log_upload);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to set device wallpaper setting in policy.
   void SetWallpaperSettings(const std::string& wallpaper_settings) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::DeviceWallpaperImageProto* proto =
         device_policy_.payload().mutable_device_wallpaper_image();
     proto->set_device_wallpaper_image(wallpaper_settings);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
+    BuildAndInstallDevicePolicy();
   }
 
   enum MetricsOption { DISABLE_METRICS, ENABLE_METRICS, REMOVE_METRICS_POLICY };
 
   // Helper routine to enable/disable metrics report upload settings in policy.
   void SetMetricsReportingSettings(MetricsOption option) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     if (option == REMOVE_METRICS_POLICY) {
       // Remove policy altogether
       device_policy_.payload().clear_metrics_enabled();
@@ -151,10 +143,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
           device_policy_.payload().mutable_metrics_enabled();
       proto->set_metrics_enabled(option == ENABLE_METRICS);
     }
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to ensure all heartbeat policies have been correctly
@@ -214,14 +203,10 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   // Helper routine to set LoginScreenDomainAutoComplete policy.
   void SetDomainAutoComplete(const std::string& domain) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::LoginScreenDomainAutoCompleteProto* proto =
         device_policy_.payload().mutable_login_screen_domain_auto_complete();
     proto->set_login_screen_domain_auto_complete(domain);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
@@ -233,43 +218,38 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   // Helper routine to set AutoUpdates connection types policy.
   void SetAutoUpdateConnectionTypes(const std::vector<int>& values) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
-
     em::AutoUpdateSettingsProto* proto =
         device_policy_.payload().mutable_auto_update_settings();
     proto->set_update_disabled(false);
     for (auto const& value : values) {
       proto->add_allowed_connection_types(kConnectionTypes[value]);
     }
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to set HostnameTemplate policy.
   void SetHostnameTemplate(const std::string& hostname_template) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::NetworkHostnameProto* proto =
         device_policy_.payload().mutable_network_hostname();
     proto->set_device_hostname_template(hostname_template);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
   }
 
   // Helper routine to set the DeviceSamlLoginAuthenticationType policy.
   void SetSamlLoginAuthenticationType(
       em::SamlLoginAuthenticationTypeProto::Type value) {
-    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     em::SamlLoginAuthenticationTypeProto* proto =
         device_policy_.payload().mutable_saml_login_authentication_type();
     proto->set_saml_login_authentication_type(value);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    ReloadDeviceSettings();
-    Mock::VerifyAndClearExpectations(this);
+    BuildAndInstallDevicePolicy();
+  }
+
+  // Helper routine that sets the device DeviceAutoUpdateTimeRestricitons policy
+  void SetDeviceAutoUpdateTimeRestrictions(const std::string& json_string) {
+    em::AutoUpdateSettingsProto* proto =
+        device_policy_.payload().mutable_auto_update_settings();
+    proto->set_disallowed_time_intervals(json_string);
+    BuildAndInstallDevicePolicy();
   }
 
   ScopedTestingLocalState local_state_;
@@ -495,15 +475,11 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
 }
 
 TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
-  EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   em::DeviceLocalAccountInfoProto* account =
       device_policy_.payload().mutable_device_local_accounts()->add_account();
   account->set_deprecated_public_session_id(
       policy::PolicyBuilder::kFakeUsername);
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
-  ReloadDeviceSettings();
-  Mock::VerifyAndClearExpectations(this);
+  BuildAndInstallDevicePolicy();
 
   // On load, the deprecated spec should have been converted to the new format.
   base::ListValue expected_accounts;
@@ -520,16 +496,11 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
-  EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
   device_policy_.policy_data().mutable_device_state()->set_device_mode(
       em::DeviceState::DEVICE_MODE_DISABLED);
   device_policy_.policy_data().mutable_device_state()->
       mutable_disabled_state()->set_message(kDisabledMessage);
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
-  ReloadDeviceSettings();
-  Mock::VerifyAndClearExpectations(this);
-
+  BuildAndInstallDevicePolicy();
   // Verify that the device state has been decoded correctly.
   const base::Value expected_disabled_value(true);
   EXPECT_EQ(expected_disabled_value, *provider_->Get(kDeviceDisabled));
@@ -538,12 +509,8 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
             *provider_->Get(kDeviceDisabledMessage));
 
   // Verify that a change to the device state triggers a notification.
-  EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
   device_policy_.policy_data().mutable_device_state()->clear_device_mode();
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
-  ReloadDeviceSettings();
-  Mock::VerifyAndClearExpectations(this);
+  BuildAndInstallDevicePolicy();
 
   // Verify that the updated state has been decoded correctly.
   EXPECT_FALSE(provider_->Get(kDeviceDisabled));
@@ -660,6 +627,48 @@ TEST_F(DeviceSettingsProviderTest, SamlLoginAuthenticationType) {
     base::Value expected_value(PolicyProto::TYPE_CLIENT_CERTIFICATE);
     VerifyPolicyValue(kSamlLoginAuthenticationType, &expected_value);
   }
+}
+
+// Test invalid cases
+TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsEmpty) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, nullptr);
+
+  // Empty string should not be considered valid
+  SetDeviceAutoUpdateTimeRestrictions("");
+  VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, nullptr);
+}
+
+// JSON with required fields that have values out of bounds should be dropped.
+TEST_F(DeviceSettingsProviderTest,
+       DeviceAutoUpdateTimeRestrictionsInvalidField) {
+  // JSON with an invalid field should be considered invalid.
+  const std::string invalid_field =
+      "[{\"start\": {\"day_of_week\": \"Monday\", \"hours\": 10, \"minutes\": "
+      "50}, \"end\": {\"day_of_week\": \"Wednesday\", \"hours\": 1, "
+      "\"minutes\": -20}}]";
+  SetDeviceAutoUpdateTimeRestrictions(invalid_field);
+  VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, nullptr);
+}
+
+// Valid JSON with extra fields should be considered valid and saved with
+// dropped extra fields.
+TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
+  const std::string extra_field =
+      "[{\"start\": {\"day_of_week\": \"Monday\", \"hours\": 10, \"minutes\": "
+      "50}, \"end\": {\"day_of_week\": \"Wednesday\", \"hours\": 1, "
+      "\"minutes\": 20, \"extra\": 50}}]";
+  base::ListValue test_list;
+  base::DictionaryValue interval;
+  interval.SetPath({"start", "day_of_week"}, base::Value("Monday"));
+  interval.SetPath({"start", "hours"}, base::Value(10));
+  interval.SetPath({"start", "minutes"}, base::Value(50));
+  interval.SetPath({"end", "day_of_week"}, base::Value("Wednesday"));
+  interval.SetPath({"end", "hours"}, base::Value(1));
+  interval.SetPath({"end", "minutes"}, base::Value(20));
+  test_list.GetList().push_back(std::move(interval));
+  SetDeviceAutoUpdateTimeRestrictions(extra_field);
+  VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
 }
 
 }  // namespace chromeos
