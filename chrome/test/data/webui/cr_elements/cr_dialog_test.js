@@ -11,6 +11,19 @@ suite('cr-dialog', function() {
     PolymerTest.clearBody();
   });
 
+  test('cr-dialog-open event fires when opened', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+        <div slot="body">body</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    const whenFired = test_util.eventToPromise('cr-dialog-open', dialog);
+    dialog.showModal();
+    return whenFired;
+  });
+
   test('close event bubbles', function() {
     document.body.innerHTML = `
       <cr-dialog>
@@ -27,7 +40,7 @@ suite('cr-dialog', function() {
     });
   });
 
-  test('cancel event bubbles', function() {
+  test('cancel and close events bubbles when cancelled', function() {
     document.body.innerHTML = `
       <cr-dialog>
         <div slot="title">title</div>
@@ -36,9 +49,10 @@ suite('cr-dialog', function() {
 
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
-    const whenFired = test_util.eventToPromise('cancel', dialog);
+    const whenCancelFired = test_util.eventToPromise('cancel', dialog);
+    const whenCloseFired = test_util.eventToPromise('close', dialog);
     dialog.cancel();
-    return whenFired.then(() => {
+    return Promise.all([whenCancelFired, whenCloseFired]).then(() => {
       assertEquals('', dialog.getNative().returnValue);
     });
   });
