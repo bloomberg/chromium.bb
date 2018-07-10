@@ -114,6 +114,8 @@ void DesktopWindowTreeHostPlatform::Close() {
   if (waiting_for_close_now_)
     return;
 
+  desktop_native_widget_aura_->content_window()->Hide();
+
   // Hide while waiting for the close.
   // Please note that it's better to call WindowTreeHost::Hide, which also calls
   // PlatformWindow::Hide and Compositor::SetVisible(false).

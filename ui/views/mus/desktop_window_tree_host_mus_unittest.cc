@@ -447,4 +447,68 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
   EXPECT_EQ(title2, window->GetTitle());
 }
 
+// Used to ensure the visibility of the root window is changed before that of
+// the content window. This is necessary else close/hide animations end up
+// animating a hidden (black) window.
+class WidgetWindowVisibilityObserver : public aura::WindowObserver {
+ public:
+  explicit WidgetWindowVisibilityObserver(Widget* widget)
+      : content_window_(widget->GetNativeWindow()),
+        root_window_(content_window_->GetRootWindow()) {
+    EXPECT_NE(content_window_, root_window_);
+    content_window_->AddObserver(this);
+    root_window_->AddObserver(this);
+    EXPECT_TRUE(content_window_->IsVisible());
+    EXPECT_TRUE(root_window_->IsVisible());
+  }
+
+  ~WidgetWindowVisibilityObserver() override {
+    content_window_->RemoveObserver(this);
+    root_window_->RemoveObserver(this);
+  }
+
+  bool got_content_window_hidden() const { return got_content_window_hidden_; }
+
+  bool got_root_window_hidden() const { return got_root_window_hidden_; }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override {
+    if (visible)
+      return;
+
+    if (!got_root_window_hidden_) {
+      EXPECT_EQ(window, root_window_);
+      got_root_window_hidden_ = true;
+    } else if (!got_content_window_hidden_) {
+      EXPECT_EQ(window, content_window_);
+      got_content_window_hidden_ = true;
+    }
+  }
+
+  aura::Window* content_window_;
+  aura::Window* root_window_;
+
+  // Set to true when |content_window_| is hidden. This is only checked after
+  // the |root_window_| is hidden.
+  bool got_content_window_hidden_ = false;
+
+  // Set to true when |root_window_| is hidden.
+  bool got_root_window_hidden_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetWindowVisibilityObserver);
+};
+
+// See comments above WidgetWindowVisibilityObserver for details on what this
+// verifies.
+TEST_F(DesktopWindowTreeHostMusTest,
+       HideChangesRootWindowVisibilityBeforeContentWindowVisibility) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+  WidgetWindowVisibilityObserver observer(widget.get());
+  widget->Close();
+  EXPECT_TRUE(observer.got_content_window_hidden());
+  EXPECT_TRUE(observer.got_root_window_hidden());
+}
+
 }  // namespace views
