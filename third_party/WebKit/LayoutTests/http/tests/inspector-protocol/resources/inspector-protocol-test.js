@@ -264,6 +264,17 @@ TestRunner.Session = class {
     return session;
   }
 
+  async createTargetInNewContext(width, height, url, enableBeginFrameControl) {
+    const browserContextId = (await this.protocol.Target.createBrowserContext())
+        .result.browserContextId;
+    const targetId = (await this.protocol.Target.createTarget(
+        {url, browserContextId, width, height, enableBeginFrameControl}))
+        .result.targetId;
+    const sessionId = (await this.protocol.Target.attachToTarget({targetId}))
+        .result.sessionId;
+    return this.createChild(sessionId);
+  }
+
   _dispatchMessageFromTarget(event) {
     var session = this._childSessions.get(event.params.sessionId);
     if (session)
