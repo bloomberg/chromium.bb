@@ -178,7 +178,6 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
         return waitForStates(states, waitTimeMs);
     }
 
-    @Override
     public EmbeddedTestServer getTestServer() {
         return mTestServer;
     }

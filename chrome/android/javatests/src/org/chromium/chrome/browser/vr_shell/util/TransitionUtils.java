@@ -121,6 +121,7 @@ public class TransitionUtils {
      * JavaScript step to finish.
      *
      * Only meant to be used alongside the test framework from VrTestFramework.
+     * @param cvc The ContentViewCore for the tab the canvas is in.
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
     public static void enterPresentationAndWait(WebContents webContents) {

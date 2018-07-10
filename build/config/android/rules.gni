@@ -2807,8 +2807,6 @@ if (enable_java_templates) {
         # Generate incremental apk related operations at runtime.
         public_deps += _incremental_apk_operations
       }
-    } else {
-      not_needed([ "_incremental_apk_operations" ])
     }
   }
 
@@ -2854,18 +2852,13 @@ if (enable_java_templates) {
   template("instrumentation_test_apk") {
     assert(defined(invoker.apk_name))
     testonly = true
-    _incremental_allowed =
-        !defined(invoker.never_incremental) || !invoker.never_incremental
     _apk_target_name = "${target_name}__apk"
     _test_runner_target_name = "${target_name}__test_runner_script"
     _dist_ijar_path =
         "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
-    if (_incremental_allowed) {
-      _incremental_test_runner_target_name =
-          "${_test_runner_target_name}_incremental"
-      _incremental_test_name = "${invoker.target_name}_incremental"
-    }
-
+    _incremental_test_runner_target_name =
+        "${_test_runner_target_name}_incremental"
+    _incremental_test_name = "${invoker.target_name}_incremental"
     if (incremental_apk_by_default) {
       _incremental_test_runner_target_name = _test_runner_target_name
       _incremental_test_name = invoker.target_name
@@ -2890,24 +2883,22 @@ if (enable_java_templates) {
         test_jar = _dist_ijar_path
       }
     }
-    if (_incremental_allowed) {
-      test_runner_script(_incremental_test_runner_target_name) {
-        forward_variables_from(invoker,
-                               [
-                                 "additional_apks",
-                                 "apk_under_test",
-                                 "data",
-                                 "data_deps",
-                                 "deps",
-                                 "ignore_all_data_deps",
-                                 "public_deps",
-                               ])
-        test_name = _incremental_test_name
-        test_type = "instrumentation"
-        apk_target = ":$_apk_target_name"
-        test_jar = _dist_ijar_path
-        incremental_install = true
-      }
+    test_runner_script(_incremental_test_runner_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "additional_apks",
+                               "apk_under_test",
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "ignore_all_data_deps",
+                               "public_deps",
+                             ])
+      test_name = _incremental_test_name
+      test_type = "instrumentation"
+      apk_target = ":$_apk_target_name"
+      test_jar = _dist_ijar_path
+      incremental_install = true
     }
 
     android_apk(_apk_target_name) {
@@ -2990,16 +2981,14 @@ if (enable_java_templates) {
       }
     }
 
-    if (_incremental_allowed) {
-      group("${target_name}_incremental") {
-        public_deps = [
-          ":$_incremental_test_runner_target_name",
-          ":${_apk_target_name}_dist_ijar",
-          ":${_apk_target_name}_incremental",
-        ]
-        if (defined(invoker.apk_under_test)) {
-          public_deps += [ "${invoker.apk_under_test}_incremental" ]
-        }
+    group("${target_name}_incremental") {
+      public_deps = [
+        ":$_incremental_test_runner_target_name",
+        ":${_apk_target_name}_dist_ijar",
+        ":${_apk_target_name}_incremental",
+      ]
+      if (defined(invoker.apk_under_test)) {
+        public_deps += [ "${invoker.apk_under_test}_incremental" ]
       }
     }
   }
