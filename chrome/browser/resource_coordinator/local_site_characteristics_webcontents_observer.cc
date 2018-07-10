@@ -42,7 +42,9 @@ LocalSiteCharacteristicsWebContentsObserver::
     DCHECK(PageSignalReceiver::IsEnabled());
 
     TabLoadTracker::Get()->AddObserver(this);
-    PageSignalReceiver::GetInstance()->AddObserver(this);
+    page_signal_receiver_ = PageSignalReceiver::GetInstance();
+    DCHECK(page_signal_receiver_);
+    page_signal_receiver_->AddObserver(this);
   }
 }
 
@@ -65,7 +67,7 @@ void LocalSiteCharacteristicsWebContentsObserver::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!g_skip_observer_registration_for_testing) {
     TabLoadTracker::Get()->RemoveObserver(this);
-    PageSignalReceiver::GetInstance()->RemoveObserver(this);
+    page_signal_receiver_->RemoveObserver(this);
   }
   writer_.reset();
   writer_origin_ = url::Origin();
@@ -186,10 +188,17 @@ void LocalSiteCharacteristicsWebContentsObserver::
   if (web_contents() != contents)
     return;
 
-  // TODO(sebmarchand): The URL from the page_navigation_id wants to be the
-  //     base of the origin this is saved against.
-  MaybeNotifyBackgroundFeatureUsage(
-      &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground);
+  DCHECK_NE(nullptr, page_signal_receiver_);
+
+  // Don't notify the writer if the origin of this navigation event isn't the
+  // same as the one tracked by the writer.
+  if ((page_signal_receiver_->GetNavigationIDForWebContents(contents) ==
+       page_navigation_id.navigation_id) ||
+      url::Origin::Create(GURL(page_navigation_id.url))
+          .IsSameOriginWith(writer_origin_)) {
+    MaybeNotifyBackgroundFeatureUsage(
+        &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground);
+  }
 }
 
 bool LocalSiteCharacteristicsWebContentsObserver::

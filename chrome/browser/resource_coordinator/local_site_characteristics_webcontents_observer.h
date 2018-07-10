@@ -63,6 +63,10 @@ class LocalSiteCharacteristicsWebContentsObserver
   url::Origin GetWriterOriginForTesting() const { return writer_origin_; }
   void ResetWriterForTesting() { writer_.reset(); }
 
+  void SetPageSignalReceiverForTesting(PageSignalReceiver* receiver) {
+    page_signal_receiver_ = receiver;
+  }
+
  private:
   // Indicates if the feature usage event just received should be ignored.
   bool ShouldIgnoreFeatureUsageEvent();
@@ -86,6 +90,9 @@ class LocalSiteCharacteristicsWebContentsObserver
   // always supposed to happen.
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
+
+  // The PageSignalReceiver observed by this instance.
+  PageSignalReceiver* page_signal_receiver_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

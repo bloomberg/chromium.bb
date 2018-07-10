@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "content/public/browser/navigation_handle.h"
@@ -91,6 +92,7 @@ class LocalSiteCharacteristicsWebContentsObserverTest
         SkipObserverRegistrationForTesting();
     observer_ = std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
         web_contents());
+    observer()->SetPageSignalReceiverForTesting(&receiver_);
   }
 
   void TearDown() override {
@@ -110,14 +112,20 @@ class LocalSiteCharacteristicsWebContentsObserverTest
 
   const GURL kTestUrl1 = GURL("http://foo.com");
   const GURL kTestUrl2 = GURL("http://bar.com");
-  const PageNavigationIdentity kNavId = {CoordinationUnitID(), 0, ""};
 
   LocalSiteCharacteristicsWebContentsObserver* observer() {
     return observer_.get();
   }
 
+  PageNavigationIdentity GetNavIdForWebContents() {
+    return {CoordinationUnitID(),
+            receiver_.GetNavigationIDForWebContents(web_contents()), ""};
+  }
+
  private:
   std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver> observer_;
+  PageSignalReceiver receiver_;
+
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsWebContentsObserverTest);
 };
 
@@ -186,7 +194,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
+  observer()->OnNonPersistentNotificationCreated(web_contents(),
+                                                 GetNavIdForWebContents());
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer,
@@ -204,7 +213,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
+  observer()->OnNonPersistentNotificationCreated(web_contents(),
+                                                 GetNavIdForWebContents());
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -233,7 +243,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
+  observer()->OnNonPersistentNotificationCreated(web_contents(),
+                                                 GetNavIdForWebContents());
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -286,6 +297,39 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, LoadEvent) {
   observer()->OnLoadingStateChange(web_contents(),
                                    TabLoadTracker::LoadingState::LOADING,
                                    TabLoadTracker::LoadingState::UNLOADED);
+
+  EXPECT_CALL(*mock_writer, OnDestroy());
+}
+
+TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
+       LateNotificationUsageSignalIsIgnored) {
+  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
+                                                   LoadingState::LOADED);
+
+  EXPECT_CALL(*mock_writer,
+              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+  web_contents()->WasHidden();
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  auto nav_id = GetNavIdForWebContents();
+  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
+  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Invalidate the navigation ID but keep the same origin, the notification
+  // should get forwarded to the writer.
+  nav_id.navigation_id++;
+  nav_id.url = web_contents()->GetLastCommittedURL().spec();
+  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
+  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Make the URL of the navigation ID point to a different origin, the writer
+  // shouldn't get notified about this event.
+  nav_id.url = "https://not-the-same-url.com";
+  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
+  ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
 }
