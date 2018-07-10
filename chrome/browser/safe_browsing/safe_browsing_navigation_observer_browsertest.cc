@@ -2473,4 +2473,24 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   EXPECT_EQ(3U, nav_list->Size());
 }
 
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, ReloadNotRecorded) {
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  auto* nav_list = navigation_event_list();
+  ASSERT_TRUE(nav_list);
+  EXPECT_EQ(1U, nav_list->Size());
+
+  // Simulates reload.
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "location.reload();"));
+  base::RunLoop().RunUntilIdle();
+
+  nav_list = navigation_event_list();
+  ASSERT_TRUE(nav_list);
+  // Verifies navigations caused by reload are ignored.
+  EXPECT_EQ(1U, nav_list->Size());
+}
+
 }  // namespace safe_browsing

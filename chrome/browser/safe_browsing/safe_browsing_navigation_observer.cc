@@ -119,6 +119,13 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
       ui::PAGE_TRANSITION_FORWARD_BACK) {
     return;
   }
+
+  // Ignores reloads
+  if (ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                   ui::PAGE_TRANSITION_RELOAD)) {
+    return;
+  }
+
   std::unique_ptr<NavigationEvent> nav_event =
       std::make_unique<NavigationEvent>();
   auto it = navigation_handle_map_.find(navigation_handle);
