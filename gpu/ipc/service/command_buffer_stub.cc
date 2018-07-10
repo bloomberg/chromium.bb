@@ -751,6 +751,10 @@ void CommandBufferStub::OnRescheduleAfterFinished() {
   channel_->OnCommandBufferScheduled(this);
 }
 
+void CommandBufferStub::ScheduleGrContextCleanup() {
+  channel_->gpu_channel_manager()->ScheduleGrContextCleanup();
+}
+
 bool CommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
   DCHECK(!waiting_for_sync_point_);
   DCHECK(command_buffer_->scheduled());

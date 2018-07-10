@@ -62,6 +62,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+  void ScheduleGrContextCleanup() override {}
 
   // Template to call glGenXXX functions.
   template <typename T>
@@ -847,6 +848,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+  void ScheduleGrContextCleanup() override {}
 
   void SetUp() override;
   void TearDown() override;

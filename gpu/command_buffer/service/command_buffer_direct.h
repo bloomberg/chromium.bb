@@ -60,6 +60,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+  void ScheduleGrContextCleanup() override {}
 
   CommandBufferNamespace GetNamespaceID() const;
   CommandBufferId GetCommandBufferID() const;

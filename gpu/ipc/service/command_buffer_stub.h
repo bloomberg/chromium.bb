@@ -100,6 +100,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
+  void ScheduleGrContextCleanup() override;
 
   gles2::MemoryTracker* GetMemoryTracker() const;
 
