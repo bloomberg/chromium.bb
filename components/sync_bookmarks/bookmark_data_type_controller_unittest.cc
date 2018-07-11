@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -101,8 +101,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
       bookmark_model_->Load(&prefs, base::FilePath(),
-                            base::ThreadTaskRunnerHandle::Get(),
-                            base::ThreadTaskRunnerHandle::Get());
+                            base::SequencedTaskRunnerHandle::Get(),
+                            base::SequencedTaskRunnerHandle::Get());
       bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
     }
   }
@@ -180,8 +180,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
 
   TestingPrefServiceSimple prefs;
   bookmark_model_->Load(&prefs, base::FilePath(),
-                       base::ThreadTaskRunnerHandle::Get(),
-                       base::ThreadTaskRunnerHandle::Get());
+                        base::SequencedTaskRunnerHandle::Get(),
+                        base::SequencedTaskRunnerHandle::Get());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
   EXPECT_EQ(DataTypeController::MODEL_LOADED, bookmark_dtc_->state());
 

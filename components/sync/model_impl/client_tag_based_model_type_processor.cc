@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/hash_util.h"
@@ -185,7 +185,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   activation_response->type_processor =
       std::make_unique<ModelTypeProcessorProxy>(
           weak_ptr_factory_for_worker_.GetWeakPtr(),
-          base::ThreadTaskRunnerHandle::Get());
+          base::SequencedTaskRunnerHandle::Get());
   std::move(start_callback_).Run(std::move(activation_response));
 }
 

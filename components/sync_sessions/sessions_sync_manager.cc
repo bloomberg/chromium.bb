@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/device_info/local_device_info_provider.h"
@@ -169,7 +171,7 @@ static std::string BuildMachineTag(const std::string& cache_guid) {
 }
 
 void SessionsSyncManager::ScheduleGarbageCollection() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SessionsSyncManager::DoGarbageCollection,
                                 base::AsWeakPtr(this)));
 }

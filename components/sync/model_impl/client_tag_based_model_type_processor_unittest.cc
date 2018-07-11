@@ -330,7 +330,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
  private:
   std::unique_ptr<TestModelTypeSyncBridge> bridge_;
 
-  // This sets ThreadTaskRunnerHandle on the current thread, which the type
+  // This sets SequencedTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
   base::MessageLoop sync_loop_;
 

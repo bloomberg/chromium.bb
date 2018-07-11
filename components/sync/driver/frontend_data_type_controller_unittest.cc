@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -175,7 +175,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
   EXPECT_CALL(*dtc_mock_, CleanUpState());
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FrontendDataTypeController::Stop,
                      base::AsWeakPtr(frontend_dtc_.get()), KEEP_METADATA));

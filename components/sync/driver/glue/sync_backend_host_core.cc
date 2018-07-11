@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -118,7 +119,7 @@ void SyncBackendHostCore::OnInitializationComplete(
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::StartSavingChanges,
                             weak_ptr_factory_.GetWeakPtr()));
 

@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_client.h"
 
@@ -21,7 +21,7 @@ SessionDataTypeController::SessionDataTypeController(
                                    dump_stack,
                                    sync_client,
                                    syncer::GROUP_UI,
-                                   base::ThreadTaskRunnerHandle::Get()),
+                                   base::SequencedTaskRunnerHandle::Get()),
       sync_client_(sync_client),
       local_device_(local_device),
       history_disabled_pref_name_(history_disabled_pref_name),

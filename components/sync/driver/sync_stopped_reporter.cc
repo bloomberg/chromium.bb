@@ -8,9 +8,9 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/base/load_flags.h"
@@ -119,7 +119,7 @@ void SyncStoppedReporter::OnSimpleLoaderComplete(
   simple_url_loader_.reset();
   timer_.Stop();
   if (!callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, result));
   }
 }
@@ -127,7 +127,7 @@ void SyncStoppedReporter::OnSimpleLoaderComplete(
 void SyncStoppedReporter::OnTimeout() {
   simple_url_loader_.reset();
   if (!callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, RESULT_TIMEOUT));
   }
 }

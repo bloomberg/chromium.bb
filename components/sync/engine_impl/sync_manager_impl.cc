@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/experiments.h"
@@ -885,7 +885,8 @@ std::unique_ptr<ModelTypeConnector>
 SyncManagerImpl::GetModelTypeConnectorProxy() {
   DCHECK(initialized_);
   return std::make_unique<ModelTypeConnectorProxy>(
-      base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr());
+      base::SequencedTaskRunnerHandle::Get(),
+      model_type_registry_->AsWeakPtr());
 }
 
 const std::string SyncManagerImpl::cache_guid() {

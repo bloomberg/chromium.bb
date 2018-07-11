@@ -5,7 +5,7 @@
 #include "components/sync/driver/fake_data_type_controller.h"
 
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -156,7 +156,7 @@ std::unique_ptr<DataTypeErrorHandler>
 FakeDataTypeController::CreateErrorHandler() {
   DCHECK(CalledOnValidThread());
   return std::make_unique<DataTypeErrorHandlerImpl>(
-      base::ThreadTaskRunnerHandle::Get(), base::Closure(),
+      base::SequencedTaskRunnerHandle::Get(), base::Closure(),
       base::Bind(model_load_callback_, type()));
 }
 
