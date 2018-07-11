@@ -86,6 +86,13 @@ enum LayoutConstant {
   // subsequent tab when tabs are stacked.
   TAB_STACK_DISTANCE,
 
+  // In refresh, tabs are drawn with an extension into the toolbar's
+  // space to prevent a gap from appearing between the toolbar and the
+  // bottom of tabs on some non-integral scales.
+  // TODO(tbergquist): Remove this after pixel canvas or any deeper fix to
+  // non-pixel-aligned drawing goes in.  See https://crbug.com/765723.
+  TABSTRIP_TOOLBAR_OVERLAP,
+
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 

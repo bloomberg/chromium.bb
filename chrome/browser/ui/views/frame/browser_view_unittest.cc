@@ -114,7 +114,9 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(expected_tabstrip_origin.x(), tabstrip->x());
   EXPECT_EQ(expected_tabstrip_origin.y(), tabstrip->y());
   EXPECT_EQ(0, toolbar->x());
-  EXPECT_EQ(tabstrip->bounds().bottom(), toolbar->y());
+  EXPECT_EQ(
+      tabstrip->bounds().bottom() - GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+      toolbar->y());
   EXPECT_EQ(0, contents_container->x());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   EXPECT_EQ(top_container->bounds().bottom(), contents_container->y());
@@ -158,7 +160,9 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height(), bookmark_bar->y());
+  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
+                GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+            bookmark_bar->y());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   EXPECT_EQ(bookmark_bar->height(), devtools_web_view->y());
   EXPECT_EQ(bookmark_bar->height(), contents_web_view->y());
