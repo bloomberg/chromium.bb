@@ -46,7 +46,7 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
   // If somebody adds an image after the surface has been destroyed, fail the
   // image immediately.  This can happen due to thread hopping.
   if (!surface_bundle_) {
-    image->SurfaceDestroyed();
+    image->ReleaseCodecBuffer();
     return;
   }
 
@@ -66,8 +66,10 @@ void CodecImageGroup::OnCodecImageDestroyed(CodecImage* image) {
 }
 
 void CodecImageGroup::OnSurfaceDestroyed(AndroidOverlay* overlay) {
+  // Release any codec buffer, so that the image doesn't try to render to the
+  // overlay.  If it already did, that's fine.
   for (CodecImage* image : images_)
-    image->SurfaceDestroyed();
+    image->ReleaseCodecBuffer();
 
   // While this might cause |surface_bundle_| to be deleted, it's okay because
   // it's a RefCountedDeleteOnSequence.

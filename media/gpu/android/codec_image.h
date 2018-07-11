@@ -83,9 +83,8 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // buffer. Returns false if the buffer was invalidated.
   bool RenderToTextureOwnerBackBuffer();
 
-  // Called when we're no longer renderable because our surface is gone.  We'll
-  // discard any codec buffer, and generally do nothing.
-  virtual void SurfaceDestroyed();
+  // Release any codec buffer without rendering, if we have one.
+  virtual void ReleaseCodecBuffer();
 
  protected:
   ~CodecImage() override;

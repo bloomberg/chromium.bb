@@ -86,16 +86,21 @@ class TexturePoolTest : public testing::Test {
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithContext) {
   // Test that adding then deleting a texture destroys it.
   WeakTexture texture = CreateAndAddTexture();
-  texture_pool_->ReleaseTexture(texture.get(), sync_token_);
+  bool release_flag = false;
+  texture_pool_->ReleaseTexture(
+      texture.get(), sync_token_,
+      base::BindOnce([](bool* flag) { *flag = true; }, &release_flag));
 
   // The texture should still exist until the sync token is cleared.
-  ASSERT_TRUE(texture);
+  EXPECT_TRUE(texture);
 
   // Once the sync token is released, then the context should be made current
   // and the texture should be destroyed.
   helper_->ReleaseSyncToken(sync_token_);
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(texture);
+  EXPECT_FALSE(texture);
+  // The release cb should have been called.
+  EXPECT_TRUE(release_flag);
 }
 
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithoutContext) {
