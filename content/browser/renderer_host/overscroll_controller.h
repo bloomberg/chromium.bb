@@ -163,8 +163,6 @@ class CONTENT_EXPORT OverscrollController {
   // owned by this controller.
   OverscrollControllerDelegate* delegate_ = nullptr;
 
-  bool wheel_scroll_latching_enabled_;
-
   // A inertial scroll (fling) event may complete an overscroll gesture and
   // navigate to a new page or cancel the overscroll animation. In both cases
   // inertial scroll can continue to generate scroll-update events. These events

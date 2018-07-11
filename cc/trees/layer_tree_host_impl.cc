@@ -3298,11 +3298,9 @@ float LayerTreeHostImpl::CurrentBrowserControlsShownRatio() const {
   return active_tree_->CurrentBrowserControlsShownRatio();
 }
 
-void LayerTreeHostImpl::BindToClient(InputHandlerClient* client,
-                                     bool wheel_scroll_latching_enabled) {
+void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
   DCHECK(input_handler_client_ == nullptr);
   input_handler_client_ = client;
-  touchpad_and_wheel_scroll_latching_enabled_ = wheel_scroll_latching_enabled;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
@@ -3785,8 +3783,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
       // For the rest of the current scroll sequence, latch to the first node
       // that scrolled while it still exists.
-      if (touchpad_and_wheel_scroll_latching_enabled_ &&
-          scroll_tree.FindNodeFromElementId(
+      if (scroll_tree.FindNodeFromElementId(
               scroll_animating_latched_element_id_) &&
           scroll_node->element_id != scroll_animating_latched_element_id_) {
         continue;

@@ -23,7 +23,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_sender.h"
@@ -78,9 +77,7 @@ InputRouterImpl::InputRouterImpl(
       frame_tree_node_id_(-1),
       active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
-      wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
-          features::kTouchpadAndWheelScrollLatching)),
-      wheel_event_queue_(this, wheel_scroll_latching_enabled_),
+      wheel_event_queue_(this),
       touch_event_queue_(this, config.touch_config),
       touchpad_pinch_event_queue_(this),
       gesture_event_queue_(this,
@@ -471,8 +468,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
 
   std::unique_ptr<InputEvent> event = std::make_unique<InputEvent>(
       ScaleEvent(input_event, device_scale_factor_), latency_info);
-  if (WebInputEventTraits::ShouldBlockEventStream(
-          input_event, wheel_scroll_latching_enabled_)) {
+  if (WebInputEventTraits::ShouldBlockEventStream(input_event)) {
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
     client_->IncrementInFlightEventCount();

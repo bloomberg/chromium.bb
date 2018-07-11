@@ -38,12 +38,6 @@ const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables async wheel events. Note that this feature depends on
-// TouchpadAndWheelScrollLatching and enabling it when latching is disabled
-// won't have any impacts.
-const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
     "AudioServiceAudioStreams", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -418,10 +412,6 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 // https://crbug.com/595987.
 const base::Feature kTopDocumentIsolation{"top-document-isolation",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables touchpad and wheel scroll latching.
-const base::Feature kTouchpadAndWheelScrollLatching{
-    "TouchpadAndWheelScrollLatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.

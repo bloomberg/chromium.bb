@@ -131,18 +131,6 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     first_bubbling_scroll_target_.target = nullptr;
   } else if (view == first_bubbling_scroll_target_.target) {
     first_bubbling_scroll_target_.target = nullptr;
-    // When wheel scroll latching is disabled
-    // bubbling_gesture_scroll_target_.target should also get reset since
-    // gesture scroll events are bubbled one target at a time and they need the
-    // first target for getting bubbled to the current bubbling target. With
-    // latching enabled gesture scroll events (other than GSB) are bubbled
-    // directly to the bubbling target, the bubbling target should wait for the
-    // GSE to arrive and finish scrolling sequence rather than getting reset.
-    if (bubbling_gesture_scroll_target_.target &&
-        !bubbling_gesture_scroll_target_.target
-             ->wheel_scroll_latching_enabled()) {
-      bubbling_gesture_scroll_target_.target = nullptr;
-    }
   }
 
   if (view == last_mouse_move_target_) {
@@ -273,7 +261,6 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
     return {target, false, transformed_point, true};
   }
 
-  if (root_view->wheel_scroll_latching_enabled()) {
     if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       auto result = FindViewAtLocation(
           root_view, event.PositionInWidget(), event.PositionInScreen(),
@@ -283,7 +270,6 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
     // For non-begin events, the target found for the previous phaseBegan is
     // used.
     return {nullptr, false, base::nullopt, true};
-  }
 
   auto result = FindViewAtLocation(root_view, event.PositionInWidget(),
                                    event.PositionInScreen(),
@@ -424,8 +410,7 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
   base::Optional<gfx::PointF> point_in_target = target_location;
-  if (!root_view->IsMouseLocked() &&
-      root_view->wheel_scroll_latching_enabled()) {
+  if (!root_view->IsMouseLocked()) {
     if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       wheel_target_.target = target;
       if (target_location.has_value()) {
@@ -465,16 +450,14 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
   // If target_location doesn't have a value, it can be for two reasons:
   // 1. |target| is null, in which case we would have early returned from the
   // check above.
-  // 2. Wheel scroll latching is enabled and the event we are receiving is not
-  // a phaseBegan, in which case we should have got a valid |point_in_target|
-  // from wheel_target_.delta above.
+  // 2. The event we are receiving is not a phaseBegan, in which case we should
+  // have got a valid |point_in_target| from wheel_target_.delta above.
   DCHECK(point_in_target.has_value());
 
   blink::WebMouseWheelEvent event = mouse_wheel_event;
   event.SetPositionInWidget(point_in_target->x(), point_in_target->y());
   target->ProcessMouseWheelEvent(event, latency);
 
-  DCHECK(root_view->wheel_scroll_latching_enabled() || !wheel_target_.target);
   if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseEnded ||
       mouse_wheel_event.momentum_phase ==
           blink::WebMouseWheelEvent::kPhaseEnded) {
@@ -805,8 +788,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     const blink::WebGestureEvent& event,
     const RenderWidgetHostViewBase* resending_view) {
   DCHECK(target_view);
-  DCHECK((target_view->wheel_scroll_latching_enabled() &&
-          event.GetType() == blink::WebInputEvent::kGestureScrollBegin) ||
+  DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
          event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
          event.GetType() == blink::WebInputEvent::kGestureFlingStart);
@@ -814,136 +796,67 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
 
-  if (target_view->wheel_scroll_latching_enabled()) {
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-      // If target_view has unrelated gesture events in progress, do
-      // not proceed. This could cause confusion between independent
-      // scrolls.
-      if (target_view == touchscreen_gesture_target_.target ||
-          target_view == touchpad_gesture_target_.target ||
-          target_view == touch_target_.target) {
-        return;
-      }
-
-      // This accounts for bubbling through nested OOPIFs. A gesture scroll
-      // begin has been bubbled but the target has sent back a gesture scroll
-      // event ack which didn't consume any scroll delta, and so another level
-      // of bubbling is needed. This requires a GestureScrollEnd be sent to the
-      // last view, which will no longer be the scroll target.
-      if (bubbling_gesture_scroll_target_.target) {
-        SendGestureScrollEnd(
-            bubbling_gesture_scroll_target_.target,
-            GestureEventInTarget(event,
-                                 bubbling_gesture_scroll_target_.target));
-      } else {
-        first_bubbling_scroll_target_.target = target_view;
-      }
-
-      bubbling_gesture_scroll_target_.target = target_view;
-    } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
-      if (!bubbling_gesture_scroll_target_.target) {
-        // The GestureScrollBegin event is not bubbled, don't bubble the rest of
-        // the scroll events.
-        return;
-      }
-
-      // Don't bubble the GSE events that are generated and sent to intermediate
-      // bubbling targets.
-      if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
-          target_view != first_bubbling_scroll_target_.target) {
-        return;
-      }
-    }
-
-    // If the router tries to resend a gesture scroll event back to the same
-    // view, we could hang.
-    DCHECK_NE(resending_view, bubbling_gesture_scroll_target_.target);
-    // We've seen reports of this, but don't know the cause yet. For now,
-    // instead of CHECKing or hanging, we'll report the issue and abort scroll
-    // bubbling.
-    // TODO(828422): Remove once this issue no longer occurs.
-    if (resending_view == bubbling_gesture_scroll_target_.target) {
-      ReportBubblingScrollToSameView(event, resending_view);
-      first_bubbling_scroll_target_.target = nullptr;
-      bubbling_gesture_scroll_target_.target = nullptr;
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+    // If target_view has unrelated gesture events in progress, do
+    // not proceed. This could cause confusion between independent
+    // scrolls.
+    if (target_view == touchscreen_gesture_target_.target ||
+        target_view == touchpad_gesture_target_.target ||
+        target_view == touch_target_.target) {
       return;
     }
 
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
-        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
-        latency_info);
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-      first_bubbling_scroll_target_.target = nullptr;
-      bubbling_gesture_scroll_target_.target = nullptr;
+    // This accounts for bubbling through nested OOPIFs. A gesture scroll
+    // begin has been bubbled but the target has sent back a gesture scroll
+    // event ack which didn't consume any scroll delta, and so another level
+    // of bubbling is needed. This requires a GestureScrollEnd be sent to the
+    // last view, which will no longer be the scroll target.
+    if (bubbling_gesture_scroll_target_.target) {
+      SendGestureScrollEnd(
+          bubbling_gesture_scroll_target_.target,
+          GestureEventInTarget(event, bubbling_gesture_scroll_target_.target));
+    } else {
+      first_bubbling_scroll_target_.target = target_view;
     }
 
-    return;
-  }
-
-  DCHECK(!target_view->wheel_scroll_latching_enabled());
-
-  // DCHECK_XNOR the current and original bubble targets. Both should be set
-  // if a bubbling gesture scroll is in progress.
-  DCHECK(!first_bubbling_scroll_target_.target ==
-         !bubbling_gesture_scroll_target_.target);
-
-  // If target_view is already set up for bubbled scrolls, we forward
-  // the event to the current scroll target without further consideration.
-  if (target_view == first_bubbling_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
-        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
-        latency_info);
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-      first_bubbling_scroll_target_.target = nullptr;
-      bubbling_gesture_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_target_.target = target_view;
+  } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+    if (!bubbling_gesture_scroll_target_.target) {
+      // The GestureScrollBegin event is not bubbled, don't bubble the rest of
+      // the scroll events.
+      return;
     }
+
+    // Don't bubble the GSE events that are generated and sent to intermediate
+    // bubbling targets.
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+        target_view != first_bubbling_scroll_target_.target) {
+      return;
+    }
+  }
+
+  // If the router tries to resend a gesture scroll event back to the same
+  // view, we could hang.
+  DCHECK_NE(resending_view, bubbling_gesture_scroll_target_.target);
+  // We've seen reports of this, but don't know the cause yet. For now,
+  // instead of CHECKing or hanging, we'll report the issue and abort scroll
+  // bubbling.
+  // TODO(828422): Remove once this issue no longer occurs.
+  if (resending_view == bubbling_gesture_scroll_target_.target) {
+    ReportBubblingScrollToSameView(event, resending_view);
+    first_bubbling_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_target_.target = nullptr;
     return;
   }
 
-  // Disregard GestureScrollEnd events going to non-current targets.
-  // These should only happen on ACKs of synthesized GSE events that are
-  // sent from SendGestureScrollEnd calls, and are not relevant here.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
-    return;
-
-  // This is a special case to catch races where multiple GestureScrollUpdates
-  // have been sent to a renderer before the first one was ACKed, and the ACK
-  // caused a bubble retarget. In this case they all get forwarded.
-  if (target_view == bubbling_gesture_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
-        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
-        latency_info);
-    return;
+  bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+      GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
+      latency_info);
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+    first_bubbling_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_target_.target = nullptr;
   }
-
-  // If target_view has unrelated gesture events in progress, do
-  // not proceed. This could cause confusion between independent
-  // scrolls.
-  if (target_view == touchscreen_gesture_target_.target ||
-      target_view == touchpad_gesture_target_.target ||
-      target_view == touch_target_.target)
-    return;
-
-  // This accounts for bubbling through nested OOPIFs. A gesture scroll has
-  // been bubbled but the target has sent back a gesture scroll event ack with
-  // unused scroll delta, and so another level of bubbling is needed. This
-  // requires a GestureScrollEnd be sent to the last view, which will no
-  // longer be the scroll target.
-  if (bubbling_gesture_scroll_target_.target) {
-    SendGestureScrollEnd(
-        bubbling_gesture_scroll_target_.target,
-        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target));
-  } else {
-    first_bubbling_scroll_target_.target = target_view;
-  }
-
-  bubbling_gesture_scroll_target_.target = target_view;
-
-  SendGestureScrollBegin(target_view, GestureEventInTarget(event, target_view));
-  target_view->ProcessGestureEvent(GestureEventInTarget(event, target_view),
-                                   latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
@@ -982,7 +895,6 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
   scroll_end.SetTimeStamp(base::TimeTicks::Now());
   switch (event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin:
-      DCHECK(view->wheel_scroll_latching_enabled());
       scroll_end.data.scroll_end.inertial_phase =
           event.data.scroll_begin.inertial_phase;
       scroll_end.data.scroll_end.delta_units =

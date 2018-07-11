@@ -6674,10 +6674,6 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
 }
 
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
-  // Enable wheel scroll latching flag.
-  TestInputHandlerClient input_handler_client;
-  host_impl_->BindToClient(&input_handler_client, true);
-
   // Scroll a child layer beyond its maximum scroll range and make sure the
   // parent layer isn't scrolled.
   gfx::Size surface_size(100, 100);
@@ -7371,7 +7367,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   scroll_layer->SetScrollable(gfx::Size(10, 20));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->BindToClient(&scroll_watcher, false);
+  host_impl_->BindToClient(&scroll_watcher);
 
   gfx::Vector2dF initial_scroll_delta(10.f, 10.f);
   scroll_layer->layer_tree_impl()

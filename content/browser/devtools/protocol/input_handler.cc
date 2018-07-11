@@ -19,7 +19,6 @@
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
-#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -285,15 +284,12 @@ class InputHandler::InputInjector
       return;
     }
 
-    if (base::FeatureList::IsEnabled(
-            features::kTouchpadAndWheelScrollLatching)) {
-      // Send a synthetic wheel event with phaseEnded to finish scrolling.
-      wheel_event->delta_x = 0;
-      wheel_event->delta_y = 0;
-      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-      wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
-      widget_host_->ForwardWheelEvent(*wheel_event);
-    }
+    // Send a synthetic wheel event with phaseEnded to finish scrolling.
+    wheel_event->delta_x = 0;
+    wheel_event->delta_y = 0;
+    wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    widget_host_->ForwardWheelEvent(*wheel_event);
   }
 
   void InjectMouseEvent(const blink::WebMouseEvent& mouse_event,
@@ -585,11 +581,8 @@ void InputHandler::DispatchMouseEvent(
     }
     wheel_event->delta_x = static_cast<float>(-delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(-delta_y.fromJust());
-    if (base::FeatureList::IsEnabled(
-            features::kTouchpadAndWheelScrollLatching)) {
-      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
-      wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
-    }
+    wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
+    wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
   } else {
     mouse_event.reset(new blink::WebMouseEvent(type, modifiers, timestamp));
   }
@@ -802,10 +795,7 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     event.reset(wheel_event);
     wheel_event->delta_x = static_cast<float>(delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(delta_y.fromJust());
-    if (base::FeatureList::IsEnabled(
-            features::kTouchpadAndWheelScrollLatching)) {
-      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
-    }
+    wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
   } else {
     mouse_event = new blink::WebMouseEvent(
         event_type,
@@ -828,15 +818,12 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
 
   if (wheel_event) {
     host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
-    if (base::FeatureList::IsEnabled(
-            features::kTouchpadAndWheelScrollLatching)) {
-      // Send a synthetic wheel event with phaseEnded to finish scrolling.
-      wheel_event->delta_x = 0;
-      wheel_event->delta_y = 0;
-      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-      wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
-      host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
-    }
+    // Send a synthetic wheel event with phaseEnded to finish scrolling.
+    wheel_event->delta_x = 0;
+    wheel_event->delta_y = 0;
+    wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   } else {
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
   }

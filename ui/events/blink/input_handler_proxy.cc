@@ -138,11 +138,8 @@ enum ScrollingThreadStatus {
 
 namespace ui {
 
-InputHandlerProxy::InputHandlerProxy(
-    cc::InputHandler* input_handler,
-    InputHandlerProxyClient* client,
-    bool touchpad_and_wheel_scroll_latching_enabled,
-    bool async_wheel_events_enabled)
+InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
+                                     InputHandlerProxyClient* client)
     : client_(client),
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
@@ -153,10 +150,6 @@ InputHandlerProxy::InputHandlerProxy(
       gesture_scroll_on_impl_thread_(false),
       scroll_sequence_ignored_(false),
       smooth_scroll_enabled_(false),
-      touchpad_and_wheel_scroll_latching_enabled_(
-          touchpad_and_wheel_scroll_latching_enabled),
-      async_wheel_events_enabled_(touchpad_and_wheel_scroll_latching_enabled &&
-                                  async_wheel_events_enabled),
       touch_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
@@ -165,8 +158,7 @@ InputHandlerProxy::InputHandlerProxy(
       tick_clock_(base::DefaultTickClock::GetInstance()),
       snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)) {
   DCHECK(client);
-  input_handler_->BindToClient(this,
-                               touchpad_and_wheel_scroll_latching_enabled_);
+  input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
       input_handler_->CreateScrollElasticityHelper();
   if (scroll_elasticity_helper) {
@@ -228,7 +220,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
         gesture_event.GetType() ==
             blink::WebGestureEvent::kGestureScrollUpdate &&
-        (!async_wheel_events_enabled_ || is_first_gesture_scroll_update_);
+        is_first_gesture_scroll_update_;
     if (gesture_event.GetType() ==
         blink::WebGestureEvent::kGestureScrollUpdate) {
       is_first_gesture_scroll_update_ = false;
@@ -743,10 +735,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
       input_handler_->ScrollBy(&scroll_state);
 
   if (!scroll_result.did_scroll &&
-      input_handler_->ScrollingShouldSwitchtoMainThread() &&
-      ((gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
-        touchpad_and_wheel_scroll_latching_enabled_) ||
-       gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen)) {
+      input_handler_->ScrollingShouldSwitchtoMainThread()) {
     gesture_scroll_on_impl_thread_ = false;
     client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
 

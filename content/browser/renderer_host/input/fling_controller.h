@@ -178,8 +178,6 @@ class CONTENT_EXPORT FlingController {
   // for determining if the fling start time should be re-initialized.
   bool has_fling_animation_started_;
 
-  bool send_wheel_events_nonblocking_;
-
   base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingController);

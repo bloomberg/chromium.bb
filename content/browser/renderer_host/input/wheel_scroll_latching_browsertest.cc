@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -67,26 +65,14 @@ const char kWheelEventLatchingDataURL[] = R"HTML(
       document.scrollingElement.addEventListener('wheel',
         function(e) { documentWheelEventCounter++; });
     </script>)HTML";
-
-enum WheelScrollingMode {
-  kWheelScrollingModeNone,
-  kWheelScrollLatching,
-  kAsyncWheelEvents,
-};
 }  // namespace
 
 namespace content {
 class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
  public:
-  WheelScrollLatchingBrowserTest(
-      WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
-      : wheel_scrolling_mode_(wheel_scrolling_mode),
-        wheel_scroll_latching_enabled_(wheel_scrolling_mode_ !=
-                                       kWheelScrollingModeNone) {
+  WheelScrollLatchingBrowserTest() {
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
-
-    SetFeatureList();
   }
   ~WheelScrollLatchingBrowserTest() override {}
 
@@ -141,48 +127,15 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
         shell(), "domAutomationController.send(" + script + ")", &value));
     return value;
   }
-  void SetFeatureList() {
-    if (wheel_scrolling_mode_ == kAsyncWheelEvents) {
-      feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents},
-                                     {});
-    } else if (wheel_scrolling_mode_ == kWheelScrollLatching) {
-      feature_list_.InitWithFeatures(
-          {features::kTouchpadAndWheelScrollLatching},
-          {features::kAsyncWheelEvents});
-    } else if (wheel_scrolling_mode_ == kWheelScrollingModeNone) {
-      feature_list_.InitWithFeatures({},
-                                     {features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents});
-    }
-  }
-
-  void WheelEventTargetTest();
-  void WheelEventRetargetWhenTargetRemovedTest();
-  void WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  WheelScrollingMode wheel_scrolling_mode_;
-  bool wheel_scroll_latching_enabled_;
 };
 
-class WheelScrollLatchingDisabledBrowserTest
-    : public WheelScrollLatchingBrowserTest {
- public:
-  WheelScrollLatchingDisabledBrowserTest()
-      : WheelScrollLatchingBrowserTest(kWheelScrollingModeNone) {}
-  ~WheelScrollLatchingDisabledBrowserTest() override {}
-};
-
-class AsyncWheelEventsBrowserTest : public WheelScrollLatchingBrowserTest {
- public:
-  AsyncWheelEventsBrowserTest()
-      : WheelScrollLatchingBrowserTest(kAsyncWheelEvents) {}
-  ~AsyncWheelEventsBrowserTest() override {}
-};
-
-void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
+// Start scrolling by mouse wheel on the document: the wheel event will be sent
+// to the document's scrolling element, the scrollable div will be under the
+// cursor after applying the scrolling. Continue scrolling by mouse wheel, since
+// wheel scroll latching is enabled the wheel event will be still sent to the
+// document's scrolling element and the document's scrolling element will
+// continue scrolling.
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, WheelEventTarget) {
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
@@ -228,62 +181,17 @@ void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());
 
-  if (wheel_scrolling_mode_ != kAsyncWheelEvents) {
-    // Runs until we get the InputMsgAck callback.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-              input_msg_watcher->WaitForAck());
+  while (ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop") <
+         -2 * delta_y) {
+    frame_observer.Wait();
   }
-
-  if (wheel_scroll_latching_enabled_) {
-    while (ExecuteScriptAndExtractDouble(
-               "document.scrollingElement.scrollTop") < -2 * delta_y) {
-      frame_observer.Wait();
-    }
-
-    EXPECT_EQ(0, ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"));
-    EXPECT_EQ(2, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
-    } else {  // !wheel_scroll_latching_enabled_
-      while (ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop") <
-             -delta_y)
-        frame_observer.Wait();
-
-      EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
-      EXPECT_EQ(1,
-                ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
-    }
-  }
-// Start scrolling by mouse wheel on the document: the wheel event will be sent
-// to the document's scrolling element, the scrollable div will be under the
-// cursor after applying the scrolling. Continue scrolling by mouse wheel, since
-// wheel scroll latching is enabled the wheel event will be still sent to the
-// document's scrolling element and the document's scrolling element will
-// continue scrolling.
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, WheelEventTarget) {
-  WheelEventTargetTest();
-}
-IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest, WheelEventTarget) {
-  WheelEventTargetTest();
+  EXPECT_EQ(0, ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"));
+  EXPECT_EQ(2, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
 
-// Start scrolling by mouse wheel on the document: the wheel event will be sent
-// to the document's scrolling element, the scrollable div will be under the
-// cursor after applying the scrolloffsets. Continue scrolling by mouse wheel,
-// since wheel scroll latching is disabled the wheel event will be still sent to
-// the scrollable div which is currently under the cursor. The div will start
-// scrolling.
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingDisabledBrowserTest,
-                       WheelEventTarget) {
-  WheelEventTargetTest();
-}
-
-// Tests that wheel events are retargeted if their target gets deleted in the
-// middle of scrolling.
-void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
-  // The test is valid only when wheel scroll latching is enabled.
-  if (!wheel_scroll_latching_enabled_)
-    return;
-
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
+                       WheelEventRetargetWhenTargetRemoved) {
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
@@ -334,14 +242,6 @@ void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       WheelEventRetargetWhenTargetRemoved) {
-  WheelEventRetargetWhenTargetRemovedTest();
-}
-IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
-                       WheelEventRetargetWhenTargetRemoved) {
-  WheelEventRetargetWhenTargetRemovedTest();
-}
 
 // crbug.com/777258 Flaky on Android.
 #if defined(OS_ANDROID)
@@ -351,12 +251,8 @@ IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
 #define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
   WheelScrollingRelatchWhenLatchedScrollerRemoved
 #endif
-void WheelScrollLatchingBrowserTest::
-    WheelScrollingRelatchWhenLatchedScrollerRemovedTest() {
-  // The test is valid only when wheel scroll latching is enabled.
-  if (!wheel_scroll_latching_enabled_)
-    return;
-
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
+                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(
       ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"), 0);
@@ -416,14 +312,6 @@ void WheelScrollLatchingBrowserTest::
     GiveItSomeTime();
   }
 }
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
-  WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
-}
-IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
-                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
-  WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
-}
 
 const char kWheelRetargetIfPreventedByDefault[] = R"HTML(
     data:text/html;charset=utf-8,
@@ -470,7 +358,7 @@ const char kWheelRetargetIfPreventedByDefault[] = R"HTML(
     });
     </script>)HTML";
 
-IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
                        WheelEventRetargetOnPreventDefault) {
   LoadURL(kWheelRetargetIfPreventedByDefault);
 

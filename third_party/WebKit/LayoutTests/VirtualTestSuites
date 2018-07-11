@@ -312,24 +312,6 @@
     "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf"]
   },
   {
-    "prefix": "wheelscrolllatching",
-    "base": "fast/events/wheel",
-    "args": ["--enable-features=TouchpadAndWheelScrollLatching"]
-  },
-  {
-    "prefix": "wheelscrolllatching",
-    "base": "fast/compositor-wheel-scroll-latching/animated-scroll",
-    "args": ["--enable-features=TouchpadAndWheelScrollLatching",
-             "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "wheelscrolllatching",
-    "base": "fast/compositor-wheel-scroll-latching/non-animated-scroll",
-    "args": ["--enable-features=TouchpadAndWheelScrollLatching",
-             "--enable-threaded-compositing",
-             "--disable-smooth-scrolling"]
-  },
-  {
     "prefix": "scalefactor150",
     "base": "fast/events/synthetic-events",
     "args": ["--force-device-scale-factor=1.5"]

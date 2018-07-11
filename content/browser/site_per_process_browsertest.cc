@@ -1195,22 +1195,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             ->GetFrameTree()
                             ->root();
   ASSERT_EQ(1U, root->child_count());
-  RenderWidgetHost* root_rwh =
-      root->current_frame_host()->GetRenderWidgetHost();
 
   FrameTreeNode* child_iframe_node = root->child_at(0);
 
   RenderWidgetHost* child_rwh =
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
 
-  RenderWidgetHostViewBase* child_rwhv =
-      static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
-
-  // If wheel scroll latching is enabled, the fling start won't bubble since
-  // its corresponding GSB hasn't bubbled.
+  // The fling start won't bubble since its corresponding GSB hasn't bubbled.
   InputEventAckWaiter gesture_fling_start_ack_observer(
-      (child_rwhv->wheel_scroll_latching_enabled() ? child_rwh : root_rwh),
-      blink::WebInputEvent::kGestureFlingStart);
+      child_rwh, blink::WebInputEvent::kGestureFlingStart);
 
   WaitForHitTestDataOrChildSurfaceReady(
       child_iframe_node->current_frame_host());
@@ -1345,17 +1338,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   scroll_event.has_precise_scrolling_deltas = true;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
-  if (rwhv_parent->wheel_scroll_latching_enabled()) {
-    // When scroll latching is enabled the event router sends wheel events of a
-    // single scroll sequence to the target under the first wheel event. Send a
-    // wheel end event to the current target view before sending a wheel event
-    // to a different one.
-    scroll_event.delta_y = 0.0f;
-    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    scroll_event.dispatch_type =
-        blink::WebInputEvent::DispatchType::kEventNonBlocking;
-    rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  }
+  // The event router sends wheel events of a single scroll sequence to the
+  // target under the first wheel event. Send a wheel end event to the current
+  // target view before sending a wheel event to a different one.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  scroll_event.dispatch_type =
+      blink::WebInputEvent::DispatchType::kEventNonBlocking;
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure that the view position is propagated to the child properly.
   filter->WaitForRect();
@@ -1388,17 +1378,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
     update_rect = filter->last_rect();
   }
 
-  if (rwhv_parent->wheel_scroll_latching_enabled()) {
-    // When scroll latching is enabled the event router sends wheel events of a
-    // single scroll sequence to the target under the first wheel event. Send a
-    // wheel end event to the current target view before sending a wheel event
-    // to a different one.
-    scroll_event.delta_y = 0.0f;
-    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    scroll_event.dispatch_type =
-        blink::WebInputEvent::DispatchType::kEventNonBlocking;
-    rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  }
+  // The event router sends wheel events of a single scroll sequence to the
+  // target under the first wheel event. Send a wheel end event to the current
+  // target view before sending a wheel event to a different one.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  scroll_event.dispatch_type =
+      blink::WebInputEvent::DispatchType::kEventNonBlocking;
+  rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->ResetRectRunLoop();
   // Once we've sent a wheel to the nested iframe that we expect to turn into
@@ -1417,17 +1404,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
-  if (rwhv_parent->wheel_scroll_latching_enabled()) {
-    // When scroll latching is enabled the event router sends wheel events of a
-    // single scroll sequence to the target under the first wheel event. Send a
-    // wheel end event to the current target view before sending a wheel event
-    // to a different one.
-    scroll_event.delta_y = 0.0f;
-    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    scroll_event.dispatch_type =
-        blink::WebInputEvent::DispatchType::kEventNonBlocking;
-    rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  }
+  // The event router sends wheel events of a single scroll sequence to the
+  // target under the first wheel event. Send a wheel end event to the current
+  // target view before sending a wheel event to a different one.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  scroll_event.dispatch_type =
+      blink::WebInputEvent::DispatchType::kEventNonBlocking;
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure ensuing offset change is received, and then reset the filter.
   filter->WaitForRect();
@@ -1739,15 +1723,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebInputEvent::kGestureScrollBegin);
 
   std::unique_ptr<ScrollObserver> scroll_observer;
-  if (root_view->wheel_scroll_latching_enabled()) {
-    // All GSU events will be wrapped between a single GSB-GSE pair. The
-    // expected delta value is equal to summation of all scroll update deltas.
-    scroll_observer = std::make_unique<ScrollObserver>(0, 15);
-  } else {
-    // Each GSU will be wrapped betweeen its own GSB-GSE pair. The expected
-    // delta value is the delta of the first GSU event.
-    scroll_observer = std::make_unique<ScrollObserver>(0, 5);
-  }
+
+  // All GSU events will be wrapped between a single GSB-GSE pair. The expected
+  // delta value is equal to summation of all scroll update deltas.
+  scroll_observer = std::make_unique<ScrollObserver>(0, 15);
+
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       scroll_observer.get());
 
@@ -1770,31 +1750,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   ack_observer.Wait();
 
-  // When wheel scroll latching is disabled, each wheel event will have its own
-  // complete scroll seqeunce.
-  if (!root_view->wheel_scroll_latching_enabled())
-    scroll_observer->Wait();
-
-  // Send 10 wheel events with delta_y = 1 to the nested oopif. When scroll
-  // latching is disabled, each wheel event will have its own scroll sequence.
+  // Send 10 wheel events with delta_y = 1 to the nested oopif.
   scroll_event.delta_y = 1.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
-  for (int i = 0; i < 10; i++) {
-    if (!root_view->wheel_scroll_latching_enabled())
-      scroll_observer->Reset(0, 1);
+  for (int i = 0; i < 10; i++)
     rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-    if (!root_view->wheel_scroll_latching_enabled())
-      scroll_observer->Wait();
-  }
 
-  // Send a wheel end event to complete the scrolling sequence when wheel scroll
-  // latching is enabled.
-  if (root_view->wheel_scroll_latching_enabled()) {
-    scroll_event.delta_y = 0.0f;
-    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-    scroll_observer->Wait();
-  }
+  // Send a wheel end event to complete the scrolling sequence.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  scroll_observer->Wait();
 }
 
 #if defined(OS_CHROMEOS)
@@ -1848,13 +1814,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.has_precise_scrolling_deltas = true;
   child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
-  // Send a wheel end event to complete the scrolling sequence when wheel scroll
-  // latching is enabled.
-  if (root_view->wheel_scroll_latching_enabled()) {
-    scroll_event.delta_y = 0.0f;
-    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  }
+  // Send a wheel end event to complete the scrolling sequence.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   scroll_observer.Wait();
 }

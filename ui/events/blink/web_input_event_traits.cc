@@ -181,9 +181,7 @@ WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
   return scoped_event;
 }
 
-bool WebInputEventTraits::ShouldBlockEventStream(
-    const WebInputEvent& event,
-    bool wheel_scroll_latching_enabled) {
+bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
   switch (event.GetType()) {
     case WebInputEvent::kContextMenu:
     case WebInputEvent::kGestureScrollEnd:
@@ -196,7 +194,7 @@ bool WebInputEventTraits::ShouldBlockEventStream(
       return false;
 
     case WebInputEvent::kGestureScrollBegin:
-      return wheel_scroll_latching_enabled;
+      return true;
 
     // TouchCancel and TouchScrollStarted should always be non-blocking.
     case WebInputEvent::kTouchCancel:

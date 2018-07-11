@@ -1347,9 +1347,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         // the GFS are directly injected to RWHI rather than being generated
         // from wheel events in MouseWheelEventQueue.
         is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
-      } else if (GetView()->wheel_scroll_latching_enabled()) {
-        // When wheel scroll latching is enabled, no GSE is sent before GFS, so
-        // is_in_gesture_scroll must be true.
+      } else {
+        // No GSE is sent before GFS, so is_in_gesture_scroll must be true.
         // TODO(sahel): This often gets tripped on Debug builds in ChromeOS
         // indicating some kind of gesture event ordering race.
         // https://crbug.com/821237.
@@ -1363,12 +1362,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         // and send a wheel event with phaseEnded. MouseWheelEventQueue will
         // process the wheel event to generate and send a GSE which shows the
         // end of a scroll sequence.
-      } else {  // !GetView()->IsInVR() &&
-                // !GetView()->wheel_scroll_latching_enabled()
-
-        // When wheel scroll latching is disabled a GSE is sent before a GFS.
-        // The GSE has already finished the scroll sequence.
-        DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()]);
       }
 
       is_in_touchpad_gesture_fling_ = true;

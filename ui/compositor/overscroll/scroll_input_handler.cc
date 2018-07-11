@@ -35,8 +35,7 @@ ScrollInputHandler::ScrollInputHandler(
     const base::WeakPtr<cc::InputHandler>& input_handler)
     : input_handler_weak_ptr_(input_handler) {
   DCHECK(input_handler_weak_ptr_);
-  input_handler_weak_ptr_->BindToClient(
-      this, false /* wheel_scroll_latching_enabled */);
+  input_handler_weak_ptr_->BindToClient(this);
 }
 
 ScrollInputHandler::~ScrollInputHandler() {

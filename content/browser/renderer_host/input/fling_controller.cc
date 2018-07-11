@@ -8,7 +8,6 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/fling_booster.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
@@ -44,10 +43,6 @@ FlingController::FlingController(
       touchscreen_tap_suppression_controller_(
           config.touchscreen_tap_suppression_config),
       fling_in_progress_(false),
-      send_wheel_events_nonblocking_(
-          base::FeatureList::IsEnabled(
-              features::kTouchpadAndWheelScrollLatching) &&
-          base::FeatureList::IsEnabled(features::kAsyncWheelEvents)),
       weak_ptr_factory_(this) {
   DCHECK(gesture_event_queue);
   DCHECK(event_sender_client);
@@ -265,15 +260,8 @@ void FlingController::GenerateAndSendWheelEvents(
   synthetic_wheel.event.SetPositionInWidget(current_fling_parameters_.point);
   synthetic_wheel.event.SetPositionInScreen(
       current_fling_parameters_.global_point);
-  // Send wheel end events nonblocking since they have zero delta and are not
-  // sent to JS.
-  if (phase == blink::WebMouseWheelEvent::kPhaseEnded) {
-    synthetic_wheel.event.dispatch_type = WebInputEvent::kEventNonBlocking;
-  } else {
-    synthetic_wheel.event.dispatch_type = send_wheel_events_nonblocking_
-                                              ? WebInputEvent::kEventNonBlocking
-                                              : WebInputEvent::kBlocking;
-  }
+  // Send wheel events nonblocking.
+  synthetic_wheel.event.dispatch_type = WebInputEvent::kEventNonBlocking;
 
   event_sender_client_->SendGeneratedWheelEvent(synthetic_wheel);
 }

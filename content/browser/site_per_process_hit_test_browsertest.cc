@@ -2610,12 +2610,10 @@ class SitePerProcessMouseWheelHitTestBrowserTest
         web_contents()->GetRenderWidgetHostView());
     set_rwhv_root(rwhv_root);
 
-    if (rwhv_root->wheel_scroll_latching_enabled()) {
-      // Set the wheel scroll latching timeout to a large value to make sure
-      // that the timer doesn't expire for the duration of the test.
-      rwhv_root->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
-          TestTimeouts::action_max_timeout());
-    }
+    // Set the wheel scroll latching timeout to a large value to make sure
+    // that the timer doesn't expire for the duration of the test.
+    rwhv_root->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+        TestTimeouts::action_max_timeout());
 
     InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
                                blink::WebInputEvent::kMouseWheel);
@@ -2630,19 +2628,13 @@ class SitePerProcessMouseWheelHitTestBrowserTest
 
     SendMouseWheel(pos);
 
-    // If async_wheel_events is disabled, this time only the wheel handler
-    // fires, since even numbered scrolls are prevent-defaulted. If it is
-    // enabled, then this wheel event will be sent non-blockingly and won't be
-    // cancellable.
+    // Even though even number events are prevented by default since the first
+    // wheel event is not prevented by default, the rest of the wheel events
+    // will be handled nonblocking and the scroll will happen.
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     EXPECT_EQ("\"wheel: 2\"", reply);
-    if (base::FeatureList::IsEnabled(features::kAsyncWheelEvents) &&
-        base::FeatureList::IsEnabled(
-            features::kTouchpadAndWheelScrollLatching)) {
-      DCHECK(rwhv_root->wheel_scroll_latching_enabled());
-      EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
-      EXPECT_EQ("\"scroll: 2\"", reply);
-    }
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"scroll: 2\"", reply);
 
     SendMouseWheel(pos);
 
@@ -2658,26 +2650,16 @@ class SitePerProcessMouseWheelHitTestBrowserTest
   RenderWidgetHostViewAura* rwhv_root_;
 };
 
-// Subclass to disable wheel scroll latching in failing tests.
-// https://crbug.com/800822
-class SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled
-    : public SitePerProcessMouseWheelHitTestBrowserTest {
- public:
-  SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled() {}
-  void SetUp() override {
-    feature_list_.InitWithFeatures({},
-                                   {features::kTouchpadAndWheelScrollLatching,
-                                    features::kAsyncWheelEvents});
-    SitePerProcessMouseWheelHitTestBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(
-    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
-    MultipleSubframeWheelEventsOnMainThread) {
+// Fails on Windows official build, see // https://crbug.com/800822
+#if defined(OS_WIN)
+#define MAYBE_MultipleSubframeWheelEventsOnMainThread \
+  DISABLED_MultipleSubframeWheelEventsOnMainThread
+#else
+#define MAYBE_MultipleSubframeWheelEventsOnMainThread \
+  MultipleSubframeWheelEventsOnMainThread
+#endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
+                       MAYBE_MultipleSubframeWheelEventsOnMainThread) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_two_positioned_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2700,7 +2682,6 @@ IN_PROC_BROWSER_TEST_P(
         static_cast<RenderWidgetHostViewBase*>(
             root->child_at(frame_index)->current_frame_host()->GetView());
 
-    EXPECT_FALSE(child_rwhv->wheel_scroll_latching_enabled());
     WaitForHitTestDataOrChildSurfaceReady(
         root->child_at(frame_index)->current_frame_host());
 
@@ -2717,9 +2698,15 @@ IN_PROC_BROWSER_TEST_P(
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
 // the same page loaded in the mainframe.
-IN_PROC_BROWSER_TEST_P(
-    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
-    MainframeWheelEventsOnMainThread) {
+// Fails on Windows official build, see // https://crbug.com/800822
+#if defined(OS_WIN)
+#define MAYBE_MainframeWheelEventsOnMainThread \
+  DISABLED_MainframeWheelEventsOnMainThread
+#else
+#define MAYBE_MainframeWheelEventsOnMainThread MainframeWheelEventsOnMainThread
+#endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
+                       MAYBE_MainframeWheelEventsOnMainThread) {
   GURL main_url(
       embedded_test_server()->GetURL("/page_with_scrollable_div.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2727,9 +2714,6 @@ IN_PROC_BROWSER_TEST_P(
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   content::RenderFrameHostImpl* rfhi = root->current_frame_host();
   SetupWheelAndScrollHandlers(rfhi);
-
-  EXPECT_FALSE(
-      rfhi->GetRenderWidgetHost()->GetView()->wheel_scroll_latching_enabled());
 
   gfx::Point pos(10, 10);
 
@@ -2770,21 +2754,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
   SendMouseWheel(pos);
   waiter.Wait();
 
-  if (child_rwhv->wheel_scroll_latching_enabled())
-    EXPECT_EQ(child_rwhv, router->wheel_target_.target);
-  else
-    EXPECT_EQ(nullptr, router->wheel_target_.target);
+  EXPECT_EQ(child_rwhv, router->wheel_target_.target);
 
-  // Send a mouse wheel event to the main frame. If wheel scroll latching is
-  // enabled it will be still routed to child till the end of current scrolling
-  // sequence. Since wheel scroll latching is enabled by default, we always do
-  // sync targeting so InputEventAckWaiter is not needed here.
+  // Send a mouse wheel event to the main frame. It will be still routed to
+  // child till the end of current scrolling sequence. Since wheel scroll
+  // latching is enabled by default, we always do sync targeting so
+  // InputEventAckWaiter is not needed here.
   TestInputEventObserver child_frame_monitor(child_rwhv->GetRenderWidgetHost());
   SendMouseWheel(pos);
-  if (child_rwhv->wheel_scroll_latching_enabled())
-    EXPECT_EQ(child_rwhv, router->wheel_target_.target);
-  else
-    EXPECT_EQ(nullptr, router->wheel_target_.target);
+  EXPECT_EQ(child_rwhv, router->wheel_target_.target);
+
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
@@ -3195,18 +3174,16 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* expected_target) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
-  if (root_view_aura->wheel_scroll_latching_enabled()) {
-    // Touchpad Fling must be sent inside a gesture scroll seqeunce.
-    blink::WebGestureEvent gesture_event(
-        blink::WebGestureEvent::kGestureScrollBegin,
-        blink::WebInputEvent::kNoModifiers,
-        blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchpad);
-    gesture_event.SetPositionInWidget(gfx::PointF(gesture_point));
-    gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
-    gesture_event.data.scroll_begin.delta_y_hint = 1.0f;
-    expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
-  }
+  // Touchpad Fling must be sent inside a gesture scroll seqeunce.
+  blink::WebGestureEvent gesture_event(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
+  gesture_event.SetPositionInWidget(gfx::PointF(gesture_point));
+  gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
+  gesture_event.data.scroll_begin.delta_y_hint = 1.0f;
+  expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gesture_point,
                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
@@ -4406,11 +4383,6 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessMouseWheelHitTestBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
-INSTANTIATE_TEST_CASE_P(
-    /* no prefix */,
-    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
-    testing::Combine(testing::ValuesIn(kHitTestOption),
-                     testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessGestureHitTestBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),
