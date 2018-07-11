@@ -10,8 +10,7 @@
   const regularExpression = '1 + 1';
   const infiniteExpression = 'while (1){}';
 
-  await runtimeTestCase(regularExpression);
-  await runtimeTestCase(infiniteExpression);
+  await runtimeTestCase(infiniteExpression, 0);
   await runtimeTestCase(regularExpression);
 
   let supports = executionContext.runtimeModel.hasSideEffectSupport();
@@ -30,8 +29,7 @@
   await SourcesTestRunner.startDebuggerTestPromise();
   await SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise();
 
-  await debuggerTestCase(regularExpression);
-  await debuggerTestCase(infiniteExpression);
+  await debuggerTestCase(infiniteExpression, 0);
   await debuggerTestCase(regularExpression);
 
   supports = executionContext.runtimeModel.hasSideEffectSupport();
@@ -39,15 +37,15 @@
 
   SourcesTestRunner.completeDebuggerTest();
 
-  async function runtimeTestCase(expression) {
-    TestRunner.addResult(`\nTesting expression ${expression} with timeout: 0`);
-    const result = await executionContext.evaluate({expression, timeout: 0});
+  async function runtimeTestCase(expression, timeout) {
+    TestRunner.addResult(`\nTesting expression ${expression} with timeout: ${timeout}`);
+    const result = await executionContext.evaluate({expression, timeout});
     printDetails(result);
   }
 
-  async function debuggerTestCase(expression) {
-    TestRunner.addResult(`\nTesting expression ${expression} with timeout: 0`);
-    const result = await executionContext.debuggerModel.selectedCallFrame().evaluate({expression, timeout: 0});
+  async function debuggerTestCase(expression, timeout) {
+    TestRunner.addResult(`\nTesting expression ${expression} with timeout: ${timeout}`);
+    const result = await executionContext.debuggerModel.selectedCallFrame().evaluate({expression, timeout});
     printDetails(result);
   }
 
