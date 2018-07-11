@@ -204,6 +204,7 @@ bool IsUntrustedSymantecCert(const X509Certificate& cert) {
   const base::Time& start = cert.valid_start();
   if (start.is_max() || start.is_null())
     return true;
+
   // Certificates issued on/after 2017-12-01 00:00:00 UTC are no longer
   // trusted.
   const base::Time kSymantecDeprecationDate =
@@ -618,7 +619,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
   if (!(flags & CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT) &&
       IsLegacySymantecCert(verify_result->public_key_hashes)) {
-    if (IsUntrustedSymantecCert(*verify_result->verified_cert)) {
+    if (base::FeatureList::IsEnabled(kLegacySymantecPKIEnforcement) ||
+        IsUntrustedSymantecCert(*verify_result->verified_cert)) {
       verify_result->cert_status |= CERT_STATUS_SYMANTEC_LEGACY;
       if (rv == OK || IsCertificateError(rv))
         rv = MapCertStatusToNetError(verify_result->cert_status);
@@ -907,5 +909,9 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
 // static
 const base::Feature CertVerifyProc::kSHA1LegacyMode{
     "SHA1LegacyMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// static
+const base::Feature CertVerifyProc::kLegacySymantecPKIEnforcement{
+    "LegacySymantecPKI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace net
