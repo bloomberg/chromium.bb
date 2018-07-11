@@ -434,6 +434,9 @@ class TabManager : public LifecycleUnitObserver,
   // LifecycleUnitSourceObserver:
   void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
 
+  // Indicates if TabManager should proactively discard tabs.
+  bool ShouldProactivelyDiscardTabs();
+
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
 

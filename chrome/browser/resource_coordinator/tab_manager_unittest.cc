@@ -49,6 +49,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/network_change_notifier.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -111,6 +112,17 @@ enum TestIndicies {
   kInternalPage,
 };
 
+// Helper class to simulate being offline. NetworkChangeNotifier is a
+// singleton, making this instance is actually globally accessible. Users of
+// this class should first create a net::NetworkChangeNotifier::DisableForTest
+// object to allow the creation of this new NetworkChangeNotifier.
+class FakeOfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  ConnectionType GetCurrentConnectionType() const override {
+    return NetworkChangeNotifier::CONNECTION_NONE;
+  }
+};
+
 }  // namespace
 
 class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
@@ -131,7 +143,7 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
         ->NavigateAndCommit(GURL("https://www.example.com"));
 
     base::RepeatingClosure run_loop_cb = base::BindRepeating(
-       &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
+        &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
 
     testing::WaitForLocalDBEntryToBeInitialized(web_contents.get(),
                                                 run_loop_cb);
@@ -1506,6 +1518,32 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kFreezeTimeout);
 
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       NoProactiveDiscardWhenOffline) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Simulate being offline.
+  net::NetworkChangeNotifier::DisableForTest disable_for_test;
+  FakeOfflineNetworkChangeNotifier fake_offline_state;
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+
+  task_runner_->FastForwardBy(kLowOccludedTimeout);
+
+  // The background tab shouldn't have been discarded while offline.
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }
