@@ -1152,13 +1152,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     public void onUrlFocusChange(boolean hasFocus) {
         mToolbar.onUrlFocusChange(hasFocus);
 
+        if (hasFocus) mOmniboxStartupMetrics.onUrlBarFocused();
+
         if (mFindToolbarManager != null && hasFocus) mFindToolbarManager.hideToolbar();
 
         if (mControlsVisibilityDelegate == null) return;
         if (hasFocus) {
             mFullscreenFocusToken = mControlsVisibilityDelegate
                     .showControlsPersistentAndClearOldToken(mFullscreenFocusToken);
-            mOmniboxStartupMetrics.onUrlBarFocused();
         } else {
             mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenFocusToken);
             mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
