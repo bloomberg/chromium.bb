@@ -289,6 +289,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // whitelist current site.
   bool show_change_password_buttons_;
 
+  base::TimeTicks start_time_;
+  bool did_perform_action_;
+
   DISALLOW_COPY_AND_ASSIGN(PageInfo);
 };
 

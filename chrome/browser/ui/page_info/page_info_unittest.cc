@@ -983,6 +983,71 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
   }
 }
 
+// Tests that the duration of time the PageInfo is open is recorded for pages
+// with various security levels.
+TEST_F(PageInfoTest, TimeOpenMetrics) {
+  struct TestCase {
+    const std::string url;
+    const security_state::SecurityLevel security_level;
+    const std::string security_level_name;
+    const PageInfo::PageInfoAction action;
+  };
+
+  const std::string kHistogramPrefix("Security.PageInfo.TimeOpen.");
+
+  const TestCase kTestCases[] = {
+      // PAGE_INFO_COUNT used as shorthand for "take no action".
+      {"https://example.test", security_state::SECURE, "SECURE",
+       PageInfo::PAGE_INFO_COUNT},
+      {"https://example.test", security_state::EV_SECURE, "EV_SECURE",
+       PageInfo::PAGE_INFO_COUNT},
+      {"http://example.test", security_state::NONE, "NONE",
+       PageInfo::PAGE_INFO_COUNT},
+      {"https://example.test", security_state::SECURE, "SECURE",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {"https://example.test", security_state::EV_SECURE, "EV_SECURE",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {"http://example.test", security_state::NONE, "NONE",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL(test.url);
+    security_info_.security_level = test.security_level;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.security_level_name, 0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "Action." + test.security_level_name, 0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "NoAction." + test.security_level_name, 0);
+
+    PageInfo* test_page_info = page_info();
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      test_page_info->RecordPageInfoAction(test.action);
+    }
+    ClearPageInfo();
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.security_level_name, 1);
+
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "Action." + test.security_level_name, 1);
+    } else {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "NoAction." + test.security_level_name, 1);
+    }
+  }
+
+  // PageInfoTest expects a valid PageInfo instance to exist at end of test.
+  ResetMockUI();
+  SetDefaultUIExpectations(mock_ui());
+  page_info();
+}
+
 // Tests that the SubresourceFilter setting is omitted correctly.
 TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   auto showing_setting = [](const PermissionInfoList& permissions) {
