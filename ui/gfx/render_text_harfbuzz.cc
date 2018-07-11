@@ -809,8 +809,8 @@ RangeF TextRunHarfBuzz::GetGraphemeSpanForCharRange(
   DCHECK(!char_range.is_reversed());
   DCHECK(range.Contains(char_range));
   size_t left_index = char_range.start();
-  size_t right_index = gfx::UTF16OffsetToIndex(render_text->GetDisplayText(),
-                                               char_range.end(), -1);
+  size_t right_index =
+      UTF16OffsetToIndex(render_text->GetDisplayText(), char_range.end(), -1);
   DCHECK_LE(left_index, right_index);
   if (is_rtl)
     std::swap(left_index, right_index);
@@ -902,28 +902,44 @@ namespace {
 
 // Input for the stateless implementation of ShapeRunWithFont.
 struct ShapeRunWithFontInput {
-  ShapeRunWithFontInput(const base::string16& text,
+  ShapeRunWithFontInput(const base::string16& full_text,
                         sk_sp<SkTypeface> skia_face,
                         FontRenderParams render_params,
                         int font_size,
-                        gfx::Range range,
+                        Range full_range,
                         UScriptCode script,
                         bool is_rtl,
                         bool obscured,
                         float glyph_width_for_test,
                         int glyph_spacing,
                         bool subpixel_rendering_suppressed)
-      : text(text),
-        skia_face(skia_face),
+      : skia_face(skia_face),
         render_params(render_params),
-        range(range),
         script(script),
         font_size(font_size),
         glyph_spacing(glyph_spacing),
         glyph_width_for_test(glyph_width_for_test),
         is_rtl(is_rtl),
         obscured(obscured),
-        subpixel_rendering_suppressed(subpixel_rendering_suppressed) {}
+        subpixel_rendering_suppressed(subpixel_rendering_suppressed) {
+    // hb_buffer_add_utf16 will read the previous and next 5 unicode characters
+    // (which can have a maximum length of 2 uint16_t). Read the previous and
+    // next 10 uint16_ts to ensure that we capture all of this context.
+    constexpr size_t kContextSize = 10;
+    size_t context_start = full_range.start() < kContextSize
+                               ? 0
+                               : full_range.start() - kContextSize;
+    size_t context_end =
+        std::min(full_text.length(), full_range.end() + kContextSize);
+    range = Range(full_range.start() - context_start,
+                  full_range.end() - context_start);
+    text = full_text.substr(context_start, context_end - context_start);
+
+    // Pre-compute the hash to avoid having to re-hash text at every comparison.
+    // Attempt to minimize collisions by including the font and text in the
+    // hash.
+    hash = (uintptr_t)skia_face.get() ^ base::Hash(text);
+  }
 
   bool operator==(const ShapeRunWithFontInput& other) const {
     return text == other.text && skia_face == other.skia_face &&
@@ -938,17 +954,12 @@ struct ShapeRunWithFontInput {
 
   struct Hash {
     size_t operator()(const ShapeRunWithFontInput& key) const {
-      return base::Hash(key.text) ^ (key.range.start() << 8) ^
-             (key.range.end() << 16);
+      return key.hash;
     }
   };
 
-  // Note that only |range| and some nearby context is needed from |text|, so
-  // it is possible to use a smaller substring of |text|.
-  base::string16 text;
   sk_sp<SkTypeface> skia_face;
   FontRenderParams render_params;
-  gfx::Range range;
   UScriptCode script;
   int font_size;
   int glyph_spacing;
@@ -956,16 +967,39 @@ struct ShapeRunWithFontInput {
   bool is_rtl;
   bool obscured;
   bool subpixel_rendering_suppressed;
+
+  // The parts of the input text that may be read by hb_buffer_add_utf16.
+  base::string16 text;
+  // The conversion of the input range to a range within |text|.
+  Range range;
+  // The hash is cached to avoid repeated calls.
+  size_t hash = 0;
 };
 
 // Output for the stateless implementation of ShapeRunWithFont.
 struct ShapeRunWithFontOutput {
+  // Move the results computed to a TextRunHarfBuzz. This operation is
+  // destructive.
+  void ApplyToRun(internal::TextRunHarfBuzz* run);
+
   std::vector<uint16_t> glyphs;
   std::vector<SkPoint> positions;
+  // Note that |glyph_to_char| is indexed with the input range at 0, while the
+  // run's |glyph_to_char| is indexed with the start of the input text at 0.
   std::vector<uint32_t> glyph_to_char;
   size_t glyph_count = 0;
   float width = 0;
 };
+
+void ShapeRunWithFontOutput::ApplyToRun(internal::TextRunHarfBuzz* run) {
+  run->glyph_count = glyph_count;
+  run->glyphs = std::move(glyphs);
+  run->glyph_to_char = std::move(glyph_to_char);
+  for (size_t i = 0; i < run->glyph_to_char.size(); ++i)
+    run->glyph_to_char[i] += run->range.start();
+  run->positions = std::move(positions);
+  run->width = width;
+}
 
 // An MRU cache of the results from calling ShapeRunWithFont. Use the same
 // maximum cache size as is used in blink::ShapeCache.
@@ -980,7 +1014,7 @@ class ShapeRunCache : public ShapeRunCacheBase {
 
 void ShapeRunWithFont(const ShapeRunWithFontInput& in,
                       ShapeRunWithFontOutput* out) {
-  TRACE_EVENT0("ui", "RenderTextHarfBuzz::(internal)::ShapeRunWithFont");
+  TRACE_EVENT0("ui", "RenderTextHarfBuzz::ShapeRunWithFontInternal");
 
   hb_font_t* harfbuzz_font =
       CreateHarfBuzzFont(in.skia_face, SkIntToScalar(in.font_size),
@@ -989,10 +1023,13 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
   // buffer holds our text, run information to be used by the shaping engine,
   // and the resulting glyph data.
-  const base::string16& text = in.text;
   hb_buffer_t* buffer = hb_buffer_create();
-  hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16_t*>(text.c_str()),
-                      text.length(), in.range.start(), in.range.length());
+  // Note that the value of the |item_offset| argument (here specified as
+  // |in.range.start()|) does affect the result, so we will have to adjust
+  // the computed offsets.
+  hb_buffer_add_utf16(buffer,
+                      reinterpret_cast<const uint16_t*>(in.text.c_str()),
+                      in.text.length(), in.range.start(), in.range.length());
   hb_buffer_set_script(buffer, ICUScriptToHBScript(in.script));
   hb_buffer_set_direction(buffer,
                           in.is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
@@ -1027,7 +1064,8 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   for (size_t i = 0; i < out->glyph_count; ++i) {
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
     out->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
-    out->glyph_to_char[i] = infos[i].cluster;
+    DCHECK_GE(infos[i].cluster, in.range.start());
+    out->glyph_to_char[i] = infos[i].cluster - in.range.start();
     const SkScalar x_offset =
         force_zero_offset ? 0
                           : HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
@@ -1355,8 +1393,7 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
             run.GetGraphemeSpanForCharRange(this, intersection);
         int start_x = std::ceil(selected_span.start() - line_start_x);
         int end_x = std::ceil(selected_span.end() - line_start_x);
-        gfx::Rect rect(start_x, 0, end_x - start_x,
-                       std::ceil(line.size.height()));
+        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
         rects.push_back(rect + GetLineOffset(line_index));
       }
     }
@@ -1791,9 +1828,13 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
       glyph_spacing(), subpixel_rendering_suppressed());
   internal::ShapeRunWithFontOutput out;
 
-  // internal::ShapeRunWithFont can be extremely slow, so use cached results
-  // if possible.
-  if (base::MessageLoopCurrentForUI::IsSet()) {
+  // ShapeRunWithFont can be extremely slow, so use cached results if possible.
+  // Only do this on the UI thread, to avoid synchronization overhead (and
+  // because almost all calls are on the UI thread. Also avoid caching long
+  // strings, to avoid blowing up the cache size.
+  constexpr size_t kMaxRunLengthToCache = 25;
+  if (base::MessageLoopCurrentForUI::IsSet() &&
+      run->range.length() <= kMaxRunLengthToCache) {
     static base::NoDestructor<internal::ShapeRunCache> cache;
     auto found = cache.get()->Get(in);
     if (found == cache.get()->end()) {
@@ -1805,12 +1846,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   } else {
     internal::ShapeRunWithFont(in, &out);
   }
-
-  run->glyph_count = out.glyph_count;
-  run->glyphs = std::move(out.glyphs);
-  run->glyph_to_char = std::move(out.glyph_to_char);
-  run->positions = std::move(out.positions);
-  run->width = out.width;
+  out.ApplyToRun(run);
   return true;
 }
 
