@@ -351,8 +351,13 @@ class MODULES_EXPORT BaseAudioContext
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
 
+  const String& Uuid() const { return uuid_; }
+
  private:
   friend class AudioContextAutoplayTest;
+
+  // Unique ID for each context.
+  const String uuid_;
 
   bool is_cleared_;
   void Clear();
