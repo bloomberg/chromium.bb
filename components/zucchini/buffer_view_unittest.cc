@@ -194,10 +194,10 @@ TEST_F(BufferViewTest, CoversArray) {
 
   EXPECT_TRUE(view.covers_array(0, 0, bytes_.size()));
   EXPECT_TRUE(view.covers_array(bytes_.size() - 1, 0, bytes_.size()));
-  EXPECT_FALSE(view.covers_array(bytes_.size(), 0, bytes_.size()));
+  EXPECT_TRUE(view.covers_array(bytes_.size(), 0, bytes_.size()));
   EXPECT_TRUE(view.covers_array(0, 0, 0x10000));
   EXPECT_TRUE(view.covers_array(bytes_.size() - 1, 0, 0x10000));
-  EXPECT_FALSE(view.covers_array(bytes_.size(), 0, 0x10000));
+  EXPECT_TRUE(view.covers_array(bytes_.size(), 0, 0x10000));
 
   EXPECT_FALSE(view.covers_array(0, 1, bytes_.size() + 1));
   EXPECT_FALSE(view.covers_array(0, 2, bytes_.size()));
@@ -206,7 +206,7 @@ TEST_F(BufferViewTest, CoversArray) {
   EXPECT_FALSE(view.covers_array(1, bytes_.size(), 1));
 
   EXPECT_FALSE(view.covers_array(bytes_.size(), 1, 1));
-  EXPECT_FALSE(view.covers_array(bytes_.size(), 0, 1));
+  EXPECT_TRUE(view.covers_array(bytes_.size(), 0, 1));
   EXPECT_FALSE(view.covers_array(0, 0x10000, 0x10000));
 }
 
