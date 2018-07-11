@@ -53,7 +53,8 @@ zx::handle CloneHandle(const zx::handle& handle) {
 
   zx::handle dupe;
   zx_status_t result = handle.duplicate(ZX_RIGHT_SAME_RIGHTS, &dupe);
-  ZX_DLOG_IF(ERROR, result != ZX_OK, result) << "zx_duplicate_handle";
+  if (result != ZX_OK)
+    ZX_DLOG(ERROR, result) << "zx_duplicate_handle";
   return std::move(dupe);
 }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
