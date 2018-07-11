@@ -99,13 +99,6 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     std::move(data_callback_).Run();
   }
 
-  // TODO(mamir) : Check if this is still needed.
-  void InitializeToReadyState() {
-    if (!data_callback_.is_null()) {
-      OnCommitDataLoaded();
-    }
-  }
-
   base::OnceClosure GetDataCallback() { return std::move(data_callback_); }
 
   void SetInitialSyncDone(bool is_done) {
@@ -203,7 +196,6 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState() {
     InitializeToMetadataLoaded();
-    bridge()->InitializeToReadyState();
     OnSyncStarting();
   }
 
@@ -1709,6 +1701,30 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, GarbageCollectionByItemLimit) {
   EXPECT_EQ(2U, db().metadata_count());
   EXPECT_EQ(3U, db().data_count());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldDeleteMetadataWhenCacheGuidMismatch) {
+  // Commit item.
+  InitializeToReadyState();
+  WriteItemAndAck(kKey1, kValue1);
+  // Reset the processor to simulate a restart.
+  ResetState(/*keep_db=*/true);
+
+  // A new processor loads the metadata after changing the cache GUID.
+  bridge()->SetInitialSyncDone(true);
+
+  std::unique_ptr<MetadataBatch> metadata_batch = db().CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_cache_guid("WRONG_CACHE_GUID");
+  metadata_batch->SetModelTypeState(model_type_state);
+
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  OnSyncStarting();
+
+  // Upon a mismatch, metadata should have been cleared.
+  EXPECT_EQ(0U, db().metadata_count());
 }
 
 class CommitOnlyClientTagBasedModelTypeProcessorTest
