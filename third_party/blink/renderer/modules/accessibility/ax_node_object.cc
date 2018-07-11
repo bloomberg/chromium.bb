@@ -30,7 +30,7 @@
 
 #include <math.h>
 
-#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"

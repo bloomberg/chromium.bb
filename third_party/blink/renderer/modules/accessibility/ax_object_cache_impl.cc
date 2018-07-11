@@ -33,7 +33,7 @@
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
-#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"

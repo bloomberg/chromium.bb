@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"

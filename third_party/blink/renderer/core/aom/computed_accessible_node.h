@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_AOM_COMPUTED_ACCESSIBLE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_AOM_COMPUTED_ACCESSIBLE_NODE_H_
 
 #include "third_party/blink/public/platform/web_computed_ax_tree.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -109,4 +109,4 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_AOM_COMPUTED_ACCESSIBLE_NODE_H_

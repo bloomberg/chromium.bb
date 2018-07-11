@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"

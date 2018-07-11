@@ -37,7 +37,7 @@
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
-#include "third_party/blink/renderer/core/dom/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editor.h"

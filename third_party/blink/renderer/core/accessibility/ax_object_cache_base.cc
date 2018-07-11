@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/dom/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 
 namespace blink {
 

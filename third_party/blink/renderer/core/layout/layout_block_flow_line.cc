@@ -22,7 +22,7 @@
  */
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"

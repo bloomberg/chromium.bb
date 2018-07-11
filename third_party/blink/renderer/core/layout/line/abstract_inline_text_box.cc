@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
 
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"

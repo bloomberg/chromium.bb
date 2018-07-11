@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/accessible_node.h"
-#include "third_party/blink/renderer/core/dom/accessible_node_list.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
+#include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"

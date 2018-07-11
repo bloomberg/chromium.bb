@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_list_box_option.h"
 
-#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"

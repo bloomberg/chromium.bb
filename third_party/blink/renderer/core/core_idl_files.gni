@@ -36,6 +36,9 @@ core_global_constructors_generated_idl_files =
 
 core_idl_files =
     get_path_info([
+                    "aom/accessible_node.idl",
+                    "aom/accessible_node_list.idl",
+                    "aom/computed_accessible_node.idl",
                     "animation/animation.idl",
                     "animation/animation_effect.idl",
                     "animation/animation_timeline.idl",
@@ -99,13 +102,10 @@ core_idl_files =
                     "css/cssom/style_property_map_read_only.idl",
                     "dom/abort_controller.idl",
                     "dom/abort_signal.idl",
-                    "dom/accessible_node.idl",
-                    "dom/accessible_node_list.idl",
                     "dom/attr.idl",
                     "dom/cdata_section.idl",
                     "dom/character_data.idl",
                     "dom/comment.idl",
-                    "dom/computed_accessible_node.idl",
                     "dom/dom_exception.idl",
                     "dom/dom_implementation.idl",
                     "dom/dom_string_list.idl",

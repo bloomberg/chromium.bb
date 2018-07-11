@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
