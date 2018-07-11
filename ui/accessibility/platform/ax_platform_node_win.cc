@@ -6164,6 +6164,12 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
   *old_len = 0;
   *new_len = 0;
 
+  // Do not compute for static text objects, otherwise redundant text change
+  // announcements will occur in live regions, as the parent hypertext also
+  // changes.
+  if (GetData().role == ax::mojom::Role::kStaticText)
+    return;
+
   const base::string16& old_text = old_hypertext_.hypertext;
   const base::string16& new_text = hypertext_.hypertext;
 
