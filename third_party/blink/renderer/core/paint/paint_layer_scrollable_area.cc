@@ -136,7 +136,6 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       needs_relayout_(false),
       had_horizontal_scrollbar_before_relayout_(false),
       had_vertical_scrollbar_before_relayout_(false),
-      has_paint_layer_scroll_child_(false),
       scroll_origin_changed_(false),
       scrollbar_manager_(*this),
       scroll_corner_(nullptr),

@@ -217,7 +217,6 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(
         compositor->CanBeComposited(layer) &&
         layer->DirectCompositingReasons());
-    layer->GetScrollableArea()->SetHasPaintLayerScrollChild(false);
   }
 
   bool should_recurse =
@@ -340,12 +339,6 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
   if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
-
-  if (properties.scroll_parent &&
-      properties.scroll_parent->GetScrollableArea()) {
-    properties.scroll_parent->GetScrollableArea()->SetHasPaintLayerScrollChild(
-        true);
-  }
 
   layer->UpdateAncestorDependentCompositingInputs(properties);
 }

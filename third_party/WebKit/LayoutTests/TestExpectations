@@ -67,6 +67,11 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 crbug.com/771643 compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
+# Fails due to flaws in the SPv1 architecture. Can be fixed with SPv2.
+crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
+crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
+
+
 crbug.com/771643 [ Mac Win ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]

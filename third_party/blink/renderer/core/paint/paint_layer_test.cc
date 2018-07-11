@@ -455,6 +455,81 @@ TEST_P(PaintLayerTest, HasSelfPaintingParentNotSelfPainting) {
   EXPECT_FALSE(child->HasSelfPaintingLayerDescendant());
 }
 
+TEST_P(PaintLayerTest, NonStackedWithInFlowDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='position: relative'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_TRUE(parent->IsNonStackedWithInFlowStackedDescendant());
+  EXPECT_FALSE(child->IsNonStackedWithInFlowStackedDescendant());
+}
+
+TEST_P(PaintLayerTest, NonStackedWithOutOfFlowDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='position: absolute'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_FALSE(parent->IsNonStackedWithInFlowStackedDescendant());
+  EXPECT_FALSE(child->IsNonStackedWithInFlowStackedDescendant());
+}
+
+TEST_P(PaintLayerTest, NonStackedWithNonStackedDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='overflow: auto'>
+        <div></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_FALSE(parent->IsNonStackedWithInFlowStackedDescendant());
+  EXPECT_FALSE(child->IsNonStackedWithInFlowStackedDescendant());
+}
+
+TEST_P(PaintLayerTest, NonStackedWithInFlowStackedGrandchild) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='overflow: auto'>
+        <div style='position: relative'></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_TRUE(parent->IsNonStackedWithInFlowStackedDescendant());
+  EXPECT_TRUE(child->IsNonStackedWithInFlowStackedDescendant());
+}
+
+TEST_P(PaintLayerTest, NonStackedWithOutOfFlowStackedGrandchild) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='overflow: auto'>
+      <div id='child' style='overflow: auto'>
+        <div style='position: absolute'></div>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+
+  EXPECT_FALSE(parent->IsNonStackedWithInFlowStackedDescendant());
+  EXPECT_FALSE(child->IsNonStackedWithInFlowStackedDescendant());
+}
+
 TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>

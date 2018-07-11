@@ -176,6 +176,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_compositing_layer_assignment_(false),
       descendant_needs_compositing_layer_assignment_(false),
       has_self_painting_layer_descendant_(false),
+      is_non_stacked_with_in_flow_stacked_descendant_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -742,11 +743,14 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_descendant_with_sticky_or_fixed_ = false;
     has_non_contained_absolute_position_descendant_ = false;
     has_self_painting_layer_descendant_ = false;
+    is_non_stacked_with_in_flow_stacked_descendant_ = false;
 
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
 
-    bool needs_stacking_node = GetLayoutObject().StyleRef().IsStackingContext();
+    const ComputedStyle& style = GetLayoutObject().StyleRef();
+    bool needs_stacking_node = style.IsStackingContext();
+    bool is_stacked = style.IsStacked();
 
     for (PaintLayer* child = FirstChild(); child;
          child = child->NextSibling()) {
@@ -782,6 +786,14 @@ void PaintLayer::UpdateDescendantDependentFlags() {
           has_self_painting_layer_descendant_ ||
           child->HasSelfPaintingLayerDescendant() ||
           child->IsSelfPaintingLayer();
+
+      if (!is_stacked) {
+        if (child->IsNonStackedWithInFlowStackedDescendant())
+          is_non_stacked_with_in_flow_stacked_descendant_ = true;
+        else if (child_style.IsStacked() &&
+                 !child->GetLayoutObject().IsOutOfFlowPositioned())
+          is_non_stacked_with_in_flow_stacked_descendant_ = true;
+      }
     }
 
     UpdateStackingNode(needs_stacking_node);
