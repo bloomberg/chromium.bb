@@ -412,7 +412,7 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
   int u_stride = width / 2;
   int v_stride = u_stride;
   if (libyuv::ConvertToI420(
-          static_cast<const uint8*>(hw_out_shm_->memory()), hw_encoded_size,
+          static_cast<const uint8_t*>(hw_out_shm_->memory()), hw_encoded_size,
           hw_yuv_result, y_stride, hw_yuv_result + y_stride * height, u_stride,
           hw_yuv_result + y_stride * height + u_stride * height / 2, v_stride,
           0, 0, width, height, width, height, libyuv::kRotate0,
@@ -422,7 +422,7 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
 
   uint8_t* sw_yuv_result = new uint8_t[yuv_size];
   if (libyuv::ConvertToI420(
-          static_cast<const uint8*>(sw_out_shm_->memory()), sw_encoded_size,
+          static_cast<const uint8_t*>(sw_out_shm_->memory()), sw_encoded_size,
           sw_yuv_result, y_stride, sw_yuv_result + y_stride * height, u_stride,
           sw_yuv_result + y_stride * height + u_stride * height / 2, v_stride,
           0, 0, width, height, width, height, libyuv::kRotate0,
