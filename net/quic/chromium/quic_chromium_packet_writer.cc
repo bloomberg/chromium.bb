@@ -204,8 +204,10 @@ void QuicChromiumPacketWriter::SetWritable() {
 
 void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
-  DCHECK(delegate_) << "Uninitialized delegate.";
   write_in_progress_ = false;
+  if (delegate_ == nullptr)
+    return;
+
   if (rv < 0) {
     if (MaybeRetryAfterWriteError(rv))
       return;
