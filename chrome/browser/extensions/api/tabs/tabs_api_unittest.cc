@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
+
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -67,6 +69,9 @@ class TabsApiUnitTest : public ExtensionServiceTestBase {
 };
 
 void TabsApiUnitTest::SetUp() {
+  // Force TabManager/TabLifecycleUnitSource creation.
+  g_browser_process->GetTabManager();
+
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
   content::BrowserSideNavigationSetUp();
