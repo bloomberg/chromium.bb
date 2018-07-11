@@ -29,7 +29,7 @@ RankerURLFetcher::~RankerURLFetcher() {}
 
 bool RankerURLFetcher::Request(
     const GURL& url,
-    const RankerURLFetcher::Callback& callback,
+    RankerURLFetcher::Callback callback,
     network::mojom::URLLoaderFactory* url_loader_factory) {
   // This function is not supposed to be called if the previous operation is not
   // finished.
@@ -44,7 +44,7 @@ bool RankerURLFetcher::Request(
 
   state_ = REQUESTING;
   url_ = url;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   if (url_loader_factory == nullptr)
     return false;
@@ -106,7 +106,7 @@ void RankerURLFetcher::OnSimpleLoaderComplete(
     state_ = FAILED;
   }
   simple_url_loader_.reset();
-  callback_.Run(state_ == COMPLETED, data);
+  std::move(callback_).Run(state_ == COMPLETED, data);
 }
 
 }  // namespace assist_ranker
