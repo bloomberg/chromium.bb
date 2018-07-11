@@ -1320,6 +1320,9 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);
 
+  // Whether url download should be throttled.
+  bool ShouldThrottleDownload();
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
@@ -1666,6 +1669,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
+
+  // Variable to control burst of download requests.
+  int num_burst_download_requests_ = 0;
+  base::TimeTicks burst_download_start_time_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
