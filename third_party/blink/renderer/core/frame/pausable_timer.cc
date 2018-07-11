@@ -59,9 +59,9 @@ void PausableTimer::Pause() {
   paused_ = true;
 #endif
   if (IsActive()) {
-    next_fire_interval_ = NextFireIntervalDelta();
+    next_fire_interval_ = NextFireInterval();
     DCHECK_GE(next_fire_interval_, TimeDelta());
-    repeat_interval_ = RepeatIntervalDelta();
+    repeat_interval_ = RepeatInterval();
     TimerBase::Stop();
   }
 }

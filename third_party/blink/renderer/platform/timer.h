@@ -52,12 +52,6 @@ class PLATFORM_EXPORT TimerBase {
   void Start(TimeDelta next_fire_interval,
              TimeDelta repeat_interval,
              const base::Location&);
-  void Start(double next_fire_interval,
-             double repeat_interval,
-             const base::Location& from_here) {
-    Start(TimeDelta::FromSecondsD(next_fire_interval),
-          TimeDelta::FromSecondsD(repeat_interval), from_here);
-  }
 
   void StartRepeating(TimeDelta repeat_interval, const base::Location& caller) {
     Start(repeat_interval, repeat_interval, caller);
@@ -66,9 +60,6 @@ class PLATFORM_EXPORT TimerBase {
   void StartOneShot(TimeDelta interval, const base::Location& caller) {
     Start(interval, TimeDelta(), caller);
   }
-  void StartOneShot(double interval, const base::Location& caller) {
-    StartOneShot(TimeDelta::FromSecondsD(interval), caller);
-  }
 
   // Timer cancellation is fast enough that you shouldn't have to worry
   // about it unless you're canceling tens of thousands of tasks.
@@ -76,21 +67,13 @@ class PLATFORM_EXPORT TimerBase {
   bool IsActive() const;
   const base::Location& GetLocation() const { return location_; }
 
-  TimeDelta NextFireIntervalDelta() const;
-  double NextFireInterval() const {
-    return NextFireIntervalDelta().InSecondsF();
-  }
-
-  TimeDelta RepeatIntervalDelta() const { return repeat_interval_; }
-  double RepeatInterval() const { return RepeatIntervalDelta().InSecondsF(); }
+  TimeDelta NextFireInterval() const;
+  TimeDelta RepeatInterval() const { return repeat_interval_; }
 
   void AugmentRepeatInterval(TimeDelta delta) {
     TimeTicks now = TimerCurrentTimeTicks();
     SetNextFireTime(now, std::max(next_fire_time_ - now + delta, TimeDelta()));
     repeat_interval_ += delta;
-  }
-  void AugmentRepeatInterval(double delta) {
-    AugmentRepeatInterval(TimeDelta::FromSecondsD(delta));
   }
 
   void MoveToNewTaskRunner(scoped_refptr<base::SingleThreadTaskRunner>);

@@ -115,9 +115,11 @@ void SearchInputType::StartSearchEventTimer() {
     return;
   }
 
-  // After typing the first key, we wait 0.5 seconds.
-  // After the second key, 0.4 seconds, then 0.3, then 0.2 from then on.
-  search_event_timer_.StartOneShot(max(0.2, 0.6 - 0.1 * length), FROM_HERE);
+  // After typing the first key, we wait 500ms.
+  // After the second key, 400ms, then 300, then 200 from then on.
+  unsigned step = std::min(length, 4u) - 1;
+  TimeDelta timeout = TimeDelta::FromMilliseconds(500 - 100 * step);
+  search_event_timer_.StartOneShot(timeout, FROM_HERE);
 }
 
 void SearchInputType::DispatchSearchEvent() {

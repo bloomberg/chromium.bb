@@ -26,15 +26,11 @@
 
 #include "third_party/blink/renderer/platform/timer.h"
 
-#include <limits.h>
-#include <math.h>
 #include <algorithm>
-#include <limits>
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -74,7 +70,7 @@ void TimerBase::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-TimeDelta TimerBase::NextFireIntervalDelta() const {
+TimeDelta TimerBase::NextFireInterval() const {
   DCHECK(IsActive());
   TimeTicks current = TimerCurrentTimeTicks();
   if (next_fire_time_ < current)
