@@ -51,8 +51,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
           computed_styles) override;
   protocol::Response captureSnapshot(
       std::unique_ptr<protocol::Array<String>> computed_styles,
-      std::unique_ptr<protocol::DOMSnapshot::DOMTreeSnapshot>* nodes,
-      std::unique_ptr<protocol::DOMSnapshot::LayoutTreeSnapshot>* layout,
+      std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
+          documents,
       std::unique_ptr<protocol::Array<String>>* strings) override;
 
   bool Enabled() const;
@@ -77,6 +77,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
                int index,
                const String& value);
   void SetRare(protocol::DOMSnapshot::RareBooleanData* data, int index);
+  void VisitDocument2(Document*);
   int VisitNode2(Node*, int parent_index);
 
   // Helpers for VisitContainerChildren.
@@ -139,9 +140,9 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   std::unique_ptr<protocol::Array<String>> strings_;
   WTF::HashMap<String, int> string_table_;
 
-  std::unique_ptr<protocol::DOMSnapshot::DOMTreeSnapshot> dom_tree_snapshot_;
-  std::unique_ptr<protocol::DOMSnapshot::LayoutTreeSnapshot>
-      layout_tree_snapshot_;
+  std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>
+      documents_;
+  std::unique_ptr<protocol::DOMSnapshot::DocumentSnapshot> document_;
 
   // Maps a style string vector to an index in |computed_styles_|. Used to avoid
   // duplicate entries in |computed_styles_|.
@@ -154,7 +155,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // Maps a backend node id to the url of the script (if any) that generates
   // the corresponding node.
   std::unique_ptr<OriginUrlMap> origin_url_map_;
-
+  using DocumentOrderMap = HeapHashMap<Member<Document>, int>;
+  DocumentOrderMap document_order_map_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
 
