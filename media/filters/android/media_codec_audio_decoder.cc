@@ -188,7 +188,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   input_queue_.push_back(std::make_pair(std::move(buffer), bound_decode_cb));
 
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
 }
 
 void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {

@@ -66,7 +66,7 @@ void MediaCodecLoop::OnKeyAdded() {
   if (state_ == STATE_WAITING_FOR_KEY)
     SetState(STATE_READY);
 
-  DoPendingWork();
+  ExpectWork();
 }
 
 bool MediaCodecLoop::TryFlush() {
@@ -93,6 +93,13 @@ bool MediaCodecLoop::TryFlush() {
 
   SetState(STATE_READY);
   return true;
+}
+
+void MediaCodecLoop::ExpectWork() {
+  // Start / reset the timer, since we believe that progress can be made soon,
+  // even if not immediately.
+  ManageTimer(true);
+  DoPendingWork();
 }
 
 void MediaCodecLoop::DoPendingWork() {

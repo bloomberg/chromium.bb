@@ -211,12 +211,11 @@ class MEDIA_EXPORT MediaCodecLoop {
   // FakeSingleThreadTaskRunner maintains a raw ptr to it also.
   void SetTestTickClock(const base::TickClock* test_tick_clock);
 
-  // Does the MediaCodec processing cycle: enqueues an input buffer, then
-  // dequeues output buffers.  This should be called by the client when more
-  // work becomes available, such as when new input data arrives.  If codec
-  // output buffers are freed after OnDecodedFrame returns, then this should
-  // also be called.
-  void DoPendingWork();
+  // Notify us that work can be done immediately, or in the near future.  This
+  // should be called by the client when more work becomes available, such as
+  // when new input data arrives.  If codec output buffers are freed after
+  // OnDecodedFrame returns, then this should also be called.
+  void ExpectWork();
 
   // Try to flush this media codec.  Returns true on success, false on failure.
   // Failures can result in a state change to the Error state.  If this returns
@@ -253,6 +252,11 @@ class MEDIA_EXPORT MediaCodecLoop {
     // True if we tried to enqueue this buffer before.
     bool is_pending = false;
   };
+
+  // Does the MediaCodec processing cycle: enqueues an input buffer, then
+  // dequeues output buffers.  Will restart / reset the timer if any progress is
+  // made on this call.
+  void DoPendingWork();
 
   // Enqueues one pending input buffer into MediaCodec if MediaCodec has room,
   // and if the client has any input to give us.

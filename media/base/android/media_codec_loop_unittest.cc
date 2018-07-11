@@ -94,7 +94,7 @@ class MediaCodecLoopTest : public testing::Test {
   }
 
   // Set an expectation that MCL will try to get another input / output buffer,
-  // and not get one in DoPendingWork.
+  // and not get one in ExpectWork.
   void ExpectEmptyIOLoop() {
     ExpectIsAnyInputPending(false);
     EXPECT_CALL(Codec(), DequeueOutputBuffer(_, _, _, _, _, _, _))
@@ -215,7 +215,7 @@ TEST_F(MediaCodecLoopTest, TestPendingWorkWithoutInput) {
   EXPECT_CALL(Codec(), DequeueOutputBuffer(_, _, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   WaitUntilIdle(ShouldNotBeIdle);
 }
 
@@ -226,7 +226,7 @@ TEST_F(MediaCodecLoopTest, TestPendingWorkWithInput) {
   ExpectIsAnyInputPending(true);
   EXPECT_CALL(Codec(), DequeueOutputBuffer(_, _, _, _, _, _, _)).Times(1);
   EXPECT_CALL(Codec(), DequeueInputBuffer(_, _)).Times(1);
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   WaitUntilIdle(ShouldNotBeIdle);
 }
 
@@ -241,11 +241,11 @@ TEST_F(MediaCodecLoopTest, TestPendingWorkWithOutputBuffer) {
     ExpectDequeueOutputBuffer(buf);
     ExpectOnDecodedFrame(buf);
 
-    // MCL will try again for another set of buffers before DoPendingWork()
+    // MCL will try again for another set of buffers before ExpectWork()
     // returns.  This is why we don't just leave them for WaitUntilIdle().
     ExpectEmptyIOLoop();
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   WaitUntilIdle(ShouldNotBeIdle);
 }
 
@@ -276,7 +276,7 @@ TEST_F(MediaCodecLoopTest, TestQueueEos) {
         .Times(1)
         .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   // Don't WaitUntilIdle() here.  See TestUnqueuedEos.
 }
 
@@ -303,7 +303,7 @@ TEST_F(MediaCodecLoopTest, TestQueueEosFailure) {
     EXPECT_CALL(*client_, OnDecodedEos(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*client_, OnCodecLoopError()).Times(1);
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   // Don't WaitUntilIdle() here.
 }
 
@@ -330,10 +330,10 @@ TEST_F(MediaCodecLoopTest, TestQueueInputData) {
         .Times(1)
         .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
 
-    // DoPendingWork will try again.
+    // ExpectWork will try again.
     ExpectEmptyIOLoop();
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   WaitUntilIdle(ShouldNotBeIdle);
 }
 
@@ -356,7 +356,7 @@ TEST_F(MediaCodecLoopTest, TestQueueInputDataFails) {
     ExpectInputDataQueued(false);
     EXPECT_CALL(*client_, OnCodecLoopError()).Times(1);
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   // MCL is now in the error state.
 }
 
@@ -371,7 +371,7 @@ TEST_F(MediaCodecLoopTest, TestQueueInputDataTryAgain) {
     // MCL will try for output too.
     ExpectDequeueOutputBuffer(MEDIA_CODEC_TRY_AGAIN_LATER);
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
   // Note that the client might not be allowed to change from "input pending"
   // to "no input pending" without actually being asked for input.  For now,
   // MCL doesn't assume this.
@@ -405,7 +405,7 @@ TEST_F(MediaCodecLoopTest, TestSeveralPendingIOBuffers) {
 
   ExpectEmptyIOLoop();
 
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
 }
 
 TEST_F(MediaCodecLoopTest, TestTryFlushOnJellyBeanMR2) {
@@ -440,7 +440,7 @@ TEST_F(MediaCodecLoopTest, TestOnKeyAdded) {
   {
     InSequence _s;
 
-    // First DoPendingWork()
+    // First ExpectWork()
     ExpectIsAnyInputPending(true);
     ExpectDequeueInputBuffer(input_buffer_index);
 
@@ -458,18 +458,18 @@ TEST_F(MediaCodecLoopTest, TestOnKeyAdded) {
     // the buffer we just provided.
     ExpectDequeueOutputBuffer(MEDIA_CODEC_TRY_AGAIN_LATER);
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
 
   // Try again, to be sure that MCL doesn't request more input.  Note that this
   // is also done in the above loop, but that one could be made optional.  This
-  // forces MCL to try again as part of an entirely new DoPendingWork cycle.
+  // forces MCL to try again as part of an entirely new ExpectWork cycle.
   {
     InSequence _s;
     // MCL should only try for output buffers, since it's still waiting for a
     // key to be added.
     ExpectDequeueOutputBuffer(MEDIA_CODEC_TRY_AGAIN_LATER);
   }
-  codec_loop_->DoPendingWork();
+  codec_loop_->ExpectWork();
 
   // When we add the key, MCL will DoPending work again.  This time, it should
   // succeed since the key has been added.
