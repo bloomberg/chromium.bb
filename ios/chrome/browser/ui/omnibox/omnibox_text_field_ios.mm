@@ -524,50 +524,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (CGRect)editingRectForBounds:(CGRect)bounds {
-  CGRect newBounds = [super editingRectForBounds:bounds];
-
-  if (!IsRefreshLocationBarEnabled()) {
-    // -editingRectForBounds doesn't account for rightViews that aren't flush
-    // with the right edge, it just looks at the rightView's width.  Account for
-    // the offset here.
-    CGFloat rightViewMaxX = CGRectGetMaxX([self rightViewRectForBounds:bounds]);
-    if (rightViewMaxX)
-      newBounds.size.width -= bounds.size.width - rightViewMaxX;
-
-    LayoutRect editingRectLayout =
-        LayoutRectForRectInBoundingRect(newBounds, bounds);
-    editingRectLayout.size.width -= kEditingRectWidthInset;
-    if (IsIPadIdiom()) {
-      if (!IsCompactTablet() && !self.rightView) {
-        // Normally the clear button shrinks the edit box, but if the rightView
-        // isn't set, shrink behind the mic icons.
-        editingRectLayout.size.width -= kVoiceSearchButtonWidth;
-      }
-    }
-    // Don't let the edit rect extend over the clear button.  The right view
-    // is hidden during animations, so fake its width here.
-    if (self.rightViewMode == UITextFieldViewModeNever)
-      editingRectLayout.size.width -= self.rightView.bounds.size.width;
-
-    newBounds = LayoutRectGetRect(editingRectLayout);
-  }
-
-  // The goal is to visually align the _selection label and the |self| textfield
-  // to avoid text jumping when inline autocomplete is shown or hidden.
-  CGFloat baselineDifference = kUILabelUITextfieldBaselineDeltaInPoints;
-  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
-    // On iOS 10, there is a difference between iPad and iPhone rendering.
-    baselineDifference = kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels /
-                         UIScreen.mainScreen.scale;
-  }
-
-  newBounds.origin.y -= baselineDifference;
-
-  // Position the selection view appropriately.
-  [_selection setFrame:newBounds];
-
-  newBounds.origin.y += baselineDifference;
-
+  CGRect superBounds = [super editingRectForBounds:bounds];
+  CGRect newBounds = [self adjustedEditingRectForBounds:superBounds];
+  [self layoutSelectionViewWithNewEditingRectBounds:newBounds];
   return newBounds;
 }
 
@@ -628,6 +587,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self hideTextAndCursor];
   } else if (!_selection) {
     [self showTextAndCursor];
+  }
+
+  if (_selection) {
+    // Trigger a layout of _selection label.
+    CGRect superBounds = [super editingRectForBounds:self.bounds];
+    CGRect newBounds = [self adjustedEditingRectForBounds:superBounds];
+    [self layoutSelectionViewWithNewEditingRectBounds:newBounds];
   }
 }
 
@@ -1093,6 +1059,60 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   } else {
     return -kToolbarButtonAnimationOffset;
   }
+}
+
+// Calculates editing rect from |bounds| rect by adjusting for in-bounds
+// decorations such as left/right view.
+- (CGRect)adjustedEditingRectForBounds:(CGRect)bounds {
+  CGRect newBounds = bounds;
+
+  if (!IsRefreshLocationBarEnabled()) {
+    // -editingRectForBounds doesn't account for rightViews that aren't flush
+    // with the right edge, it just looks at the rightView's width.  Account for
+    // the offset here.
+    CGFloat rightViewMaxX = CGRectGetMaxX([self rightViewRectForBounds:bounds]);
+    if (rightViewMaxX)
+      newBounds.size.width -= bounds.size.width - rightViewMaxX;
+
+    LayoutRect editingRectLayout =
+        LayoutRectForRectInBoundingRect(newBounds, bounds);
+    editingRectLayout.size.width -= kEditingRectWidthInset;
+    if (IsIPadIdiom()) {
+      if (!IsCompactTablet() && !self.rightView) {
+        // Normally the clear button shrinks the edit box, but if the rightView
+        // isn't set, shrink behind the mic icons.
+        editingRectLayout.size.width -= kVoiceSearchButtonWidth;
+      }
+    }
+    // Don't let the edit rect extend over the clear button.  The right view
+    // is hidden during animations, so fake its width here.
+    if (self.rightViewMode == UITextFieldViewModeNever)
+      editingRectLayout.size.width -= self.rightView.bounds.size.width;
+
+    newBounds = LayoutRectGetRect(editingRectLayout);
+  }
+
+  return newBounds;
+}
+
+// Aligns the selection UILabel to match the editing rect bounds. Takes iOS
+// version-specific text rendering differences into account.
+- (void)layoutSelectionViewWithNewEditingRectBounds:(CGRect)newBounds {
+  // The goal is to visually align the _selection label and the |self| textfield
+  // to avoid text jumping when inline autocomplete is shown or hidden.
+  CGFloat baselineDifference = kUILabelUITextfieldBaselineDeltaInPoints;
+  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // On iOS 10, there is a difference between iPad and iPhone rendering.
+    baselineDifference = kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels /
+                         UIScreen.mainScreen.scale;
+  }
+
+  newBounds.origin.y -= baselineDifference;
+
+  // Position the selection view appropriately.
+  [_selection setFrame:newBounds];
+
+  newBounds.origin.y += baselineDifference;
 }
 
 @end
