@@ -267,6 +267,7 @@ FAKE OUTPUT. Will be filled in later.
                  '--io-timeout', swarming_io_timeout_secs,
                  '--hard-timeout', swarming_hard_timeout_secs,
                  '--expiration', swarming_expiration_secs,
+                 '--tags=skylab:run_suite',
                  '--tags=priority:%s' % priority,
                  '--tags=build:test-build',
                  '--tags=task_name:test-build-test-suite',

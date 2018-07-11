@@ -1280,6 +1280,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
   }
   if run_skylab:
     tags['luci_project'] = 'chromiumos'
+    tags['skylab'] = 'run_suite'
 
   return {
       'swarming_server': swarming_server,
@@ -1482,7 +1483,9 @@ def AbortSkylabHWTests(build, board, debug, suite, pool=None, suite_id=''):
         'dimensions': [('os', 'Ubuntu-14.04'),
                        ('pool', SKYLAB_SUITE_BOT_POOL)],
         'print_status_updates': True,
-        'expiration_secs': _SWARMING_EXPIRATION}
+        'expiration_secs': _SWARMING_EXPIRATION,
+        'tags': {'luci_project':'chromiumos',
+                 'skylab':'abort_suite'}}
     if debug:
       logging.info('AbortSkylabHWTests would run the cmd via '
                    'swarming, cmd: %s, swarming_args: %s',
