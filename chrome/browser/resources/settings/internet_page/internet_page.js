@@ -10,8 +10,10 @@
 Polymer({
   is: 'settings-internet-page',
 
-  behaviors:
-      [I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior],
+  behaviors: [
+    I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior,
+    NetworkListenerBehavior
+  ],
 
   properties: {
     /**
@@ -78,6 +80,27 @@ Polymer({
     /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
     globalPolicy_: Object,
 
+    /** Overridden from NetworkListenerBehavior. */
+    networkListChangeSubscriberSelectors_: {
+      type: Array,
+      value: function() {
+        return [
+          'network-summary',
+          'settings-internet-detail-page',
+          'settings-internet-known-networks-page',
+          'settings-internet-subpage',
+        ];
+      }
+    },
+
+    /** Overridden from NetworkListenerBehavior. */
+    networksChangeSubscriberSelectors_: {
+      type: Array,
+      value: function() {
+        return ['network-summary', 'settings-internet-detail-page'];
+      }
+    },
+
     /**
      * List of third party VPN providers.
      * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
@@ -124,13 +147,6 @@ Polymer({
     'show-networks': 'onShowNetworks_',
   },
 
-  // chrome.networkingPrivate listeners
-  /** @private {?function(!Array<string>)} */
-  networkListChangedListener_: null,
-
-  /** @private {?function(!Array<string>)} */
-  networksChangedListener_: null,
-
   // chrome.management listeners
   /** @private {Function} */
   onExtensionAddedListener_: null,
@@ -158,16 +174,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.networkListChangedListener_ = this.networkListChangedListener_ ||
-        this.onNetworkListChanged_.bind(this);
-    this.networkingPrivate.onNetworkListChanged.addListener(
-        this.networkListChangedListener_);
-
-    this.networksChangedListener_ =
-        this.networksChangedListener_ || this.onNetworksChanged_.bind(this);
-    this.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
-
     this.onExtensionAddedListener_ =
         this.onExtensionAddedListener_ || this.onExtensionAdded_.bind(this);
     chrome.management.onInstalled.addListener(this.onExtensionAddedListener_);
@@ -191,11 +197,6 @@ Polymer({
 
   /** @override */
   detached: function() {
-    this.networkingPrivate.onNetworkListChanged.removeListener(
-        assert(this.networkListChangedListener_));
-    this.networkingPrivate.onNetworksChanged.removeListener(
-        assert(this.networksChangedListener_));
-
     chrome.management.onInstalled.removeListener(
         assert(this.onExtensionAddedListener_));
     chrome.management.onEnabled.removeListener(
@@ -447,45 +448,6 @@ Polymer({
       ProviderName: extension.name,
     };
     vpnProviders.push(newProvider);
-  },
-
-  /**
-   * This event is triggered when the list of networks changes.
-   * |networkIds| contains the ids for all visible or configured networks.
-   * networkingPrivate.onNetworkListChanged event callback.
-   * @param {!Array<string>} networkIds
-   * @private
-   */
-  onNetworkListChanged_: function(networkIds) {
-    const event = new CustomEvent('network-list-changed', {detail: networkIds});
-    this.maybeDispatchEvent_('network-summary', event);
-    this.maybeDispatchEvent_('settings-internet-detail-page', event);
-    this.maybeDispatchEvent_('settings-internet-known-networks-page', event);
-    this.maybeDispatchEvent_('settings-internet-subpage', event);
-  },
-
-  /**
-   * This event is triggered when interesting properties of a network change.
-   * |networkIds| contains the ids for networks whose properties have changed.
-   * networkingPrivate.onNetworksChanged event callback.
-   * @param {!Array<string>} networkIds
-   * @private
-   */
-  onNetworksChanged_: function(networkIds) {
-    const event = new CustomEvent('networks-changed', {detail: networkIds});
-    this.maybeDispatchEvent_('network-summary', event);
-    this.maybeDispatchEvent_('settings-internet-detail-page', event);
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  maybeDispatchEvent_: function(identifier, event) {
-    const element = this.$$(identifier);
-    if (!element)
-      return;
-    element.dispatchEvent(event);
   },
 
   /**
