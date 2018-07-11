@@ -717,9 +717,7 @@ abstract class OverlayPanelBase {
         PanelState nextState = PanelState.values()[0];
         PanelState prevState = nextState;
         for (PanelState state : PanelState.values()) {
-            if (!isValidUiState(state)) {
-                continue;
-            }
+            if (!isValidUiState(state)) continue;
             prevState = nextState;
             nextState = state;
             // The values in PanelState are ascending, they should be kept that way in order for
@@ -830,9 +828,7 @@ abstract class OverlayPanelBase {
         // Iterate over all states and find the largest one which is being
         // transitioned to/from.
         for (PanelState state : PanelState.values()) {
-            if (!isValidUiState(state)) {
-                continue;
-            }
+            if (!isValidUiState(state)) continue;
             if (panelHeight <= getPanelHeightFromState(state)) {
                 stateFound = state;
                 break;
@@ -1024,19 +1020,11 @@ abstract class OverlayPanelBase {
     }
 
     private float getBarHeightExpanded() {
-        if (isFullWidthSizePanel()) {
-            return mBarHeightExpanded;
-        } else {
-            return mBarHeightPeeking;
-        }
+        return isFullWidthSizePanel() ? mBarHeightExpanded : mBarHeightPeeking;
     }
 
     private float getBarHeightMaximized() {
-        if (isFullWidthSizePanel()) {
-            return mBarHeightMaximized;
-        } else {
-            return mBarHeightPeeking;
-        }
+        return isFullWidthSizePanel() ? mBarHeightMaximized : mBarHeightPeeking;
     }
 
     /**
