@@ -79,7 +79,7 @@ class ProfileSyncServiceBundle {
     // The client will call this callback to produce the SyncableService
     // specific to |type|.
     void SetSyncableServiceCallback(
-        const base::Callback<base::WeakPtr<syncer::SyncableService>(
+        const base::RepeatingCallback<base::WeakPtr<syncer::SyncableService>(
             syncer::ModelType type)>& get_syncable_service_callback);
 
     // The client will call this callback to produce the SyncService for the
