@@ -13,6 +13,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
@@ -133,7 +135,7 @@ void SessionSyncBridge::ScheduleGarbageCollection() {
   if (!syncing_) {
     return;
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SessionSyncBridge::DoGarbageCollection,
                                 base::AsWeakPtr(this)));
 }
@@ -313,7 +315,7 @@ SessionSyncBridge::CreateLocalSessionWriteBatch() {
     syncing_->local_data_out_of_sync = false;
     // We use PostTask() to avoid interferring with the ongoing handling of
     // local changes that triggered this function.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SessionSyncBridge::ResubmitLocalSession,
                                   base::AsWeakPtr(this)));
   }

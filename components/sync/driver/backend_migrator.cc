@@ -5,9 +5,9 @@
 #include "components/sync/driver/backend_migrator.h"
 
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -105,7 +105,7 @@ void BackendMigrator::OnConfigureDone(
   // |manager_|'s methods aren't re-entrant, and we're notified from
   // them, so post a task to avoid problems.
   SDVLOG(1) << "Posting OnConfigureDoneImpl";
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&BackendMigrator::OnConfigureDoneImpl,
                             weak_ptr_factory_.GetWeakPtr(), result));
 }

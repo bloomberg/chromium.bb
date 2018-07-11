@@ -13,10 +13,10 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type_test_util.h"
@@ -81,14 +81,14 @@ void PumpLoop() {
   // Do it this way instead of RunAllPending to pump loop exactly once
   // (necessary in the presence of timers; see comment in
   // QuitLoopNow).
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&QuitLoopNow));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&QuitLoopNow));
   RunLoop();
 }
 
 void PumpLoopFor(TimeDelta time) {
   // Allow the loop to run for the specified amount of time.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&QuitLoopNow), time);
   RunLoop();
 }
@@ -202,7 +202,7 @@ class SyncSchedulerImplTest : public testing::Test {
 
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SyncSchedulerImplTest::DoQuitLoopNow,
                               weak_ptr_factory_.GetWeakPtr()));
     RunLoop();

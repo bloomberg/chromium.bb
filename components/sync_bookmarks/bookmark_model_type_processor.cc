@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -281,7 +281,8 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
   }
   activation_context->type_processor =
       std::make_unique<syncer::ModelTypeProcessorProxy>(
-          weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+          weak_ptr_factory_.GetWeakPtr(),
+          base::SequencedTaskRunnerHandle::Get());
   std::move(start_callback_).Run(std::move(activation_context));
 }
 

@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -140,7 +139,7 @@ class SharedChangeProcessor
 
   // The frontend / UI MessageLoop this object is constructed on. May also be
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.
-  const scoped_refptr<const base::SingleThreadTaskRunner> frontend_task_runner_;
+  const scoped_refptr<const base::SequencedTaskRunner> frontend_task_runner_;
 
   // The execution sequence that all methods except the constructor, destructor,
   // and Disconnect() should be called on. Set in Connect().

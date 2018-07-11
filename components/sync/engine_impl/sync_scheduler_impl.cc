@@ -14,9 +14,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/logging.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
@@ -702,9 +702,9 @@ void SyncSchedulerImpl::TryCanaryJob() {
 }
 
 void SyncSchedulerImpl::TrySyncCycleJob() {
-  // Post call to TrySyncCycleJobImpl on current thread. Later request for
+  // Post call to TrySyncCycleJobImpl on current sequence. Later request for
   // access token will be here.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SyncSchedulerImpl::TrySyncCycleJobImpl,
                             weak_ptr_factory_.GetWeakPtr()));
 }

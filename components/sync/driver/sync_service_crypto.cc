@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/nigori.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_manager.h"
@@ -382,7 +382,7 @@ std::unique_ptr<SyncEncryptionHandler::Observer>
 SyncServiceCrypto::GetEncryptionObserverProxy() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_unique<SyncEncryptionObserverProxy>(
-      weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+      weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
 std::unique_ptr<SyncEncryptionHandler::NigoriState>

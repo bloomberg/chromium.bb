@@ -178,7 +178,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   explicit DataTypeController(ModelType type);
 
   // Allows subclasses to DCHECK that they're on the correct sequence.
-  // TODO(treib): Rename this to CalledOnValidSequence.
+  // TODO(crbug.com/846238): Rename this to CalledOnValidSequence.
   bool CalledOnValidThread() const;
 
  private:

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -120,7 +120,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
   // Initialize Processor -> Worker communication channel.
   type_processor->ConnectSync(std::make_unique<CommitQueueProxy>(
-      worker_ptr->AsWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
+      worker_ptr->AsWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 
   // Attempt migration if necessary.
   if (do_migration) {

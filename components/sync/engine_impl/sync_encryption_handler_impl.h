@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
@@ -274,7 +274,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // Notify observers when a custom passphrase is set by this device.
   void NotifyObserversOfLocalCustomPassphrase(WriteTransaction* trans);
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::ObserverList<SyncEncryptionHandler::Observer> observers_;
 

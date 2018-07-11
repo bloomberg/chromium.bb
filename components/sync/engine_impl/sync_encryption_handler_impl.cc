@@ -15,8 +15,8 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/passphrase_type.h"
@@ -224,19 +224,19 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
 SyncEncryptionHandlerImpl::~SyncEncryptionHandlerImpl() {}
 
 void SyncEncryptionHandlerImpl::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!observers_.HasObserver(observer));
   observers_.AddObserver(observer);
 }
 
 void SyncEncryptionHandlerImpl::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
 }
 
 void SyncEncryptionHandlerImpl::Init() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteNode node(&trans);
 
@@ -316,7 +316,7 @@ void SyncEncryptionHandlerImpl::Init() {
 void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
     NOTREACHED() << "Cannot encrypt with an empty passphrase.";
@@ -469,7 +469,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
 
 void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
     NOTREACHED() << "Cannot decrypt with an empty passphrase.";
@@ -615,7 +615,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
 }
 
 void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteTransaction trans(FROM_HERE, user_share_);
   DVLOG(1) << "Enabling encrypt everything.";
   if (encrypt_everything_)
@@ -627,7 +627,7 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
 }
 
 bool SyncEncryptionHandlerImpl::IsEncryptEverythingEnabled() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return encrypt_everything_;
 }
 
@@ -636,10 +636,10 @@ bool SyncEncryptionHandlerImpl::IsEncryptEverythingEnabled() const {
 void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(trans);
   if (!ApplyNigoriUpdateImpl(nigori, trans)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
                               weak_ptr_factory_.GetWeakPtr()));
   }
@@ -653,21 +653,21 @@ void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
 void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
     syncable::BaseTransaction* const trans) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncable::UpdateNigoriFromEncryptedTypes(UnlockVault(trans).encrypted_types,
                                            encrypt_everything_, nigori);
 }
 
 bool SyncEncryptionHandlerImpl::NeedKeystoreKey(
     syncable::BaseTransaction* const trans) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return keystore_key_.empty();
 }
 
 bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
     const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
     syncable::BaseTransaction* const trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (keys.size() == 0)
     return false;
   // The last key in the vector is the current keystore key. The others are kept
@@ -721,7 +721,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // properly migrated with the newest keystore keys.
   if (ShouldTriggerMigration(nigori, *cryptographer,
                              GetPassphraseType(trans))) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
                               weak_ptr_factory_.GetWeakPtr()));
   }
@@ -740,17 +740,17 @@ PassphraseType SyncEncryptionHandlerImpl::GetPassphraseType(
 }
 
 Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return &vault_unsafe_.cryptographer;
 }
 
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypesUnsafe() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return vault_unsafe_.encrypted_types;
 }
 
 bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ReadTransaction trans(FROM_HERE, user_share_);
   ReadNode nigori_node(&trans);
   if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
@@ -768,7 +768,7 @@ base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
 
 void SyncEncryptionHandlerImpl::RestoreNigori(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   WriteTransaction trans(FROM_HERE, user_share_);
 
@@ -802,7 +802,7 @@ void SyncEncryptionHandlerImpl::RestoreNigori(
 // the lookup of the root node will fail and we will skip encryption for that
 // type.
 void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(UnlockVault(trans->GetWrappedTrans()).cryptographer.is_ready());
   for (ModelTypeSet::Iterator iter =
            UnlockVault(trans->GetWrappedTrans()).encrypted_types.First();
@@ -864,7 +864,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
 bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update =
       !UpdateEncryptedTypesFromNigori(nigori, trans);
@@ -1013,14 +1013,14 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
 
 void SyncEncryptionHandlerImpl::RewriteNigori() {
   DVLOG(1) << "Writing local encryption state into nigori.";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteEncryptionStateToNigori(&trans);
 }
 
 void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
     WriteTransaction* trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteNode nigori_node(trans);
   // This can happen in tests that don't have nigori nodes.
   if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
@@ -1072,7 +1072,7 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
 bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (nigori.encrypt_everything()) {
     EnableEncryptEverythingImpl(trans);
@@ -1111,7 +1111,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
     const std::string& passphrase,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsNigoriMigratedToKeystore(nigori_node->GetNigoriSpecifics()));
   KeyParams key_params = {"localhost", "dummy", passphrase};
 
@@ -1175,7 +1175,7 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
     const std::string& passphrase,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsExplicitPassphrase(GetPassphraseType(trans->GetWrappedTrans())));
   KeyParams key_params = {"localhost", "dummy", passphrase};
 
@@ -1215,7 +1215,7 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     const std::string& bootstrap_token,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(
         &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer);
@@ -1296,7 +1296,7 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
 void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
     ModelTypeSet new_encrypted_types,
     syncable::BaseTransaction* const trans) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Only UserTypes may be encrypted.
   DCHECK(EncryptableUserTypes().HasAll(new_encrypted_types));
@@ -1326,7 +1326,7 @@ bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
     const sync_pb::NigoriSpecifics& nigori,
     const Cryptographer& cryptographer,
     PassphraseType passphrase_type) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Don't migrate if there are pending encryption keys (because data
   // encrypted with the pending keys will not be decryptable).
   if (cryptographer.has_pending_keys())
@@ -1381,7 +1381,7 @@ bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
 bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     WriteTransaction* trans,
     WriteNode* nigori_node) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const sync_pb::NigoriSpecifics& old_nigori =
       nigori_node->GetNigoriSpecifics();
   Cryptographer* cryptographer =
@@ -1555,7 +1555,7 @@ bool SyncEncryptionHandlerImpl::GetKeystoreDecryptor(
     const Cryptographer& cryptographer,
     const std::string& keystore_key,
     sync_pb::EncryptedData* encrypted_blob) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!keystore_key.empty());
   DCHECK(cryptographer.is_ready());
   std::string serialized_nigori;

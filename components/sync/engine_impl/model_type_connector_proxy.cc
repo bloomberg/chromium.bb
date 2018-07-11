@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "components/sync/engine/data_type_activation_response.h"
 
 namespace syncer {

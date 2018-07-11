@@ -16,7 +16,7 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -240,9 +240,9 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(ModelType type,
   env->GetTestDirectory(&path);
   path += "/in-memory";
 
-  // In-memory store backend works on the same thread as test.
+  // In-memory store backend works on the same sequence as test.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+      base::SequencedTaskRunnerHandle::Get();
 
   auto error = std::make_unique<base::Optional<ModelError>>();
   auto task = base::BindOnce(&ModelTypeStoreBackend::GetOrCreateBackend, path,

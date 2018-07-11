@@ -15,8 +15,8 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -292,7 +292,7 @@ class SyncEngineTest : public testing::Test {
     base::RunLoop run_loop;
     quit_loop_ = run_loop.QuitClosure();
     host_.set_quit_closure(run_loop.QuitClosure());
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop.Run();
   }
