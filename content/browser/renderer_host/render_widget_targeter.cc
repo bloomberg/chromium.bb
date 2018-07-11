@@ -54,8 +54,8 @@ class TracingUmaTracker {
         metric_name_(metric_name),
         tracing_category_(tracing_category) {
     TRACE_EVENT_ASYNC_BEGIN0(
-        tracing_category_.c_str(), metric_name_.c_str(),
-        TRACE_ID_WITH_SCOPE(metric_name_.c_str(), TRACE_ID_LOCAL(id_)));
+        tracing_category_, metric_name_,
+        TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
   }
   ~TracingUmaTracker() = default;
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
@@ -63,17 +63,19 @@ class TracingUmaTracker {
 
   void Stop() {
     TRACE_EVENT_ASYNC_END0(
-        tracing_category_.c_str(), metric_name_.c_str(),
-        TRACE_ID_WITH_SCOPE(metric_name_.c_str(), TRACE_ID_LOCAL(id_)));
-    UmaHistogramTimes(metric_name_.c_str(),
-                      base::TimeTicks::Now() - start_time_);
+        tracing_category_, metric_name_,
+        TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
+    UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
   }
 
  private:
   const int id_;
   const base::TimeTicks start_time_;
-  std::string metric_name_;
-  std::string tracing_category_;
+
+  // These variables must be string literals and live for the duration
+  // of the program since tracing stores pointers.
+  const char* metric_name_;
+  const char* tracing_category_;
 
   static int next_id_;
 
