@@ -241,29 +241,6 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
-// Verify in an integration that that the variations header (X-Client-Data) is
-// correctly attached and stripped from network requests that are triggered via
-// the network service.
-IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
-                       TestStrippingHeadersFromNetworkService) {
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
-  network::mojom::NetworkContext* network_context =
-      partition->GetNetworkContext();
-  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context,
-                                               GetGoogleRedirectUrl1()));
-
-  // TODO(crbug.com/794644) Once the network service stack starts injecting
-  // X-Client-Data headers, the following expectations should be used.
-  EXPECT_FALSE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
-  /*
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
-  EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
-  EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
-  */
-}
-
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromSubresourceRequest) {
   GURL url = server()->GetURL("/simple_page.html");
