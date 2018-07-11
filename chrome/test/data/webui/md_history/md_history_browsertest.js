@@ -35,18 +35,6 @@ MaterialHistoryBrowserTest.prototype = {
       // Wait for the top-level app element to be upgraded.
       return waitForAppUpgrade()
           .then(function() {
-            // <iron-list>#_maxPages controls the default number of "pages" of
-            // "physical" (i.e. DOM) elements to render. Some of these tests
-            // rely on rendering up to 3 "pages" of items, which was previously
-            // the default, changeed to 2 for performance reasons. TODO(dbeam):
-            // maybe trim down the number of items created in the tests? Or
-            // don't touch <iron-list>'s physical items as much?
-            Array.from(document.querySelectorAll('* /deep/ iron-list'))
-                .forEach(function(ironList) {
-                  ironList._maxPages = 3;
-                });
-          })
-          .then(function() {
             return md_history.ensureLazyLoaded();
           })
           .then(function() {
