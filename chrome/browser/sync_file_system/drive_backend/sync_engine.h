@@ -20,7 +20,7 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "net/base/network_change_notifier.h"
+#include "content/public/browser/network_connection_tracker.h"
 
 class OAuth2TokenService;
 
@@ -62,12 +62,13 @@ class RemoteChangeProcessorOnWorker;
 class RemoteChangeProcessorWrapper;
 class SyncWorkerInterface;
 
-class SyncEngine : public RemoteFileSyncService,
-                   public LocalChangeProcessor,
-                   public drive::DriveNotificationObserver,
-                   public drive::DriveServiceObserver,
-                   public net::NetworkChangeNotifier::NetworkChangeObserver,
-                   public SigninManagerBase::Observer {
+class SyncEngine
+    : public RemoteFileSyncService,
+      public LocalChangeProcessor,
+      public drive::DriveNotificationObserver,
+      public drive::DriveServiceObserver,
+      public content::NetworkConnectionTracker::NetworkConnectionObserver,
+      public SigninManagerBase::Observer {
  public:
   typedef RemoteFileSyncService::Observer SyncServiceObserver;
 
@@ -143,9 +144,8 @@ class SyncEngine : public RemoteFileSyncService,
   void OnReadyToSendRequests() override;
   void OnRefreshTokenInvalid() override;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver overrides.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // content::NetworkConnectionTracker::NetworkConnectionObserver overrides.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // SigninManagerBase::Observer overrides.
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;

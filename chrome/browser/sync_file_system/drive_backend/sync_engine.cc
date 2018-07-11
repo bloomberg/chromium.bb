@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -248,7 +249,8 @@ void SyncEngine::AppendDependsOnFactories(
 SyncEngine::~SyncEngine() {
   Reset();
 
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
   if (signin_manager_)
     signin_manager_->RemoveObserver(this);
   if (notification_manager_)
@@ -367,7 +369,11 @@ void SyncEngine::InitializeInternal(
   drive_service_->AddObserver(this);
 
   service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
-  OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
+  g_browser_process->network_connection_tracker()->GetConnectionType(
+      &connection_type, base::BindOnce(&SyncEngine::OnConnectionChanged,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  OnConnectionChanged(connection_type);
   if (drive_service_->HasRefreshToken())
     OnReadyToSendRequests();
   else
@@ -681,13 +687,13 @@ void SyncEngine::OnRefreshTokenInvalid() {
                                 "Found invalid refresh token."));
 }
 
-void SyncEngine::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void SyncEngine::OnConnectionChanged(network::mojom::ConnectionType type) {
   if (!sync_worker_)
     return;
 
   bool network_available_old = network_available_;
-  network_available_ = (type != net::NetworkChangeNotifier::CONNECTION_NONE);
+  network_available_ =
+      (type != network::mojom::ConnectionType::CONNECTION_NONE);
 
   if (!network_available_old && network_available_) {
     worker_task_runner_->PostTask(
@@ -758,7 +764,8 @@ SyncEngine::SyncEngine(
     notification_manager_->AddObserver(this);
   if (signin_manager_)
     signin_manager_->AddObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
 }
 
 void SyncEngine::OnPendingFileListUpdated(int item_count) {
