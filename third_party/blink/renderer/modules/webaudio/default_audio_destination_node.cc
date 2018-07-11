@@ -39,22 +39,22 @@
 
 namespace blink {
 
-DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
-    AudioNode& node,
-    const WebAudioLatencyHint& latency_hint)
-    : AudioDestinationHandler(node),
-      latency_hint_(latency_hint) {
-  // Node-specific default mixing rules.
-  channel_count_ = 2;
-  SetInternalChannelCountMode(kExplicit);
-  SetInternalChannelInterpretation(AudioBus::kSpeakers);
-}
-
 scoped_refptr<DefaultAudioDestinationHandler>
 DefaultAudioDestinationHandler::Create(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint) {
   return base::AdoptRef(new DefaultAudioDestinationHandler(node, latency_hint));
+}
+
+DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
+    AudioNode& node,
+    const WebAudioLatencyHint& latency_hint)
+    : AudioDestinationHandler(node),
+      latency_hint_(latency_hint) {
+  // Node-specific default channel count and mixing rules.
+  channel_count_ = 2;
+  SetInternalChannelCountMode(kExplicit);
+  SetInternalChannelInterpretation(AudioBus::kSpeakers);
 }
 
 DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler() {
@@ -86,29 +86,34 @@ void DefaultAudioDestinationHandler::Uninitialize() {
   AudioHandler::Uninitialize();
 }
 
-void DefaultAudioDestinationHandler::CreateDestination() {
-  destination_ = AudioDestination::Create(*this, ChannelCount(), latency_hint_);
-}
+void DefaultAudioDestinationHandler::SetChannelCount(
+    unsigned long channel_count,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-void DefaultAudioDestinationHandler::StartDestination() {
-  DCHECK(!destination_->IsPlaying());
-
-  AudioWorklet* audio_worklet = Context()->audioWorklet();
-  if (audio_worklet && audio_worklet->IsReady()) {
-    // This task runner is only used to fire the audio render callback, so it
-    // MUST not be throttled to avoid potential audio glitch.
-    destination_->StartWithWorkletTaskRunner(
-        audio_worklet->GetMessagingProxy()
-            ->GetBackingWorkerThread()
-            ->GetTaskRunner(TaskType::kInternalMedia));
-  } else {
-    destination_->Start();
+  // The channelCount for the input to this node controls the actual number of
+  // channels we send to the audio hardware. It can only be set if the number
+  // is less than the number of hardware channels.
+  if (!MaxChannelCount() || channel_count > MaxChannelCount()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange<unsigned>(
+            "channel count", channel_count, 1,
+            ExceptionMessages::kInclusiveBound, MaxChannelCount(),
+            ExceptionMessages::kInclusiveBound));
+    return;
   }
-}
 
-void DefaultAudioDestinationHandler::StopDestination() {
-  DCHECK(destination_->IsPlaying());
-  destination_->Stop();
+  unsigned long old_channel_count = this->ChannelCount();
+  AudioHandler::SetChannelCount(channel_count, exception_state);
+
+  // Stop, re-create and start the destination to apply the new channel count.
+  if (!exception_state.HadException() &&
+      this->ChannelCount() != old_channel_count && IsInitialized()) {
+    StopDestination();
+    CreateDestination();
+    StartDestination();
+  }
 }
 
 void DefaultAudioDestinationHandler::StartRendering() {
@@ -138,47 +143,8 @@ unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
 
-size_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
-  return destination_->CallbackBufferSize();
-}
-
-void DefaultAudioDestinationHandler::SetChannelCount(
-    unsigned long channel_count,
-    ExceptionState& exception_state) {
-  // The channelCount for the input to this node controls the actual number of
-  // channels we send to the audio hardware. It can only be set depending on the
-  // maximum number of channels supported by the hardware.
-
-  DCHECK(IsMainThread());
-
-  if (!MaxChannelCount() || channel_count > MaxChannelCount()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexOutsideRange<unsigned>(
-            "channel count", channel_count, 1,
-            ExceptionMessages::kInclusiveBound, MaxChannelCount(),
-            ExceptionMessages::kInclusiveBound));
-    return;
-  }
-
-  unsigned long old_channel_count = this->ChannelCount();
-  AudioHandler::SetChannelCount(channel_count, exception_state);
-
-  if (!exception_state.HadException() &&
-      this->ChannelCount() != old_channel_count && IsInitialized()) {
-    // Recreate/restart destination.
-    StopDestination();
-    CreateDestination();
-    StartDestination();
-  }
-}
-
 double DefaultAudioDestinationHandler::SampleRate() const {
   return destination_ ? destination_->SampleRate() : 0;
-}
-
-int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
-  return destination_ ? destination_->FramesPerBuffer() : 0;
 }
 
 void DefaultAudioDestinationHandler::Render(
@@ -187,33 +153,27 @@ void DefaultAudioDestinationHandler::Render(
     const AudioIOPosition& output_position) {
   TRACE_EVENT0("webaudio", "DefaultAudioDestinationHandler::Render");
 
-  // We don't want denormals slowing down any of the audio processing
-  // since they can very seriously hurt performance.  This will take care of all
-  // AudioNodes because they all process within this scope.
+  // Denormals can seriously hurt performance of audio processing. This will
+  // take care of all AudioNode processes within this scope.
   DenormalDisabler denormal_disabler;
 
-  // Need to check if the context actually alive. Otherwise the subsequent
-  // steps will fail. If the context is not alive somehow, return immediately
-  // and do nothing.
-  //
-  // TODO(hongchan): because the context can go away while rendering, so this
-  // check cannot guarantee the safe execution of the following steps.
+  // A sanity check for the associated context, but this does not guarantee the
+  // safe execution of the subsequence operations because the hanlder holds
+  // the context as |UntracedMember| and it can go away anytime.
   DCHECK(Context());
   if (!Context())
     return;
 
   Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
 
-  // If the destination node is not initialized, pass the silence to the final
-  // audio destination (one step before the FIFO). This check is for the case
-  // where the destination is in the middle of tearing down process.
+  // If this node is not initialized yet, pass silence to the platform audio
+  // destination. It is for the case where this node is in the middle of
+  // tear-down process.
   if (!IsInitialized()) {
     destination_bus->Zero();
     return;
   }
 
-  // Let the context take care of any business at the start of each render
-  // quantum.
   Context()->HandlePreRenderTasks(output_position);
 
   DCHECK_GE(NumberOfInputs(), 1u);
@@ -221,8 +181,9 @@ void DefaultAudioDestinationHandler::Render(
     destination_bus->Zero();
     return;
   }
-  // This will cause the node(s) connected to us to process, which in turn will
-  // pull on their input(s), all the way backwards through the rendering graph.
+
+  // Renders the graph by pulling all the input(s) to this node. This will in
+  // turn pull on their input(s), all the way backwards through the graph.
   AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
   if (!rendered_bus) {
@@ -232,23 +193,54 @@ void DefaultAudioDestinationHandler::Render(
     destination_bus->CopyFrom(*rendered_bus);
   }
 
-  // Process nodes which need a little extra help because they are not connected
-  // to anything, but still need to process.
+  // Processes "automatic" nodes that are not connected to anything.
   Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
       number_of_frames);
 
-  // Let the context take care of any business at the end of each render
-  // quantum.
   Context()->HandlePostRenderTasks();
 
-  // Advance current sample-frame.
+  // Advances the current sample-frame.
   size_t new_sample_frame = current_sample_frame_ + number_of_frames;
   ReleaseStore(&current_sample_frame_, new_sample_frame);
 
   Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
-// ----------------------------------------------------------------
+size_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
+  return destination_->CallbackBufferSize();
+}
+
+int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
+  return destination_ ? destination_->FramesPerBuffer() : 0;
+}
+
+void DefaultAudioDestinationHandler::CreateDestination() {
+  destination_ = AudioDestination::Create(*this, ChannelCount(), latency_hint_);
+}
+
+void DefaultAudioDestinationHandler::StartDestination() {
+  DCHECK(!destination_->IsPlaying());
+
+  AudioWorklet* audio_worklet = Context()->audioWorklet();
+  if (audio_worklet && audio_worklet->IsReady()) {
+    // This task runner is only used to fire the audio render callback, so it
+    // MUST not be throttled to avoid potential audio glitch.
+    destination_->StartWithWorkletTaskRunner(
+        audio_worklet->GetMessagingProxy()
+            ->GetBackingWorkerThread()
+            ->GetTaskRunner(TaskType::kInternalMedia));
+  } else {
+    destination_->Start();
+  }
+}
+
+void DefaultAudioDestinationHandler::StopDestination() {
+  DCHECK(destination_->IsPlaying());
+
+  destination_->Stop();
+}
+
+// -----------------------------------------------------------------------------
 
 DefaultAudioDestinationNode::DefaultAudioDestinationNode(
     BaseAudioContext& context,
