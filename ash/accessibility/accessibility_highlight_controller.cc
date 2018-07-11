@@ -34,7 +34,7 @@ ui::InputMethod* GetInputMethod(aura::Window* root_window) {
 AccessibilityHighlightController::AccessibilityHighlightController() {
   Shell::Get()->AddPreTargetHandler(this);
   // TODO: CursorManager not created in mash. https://crbug.com/631103.
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     Shell::Get()->cursor_manager()->AddObserver(this);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ui::InputMethod* input_method = GetInputMethod(root_window);
@@ -53,7 +53,7 @@ AccessibilityHighlightController::~AccessibilityHighlightController() {
   ui::InputMethod* input_method = GetInputMethod(root_window);
   input_method->RemoveObserver(this);
   // TODO: CursorManager not created in mash. https://crbug.com/631103.
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
@@ -127,7 +127,7 @@ void AccessibilityHighlightController::OnCursorVisibilityChanged(
 
 bool AccessibilityHighlightController::IsCursorVisible() {
   // TODO: CursorManager not created in mash. https://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return false;
   return Shell::Get()->cursor_manager()->IsCursorVisible();
 }

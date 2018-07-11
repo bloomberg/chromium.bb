@@ -47,12 +47,12 @@ UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-// NOTE: this feature will either go away (and be replaced by kOopAsh), or
-// kOopAsh will go away in place of this.
+// Used to have ash (Chrome OS system UI) run in its own process.
+// TODO(jamescook): Make flag only available in Chrome OS.
 UI_BASE_EXPORT extern const base::Feature kMash;
 
-// Used to have ash run out of process. |kMash| is transitioning to this.
-UI_BASE_EXPORT extern const base::Feature kOopAsh;
+// Deprecated. Use |kMash|.
+UI_BASE_EXPORT extern const base::Feature kMashDeprecated;
 
 // Returns true if ash is in process (the default). A value of false means ash
 // is running in a separate process (and is hosting the UI Service and Viz).

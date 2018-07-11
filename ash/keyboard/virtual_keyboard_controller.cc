@@ -285,7 +285,7 @@ void VirtualKeyboardController::ForceShowKeyboard() {
 
   // TODO(mash): Turning on accessibility keyboard does not create a valid
   // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   // Onscreen keyboard has not been enabled yet, forces to bring out the

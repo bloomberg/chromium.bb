@@ -113,7 +113,7 @@ TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsEnabled) {
   // TODO(mash): Turning on accessibility keyboard does not create a valid
   // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   AccessibilityController* accessibility_controller =
@@ -158,7 +158,7 @@ TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsDisabled) {
   // TODO(mash): Turning on accessibility keyboard does not create a valid
   // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   AccessibilityController* accessibility_controller =

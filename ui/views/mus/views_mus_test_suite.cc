@@ -249,9 +249,9 @@ void ViewsMusTestSuite::Initialize() {
 
   // NOTE: this has to be after ViewsTestSuite::Initialize() as
   // TestSuite::Initialize() resets kEnableFeatures and the command line.
-  feature_list_.InitAndEnableFeature(features::kMash);
+  feature_list_.InitAndEnableFeature(features::kMashDeprecated);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableFeatures, features::kMash.name);
+      switches::kEnableFeatures, features::kMashDeprecated.name);
 
   PlatformTestHelper::set_factory(base::Bind(&CreatePlatformTestHelper));
 }

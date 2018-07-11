@@ -69,8 +69,8 @@ void RegisterOutOfProcessServices(
     ContentBrowserClient::OutOfProcessServiceMap* services) {
   RegisterOutOfProcessServicesImpl(kCommonServices, base::size(kCommonServices),
                                    services);
-  if (base::FeatureList::IsEnabled(features::kMash) ||
-      base::FeatureList::IsEnabled(features::kOopAsh)) {
+  if (base::FeatureList::IsEnabled(features::kMashDeprecated) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     RegisterOutOfProcessServicesImpl(kMashServices, base::size(kMashServices),
                                      services);
   }
@@ -100,8 +100,8 @@ void RegisterInProcessServices(
     (*services)[ax::mojom::kAXHostServiceName] = info;
   }
 
-  if (base::FeatureList::IsEnabled(features::kMash) ||
-      base::FeatureList::IsEnabled(features::kOopAsh))
+  if (base::FeatureList::IsEnabled(features::kMashDeprecated) ||
+      base::FeatureList::IsEnabled(features::kMash))
     return;
 
   (*services)[ash::mojom::kServiceName] =

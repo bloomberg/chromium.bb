@@ -793,7 +793,7 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     if (!connector_)  // Null in tests.
       return;
     mash::mojom::LaunchablePtr launchable;
@@ -814,7 +814,7 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
     return;
   autoclick_delay_ = autoclick_delay;
 
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     if (!connector_)  // Null in tests.
       return;
     autoclick::mojom::AutoclickControllerPtr autoclick_controller;
@@ -899,7 +899,7 @@ void AccessibilityController::UpdateHighContrastFromPref() {
   NotifyAccessibilityStatusChanged();
 
   // Under mash the UI service (window server) handles high contrast mode.
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     if (!connector_)  // Null in tests.
       return;
     ui::mojom::AccessibilityManagerPtr accessibility_ptr;

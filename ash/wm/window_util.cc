@@ -205,7 +205,7 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
 }
 
 void CloseWidgetForWindow(aura::Window* window) {
-  if (Shell::GetAshConfig() == Config::MASH &&
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED &&
       window->GetProperty(kWidgetCreationTypeKey) ==
           WidgetCreationType::FOR_CLIENT) {
     // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
@@ -223,7 +223,7 @@ void CloseWidgetForWindow(aura::Window* window) {
 void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
                                          aura::Window* window) {
   // In mus AddPreTargetHandler() only works for windows created by this client.
-  DCHECK(Shell::GetAshConfig() != Config::MASH ||
+  DCHECK(Shell::GetAshConfig() != Config::MASH_DEPRECATED ||
          Shell::window_tree_client()->WasCreatedByThisClient(
              aura::WindowMus::Get(window)));
   window->AddPreTargetHandler(handler);

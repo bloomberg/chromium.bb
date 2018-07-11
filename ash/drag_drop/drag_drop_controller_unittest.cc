@@ -360,7 +360,7 @@ class DragDropControllerTest : public AshTestBase {
 };
 
 TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -404,7 +404,7 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
 }
 
 TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -445,7 +445,7 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
 }
 
 TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
@@ -503,7 +503,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
 }
 
 TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget1 = CreateFramelessWidget();
@@ -566,7 +566,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
 }
 
 TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -622,7 +622,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
 }
 
 TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
@@ -663,7 +663,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -712,7 +712,7 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -765,7 +765,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -810,7 +810,7 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -861,7 +861,7 @@ TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -926,7 +926,7 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -955,7 +955,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1001,7 +1001,7 @@ class DragImageWindowObserver : public aura::WindowObserver {
 // Verifies the drag image moves back to the position where drag is started
 // across displays when drag is cancelled.
 TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   UpdateDisplay("400x400,400x400");
@@ -1081,7 +1081,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
 
 // Verifies that a drag is aborted if a display is disconnected during the drag.
 TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   UpdateDisplay("400x400,400x400");
@@ -1121,7 +1121,7 @@ TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1179,7 +1179,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
 }
 
 TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   TestObserver observer;
@@ -1209,7 +1209,7 @@ TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
 }
 
 TEST_F(DragDropControllerTest, EventTarget) {
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;  // DragDropController not created in mash.
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(

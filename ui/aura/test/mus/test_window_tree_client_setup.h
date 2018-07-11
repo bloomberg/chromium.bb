@@ -29,9 +29,9 @@ class TestWindowTreeClientSetup {
   void InitForWindowManager(WindowTreeClientDelegate* window_tree_delegate,
                             WindowManagerDelegate* window_manager_delegate);
   // TODO(sky): see if can combine with Init().
-  void InitWithoutEmbed(
-      WindowTreeClientDelegate* window_tree_delegate,
-      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
+  void InitWithoutEmbed(WindowTreeClientDelegate* window_tree_delegate,
+                        WindowTreeClient::Config config =
+                            WindowTreeClient::Config::kMashDeprecated);
 
   // The WindowTree that WindowTreeClient talks to.
   TestWindowTree* window_tree() { return window_tree_.get(); }

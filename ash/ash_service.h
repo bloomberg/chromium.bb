@@ -90,7 +90,7 @@ class ASH_EXPORT AshService : public service_manager::Service,
  private:
   // Does initialization necessary when ash runs out of process. This is called
   // once the service starts (from OnStart()).
-  void InitForOop();
+  void InitForMash();
 
   void BindServiceFactory(
       service_manager::mojom::ServiceFactoryRequest request);

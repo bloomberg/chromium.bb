@@ -121,8 +121,8 @@ class AshTestBase : public testing::Test,
       int shell_window_id = kShellWindowId_Invalid);
 
   // Creates a visible top-level window. For Config::CLASSIC this creates a
-  // Window with a delegate. For Config::MASH this creates a window as if the
-  // client requested a top-level window.
+  // Window with a delegate. For Config::MASH_DEPRECATED this creates a window
+  // as if the client requested a top-level window.
   std::unique_ptr<aura::Window> CreateToplevelTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
       int shell_window_id = kShellWindowId_Invalid);

@@ -111,7 +111,7 @@ class NonClientFrameControllerMashTest : public AshTestBase {
 };
 
 TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     return;  // TODO: decide if this test should be made to work with ws2.
 
   std::map<std::string, std::vector<uint8_t>> properties;

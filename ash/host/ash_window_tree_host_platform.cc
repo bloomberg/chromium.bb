@@ -170,7 +170,7 @@ void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 }
 
 void AshWindowTreeHostPlatform::InitInputMethodIfNecessary() {
-  if (!base::FeatureList::IsEnabled(features::kOopAsh))
+  if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
   input_method_ = std::make_unique<aura::InputMethodMus>(this, this);

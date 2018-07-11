@@ -19,7 +19,7 @@ TEST_F(FlagWarningTrayTest, Visibility) {
   // Flag warning tray is not currently used in non-MASH environments, because
   // mus will roll out via experiment/Finch trial and showing the tray would
   // reveal the experiment state to users.
-  const bool is_mash = Shell::GetAshConfig() == Config::MASH;
+  const bool is_mash = Shell::GetAshConfig() == Config::MASH_DEPRECATED;
   FlagWarningTray* tray = Shell::GetPrimaryRootWindowController()
                               ->GetStatusAreaWidget()
                               ->flag_warning_tray_for_testing();

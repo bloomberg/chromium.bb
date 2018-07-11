@@ -96,8 +96,9 @@ void AuraTestBase::SetUp() {
   if (backend_type_ != BackendType::CLASSIC) {
     helper_->EnableMusWithTestWindowTree(
         window_tree_client_delegate_, window_manager_delegate_,
-        backend_type_ == BackendType::MUS2 ? WindowTreeClient::Config::kMus2
-                                           : WindowTreeClient::Config::kMash);
+        backend_type_ == BackendType::MUS2
+            ? WindowTreeClient::Config::kMus2
+            : WindowTreeClient::Config::kMashDeprecated);
   }
   helper_->SetUp(context_factory, context_factory_private);
 }

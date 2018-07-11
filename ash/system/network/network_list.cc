@@ -646,7 +646,7 @@ NetworkListView::UpdateNetworkListEntries() {
   // TODO(jamescook): Create UIProxyConfigService under mash. This will require
   // the mojo pref service to work with prefs in Local State.
   // http://crbug.com/718072
-  if (Shell::GetAshConfig() != Config::MASH) {
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     using_proxy = NetworkHandler::Get()
                       ->ui_proxy_config_service()
                       ->HasDefaultNetworkProxyConfigured();

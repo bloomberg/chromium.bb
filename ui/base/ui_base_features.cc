@@ -132,15 +132,14 @@ const base::Feature kDirectManipulationStylus = {
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-// Used to have ash (Chrome OS system UI) run in its own process.
-// TODO(jamescook): Make flag only available in Chrome OS.
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kOopAsh = {"OopAsh", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMashDeprecated = {"MashDeprecated",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAshInBrowserProcess() {
-  return !base::FeatureList::IsEnabled(features::kMash) &&
-         !base::FeatureList::IsEnabled(features::kOopAsh);
+  return !base::FeatureList::IsEnabled(features::kMashDeprecated) &&
+         !base::FeatureList::IsEnabled(features::kMash);
 }
 
 #if defined(OS_MACOSX)

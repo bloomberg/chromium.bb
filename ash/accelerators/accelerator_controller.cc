@@ -800,7 +800,7 @@ void HandleToggleDictation() {
 }
 
 bool CanHandleToggleDockedMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     // TODO: Mash support for the Docked Magnifier https://crbug.com/814481.
     NOTIMPLEMENTED();
     return false;
@@ -924,7 +924,7 @@ void HandleToggleHighContrast() {
 }
 
 bool CanHandleToggleFullscreenMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     // TODO: Mash support for the Fullscreen Magnifier
     // https://crbug.com/821551.
     NOTIMPLEMENTED();
@@ -1003,7 +1003,7 @@ bool CanHandleActiveMagnifierZoom() {
 // Change the scale of the active magnifier.
 void HandleActiveMagnifierZoom(int delta_index) {
   // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1022,7 +1022,7 @@ void HandleActiveMagnifierZoom(int delta_index) {
 
 bool CanHandleTouchHud() {
   // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return false;
 
   return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
@@ -1030,7 +1030,7 @@ bool CanHandleTouchHud() {
 
 void HandleTouchHudClear() {
   // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1039,7 +1039,7 @@ void HandleTouchHudClear() {
 
 void HandleTouchHudModeChange() {
   // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     NOTIMPLEMENTED();
     return;
   }

@@ -46,7 +46,7 @@ AppListControllerImpl::AppListControllerImpl()
 
   // Create only for non-mash. Mash uses window tree embed API to get a
   // token to map answer card contents.
-  if (Shell::GetAshConfig() != Config::MASH) {
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     answer_card_contents_registry_ =
         std::make_unique<app_list::AnswerCardContentsRegistry>();
   }

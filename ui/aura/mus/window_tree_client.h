@@ -107,8 +107,7 @@ class AURA_EXPORT WindowTreeClient
  public:
   // TODO(sky): remove Config. https://crbug.com/842365.
   enum class Config {
-    // kMash is deprecated.
-    kMash,
+    kMashDeprecated,
 
     // kMus2 targets ws2. services/ui/Service and services/ui/ws2/WindowService
     // provide an implementation of the same mojom interfaces, but differ in a
@@ -140,7 +139,7 @@ class AURA_EXPORT WindowTreeClient
       WindowTreeClientDelegate* delegate,
       bool create_discardable_memory = true,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Config config = Config::kMash);
+      Config config = Config::kMashDeprecated);
 
   // Creates a WindowTreeClient such that the Window Service creates a single
   // WindowTreeHost. This is useful for testing and examples.
@@ -262,7 +261,7 @@ class AURA_EXPORT WindowTreeClient
       ui::mojom::WindowTreeClientRequest request = nullptr,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
       bool create_discardable_memory = true,
-      Config config = Config::kMash);
+      Config config = Config::kMashDeprecated);
 
   // Creates a PlatformEventSourceMus if not created yet.
   void CreatePlatformEventSourceIfNecessary();

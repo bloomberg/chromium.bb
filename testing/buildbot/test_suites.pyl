@@ -1678,14 +1678,6 @@
    },
 
   'mash_chromium_gtests': {
-    'mash_ash_unittests': {
-      'test': 'ash_unittests',
-      'override_isolate_target': 'ash_unittests',
-      'args': [
-        '--enable-features=Mash',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mash.ash_unittests.filter',
-      ],
-    },
     'mash_browser_tests': {
       'test': 'browser_tests',
       'args': [

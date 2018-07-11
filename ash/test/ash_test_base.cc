@@ -288,7 +288,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
-  if (AshTestHelper::config() == Config::MASH) {
+  if (AshTestHelper::config() == Config::MASH_DEPRECATED) {
     // For mash route creation through the window manager. This better simulates
     // what happens when a client creates a top level window.
     return CreateTestWindowMash(mus_window_type, shell_window_id, &properties);
@@ -310,7 +310,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
     const gfx::Rect& bounds_in_screen,
     int shell_window_id) {
-  if (AshTestHelper::config() == Config::MASH) {
+  if (AshTestHelper::config() == Config::MASH_DEPRECATED) {
     return CreateTestWindow(bounds_in_screen, aura::client::WINDOW_TYPE_NORMAL,
                             shell_window_id);
   }

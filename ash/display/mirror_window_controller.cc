@@ -338,7 +338,7 @@ void MirrorWindowController::OnAcceleratedWidgetOverridden(
     aura::WindowTreeHost* host) {
   DCHECK_NE(host->GetAcceleratedWidget(), gfx::kNullAcceleratedWidget);
   DCHECK_NE(Shell::GetAshConfig(), Config::CLASSIC);
-  DCHECK(!base::FeatureList::IsEnabled(features::kMash));
+  DCHECK(!base::FeatureList::IsEnabled(features::kMashDeprecated));
   MirroringHostInfo* info = mirroring_host_info_map_[host->GetDisplayId()];
   if (reflector_) {
     reflector_->AddMirroringLayer(info->mirror_window->layer());
