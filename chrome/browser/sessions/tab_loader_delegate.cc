@@ -5,12 +5,14 @@
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/base/network_change_notifier.h"
+#include "content/public/browser/network_connection_tracker.h"
 
 namespace {
 
@@ -28,7 +30,7 @@ static const int kFirstTabLoadTimeoutMS = 60000;
 
 class TabLoaderDelegateImpl
     : public TabLoaderDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public content::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   explicit TabLoaderDelegateImpl(TabLoaderCallback* callback);
   ~TabLoaderDelegateImpl() override;
@@ -56,9 +58,8 @@ class TabLoaderDelegateImpl
   // TabLoaderDelegate:
   void NotifyTabLoadStarted() override { policy_.NotifyTabLoadStarted(); }
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:
   // The policy engine used to implement ShouldLoad.
@@ -71,13 +72,20 @@ class TabLoaderDelegateImpl
   base::TimeDelta first_timeout_;
   base::TimeDelta timeout_;
 
+  base::WeakPtrFactory<TabLoaderDelegateImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TabLoaderDelegateImpl);
 };
 
 TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
-    : callback_(callback) {
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  if (net::NetworkChangeNotifier::IsOffline()) {
+    : callback_(callback), weak_factory_(this) {
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
+  auto type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  g_browser_process->network_connection_tracker()->GetConnectionType(
+      &type, base::BindOnce(&TabLoaderDelegateImpl::OnConnectionChanged,
+                            weak_factory_.GetWeakPtr()));
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE) {
     // When we are off-line we do not allow loading of tabs, since each of
     // these tabs would start loading simultaneously when going online.
     // TODO(skuhne): Once we get a higher level resource control logic which
@@ -90,13 +98,14 @@ TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
 }
 
 TabLoaderDelegateImpl::~TabLoaderDelegateImpl() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
-void TabLoaderDelegateImpl::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void TabLoaderDelegateImpl::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   callback_->SetTabLoadingEnabled(
-      type != net::NetworkChangeNotifier::CONNECTION_NONE);
+      type != network::mojom::ConnectionType::CONNECTION_NONE);
 }
 
 }  // namespace
