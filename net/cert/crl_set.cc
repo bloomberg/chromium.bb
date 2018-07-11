@@ -141,15 +141,12 @@ bool CopyHashListFromHeader(base::DictionaryValue* header_dict,
 
 // CopyHashToHashesMapFromHeader parse a map from base64-encoded, SHA-256
 // hashes to lists of the same, from the given |key| in |header_dict|. It
-// copies the map data into |out| (after base64-decoding) and writes the order
-// of map keys into |out_key_order|.
+// copies the map data into |out| (after base64-decoding).
 bool CopyHashToHashesMapFromHeader(
     base::DictionaryValue* header_dict,
     const char* key,
-    std::unordered_map<std::string, std::vector<std::string>>* out,
-    std::vector<std::string>* out_key_order) {
+    std::unordered_map<std::string, std::vector<std::string>>* out) {
   out->clear();
-  out_key_order->clear();
 
   base::Value* const dict =
       header_dict->FindKeyOfType(key, base::Value::Type::DICTIONARY);
@@ -177,7 +174,6 @@ bool CopyHashToHashesMapFromHeader(
       return false;
     }
 
-    out_key_order->push_back(subject_hash);
     (*out)[subject_hash] = allowed_spkis;
   }
 
@@ -240,27 +236,19 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   crl_set->crls_.reserve(64);  // Value observed experimentally.
 
   for (size_t crl_index = 0; !data.empty(); crl_index++) {
-    // Speculatively push back a pair and pass it to ReadCRL() to avoid
-    // unnecessary copies.
-    crl_set->crls_.push_back(
-        std::make_pair(std::string(), std::vector<std::string>()));
-    std::pair<std::string, std::vector<std::string>>* const back_pair =
-        &crl_set->crls_.back();
+    std::string spki_hash;
+    std::vector<std::string> blocked_serials;
 
-    if (!ReadCRL(&data, &back_pair->first, &back_pair->second)) {
-      // Undo the speculative push_back() performed above.
-      crl_set->crls_.pop_back();
+    if (!ReadCRL(&data, &spki_hash, &blocked_serials)) {
       return false;
     }
-
-    crl_set->crls_index_by_issuer_[back_pair->first] = crl_index;
+    crl_set->crls_[std::move(spki_hash)] = std::move(blocked_serials);
   }
 
   if (!CopyHashListFromHeader(header_dict.get(), "BlockedSPKIs",
                               &crl_set->blocked_spkis_) ||
       !CopyHashToHashesMapFromHeader(header_dict.get(), "LimitedSubjects",
-                                     &crl_set->limited_subjects_,
-                                     &crl_set->limited_subjects_ordered_)) {
+                                     &crl_set->limited_subjects_)) {
     return false;
   }
 
@@ -312,15 +300,12 @@ CRLSet::Result CRLSet::CheckSerial(
   while (serial.size() > 1 && serial[0] == 0x00)
     serial.remove_prefix(1);
 
-  std::unordered_map<std::string, size_t>::const_iterator crl_index =
-      crls_index_by_issuer_.find(issuer_spki_hash.as_string());
-  if (crl_index == crls_index_by_issuer_.end())
+  auto it = crls_.find(issuer_spki_hash.as_string());
+  if (it == crls_.end())
     return UNKNOWN;
-  const std::vector<std::string>& serials = crls_[crl_index->second].second;
 
-  for (std::vector<std::string>::const_iterator i = serials.begin();
-       i != serials.end(); ++i) {
-    if (base::StringPiece(*i) == serial)
+  for (const auto& issuer_serial : it->second) {
+    if (issuer_serial == serial)
       return REVOKED;
   }
 
@@ -339,7 +324,7 @@ uint32_t CRLSet::sequence() const {
   return sequence_;
 }
 
-const CRLSet::CRLList& CRLSet::crls() const {
+const CRLSet::CRLList& CRLSet::CrlsForTesting() const {
   return crls_;
 }
 
@@ -392,15 +377,15 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
   if (is_expired)
     crl_set->not_after_ = 1;
 
-  if (issuer_spki != nullptr) {
+  if (issuer_spki) {
     const std::string spki(reinterpret_cast<const char*>(issuer_spki->data),
                            sizeof(issuer_spki->data));
-    crl_set->crls_.push_back(make_pair(spki, std::vector<std::string>()));
-    crl_set->crls_index_by_issuer_[spki] = 0;
-  }
+    std::vector<std::string> serials;
+    if (!serial_number.empty())
+      serials.push_back(serial_number);
 
-  if (!serial_number.empty())
-    crl_set->crls_[0].second.push_back(serial_number);
+    crl_set->crls_.emplace(std::move(spki), std::move(serials));
+  }
 
   if (!subject_hash.empty())
     crl_set->limited_subjects_[subject_hash] = acceptable_spki_hashes_for_cn;

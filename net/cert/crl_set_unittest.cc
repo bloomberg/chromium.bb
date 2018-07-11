@@ -84,9 +84,9 @@ TEST(CRLSetTest, Parse) {
   EXPECT_TRUE(CRLSet::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  const CRLSet::CRLList& crls = set->crls();
+  const CRLSet::CRLList& crls = set->CrlsForTesting();
   ASSERT_EQ(1u, crls.size());
-  const std::vector<std::string>& serials = crls[0].second;
+  const std::vector<std::string>& serials = crls.begin()->second;
   static const unsigned kExpectedNumSerials = 13;
   ASSERT_EQ(kExpectedNumSerials, serials.size());
   EXPECT_EQ(std::string("\x10\x0D\x7F\x30\x00\x03\x00\x00\x23\xB0", 10),

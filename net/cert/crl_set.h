@@ -64,14 +64,13 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // numbers.
   uint32_t sequence() const;
 
-  // CRLList contains a list of (issuer SPKI hash, revoked serial numbers)
+  // CRLList contains a map of (issuer SPKI hash, revoked serial numbers)
   // pairs.
-  typedef std::vector< std::pair<std::string, std::vector<std::string> > >
-      CRLList;
+  typedef std::unordered_map<std::string, std::vector<std::string>> CRLList;
 
   // crls returns the internal state of this CRLSet. It should only be used in
   // testing.
-  const CRLList& crls() const;
+  const CRLList& CrlsForTesting() const;
 
   // EmptyCRLSetForTesting returns a valid, but empty, CRLSet for unit tests.
   static scoped_refptr<CRLSet> EmptyCRLSetForTesting();
@@ -101,25 +100,18 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   friend class base::RefCountedThreadSafe<CRLSet>;
 
   uint32_t sequence_;
-  CRLList crls_;
   // not_after_ contains the time, in UNIX epoch seconds, after which the
   // CRLSet should be considered stale, or 0 if no such time was given.
   uint64_t not_after_;
-  // crls_index_by_issuer_ maps from issuer SPKI hashes to the index in |crls_|
-  // where the information for that issuer can be found. We have both |crls_|
-  // and |crls_index_by_issuer_| because, when applying a delta update, we need
-  // to identify a CRL by index.
-  std::unordered_map<std::string, size_t> crls_index_by_issuer_;
+  // crls_ is a map from the SHA-256 hash of an X.501 subject name to a list
+  // of revoked serial numbers.
+  CRLList crls_;
   // blocked_spkis_ contains the SHA256 hashes of SPKIs which are to be blocked
   // no matter where in a certificate chain they might appear.
   std::vector<std::string> blocked_spkis_;
   // limited_subjects_ is a map from the SHA256 hash of an X.501 subject name
   // to a list of allowed SPKI hashes for certificates with that subject name.
   std::unordered_map<std::string, std::vector<std::string>> limited_subjects_;
-  // limited_subjects_ordered_ contains the keys of |limited_subjects_|,
-  // ordered in the same order as they were found when parsing. This allows
-  // exact reserialisation.
-  std::vector<std::string> limited_subjects_ordered_;
 };
 
 }  // namespace net
