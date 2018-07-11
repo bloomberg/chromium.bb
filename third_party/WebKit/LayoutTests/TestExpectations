@@ -2087,7 +2087,6 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-020.xht [ Failure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
-crbug.com/443615 [ Linux Win ] external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
