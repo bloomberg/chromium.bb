@@ -63,10 +63,6 @@ class RemoteDeviceRef {
   const std::string& persistent_symmetric_key() const {
     return remote_device_->persistent_symmetric_key;
   }
-  bool unlock_key() const { return remote_device_->unlock_key; }
-  bool supports_mobile_hotspot() const {
-    return remote_device_->supports_mobile_hotspot;
-  }
   int64_t last_update_time_millis() const {
     return remote_device_->last_update_time_millis;
   }

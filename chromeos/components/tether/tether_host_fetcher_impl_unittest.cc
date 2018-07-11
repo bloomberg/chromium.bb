@@ -116,8 +116,10 @@ class TetherHostFetcherImplTest : public testing::Test {
   cryptauth::RemoteDeviceList CreateTestRemoteDeviceList() {
     cryptauth::RemoteDeviceList list =
         cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices);
-    for (auto& device : list)
-      device.supports_mobile_hotspot = true;
+    for (auto& device : list) {
+      device.software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+          cryptauth::SoftwareFeatureState::kSupported;
+    }
 
     return list;
   }
@@ -195,7 +197,9 @@ class TetherHostFetcherImplTest : public testing::Test {
     // Now, set another device as the only device, but remove its mobile data
     // support. It should not be returned.
     cryptauth::RemoteDevice remote_device = cryptauth::RemoteDevice();
-    remote_device.supports_mobile_hotspot = false;
+    remote_device
+        .software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+        cryptauth::SoftwareFeatureState::kNotSupported;
 
     SetSyncedDevices(cryptauth::RemoteDeviceList{remote_device});
     NotifyNewDevicesSynced();
@@ -214,9 +218,12 @@ class TetherHostFetcherImplTest : public testing::Test {
 
     // Create a list of test devices, only some of which are valid tether hosts.
     // Ensure that only that subset is fetched.
-
-    test_remote_device_list_[3].supports_mobile_hotspot = false;
-    test_remote_device_list_[4].supports_mobile_hotspot = false;
+    test_remote_device_list_[3]
+        .software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+        cryptauth::SoftwareFeatureState::kNotSupported;
+    test_remote_device_list_[4]
+        .software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+        cryptauth::SoftwareFeatureState::kNotSupported;
 
     cryptauth::RemoteDeviceRefList host_device_list(
         CreateTestRemoteDeviceRefList({test_remote_device_list_[0],

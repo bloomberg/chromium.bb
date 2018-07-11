@@ -304,7 +304,10 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
                     serialized_beacon_seeds);
 
     // This differentiates the local device from the remote device.
-    dict->SetBoolean(key_names::kKeyUnlockKey, device.unlock_key());
+    bool unlock_key = device.GetSoftwareFeatureState(
+                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+                      cryptauth::SoftwareFeatureState::kEnabled;
+    dict->SetBoolean(key_names::kKeyUnlockKey, unlock_key);
 
     device_list->Append(std::move(dict));
   }
@@ -847,7 +850,10 @@ void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
 cryptauth::RemoteDeviceRefList EasyUnlockServiceRegular::GetUnlockKeys() {
   cryptauth::RemoteDeviceRefList unlock_keys;
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
-    if (remote_device.unlock_key())
+    bool unlock_key = remote_device.GetSoftwareFeatureState(
+                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+                      cryptauth::SoftwareFeatureState::kEnabled;
+    if (unlock_key)
       unlock_keys.push_back(remote_device);
   }
   return unlock_keys;

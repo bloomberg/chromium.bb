@@ -16,8 +16,6 @@ const char kTestRemoteDeviceUserId[] = "example@gmail.com";
 const char kTestRemoteDeviceName[] = "remote device";
 const char kTestRemoteDevicePublicKey[] = "public key";
 const char kTestRemoteDevicePSK[] = "remote device psk";
-const bool kTestRemoteDeviceUnlockKey = true;
-const bool kTestRemoteDeviceSupportsMobileHotspot = true;
 const int64_t kTestRemoteDeviceLastUpdateTimeMillis = 0L;
 
 RemoteDeviceRefBuilder::RemoteDeviceRefBuilder() {
@@ -46,7 +44,10 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetPublicKey(
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSupportsMobileHotspot(
     bool supports_mobile_hotspot) {
-  remote_device_->supports_mobile_hotspot = supports_mobile_hotspot;
+  remote_device_
+      ->software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+      supports_mobile_hotspot ? cryptauth::SoftwareFeatureState::kSupported
+                              : cryptauth::SoftwareFeatureState::kNotSupported;
   return *this;
 }
 
@@ -74,12 +75,17 @@ RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
 }
 
 RemoteDevice CreateRemoteDeviceForTest() {
-  return RemoteDevice(
-      kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
-      kTestRemoteDeviceUnlockKey, kTestRemoteDeviceSupportsMobileHotspot,
-      kTestRemoteDeviceLastUpdateTimeMillis,
-      std::map<SoftwareFeature, SoftwareFeatureState>(), {} /* beacon_seeds */);
+  std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+      software_features;
+  software_features[cryptauth::SoftwareFeature::EASY_UNLOCK_HOST] =
+      cryptauth::SoftwareFeatureState::kEnabled;
+  software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+      cryptauth::SoftwareFeatureState::kSupported;
+
+  return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
+                      kTestRemoteDeviceLastUpdateTimeMillis, software_features,
+                      {} /* beacon_seeds */);
 }
 
 RemoteDeviceRef CreateRemoteDeviceRefForTest() {

@@ -92,13 +92,19 @@ void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
-      if (remote_device.supports_mobile_hotspot())
+      if (remote_device.GetSoftwareFeatureState(
+              cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
+          cryptauth::SoftwareFeatureState::kSupported)
         updated_list.push_back(remote_device);
     }
   } else {
     for (const auto& remote_device :
          remote_device_provider_->GetSyncedDevices()) {
-      if (remote_device.supports_mobile_hotspot) {
+      if (base::ContainsKey(remote_device.software_features,
+                            cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) &&
+          remote_device.software_features.at(
+              cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
+              cryptauth::SoftwareFeatureState::kSupported) {
         updated_list.push_back(cryptauth::RemoteDeviceRef(
             std::make_shared<cryptauth::RemoteDevice>(remote_device)));
       }

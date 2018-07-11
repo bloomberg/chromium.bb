@@ -23,8 +23,6 @@ struct RemoteDevice {
   std::string name;
   std::string public_key;
   std::string persistent_symmetric_key;
-  bool unlock_key;
-  bool supports_mobile_hotspot;
   int64_t last_update_time_millis;
   std::map<SoftwareFeature, SoftwareFeatureState> software_features;
   std::vector<BeaconSeed> beacon_seeds;
@@ -35,8 +33,6 @@ struct RemoteDevice {
       const std::string& name,
       const std::string& public_key,
       const std::string& persistent_symmetric_key,
-      bool unlock_key,
-      bool supports_mobile_hotspot,
       int64_t last_update_time_millis,
       const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
       const std::vector<BeaconSeed>& beacon_seeds);

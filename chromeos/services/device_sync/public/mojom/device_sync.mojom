@@ -71,15 +71,6 @@ struct RemoteDevice {
   // Encryption key used for communication with this device.
   string persistent_symmetric_key;
 
-  // True if this device has the capability of unlocking another device via
-  // EasyUnlock.
-  bool unlock_key;
-
-  // True if this device can enable a Wi-Fi hotspot to support Instant
-  // Tethering (i.e., the device supports mobile data and its model supports the
-  // feature).
-  bool supports_mobile_hotspot;
-
   // The time at which this device's metadata was last updated on the CryptAuth
   // back-end.
   mojo_base.mojom.Time last_update_time;
