@@ -110,7 +110,7 @@ class BufferViewBase {
   bool covers_array(size_t offset, size_t num, size_t elt_size) {
     DCHECK_GT(elt_size, 0U);
     // Use subtraction and division to avoid overflow.
-    return offset < size() && (size() - offset) / elt_size >= num;
+    return offset <= size() && (size() - offset) / elt_size >= num;
   }
 
   // Element access
