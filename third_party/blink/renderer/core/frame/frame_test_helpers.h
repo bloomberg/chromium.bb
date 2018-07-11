@@ -263,11 +263,12 @@ class WebViewHelper {
   void Reset();
 
   WebViewImpl* GetWebView() const { return web_view_; }
+  content::LayerTreeView* GetLayerTreeView() const {
+    return test_web_view_client_->layer_tree_view();
+  }
 
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
-
-  void SetViewportSize(const WebSize& size);
 
  private:
   void InitializeWebView(TestWebViewClient*, class WebView* opener);

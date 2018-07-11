@@ -377,14 +377,6 @@ void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
 }
 
-void WebViewHelper::SetViewportSize(const WebSize& size) {
-  content::LayerTreeView* layer_tree_view =
-      test_web_view_client_->layer_tree_view();
-  layer_tree_view->SetViewportSizeAndScale(
-      static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-      layer_tree_view->layer_tree_host()->local_surface_id_from_parent());
-}
-
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                                       class WebView* opener) {
   owned_test_web_view_client_ = CreateDefaultClientIfNeeded(web_view_client);

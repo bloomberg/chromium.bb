@@ -35,6 +35,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "cc/trees/layer_tree_host.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -256,7 +257,11 @@ class WebViewTest : public testing::Test {
 
  protected:
   void SetViewportSize(const WebSize& size) {
-    web_view_helper_.SetViewportSize(size);
+    content::LayerTreeView* layer_tree_view =
+        web_view_helper_.GetLayerTreeView();
+    layer_tree_view->SetViewportSizeAndScale(
+        static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
+        layer_tree_view->layer_tree_host()->local_surface_id_from_parent());
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
