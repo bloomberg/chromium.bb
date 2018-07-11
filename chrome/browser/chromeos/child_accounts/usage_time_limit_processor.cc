@@ -11,7 +11,7 @@ namespace usage_time_limit {
 namespace internal {
 namespace {
 
-constexpr char kOverride[] = "overrides";
+constexpr char kOverrides[] = "overrides";
 constexpr char kOverrideAction[] = "action";
 constexpr char kOverrideActionCreatedAt[] = "created_at_millis";
 constexpr char kOverrideActionDurationMins[] = "duration_mins";
@@ -855,16 +855,48 @@ TimeUsageLimit::TimeUsageLimit(TimeUsageLimit&&) = default;
 
 TimeUsageLimit& TimeUsageLimit::operator=(TimeUsageLimit&&) = default;
 
-Override::Override(const base::Value& override_dict) {
-  const base::Value* action_value = override_dict.FindKey(kOverrideAction);
-  const base::Value* created_at_value =
-      override_dict.FindKey(kOverrideActionCreatedAt);
-
-  if (!action_value || !created_at_value)
+Override::Override(const base::Value& override_list) {
+  if (!override_list.is_list()) {
+    LOG(ERROR) << "Overrides is not a list.";
     return;
+  }
+
+  const base::Value* last_override = nullptr;
+  for (const base::Value& override_value : override_list.GetList()) {
+    if (!override_value.is_dict()) {
+      LOG(ERROR) << "Override entry is not a dictionary";
+      continue;
+    }
+
+    const base::Value* created_at_value =
+        override_value.FindKey(kOverrideActionCreatedAt);
+
+    if (!created_at_value) {
+      LOG(ERROR) << "Override entry is missing created_at_millis field.";
+      continue;
+    }
+    if (!last_override ||
+        created_at_value->GetString().compare(
+            last_override->FindKey(kOverrideActionCreatedAt)->GetString()) >
+            0) {
+      last_override = &override_value;
+    }
+  }
+
+  if (!last_override)
+    return;
+
+  const base::Value* action_value = last_override->FindKey(kOverrideAction);
+
+  if (!action_value)
+    return;
+
+  const base::Value* created_at_value =
+      last_override->FindKey(kOverrideActionCreatedAt);
 
   int64_t created_at_millis;
   if (!base::StringToInt64(created_at_value->GetString(), &created_at_millis)) {
+    LOG(ERROR) << "Invalid override created_at_millis.";
     // Cannot process entry without a valid creation time.
     return;
   }
@@ -874,7 +906,7 @@ Override::Override(const base::Value& override_dict) {
   created_at = base::Time::UnixEpoch() +
                base::TimeDelta::FromMilliseconds(created_at_millis);
 
-  const base::Value* duration_value = override_dict.FindPath(
+  const base::Value* duration_value = last_override->FindPath(
       {kOverrideActionSpecificData, kOverrideActionDurationMins});
   if (duration_value)
     duration = base::TimeDelta::FromMinutes(duration_value->GetInt());
@@ -919,7 +951,7 @@ base::Optional<internal::TimeUsageLimit> TimeUsageLimitFromPolicy(
 
 base::Optional<internal::Override> OverrideFromPolicy(
     const std::unique_ptr<base::DictionaryValue>& time_limit) {
-  base::Value* override_value = time_limit->FindKey(internal::kOverride);
+  base::Value* override_value = time_limit->FindKey(internal::kOverrides);
   if (!override_value)
     return base::nullopt;
   return internal::Override(*override_value);

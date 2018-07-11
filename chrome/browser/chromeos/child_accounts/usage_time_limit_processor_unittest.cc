@@ -183,16 +183,25 @@ TEST_F(UsageTimeLimitProcessorInternalTest, TimeUsageWindowValid) {
 TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
   // Create policy information.
   std::string created_at_millis = CreatePolicyTimestamp("1 Jan 2018 10:00:00");
-  base::Value override = base::Value(base::Value::Type::DICTIONARY);
-  override.SetKey("action", base::Value("UNLOCK"));
-  override.SetKey("created_at_millis", base::Value(created_at_millis));
+  base::Value override_one = base::Value(base::Value::Type::DICTIONARY);
+  override_one.SetKey("action", base::Value("UNLOCK"));
+  override_one.SetKey("created_at_millis", base::Value(created_at_millis));
+
+  base::Value override_two = base::Value(base::Value::Type::DICTIONARY);
+  override_two.SetKey("action", base::Value("LOCK"));
+  override_two.SetKey("created_at_millis",
+                      base::Value(CreatePolicyTimestamp("1 Jan 2018 9:00:00")));
+
+  base::Value overrides(base::Value::Type::LIST);
+  overrides.GetList().push_back(std::move(override_one));
+  overrides.GetList().push_back(std::move(override_two));
 
   // Call tested functions.
-  Override override_struct(override);
+  Override override_struct(overrides);
 
   // Assert right fields are set.
   ASSERT_EQ(override_struct.action, Override::Action::kUnlock);
-  ASSERT_EQ(override_struct.created_at, base::Time::FromDoubleT(1514800800));
+  ASSERT_EQ(override_struct.created_at, TimeFromString("1 Jan 2018 10:00:00"));
   ASSERT_FALSE(override_struct.duration);
 }
 
@@ -485,10 +494,12 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithOverrideLock) {
   base::Value override = base::Value(base::Value::Type::DICTIONARY);
   override.SetKey("action", base::Value("LOCK"));
   override.SetKey("created_at_millis", base::Value(created_at));
+  base::Value overrides(base::Value::Type::LIST);
+  overrides.GetList().push_back(std::move(override));
 
   std::unique_ptr<base::Value> time_limit =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  time_limit->SetKey("overrides", std::move(override));
+  time_limit->SetKey("overrides", std::move(overrides));
   std::unique_ptr<base::DictionaryValue> time_limit_dictionary =
       base::DictionaryValue::From(std::move(time_limit));
 
@@ -531,11 +542,13 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockedTimeWindowLimit) {
   base::Value override = base::Value(base::Value::Type::DICTIONARY);
   override.SetKey("action", base::Value("UNLOCK"));
   override.SetKey("created_at_millis", base::Value(created_at));
+  base::Value overrides(base::Value::Type::LIST);
+  overrides.GetList().push_back(std::move(override));
 
   std::unique_ptr<base::Value> time_limit =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   time_limit->SetKey("time_window_limit", std::move(time_window_limit));
-  time_limit->SetKey("overrides", std::move(override));
+  time_limit->SetKey("overrides", std::move(overrides));
 
   std::unique_ptr<base::DictionaryValue> time_limit_dictionary =
       base::DictionaryValue::From(std::move(time_limit));
@@ -617,13 +630,15 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeWindowLimitOnly) {
   base::Value override = base::Value(base::Value::Type::DICTIONARY);
   override.SetKey("action", base::Value("UNLOCK"));
   override.SetKey("created_at_millis", base::Value(created_at));
+  base::Value overrides(base::Value::Type::LIST);
+  overrides.GetList().push_back(std::move(override));
 
   // Setup policy.
   std::unique_ptr<base::Value> time_limit =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   time_limit->SetKey("time_window_limit", std::move(time_window_limit));
   time_limit->SetKey("time_usage_limit", std::move(time_usage_limit));
-  time_limit->SetKey("overrides", std::move(override));
+  time_limit->SetKey("overrides", std::move(overrides));
 
   std::unique_ptr<base::DictionaryValue> time_limit_dictionary =
       base::DictionaryValue::From(std::move(time_limit));
