@@ -254,7 +254,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
-  InputHandler::ScrollStatus FlingScrollBegin() override;
 
   void MouseDown() override;
   void MouseUp() override;
@@ -315,7 +314,6 @@ class CC_EXPORT LayerTreeHostImpl
   void ActivateAnimations();
   void Animate();
   void AnimatePendingTreeAfterCommit();
-  void MainThreadHasStoppedFlinging();
   void DidAnimateScrollOffset();
   void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);

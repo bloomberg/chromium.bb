@@ -1255,12 +1255,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   return draw_result;
 }
 
-void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
-  browser_controls_offset_manager_->MainThreadHasStoppedFlinging();
-  if (input_handler_client_)
-    input_handler_client_->MainThreadHasStoppedFlinging();
-}
-
 void LayerTreeHostImpl::DidAnimateScrollOffset() {
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
@@ -4440,20 +4434,6 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
     return;
 
   ScrollEndImpl(scroll_state);
-}
-
-InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
-  InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  if (!CurrentlyScrollingNode()) {
-    scroll_status.thread = SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNoScrollingLayer;
-  } else {
-    scroll_status.thread = SCROLL_ON_IMPL_THREAD;
-  }
-  return scroll_status;
 }
 
 void LayerTreeHostImpl::MouseDown() {

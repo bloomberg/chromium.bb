@@ -223,10 +223,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // the compositor thread.
   const base::WeakPtr<InputHandler>& GetInputHandler() const;
 
-  // Informs the compositor that an active fling gesture being processed on the
-  // main thread has been finished.
-  void DidStopFlinging();
-
   // Debugging and benchmarks ---------------------------------
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& GetDebugState() const;

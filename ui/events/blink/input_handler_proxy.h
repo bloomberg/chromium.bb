@@ -11,10 +11,7 @@
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/snap_fling_controller.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
-#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/web/web_active_fling_parameters.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
@@ -39,7 +36,6 @@ class TestInputHandlerProxy;
 
 class CompositorThreadEventQueue;
 class EventWithCallback;
-class FlingBooster;
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
 class ScrollPredictor;
@@ -53,7 +49,6 @@ struct DidOverscrollParams;
 // events intended for a specific WebWidget.
 class InputHandlerProxy : public cc::InputHandlerClient,
                           public SynchronousInputHandlerProxy,
-                          public blink::WebGestureCurveTarget,
                           public cc::SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
@@ -93,7 +88,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // cc::InputHandlerClient implementation.
   void WillShutdown() override;
   void Animate(base::TimeTicks time) override;
-  void MainThreadHasStoppedFlinging() override;
   void ReconcileElasticOverscrollAndRootScroll() override;
   void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,
@@ -112,10 +106,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float magnify_delta,
                            const gfx::Point& anchor) override;
-
-  // blink::WebGestureCurveTarget implementation.
-  bool ScrollBy(const blink::WebFloatSize& offset,
-                const blink::WebFloatSize& velocity) override;
 
   // SnapFlingClient implementation.
   bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
@@ -153,31 +143,18 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollEnd(
       const blink::WebGestureEvent& event);
-  EventDisposition HandleGestureFlingStart(
-      const blink::WebGestureEvent& event);
   EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
-
-  // Returns true if we actually had an active fling to cancel, also notifying
-  // the client that the fling has ended. Note that if a boosted fling is active
-  // and suppressing an active scroll sequence, a synthetic GestureScrollBegin
-  // will be injected to resume scrolling.
-  bool CancelCurrentFling();
-
-  // Returns true if we actually had an active fling to cancel.
-  bool CancelCurrentFlingWithoutNotifyingClient();
 
   // Request a frame of animation from the InputHandler or
   // SynchronousInputHandler. They can provide that by calling Animate().
   void RequestAnimation();
 
-  // Used to send overscroll messages to the browser.
-  // |bundle_overscroll_params_with_ack| means overscroll message should be
-  // bundled with triggering event response, and won't fire |DidOverscroll|.
+  // Used to send overscroll messages to the browser. It bundles the overscroll
+  // params with with event ack.
   void HandleOverscroll(const gfx::PointF& causal_event_viewport_point,
-                        const cc::InputHandlerScrollResult& scroll_result,
-                        bool bundle_overscroll_params_with_ack);
+                        const cc::InputHandlerScrollResult& scroll_result);
 
   // Whether to use a smooth scroll animation for this event.
   bool ShouldAnimate(bool has_precise_scroll_deltas) const;
@@ -201,14 +178,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       bool* is_touching_scrolling_layer,
       cc::TouchAction* white_listed_touch_action);
 
-  void UpdateCurrentFlingState(const blink::WebGestureEvent& fling_start_event,
-                               const gfx::Vector2dF& velocity);
-
-  std::unique_ptr<blink::WebGestureCurve> fling_curve_;
-  // Parameters for the active fling animation, stored in case we need to
-  // transfer it out later.
-  blink::WebActiveFlingParameters fling_parameters_;
-
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
 
@@ -226,22 +195,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   bool gesture_pinch_in_progress_ = false;
   bool in_inertial_scrolling_ = false;
   bool scroll_sequence_ignored_;
-  // This is always false when there are no flings on the main thread, but
-  // conservative in the sense that we might not be actually flinging when it is
-  // true.
-  bool fling_may_be_active_on_main_thread_;
-  // The axes on which the current fling is allowed to scroll.  If a given fling
-  // has overscrolled on a particular axis, further fling scrolls on that axis
-  // will be disabled.
-  bool disallow_horizontal_fling_scroll_;
-  bool disallow_vertical_fling_scroll_;
-
-  // Whether an active fling has seen an |Animate()| call. This is useful for
-  // determining if the fling start time should be re-initialized.
-  bool has_fling_animation_started_;
-
-  // Non-zero only within the scope of |scrollBy|.
-  gfx::Vector2dF current_fling_velocity_;
 
   // Used to animate rubber-band over-scroll effect on Mac.
   std::unique_ptr<InputScrollElasticityController>
@@ -260,21 +213,16 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // whether the next wheel scroll is blocked on the Main thread or not.
   int32_t mouse_wheel_result_;
 
-  base::TimeTicks last_fling_animate_time_;
-
   // Used to record overscroll notifications while an event is being
-  // dispatched.  If the event causes overscroll, the overscroll metadata can be
-  // bundled in the event ack, saving an IPC.  Note that we must continue
-  // supporting overscroll IPC notifications due to fling animation updates.
+  // dispatched.  If the event causes overscroll, the overscroll metadata is
+  // bundled in the event ack, saving an IPC.
   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
 
   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
-  bool has_ongoing_compositor_scroll_fling_pinch_;
+  bool has_ongoing_compositor_scroll_or_pinch_;
   bool is_first_gesture_scroll_update_;
 
   const base::TickClock* tick_clock_;
-
-  std::unique_ptr<FlingBooster> fling_booster_;
 
   std::unique_ptr<cc::SnapFlingController> snap_fling_controller_;
 

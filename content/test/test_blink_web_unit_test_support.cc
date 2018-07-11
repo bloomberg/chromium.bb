@@ -22,7 +22,6 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/test/mock_clipboard_host.h"
-#include "content/test/web_gesture_curve_mock.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
 #include "net/cookies/cookie_monster.h"
@@ -294,14 +293,6 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
 
 blink::WebString TestBlinkWebUnitTestSupport::DefaultLocale() {
   return blink::WebString::FromASCII("en-US");
-}
-
-std::unique_ptr<blink::WebGestureCurve>
-TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
-    blink::WebGestureDevice device_source,
-    const blink::WebFloatPoint& velocity,
-    const blink::WebSize& cumulative_scroll) {
-  return std::make_unique<WebGestureCurveMock>(velocity, cumulative_scroll);
 }
 
 blink::WebURLLoaderMockFactory*

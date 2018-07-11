@@ -53,7 +53,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferCommits(bool defer_commits) override;
   bool CommitRequested() const override;
-  void MainThreadHasStoppedFlinging() override {}
   void Start() override;
   void Stop() override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;

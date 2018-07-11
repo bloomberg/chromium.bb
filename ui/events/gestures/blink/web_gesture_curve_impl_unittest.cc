@@ -9,36 +9,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
-#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "ui/events/gestures/fling_curve.h"
 
 using blink::WebFloatSize;
 using blink::WebGestureCurve;
-using blink::WebGestureCurveTarget;
 
 namespace ui {
-namespace {
-
-class MockGestureCurveTarget : public WebGestureCurveTarget {
- public:
-  bool ScrollBy(const WebFloatSize& delta,
-                const WebFloatSize& velocity) override {
-    cumulative_delta_.width += delta.width;
-    cumulative_delta_.height += delta.height;
-    current_velocity_ = velocity;
-    return true;
-  }
-
-  const WebFloatSize& cumulative_delta() const { return cumulative_delta_; }
-  const WebFloatSize& current_velocity() const { return current_velocity_; }
-
- private:
-  WebFloatSize cumulative_delta_;
-  WebFloatSize current_velocity_;
-};
-
-}  // namespace anonymous
-
 TEST(WebGestureCurveImplTest, Basic) {
   gfx::Vector2dF velocity(5000, 0);
   gfx::Vector2dF offset;
@@ -47,29 +23,35 @@ TEST(WebGestureCurveImplTest, Basic) {
       std::unique_ptr<ui::GestureCurve>(new ui::FlingCurve(velocity, time)),
       offset);
 
-  // coded into the create call above.
-  MockGestureCurveTarget target;
-  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0, &target));
-  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.25, &target));
-  EXPECT_NEAR(target.current_velocity().width, 1878, 1);
-  EXPECT_EQ(target.current_velocity().height, 0);
-  EXPECT_GT(target.cumulative_delta().width, 0);
-  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(
-      0.45, &target));  // Use non-uniform tick spacing.
+  gfx::Vector2dF current_velocity;
+  gfx::Vector2dF current_scroll_delta;
+  gfx::Vector2dF cumulative_delta;
+  EXPECT_TRUE(curve->Advance(0, current_velocity, current_scroll_delta));
+  cumulative_delta += current_scroll_delta;
+  EXPECT_TRUE(curve->Advance(0.25, current_velocity, current_scroll_delta));
+  cumulative_delta += current_scroll_delta;
+  EXPECT_NEAR(current_velocity.x(), 1878, 1);
+  EXPECT_EQ(current_velocity.y(), 0);
+  EXPECT_GT(cumulative_delta.x(), 0);
+  EXPECT_TRUE(
+      curve->Advance(0.45, current_velocity,
+                     current_scroll_delta));  // Use non-uniform tick spacing.
+  cumulative_delta += current_scroll_delta;
 
   // Ensure fling persists even if successive timestamps are identical.
-  gfx::Vector2dF cumulative_delta = target.cumulative_delta();
-  gfx::Vector2dF current_velocity = target.current_velocity();
-  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.45, &target));
-  EXPECT_EQ(cumulative_delta, gfx::Vector2dF(target.cumulative_delta()));
-  EXPECT_EQ(current_velocity, gfx::Vector2dF(target.current_velocity()));
+  gfx::Vector2dF old_velocity = current_velocity;
+  EXPECT_TRUE(curve->Advance(0.45, current_velocity, current_scroll_delta));
+  EXPECT_EQ(gfx::Vector2dF(), current_scroll_delta);
+  EXPECT_EQ(old_velocity, current_velocity);
 
-  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.75, &target));
-  EXPECT_FALSE(curve->AdvanceAndApplyToTarget(1.5, &target));
-  EXPECT_NEAR(target.cumulative_delta().width, 1193, 1);
-  EXPECT_EQ(target.cumulative_delta().height, 0);
-  EXPECT_EQ(target.current_velocity().width, 0);
-  EXPECT_EQ(target.current_velocity().height, 0);
+  EXPECT_TRUE(curve->Advance(0.75, current_velocity, current_scroll_delta));
+  cumulative_delta += current_scroll_delta;
+  EXPECT_FALSE(curve->Advance(1.5, current_velocity, current_scroll_delta));
+  cumulative_delta += current_scroll_delta;
+  EXPECT_NEAR(cumulative_delta.x(), 1193, 1);
+  EXPECT_EQ(cumulative_delta.y(), 0);
+  EXPECT_EQ(current_velocity.x(), 0);
+  EXPECT_EQ(current_velocity.y(), 0);
 }
 
 }  // namespace ui

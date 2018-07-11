@@ -280,8 +280,6 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
   if (!LocalRootImpl())
     return;
 
-  UpdateGestureAnimation(last_frame_time);
-
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
@@ -845,9 +843,6 @@ void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
 WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& frame,
     const WebMouseWheelEvent& event) {
-  // Halt an in-progress fling on a wheel tick.
-  if (!event.has_precise_scrolling_deltas)
-    EndActiveFlingAnimation();
 
   View()->HidePopups();
   return PageWidgetEventHandler::HandleMouseWheel(frame, event);
@@ -889,11 +884,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       GetPage()->GetContextMenuController().ClearContextMenu();
       maybe_context_menu_scope.emplace();
       break;
-    case WebInputEvent::kGestureFlingStart:
-    case WebInputEvent::kGestureFlingCancel:
-      event_result = HandleGestureFlingEvent(event);
-      Client()->DidHandleGestureEvent(event, event_cancelled);
-      return event_result;
     default:
       NOTREACHED();
   }

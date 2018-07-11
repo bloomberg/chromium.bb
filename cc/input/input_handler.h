@@ -62,7 +62,6 @@ class CC_EXPORT InputHandlerClient {
 
   virtual void WillShutdown() = 0;
   virtual void Animate(base::TimeTicks time) = 0;
-  virtual void MainThreadHasStoppedFlinging() = 0;
   virtual void ReconcileElasticOverscrollAndRootScroll() = 0;
   virtual void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,
@@ -163,10 +162,6 @@ class CC_EXPORT InputHandler {
   // value's |accumulated_overscroll| field. Should only be called if
   // ScrollBegin() returned SCROLL_STARTED.
   virtual InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) = 0;
-
-  // Returns SCROLL_STARTED if a layer was actively being scrolled,
-  // SCROLL_IGNORED if not.
-  virtual ScrollStatus FlingScrollBegin() = 0;
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
   virtual void MouseDown() = 0;

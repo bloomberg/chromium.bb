@@ -267,10 +267,6 @@ void LayerTreeHost::BeginMainFrame(const viz::BeginFrameArgs& args) {
   client_->BeginMainFrame(args);
 }
 
-void LayerTreeHost::DidStopFlinging() {
-  proxy_->MainThreadHasStoppedFlinging();
-}
-
 const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }

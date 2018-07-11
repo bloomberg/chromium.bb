@@ -33,7 +33,6 @@ class FakeProxy : public Proxy {
   bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferCommits(bool defer_commits) override {}
-  void MainThreadHasStoppedFlinging() override {}
   bool CommitRequested() const override;
   void Start() override {}
   void Stop() override {}

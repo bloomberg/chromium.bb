@@ -1299,12 +1299,6 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
       ADD_FAILURE() << "Animate called on wrong thread";
   }
 
-  void MainThreadHasStoppedFlinging() override {
-    if (!task_runner_->BelongsToCurrentThread())
-      ADD_FAILURE() << "MainThreadHasStoppedFlinging called on wrong thread";
-    *received_stop_flinging_ = true;
-  }
-
   void ReconcileElasticOverscrollAndRootScroll() override {
     if (!task_runner_->BelongsToCurrentThread()) {
       ADD_FAILURE() << "ReconcileElasticOverscrollAndRootScroll called on "
@@ -1335,52 +1329,6 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
   base::SingleThreadTaskRunner* task_runner_;
   bool* received_stop_flinging_;
 };
-
-void BindInputHandlerOnCompositorThread(
-    const base::WeakPtr<InputHandler>& input_handler,
-    ThreadCheckingInputHandlerClient* client) {
-  input_handler->BindToClient(client, false);
-}
-
-TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
-  base::Thread impl_thread("cc");
-  ASSERT_TRUE(impl_thread.Start());
-  ASSERT_TRUE(impl_thread.task_runner());
-
-  bool received_stop_flinging = false;
-  LayerTreeSettings settings;
-
-  StubLayerTreeHostClient layer_tree_host_client;
-  TestTaskGraphRunner task_graph_runner;
-
-  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
-
-  LayerTreeHost::InitParams params;
-  params.client = &layer_tree_host_client;
-  params.task_graph_runner = &task_graph_runner;
-  params.settings = &settings;
-  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  params.mutator_host = animation_host.get();
-  params.ukm_recorder_factory = std::make_unique<TestUkmRecorderFactory>();
-  std::unique_ptr<LayerTreeHost> layer_tree_host =
-      LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
-
-  ThreadCheckingInputHandlerClient input_handler_client(
-      impl_thread.task_runner().get(), &received_stop_flinging);
-  impl_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BindInputHandlerOnCompositorThread,
-                                layer_tree_host->GetInputHandler(),
-                                base::Unretained(&input_handler_client)));
-
-  layer_tree_host->DidStopFlinging();
-
-  animation_host->SetMutatorHostClient(nullptr);
-  layer_tree_host = nullptr;
-  animation_host = nullptr;
-
-  impl_thread.Stop();
-  EXPECT_TRUE(received_stop_flinging);
-}
 
 class LayerTreeHostScrollTestLayerStructureChange
     : public LayerTreeHostScrollTest {
@@ -1868,7 +1816,6 @@ class MockInputHandlerClient : public InputHandlerClient {
 
   void WillShutdown() override {}
   void Animate(base::TimeTicks) override {}
-  void MainThreadHasStoppedFlinging() override {}
   void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,
       const gfx::ScrollOffset& max_scroll_offset,

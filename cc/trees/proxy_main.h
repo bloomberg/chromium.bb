@@ -83,7 +83,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   void NotifyInputThrottledUntilCommit() override;
   void SetDeferCommits(bool defer_commits) override;
   bool CommitRequested() const override;
-  void MainThreadHasStoppedFlinging() override;
   void Start() override;
   void Stop() override;
   bool SupportsImplScrolling() const override;

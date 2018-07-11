@@ -51,11 +51,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       const blink::WebString& value2) override;
   blink::WebString DefaultLocale() override;
 
-  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
-      blink::WebGestureDevice device_source,
-      const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll) override;
-
   blink::WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
 
   blink::WebThread* CurrentThread() override;

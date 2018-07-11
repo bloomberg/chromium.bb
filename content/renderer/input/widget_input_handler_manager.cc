@@ -225,15 +225,6 @@ void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(
       INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, HandledEventCallback());
 }
 
-std::unique_ptr<blink::WebGestureCurve>
-WidgetInputHandlerManager::CreateFlingAnimationCurve(
-    blink::WebGestureDevice device_source,
-    const blink::WebFloatPoint& velocity,
-    const blink::WebSize& cumulative_scroll) {
-  return blink::Platform::Current()->CreateFlingAnimationCurve(
-      device_source, velocity, cumulative_scroll);
-}
-
 void WidgetInputHandlerManager::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta,
@@ -250,13 +241,6 @@ void WidgetInputHandlerManager::DidOverscroll(
   params.causal_event_viewport_point = causal_event_viewport_point;
   params.overscroll_behavior = overscroll_behavior;
   host->DidOverscroll(params);
-}
-
-void WidgetInputHandlerManager::DidStopFlinging() {
-  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
-  if (!host)
-    return;
-  host->DidStopFlinging();
 }
 
 void WidgetInputHandlerManager::DidAnimateForInput() {

@@ -71,8 +71,6 @@ void ScrollInputHandler::WillShutdown() {
 
 void ScrollInputHandler::Animate(base::TimeTicks time) {}
 
-void ScrollInputHandler::MainThreadHasStoppedFlinging() {}
-
 void ScrollInputHandler::ReconcileElasticOverscrollAndRootScroll() {}
 
 void ScrollInputHandler::UpdateRootLayerStateForSynchronousInputHandler(
