@@ -287,8 +287,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
 
   void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser.BeginMainFrameIntervalNotCritical", interval);
   }
 
   // CommitInterval is not meaningful to measure on browser side because
@@ -325,10 +323,7 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   }
 
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Browser.BeginMainFrameQueueDurationNotCritical", duration);
-  }
+      base::TimeDelta duration) override {}
 
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
