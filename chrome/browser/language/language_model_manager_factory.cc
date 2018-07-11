@@ -83,7 +83,8 @@ content::BrowserContext* LanguageModelManagerFactory::GetBrowserContextToUse(
 
 void LanguageModelManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* const registry) {
-  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+  if (language::GetOverrideLanguageModel() ==
+      language::OverrideLanguageModel::HEURISTIC) {
     registry->RegisterDictionaryPref(
         language::prefs::kUserLanguageProfile,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
