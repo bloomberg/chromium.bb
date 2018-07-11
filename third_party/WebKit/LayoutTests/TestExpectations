@@ -3499,7 +3499,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failu
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
 
 # [selectors-4]
-crbug.com/706118 external/wpt/css/selectors/focus-within-004.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-rtl-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-01a.html [ Failure ]
