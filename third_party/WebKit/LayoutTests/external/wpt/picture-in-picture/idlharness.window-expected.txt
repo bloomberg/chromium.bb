@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS idlharness
 PASS picture-in-picture interfaces.
 PASS Partial interface HTMLVideoElement: original interface defined
 PASS Partial interface Document: original interface defined
@@ -15,6 +16,24 @@ PASS PictureInPictureWindow interface: attribute height
 PASS Unscopable handled correctly for height property on PictureInPictureWindow
 PASS PictureInPictureWindow interface: attribute onresize
 PASS Unscopable handled correctly for onresize property on PictureInPictureWindow
+FAIL PictureInPictureWindow must be primary interface of pipw assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: pipw is not defined"
+FAIL Stringification of pipw assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: pipw is not defined"
+FAIL PictureInPictureWindow interface: pipw must inherit property "width" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: pipw is not defined"
+FAIL PictureInPictureWindow interface: pipw must inherit property "height" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: pipw is not defined"
+FAIL PictureInPictureWindow interface: pipw must inherit property "onresize" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: pipw is not defined"
+PASS HTMLVideoElement interface: operation requestPictureInPicture()
+PASS Unscopable handled correctly for requestPictureInPicture() on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute onenterpictureinpicture
+PASS Unscopable handled correctly for onenterpictureinpicture property on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute onleavepictureinpicture
+PASS Unscopable handled correctly for onleavepictureinpicture property on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute disablePictureInPicture
+PASS Unscopable handled correctly for disablePictureInPicture property on HTMLVideoElement
+PASS HTMLVideoElement interface: video must inherit property "requestPictureInPicture()" with the proper type
+PASS HTMLVideoElement interface: video must inherit property "onenterpictureinpicture" with the proper type
+PASS HTMLVideoElement interface: video must inherit property "onleavepictureinpicture" with the proper type
+PASS HTMLVideoElement interface: video must inherit property "disablePictureInPicture" with the proper type
+PASS DocumentOrShadowRoot interface: document must inherit property "pictureInPictureElement" with the proper type
 PASS Document interface: attribute pictureInPictureEnabled
 PASS Unscopable handled correctly for pictureInPictureEnabled property on Document
 PASS Document interface: operation exitPictureInPicture()
@@ -24,13 +43,5 @@ PASS Unscopable handled correctly for pictureInPictureElement property on Docume
 PASS Document interface: document must inherit property "pictureInPictureEnabled" with the proper type
 PASS Document interface: document must inherit property "exitPictureInPicture()" with the proper type
 PASS Document interface: document must inherit property "pictureInPictureElement" with the proper type
-PASS HTMLVideoElement interface: operation requestPictureInPicture()
-PASS Unscopable handled correctly for requestPictureInPicture() on HTMLVideoElement
-PASS HTMLVideoElement interface: attribute onenterpictureinpicture
-PASS Unscopable handled correctly for onenterpictureinpicture property on HTMLVideoElement
-PASS HTMLVideoElement interface: attribute onleavepictureinpicture
-PASS Unscopable handled correctly for onleavepictureinpicture property on HTMLVideoElement
-PASS HTMLVideoElement interface: attribute disablePictureInPicture
-PASS Unscopable handled correctly for disablePictureInPicture property on HTMLVideoElement
 Harness: the test ran to completion.
 
