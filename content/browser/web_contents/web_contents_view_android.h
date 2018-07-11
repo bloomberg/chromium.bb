@@ -81,9 +81,8 @@ class WebContentsViewAndroid : public WebContentsView,
   void SetPageTitle(const base::string16& title) override;
   void RenderViewCreated(RenderViewHost* host) override;
   void RenderViewReady() override;
-  void RenderFrameSwappedIn(RenderFrameHost* old_host,
-                            RenderFrameHost* new_host,
-                            bool is_main_frame) override;
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 
   // Backend implementation of RenderViewHostDelegateView.

@@ -279,21 +279,17 @@ void WebContentsViewAndroid::RenderViewReady() {
   web_contents_->OnScreenOrientationChange();
 }
 
-void WebContentsViewAndroid::RenderFrameSwappedIn(RenderFrameHost* old_host,
-                                                  RenderFrameHost* new_host,
-                                                  bool is_main_frame) {
-  if (!is_main_frame)
-    return;
-
+void WebContentsViewAndroid::RenderViewHostChanged(RenderViewHost* old_host,
+                                                   RenderViewHost* new_host) {
   if (old_host) {
-    auto* rwhv = old_host->GetView();
+    auto* rwhv = old_host->GetWidget()->GetView();
     if (rwhv && rwhv->GetNativeView()) {
       static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
           nullptr);
     }
   }
 
-  auto* rwhv = new_host->GetView();
+  auto* rwhv = new_host->GetWidget()->GetView();
   if (rwhv && rwhv->GetNativeView()) {
     static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
         GetNativeView());

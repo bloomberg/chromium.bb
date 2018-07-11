@@ -4985,6 +4985,8 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
   for (auto& observer : observers_)
     observer.RenderViewHostChanged(old_host, new_host);
 
+  view_->RenderViewHostChanged(old_host, new_host);
+
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
   // RenderViewHost is attached to this WebContents.
@@ -5006,8 +5008,6 @@ void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
 #endif
   for (auto& observer : observers_)
     observer.RenderFrameHostChanged(old_host, new_host);
-
-  view_->RenderFrameSwappedIn(old_host, new_host, is_main_frame);
 }
 
 // TODO(avi): Remove this entire function because this notification is already

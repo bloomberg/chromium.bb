@@ -425,9 +425,8 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
 
 void WebContentsViewMac::RenderViewReady() {}
 
-void WebContentsViewMac::RenderFrameSwappedIn(RenderFrameHost* old_host,
-                                              RenderFrameHost* new_host,
-                                              bool is_main_frame) {}
+void WebContentsViewMac::RenderViewHostChanged(RenderViewHost* old_host,
+                                               RenderViewHost* new_host) {}
 
 void WebContentsViewMac::SetOverscrollControllerEnabled(bool enabled) {
 }
