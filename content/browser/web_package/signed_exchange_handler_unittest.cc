@@ -155,7 +155,7 @@ class SignedExchangeHandlerTest
  public:
   SignedExchangeHandlerTest()
       : request_initiator_(
-            url::Origin::Create(GURL("https://htxg.example.com/test.htxg"))) {}
+            url::Origin::Create(GURL("https://sxg.example.com/test.sxg"))) {}
 
   virtual std::string ContentType() {
     return "application/signed-exchange;v=b1";
@@ -325,7 +325,7 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -371,7 +371,7 @@ TEST_P(SignedExchangeHandlerTest, MimeType) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_hello.txt.htxg");
+  std::string contents = GetTestFileContents("test.example.org_hello.txt.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -406,7 +406,7 @@ TEST_P(SignedExchangeHandlerTest, HeaderParseError) {
 }
 
 TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   contents.resize(30);
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
@@ -437,8 +437,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents =
-      GetTestFileContents("test.example.org_noext_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_noext_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -474,8 +473,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionAllowedByFeatureFlag) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents =
-      GetTestFileContents("test.example.org_noext_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_noext_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -494,7 +492,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionAllowedByFeatureFlag) {
 
 TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   // The certificate is for "127.0.0.1". And the SHA 256 hash of the certificate
-  // is different from the cert-sha256 of the signature in the htxg file. So the
+  // is different from the cert-sha256 of the signature in the sxg file. So the
   // certification verification must fail.
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
@@ -506,7 +504,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   mock_cert_verifier->set_default_result(net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -536,11 +534,11 @@ TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  // The certificate is for "test.example.org". But the request URL of the htxg
+  // The certificate is for "test.example.org". But the request URL of the sxg
   // file is "https://test.example.com/test/". So the certification verification
   // must fail.
   std::string contents =
-      GetTestFileContents("test.example.com_invalid_test.htxg");
+      GetTestFileContents("test.example.com_invalid_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -571,7 +569,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotChecked) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -602,7 +600,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotProvided) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -634,7 +632,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPInvalid) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -667,7 +665,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -712,7 +710,7 @@ TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
       .WillOnce(DoAll(SetArgPointee<2>(fake_result), Return(net::OK)));
   SetCertVerifier(std::move(gmock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -753,7 +751,7 @@ TEST_P(SignedExchangeHandlerTest, NotEnoughSCTsFromPubliclyTrustedCert) {
   EXPECT_CALL(*mock_ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillOnce(Return(net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -789,7 +787,7 @@ TEST_P(SignedExchangeHandlerTest, CTRequirementsMetForPubliclyTrustedCert) {
   // The mock CT policy enforcer will return CT_POLICY_COMPLIES_VIA_SCTS, as
   // configured in SetUp().
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -840,7 +838,7 @@ TEST_P(SignedExchangeHandlerTest, CTNotRequiredForLocalAnchors) {
   EXPECT_CALL(*mock_ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillOnce(Return(net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -913,7 +911,7 @@ TEST_P(SignedExchangeHandlerTest, CTVerifierParams) {
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK,
                          net::MockSourceStream::ASYNC);
   source_->AddReadResult(nullptr, 0, net::OK, net::MockSourceStream::ASYNC);
