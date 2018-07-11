@@ -893,7 +893,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     return -1;
 }
 
-int ContentMainRunnerImpl::Run() {
+int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   DCHECK(is_initialized_);
   DCHECK(!is_shutdown_);
   const base::CommandLine& command_line =
