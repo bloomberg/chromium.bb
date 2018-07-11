@@ -86,8 +86,9 @@ public class WebVrInputTest {
     }
 
     private void assertAppButtonEffect(boolean shouldHaveExited, TestFramework framework) {
-        String boolExpression = (framework instanceof VrTestFramework) ? "!vrDisplay.isPresenting" :
-                                                                         "exclusiveSession == null";
+        String boolExpression = (framework instanceof VrTestFramework)
+                ? "!vrDisplay.isPresenting"
+                : "sessionInfos[sessionTypes.EXCLUSIVE].currentSession == null";
         Assert.assertEquals("App button exited presentation", shouldHaveExited,
                 TestFramework.pollJavaScriptBoolean(boolExpression, POLL_TIMEOUT_SHORT_MS,
                         framework.getFirstTabWebContents()));
