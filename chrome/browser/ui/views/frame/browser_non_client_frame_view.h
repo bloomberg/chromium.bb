@@ -111,7 +111,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Whether the special painting mode for one tab is allowed, regardless of how
   // many tabs there are right now.
-  bool IsSingleTabModeAvailable() const;
+  virtual bool IsSingleTabModeAvailable() const;
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;

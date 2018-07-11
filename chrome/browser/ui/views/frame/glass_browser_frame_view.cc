@@ -195,6 +195,13 @@ int GlassBrowserFrameView::GetTabStripLeftInset() const {
   return incognito_bounds_.right() + GetAvatarIconPadding();
 }
 
+bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
+  // We can't paint the special single-tab appearance unless we're
+  // custom-drawing the titlebar.
+  return ShouldCustomDrawSystemTitlebar() &&
+         BrowserNonClientFrameView::IsSingleTabModeAvailable();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::NonClientFrameView implementation:
 

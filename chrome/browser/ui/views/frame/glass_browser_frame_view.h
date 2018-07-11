@@ -38,6 +38,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   int GetTabStripLeftInset() const override;
+  bool IsSingleTabModeAvailable() const override;
   void OnTabRemoved(int index) override;
   void OnTabsMaxXChanged() override;
 
