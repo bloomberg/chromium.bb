@@ -268,7 +268,6 @@ class KEYBOARD_EXPORT KeyboardController
   };
 
   // aura::WindowObserver overrides
-  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
