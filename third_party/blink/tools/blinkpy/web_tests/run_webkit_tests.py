@@ -276,7 +276,7 @@ def parse_args(args):
                 action='store_false',
                 help="Don't check to see if the build is up to date."),
             optparse.make_option(
-                '--child-processes',
+                '--child-processes', '--jobs', '-j',
                 help='Number of drivers to run in parallel.'),
             optparse.make_option(
                 '--disable-breakpad',
