@@ -86,8 +86,8 @@ function sortTree(node) {
  * @param {Partial<TreeNode> & {shortName?:string}} options
  * Values to use for the node. If a value is
  * omitted, a default will be used instead.
- * @param {string} sep Path seperator, such as '/'. Used for creating a default
- * shortName.
+ * @param {string} [sep] Path seperator, such as '/'. Used for creating a
+ * default shortName. Not required if `shortName` is supplied.
  * @returns {TreeNode}
  */
 function createNode(options, sep) {
@@ -156,7 +156,7 @@ class TreeBuilder {
    * @param {(symbolNode: TreeNode) => boolean} options.filterTest Called to see
    * if a symbol should be included. If a symbol fails the test, it will not be
    * attached to the tree.
-   * @param {string} options.sep Path seperator used to find parent names.=
+   * @param {string} options.sep Path seperator used to find parent names.
    */
   constructor(options) {
     this._getPath = options.getPath;
@@ -214,6 +214,63 @@ class TreeBuilder {
 
       node.parent.size += additionalSize;
       node = node.parent;
+    }
+  }
+
+  /**
+   *
+   * @param {TreeNode} node
+   */
+  static _joinDexMethodClasses(node) {
+    const hasDexMethods = node.childStats[_DEX_METHOD_SYMBOL_TYPE] != null;
+    if (!hasDexMethods) return;
+
+    if (node.type[0] === _CONTAINER_TYPES.FILE) {
+      /** @type {Map<string, TreeNode>} */
+      const javaClassContainers = new Map();
+      /** @type {TreeNode[]} */
+      const otherSymbols = [];
+
+      // Place all dex methods into buckets
+      for (const childNode of node.children) {
+        // Java classes are denoted with a "#", such as "LogoView#onDraw"
+        const splitIndex = childNode.idPath.lastIndexOf('#');
+
+        const isDexMethodWithClass =
+            childNode.type === _DEX_METHOD_SYMBOL_TYPE &&
+            splitIndex > childNode.shortNameIndex;
+
+        if (isDexMethodWithClass) {
+          // Get the idPath of the class
+          const classIdPath = childNode.idPath.slice(0, splitIndex);
+
+          let classNode = javaClassContainers.get(classIdPath);
+          if (classNode == null) {
+            classNode = createNode({
+              idPath: classIdPath,
+              shortName: classIdPath.slice(childNode.shortNameIndex),
+              type: _CONTAINER_TYPES.JAVA_CLASS,
+            });
+            javaClassContainers.set(classIdPath, classNode);
+          }
+
+          // Adjust the dex method's short name so it starts after the "#"
+          childNode.shortNameIndex = splitIndex + 1;
+          TreeBuilder._attachToParent(childNode, classNode);
+        } else {
+          otherSymbols.push(childNode);
+        }
+      }
+
+      node.children = otherSymbols;
+      for (const containerNode of javaClassContainers.values()) {
+        // Delay setting the parent until here so that `_attachToParent`
+        // doesn't add method stats twice
+        containerNode.parent = node;
+        node.children.push(containerNode);
+      }
+    } else {
+      node.children.forEach(TreeBuilder._joinDexMethodClasses);
     }
   }
 
@@ -277,6 +334,8 @@ class TreeBuilder {
   addFileEntry(fileEntry) {
     // make path for this
     const filePath = fileEntry[_KEYS.SOURCE_PATH];
+    // insert zero-width spaces after certain characters to indicate to the
+    // browser it could add a line break there on small screen sizes.
     const idPath = this._getPath(fileEntry);
     // make node for this
     const fileNode = createNode(
@@ -325,6 +384,7 @@ class TreeBuilder {
    * Finalize the creation of the tree and return the root node.
    */
   build() {
+    TreeBuilder._joinDexMethodClasses(this.rootNode);
     // Sort the tree so that larger items are higher.
     sortTree(this.rootNode);
 

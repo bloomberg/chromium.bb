@@ -78,6 +78,7 @@ const _CONTAINER_TYPES = {
   DIRECTORY: 'D',
   COMPONENT: 'C',
   FILE: 'F',
+  JAVA_CLASS: 'J',
 };
 const _CONTAINER_TYPE_SET = new Set(Object.values(_CONTAINER_TYPES));
 

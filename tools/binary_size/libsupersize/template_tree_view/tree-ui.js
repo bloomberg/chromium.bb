@@ -14,6 +14,11 @@
 const worker = new TreeWorker('tree-worker.js');
 
 {
+  /** Capture one of: "::", "../", "./", "/", "#" */
+  const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
+  /** Insert zero-width space after capture group */
+  const _ZERO_WIDTH_SPACE = '$&\u200b';
+
   // Templates for tree nodes in the UI.
   /** @type {HTMLTemplateElement} Template for leaves in the tree */
   const _leafTemplate = document.getElementById('treenode-symbol');
@@ -330,7 +335,10 @@ const worker = new TreeWorker('tree-worker.js');
     // Set the symbol name and hover text
     /** @type {HTMLSpanElement} */
     const symbolName = element.querySelector('.symbol-name');
-    symbolName.textContent = shortName(data);
+    symbolName.textContent = shortName(data).replace(
+      _SPECIAL_CHAR_REGEX,
+      _ZERO_WIDTH_SPACE
+    );
     symbolName.title = data.idPath;
 
     // Set the byte size and hover text
