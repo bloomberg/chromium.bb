@@ -21,11 +21,6 @@
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-#include "base/trace_event/cfi_backtrace_android.h"
-#endif
-
 namespace base {
 
 using base::allocator::AllocatorDispatch;
@@ -236,14 +231,6 @@ void SamplingHeapProfiler::SetHooksInstallCallback(
 }
 
 uint32_t SamplingHeapProfiler::Start() {
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-  if (!base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
-           ->can_unwind_stack_frames()) {
-    LOG(WARNING) << "Sampling heap profiler: Stack unwinding is not available.";
-    return 0;
-  }
-#endif
   InstallAllocatorHooksOnce();
   base::subtle::Barrier_AtomicIncrement(&g_running, 1);
   return last_sample_ordinal_;
@@ -322,31 +309,16 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
 void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
                                             uint32_t skip_frames) {
 #if !defined(OS_NACL)
-  constexpr uint32_t kMaxStackEntries = 256;
-  constexpr uint32_t kSkipProfilerOwnFrames = 2;
+  // TODO(alph): Consider using debug::TraceStackFramePointers. It should be
+  // somewhat faster than base::debug::StackTrace.
+  base::debug::StackTrace trace;
+  size_t count;
+  void* const* addresses = const_cast<void* const*>(trace.Addresses(&count));
+  const uint32_t kSkipProfilerOwnFrames = 2;
   skip_frames += kSkipProfilerOwnFrames;
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-  const void* frames[kMaxStackEntries];
-  size_t frame_count =
-      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-          frames, kMaxStackEntries);
-#elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
-  const void* frames[kMaxStackEntries];
-  size_t frame_count = base::debug::TraceStackFramePointers(
-      frames, kMaxStackEntries, skip_frames);
-  skip_frames = 0;
-#else
-  // Fall-back to capturing the stack with base::debug::StackTrace,
-  // which is likely slower, but more reliable.
-  base::debug::StackTrace stack_trace(kMaxStackEntries);
-  size_t frame_count = 0;
-  const void* const* frames = stack_trace.Addresses(&frame_count);
-#endif
-
   sample->stack.insert(
-      sample->stack.end(), const_cast<void**>(&frames[skip_frames]),
-      const_cast<void**>(&frames[std::max<size_t>(frame_count, skip_frames)]));
+      sample->stack.end(), &addresses[skip_frames],
+      &addresses[std::max(count, static_cast<size_t>(skip_frames))]);
 #endif
 }
 
