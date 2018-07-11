@@ -60,55 +60,6 @@ fi
 # find_duplicates
 # We may have enough targets to avoid re-implementing this.
 
-# Generate libaom.config file for rtcd.pl.
-# $1 - platform/arch
-function print_config {
-  combined_config="$(cat ${CFG}/${1}/config/aom_config.h | grep -E ' +[01] *$')"
-  combined_config="$(echo "$combined_config" | grep -v DO1STROUNDING)"
-  combined_config="$(echo "$combined_config" | sed 's/[ \t]//g')"
-  combined_config="$(echo "$combined_config" | sed 's/.*define//')"
-  combined_config="$(echo "$combined_config" | sed 's/0$/=no/')"
-  combined_config="$(echo "$combined_config" | sed 's/1$/=yes/')"
-  echo "$combined_config" | sort | uniq
-}
-
-# Generate *_rtcd.h files.
-# $1 - Header file directory.
-# $2 - Architecture.
-# $3 - Optional - additional arguments to pass through to rtcd.pl.
-function gen_rtcd_header {
-  echo "Generate ${1} RTCD files."
-
-  print_config ${1} > "libaom.config"
-
-  ${SRC}/build/make/rtcd.pl \
-    --arch=${2} \
-    --sym=av1_rtcd ${3} \
-    --config=libaom.config \
-    "${SRC}/av1/common/av1_rtcd_defs.pl" \
-    > "${CFG}/${1}/config/av1_rtcd.h"
-
-  clang-format -i "${CFG}/${1}/config/av1_rtcd.h"
-
-  ${SRC}/build/make/rtcd.pl \
-    --arch=${2} \
-    --sym=aom_scale_rtcd ${3} \
-    --config=libaom.config \
-    "${SRC}/aom_scale/aom_scale_rtcd.pl" \
-    > "${CFG}/${1}/config/aom_scale_rtcd.h"
-
-  clang-format -i "${CFG}/${1}/config/aom_scale_rtcd.h"
-
-  ${SRC}/build/make/rtcd.pl \
-    --arch=${2} \
-    --sym=aom_dsp_rtcd ${3} \
-    --config=libaom.config \
-    "${SRC}/aom_dsp/aom_dsp_rtcd_defs.pl" \
-    > "${CFG}/${1}/config/aom_dsp_rtcd.h"
-
-  clang-format -i "${CFG}/${1}/config/aom_dsp_rtcd.h"
-}
-
 # Generate Config files.
 # $1 - Header file directory.
 # $2 - cmake options.
@@ -123,6 +74,9 @@ function gen_config_files {
   esac
 
   cp config/aom_config.{h,c,asm} "${CFG}/${1}/config/"
+
+  cp config/*_rtcd.h "${CFG}/${1}/config/"
+  clang-format -i "${CFG}/${1}/config/"*_rtcd.h
 }
 
 function update_readme {
@@ -160,15 +114,12 @@ gen_config_files linux/generic "-DAOM_TARGET_CPU=generic ${all_platforms}"
 # libaom_srcs.gni and aom_version.h are shared.
 cp libaom_srcs.gni "${BASE}"
 cp config/aom_version.h "${CFG}/config/"
-gen_rtcd_header linux/generic generic
 
 reset_dirs linux/ia32
 gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms}"
-gen_rtcd_header linux/ia32 x86 #--disable-avx2
 
 reset_dirs linux/x64
 gen_config_files linux/x64 "${all_platforms}"
-gen_rtcd_header linux/x64 x86_64 #--disable-avx2
 
 # Windows looks like linux but with some minor tweaks. Cmake doesn't generate VS
 # project files on linux otherwise we would not resort to these hacks.
@@ -202,20 +153,16 @@ egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/x64/config/aom_config.h" \
 reset_dirs linux/arm
 gen_config_files linux/arm \
   "${toolchain}/armv7-linux-gcc.cmake -DENABLE_NEON=0 ${all_platforms}"
-gen_rtcd_header linux/arm armv7 --disable-neon
 
 reset_dirs linux/arm-neon
 gen_config_files linux/arm-neon "${toolchain}/armv7-linux-gcc.cmake ${all_platforms}"
-gen_rtcd_header linux/arm-neon armv7
 
 reset_dirs linux/arm-neon-cpu-detect
 gen_config_files linux/arm-neon-cpu-detect \
   "${toolchain}/armv7-linux-gcc.cmake -DCONFIG_RUNTIME_CPU_DETECT=1 ${all_platforms}"
-gen_rtcd_header linux/arm-neon-cpu-detect armv7
 
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
-gen_rtcd_header linux/arm64 arm64
 
 cd "${SRC}"
 update_readme
