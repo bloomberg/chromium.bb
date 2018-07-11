@@ -9,9 +9,9 @@
 #include <set>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "extensions/common/constants.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -19,10 +19,21 @@
 
 namespace extensions {
 
+ExtensionCreatorFilter::ExtensionCreatorFilter(
+    const base::FilePath& extension_dir)
+    : reserved_metadata_dir_(extension_dir.Append(kMetadataFolder)) {}
+
 bool ExtensionCreatorFilter::ShouldPackageFile(
     const base::FilePath& file_path) {
   const base::FilePath& base_name = file_path.BaseName();
   if (base_name.empty()) {
+    return false;
+  }
+
+  // Exclude the kMetadata folder which is reserved for use by the Extension
+  // system.
+  if (reserved_metadata_dir_ == file_path ||
+      reserved_metadata_dir_.IsParent(file_path)) {
     return false;
   }
 
