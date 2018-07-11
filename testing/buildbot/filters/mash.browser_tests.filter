@@ -288,6 +288,7 @@
 -FirstRunUIBrowserTest.ModalWindowDoesNotBlock
 -LauncherPlatformAppBrowserTest.AltNumberAppsTabbing
 -LauncherPlatformAppBrowserTest.PackagedAppClickBehaviorInMinimizeMode
+-LoginWebDialogTest.CannotMinimize
 -LoginWebDialogTest.CloseDialogByAccelerator
 -ShelfAppBrowserTest.AltNumberTabsTabbing
 -ShelfAppBrowserTestNoDefaultBrowser.AltNumberBrowserTabbing
