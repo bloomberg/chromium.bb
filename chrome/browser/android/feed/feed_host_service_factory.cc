@@ -18,6 +18,7 @@
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/feed/core/feed_storage_database.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/version_info/version_info.h"
@@ -85,9 +86,11 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto scheduler_host = std::make_unique<FeedSchedulerHost>(
       profile->GetPrefs(), base::DefaultClock::GetInstance());
 
-  return new FeedHostService(std::move(image_manager),
-                             std::move(networking_host),
-                             std::move(scheduler_host));
+  auto storage_database = std::make_unique<FeedStorageDatabase>(feed_dir);
+
+  return new FeedHostService(
+      std::move(image_manager), std::move(networking_host),
+      std::move(scheduler_host), std::move(storage_database));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(
