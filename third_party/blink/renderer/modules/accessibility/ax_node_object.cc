@@ -2360,22 +2360,31 @@ bool AXNodeObject::OnNativeSetSequentialFocusNavigationStartingPointAction() {
 }
 
 void AXNodeObject::ChildrenChanged() {
-  // This method is meant as a quick way of marking a portion of the
-  // accessibility tree dirty.
   if (!GetNode() && !GetLayoutObject())
     return;
 
+  // Call SetNeedsToUpdateChildren on this node, and if this node is
+  // ignored, call it on each existing parent until reaching an unignored node,
+  // because unignored nodes recursively include all children of ignored
+  // nodes. This method is called during layout, so we need to be careful to
+  // only explore existing objects.
+  AXObject* node_to_update = this;
+  while (node_to_update) {
+    node_to_update->SetNeedsToUpdateChildren();
+    if (!node_to_update->LastKnownIsIgnoredValue())
+      break;
+    node_to_update = node_to_update->ParentObjectIfExists();
+  }
+
   // If this node's children are not part of the accessibility tree then
-  // invalidate the children but skip notification and walking up the ancestors.
+  // skip notification and walking up the ancestors.
   // Cases where this happens:
   // - an ancestor has only presentational children, or
   // - this or an ancestor is a leaf node
   // Uses |cached_is_descendant_of_leaf_node_| to avoid updating cached
   // attributes for eachc change via | UpdateCachedAttributeValuesIfNeeded()|.
-  if (!CanHaveChildren() || cached_is_descendant_of_leaf_node_) {
-    SetNeedsToUpdateChildren();
+  if (!CanHaveChildren() || cached_is_descendant_of_leaf_node_)
     return;
-  }
 
   AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
 
@@ -2386,8 +2395,6 @@ void AXNodeObject::ChildrenChanged() {
   // changes.
   for (AXObject* parent = this; parent;
        parent = parent->ParentObjectIfExists()) {
-    parent->SetNeedsToUpdateChildren();
-
     // These notifications always need to be sent because screenreaders are
     // reliant on them to perform.  In other words, they need to be sent even
     // when the screen reader has not accessed this live region since the last
