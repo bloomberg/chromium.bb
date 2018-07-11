@@ -14,7 +14,7 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++ROLE_SYSTEM_DIALOG name='Modal illegal' IA2_STATE_MODAL
 ++ROLE_SYSTEM_TEXT name='Multiline illegal' IA2_STATE_MULTI_LINE
 ++ROLE_SYSTEM_TABLE name='Multiselectable illegal' MULTISELECTABLE
-++ROLE_SYSTEM_SLIDER name='Orientation illegal' IA2_STATE_HORIZONTAL
+++ROLE_SYSTEM_SLIDER name='Orientation illegal' value='50' IA2_STATE_HORIZONTAL
 ++IA2_ROLE_TOGGLE_BUTTON name='Pressed illegal' PRESSED IA2_STATE_CHECKABLE checkable:true
 ++ROLE_SYSTEM_TEXT name='Readonly illegal' READONLY
 ++ROLE_SYSTEM_CLIENT name='Relevant illegal' live:polite relevant:X-ILLEGAL atomic:false

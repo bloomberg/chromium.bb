@@ -92,10 +92,6 @@ Tests name sources in input[type=button].
       }
     ]
   },
-  "value": {
-    "type": "string",
-    "value": "button-value2"
-  },
   "properties": [
     {
       "name": "invalid",
@@ -160,10 +156,6 @@ Tests name sources in input[type=button].
   "description": {
     "type": "computedString",
     "value": "button-title3"
-  },
-  "value": {
-    "type": "string",
-    "value": "button-value3"
   },
   "properties": [
     {
@@ -441,10 +433,6 @@ Tests name sources in input[type=button].
     "type": "computedString",
     "value": "button-value7"
   },
-  "value": {
-    "type": "string",
-    "value": "button-value7"
-  },
   "properties": [
     {
       "name": "invalid",
@@ -539,10 +527,6 @@ Tests name sources in input[type=button].
   },
   "description": {
     "type": "computedString",
-    "value": "button-value8"
-  },
-  "value": {
-    "type": "string",
     "value": "button-value8"
   },
   "properties": [
@@ -643,10 +627,6 @@ Tests name sources in input[type=button].
   },
   "description": {
     "type": "computedString",
-    "value": "button-value9"
-  },
-  "value": {
-    "type": "string",
     "value": "button-value9"
   },
   "properties": [
@@ -770,10 +750,6 @@ Tests name sources in input[type=button].
         "superseded": true
       }
     ]
-  },
-  "value": {
-    "type": "string",
-    "value": "submit-value2"
   },
   "properties": [
     {
@@ -1030,10 +1006,6 @@ Tests name sources in input[type=button].
       }
     ]
   },
-  "value": {
-    "type": "string",
-    "value": "image-input-value2"
-  },
   "properties": [
     {
       "name": "invalid",
@@ -1195,10 +1167,6 @@ Tests name sources in input[type=button].
         "superseded": true
       }
     ]
-  },
-  "value": {
-    "type": "string",
-    "value": "image-input-value4"
   },
   "properties": [
     {

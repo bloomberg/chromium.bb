@@ -313,7 +313,7 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
     return kUnknownRole;
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*GetNode())) {
+  if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
     const AtomicString& type = input->type();
     if (input->DataList())
       return kTextFieldWithComboBoxRole;
@@ -833,7 +833,7 @@ bool AXNodeObject::IsMultiSelectable() const {
 }
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
-  if (auto* input = ToHTMLInputElementOrNull(GetNode())) {
+  if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
     return input->type() == InputTypeNames::checkbox ||
            input->type() == InputTypeNames::radio;
   }
@@ -851,7 +851,7 @@ bool AXNodeObject::IsNativeImage() const {
   if (IsHTMLPlugInElement(*node))
     return true;
 
-  if (auto* input = ToHTMLInputElementOrNull(*node))
+  if (const auto* input = ToHTMLInputElementOrNull(*node))
     return input->type() == InputTypeNames::image;
 
   return false;
@@ -865,7 +865,7 @@ bool AXNodeObject::IsNativeTextControl() const {
   if (IsHTMLTextAreaElement(*node))
     return true;
 
-  if (auto* input = ToHTMLInputElementOrNull(*node))
+  if (const auto* input = ToHTMLInputElementOrNull(*node))
     return input->IsTextField();
 
   return false;
@@ -913,13 +913,13 @@ bool AXNodeObject::IsSpinButton() const {
 }
 
 bool AXNodeObject::IsNativeSlider() const {
-  if (auto* input = ToHTMLInputElementOrNull(GetNode()))
+  if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
     return input->type() == InputTypeNames::range;
   return false;
 }
 
 bool AXNodeObject::IsNativeSpinButton() const {
-  if (auto* input = ToHTMLInputElementOrNull(GetNode()))
+  if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
     return input->type() == InputTypeNames::number;
   return false;
 }
@@ -984,7 +984,7 @@ AXRestriction AXNodeObject::Restriction() const {
   // Only editable fields can be marked @readonly (unlike @aria-readonly).
   if (IsHTMLTextAreaElement(*elem) && ToHTMLTextAreaElement(*elem).IsReadOnly())
     return kReadOnly;
-  if (auto* input = ToHTMLInputElementOrNull(*elem)) {
+  if (const auto* input = ToHTMLInputElementOrNull(*elem)) {
     if (input->IsTextField() && input->IsReadOnly())
       return kReadOnly;
   }
@@ -1675,12 +1675,19 @@ String AXNodeObject::StringValue() const {
     return GetText();
 
   // Handle other HTML input elements that aren't text controls, like date and
-  // time controls, by returning the string value, with the exception of
-  // checkboxes and radio buttons (which would return "on").
-  if (auto* input = ToHTMLInputElementOrNull(node)) {
-    if (input->type() != InputTypeNames::checkbox &&
-        input->type() != InputTypeNames::radio)
+  // time controls, by returning their value converted to text, with the
+  // exception of checkboxes and radio buttons (which would return "on"), and
+  // buttons which will return their name.
+  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
+  if (const auto* input = ToHTMLInputElementOrNull(node)) {
+    if (input->type() != InputTypeNames::button &&
+        input->type() != InputTypeNames::checkbox &&
+        input->type() != InputTypeNames::image &&
+        input->type() != InputTypeNames::radio &&
+        input->type() != InputTypeNames::reset &&
+        input->type() != InputTypeNames::submit) {
       return input->value();
+    }
   }
 
   return String();

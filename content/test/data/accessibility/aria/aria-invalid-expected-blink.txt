@@ -2,7 +2,7 @@ rootWebArea
 ++genericContainer invalidState=true
 ++++staticText name='invalid=true'
 ++++++inlineTextBox name='invalid=true'
-++textField
+++textField value='An eror via invalid=spelling'
 ++++staticText name='An '
 ++++++inlineTextBox name='An '
 ++++genericContainer invalidState=spelling
@@ -10,7 +10,7 @@ rootWebArea
 ++++++++inlineTextBox name='eror'
 ++++staticText name=' via invalid=spelling'
 ++++++inlineTextBox name=' via invalid=spelling'
-++textField
+++textField value='An errors via invalid=grammar'
 ++++staticText name='An '
 ++++++inlineTextBox name='An '
 ++++genericContainer invalidState=grammar
@@ -31,7 +31,7 @@ rootWebArea
 ++++staticText name='invalid=unknown'
 ++++++inlineTextBox name='invalid=unknown'
 ++form
-++++textField invalidState=true
+++++textField value='1234' invalidState=true
 ++++++genericContainer
 ++++++++staticText name='1234'
 ++++++++++inlineTextBox name='1234'

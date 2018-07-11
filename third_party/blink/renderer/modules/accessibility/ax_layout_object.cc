@@ -1449,13 +1449,19 @@ String AXLayoutObject::StringValue() const {
     return ToLayoutFileUploadControl(layout_object_)->FileTextValue();
 
   // Handle other HTML input elements that aren't text controls, like date and
-  // time controls, by returning the string value, with the exception of
-  // checkboxes and radio buttons (which would return "on").
-  if (GetNode() && IsHTMLInputElement(GetNode())) {
-    HTMLInputElement* input = ToHTMLInputElement(GetNode());
-    if (input->type() != InputTypeNames::checkbox &&
-        input->type() != InputTypeNames::radio)
+  // time controls, by returning their value converted to text, with the
+  // exception of checkboxes and radio buttons (which would return "on"), and
+  // buttons which will return their name.
+  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
+  if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
+    if (input->type() != InputTypeNames::button &&
+        input->type() != InputTypeNames::checkbox &&
+        input->type() != InputTypeNames::image &&
+        input->type() != InputTypeNames::radio &&
+        input->type() != InputTypeNames::reset &&
+        input->type() != InputTypeNames::submit) {
       return input->value();
+    }
   }
 
   // FIXME: We might need to implement a value here for more types

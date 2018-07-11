@@ -107,16 +107,20 @@ bool AccessibilityTreeFormatter::MatchesFilters(
     const std::vector<Filter>& filters,
     const base::string16& text,
     bool default_result) {
-  std::vector<Filter>::const_iterator iter = filters.begin();
   bool allow = default_result;
-  for (iter = filters.begin(); iter != filters.end(); ++iter) {
-    if (base::MatchPattern(text, iter->match_str)) {
-      if (iter->type == Filter::ALLOW_EMPTY)
-        allow = true;
-      else if (iter->type == Filter::ALLOW)
-        allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
-      else
-        allow = false;
+  for (const auto& filter : filters) {
+    if (base::MatchPattern(text, filter.match_str)) {
+      switch (filter.type) {
+        case Filter::ALLOW_EMPTY:
+          allow = true;
+          break;
+        case Filter::ALLOW:
+          allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
+          break;
+        case Filter::DENY:
+          allow = false;
+          break;
+      }
     }
   }
   return allow;
