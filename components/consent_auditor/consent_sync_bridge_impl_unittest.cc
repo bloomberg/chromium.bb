@@ -236,7 +236,12 @@ TEST_F(ConsentSyncBridgeImplTest,
   // initilization is in progress.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
   bridge()->RecordConsent(SpecificsUniquePtr(/*client_consent_time_usec=*/1u));
-  EXPECT_THAT(GetAllData(), IsEmpty());
+
+  // When store is fully initialized, the consent should be reported to the
+  // processor.
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  EXPECT_CALL(*processor(), Put(_, _, _));
+  base::RunLoop().RunUntilIdle();
 }
 
 // User consents should be buffered if the store and processor is not fully

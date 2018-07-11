@@ -118,6 +118,7 @@ scoped_refptr<ModelTypeStoreBackend> ModelTypeStoreBackend::GetOrCreateBackend(
   scoped_refptr<ModelTypeStoreBackend> backend =
       backend_map.Get().GetBackend(path);
   if (backend) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(backend->sequence_checker_);
     return backend;
   }
 
