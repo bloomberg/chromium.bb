@@ -103,9 +103,8 @@ cvox.BrailleDisplayManager = function(translatorManager) {
 /**
  * Dots representing a cursor.
  * @const
- * @private
  */
-cvox.BrailleDisplayManager.CURSOR_DOTS_ = 1 << 6 | 1 << 7;
+cvox.BrailleDisplayManager.CURSOR_DOTS = 1 << 6 | 1 << 7;
 
 
 /**
@@ -137,6 +136,14 @@ cvox.BrailleDisplayManager.LUMINANCE_THRESHOLD_ = 128;
  */
 cvox.BrailleDisplayManager.COORDS_TO_BRAILLE_DOT_ =
     [0x1, 0x2, 0x4, 0x40, 0x8, 0x10, 0x20, 0x80];
+
+
+/**
+ * Time elapsed before a cursor changes state. This results in a blinking
+ * effect.
+ * @const {number}
+ */
+cvox.BrailleDisplayManager.CURSOR_BLINK_TIME_MS = 1000;
 
 
 /**
@@ -310,10 +317,29 @@ cvox.BrailleDisplayManager.prototype.onCaptionsStateChanged_ = function() {
  * @private
  */
 cvox.BrailleDisplayManager.prototype.refresh_ = function() {
+  if (this.blinkerId_ !== undefined) {
+    window.clearInterval(this.blinkerId_);
+  }
+
+  this.refreshInternal_(true);
+
+  var showCursor = false;
+  this.blinkerId_ = window.setInterval(function() {
+    this.refreshInternal_(showCursor);
+    showCursor = !showCursor;
+  }.bind(this), cvox.BrailleDisplayManager.CURSOR_BLINK_TIME_MS);
+};
+
+/**
+ * @param {boolean} showCursor Whether to show the cursor.
+ * @private
+ */
+cvox.BrailleDisplayManager.prototype.refreshInternal_ = function(showCursor) {
   if (!this.displayState_.available) {
     return;
   }
-  var brailleBuf = this.panStrategy_.getCurrentBrailleViewportContents();
+  var brailleBuf =
+      this.panStrategy_.getCurrentBrailleViewportContents(showCursor);
   var textBuf = this.panStrategy_.getCurrentTextViewportContents();
   if (this.realDisplayState_.available) {
     chrome.brailleDisplayPrivate.writeDots(
@@ -365,9 +391,10 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(
         translatedEndIndex = textToBraille[endIndex];
       }
       // Add the cursor to cells.
-      this.writeCursor_(cells, translatedStartIndex, translatedEndIndex);
+      this.setCursor_(cells, translatedStartIndex, translatedEndIndex);
       targetPosition = translatedStartIndex;
     } else {
+      this.setCursor_(cells, -1, -1);
       targetPosition = 0;
     }
     this.panStrategy_.setContent(
@@ -443,28 +470,23 @@ cvox.BrailleDisplayManager.prototype.panRight_ = function() {
 };
 
 /**
- * Writes a cursor in the specified range into translated content.
+ * Sets a cursor within translated content.
  * @param {ArrayBuffer} buffer Buffer to add cursor to.
  * @param {number} startIndex The start index to place the cursor.
  * @param {number} endIndex The end index to place the cursor (exclusive).
  * @private
  */
-cvox.BrailleDisplayManager.prototype.writeCursor_ = function(
+cvox.BrailleDisplayManager.prototype.setCursor_ = function(
     buffer, startIndex, endIndex) {
   if (startIndex < 0 || startIndex >= buffer.byteLength ||
       endIndex < startIndex || endIndex > buffer.byteLength) {
+    this.panStrategy_.setCursor(-1, -1);
     return;
   }
   if (startIndex == endIndex) {
     endIndex = startIndex + 1;
   }
-  var dataView = new DataView(buffer);
-  while (startIndex < endIndex) {
-    var value = dataView.getUint8(startIndex);
-    value |= cvox.BrailleDisplayManager.CURSOR_DOTS_;
-    dataView.setUint8(startIndex, value);
-    startIndex++;
-  }
+  this.panStrategy_.setCursor(startIndex, endIndex);
 };
 
 /**

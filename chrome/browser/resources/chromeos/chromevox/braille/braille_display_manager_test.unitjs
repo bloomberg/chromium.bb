@@ -70,7 +70,7 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     assertEquals(1, this.writtenCells.length);
     var a = new Uint8Array(this.writtenCells[0]);
     this.writtenCells.length = 0;
-    var firstCell = a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS_;
+    var firstCell = a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS;
     // We are asserting that start, which is an index, and firstCell,
     // which is a value, are the same because the fakeTranslator generates
     // the values of the braille cells based on indices.
@@ -78,8 +78,8 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
                  ' Start mismatch: ' + start + ' vs. ' + firstCell);
     if (opt_selStart !== undefined) {
       for (var i = opt_selStart; i < opt_selEnd; ++i) {
-        assertEquals(cvox.BrailleDisplayManager.CURSOR_DOTS_,
-                     a[i] & cvox.BrailleDisplayManager.CURSOR_DOTS_,
+        assertEquals(cvox.BrailleDisplayManager.CURSOR_DOTS,
+                     a[i] & cvox.BrailleDisplayManager.CURSOR_DOTS,
                      'Missing cursor marker at position ' + i);
       }
     }
