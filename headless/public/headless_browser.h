@@ -179,9 +179,6 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // If true, then all pop-ups and calls to window.open will fail.
   bool block_new_web_contents = false;
 
-  // Whether cookies are allowed. Enabled by default.
-  bool allow_cookies = true;
-
   // Whether or not BeginFrames will be issued over DevTools protocol
   // (experimental).
   bool enable_begin_frame_control = false;
@@ -266,7 +263,6 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetIncognitoMode(bool incognito_mode);
   Builder& SetSitePerProcess(bool site_per_process);
   Builder& SetBlockNewWebContents(bool block_new_web_contents);
-  Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
       base::RepeatingCallback<void(WebPreferences*)> callback);
   Builder& SetCrashReporterEnabled(bool enabled);

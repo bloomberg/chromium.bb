@@ -113,7 +113,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetIncognitoMode(bool incognito_mode);
   Builder& SetSitePerProcess(bool site_per_process);
   Builder& SetBlockNewWebContents(bool block_new_web_contents);
-  Builder& SetAllowCookies(bool incognito_mode);
   Builder& SetOverrideWebPreferencesCallback(
       base::RepeatingCallback<void(WebPreferences*)> callback);
 
