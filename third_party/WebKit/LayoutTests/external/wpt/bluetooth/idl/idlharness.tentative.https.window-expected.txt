@@ -25,6 +25,18 @@ FAIL Bluetooth interface: attribute onservicechanged assert_true: The prototype 
 PASS Unscopable handled correctly for onservicechanged property on Bluetooth
 FAIL Bluetooth interface: attribute onserviceremoved assert_true: The prototype object must have a property "onserviceremoved" expected true got false
 PASS Unscopable handled correctly for onserviceremoved property on Bluetooth
+PASS Bluetooth must be primary interface of navigator.bluetooth
+PASS Stringification of navigator.bluetooth
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "getAvailability()" with the proper type assert_inherits: property "getAvailability" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "onavailabilitychanged" with the proper type assert_inherits: property "onavailabilitychanged" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "referringDevice" with the proper type assert_inherits: property "referringDevice" not found in prototype chain
+PASS Bluetooth interface: navigator.bluetooth must inherit property "requestDevice(RequestDeviceOptions)" with the proper type
+PASS Bluetooth interface: calling requestDevice(RequestDeviceOptions) on navigator.bluetooth with too few arguments must throw TypeError
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "ongattserverdisconnected" with the proper type assert_inherits: property "ongattserverdisconnected" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "oncharacteristicvaluechanged" with the proper type assert_inherits: property "oncharacteristicvaluechanged" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "onserviceadded" with the proper type assert_inherits: property "onserviceadded" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "onservicechanged" with the proper type assert_inherits: property "onservicechanged" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "onserviceremoved" with the proper type assert_inherits: property "onserviceremoved" not found in prototype chain
 FAIL BluetoothPermissionResult interface: existence and properties of interface object assert_own_property: self does not have own property "BluetoothPermissionResult" expected property "BluetoothPermissionResult" missing
 FAIL BluetoothPermissionResult interface object length assert_own_property: self does not have own property "BluetoothPermissionResult" expected property "BluetoothPermissionResult" missing
 FAIL BluetoothPermissionResult interface object name assert_own_property: self does not have own property "BluetoothPermissionResult" expected property "BluetoothPermissionResult" missing
@@ -103,6 +115,16 @@ FAIL BluetoothAdvertisingEvent interface: attribute manufacturerData assert_own_
 PASS Unscopable handled correctly for manufacturerData property on BluetoothAdvertisingEvent
 FAIL BluetoothAdvertisingEvent interface: attribute serviceData assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
 PASS Unscopable handled correctly for serviceData property on BluetoothAdvertisingEvent
+FAIL BluetoothAdvertisingEvent must be primary interface of event assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL Stringification of event assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "device" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "uuids" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "name" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "appearance" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "txPower" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "rssi" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "manufacturerData" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL BluetoothAdvertisingEvent interface: event must inherit property "serviceData" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 PASS BluetoothRemoteGATTServer interface: existence and properties of interface object
 PASS BluetoothRemoteGATTServer interface object length
 PASS BluetoothRemoteGATTServer interface object name
@@ -233,5 +255,6 @@ PASS BluetoothUUID interface: operation canonicalUUID(unsigned long)
 PASS Unscopable handled correctly for canonicalUUID(unsigned long) on BluetoothUUID
 PASS Navigator interface: attribute bluetooth
 PASS Unscopable handled correctly for bluetooth property on Navigator
+PASS Navigator interface: navigator must inherit property "bluetooth" with the proper type
 Harness: the test ran to completion.
 
