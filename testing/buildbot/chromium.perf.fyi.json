@@ -85,7 +85,8 @@
           "expiration": 3600,
           "hard_timeout": 1080,
           "ignore_task_failure": false,
-          "io_timeout": 360
+          "io_timeout": 360,
+          "shards": 4
         },
         "trigger_script": {
           "args": [
