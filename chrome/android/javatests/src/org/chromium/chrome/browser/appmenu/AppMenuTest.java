@@ -212,7 +212,7 @@ public class AppMenuTest {
     }
 
     private void showAppMenuAndAssertMenuShown() {
-        ThreadUtils.runOnUiThread((Runnable) () -> mAppMenuHandler.showAppMenu(null, false));
+        ThreadUtils.runOnUiThread((Runnable) () -> mAppMenuHandler.showAppMenu(null, false, false));
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {

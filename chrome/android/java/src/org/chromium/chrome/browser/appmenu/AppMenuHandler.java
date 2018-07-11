@@ -95,13 +95,14 @@ public class AppMenuHandler {
      *                      dragging down on the menu button, this should be true. Note that if
      *                      anchorView is null, this must be false since we no longer support
      *                      hardware menu button dragging.
+     * @param showFromBottom Whether the menu should be shown from the bottom up.
      * @return              True, if the menu is shown, false, if menu is not shown, example
      *                      reasons: the menu is not yet available to be shown, or the menu is
      *                      already showing.
      */
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ResourceType")
-    public boolean showAppMenu(View anchorView, boolean startDragging) {
+    public boolean showAppMenu(View anchorView, boolean startDragging, boolean showFromBottom) {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
         boolean isByPermanentButton = false;
 
@@ -167,7 +168,7 @@ public class AppMenuHandler {
             headerView = mDelegate.getHeaderView();
         }
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
-                footerResourceId, headerView, mHighlightMenuId);
+                footerResourceId, headerView, mHighlightMenuId, showFromBottom);
         mAppMenuDragHelper.onShow(startDragging);
         setMenuHighlight(null);
         RecordUserAction.record("MobileMenuShow");

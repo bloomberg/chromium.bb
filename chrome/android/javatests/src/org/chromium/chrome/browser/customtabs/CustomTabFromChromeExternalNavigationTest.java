@@ -201,7 +201,7 @@ public class CustomTabFromChromeExternalNavigationTest {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                appMenuHandler.showAppMenu(null, false);
+                appMenuHandler.showAppMenu(null, false, false);
             }
         });
         CriteriaHelper.pollUiThread(new Criteria("AppMenu did not show") {
