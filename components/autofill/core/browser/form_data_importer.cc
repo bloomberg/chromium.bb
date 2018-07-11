@@ -107,9 +107,11 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
 FormDataImporter::~FormDataImporter() {}
 
 void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
+                                      bool profile_autofill_enabled,
                                       bool credit_card_autofill_enabled) {
   std::unique_ptr<CreditCard> imported_credit_card;
-  if (!ImportFormData(submitted_form, credit_card_autofill_enabled,
+  if (!ImportFormData(submitted_form, profile_autofill_enabled,
+                      credit_card_autofill_enabled,
                       credit_card_save_manager_->IsCreditCardUploadEnabled(),
                       &imported_credit_card))
     return;
@@ -161,6 +163,7 @@ bool FormDataImporter::IsValidLearnableProfile(const AutofillProfile& profile,
 
 bool FormDataImporter::ImportFormData(
     const FormStructure& submitted_form,
+    bool profile_autofill_enabled,
     bool credit_card_autofill_enabled,
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card) {
@@ -175,7 +178,10 @@ bool FormDataImporter::ImportFormData(
   }
   // - ImportAddressProfiles may eventually save or update one or more address
   //   profiles.
-  bool address_import = ImportAddressProfiles(submitted_form);
+  bool address_import = false;
+  if (profile_autofill_enabled) {
+    address_import = ImportAddressProfiles(submitted_form);
+  }
   if (cc_import || address_import)
     return true;
 

@@ -27,6 +27,9 @@ const char kAutofillCreditCardSigninPromoImpressionCount[] =
     "autofill.credit_card_signin_promo_impression_count";
 
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
+const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
+
+// Boolean that is true if Autofill is enabled and allowed to save data.
 const char kAutofillEnabled[] = "autofill.enabled";
 
 // Integer that is set to the last version where the profile deduping routine

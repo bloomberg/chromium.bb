@@ -191,6 +191,9 @@ void AutofillManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kAutofillEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillProfileEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDeduped, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -349,7 +352,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   }
   autocomplete_history_manager_->OnWillSubmitForm(form_for_autocomplete);
 
-  address_form_event_logger_->OnWillSubmitForm();
+  if (IsProfileAutofillEnabled())
+    address_form_event_logger_->OnWillSubmitForm();
   if (IsCreditCardAutofillEnabled())
     credit_card_form_event_logger_->OnWillSubmitForm();
 
@@ -368,8 +372,9 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   AutofillMetrics::CardNumberStatus card_number_status =
       GetCardNumberStatus(credit_card);
 
-  address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false,
-                                              card_number_status);
+  if (IsProfileAutofillEnabled())
+    address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false,
+                                                card_number_status);
   if (IsCreditCardAutofillEnabled())
     credit_card_form_event_logger_->OnFormSubmitted(enable_ablation_logging_,
                                                     card_number_status);
@@ -380,6 +385,7 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
   form_data_importer_->ImportFormData(*submitted_form,
+                                      IsProfileAutofillEnabled(),
                                       IsCreditCardAutofillEnabled());
 }
 
@@ -1039,7 +1045,12 @@ bool AutofillManager::IsAutofillEnabled() const {
          client_->IsAutofillSupported();
 }
 
-bool AutofillManager::IsCreditCardAutofillEnabled() {
+bool AutofillManager::IsProfileAutofillEnabled() const {
+  return client_->GetPrefs()->GetBoolean(prefs::kAutofillProfileEnabled) &&
+         client_->IsAutofillSupported();
+}
+
+bool AutofillManager::IsCreditCardAutofillEnabled() const {
   return client_->GetPrefs()->GetBoolean(prefs::kAutofillCreditCardEnabled) &&
          client_->IsAutofillSupported();
 }

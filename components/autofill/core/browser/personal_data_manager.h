@@ -382,6 +382,12 @@ class PersonalDataManager : public KeyedService,
       PersonalDataManagerTest,
       DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           GetProfileSuggestions_ProfileAutofillDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           GetProfileSuggestions_NoProfilesLoadedIfDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           GetProfileSuggestions_NoProfilesAddedIfDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetCreditCardSuggestions_CreditCardAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetCreditCardSuggestions_NoCardsLoadedIfDisabled);
@@ -444,6 +450,9 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
+
+  // Returns the value of the AutofillEnabled pref.
+  virtual bool IsAutofillProfileEnabled() const;
 
   // Returns the value of the AutofillCreditCardEnabled pref.
   virtual bool IsAutofillCreditCardEnabled() const;
@@ -643,6 +652,9 @@ class PersonalDataManager : public KeyedService,
 
   // An observer to listen for changes to prefs::kAutofillCreditCardEnabled.
   std::unique_ptr<BooleanPrefMember> credit_card_enabled_pref_;
+
+  // An observer to listen for changes to prefs::kAutofillProfileEnabled.
+  std::unique_ptr<BooleanPrefMember> profile_enabled_pref_;
 
   // An observer to listen for changes to prefs::kAutofillEnabled.
   std::unique_ptr<BooleanPrefMember> enabled_pref_;

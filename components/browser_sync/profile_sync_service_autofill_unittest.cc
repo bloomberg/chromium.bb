@@ -95,6 +95,7 @@ namespace {
 void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled,
                                 true);
+  registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled,
                                 true);

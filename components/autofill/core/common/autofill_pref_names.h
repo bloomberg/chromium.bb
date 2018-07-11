@@ -15,6 +15,7 @@ extern const char kAutofillAcceptSaveCreditCardPromptState[];
 extern const char kAutofillBillingCustomerNumber[];
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
+extern const char kAutofillProfileEnabled[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];

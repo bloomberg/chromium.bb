@@ -934,6 +934,8 @@ bool PersonalDataManager::IsDataLoaded() const {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
   std::vector<AutofillProfile*> result;
+  if (!IsAutofillProfileEnabled())
+    return result;
   result.reserve(web_profiles_.size());
   for (const auto& profile : web_profiles_)
     result.push_back(profile.get());
@@ -942,6 +944,8 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
   std::vector<AutofillProfile*> result;
+  if (!IsAutofillProfileEnabled())
+    return result;
   result.reserve(server_profiles_.size());
   for (const auto& profile : server_profiles_)
     result.push_back(profile.get());
@@ -1235,6 +1239,10 @@ bool PersonalDataManager::IsAutofillEnabled() const {
   return ::autofill::IsAutofillEnabled(pref_service_);
 }
 
+bool PersonalDataManager::IsAutofillProfileEnabled() const {
+  return pref_service_->GetBoolean(prefs::kAutofillProfileEnabled);
+}
+
 bool PersonalDataManager::IsAutofillCreditCardEnabled() const {
   return pref_service_->GetBoolean(prefs::kAutofillCreditCardEnabled);
 }
@@ -1269,6 +1277,7 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
   enabled_pref_ = std::make_unique<BooleanPrefMember>();
   wallet_enabled_pref_ = std::make_unique<BooleanPrefMember>();
+  profile_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   credit_card_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   pref_service_ = pref_service;
   // |pref_service_| can be nullptr in tests.
@@ -1276,6 +1285,10 @@ void PersonalDataManager::SetPrefService(PrefService* pref_service) {
     credit_card_enabled_pref_->Init(
         prefs::kAutofillCreditCardEnabled, pref_service_,
         base::Bind(&PersonalDataManager::Refresh, base::Unretained(this)));
+    profile_enabled_pref_->Init(
+        prefs::kAutofillProfileEnabled, pref_service_,
+        base::BindRepeating(&PersonalDataManager::Refresh,
+                            base::Unretained(this)));
     enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
                         base::Bind(&PersonalDataManager::EnabledPrefChanged,
                                    base::Unretained(this)));

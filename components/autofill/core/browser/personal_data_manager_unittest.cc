@@ -1943,6 +1943,123 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_InvalidData) {
   }
 }
 
+// Test that local and server profiles are not shown if
+// |kAutofillProfileEnabled| is set to |false|.
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  const std::string kServerAddressId("server_address1");
+
+  // Add two different profiles, a local and a server one.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
+  personal_data_->AddProfile(local_profile);
+
+  // Add a different server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "",
+                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                       "77401", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Disable Profile autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
+                                            false);
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+
+  // Expect no autofilled values or suggestions.
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
+      false, std::vector<ServerFieldType>());
+  ASSERT_EQ(0U, suggestions.size());
+}
+
+// Test that local and server profiles are not loaded into memory on start-up if
+// |kAutofillProfileEnabled| is set to |false|.
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_NoProfilesLoadedIfDisabled) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  const std::string kServerAddressId("server_address1");
+
+  // Add two different profiles, a local and a server one.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
+  personal_data_->AddProfile(local_profile);
+
+  // Add a different server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "",
+                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                       "77401", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+
+  // Expect 2 autofilled values or suggestions.
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+
+  // Disable CProfile autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
+                                            false);
+  // Reload the database.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Expect no profile values or suggestions were loaded.
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
+      false, std::vector<ServerFieldType>());
+  ASSERT_EQ(0U, suggestions.size());
+}
+
+// Test that local profiles are not added if |kAutofillProfileEnabled| is set to
+// |false|.
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_NoProfilesAddedIfDisabled) {
+  // Disable Profile autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
+                                            false);
+
+  // Add a local profile.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
+  personal_data_->AddProfile(local_profile);
+
+  // Expect no profile values or suggestions were added.
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+}
+
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
   std::vector<CreditCard> server_cards;

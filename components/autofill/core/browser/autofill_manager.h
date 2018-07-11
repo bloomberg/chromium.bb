@@ -191,9 +191,13 @@ class AutofillManager : public AutofillHandler,
   // client supports Autofill.
   virtual bool IsAutofillEnabled() const;
 
+  // Returns true if the value of the AutofillProfileEnabled pref is true and
+  // the client supports Autofill.
+  virtual bool IsProfileAutofillEnabled() const;
+
   // Returns true if the value of the AutofillCreditCardEnabled pref is true and
   // the client supports Autofill.
-  virtual bool IsCreditCardAutofillEnabled();
+  virtual bool IsCreditCardAutofillEnabled() const;
 
   // Shared code to determine if |form| should be uploaded to the Autofill
   // server. It verifies that uploading is allowed and |form| meets conditions

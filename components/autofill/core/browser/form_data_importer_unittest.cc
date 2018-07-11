@@ -2142,6 +2142,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure,
+      /*profile_autofill_enabled=*/true,
       /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -2221,7 +2222,8 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   // Still returns true because the credit card import was successful.
   EXPECT_TRUE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
@@ -2241,6 +2243,63 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
   EXPECT_EQ(0, expected_card.Compare(*results[0]));
 }
 
+// Test that a form with both address and credit card sections imports only the
+// the credit card if addresses are disabled.
+TEST_F(FormDataImporterTest, ImportFormData_AddressesDisabledOneCreditCard) {
+  FormData form;
+  FormFieldData field;
+  // Address section.
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Credit card section.
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*profile_autofill_enabled=*/false,
+      /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/false, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
+
+  WaitForOnPersonalDataChanged();
+
+  // Test that addresses were not saved.
+  EXPECT_EQ(0U, personal_data_manager_->GetProfiles().size());
+
+  // Test that the credit card has been saved.
+  CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
+                          "01", "2999", "");
+  const std::vector<CreditCard*>& results =
+      personal_data_manager_->GetCreditCards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected_card.Compare(*results[0]));
+}
+
+// Test that a form with both address and credit card sections imports only the
+// the address if credit cards are disabled.
 TEST_F(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
   FormData form;
   FormFieldData field;
@@ -2273,7 +2332,9 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/false,
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/false,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
@@ -2290,6 +2351,55 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
       personal_data_manager_->GetProfiles();
   ASSERT_EQ(1U, results_addr.size());
   EXPECT_EQ(0, expected_address.Compare(*results_addr[0]));
+
+  // Test that the credit card was not saved.
+  const std::vector<CreditCard*>& results_cards =
+      personal_data_manager_->GetCreditCards();
+  ASSERT_EQ(0U, results_cards.size());
+}
+
+// Test that a form with both address and credit card sections imports nothing
+// if both addressed and credit cards are disabled.
+TEST_F(FormDataImporterTest, ImportFormData_AddressCreditCardDisabled) {
+  FormData form;
+  FormFieldData field;
+  // Address section.
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Credit card section.
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure,
+      /*profile_autofill_enabled=*/false,
+      /*credit_card_autofill_enabled=*/false,
+      /*should_return_local_card=*/false, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  // Test that addresses were not saved.
+  EXPECT_EQ(0U, personal_data_manager_->GetProfiles().size());
 
   // Test that the credit card was not saved.
   const std::vector<CreditCard*>& results_cards =
@@ -2338,7 +2448,8 @@ TEST_F(FormDataImporterTest, DontDuplicateMaskedServerCard) {
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 }
@@ -2385,7 +2496,9 @@ TEST_F(FormDataImporterTest, DontDuplicateFullServerCard) {
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 }
@@ -2427,7 +2540,9 @@ TEST_F(FormDataImporterTest,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
   histogram_tester.ExpectUniqueSample(
@@ -2473,7 +2588,9 @@ TEST_F(FormDataImporterTest,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
   histogram_tester.ExpectUniqueSample(
@@ -2519,7 +2636,9 @@ TEST_F(FormDataImporterTest,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
   histogram_tester.ExpectUniqueSample(
@@ -2566,7 +2685,8 @@ TEST_F(FormDataImporterTest,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*credit_card_autofill_enabled=*/true,
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
   histogram_tester.ExpectUniqueSample(
