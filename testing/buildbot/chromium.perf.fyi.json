@@ -57,7 +57,7 @@
           "--upload-results",
           "--output-format=histograms",
           "--browser=android-chromium",
-          "--test-shard-map-filename=android_nexus5x_4_shard_map.json"
+          "--test-shard-map-filename=android_nexus5x_fyi_4_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
