@@ -1394,7 +1394,6 @@ skip_child_includes = [
   'third_party/abseil-cpp',
   'third_party/breakpad/breakpad',
   'v8',
-  'win8',
 ]
 
 
