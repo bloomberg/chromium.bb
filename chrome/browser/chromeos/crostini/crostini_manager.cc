@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -419,6 +420,19 @@ bool CrostiniManager::IsVmRunning(Profile* profile, std::string vm_name) {
   return running_vms_.find(std::make_pair(CryptohomeIdForProfile(profile),
                                           std::move(vm_name))) !=
          running_vms_.end();
+}
+
+bool CrostiniManager::IsContainerRunning(Profile* profile,
+                                         std::string vm_name,
+                                         std::string container_name) {
+  auto range = running_containers_.equal_range(
+      std::make_pair(CryptohomeIdForProfile(profile), std::move(vm_name)));
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second == container_name) {
+      return true;
+    }
+  }
+  return false;
 }
 
 CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
@@ -977,8 +991,10 @@ void CrostiniManager::OnStopVm(
     }
   }
   // Remove from running_vms_.
-  running_vms_.erase(std::make_pair(std::move(owner_id), std::move(vm_name)));
-
+  auto key = std::make_pair(std::move(owner_id), std::move(vm_name));
+  running_vms_.erase(key);
+  // Remove containers from running_containers_
+  running_containers_.erase(key);
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
@@ -1018,6 +1034,9 @@ void CrostiniManager::OnContainerStarted(
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
+  running_containers_.emplace(
+      std::make_pair(signal.owner_id(), signal.vm_name()),
+      signal.container_name());
 }
 
 void CrostiniManager::OnContainerStartupFailed(

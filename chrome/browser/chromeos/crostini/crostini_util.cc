@@ -30,6 +30,7 @@ namespace {
 
 constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
 constexpr char kCrostiniAppNamePrefix[] = "_crostini_";
+constexpr int64_t kDelayBeforeSpinnerMs = 400;
 
 // If true then override IsCrostiniUIAllowedForProfile and related methods to
 // turn on Crostini.
@@ -160,6 +161,20 @@ void LaunchCrostiniApp(Profile* profile,
   LaunchCrostiniApp(profile, app_id, display_id, std::vector<std::string>());
 }
 
+void AddSpinner(const std::string& app_id,
+                Profile* profile,
+                std::string vm_name,
+                std::string container_name) {
+  ChromeLauncherController* chrome_controller =
+      ChromeLauncherController::instance();
+  if (chrome_controller &&
+      !crostini::CrostiniManager::GetInstance()->IsContainerRunning(
+          profile, vm_name, container_name)) {
+    chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
+        app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
+  }
+}
+
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
@@ -211,13 +226,10 @@ void LaunchCrostiniApp(Profile* profile,
   // Update the last launched time.
   registry_service->AppLaunched(app_id);
 
-  // Show a spinner as it may take a while for the app window to appear.
-  ChromeLauncherController* chrome_controller =
-      ChromeLauncherController::instance();
-  DCHECK(chrome_controller);
-  chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
-      app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
-
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AddSpinner, app_id, profile, vm_name, container_name),
+      base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
   crostini_manager->RestartCrostini(
       profile, vm_name, container_name,
       base::BindOnce(OnCrostiniRestarted, app_id, browser,
