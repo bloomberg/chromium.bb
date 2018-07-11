@@ -312,7 +312,6 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
 
 DownloadManagerImpl::~DownloadManagerImpl() {
   DCHECK(!shutdown_needed_);
-  download::SetIOTaskRunner(nullptr);
 }
 
 download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
