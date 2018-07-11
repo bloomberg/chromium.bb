@@ -29,6 +29,14 @@ suite('Multidevice', function() {
     name: 'Pixel XL',
   };
 
+  function setPageContentData(newMode, newHostDevice) {
+    multidevicePage.pageContentData = {
+      mode: newMode,
+      hostDevice: newHostDevice,
+    };
+    Polymer.dom.flush();
+  }
+
   suiteSetup(function() {
     HOST_SET_MODES = [
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
@@ -53,17 +61,11 @@ suite('Multidevice', function() {
     multidevicePage.remove();
   });
 
-  const setPageContentData = function(newMode, newHostDevice) {
-    multidevicePage.pageContentData = {
-      mode: newMode,
-      hostDevice: newHostDevice,
-    };
-    Polymer.dom.flush();
-  };
-
   const getLabel = () => multidevicePage.$$('#multidevice-label').textContent;
 
-  test('pressing setup shows multidevice setup dialog', function() {
+  const getSubpage = () => multidevicePage.$$('settings-multidevice-subpage');
+
+  test('clicking setup shows multidevice setup dialog', function() {
     setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, null);
     const button = multidevicePage.$$('paper-button');
     assertTrue(!!button);
@@ -90,4 +92,38 @@ suite('Multidevice', function() {
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
     assertEquals(getLabel(), anotherHost.name);
   });
+
+  test('item is actionable if and only if a host is set', function() {
+    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, null);
+    assertFalse(
+        multidevicePage.$$('#multidevice-item').hasAttribute('actionable'));
+    for (let mode of HOST_SET_MODES) {
+      setPageContentData(mode, HOST_DEVICE);
+      assertTrue(
+          multidevicePage.$$('#multidevice-item').hasAttribute('actionable'));
+    }
+  });
+
+  test(
+      'clicking item with verified host opens subpage with features',
+      function() {
+        setPageContentData(
+            settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED, HOST_DEVICE);
+        assertFalse(!!getSubpage());
+        multidevicePage.$$('#multidevice-item').click();
+        assertTrue(!!getSubpage());
+        assertTrue(!!getSubpage().$$('settings-multidevice-feature-item'));
+      });
+
+  test(
+      'clicking item with unverified set host opens subpage without features',
+      function() {
+        setPageContentData(
+            settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+            HOST_DEVICE);
+        assertFalse(!!getSubpage());
+        multidevicePage.$$('#multidevice-item').click();
+        assertTrue(!!getSubpage());
+        assertFalse(!!getSubpage().$$('settings-multidevice-feature-item'));
+      });
 });

@@ -6,7 +6,6 @@
  * @fileoverview
  * Settings page for managing MultiDevice features.
  */
-
 cr.exportPath('settings');
 
 Polymer({
@@ -27,11 +26,32 @@ Polymer({
     // TODO(jordynass): Set this variable once the information is retrieved from
     // prefs.
     /**
-     * @type {boolean|undefined}
-     * If a host has been verified, this is true if that host is and enabled and
-     * false if it is disabled. Otherwise it is undefined.
+     * True if the multidevice setup is complete and the paired phone has been
+     * verified; otherwise, false.
+     * @private {boolean}
      */
-    hostEnabled: Boolean,
+    hostEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * A Map specifying which element should be focused when exiting a subpage.
+     * The key of the map holds a settings.Route path, and the value holds a
+     * query selector that identifies the desired element.
+     * @private {!Map<string, string>}
+     */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        const map = new Map();
+        if (settings.routes.MULTIDEVICE_FEATURES)
+          map.set(
+              settings.routes.MULTIDEVICE_FEATURES.path,
+              '#multidevice-item .subpage-arrow');
+        return map;
+      },
+    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -65,8 +85,8 @@ Polymer({
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18nAdvanced('multideviceVerificationText');
       default:
-        return this.hostEnabled ? this.i18n('multideviceEnabled') :
-                                  this.i18n('multideviceDisabled');
+        return this.hostEnabled_ ? this.i18n('multideviceEnabled') :
+                                   this.i18n('multideviceDisabled');
     }
   },
 
@@ -105,8 +125,28 @@ Polymer({
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
+  /**
+   * @return {boolean}
+   * @private
+   */
+  doesClickOpenSubpage_: function() {
+    return [
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+      settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED,
+    ].includes(this.pageContentData.mode);
+  },
+
   /** @private */
-  handleClick_: function() {
+  handleItemClick_: function() {
+    if (!this.doesClickOpenSubpage_())
+      return;
+    settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
+  },
+
+  /** @private */
+  handleButtonClick_: function(event) {
+    event.stopPropagation();
     switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         this.browserProxy_.showMultiDeviceSetupDialog();
