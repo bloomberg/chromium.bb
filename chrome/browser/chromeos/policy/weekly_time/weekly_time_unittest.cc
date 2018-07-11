@@ -4,13 +4,20 @@
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 
+#include <memory>
 #include <tuple>
 #include <utility>
 
+#include "base/callback_helpers.h"
+#include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace em = enterprise_management;
 
@@ -237,5 +244,36 @@ INSTANTIATE_TEST_CASE_P(
                                     -7 * kMinutesInHour,
                                     kThursday,
                                     15 * kMinutesInHour + 24)));
+
+TEST(WeeklyTimeStringTest, ToLocalizedString) {
+  base::test::ScopedRestoreICUDefaultLocale restore_locale;
+
+  // 15:50 UTC, 8:50 PT, 11:50 PT
+  WeeklyTime test_weekly_time =
+      WeeklyTime(5, (15 * kMinutesInHour + 50) * kMinute.InMilliseconds());
+
+  // Save original timezone
+  base::ScopedClosureRunner reset_timezone(base::BindOnce(
+      [](std::unique_ptr<icu::TimeZone> original_timezone) {
+        icu::TimeZone::adoptDefault(original_timezone.release());
+      },
+      base::WrapUnique<icu::TimeZone>(icu::TimeZone::createDefault())));
+
+  base::i18n::SetICUDefaultLocale("en_US");
+  icu::TimeZone::adoptDefault(
+      icu::TimeZone::createTimeZone("America/Los_Angeles"));
+  EXPECT_EQ(base::UTF8ToUTF16("Friday 8:50 AM"),
+            test_weekly_time.ToLocalizedString());
+
+  base::i18n::SetICUDefaultLocale("de_DE");
+  EXPECT_EQ(base::UTF8ToUTF16("Freitag, 08:50"),
+            test_weekly_time.ToLocalizedString());
+
+  base::i18n::SetICUDefaultLocale("en_GB");
+  icu::TimeZone::adoptDefault(
+      icu::TimeZone::createTimeZone("America/New_York"));
+  EXPECT_EQ(base::UTF8ToUTF16("Friday 11:50"),
+            test_weekly_time.ToLocalizedString());
+}
 
 }  // namespace policy

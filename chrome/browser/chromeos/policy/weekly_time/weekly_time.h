@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -16,7 +17,8 @@ namespace policy {
 
 // WeeklyTime class contains day of week and time. Day of week is number from 1
 // to 7 (1 = Monday, 2 = Tuesday, etc.) Time is in milliseconds from the
-// beginning of the day.
+// beginning of the day. WeeklyTime's timezone should be interpreted to be in
+// UTC.
 class WeeklyTime {
  public:
   WeeklyTime(int day_of_week, int milliseconds);
@@ -43,6 +45,15 @@ class WeeklyTime {
 
   // Add milliseconds to WeeklyTime.
   WeeklyTime AddMilliseconds(int milliseconds) const;
+
+  // Convert WeeklyTime to a string that is in local time and localized to the
+  // system's language and time display settings. The output is in the format
+  // "EEEE jj:mm a" E.g. for |day_of_week_| = 4 and |milliseconds_| = 5 hours
+  // (in ms) then the output should be "Thursday 5:00 AM" in an US locale in UTC
+  // timezone. Similarly, the output will be "Donnerstag 05:00" in a german
+  // locale in UTC timezone (there may be slight changes due to different
+  // standards in different locales).
+  base::string16 ToLocalizedString() const;
 
   // Return WeeklyTime structure from WeeklyTimeProto. Return nullptr if
   // WeeklyTime structure isn't correct.
