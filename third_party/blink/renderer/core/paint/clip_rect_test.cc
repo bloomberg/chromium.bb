@@ -41,6 +41,10 @@ TEST_F(ClipRectTest, HasRadius) {
 
   rect.SetHasRadius(true);
   EXPECT_TRUE(rect.HasRadius());
+
+  rect.SetRect(FloatClipRect());
+  EXPECT_FALSE(rect.HasRadius());
+  EXPECT_TRUE(rect.IsInfinite());
 }
 
 TEST_F(ClipRectTest, IntersectClipRect) {

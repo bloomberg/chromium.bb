@@ -32,12 +32,19 @@
 
 namespace blink {
 
+ClipRect::ClipRect()
+    : rect_(LayoutRect::InfiniteIntRect()),
+      has_radius_(false),
+      is_infinite_(true) {}
+
 ClipRect::ClipRect(const FloatClipRect& rect)
     : rect_(rect.Rect()),
       has_radius_(rect.HasRadius()),
       is_infinite_(rect.IsInfinite()) {}
 
 void ClipRect::SetRect(const FloatClipRect& rect) {
+  if (rect.IsInfinite() && IsInfinite())
+    return;
   rect_ = LayoutRect(rect.Rect());
   has_radius_ = rect.HasRadius();
   is_infinite_ = rect.IsInfinite();
@@ -49,10 +56,35 @@ void ClipRect::SetRect(const LayoutRect& rect) {
   is_infinite_ = false;
 }
 
+void ClipRect::Intersect(const LayoutRect& other) {
+  if (IsInfinite()) {
+    rect_ = other;
+    is_infinite_ = false;
+  } else {
+    rect_.Intersect(other);
+  }
+}
+
+void ClipRect::Intersect(const ClipRect& other) {
+  if (other.IsInfinite())
+    return;
+  Intersect(other.Rect());
+  if (other.HasRadius())
+    has_radius_ = true;
+}
+
 bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
   if (is_infinite_)
     return true;
   return hit_test_location.Intersects(rect_);
+}
+
+void ClipRect::Reset() {
+  if (is_infinite_)
+    return;
+  has_radius_ = true;
+  is_infinite_ = true;
+  rect_ = LayoutRect(LayoutRect::InfiniteIntRect());
 }
 
 String ClipRect::ToString() const {

@@ -39,10 +39,7 @@ class CORE_EXPORT ClipRect {
   USING_FAST_MALLOC(ClipRect);
 
  public:
-  ClipRect()
-      : rect_(LayoutRect::InfiniteIntRect()),
-        has_radius_(false),
-        is_infinite_(true) {}
+  ClipRect();
   ClipRect(const LayoutRect& rect)
       : rect_(rect), has_radius_(false), is_infinite_(false) {}
   ClipRect(const FloatClipRect& rect);
@@ -51,8 +48,16 @@ class CORE_EXPORT ClipRect {
   const LayoutRect& Rect() const { return rect_; }
   void SetRect(const FloatClipRect& rect);
 
+  // HasRadius is true if the clip this ClipRect has rounded corners.
+  // The ClipRect does not actually represent the rounded corners; those
+  // are computed as neeeded from the LayoutObject when actually applying the
+  // clip.
   bool HasRadius() const { return has_radius_; }
-  void SetHasRadius(bool has_radius) { has_radius_ = has_radius; }
+  void SetHasRadius(bool has_radius) {
+    if (IsInfinite())
+      return;
+    has_radius_ = has_radius;
+  }
 
   bool IsInfinite() const { return is_infinite_; }
 
@@ -66,28 +71,17 @@ class CORE_EXPORT ClipRect {
     return Rect() != other_rect;
   }
 
-  void Intersect(const LayoutRect& other) {
-    if (IsInfinite()) {
-      rect_ = other;
-      is_infinite_ = false;
-    } else {
-      rect_.Intersect(other);
-    }
-  }
+  void Intersect(const LayoutRect& other);
+  void Intersect(const ClipRect& other);
 
-  void Intersect(const ClipRect& other) {
-    if (other.IsInfinite())
-      return;
-    Intersect(other.Rect());
-    if (other.HasRadius())
-      has_radius_ = true;
-  }
   void Move(const LayoutSize& size) { rect_.Move(size); }
   void Move(const IntSize& size) { rect_.Move(size); }
   void MoveBy(const LayoutPoint& point) { rect_.MoveBy(point); }
 
   bool IsEmpty() const { return rect_.IsEmpty(); }
   bool Intersects(const HitTestLocation&) const;
+
+  void Reset();
 
   String ToString() const;
 
