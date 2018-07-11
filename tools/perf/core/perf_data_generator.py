@@ -373,7 +373,6 @@ BLACKLISTED_DEVICES = []
 BENCHMARK_REF_BUILD_BLACKLIST = [
   'loading.desktop',  # Long running benchmark.
   'loading.mobile',  # Long running benchmark.
-  'power.idle_platform',  # No browser used in benchmark.
   'v8.runtime_stats.top_25',  # Long running benchmark.
 ]
 

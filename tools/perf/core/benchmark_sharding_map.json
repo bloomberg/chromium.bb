@@ -52,7 +52,6 @@
     "build199-b7--device7": {
       "benchmarks": [
         "blink_perf.shadow_dom",
-        "power.idle_platform",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases"
       ]
     },
@@ -231,7 +230,6 @@
     "build211-b7--device7": {
       "benchmarks": [
         "blink_perf.shadow_dom",
-        "power.idle_platform",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases"
       ]
     },
@@ -410,7 +408,6 @@
       "benchmarks": [
         "blink_perf.canvas",
         "blink_perf.paint",
-        "power.idle_platform",
         "smoothness.image_decoding_cases"
       ]
     },
@@ -586,7 +583,6 @@
       "benchmarks": [
         "blink_perf.canvas",
         "blink_perf.paint",
-        "power.idle_platform",
         "smoothness.image_decoding_cases"
       ]
     },
@@ -765,8 +761,7 @@
     "build191-b7--device7": {
       "benchmarks": [
         "kraken",
-        "rendering.mobile",
-        "power.idle_platform"
+        "rendering.mobile"
       ]
     },
     "build192-b7--device1": {
@@ -942,7 +937,6 @@
     "build245-m4--device7": {
       "benchmarks": [
         "blink_perf.shadow_dom",
-        "power.idle_platform",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases"
       ]
     },
@@ -1099,7 +1093,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1216,7 +1209,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1332,7 +1324,6 @@
         "octane",
         "oortonline_tbmv2",
         "power.desktop",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1445,7 +1436,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1562,7 +1552,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1704,8 +1693,7 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
-	"rendering.desktop",
+        "rendering.desktop",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1800,7 +1788,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -1915,7 +1902,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -2030,7 +2016,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -2145,7 +2130,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
         "smoothness.top_25_smooth",
@@ -2259,7 +2243,6 @@
     "octane",
     "oortonline_tbmv2",
     "power.desktop",
-    "power.idle_platform",
     "power.typical_10_mobile",
     "rasterize_and_record_micro.partial_invalidation",
     "rasterize_and_record_micro.top_25",

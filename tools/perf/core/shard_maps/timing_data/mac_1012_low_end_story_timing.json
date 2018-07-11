@@ -2052,18 +2052,6 @@
         "name": "power.desktop/uol"
     },
     {
-        "duration": "17.968606454545455",
-        "name": "power.idle_platform/IdleStory_10s"
-    },
-    {
-        "duration": "128.6242666666666",
-        "name": "power.idle_platform/IdleStory_120s"
-    },
-    {
-        "duration": "68.2272805353535",
-        "name": "power.idle_platform/IdleStory_60s"
-    },
-    {
         "duration": "5.672152413131314",
         "name": "rasterize_and_record_micro.partial_invalidation/800_relpos_divs.html"
     },
