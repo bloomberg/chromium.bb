@@ -96,7 +96,8 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
                                    payments::PaymentsClient* payments_client,
                                    PersonalDataManager* personal_data_manager,
                                    const std::string& app_locale)
-    : credit_card_save_manager_(
+    : client_(client),
+      credit_card_save_manager_(
           std::make_unique<CreditCardSaveManager>(client,
                                                   payments_client,
                                                   app_locale,
@@ -296,7 +297,14 @@ bool FormDataImporter::ImportAddressProfileForSection(
   if (!IsValidLearnableProfile(candidate_profile, app_locale_))
     return false;
 
-  personal_data_manager_->SaveImportedProfile(candidate_profile);
+  // Delaying |SaveImportedProfile| is safe here because PersonalDataManager
+  // outlives this class.
+  client_->ConfirmSaveAutofillProfile(
+      candidate_profile,
+      base::BindOnce(
+          base::IgnoreResult(&PersonalDataManager::SaveImportedProfile),
+          base::Unretained(personal_data_manager_), candidate_profile));
+
   return true;
 }
 

@@ -155,6 +155,14 @@ void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
   unmask_controller_.OnVerificationResult(result);
 }
 
+void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
+    const AutofillProfile& profile,
+    base::OnceClosure callback) {
+  // Since there is no confirmation needed to save an Autofill Profile,
+  // running |callback| will proceed with saving |profile|.
+  std::move(callback).Run();
+}
+
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     const base::Closure& callback) {
