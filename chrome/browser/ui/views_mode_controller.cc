@@ -12,8 +12,7 @@
 namespace views_mode_controller {
 
 bool IsViewsBrowserCocoa() {
-  return features::IsViewsBrowserCocoa() &&
-         !base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return features::IsViewsBrowserCocoa();
 }
 
 }  // namespace views_mode_controller

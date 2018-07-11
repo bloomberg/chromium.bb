@@ -162,7 +162,8 @@ const base::Feature kViewsBrowserWindows{"ViewsBrowserWindows",
 // Returns whether a Views-capable browser build should use the Cocoa browser
 // UI.
 bool IsViewsBrowserCocoa() {
-  return !base::FeatureList::IsEnabled(kViewsBrowserWindows);
+  return !base::FeatureList::IsEnabled(kViewsBrowserWindows) &&
+      !base::FeatureList::IsEnabled(kExperimentalUi);
 }
 #endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)
