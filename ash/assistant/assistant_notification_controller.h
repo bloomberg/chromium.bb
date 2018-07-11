@@ -32,6 +32,7 @@ class ASH_EXPORT AssistantNotificationController
 
   // chromeos::assistant::mojom::AssistantNotificationSubscriber:
   void OnShowNotification(AssistantNotificationPtr notification) override;
+  void OnRemoveNotification(const std::string& grouping_id) override;
 
  private:
   AssistantController* assistant_controller_;
@@ -42,8 +43,8 @@ class ASH_EXPORT AssistantNotificationController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  // Save notifications for future retrieval or dismiss operations.
-  std::map<std::string, AssistantNotificationPtr> notifications_by_id_;
+  // Save the latest notification for future retrieval or dismiss operations.
+  AssistantNotificationPtr notification_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationController);
 };

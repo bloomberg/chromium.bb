@@ -81,6 +81,10 @@ interface AssistantInteractionSubscriber {
 interface AssistantNotificationSubscriber {
   // Assistant got notification from server.
   OnShowNotification(AssistantNotification notification);
+
+  // Notifies UI to remove the notification with the |grouping_key|.
+  // If |grouping_key| is empty, remove all notifications.
+  OnRemoveNotification(string grouping_key);
 };
 
 // Interface for browser to bind and start assistant.

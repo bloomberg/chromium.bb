@@ -117,6 +117,7 @@ class AssistantManagerServiceImpl
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
+  void OnNotificationRemoved(const std::string& grouping_key) override;
 
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
@@ -161,6 +162,7 @@ class AssistantManagerServiceImpl
   void OnOpenUrlOnMainThread(const std::string& url);
   void OnShowNotificationOnMainThread(
       const mojom::AssistantNotificationPtr& notification);
+  void OnNotificationRemovedOnMainThread(const std::string& grouping_id);
   void OnRecognitionStateChangedOnMainThread(
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&

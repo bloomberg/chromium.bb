@@ -51,16 +51,12 @@ void AssistantNotificationController::OnShowNotification(
 
   // Create the specified |notification| that should be rendered in the
   // |message_center| for the interaction.
-  const std::string notification_id = notification->notification_id;
-  if (notifications_by_id_.count(notification_id) > 0)
-    return;
-
-  const base::string16 title = base::UTF8ToUTF16(notification->title);
-  const base::string16 message = base::UTF8ToUTF16(notification->message);
-  const GURL action_url = notification->action_url;
+  notification_ = std::move(notification);
+  const base::string16 title = base::UTF8ToUTF16(notification_->title);
+  const base::string16 message = base::UTF8ToUTF16(notification_->message);
+  const GURL action_url = notification_->action_url;
   const base::string16 display_source =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE);
-  notifications_by_id_.emplace(notification_id, std::move(notification));
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -87,6 +83,21 @@ void AssistantNotificationController::OnShowNotification(
           message_center::SystemNotificationWarningLevel::NORMAL);
   system_notification->set_priority(message_center::DEFAULT_PRIORITY);
   message_center->AddNotification(std::move(system_notification));
+}
+
+void AssistantNotificationController::OnRemoveNotification(
+    const std::string& grouping_key) {
+  if (!grouping_key.empty() &&
+      (!notification_ || notification_->grouping_key != grouping_key)) {
+    return;
+  }
+
+  // message_center has only one Assistant notification, so there is no
+  // difference between removing all and removing one Assistant notification.
+  notification_.reset();
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  message_center->RemoveNotification(kNotificationId, /*by_user=*/false);
 }
 
 }  // namespace ash
