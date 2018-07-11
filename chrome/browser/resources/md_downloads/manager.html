@@ -27,15 +27,7 @@
         z-index: 0;
       }
 
-      @media screen and (max-width: 1024px) {
-        :host {
-          flex-basis: calc(
-              var(--downloads-card-width) + 2 * var(--downloads-card-margin));
-        }
-      }
-
       #toolbar {
-        position: relative;
         z-index: 1;
       }
 
@@ -48,6 +40,8 @@
       }
 
       #downloads-list {
+        min-width: calc(
+          var(--downloads-card-width) + 2 * var(--downloads-card-margin));
         /* TODO(dbeam): we're not setting scrollTarget explicitly, yet
          * style="overflow: auto" is still being set by <iron-list>'s JS. Weird.
          */
@@ -84,22 +78,30 @@
         height: 144px;  /* Matches natural image height. */
         margin-bottom: 32px;
       }
+
+      #mainContainer {
+        display: flex;
+        flex: 1;
+        overflow: auto;
+      }
     </style>
 
     <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}"
         role="none">
     </downloads-toolbar>
     <div id="drop-shadow"></div>
-    <iron-list id="downloads-list" items="[[items_]]"
-        hidden="[[!hasDownloads_]]">
-      <template>
-        <downloads-item data="[[item]]"></downloads-item>
-      </template>
-    </iron-list>
-    <div id="no-downloads" hidden="[[hasDownloads_]]">
-      <div>
-        <div class="illustration"></div>
-        <span>[[noDownloadsText_(inSearchMode_)]]</span>
+    <div id="mainContainer">
+      <iron-list id="downloads-list" items="[[items_]]"
+          hidden="[[!hasDownloads_]]">
+        <template>
+          <downloads-item data="[[item]]"></downloads-item>
+        </template>
+      </iron-list>
+      <div id="no-downloads" hidden="[[hasDownloads_]]">
+        <div>
+          <div class="illustration"></div>
+          <span>[[noDownloadsText_(inSearchMode_)]]</span>
+        </div>
       </div>
     </div>
   </template>
