@@ -167,3 +167,67 @@ testcase.directoryTreeRefresh = function() {
     },
   ]);
 };
+
+/**
+ * Tests My Files displaying Downloads on file list (RHS) and opening Downloads
+ * from file list.
+ */
+testcase.myFilesDisplaysAndOpensEntries = function() {
+  let appId;
+  StepsRunner.run([
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
+    },
+    // Select My Files folder.
+    function(results) {
+      appId = results.windowId;
+      const myFilesQuery = '#directory-tree [entry-label="My Files"]';
+      const isDriveQuery = false;
+      remoteCall.callRemoteTestUtil(
+          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
+          this.next);
+    },
+    // Wait for file list to display Downloads and Crostini.
+    function(result) {
+      chrome.test.assertTrue(result);
+      const downloadsRow = ['Downloads', '--', 'Folder'];
+      const crostiniRow = ['Linux Files', '--', 'Folder'];
+      remoteCall
+          .waitForFiles(
+              appId, [downloadsRow, crostiniRow],
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Double click on Download on file list.
+    function() {
+      const downloadsFileListQuery = '#file-list [file-name="Downloads"]';
+      remoteCall
+          .callRemoteTestUtil(
+              'fakeMouseDoubleClick', appId, [downloadsFileListQuery])
+          .then(this.next);
+    },
+    // Wait for file list to Downloads' content.
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId, [ENTRIES.beautiful.getExpectedRow()],
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Get the selected navigation tree item.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'getSelectedTreeItem', appId, [], this.next);
+    },
+    // Get the selected navigation tree item.
+    function(result) {
+      chrome.test.assertEq('Downloads', result);
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};

@@ -1236,6 +1236,7 @@ FileManager.prototype = /** @struct */ {
               str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI, {
                 isDirectory: true,
                 rootType: VolumeManagerCommon.RootType.CROSTINI,
+                name: str('LINUX_FILES_ROOT_LABEL'),
                 toURL: function() {
                   return 'fake-entry://linux-files';
                 },

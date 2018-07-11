@@ -56,8 +56,9 @@ DirectoryContentScanner.prototype.__proto__ = ContentScanner.prototype;
  */
 DirectoryContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  if (!this.entry_ || util.isFakeEntry(this.entry_)) {
-    // If entry is not specified or a fake, we cannot read it.
+  if (!this.entry_ || !this.entry_.createReader) {
+    // If entry is not specified or if entry doesn't implement createReader, we
+    // cannot read it.
     errorCallback(util.createDOMError(
         util.FileError.INVALID_MODIFICATION_ERR));
     return;
@@ -474,11 +475,11 @@ FileFilter.prototype.isHiddenFilesVisible = function() {
 FileFilter.prototype.setAllAndroidFoldersVisible = function(visible) {
   if (!visible) {
     this.addFilter('android_hidden', entry => {
-      if (entry.filesystem.name !== 'android_files')
+      if (entry.filesystem && entry.filesystem.name !== 'android_files')
         return true;
       // If |entry| is an Android top-level folder which is not whitelisted, it
       // should be hidden.
-      if (entry.fullPath.substr(1) == entry.name &&
+      if (entry.fullPath && entry.fullPath.substr(1) == entry.name &&
           FileFilter.DEFAULT_ANDROID_FOLDERS.indexOf(entry.name) == -1) {
         return false;
       }

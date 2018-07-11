@@ -492,9 +492,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("showMyFiles").EnableMyFiles(),
-                      TestCase("hideSearchButton").EnableMyFiles(),
-                      TestCase("directoryTreeRefresh").EnableMyFiles()));
+    ::testing::Values(
+        TestCase("showMyFiles").EnableMyFiles(),
+        TestCase("hideSearchButton").EnableMyFiles(),
+        TestCase("myFilesDisplaysAndOpensEntries").EnableMyFiles(),
+        TestCase("directoryTreeRefresh").EnableMyFiles()));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
