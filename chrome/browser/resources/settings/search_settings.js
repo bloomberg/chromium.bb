@@ -65,14 +65,19 @@ cr.define('settings', function() {
     const domIfTag = Polymer.DomIf ? 'DOM-IF' : 'TEMPLATE';
 
     function doSearch(node) {
-      // TODO(dpapad): Note that for subpage wrappers
-      // <template route-path="..."> a noSearch member variable *should* be
-      // used, instead of the "no-search" CSS attribute, which does not work
-      // (throws an error) with the automatic Polymer 2 conversion to
-      // <dom-if><template...> syntax. Clean this up once Polymer 2 migration
-      // has finished.
+      // NOTE: For subpage wrappers <template route-path="..."> when |no-search|
+      // participates in a data binding:
+      //
+      //  - Always use noSearch Polymer property, for example
+      //    no-search="[[foo]]"
+      //  - *Don't* use a no-search CSS attribute like no-search$="[[foo]]"
+      //
+      // The latter throws an error during the automatic Polymer 2 conversion to
+      // <dom-if><template...></dom-if> syntax.
+      // TODO(dpapad):Clean this up once Polymer 2 migration has finished.
       if (node.nodeName == domIfTag && node.hasAttribute('route-path') &&
-          !node.if && !node['noSearch']) {
+          !node.if && !node['noSearch'] &&
+          !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
         request.queue_.addRenderTask(new RenderTask(request, node));
         return;
       }

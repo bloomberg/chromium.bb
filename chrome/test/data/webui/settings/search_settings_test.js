@@ -152,8 +152,16 @@ cr.define('settings_test', function() {
           <template>
             <button></button>
             <settings-section hidden-by-search>
-              <template is="dom-if" route-path="/myPath"
+              <!-- Test case were no-search is part of a data binding. -->
+              <template is="dom-if" route-path="/myPath0"
                   no-search="[[noSearch]]">
+                <settings-subpage associated-control="[[$$('button')]]">
+                  ${text}
+                </settings-subpage>
+              </template>
+
+              <!-- Test case were no-search is not part of any data binding.-->
+              <template is="dom-if" route-path="/myPath1" no-search>
                 <settings-subpage associated-control="[[$$('button')]]">
                   ${text}
                 </settings-subpage>
