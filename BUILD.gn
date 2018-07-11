@@ -177,13 +177,6 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios && !is_android && !is_chromecast) {
-    deps += [
-      "//tools/gn",
-      "//tools/gn:gn_unittests",
-    ]
-  }
-
   if (!is_ios && !is_android) {
     deps += [
       "//components/cronet:cronet_tests",

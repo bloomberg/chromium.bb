@@ -1948,7 +1948,6 @@
     'battor_agent_unittests': {},
     'cronet_tests': {},
     'cronet_unittests': {},
-    'gn_unittests': {},
     'headless_browsertests': {},
     'headless_unittests': {},
   },

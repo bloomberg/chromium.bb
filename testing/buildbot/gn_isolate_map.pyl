@@ -603,10 +603,6 @@
     "label": "//:gn_all",
     "type": "additional_compile_target",
   },
-  "gn_unittests": {
-    "label": "//tools/gn:gn_unittests",
-    "type": "console_test_launcher",
-  },
   "google_apis_unittests": {
     "label": "//google_apis:google_apis_unittests",
     "type": "console_test_launcher",
