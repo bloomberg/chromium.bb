@@ -113,6 +113,18 @@ TEST_F(AXRemoteHostTest, AutomationEnabled) {
             service.last_event_.id);
 }
 
+// Views can trigger accessibility events during Widget construction before the
+// AXRemoteHost starts monitoring the widget. This happens with the material
+// design focus ring on text fields. Verify we don't crash in this case.
+// https://crbug.com/862759
+TEST_F(AXRemoteHostTest, SendEventBeforeWidgetCreated) {
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+  views::View view;
+  remote->HandleEvent(&view, ax::mojom::Event::kLocationChanged);
+  // No crash.
+}
+
 TEST_F(AXRemoteHostTest, CreateWidgetThenEnableAutomation) {
   TestAXHostService service(false /*automation_enabled*/);
   AXRemoteHost* remote = CreateRemote(&service);

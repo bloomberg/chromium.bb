@@ -157,7 +157,7 @@ void AXRemoteHost::Disable() {
 
 void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
                              ax::mojom::Event event_type) {
-  if (!enabled_)
+  if (!enabled_ || !tree_serializer_)
     return;
 
   ui::AXTreeUpdate update;
