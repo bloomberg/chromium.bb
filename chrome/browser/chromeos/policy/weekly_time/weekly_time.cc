@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/strings/string16.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 
 namespace em = enterprise_management;
@@ -16,6 +20,8 @@ constexpr base::TimeDelta kDay = base::TimeDelta::FromDays(1);
 constexpr base::TimeDelta kHour = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kSecond = base::TimeDelta::FromSeconds(1);
+
+const char* kFormatWeekdayHourMinute = "EEEE jj:mm a";
 
 }  // namespace
 
@@ -61,18 +67,27 @@ WeeklyTime WeeklyTime::AddMilliseconds(int milliseconds) const {
   return WeeklyTime(result_day_of_week, result_milliseconds);
 }
 
+base::string16 WeeklyTime::ToLocalizedString() const {
+  // Clock with the current time.
+  base::Clock* default_clock = base::DefaultClock::GetInstance();
+  WeeklyTime now_weekly_time = GetCurrentWeeklyTime(default_clock);
+  // Offset the current time so that its day of the week and time match
+  // |day_of_week| and |milliseconds_|.
+  base::Time offset_time =
+      default_clock->Now() + now_weekly_time.GetDurationTo(*this);
+  return base::TimeFormatWithPattern(offset_time, kFormatWeekdayHourMinute);
+}
+
 // static
 WeeklyTime WeeklyTime::GetCurrentWeeklyTime(base::Clock* clock) {
   base::Time::Exploded exploded;
   clock->Now().UTCExplode(&exploded);
-  int day_of_week = exploded.day_of_week;
-  // Exploded contains 0-based day of week (0 = Sunday, etc.)
-  if (day_of_week == 0)
-    day_of_week = 7;
-  return WeeklyTime(day_of_week,
-                    exploded.hour * kHour.InMilliseconds() +
-                        exploded.minute * kMinute.InMilliseconds() +
-                        exploded.second * kSecond.InMilliseconds());
+  int day_of_week = exploded.day_of_week == 0 ? 7 : exploded.day_of_week;
+  int milliseconds = exploded.hour * kHour.InMilliseconds() +
+                     exploded.minute * kMinute.InMilliseconds() +
+                     exploded.second * kSecond.InMilliseconds() +
+                     exploded.millisecond;
+  return WeeklyTime(day_of_week, milliseconds);
 }
 
 // static
