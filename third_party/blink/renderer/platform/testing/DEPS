@@ -47,4 +47,7 @@ specific_include_rules = {
     'blink_fuzzer_test_support\.cc': [
         "+content/public/test/blink_test_environment.h",
     ],
+    'testing_platform_support_with_mock_scheduler\.cc': [
+        "+base/task/sequence_manager/test/sequence_manager_for_test.h",
+    ],
 }

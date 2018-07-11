@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 
 #include "base/task/sequence_manager/thread_controller_impl.h"
 

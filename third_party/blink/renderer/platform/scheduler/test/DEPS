@@ -3,7 +3,8 @@ include_rules = [
 ]
 
 specific_include_rules = {
- "lazy_thread_controller_for_test.h": [
-   "+base/task/sequence_manager/thread_controller_impl.h",
+ "renderer_scheduler_test_support\.cc": [
+   "+base/task/sequence_manager/test/lazy_thread_controller_for_test.h",
+   "+base/task/sequence_manager/test/sequence_manager_for_test.h",
  ],
 }

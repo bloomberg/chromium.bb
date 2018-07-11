@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/test/lazy_thread_controller_for_test.h"
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/test/lazy_thread_controller_for_test.h"
 
 namespace blink {
 namespace scheduler {
@@ -19,7 +19,8 @@ namespace scheduler {
 std::unique_ptr<WebThreadScheduler> CreateWebMainThreadSchedulerForTests() {
   return std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::make_unique<base::sequence_manager::SequenceManagerForTest>(
-          std::make_unique<LazyThreadControllerForTest>()),
+          std::make_unique<
+              base::sequence_manager::LazyThreadControllerForTest>()),
       base::nullopt);
 }
 

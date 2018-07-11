@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TEST_TEST_TASK_QUEUE_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TEST_TEST_TASK_QUEUE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -15,13 +15,14 @@ class TestTaskQueue : public TaskQueue {
  public:
   explicit TestTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                          const TaskQueue::Spec& spec);
-  ~TestTaskQueue() override;
 
   using TaskQueue::GetTaskQueueImpl;
 
   WeakPtr<TestTaskQueue> GetWeakPtr();
 
  private:
+  ~TestTaskQueue() override;  // Ref-counted.
+
   // Used to ensure that task queue is deleted in tests.
   WeakPtrFactory<TestTaskQueue> weak_factory_;
 };
@@ -29,4 +30,4 @@ class TestTaskQueue : public TaskQueue {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TEST_TEST_TASK_QUEUE_H_

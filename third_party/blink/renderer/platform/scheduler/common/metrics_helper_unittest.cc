@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
 
+#include "base/task/sequence_manager/test/fake_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/fake_task.h"
 
 using base::sequence_manager::TaskQueue;
 

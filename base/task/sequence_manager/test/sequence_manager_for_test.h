@@ -1,19 +1,18 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.  // Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
 
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/time/tick_clock.h"
 
 namespace base {
-class MessageLoop;
-}
 
-namespace base {
+class MessageLoop;
+
 namespace sequence_manager {
 
 class SequenceManagerForTest : public internal::SequenceManagerImpl {
@@ -44,4 +43,4 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
