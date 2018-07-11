@@ -101,8 +101,9 @@ class CORE_EXPORT Request final : public Body {
 
   String ContentType() const override;
   String MimeType() const override;
+  void RefreshBody(ScriptState*);
 
-  const TraceWrapperMember<FetchRequestData> request_;
+  const Member<FetchRequestData> request_;
   const Member<Headers> headers_;
   const Member<AbortSignal> signal_;
   DISALLOW_COPY_AND_ASSIGN(Request);

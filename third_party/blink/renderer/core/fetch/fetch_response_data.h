@@ -15,7 +15,6 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -24,6 +23,7 @@
 
 namespace blink {
 
+class BodyStreamBuffer;
 class ExceptionState;
 class FetchHeaderList;
 class ScriptState;
@@ -116,8 +116,8 @@ class CORE_EXPORT FetchResponseData final
   unsigned short status_;
   AtomicString status_message_;
   Member<FetchHeaderList> header_list_;
-  TraceWrapperMember<FetchResponseData> internal_response_;
-  TraceWrapperMember<BodyStreamBuffer> buffer_;
+  Member<FetchResponseData> internal_response_;
+  Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   Time response_time_;
   String cache_storage_cache_name_;
