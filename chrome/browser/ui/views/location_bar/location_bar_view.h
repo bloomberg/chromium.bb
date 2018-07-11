@@ -53,6 +53,7 @@ class StarView;
 class TranslateIconView;
 
 namespace autofill {
+class LocalCardMigrationIconView;
 class SaveCardIconView;
 }
 
@@ -162,6 +163,10 @@ class LocationBarView : public LocationBar,
   // |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view() {
     return save_credit_card_icon_view_;
+  }
+
+  autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
+    return local_card_migration_icon_view_;
   }
 
   // The translate icon. It may not be visible.
@@ -337,6 +342,7 @@ class LocationBarView : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
+  void UpdateLocalCardMigrationIcon() override;
   void UpdateFindBarIconVisibility() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
@@ -430,6 +436,10 @@ class LocationBarView : public LocationBar,
 
   // The save credit card icon.  It will be null when |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
+
+  // The icon for the local card migration prompt.
+  autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
+      nullptr;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_ = nullptr;

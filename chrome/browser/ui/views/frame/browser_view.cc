@@ -42,6 +42,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -60,6 +61,8 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
+#include "chrome/browser/ui/views/autofill/local_card_migration_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -1234,10 +1237,40 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
       anchor_view, gfx::Point(), web_contents, controller);
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble);
+
   if (card_view)
     card_view->OnBubbleWidgetCreated(bubble_widget);
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                             : autofill::SaveCardBubbleViews::AUTOMATIC);
+  return bubble;
+}
+
+autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
+    content::WebContents* web_contents,
+    autofill::LocalCardMigrationBubbleController* controller,
+    bool user_gesture) {
+  LocationBarView* location_bar = GetLocationBarView();
+  PageActionIconView* card_view =
+      location_bar->local_card_migration_icon_view();
+
+  views::View* anchor_view = location_bar;
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    if (card_view && card_view->visible())
+      anchor_view = card_view;
+    else
+      anchor_view = toolbar_button_provider()->GetAppMenuButton();
+  }
+
+  autofill::LocalCardMigrationBubbleViews* bubble =
+      new autofill::LocalCardMigrationBubbleViews(anchor_view, gfx::Point(),
+                                                  web_contents, controller);
+  views::Widget* bubble_widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble);
+  if (card_view)
+    card_view->OnBubbleWidgetCreated(bubble_widget);
+  bubble->Show(user_gesture
+                   ? autofill::LocalCardMigrationBubbleViews::USER_GESTURE
+                   : autofill::LocalCardMigrationBubbleViews::AUTOMATIC);
   return bubble;
 }
 

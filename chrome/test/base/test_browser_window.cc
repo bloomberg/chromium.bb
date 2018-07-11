@@ -164,6 +164,14 @@ autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
   return nullptr;
 }
 
+autofill::LocalCardMigrationBubble*
+TestBrowserWindow::ShowLocalCardMigrationBubble(
+    content::WebContents* contents,
+    autofill::LocalCardMigrationBubbleController* controller,
+    bool user_gesture) {
+  return nullptr;
+}
+
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;
 }
