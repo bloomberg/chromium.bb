@@ -24,7 +24,8 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'],
+                documentation_url='https://bit.ly/loading-benchmarks')
 class LoadingDesktop(_LoadingBase):
   """ A benchmark measuring loading performance of desktop sites. """
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
@@ -38,7 +39,8 @@ class LoadingDesktop(_LoadingBase):
     return 'loading.desktop'
 
 
-@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'],
+                documentation_url='https://bit.ly/loading-benchmarks')
 class LoadingMobile(_LoadingBase):
   """ A benchmark measuring loading performance of mobile sites. """
   SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]

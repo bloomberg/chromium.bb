@@ -59,7 +59,8 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
-                        'tdresser@chromium.org'])
+                        'tdresser@chromium.org'],
+                documentation_url='https://bit.ly/system-health-benchmarks')
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
   PLATFORM = 'desktop'
@@ -71,7 +72,9 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
 
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
-                        'tdresser@chromium.org', 'perezju@chromium.org'])
+                        'tdresser@chromium.org', 'perezju@chromium.org'],
+
+                documentation_url='https://bit.ly/system-health-benchmarks')
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
   PLATFORM = 'mobile'
@@ -115,7 +118,8 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return not _IGNORED_STATS_RE.search(name)
 
 
-@benchmark.Info(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'],
+                documentation_url='https://bit.ly/system-health-benchmarks')
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   PLATFORM = 'desktop'
@@ -126,7 +130,8 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
     return 'system_health.memory_desktop'
 
 
-@benchmark.Info(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'],
+                documentation_url='https://bit.ly/system-health-benchmarks')
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
   PLATFORM = 'mobile'
