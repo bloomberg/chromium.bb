@@ -179,14 +179,6 @@ if (use_system_harfbuzz) {
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HB_NO_MMAP",
-
-      # Define HB_VECTOR_SIZE to be 0 to disable compiler assisted
-      # vectorization. Compiler assisted vectorization is now disabled in
-      # upstream until posix_memalign() is used to align corresponding types.
-      # Compare
-      # https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz/+/058708a665cdd9e796581dbcf60a5778d3f5e240%5E%21/#F0
-      # TODO(drott): Remove this after rolling past 1ebaa090d80bf0b59308d2c70f5e58dd8da47450
-      "HB_VECTOR_SIZE=0",
     ]
 
     if (is_component_build) {
