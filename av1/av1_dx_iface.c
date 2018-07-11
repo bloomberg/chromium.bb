@@ -1029,6 +1029,43 @@ static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_img_fmt_t get_img_format(int subsampling_x, int subsampling_y,
+                                    int use_highbitdepth) {
+  aom_img_fmt_t fmt = 0;
+
+  if (subsampling_x == 0 && subsampling_y == 0)
+    fmt = AOM_IMG_FMT_I444;
+  else if (subsampling_x == 1 && subsampling_y == 0)
+    fmt = AOM_IMG_FMT_I422;
+  else if (subsampling_x == 1 && subsampling_y == 1)
+    fmt = AOM_IMG_FMT_I420;
+
+  if (use_highbitdepth) fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+  return fmt;
+}
+
+static aom_codec_err_t ctrl_get_img_format(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  aom_img_fmt_t *const img_fmt = va_arg(args, aom_img_fmt_t *);
+  AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
+
+  if (img_fmt) {
+    if (worker) {
+      FrameWorkerData *const frame_worker_data =
+          (FrameWorkerData *)worker->data1;
+      const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
+
+      *img_fmt = get_img_format(cm->subsampling_x, cm->subsampling_y,
+                                cm->use_highbitdepth);
+      return AOM_CODEC_OK;
+    } else {
+      return AOM_CODEC_ERROR;
+    }
+  }
+
+  return AOM_CODEC_INVALID_PARAM;
+}
+
 static aom_codec_err_t ctrl_set_invert_tile_order(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   ctx->invert_tile_order = va_arg(args, int);
@@ -1179,6 +1216,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AOMD_GET_LAST_QUANTIZER, ctrl_get_last_quantizer },
   { AOMD_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
   { AV1D_GET_BIT_DEPTH, ctrl_get_bit_depth },
+  { AV1D_GET_IMG_FORMAT, ctrl_get_img_format },
   { AV1D_GET_DISPLAY_SIZE, ctrl_get_render_size },
   { AV1D_GET_FRAME_SIZE, ctrl_get_frame_size },
   { AV1_GET_ACCOUNTING, ctrl_get_accounting },
