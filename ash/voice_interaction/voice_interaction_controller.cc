@@ -38,6 +38,13 @@ void VoiceInteractionController::NotifyContextEnabled(bool enabled) {
   });
 }
 
+void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
+  hotword_enabled_ = enabled;
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnVoiceInteractionHotwordEnabled(enabled);
+  });
+}
+
 void VoiceInteractionController::NotifySetupCompleted(bool completed) {
   setup_completed_ = completed;
   observers_.ForAllPtrs([completed](auto* observer) {
@@ -61,6 +68,11 @@ void VoiceInteractionController::IsSettingEnabled(
 void VoiceInteractionController::IsSetupCompleted(
     IsSetupCompletedCallback callback) {
   std::move(callback).Run(setup_completed_);
+}
+
+void VoiceInteractionController::IsHotwordEnabled(
+    IsHotwordEnabledCallback callback) {
+  std::move(callback).Run(hotword_enabled_);
 }
 
 void VoiceInteractionController::AddObserver(

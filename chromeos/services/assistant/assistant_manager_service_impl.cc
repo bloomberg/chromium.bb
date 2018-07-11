@@ -42,13 +42,13 @@ const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
-    Service* service)
-    : platform_api_(CreateLibAssistantConfig(),
-                    connector,
-                    std::move(battery_monitor)),
+    Service* service,
+    const std::string& config_str)
+    : platform_api_(config_str, connector, std::move(battery_monitor)),
+      config_str_(config_str),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
-      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       voice_interaction_observer_binding_(this),
       service_(service),
       background_thread_("background thread"),
@@ -394,8 +394,8 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& arc_version) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
-  assistant_manager_.reset(assistant_client::AssistantManager::Create(
-      &platform_api_, CreateLibAssistantConfig()));
+  assistant_manager_.reset(
+      assistant_client::AssistantManager::Create(&platform_api_, config_str_));
   assistant_manager_internal_ =
       UnwrapAssistantManagerInternal(assistant_manager_.get());
 

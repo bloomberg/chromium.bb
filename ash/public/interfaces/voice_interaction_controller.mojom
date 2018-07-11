@@ -55,6 +55,9 @@ interface VoiceInteractionObserver {
   // the "context" (text and graphic content that is currently on screen).
   OnVoiceInteractionContextEnabled(bool enabled);
 
+  // Called when hotword listening is enabled/disabled.
+  OnVoiceInteractionHotwordEnabled(bool enabled);
+
   // Called when voice interaction setup flow completed.
   OnVoiceInteractionSetupCompleted(bool completed);
 
@@ -76,6 +79,9 @@ interface VoiceInteractionController {
   // interaction session.
   NotifyContextEnabled(bool enabled);
 
+  // Called when the hotword listening is enabled/disabled.
+  NotifyHotwordEnabled(bool enabled);
+
   // Called when the voice interaction setup complete status is changed.
   NotifySetupCompleted(bool completed);
 
@@ -88,6 +94,9 @@ interface VoiceInteractionController {
 
   // Return the voice interaction setup complete status.
   IsSetupCompleted() => (bool completed);
+
+  // Return the voice interaction hotword listening status.
+  IsHotwordEnabled() => (bool enabled);
 
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);

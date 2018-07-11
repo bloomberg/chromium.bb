@@ -118,6 +118,14 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
       true,
       voice_interaction_controller()->voice_interaction_context_enabled());
 
+  ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(prefs::kVoiceInteractionHotwordEnabled, true);
+  ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
+  voice_interaction_controller_client()->FlushMojoForTesting();
+  EXPECT_EQ(
+      true,
+      voice_interaction_controller()->voice_interaction_hotword_enabled());
+
   ASSERT_EQ(false,
             prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted));
   prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, true);

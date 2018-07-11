@@ -74,6 +74,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override {}
+  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}

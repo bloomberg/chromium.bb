@@ -55,6 +55,7 @@ class VoiceInteractionControllerClient
   // Notify the controller about state changes.
   void NotifySettingsEnabled();
   void NotifyContextEnabled();
+  void NotifyHotwordEnabled();
   void NotifySetupCompleted();
   void NotifyFeatureAllowed();
 
