@@ -80,6 +80,22 @@ var allTests = [
         < 3);
     chrome.test.succeed();
 
+  },
+
+  function boundsForRangeClips() {
+    let clipped = rootNode.find({attributes: {name: "This text overflows"}});
+    let clippedBounds = clipped.boundsForRange(0, clipped.name.length);
+    assertTrue(clipped.parent.location.width < clipped.unclippedLocation.width);
+    assertEq(clipped.parent.location.width, clippedBounds.width);
+
+    let hidden = rootNode.find({attributes: {name: "This text is hidden"}});
+    let hiddenBounds = hidden.boundsForRange(0, hidden.name.length);
+    assertTrue(hidden.parent.location.width < hidden.unclippedLocation.width);
+    assertTrue(hidden.parent.location.height < hidden.unclippedLocation.height);
+    assertEq(hidden.parent.location.width, hiddenBounds.width);
+    assertEq(hidden.parent.location.height, hiddenBounds.height);
+
+    chrome.test.succeed();
   }
 ];
 

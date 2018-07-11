@@ -724,10 +724,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
         // Convert from local to global coordinates second, after subsetting,
         // because the local to global conversion might involve matrix
         // transformations.
-        // TODO(katie): Instead of removing clipping we could trim local_bounds
-        // to fit in the clipped space?
         gfx::Rect global_bounds = ComputeGlobalNodeBounds(
-            tree_wrapper, node, local_bounds, nullptr, false /* clip_bounds */);
+            tree_wrapper, node, local_bounds, nullptr, true /* clip_bounds */);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
 
