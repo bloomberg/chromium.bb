@@ -357,10 +357,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-// Mac doesn't yet have a gesture recognizer, so can't support turning touch
-// events into scroll gestures.
-// Will be fixed with http://crbug.com/337142
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_DefaultAuto DISABLED_DefaultAuto
 #else
 #define MAYBE_DefaultAuto DefaultAuto
@@ -382,8 +379,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
-// Disabled on MacOS because it doesn't support touch input.
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_TouchActionNone DISABLED_TouchActionNone
 #else
 #define MAYBE_TouchActionNone TouchActionNone
@@ -400,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
 }
 
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_PanYMainThreadJanky DISABLED_PanYMainThreadJanky
 #else
 #define MAYBE_PanYMainThreadJanky PanYMainThreadJanky
@@ -412,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_PanXMainThreadJanky DISABLED_PanXMainThreadJanky
 #else
 #define MAYBE_PanXMainThreadJanky PanXMainThreadJanky
@@ -453,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
   DoTwoFingerTouchScroll(false, gfx::Vector2d(20, 0));
 }
 
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_PanXYMainThreadJanky DISABLED_PanXYMainThreadJanky
 #else
 #define MAYBE_PanXYMainThreadJanky PanXYMainThreadJanky
@@ -465,8 +461,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
                 gfx::Vector2d(45, 45), kShortJankTime);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// Flaky: https://crbug.com/833015
+#if defined(DEBUG)
 #define MAYBE_PanXYAtXAreaMainThreadJanky DISABLED_PanXYAtXAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtXAreaMainThreadJanky PanXYAtXAreaMainThreadJanky
@@ -479,8 +474,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// Flaky: https://crbug.com/833015
+#if defined(DEBUG)
 #define MAYBE_PanXYAtYAreaMainThreadJanky DISABLED_PanXYAtYAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtYAreaMainThreadJanky PanXYAtYAreaMainThreadJanky
@@ -493,15 +487,22 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
+#if defined(DEBUG)
+#define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
+  DISABLED_PanXYAtAutoYOverlapAreaMainThreadJanky
+#else
+#define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
+  PanXYAtAutoYOverlapAreaMainThreadJanky
+#endif
 IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
-                       PanXYAtAutoYOverlapAreaMainThreadJanky) {
+                       MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
   DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(20, 45), false, 10000,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(OS_MACOSX)
+#if defined(DEBUG)
 #define MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky \
   DISABLED_PanXYAtAutoXOverlapAreaMainThreadJanky
 #else
