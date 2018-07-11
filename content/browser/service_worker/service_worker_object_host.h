@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -46,6 +48,8 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
                           scoped_refptr<ServiceWorkerVersion> version);
   ~ServiceWorkerObjectHost() override;
 
+  void CrashOnDoubleDelete();
+
   // ServiceWorkerVersion::Observer overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
@@ -78,10 +82,15 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
       blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object_ptr_info,
       blink::mojom::ServiceWorkerState sent_state);
 
-  int provider_id() const { return provider_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
   base::WeakPtr<ServiceWorkerObjectHost> AsWeakPtr();
+
+  // TODO(crbug.com/838410): Instrumentation for the linked bug.
+  using DebugLog = base::circular_deque<std::string>;
+  static DebugLog* GetDebugLogInstance();
+  static void AddToDebugLog(const std::string& event);
+  static std::string GetDebugLogString();
 
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
@@ -103,13 +112,13 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   // |provider_host_| is valid throughout lifetime of |this| because it owns
   // |this|.
-  ServiceWorkerProviderHost* provider_host_;
+  ServiceWorkerProviderHost* const provider_host_;
   // The origin of the |provider_host_|. Note that this is const because once a
   // JavaScript ServiceWorker object is created for an execution context, we
   // don't expect that context to change origins and still hold on to the
   // object.
   const url::Origin provider_origin_;
-  const int provider_id_;
+  const blink::mojom::ServiceWorkerProviderType provider_type_;
   scoped_refptr<ServiceWorkerVersion> version_;
   // Typically both |bindings_| and |remote_objects_| contain only one Mojo
   // connection, corresponding to the content::WebServiceWorkerImpl in the
