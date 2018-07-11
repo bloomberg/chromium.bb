@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
 
+#include <bitset>
+
 namespace blink {
 
 // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox
@@ -49,6 +51,10 @@ inline WebSandboxFlags& operator|=(WebSandboxFlags& a, WebSandboxFlags b) {
 
 inline constexpr WebSandboxFlags operator~(WebSandboxFlags flags) {
   return static_cast<WebSandboxFlags>(~static_cast<int>(flags));
+}
+
+inline std::ostream& operator<<(std::ostream& out, WebSandboxFlags flags) {
+  return out << std::bitset<sizeof(int) * 8>(static_cast<int>(flags));
 }
 
 }  // namespace blink
