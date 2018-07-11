@@ -49,6 +49,41 @@ bool Is32BitAligned(offset_t offset) {
   return offset % 4 == 0;
 }
 
+// Returns a lower bound for the size of an item of type |type_item_code|.
+// - For fixed-length items (e.g., kTypeFieldIdItem) this is the exact size.
+// - For variant-length items (e.g., kTypeCodeItem), returns a value that is
+//   known to be less than the item length (e.g., header size).
+// - For items not handled by this function, returns 1 for sanity check.
+size_t GetItemBaseSize(uint16_t type_item_code) {
+  switch (type_item_code) {
+    case dex::kTypeStringIdItem:
+      return sizeof(dex::StringIdItem);
+    case dex::kTypeTypeIdItem:
+      return sizeof(dex::TypeIdItem);
+    case dex::kTypeProtoIdItem:
+      return sizeof(dex::ProtoIdItem);
+    case dex::kTypeFieldIdItem:
+      return sizeof(dex::FieldIdItem);
+    case dex::kTypeMethodIdItem:
+      return sizeof(dex::MethodIdItem);
+    case dex::kTypeClassDefItem:
+      return sizeof(dex::ClassDefItem);
+    // No need to handle dex::kTypeMapList.
+    case dex::kTypeTypeList:
+      return sizeof(uint32_t);  // Variable-length.
+    case dex::kTypeAnnotationSetRefList:
+      return sizeof(uint32_t);  // Variable-length.
+    case dex::kTypeAnnotationSetItem:
+      return sizeof(uint32_t);  // Variable-length.
+    case dex::kTypeCodeItem:
+      return sizeof(dex::CodeItem);  // Variable-length.
+    case dex::kTypeAnnotationsDirectoryItem:
+      return sizeof(dex::AnnotationsDirectoryItem);  // Variable-length.
+    default:
+      return 1U;  // Unhandled item. For sanity check assume size >= 1.
+  }
+}
+
 /******** CodeItemParser ********/
 
 // A parser to extract successive code items from a DEX image whose header has
@@ -1549,6 +1584,10 @@ bool DisassemblerDex::ParseHeader() {
     return false;
 
   // Read and validate map list, ensuring that required item types are present.
+  // - GetItemBaseSize() should have an entry for each item.
+  // - dex::kTypeCodeItem is actually not required; it's possible to have a DEX
+  //   file with classes that have no code. However, this is unlikely to appear
+  //   in application, so for simplicity we require DEX files to have code.
   std::set<uint16_t> required_item_types = {
       dex::kTypeStringIdItem, dex::kTypeTypeIdItem,   dex::kTypeProtoIdItem,
       dex::kTypeFieldIdItem,  dex::kTypeMethodIdItem, dex::kTypeClassDefItem,
@@ -1556,9 +1595,10 @@ bool DisassemblerDex::ParseHeader() {
   };
   for (offset_t i = 0; i < list_size; ++i) {
     const dex::MapItem* item = &item_list[i];
-    // Sanity check to reject unreasonably large |item->size|.
-    // TODO(huangs): Implement a more stringent check.
-    if (!image_.covers({item->offset, item->size}))
+    // Reject unreasonably large |item->size|.
+    size_t item_size = GetItemBaseSize(item->type);
+    // Confusing name: |item->size| is actually the number of items.
+    if (!image_.covers_array(item->offset, item->size, item_size))
       return false;
     if (!map_item_map_.insert(std::make_pair(item->type, item)).second)
       return false;  // A given type must appear at most once.
