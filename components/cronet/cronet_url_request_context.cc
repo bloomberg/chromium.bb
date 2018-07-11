@@ -132,16 +132,21 @@ namespace cronet {
 
 CronetURLRequestContext::CronetURLRequestContext(
     std::unique_ptr<URLRequestContextConfig> context_config,
-    std::unique_ptr<Callback> callback)
+    std::unique_ptr<Callback> callback,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : default_load_flags_(
           net::LOAD_NORMAL |
           (context_config->load_disable_cache ? net::LOAD_DISABLE_CACHE : 0)),
       network_tasks_(
           new NetworkTasks(std::move(context_config), std::move(callback))),
-      network_thread_("network") {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  network_thread_.StartWithOptions(options);
+      network_task_runner_(network_task_runner) {
+  if (!network_task_runner_) {
+    network_thread_ = std::make_unique<base::Thread>("network");
+    base::Thread::Options options;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    network_thread_->StartWithOptions(options);
+    network_task_runner_ = network_thread_->task_runner();
+  }
 }
 
 CronetURLRequestContext::~CronetURLRequestContext() {
@@ -456,7 +461,7 @@ bool CronetURLRequestContext::IsOnNetworkThread() const {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CronetURLRequestContext::GetNetworkTaskRunner() const {
-  return network_thread_.task_runner();
+  return network_task_runner_;
 }
 
 bool CronetURLRequestContext::StartNetLogToFile(const std::string& file_name,

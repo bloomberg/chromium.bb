@@ -31,7 +31,7 @@ scoped_refptr<base::SingleThreadTaskRunner> TestUtil::GetTaskRunner(
     jlong jcontext_adapter) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
-  return context_adapter->context_->network_thread_.task_runner();
+  return context_adapter->context_->network_task_runner_;
 }
 
 // static
