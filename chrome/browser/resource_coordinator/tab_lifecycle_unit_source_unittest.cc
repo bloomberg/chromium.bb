@@ -11,6 +11,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -101,6 +102,9 @@ class TabLifecycleUnitSourceTest
 
   void SetUp() override {
     ChromeTestHarnessWithLocalDB::SetUp();
+
+    // Force TabManager/TabLifecycleUnitSource creation.
+    g_browser_process->GetTabManager();
 
     source_ = TabLifecycleUnitSource::GetInstance();
     source_->AddObserver(&source_observer_);

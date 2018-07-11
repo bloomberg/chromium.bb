@@ -11,7 +11,6 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -51,7 +50,10 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
 TabLifecycleUnitSource::TabLifecycleUnitSource()
     : browser_tab_strip_tracker_(this, nullptr, this) {
   DCHECK(!instance_);
-  DCHECK(BrowserList::GetInstance()->empty());
+
+  // In unit tests, tabs might already exist when TabLifecycleUnitSource is
+  // instantiated. No TabLifecycleUnit is created for these tabs.
+
   browser_tab_strip_tracker_.Init();
   instance_ = this;
   // TODO(chrisha): Create a ScopedPageSignalObserver helper class to clean up
