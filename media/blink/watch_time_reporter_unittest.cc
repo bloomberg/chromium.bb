@@ -76,17 +76,17 @@ using blink::WebMediaPlayer;
 // finalize event is expected to finalize.
 #define EXPECT_POWER_WATCH_TIME_FINALIZED()       \
   EXPECT_CALL(*this, OnPowerWatchTimeFinalized()) \
-      .Times(14)                                  \
+      .Times(2)                                   \
       .RetiresOnSaturation();
 
 #define EXPECT_CONTROLS_WATCH_TIME_FINALIZED()       \
   EXPECT_CALL(*this, OnControlsWatchTimeFinalized()) \
-      .Times(8)                                      \
+      .Times(2)                                      \
       .RetiresOnSaturation();
 
 #define EXPECT_DISPLAY_WATCH_TIME_FINALIZED()       \
   EXPECT_CALL(*this, OnDisplayWatchTimeFinalized()) \
-      .Times(9)                                     \
+      .Times(3)                                     \
       .RetiresOnSaturation();
 
 using WatchTimeReporterTestData = std::tuple<bool, bool>;
@@ -304,7 +304,11 @@ class WatchTimeReporterTest
   // PowerMonitorTestSource since that results in a posted tasks which interfere
   // with our ability to test the timer.
   void SetOnBatteryPower(bool on_battery_power) {
-    wtr_->is_on_battery_power_ = on_battery_power;
+    wtr_->power_component_->SetCurrentValue(on_battery_power);
+  }
+
+  bool IsOnBatteryPower() const {
+    return wtr_->power_component_->current_value_for_testing();
   }
 
   void OnPowerStateChange(bool on_battery_power) {
@@ -450,7 +454,7 @@ class WatchTimeReporterTest
     if (TestFlags & kStartOnBattery)
       SetOnBatteryPower(true);
     else
-      ASSERT_FALSE(wtr_->is_on_battery_power_);
+      ASSERT_FALSE(IsOnBatteryPower());
 
     EXPECT_WATCH_TIME(All, kWatchTime1);
     EXPECT_WATCH_TIME(Src, kWatchTime1);
@@ -595,6 +599,8 @@ class WatchTimeReporterTest
  private:
   DISALLOW_COPY_AND_ASSIGN(WatchTimeReporterTest);
 };
+
+class DisplayTypeWatchTimeReporterTest : public WatchTimeReporterTest {};
 
 // Tests that watch time reporting is appropriately enabled or disabled.
 TEST_P(WatchTimeReporterTest, WatchTimeReporter) {
@@ -1016,7 +1022,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterHiddenControlsBackground) {
   wtr_.reset();
 }
 
-TEST_P(WatchTimeReporterTest, WatchTimeReporterHiddenDisplayTypeBackground) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       WatchTimeReporterHiddenDisplayTypeBackground) {
   constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(8);
   constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(16);
   EXPECT_CALL(*this, GetCurrentMediaTime())
@@ -1152,8 +1159,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterMultiplePartialFinalize) {
     wtr_.reset();
   }
 
-  // Transition display type and battery.
-  {
+  // Transition display type and battery. Test only works with video.
+  if (has_video_) {
     EXPECT_CALL(*this, GetCurrentMediaTime())
         .WillOnce(testing::Return(base::TimeDelta()))
         .WillOnce(testing::Return(kWatchTime1))
@@ -1191,8 +1198,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterMultiplePartialFinalize) {
     wtr_.reset();
   }
 
-  // Transition controls, battery and display type.
-  {
+  // Transition controls, battery and display type. Test only works with video.
+  if (has_video_) {
     EXPECT_CALL(*this, GetCurrentMediaTime())
         .WillOnce(testing::Return(base::TimeDelta()))
         .WillOnce(testing::Return(kWatchTime1))
@@ -1553,7 +1560,7 @@ TEST_P(WatchTimeReporterTest, OnControlsChangeToNative) {
       [this]() { OnNativeControlsEnabled(true); });
 }
 
-TEST_P(WatchTimeReporterTest,
+TEST_P(DisplayTypeWatchTimeReporterTest,
        OnDisplayTypeChangeHysteresisFullscreenContinuation) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeExitDoesNotRequireCurrentTime |
@@ -1563,13 +1570,15 @@ TEST_P(WatchTimeReporterTest,
   });
 }
 
-TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeHysteresisNativeFinalized) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       OnDisplayTypeChangeHysteresisNativeFinalized) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeDisplayWatchTime | kStartWithDisplayFullscreen>(
       [this]() { OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline); });
 }
 
-TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeHysteresisInlineContinuation) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       OnDisplayTypeChangeHysteresisInlineContinuation) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeExitDoesNotRequireCurrentTime>([this]() {
     OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kFullscreen);
@@ -1577,21 +1586,24 @@ TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeHysteresisInlineContinuation) {
   });
 }
 
-TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeHysteresisNativeOffFinalized) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       OnDisplayTypeChangeHysteresisNativeOffFinalized) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeDisplayWatchTime>([this]() {
     OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kFullscreen);
   });
 }
 
-TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeInlineToFullscreen) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       OnDisplayTypeChangeInlineToFullscreen) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeDisplayWatchTime | kStartWithDisplayFullscreen |
                     kTransitionDisplayWatchTime>(
       [this]() { OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline); });
 }
 
-TEST_P(WatchTimeReporterTest, OnDisplayTypeChangeFullscreenToInline) {
+TEST_P(DisplayTypeWatchTimeReporterTest,
+       OnDisplayTypeChangeFullscreenToInline) {
   RunHysteresisTest<kAccumulationContinuesAfterTest |
                     kFinalizeDisplayWatchTime | kTransitionDisplayWatchTime>(
       [this]() {
@@ -1921,10 +1933,18 @@ INSTANTIATE_TEST_CASE_P(WatchTimeReporterTest,
                         WatchTimeReporterTest,
                         testing::ValuesIn({// has_video, has_audio
                                            std::make_tuple(true, true),
-                                           // has_audio
-                                           std::make_tuple(true, false),
                                            // has_video
+                                           std::make_tuple(true, false),
+                                           // has_audio
                                            std::make_tuple(false, true)}));
+
+// Separate test set since display tests only work with video.
+INSTANTIATE_TEST_CASE_P(DisplayTypeWatchTimeReporterTest,
+                        DisplayTypeWatchTimeReporterTest,
+                        testing::ValuesIn({// has_video, has_audio
+                                           std::make_tuple(true, true),
+                                           // has_video
+                                           std::make_tuple(true, false)}));
 
 // Separate test set since muted tests only work with audio+video.
 INSTANTIATE_TEST_CASE_P(MutedWatchTimeReporterTest,
