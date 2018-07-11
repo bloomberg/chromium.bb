@@ -76,8 +76,12 @@ public class NativeUiUtils {
             throws InterruptedException {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
-        instance.setUiExpectingActivityForTesting(
-                DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, () -> { resultLatch.countDown(); });
+        // Run on the UI thread to prevent issues with registering a new callback before
+        // reportUiActivityResultForTesting has finished.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            instance.setUiExpectingActivityForTesting(
+                    DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, () -> { resultLatch.countDown(); });
+        });
         action.run();
 
         // Wait for any outstanding animations to finish.
