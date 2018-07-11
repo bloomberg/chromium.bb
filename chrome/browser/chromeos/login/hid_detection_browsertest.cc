@@ -57,9 +57,10 @@ class HidDetectionTest : public OobeBaseTest {
                    base::Unretained(fake_input_service_manager_.get())));
   }
 
-  ~HidDetectionTest() override {}
-
-  void SetUpOnMainThread() override { OobeBaseTest::SetUpOnMainThread(); }
+  ~HidDetectionTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     OobeBaseTest::SetUpInProcessBrowserTestFixture();

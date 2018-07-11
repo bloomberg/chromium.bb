@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -44,10 +43,20 @@ using device::FakeSensorProvider;
 
 class DeviceSensorBrowserTest : public ContentBrowserTest {
  public:
-  DeviceSensorBrowserTest()
-      : io_loop_finished_event_(
-            base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  DeviceSensorBrowserTest() {
+    // Because Device Service also runs in this process (browser process), here
+    // we can directly set our binder to intercept interface requests against
+    // it.
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
+        base::BindRepeating(&DeviceSensorBrowserTest::Bind,
+                            base::Unretained(this)));
+  }
+
+  ~DeviceSensorBrowserTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+  }
 
   void SetUpOnMainThread() override {
     https_embedded_test_server_.reset(
@@ -66,28 +75,12 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
     sensor_provider_->SetGyroscopeData(7, 8, 9);
     sensor_provider_->SetRelativeOrientationSensorData(1, 2, 3);
     sensor_provider_->SetAbsoluteOrientationSensorData(4, 5, 6);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DeviceSensorBrowserTest::SetUpOnIOThread,
-                       base::Unretained(this)));
-    io_loop_finished_event_.Wait();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed
     // to load pages from other hosts without an error.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
-
-  void SetUpOnIOThread() {
-    // Because Device Service also runs in this process(browser process), here
-    // we can directly set our binder to intercept interface requests against
-    // it.
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
-        base::Bind(&DeviceSensorBrowserTest::Bind, base::Unretained(this)));
-
-    io_loop_finished_event_.Signal();
   }
 
   void DelayAndQuit(base::TimeDelta delay) {
@@ -117,8 +110,6 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
     sensor_provider_->Bind(
         device::mojom::SensorProviderRequest(std::move(handle)));
   }
-
-  base::WaitableEvent io_loop_finished_event_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationTest) {

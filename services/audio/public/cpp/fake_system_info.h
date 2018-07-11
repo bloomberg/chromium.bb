@@ -26,9 +26,9 @@ class FakeSystemInfo : public mojom::SystemInfo {
   FakeSystemInfo();
   ~FakeSystemInfo() override;
 
-  // See ServiceContext::ClearGlobalBindersForTesting() to clear it if needed.
   static void OverrideGlobalBinderForAudioService(
       FakeSystemInfo* fake_system_info);
+  static void ClearGlobalBinderForAudioService();
 
  protected:
   // audio::mojom::SystemInfo implementation.

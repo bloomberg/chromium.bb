@@ -23,6 +23,27 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+// Disable SIMULATE_SERIAL_PORTS only if all the following are true:
+//
+// 1. You have an Arduino or compatible board attached to your machine and
+// properly appearing as the first virtual serial port ("first" is very loosely
+// defined as whichever port shows up in serial.getPorts). We've tested only
+// the Atmega32u4 Breakout Board and Arduino Leonardo; note that both these
+// boards are based on the Atmel ATmega32u4, rather than the more common
+// Arduino '328p with either FTDI or '8/16u2 USB interfaces. TODO: test more
+// widely.
+//
+// 2. Your user has permission to read/write the port. For example, this might
+// mean that your user is in the "tty" or "uucp" group on Ubuntu flavors of
+// Linux, or else that the port's path (e.g., /dev/ttyACM0) has global
+// read/write permissions.
+//
+// 3. You have uploaded a program to the board that does a byte-for-byte echo
+// on the virtual serial port at 57600 bps. An example is at
+// chrome/test/data/extensions/api_test/serial/api/serial_arduino_test.ino.
+//
+#define SIMULATE_SERIAL_PORTS (1)
+
 using testing::_;
 using testing::Return;
 
@@ -169,30 +190,30 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   DISALLOW_COPY_AND_ASSIGN(FakeSerialIoHandler);
 };
 
-void BindSerialDeviceEnumerator(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle handle,
-    const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(
-      std::make_unique<FakeSerialDeviceEnumerator>(),
-      device::mojom::SerialDeviceEnumeratorRequest(std::move(handle)));
-}
-
-void BindSerialIoHandler(const std::string& interface_name,
-                         mojo::ScopedMessagePipeHandle handle,
-                         const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(
-      std::make_unique<FakeSerialIoHandler>(),
-      device::mojom::SerialIoHandlerRequest(std::move(handle)));
-}
-
-void DropBindRequest(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle handle,
-                     const service_manager::BindSourceInfo& source_info) {}
-
 class SerialApiTest : public ExtensionApiTest {
  public:
-  SerialApiTest() {}
+  SerialApiTest() {
+#if SIMULATE_SERIAL_PORTS
+    // Because Device Service also runs in this process(browser process), we can
+    // set our binder to intercept requests for
+    // SerialDeviceEnumerator/SerialIoHandler interfaces to it.
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName,
+        device::mojom::SerialDeviceEnumerator::Name_,
+        base::BindRepeating(&SerialApiTest::BindSerialDeviceEnumerator,
+                            base::Unretained(this)));
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::SerialIoHandler::Name_,
+        base::BindRepeating(&SerialApiTest::BindSerialIoHandler));
+#endif
+  }
+
+  ~SerialApiTest() override {
+#if SIMULATE_SERIAL_PORTS
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+#endif
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -204,57 +225,38 @@ class SerialApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
+  void FailEnumeratorRequest() { fail_enumerator_request_ = true; }
+
  protected:
-  // Because Device Service also runs in this process(browser process), we can
-  // set our binder to intercept requests for
-  // SerialDeviceEnumerator/SerialIoHandler interfaces to it.
-  void InterceptSerialDeviceEnumerator(
-      const service_manager::BinderRegistryWithArgs<
-          const service_manager::BindSourceInfo&>::Binder& binder) {
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName,
-        device::mojom::SerialDeviceEnumerator::Name_, binder);
+  void BindSerialDeviceEnumerator(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle handle,
+      const service_manager::BindSourceInfo& source_info) {
+    if (fail_enumerator_request_)
+      return;
+
+    mojo::MakeStrongBinding(
+        std::make_unique<FakeSerialDeviceEnumerator>(),
+        device::mojom::SerialDeviceEnumeratorRequest(std::move(handle)));
   }
 
-  void InterceptSerialIoHandler(
-      const service_manager::BinderRegistryWithArgs<
-          const service_manager::BindSourceInfo&>::Binder& binder) {
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName, device::mojom::SerialIoHandler::Name_,
-        binder);
+  static void BindSerialIoHandler(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle handle,
+      const service_manager::BindSourceInfo& source_info) {
+    mojo::MakeStrongBinding(
+        std::make_unique<FakeSerialIoHandler>(),
+        device::mojom::SerialIoHandlerRequest(std::move(handle)));
   }
+
+  bool fail_enumerator_request_ = false;
 };
 
 }  // namespace
 
-// Disable SIMULATE_SERIAL_PORTS only if all the following are true:
-//
-// 1. You have an Arduino or compatible board attached to your machine and
-// properly appearing as the first virtual serial port ("first" is very loosely
-// defined as whichever port shows up in serial.getPorts). We've tested only
-// the Atmega32u4 Breakout Board and Arduino Leonardo; note that both these
-// boards are based on the Atmel ATmega32u4, rather than the more common
-// Arduino '328p with either FTDI or '8/16u2 USB interfaces. TODO: test more
-// widely.
-//
-// 2. Your user has permission to read/write the port. For example, this might
-// mean that your user is in the "tty" or "uucp" group on Ubuntu flavors of
-// Linux, or else that the port's path (e.g., /dev/ttyACM0) has global
-// read/write permissions.
-//
-// 3. You have uploaded a program to the board that does a byte-for-byte echo
-// on the virtual serial port at 57600 bps. An example is at
-// chrome/test/data/extensions/api_test/serial/api/serial_arduino_test.ino.
-//
-#define SIMULATE_SERIAL_PORTS (1)
 IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
-
-#if SIMULATE_SERIAL_PORTS
-  InterceptSerialDeviceEnumerator(base::Bind(&BindSerialDeviceEnumerator));
-  InterceptSerialIoHandler(base::Bind(&BindSerialIoHandler));
-#endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;
 }
@@ -263,7 +265,6 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialRealHardware) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
-  InterceptSerialDeviceEnumerator(base::Bind(&BindSerialDeviceEnumerator));
   ASSERT_TRUE(RunExtensionTest("serial/real_hardware")) << message_;
 }
 
@@ -271,9 +272,9 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialRealHardwareFail) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
-  // Intercept the request and then drop it, chrome.serial.getDevices() should
-  // get an empty list.
-  InterceptSerialDeviceEnumerator(base::Bind(&DropBindRequest));
+  // chrome.serial.getDevices() should get an empty list when the serial
+  // enumerator interface is unavailable.
+  FailEnumeratorRequest();
   ASSERT_TRUE(RunExtensionTest("serial/real_hardware_fail")) << message_;
 }
 

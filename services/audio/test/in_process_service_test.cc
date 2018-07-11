@@ -201,8 +201,7 @@ TEST_F(FakeSystemInfoTest, HasInputDevicesCalledOnGlobalBinderOverride) {
       .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
   audio_system()->HasInputDevices(base::BindOnce([](bool) {}));
   wait_loop.Run();
-  service_manager::ServiceContext::ClearGlobalBindersForTesting(
-      mojom::kServiceName);
+  FakeSystemInfo::ClearGlobalBinderForAudioService();
 }
 
 // Service lifetime tests.

@@ -253,17 +253,23 @@ class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
 
 class HidApiTest : public ShellApiTest {
  public:
-  void SetUpOnMainThread() override {
-    ShellApiTest::SetUpOnMainThread();
-
+  HidApiTest() {
+    // Because Device Service also runs in this process (browser process), we
+    // can set our binder to intercept requests for HidManager interface to it.
     fake_hid_manager_ = std::make_unique<FakeHidManager>();
-    // Because Device Service also runs in this process(browser process), here
-    // we can directly set our binder to intercept interface requests against
-    // it.
     service_manager::ServiceContext::SetGlobalBinderForTesting(
         device::mojom::kServiceName, device::mojom::HidManager::Name_,
         base::Bind(&FakeHidManager::Bind,
                    base::Unretained(fake_hid_manager_.get())));
+  }
+
+  ~HidApiTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+  }
+
+  void SetUpOnMainThread() override {
+    ShellApiTest::SetUpOnMainThread();
 
     AddDevice(kTestDeviceGuids[0], 0x18D1, 0x58F0, false, "A");
     AddDevice(kTestDeviceGuids[1], 0x18D1, 0x58F0, true, "B");
@@ -311,23 +317,11 @@ class HidApiTest : public ShellApiTest {
   std::unique_ptr<FakeHidManager> fake_hid_manager_;
 };
 
-// Flaky in tsan builds. http://crbug.com/853915
-#ifdef THREAD_SANITIZER
-#define MAYBE_HidApp DISABLED_HidApp
-#else
-#define MAYBE_HidApp HidApp
-#endif
-IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_HidApp) {
+IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
   ASSERT_TRUE(RunAppTest("api_test/hid/api")) << message_;
 }
 
-// Flaky in tsan builds. http://crbug.com/853915
-#ifdef THREAD_SANITIZER
-#define MAYBE_OnDeviceAdded DISABLED_OnDeviceAdded
-#else
-#define MAYBE_OnDeviceAdded OnDeviceAdded
-#endif
-IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceAdded) {
+IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
   result_listener.set_failure_message("failure");
@@ -343,13 +337,7 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceAdded) {
   EXPECT_EQ("success", result_listener.message());
 }
 
-// Flaky in tsan builds. http://crbug.com/853915
-#ifdef THREAD_SANITIZER
-#define MAYBE_OnDeviceRemoved DISABLED_OnDeviceRemoved
-#else
-#define MAYBE_OnDeviceRemoved OnDeviceRemoved
-#endif
-IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceRemoved) {
+IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
   result_listener.set_failure_message("failure");
@@ -366,13 +354,7 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceRemoved) {
   EXPECT_EQ("success", result_listener.message());
 }
 
-// Flaky in tsan builds. http://crbug.com/853907
-#ifdef THREAD_SANITIZER
-#define MAYBE_GetUserSelectedDevices DISABLED_GetUserSelectedDevices
-#else
-#define MAYBE_GetUserSelectedDevices GetUserSelectedDevices
-#endif
-IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_GetUserSelectedDevices) {
+IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ExtensionTestMessageListener open_listener("opened_device", false);
 
   TestExtensionsAPIClient test_api_client;

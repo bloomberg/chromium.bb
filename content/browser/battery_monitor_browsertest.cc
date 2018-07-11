@@ -71,9 +71,7 @@ class MockBatteryMonitor : public device::mojom::BatteryMonitor {
 
 class BatteryMonitorTest : public ContentBrowserTest {
  public:
-  BatteryMonitorTest() = default;
-
-  void SetUpOnMainThread() override {
+  BatteryMonitorTest() {
     mock_battery_monitor_ = std::make_unique<MockBatteryMonitor>();
     // Because Device Service also runs in this process(browser process), here
     // we can directly set our binder to intercept interface requests against
@@ -82,6 +80,11 @@ class BatteryMonitorTest : public ContentBrowserTest {
         device::mojom::kServiceName, device::mojom::BatteryMonitor::Name_,
         base::Bind(&MockBatteryMonitor::Bind,
                    base::Unretained(mock_battery_monitor_.get())));
+  }
+
+  ~BatteryMonitorTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
  protected:
