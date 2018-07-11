@@ -35,6 +35,7 @@ TEST_F(WebViewRestorableStateTest, EncodeDecode) {
   // Create second web view and restore its state from the first web view.
   CWVWebView* restored_web_view = test::CreateWebView();
   test::CopyWebViewState(web_view_, restored_web_view);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(restored_web_view));
 
   // Verify that the state has been restored correctly.
   EXPECT_NSEQ(@"about:blank",
