@@ -508,39 +508,46 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   document->UpdateStyleAndLayoutTree();
+  DocumentType* doc_type = document->doctype();
 
   document_ =
       protocol::DOMSnapshot::DocumentSnapshot::create()
-          .setParentIndex(protocol::Array<int>::create())
-          .setNodeType(protocol::Array<int>::create())
-          .setNodeName(protocol::Array<int>::create())
-          .setNodeValue(protocol::Array<int>::create())
-          .setBackendNodeId(protocol::Array<int>::create())
-          .setAttributes(protocol::Array<protocol::Array<int>>::create())
-          .setTextValue(StringData())
-          .setInputValue(StringData())
-          .setInputChecked(BooleanData())
-          .setOptionSelected(BooleanData())
-          .setDocumentURL(StringData())
-          .setBaseURL(StringData())
-          .setContentLanguage(StringData())
-          .setDocumentEncoding(StringData())
-          .setPublicId(StringData())
-          .setSystemId(StringData())
-          .setFrameId(StringData())
-          .setContentDocumentIndex(IntegerData())
-          .setPseudoType(StringData())
-          .setIsClickable(BooleanData())
-          .setCurrentSourceURL(StringData())
-          .setOriginURL(StringData())
-          .setLayoutSnapshot(
+          .setDocumentURL(
+              AddString(InspectorDOMAgent::DocumentURLString(document)))
+          .setBaseURL(
+              AddString(InspectorDOMAgent::DocumentBaseURLString(document)))
+          .setContentLanguage(AddString(document->ContentLanguage()))
+          .setEncodingName(AddString(document->EncodingName()))
+          .setFrameId(
+              AddString(IdentifiersFactory::FrameId(document->GetFrame())))
+          .setPublicId(AddString(doc_type ? doc_type->publicId() : String()))
+          .setSystemId(AddString(doc_type ? doc_type->systemId() : String()))
+          .setNodes(protocol::DOMSnapshot::NodeTreeSnapshot::create()
+                        .setParentIndex(protocol::Array<int>::create())
+                        .setNodeType(protocol::Array<int>::create())
+                        .setNodeName(protocol::Array<int>::create())
+                        .setNodeValue(protocol::Array<int>::create())
+                        .setBackendNodeId(protocol::Array<int>::create())
+                        .setAttributes(
+                            protocol::Array<protocol::Array<int>>::create())
+                        .setTextValue(StringData())
+                        .setInputValue(StringData())
+                        .setInputChecked(BooleanData())
+                        .setOptionSelected(BooleanData())
+                        .setContentDocumentIndex(IntegerData())
+                        .setPseudoType(StringData())
+                        .setIsClickable(BooleanData())
+                        .setCurrentSourceURL(StringData())
+                        .setOriginURL(StringData())
+                        .build())
+          .setLayout(
               protocol::DOMSnapshot::LayoutTreeSnapshot::create()
                   .setNodeIndex(protocol::Array<int>::create())
                   .setBounds(protocol::Array<protocol::Array<double>>::create())
                   .setText(protocol::Array<int>::create())
                   .setStyles(protocol::Array<protocol::Array<int>>::create())
                   .build())
-          .setTextBoxSnapshot(
+          .setTextBoxes(
               protocol::DOMSnapshot::TextBoxSnapshot::create()
                   .setLayoutIndex(protocol::Array<int>::create())
                   .setBounds(protocol::Array<protocol::Array<double>>::create())
@@ -566,20 +573,19 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
       break;
   }
 
-  int index = document_->getNodeName(nullptr)->length();
+  auto* nodes = document_->getNodes();
+  int index = nodes->getNodeName(nullptr)->length();
   int backend_node_id = DOMNodeIds::IdForNode(node);
 
   // Create DOMNode object and add it to the result array before traversing
   // children, so that parents appear before their children in the array.
-  document_->getParentIndex(nullptr)->addItem(parent_index);
+  nodes->getParentIndex(nullptr)->addItem(parent_index);
 
-  document_->getNodeType(nullptr)->addItem(
-      static_cast<int>(node->getNodeType()));
-  document_->getNodeName(nullptr)->addItem(AddString(node->nodeName()));
-  document_->getNodeValue(nullptr)->addItem(AddString(node_value));
-  document_->getBackendNodeId(nullptr)->addItem(backend_node_id);
-  document_->getAttributes(nullptr)->addItem(
-      BuildArrayForElementAttributes2(node));
+  nodes->getNodeType(nullptr)->addItem(static_cast<int>(node->getNodeType()));
+  nodes->getNodeName(nullptr)->addItem(AddString(node->nodeName()));
+  nodes->getNodeValue(nullptr)->addItem(AddString(node_value));
+  nodes->getBackendNodeId(nullptr)->addItem(backend_node_id);
+  nodes->getAttributes(nullptr)->addItem(BuildArrayForElementAttributes2(node));
   BuildLayoutTreeNode(node, index);
 
   if (origin_url_map_ && origin_url_map_->Contains(backend_node_id)) {
@@ -588,57 +594,40 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
     // origin url as its parent, so no need to mark twice.
     if (!node->parentNode() || origin_url_map_->at(DOMNodeIds::IdForNode(
                                    node->parentNode())) != origin_url) {
-      SetRare(document_->getOriginURL(nullptr), index, origin_url);
+      SetRare(nodes->getOriginURL(nullptr), index, origin_url);
     }
   }
 
   if (node->WillRespondToMouseClickEvents())
-    SetRare(document_->getIsClickable(nullptr), index);
+    SetRare(nodes->getIsClickable(nullptr), index);
 
   if (node->IsElementNode()) {
     Element* element = ToElement(node);
     if (node->IsFrameOwnerElement()) {
       const HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
-      if (LocalFrame* frame =
-              frame_owner->ContentFrame() &&
-                      frame_owner->ContentFrame()->IsLocalFrame()
-                  ? ToLocalFrame(frame_owner->ContentFrame())
-                  : nullptr) {
-        SetRare(document_->getFrameId(nullptr), index,
-                IdentifiersFactory::FrameId(frame));
-      }
       if (Document* doc = frame_owner->contentDocument()) {
-        SetRare(document_->getContentDocumentIndex(nullptr), index,
+        SetRare(nodes->getContentDocumentIndex(nullptr), index,
                 document_order_map_.at(doc));
       }
     }
 
-    if (node->parentNode() && node->parentNode()->IsDocumentNode()) {
-      LocalFrame* frame = node->GetDocument().GetFrame();
-      if (frame) {
-        SetRare(document_->getFrameId(nullptr), index,
-                IdentifiersFactory::FrameId(frame));
-      }
-    }
-
     if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element)) {
-      SetRare(document_->getTextValue(nullptr), index,
-              textarea_element->value());
+      SetRare(nodes->getTextValue(nullptr), index, textarea_element->value());
     }
 
     if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
-      SetRare(document_->getInputValue(nullptr), index, input_element->value());
+      SetRare(nodes->getInputValue(nullptr), index, input_element->value());
       if ((input_element->type() == InputTypeNames::radio) ||
           (input_element->type() == InputTypeNames::checkbox)) {
         if (input_element->checked()) {
-          SetRare(document_->getInputChecked(nullptr), index);
+          SetRare(nodes->getInputChecked(nullptr), index);
         }
       }
     }
 
     if (auto* option_element = ToHTMLOptionElementOrNull(*element)) {
       if (option_element->Selected()) {
-        SetRare(document_->getOptionSelected(nullptr), index);
+        SetRare(nodes->getOptionSelected(nullptr), index);
       }
     }
 
@@ -646,7 +635,7 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
       protocol::DOM::PseudoType pseudo_type;
       if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
                                                   &pseudo_type)) {
-        SetRare(document_->getPseudoType(nullptr), index, pseudo_type);
+        SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
       }
     } else {
       VisitPseudoElements2(element, index);
@@ -654,31 +643,10 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
 
     HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
     if (image_element) {
-      SetRare(document_->getCurrentSourceURL(nullptr), index,
+      SetRare(nodes->getCurrentSourceURL(nullptr), index,
               image_element->currentSrc());
     }
-  } else if (node->IsDocumentNode()) {
-    Document* document = ToDocument(node);
-    SetRare(document_->getDocumentURL(nullptr), index,
-            InspectorDOMAgent::DocumentURLString(document));
-    SetRare(document_->getBaseURL(nullptr), index,
-            InspectorDOMAgent::DocumentBaseURLString(document));
-    if (document->ContentLanguage()) {
-      SetRare(document_->getContentLanguage(nullptr), index,
-              document->ContentLanguage());
-    }
-    if (document->EncodingName()) {
-      SetRare(document_->getDocumentEncoding(nullptr), index,
-              document->EncodingName());
-    }
-    SetRare(document_->getFrameId(nullptr), index,
-            IdentifiersFactory::FrameId(document->GetFrame()));
-  } else if (node->IsDocumentTypeNode()) {
-    DocumentType* doc_type = ToDocumentType(node);
-    SetRare(document_->getPublicId(nullptr), index, doc_type->publicId());
-    SetRare(document_->getSystemId(nullptr), index, doc_type->systemId());
   }
-
   if (node->IsContainerNode())
     VisitContainerChildren2(node, index);
   return index;
@@ -882,8 +850,8 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(Node* node, int node_index) {
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
     return -1;
-  auto* layout_tree_snapshot = document_->getLayoutSnapshot();
-  auto* text_box_snapshot = document_->getTextBoxSnapshot();
+  auto* layout_tree_snapshot = document_->getLayout();
+  auto* text_box_snapshot = document_->getTextBoxes();
 
   int layout_index = layout_tree_snapshot->getNodeIndex()->length();
   layout_tree_snapshot->getNodeIndex()->addItem(node_index);
