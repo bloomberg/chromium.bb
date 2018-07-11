@@ -1179,9 +1179,7 @@ void Shell::Init(
   if (!::features::IsAshInBrowserProcess())
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
-  // In mash drag and drop is handled by mus.
-  if (config != Config::MASH_DEPRECATED)
-    drag_drop_controller_ = std::make_unique<DragDropController>();
+  drag_drop_controller_ = std::make_unique<DragDropController>();
 
   // |screenshot_controller_| needs to be created (and prepended as a
   // pre-target handler) at this point, because |mouse_cursor_filter_| needs to
@@ -1408,12 +1406,7 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   ::wm::SetActivationClient(root_window, focus_controller_.get());
   root_window->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
-  if (drag_drop_controller_) {
-    DCHECK_NE(Config::MASH_DEPRECATED, GetAshConfig());
-    aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
-  } else {
-    DCHECK_EQ(Config::MASH_DEPRECATED, GetAshConfig());
-  }
+  aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
   aura::client::SetCursorClient(root_window, cursor_manager_.get());
