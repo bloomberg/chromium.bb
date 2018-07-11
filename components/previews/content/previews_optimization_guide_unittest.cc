@@ -10,13 +10,16 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_user_data.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -95,6 +98,9 @@ class PreviewsOptimizationGuideTest : public testing::Test {
     scoped_task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
+
+  void DoExperimentFlagTest(base::Optional<std::string> experiment_name,
+                            bool expect_enabled);
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -264,6 +270,128 @@ TEST_F(
       GURL("https://m.twitter.com"), PreviewsType::RESOURCE_LOADING_HINTS));
   EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
       GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+}
+
+// This is a helper function for testing the experiment flags on the config for
+// the optimization guide. It creates a test config with a hint containing
+// multiple optimizations. The optimization under test will be marked with an
+// experiment name if one is provided in |experiment_name|. It will then be
+// tested to see if it's enabled, the expectation found in |expect_enabled|.
+void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
+    base::Optional<std::string> experiment_name,
+    bool expect_enabled) {
+  optimization_guide::proto::Configuration config;
+
+  // Create a hint with two optimizations. One may be marked experimental
+  // depending on test configuration. The other is never marked experimental.
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("facebook.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization1 =
+      hint1->add_whitelisted_optimizations();
+  // NOSCRIPT is the optimization under test and may be marked experimental.
+  if (experiment_name.has_value()) {
+    optimization1->set_experiment_name(experiment_name.value());
+  }
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  // RESOURCE_LOADING is never marked experimental.
+  optimization_guide::proto::Optimization* optimization2 =
+      hint1->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+
+  // Add a second, non-experimental hint.
+  optimization_guide::proto::Hint* hint2 = config.add_hints();
+  hint2->set_key("twitter.com");
+  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization3 =
+      hint2->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+
+  // Check to ensure the optimization under test (facebook noscript) is either
+  // enabled or disabled, depending on what the caller told us to expect.
+  EXPECT_EQ(expect_enabled,
+            guide()->IsWhitelisted(
+                *CreateRequestWithURL(GURL("https://m.facebook.com")),
+                PreviewsType::NOSCRIPT));
+
+  // RESOURCE_LOADING_HINTS for facebook should always be enabled.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.facebook.com")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  // Twitter's NOSCRIPT should always be enabled; RESOURCE_LOADING_HINTS is not
+  // configured and should be disabled.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://m.twitter.com/example")),
+      PreviewsType::NOSCRIPT));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://m.twitter.com/example"),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  // Google (which is not configured at all) should always have both NOSCRIPT
+  // and RESOURCE_LOADING_HINTS disabled.
+  EXPECT_FALSE(
+      guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
+                             PreviewsType::NOSCRIPT));
+  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
+      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       HandlesExperimentalFlagWithNoExperimentFlaggedOrEnabled) {
+  // With the optimization NOT flagged as experimental and no experiment
+  // enabled, the optimization should be enabled.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  DoExperimentFlagTest(base::nullopt, true);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       HandlesExperimentalFlagWithEmptyExperimentName) {
+  // Empty experiment names should be equivalent to no experiment flag set.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  DoExperimentFlagTest("", true);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       HandlesExperimentalFlagWithExperimentConfiguredAndNotRunning) {
+  // With the optimization flagged as experimental and no experiment
+  // enabled, the optimization should be disabled.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  DoExperimentFlagTest("foo_experiment", false);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       HandlesExperimentalFlagWithExperimentConfiguredAndSameOneRunning) {
+  // With the optimization flagged as experimental and an experiment with that
+  // name running, the optimization should be enabled.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      features::kOptimizationHintsExperiments,
+      {{"experiment_name", "foo_experiment"}});
+  DoExperimentFlagTest("foo_experiment", true);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       HandlesExperimentalFlagWithExperimentConfiguredAndDifferentOneRunning) {
+  // With the optimization flagged as experimental and a *different* experiment
+  // enabled, the optimization should be disabled.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      features::kOptimizationHintsExperiments,
+      {{"experiment_name", "bar_experiment"}});
+  DoExperimentFlagTest("foo_experiment", false);
+}
+
+TEST_F(PreviewsOptimizationGuideTest, EnsureExperimentsDisabledByDefault) {
+  // Mark an optimization as experiment, and ensure it's disabled even though we
+  // don't explicitly enable or disable the feature as part of the test. This
+  // ensures the experiments feature is disabled by default.
+  DoExperimentFlagTest("foo_experiment", false);
 }
 
 TEST_F(PreviewsOptimizationGuideTest, ProcessHintsUnsupportedKeyRepIsIgnored) {
