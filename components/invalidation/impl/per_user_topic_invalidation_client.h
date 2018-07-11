@@ -5,22 +5,20 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_INVALIDATION_CLIENT_H_
 #define COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_INVALIDATION_CLIENT_H_
 
-#include <string>
-#include <utility>
-
 #include "base/macros.h"
-#include "google/cacheinvalidation/include/invalidation-client.h"
-#include "google/cacheinvalidation/include/system-resources.h"
-#include "google/cacheinvalidation/include/types.h"
+#include "base/memory/weak_ptr.h"
+#include "components/invalidation/impl/invalidation_client.h"
 
-namespace invalidation {
+namespace syncer {
 
 class InvalidationListener;
 class Logger;
+class NetworkChannel;
 
 class PerUserTopicInvalidationClient : public InvalidationClient {
  public:
-  PerUserTopicInvalidationClient(SystemResources* resources,
+  PerUserTopicInvalidationClient(NetworkChannel* network,
+                                 Logger* logger,
                                  InvalidationListener* listener);
 
   ~PerUserTopicInvalidationClient() override;
@@ -31,35 +29,28 @@ class PerUserTopicInvalidationClient : public InvalidationClient {
   //  InvalidationClient implementation
   void Start() override;
   void Stop() override;
-  void Register(const ObjectId& object_id) override {}
-  void Unregister(const ObjectId& object_id) override {}
-  void Register(const vector<ObjectId>& object_ids) override {}
-  void Unregister(const vector<ObjectId>& object_ids) override {}
-  void Acknowledge(const AckHandle& ack_handle) override {}
 
  private:
   InvalidationListener* GetListener() { return listener_; }
-  Logger* logger() { return resources_->logger(); }
-
-  /* Handles the result of a request to read from persistent storage. */
-  void ReadCallback(std::pair<Status, std::string> read_result);
 
   /* Finish starting the ticl and inform the listener that it is ready. */
   void FinishStartingTiclAndInformListener();
 
-  /* Registers a message receiver and status change listener on |resources|. */
-  void RegisterWithNetwork(SystemResources* resources);
+  /* Registers a message receiver */
+  void RegisterWithNetwork();
 
   /* Handles inbound messages from the network. */
-  void MessageReceiver(std::string message);
-
-  /* Resources for the Ticl. Owned by interface user */
-  SystemResources* resources_;
+  void MessageReceiver(const std::string& message);
 
   /* The state of the Ticl whether it has started or not. */
   bool ticl_protocol_started_ = false;
 
+  /* Resources for the Ticl. Owned by interface user */
+  NetworkChannel* network_;
+  Logger* logger_;
   InvalidationListener* listener_;
+
+  base::WeakPtrFactory<PerUserTopicInvalidationClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicInvalidationClient);
 };

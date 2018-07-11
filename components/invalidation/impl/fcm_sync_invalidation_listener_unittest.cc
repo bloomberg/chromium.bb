@@ -16,8 +16,8 @@
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/invalidation_util.h"
+#include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,7 +27,6 @@ namespace syncer {
 
 namespace {
 
-using invalidation::AckHandle;
 using invalidation::ObjectId;
 
 const char kPayload1[] = "payload1";
@@ -38,26 +37,13 @@ const int64_t kVersion2 = 2LL;
 
 const int kChromeSyncSourceId = 1004;
 
-struct AckHandleLessThan {
-  bool operator()(const AckHandle& lhs, const AckHandle& rhs) const {
-    return lhs.handle_data() < rhs.handle_data();
-  }
-};
-
-typedef std::set<AckHandle, AckHandleLessThan> AckHandleSet;
 
 // Fake invalidation::InvalidationClient implementation that keeps
 // track of registered IDs and acked handles.
-class FakeInvalidationClient : public invalidation::InvalidationClient {
+class FakeInvalidationClient : public InvalidationClient {
  public:
   FakeInvalidationClient() : started_(false) {}
   ~FakeInvalidationClient() override {}
-
-  void ClearAckedHandles() { acked_handles_.clear(); }
-
-  bool IsAckedHandle(const AckHandle& ack_handle) const {
-    return (acked_handles_.find(ack_handle) != acked_handles_.end());
-  }
 
   // invalidation::InvalidationClient implementation.
 
@@ -65,53 +51,8 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   void Stop() override { started_ = false; }
 
-  void Register(const ObjectId& object_id) override {
-    if (!started_) {
-      ADD_FAILURE();
-      return;
-    }
-    registered_ids_.insert(object_id);
-  }
-
-  void Register(const invalidation::vector<ObjectId>& object_ids) override {
-    if (!started_) {
-      ADD_FAILURE();
-      return;
-    }
-    registered_ids_.insert(object_ids.begin(), object_ids.end());
-  }
-
-  void Unregister(const ObjectId& object_id) override {
-    if (!started_) {
-      ADD_FAILURE();
-      return;
-    }
-    registered_ids_.erase(object_id);
-  }
-
-  void Unregister(const invalidation::vector<ObjectId>& object_ids) override {
-    if (!started_) {
-      ADD_FAILURE();
-      return;
-    }
-    for (invalidation::vector<ObjectId>::const_iterator it = object_ids.begin();
-         it != object_ids.end(); ++it) {
-      registered_ids_.erase(*it);
-    }
-  }
-
-  void Acknowledge(const AckHandle& ack_handle) override {
-    if (!started_) {
-      ADD_FAILURE();
-      return;
-    }
-    acked_handles_.insert(ack_handle);
-  }
-
  private:
   bool started_;
-  ObjectIdSet registered_ids_;
-  AckHandleSet acked_handles_;
 };
 
 // Fake delegate that keeps track of invalidation counts, payloads,
@@ -227,10 +168,11 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
   DropMap dropped_invalidations_map_;
 };
 
-std::unique_ptr<invalidation::InvalidationClient> CreateFakeInvalidationClient(
+std::unique_ptr<InvalidationClient> CreateFakeInvalidationClient(
     FakeInvalidationClient** fake_invalidation_client,
-    invalidation::SystemResources* resources,
-    invalidation::InvalidationListener* listener) {
+    FCMSyncNetworkChannel* network_channel,
+    Logger* logger,
+    InvalidationListener* listener) {
   std::unique_ptr<FakeInvalidationClient> fake_client =
       std::make_unique<FakeInvalidationClient>();
   *fake_invalidation_client = fake_client.get();
@@ -257,10 +199,9 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
         kPreferencesId_(kChromeSyncSourceId, "PREFERENCE"),
         kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
         kAppsId_(kChromeSyncSourceId, "APP"),
-        fake_network_status_(new notifier::FakePushClient()),
+        fcm_sync_network_channel_(new FCMSyncNetworkChannel()),
         fake_invalidation_client_(nullptr),
-        listener_(base::WrapUnique(
-            new PushClientChannel(base::WrapUnique(fake_network_status_)))),
+        listener_(base::WrapUnique(fcm_sync_network_channel_)),
         fake_delegate_(&listener_) {}
 
   void SetUp() override {
@@ -352,32 +293,24 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
     } else {
       inv = invalidation::Invalidation(object_id, version);
     }
-    const AckHandle ack_handle("fakedata");
-    fake_invalidation_client_->ClearAckedHandles();
-    listener_.Invalidate(fake_invalidation_client_, inv, ack_handle);
-    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
+    listener_.Invalidate(fake_invalidation_client_, inv);
   }
 
   // |payload| can be NULL, but not |type_name|.
   void FireInvalidateUnknownVersion(const ObjectId& object_id) {
-    const AckHandle ack_handle("fakedata_unknown");
-    fake_invalidation_client_->ClearAckedHandles();
-    listener_.InvalidateUnknownVersion(fake_invalidation_client_, object_id,
-                                       ack_handle);
-    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
+    listener_.InvalidateUnknownVersion(fake_invalidation_client_, object_id);
   }
 
   void FireInvalidateAll() {
-    const AckHandle ack_handle("fakedata_all");
-    fake_invalidation_client_->ClearAckedHandles();
-    listener_.InvalidateAll(fake_invalidation_client_, ack_handle);
-    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
+    listener_.InvalidateAll(fake_invalidation_client_);
   }
 
-  void EnableNotifications() { fake_network_status_->EnableNotifications(); }
+  void EnableNotifications() {
+    fcm_sync_network_channel_->NotifyChannelStateChange(INVALIDATIONS_ENABLED);
+  }
 
-  void DisableNotifications(notifier::NotificationsDisabledReason reason) {
-    fake_network_status_->DisableNotifications(reason);
+  void DisableNotifications(InvalidatorState state) {
+    fcm_sync_network_channel_->NotifyChannelStateChange(state);
   }
 
   const ObjectId kBookmarksId_;
@@ -389,7 +322,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  notifier::FakePushClient* const fake_network_status_;
+  FCMSyncNetworkChannel* fcm_sync_network_channel_;
 
  protected:
   // A derrived test needs direct access to this.
@@ -573,7 +506,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateMultipleIds) {
 TEST_F(FCMSyncInvalidationListenerTest, EnableNotificationsNotReady) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
-  DisableNotifications(notifier::TRANSIENT_NOTIFICATION_ERROR);
+  DisableNotifications(TRANSIENT_INVALIDATION_ERROR);
 
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
@@ -619,7 +552,7 @@ TEST_F(FCMSyncInvalidationListenerTest, PushClientAuthError) {
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
-  DisableNotifications(notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+  DisableNotifications(INVALIDATION_CREDENTIALS_REJECTED);
 
   EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 

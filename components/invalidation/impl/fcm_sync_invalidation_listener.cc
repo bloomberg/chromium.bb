@@ -7,10 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "components/invalidation/impl/network_channel.h"
+#include "components/invalidation/impl/per_user_topic_invalidation_client.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/prefs/pref_service.h"
-#include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
@@ -49,18 +50,17 @@ InvalidationObjectIdSet ConvertToInvalidationObjectIdSet(
 FCMSyncInvalidationListener::Delegate::~Delegate() {}
 
 FCMSyncInvalidationListener::FCMSyncInvalidationListener(
-    std::unique_ptr<SyncNetworkChannel> network_channel)
-    : sync_network_channel_(std::move(network_channel)),
-      sync_system_resources_(sync_network_channel_.get(), nullptr),
+    std::unique_ptr<FCMSyncNetworkChannel> network_channel)
+    : network_channel_(std::move(network_channel)),
       delegate_(nullptr),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
       fcm_network_state_(DEFAULT_INVALIDATION_ERROR),
       weak_factory_(this) {
-  sync_network_channel_->AddObserver(this);
+  network_channel_->AddObserver(this);
 }
 
 FCMSyncInvalidationListener::~FCMSyncInvalidationListener() {
-  sync_network_channel_->RemoveObserver(this);
+  network_channel_->RemoveObserver(this);
   Stop();
   DCHECK(!delegate_);
 }
@@ -72,13 +72,12 @@ void FCMSyncInvalidationListener::Start(
         per_user_topic_registration_manager) {
   DCHECK(delegate);
   Stop();
-  sync_system_resources_.Start();
   delegate_ = delegate;
   per_user_topic_registration_manager_ =
       std::move(per_user_topic_registration_manager);
 
   invalidation_client_ = std::move(create_invalidation_client_callback)
-                             .Run(&sync_system_resources_, this);
+                             .Run(network_channel_.get(), &logger_, this);
   invalidation_client_->Start();
 }
 
@@ -89,8 +88,7 @@ void FCMSyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
     DoRegistrationUpdate();
 }
 
-void FCMSyncInvalidationListener::Ready(
-    invalidation::InvalidationClient* client) {
+void FCMSyncInvalidationListener::Ready(InvalidationClient* client) {
   DCHECK_EQ(client, invalidation_client_.get());
   ticl_state_ = INVALIDATIONS_ENABLED;
   EmitStateChange();
@@ -98,11 +96,9 @@ void FCMSyncInvalidationListener::Ready(
 }
 
 void FCMSyncInvalidationListener::Invalidate(
-    invalidation::InvalidationClient* client,
-    const invalidation::Invalidation& invalidation,
-    const invalidation::AckHandle& ack_handle) {
+    InvalidationClient* client,
+    const invalidation::Invalidation& invalidation) {
   DCHECK_EQ(client, invalidation_client_.get());
-  client->Acknowledge(ack_handle);
 
   const invalidation::ObjectId& id = invalidation.object_id();
 
@@ -123,12 +119,10 @@ void FCMSyncInvalidationListener::Invalidate(
 }
 
 void FCMSyncInvalidationListener::InvalidateUnknownVersion(
-    invalidation::InvalidationClient* client,
-    const invalidation::ObjectId& object_id,
-    const invalidation::AckHandle& ack_handle) {
+    InvalidationClient* client,
+    const invalidation::ObjectId& object_id) {
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateUnknownVersion";
-  client->Acknowledge(ack_handle);
 
   ObjectIdInvalidationMap invalidations;
   Invalidation unknown_version = Invalidation::InitUnknownVersion(object_id);
@@ -141,12 +135,9 @@ void FCMSyncInvalidationListener::InvalidateUnknownVersion(
 
 // This should behave as if we got an invalidation with version
 // UNKNOWN_OBJECT_VERSION for all known data types.
-void FCMSyncInvalidationListener::InvalidateAll(
-    invalidation::InvalidationClient* client,
-    const invalidation::AckHandle& ack_handle) {
+void FCMSyncInvalidationListener::InvalidateAll(InvalidationClient* client) {
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateAll";
-  client->Acknowledge(ack_handle);
 
   ObjectIdInvalidationMap invalidations;
   for (const auto& registered_id : registered_ids_) {
@@ -192,7 +183,7 @@ void FCMSyncInvalidationListener::EmitSavedInvalidations(
 }
 
 void FCMSyncInvalidationListener::InformRegistrationStatus(
-    invalidation::InvalidationClient* client,
+    InvalidationClient* client,
     const invalidation::ObjectId& object_id,
     InvalidationListener::RegistrationState new_state) {
   // TODO(melandory): this method is irrelevant in new architecture and
@@ -200,7 +191,7 @@ void FCMSyncInvalidationListener::InformRegistrationStatus(
 }
 
 void FCMSyncInvalidationListener::InformRegistrationFailure(
-    invalidation::InvalidationClient* client,
+    InvalidationClient* client,
     const invalidation::ObjectId& object_id,
     bool is_transient,
     const std::string& error_message) {
@@ -209,7 +200,7 @@ void FCMSyncInvalidationListener::InformRegistrationFailure(
 }
 
 void FCMSyncInvalidationListener::ReissueRegistrations(
-    invalidation::InvalidationClient* client,
+    InvalidationClient* client,
     const std::string& prefix,
     int prefix_length) {
   // TODO(melandory): this method is irrelevant in new architecture and
@@ -217,7 +208,7 @@ void FCMSyncInvalidationListener::ReissueRegistrations(
 }
 
 void FCMSyncInvalidationListener::InformError(
-    invalidation::InvalidationClient* client,
+    InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {}
 
 void FCMSyncInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
@@ -281,7 +272,6 @@ void FCMSyncInvalidationListener::Stop() {
     return;
   }
 
-  sync_system_resources_.Stop();
   invalidation_client_->Stop();
 
   invalidation_client_.reset();
@@ -313,7 +303,7 @@ void FCMSyncInvalidationListener::EmitStateChange() {
   delegate_->OnInvalidatorStateChange(GetState());
 }
 
-void FCMSyncInvalidationListener::OnNetworkChannelStateChanged(
+void FCMSyncInvalidationListener::OnFCMSyncNetworkChannelStateChanged(
     InvalidatorState invalidator_state) {
   fcm_network_state_ = invalidator_state;
   EmitStateChange();
