@@ -3616,6 +3616,16 @@ interface LinearAccelerationSensor : Accelerometer
 interface Location
     attribute @@toStringTag
     method constructor
+interface Lock
+    attribute @@toStringTag
+    getter mode
+    getter name
+    method constructor
+interface LockManager
+    attribute @@toStringTag
+    method constructor
+    method query
+    method request
 interface MIDIAccess : EventTarget
     attribute @@toStringTag
     getter inputs
@@ -4031,6 +4041,7 @@ interface Navigator
     getter keyboard
     getter language
     getter languages
+    getter locks
     getter maxTouchPoints
     getter mediaCapabilities
     getter mediaDevices

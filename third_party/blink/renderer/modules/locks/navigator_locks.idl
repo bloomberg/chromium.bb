@@ -7,7 +7,7 @@
     SecureContext,
     Exposed=Window,
     ImplementedAs=NavigatorLocks,
-    OriginTrialEnabled=WebLocksAPI
+    RuntimeEnabled=WebLocksAPI
 ] partial interface Navigator {
     [CallWith=ScriptState] readonly attribute LockManager locks;
 };
