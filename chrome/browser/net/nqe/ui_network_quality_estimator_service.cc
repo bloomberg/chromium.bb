@@ -226,11 +226,6 @@ void UINetworkQualityEstimatorService::RTTOrThroughputComputed(
   http_rtt_ = http_rtt;
   transport_rtt_ = transport_rtt;
   downstream_throughput_kbps_ = downstream_throughput_kbps;
-
-  for (auto& observer : rtt_throughput_observer_list_) {
-    observer.OnRTTOrThroughputEstimatesComputed(http_rtt, transport_rtt,
-                                                downstream_throughput_kbps);
-  }
 }
 
 void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
@@ -280,28 +275,6 @@ UINetworkQualityEstimatorService::GetDownstreamThroughputKbps() const {
   return downstream_throughput_kbps_;
 }
 
-void UINetworkQualityEstimatorService::AddRTTAndThroughputEstimatesObserver(
-    net::RTTAndThroughputEstimatesObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  rtt_throughput_observer_list_.AddObserver(observer);
-
-  // Notify the |observer| on the next message pump since |observer| may not
-  // be completely set up for receiving the callbacks.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UINetworkQualityEstimatorService::
-                         NotifyRTTAndThroughputObserverIfPresent,
-                     weak_factory_.GetWeakPtr(), observer));
-}
-
-// Removes |observer| from the list of RTT and throughput estimate observers.
-// Must be called on the IO thread.
-void UINetworkQualityEstimatorService::RemoveRTTAndThroughputEstimatesObserver(
-    net::RTTAndThroughputEstimatesObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  rtt_throughput_observer_list_.RemoveObserver(observer);
-}
-
 void UINetworkQualityEstimatorService::SetEffectiveConnectionTypeForTesting(
     net::EffectiveConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -331,16 +304,6 @@ void UINetworkQualityEstimatorService::
   if (type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
     return;
   observer->OnEffectiveConnectionTypeChanged(type_);
-}
-
-void UINetworkQualityEstimatorService::NotifyRTTAndThroughputObserverIfPresent(
-    net::RTTAndThroughputEstimatesObserver* observer) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!rtt_throughput_observer_list_.HasObserver(observer))
-    return;
-  observer->OnRTTOrThroughputEstimatesComputed(http_rtt_, transport_rtt_,
-                                               downstream_throughput_kbps_);
 }
 
 // static

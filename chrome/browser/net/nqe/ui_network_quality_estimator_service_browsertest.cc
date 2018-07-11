@@ -57,39 +57,6 @@ class TestEffectiveConnectionTypeObserver
   DISALLOW_COPY_AND_ASSIGN(TestEffectiveConnectionTypeObserver);
 };
 
-class TestRTTAndThroughputEstimatesObserver
-    : public net::RTTAndThroughputEstimatesObserver {
- public:
-  TestRTTAndThroughputEstimatesObserver()
-      : http_rtt_(base::TimeDelta::FromMilliseconds(-1)),
-        transport_rtt_(base::TimeDelta::FromMilliseconds(-1)),
-        downstream_throughput_kbps_(-1) {}
-  ~TestRTTAndThroughputEstimatesObserver() override {}
-
-  // net::RTTAndThroughputEstimatesObserver implementation:
-  void OnRTTOrThroughputEstimatesComputed(
-      base::TimeDelta http_rtt,
-      base::TimeDelta transport_rtt,
-      int32_t downstream_throughput_kbps) override {
-    http_rtt_ = http_rtt;
-    transport_rtt_ = transport_rtt;
-    downstream_throughput_kbps_ = downstream_throughput_kbps;
-  }
-
-  base::TimeDelta http_rtt() const { return http_rtt_; }
-  base::TimeDelta transport_rtt() const { return transport_rtt_; }
-  int32_t downstream_throughput_kbps() const {
-    return downstream_throughput_kbps_;
-  }
-
- private:
-  base::TimeDelta http_rtt_;
-  base::TimeDelta transport_rtt_;
-  int32_t downstream_throughput_kbps_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRTTAndThroughputEstimatesObserver);
-};
-
 class UINetworkQualityEstimatorServiceBrowserTest
     : public InProcessBrowserTest {
  public:
@@ -243,53 +210,24 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   UINetworkQualityEstimatorService* nqe_service =
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
-  TestRTTAndThroughputEstimatesObserver nqe_observer;
-  nqe_service->AddRTTAndThroughputEstimatesObserver(&nqe_observer);
 
   base::TimeDelta rtt_1 = base::TimeDelta::FromMilliseconds(100);
-
   nqe_test_util::OverrideRTTsAndWait(rtt_1);
-  EXPECT_EQ(rtt_1, nqe_observer.http_rtt());
-
   EXPECT_EQ(rtt_1, nqe_service->GetHttpRTT());
   EXPECT_EQ(rtt_1, nqe_service->GetTransportRTT());
   EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
 
   base::TimeDelta rtt_2 = base::TimeDelta::FromMilliseconds(200);
-
   nqe_test_util::OverrideRTTsAndWait(rtt_2);
-  EXPECT_EQ(rtt_2, nqe_observer.http_rtt());
-
   EXPECT_EQ(rtt_2, nqe_service->GetHttpRTT());
   EXPECT_EQ(rtt_2, nqe_service->GetTransportRTT());
   EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
 
-  nqe_service->RemoveRTTAndThroughputEstimatesObserver(&nqe_observer);
-
   base::TimeDelta rtt_3 = base::TimeDelta::FromMilliseconds(300);
-
   nqe_test_util::OverrideRTTsAndWait(rtt_3);
-  EXPECT_EQ(rtt_2, nqe_observer.http_rtt());
-
   EXPECT_EQ(rtt_3, nqe_service->GetHttpRTT());
   EXPECT_EQ(rtt_3, nqe_service->GetTransportRTT());
   EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
-
-  // Observer should be notified on addition.
-  TestRTTAndThroughputEstimatesObserver nqe_observer_2;
-  nqe_service->AddRTTAndThroughputEstimatesObserver(&nqe_observer_2);
-  EXPECT_GT(0, nqe_observer_2.http_rtt().InMilliseconds());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(rtt_3, nqe_observer_2.http_rtt());
-
-  // |nqe_observer_3| should be not notified since it unregisters before the
-  // message loop is run.
-  TestRTTAndThroughputEstimatesObserver nqe_observer_3;
-  nqe_service->AddRTTAndThroughputEstimatesObserver(&nqe_observer_3);
-  EXPECT_GT(0, nqe_observer_3.http_rtt().InMilliseconds());
-  nqe_service->RemoveRTTAndThroughputEstimatesObserver(&nqe_observer_3);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_GT(0, nqe_observer_3.http_rtt().InMilliseconds());
 }
 
 // Verify that prefs are writen and read correctly.

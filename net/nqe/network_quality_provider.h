@@ -18,7 +18,6 @@
 namespace net {
 
 class EffectiveConnectionTypeObserver;
-class RTTAndThroughputEstimatesObserver;
 
 // Provides simple interface to obtain the network quality, and to listen to
 // the changes in the network quality.
@@ -65,19 +64,6 @@ class NET_EXPORT NetworkQualityProvider {
   // bandwidth delay product is calculated from the transport RTT and the
   // downlink bandwidth estimates.
   virtual base::Optional<int32_t> GetBandwidthDelayProductKbits() const;
-
-  // Adds |observer| to the list of RTT and throughput estimate observers.
-  // The observer must register and unregister itself on the same thread.
-  // |observer| would be notified on the thread on which it registered.
-  // |observer| would be notified of the current values in the next message
-  // pump.
-  virtual void AddRTTAndThroughputEstimatesObserver(
-      RTTAndThroughputEstimatesObserver* observer) {}
-
-  // Removes |observer| from the list of RTT and throughput estimate
-  // observers.
-  virtual void RemoveRTTAndThroughputEstimatesObserver(
-      RTTAndThroughputEstimatesObserver* observer) {}
 
  protected:
   NetworkQualityProvider() {}

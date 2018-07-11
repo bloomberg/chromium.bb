@@ -131,10 +131,19 @@ class NET_EXPORT NetworkQualityEstimator
   base::Optional<base::TimeDelta> GetTransportRTT() const override;
   base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
   base::Optional<int32_t> GetBandwidthDelayProductKbits() const override;
+
+  // Adds |observer| to the list of RTT and throughput estimate observers.
+  // The observer must register and unregister itself on the same thread.
+  // |observer| would be notified on the thread on which it registered.
+  // |observer| would be notified of the current values in the next message
+  // pump.
   void AddRTTAndThroughputEstimatesObserver(
-      RTTAndThroughputEstimatesObserver* observer) override;
+      RTTAndThroughputEstimatesObserver* observer);
+
+  // Removes |observer| from the list of RTT and throughput estimate
+  // observers.
   void RemoveRTTAndThroughputEstimatesObserver(
-      RTTAndThroughputEstimatesObserver* observer) override;
+      RTTAndThroughputEstimatesObserver* observer);
 
   // Notifies NetworkQualityEstimator that the response header of |request| has
   // been received.
