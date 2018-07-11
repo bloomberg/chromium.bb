@@ -168,18 +168,17 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
     // 3. Process messages until quitNow is called.
     message_loop_->Run();
-
-    // 4. Resume active objects
-    WebView::DidExitModalLoop();
-
-    // 5. Enable input events.
-    WebFrameWidgetBase::SetIgnoreInputEvents(false);
   }
 
   void QuitNow() override {
     if (running_for_debug_break_) {
       running_for_debug_break_ = false;
+      // Undo steps (3), (2) and (1) from above.
+      // NOTE: This code used to be above right after the |mesasge_loop_->Run()|
+      // code, but it is moved here to support browser-side navigation.
       message_loop_->QuitNow();
+      WebView::DidExitModalLoop();
+      WebFrameWidgetBase::SetIgnoreInputEvents(false);
     }
   }
 
