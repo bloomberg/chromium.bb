@@ -46,7 +46,7 @@ include_rules = [
   "+media/base/android",
 
   "+components/policy/policy_constants.h",
-  "+components/web_contents_delegate_android",
+  "+components/embedder_support/android",
 
   "+printing",
 

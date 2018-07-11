@@ -6,6 +6,7 @@ include_rules = [
   "+components/crash/android/java",
   "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",
   "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
+  "+components/embedder_support/android/delegate",
   "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/location/android/java",
@@ -14,7 +15,6 @@ include_rules = [
   "+components/offline_items_collection/core/android/java",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/sync/android/java/src/org/chromium/components/sync",
-  "+components/web_contents_delegate_android",
   "+components/web_restrictions",
 
   "-content/public/android",

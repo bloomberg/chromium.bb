@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 // The actual android color chooser is at
-// components/web_contents_delegate_android/color_chooser_android.cc
+// components/embedder_support/android/delegate/color_chooser_android.cc
 
 namespace chrome {
 

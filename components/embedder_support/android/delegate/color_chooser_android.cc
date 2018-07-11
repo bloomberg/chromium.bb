@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/web_contents_delegate_android/color_chooser_android.h"
+#include "components/embedder_support/android/delegate/color_chooser_android.h"
 
 #include <stddef.h>
 
@@ -50,8 +50,7 @@ ColorChooserAndroid::ColorChooserAndroid(
     OnColorChosen(env, j_color_chooser_, initial_color);
 }
 
-ColorChooserAndroid::~ColorChooserAndroid() {
-}
+ColorChooserAndroid::~ColorChooserAndroid() {}
 
 void ColorChooserAndroid::End() {
   if (!j_color_chooser_.is_null()) {

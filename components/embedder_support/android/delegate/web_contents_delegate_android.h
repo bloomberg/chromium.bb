@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
-#define COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#ifndef COMPONENTS_EMBEDDER_SUPPORT_ANDROID_DELEGATE_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#define COMPONENTS_EMBEDDER_SUPPORT_ANDROID_DELEGATE_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@ class WebContents;
 class WebContentsDelegate;
 struct NativeWebKeyboardEvent;
 struct OpenURLParams;
-}
+}  // namespace content
 
 namespace web_contents_delegate_android {
 
@@ -35,7 +35,6 @@ enum WebContentsDelegateLogLevel {
   // Equivalent of WebCore::WebConsoleMessage::LevelError.
   WEB_CONTENTS_DELEGATE_LOG_LEVEL_ERROR = 3,
 };
-
 
 // Native underpinnings of WebContentsDelegateAndroid.java. Provides a default
 // delegate for WebContents to forward calls to the java peer. The embedding
@@ -103,8 +102,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const content::NativeWebKeyboardEvent& event) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   void ShowRepostFormWarningDialog(content::WebContents* source) override;
-  base::android::ScopedJavaLocalRef<jobject>
-      GetContentVideoViewEmbedder() override;
+  base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder()
+      override;
   bool ShouldBlockMediaRequest(const GURL& url) override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
@@ -133,4 +132,4 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
 
 }  // namespace web_contents_delegate_android
 
-#endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#endif  // COMPONENTS_EMBEDDER_SUPPORT_ANDROID_DELEGATE_WEB_CONTENTS_DELEGATE_ANDROID_H_

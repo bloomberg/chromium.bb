@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
-import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 
 /**
  * A factory class to create {@link Tab} related delegates.
