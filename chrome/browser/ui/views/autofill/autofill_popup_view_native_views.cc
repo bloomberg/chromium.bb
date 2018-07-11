@@ -58,6 +58,11 @@ int GetCornerRadius() {
       views::EMPHASIS_MEDIUM);
 }
 
+int GetContentsVerticalPadding() {
+  return ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+}
+
 }  // namespace
 
 namespace autofill {
@@ -157,7 +162,6 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override {}
   void OnMouseReleased(const ui::MouseEvent& event) override {}
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  protected:
   // AutofillPopupRowView:
@@ -367,11 +371,6 @@ void AutofillPopupSeparatorView::GetAccessibleNodeData(
   node_data->role = ax::mojom::Role::kSplitter;
 }
 
-void AutofillPopupSeparatorView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  RefreshStyle();
-}
-
 void AutofillPopupSeparatorView::CreateContent() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -379,18 +378,17 @@ void AutofillPopupSeparatorView::CreateContent() {
   // view which matches the width of the parent (by using full flex) and has a
   // height equal to the desired padding, then paint a border on the bottom.
   empty_ = new views::View();
-  empty_->SetPreferredSize(
-      gfx::Size(1, views::MenuConfig::instance().menu_vertical_border_size));
-  AddChildView(empty_);
-}
-
-void AutofillPopupSeparatorView::RefreshStyle() {
+  empty_->SetPreferredSize(gfx::Size(1, GetContentsVerticalPadding()));
   empty_->SetBorder(views::CreateSolidSidedBorder(
       /*top=*/0,
       /*left=*/0,
       /*bottom=*/views::MenuConfig::instance().separator_thickness,
       /*right=*/0,
       /*color=*/kAutofillPopupSeparatorColor));
+  AddChildView(empty_);
+}
+
+void AutofillPopupSeparatorView::RefreshStyle() {
   SchedulePaint();
 }
 
@@ -511,8 +509,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   views::BoxLayout* body_layout =
       body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical,
-          gfx::Insets(views::MenuConfig::instance().menu_vertical_border_size,
-                      0)));
+          gfx::Insets(GetContentsVerticalPadding(), 0)));
   body_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
