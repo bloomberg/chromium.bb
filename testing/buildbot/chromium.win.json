@@ -1928,6 +1928,7 @@
     ],
     "isolated_scripts": [
       {
+        "experiment_percentage": 100,
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
         "swarming": {
