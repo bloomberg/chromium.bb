@@ -108,7 +108,7 @@ fuzzer_test("signed_exchange_envelope_fuzzer") {
     "//base:i18n",
     "//content/test:test_support",
   ]
-  seed_corpus = "//content/test/data/htxg/"
+  seed_corpus = "//content/test/data/sxg/"
 }
 
 fuzzer_test("signed_exchange_signature_header_field_fuzzer") {

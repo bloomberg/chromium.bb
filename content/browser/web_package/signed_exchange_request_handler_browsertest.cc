@@ -109,7 +109,7 @@ class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
     base::ScopedAllowBlockingForTesting allow_io;
     base::FilePath dir_path;
     base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
-    dir_path = dir_path.AppendASCII("htxg");
+    dir_path = dir_path.AppendASCII("sxg");
 
     return net::CreateCertificateChainFromFile(
         dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
@@ -172,7 +172,7 @@ class SignedExchangeRequestHandlerWithNetworkServiceBrowserTest
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/test.example.org.public.pem.cbor");
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
 
   // Make the MockCertVerifier treat the certificate
   // "prime256v1-sha256.public.pem" as valid for "test.example.org".
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
-        if (request.relative_url == "/htxg/test.example.org_test.htxg") {
+        if (request.relative_url == "/sxg/test.example.org_test.htxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
                       ::testing::HasSubstr("application/signed-exchange;v=b1"));
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/test.example.org.public.pem.cbor");
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
 
   // Make the MockCertVerifier treat the certificate
   // "prime256v1-sha256.public.pem" as valid for "test.example.org".
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
-      "/htxg/test.example.org_test_invalid_content_type.htxg");
+      "/sxg/test.example.org_test_invalid_content_type.htxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -254,11 +254,11 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
-                        "content/test/data/htxg/404.msg");
+                        "content/test/data/sxg/404.msg");
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(
     NetworkServiceEnabled) {
   InstallUrlInterceptor(
       GURL("https://test.example.org/cert.msg"),
-      "content/test/data/htxg/test.example.org.public.pem.cbor");
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
 
   // Make the MockCertVerifier treat the certificate
   // "prime256v1-sha256.public.pem" as valid for "test.example.org".
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -303,14 +303,14 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
                        RealCertVerifier) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/test.example.org.public.pem.cbor");
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
 
   // Use "real" CertVerifier.
   SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
-        if (request.relative_url == "/htxg/test.example.org_test.htxg") {
+        if (request.relative_url == "/sxg/test.example.org_test.htxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
                       ::testing::HasSubstr("application/signed-exchange;v=b1"));
@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
 
   // "test.example.org_test.htxg" should pass CertVerifier::Verify() and then
   // fail at SignedExchangeHandler::CheckOCSPStatus() because of the dummy OCSP

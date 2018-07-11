@@ -53,7 +53,7 @@ constexpr base::StringPiece kDummySCTList = "SCT";
 std::string GetTestFileContents(base::StringPiece name) {
   base::FilePath path;
   base::PathService::Get(content::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("htxg").AppendASCII(name);
+  path = path.AppendASCII("sxg").AppendASCII(name);
 
   std::string contents;
   CHECK(base::ReadFileToString(path, &contents));
@@ -64,7 +64,7 @@ scoped_refptr<net::X509Certificate> LoadCertificate(
     const std::string& cert_file) {
   base::FilePath dir_path;
   base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
-  dir_path = dir_path.AppendASCII("htxg");
+  dir_path = dir_path.AppendASCII("sxg");
 
   base::ScopedAllowBlockingForTesting allow_io;
   return net::CreateCertificateChainFromFile(
