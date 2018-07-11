@@ -1392,7 +1392,6 @@ skip_child_includes = [
   'skia',
   'testing',
   'third_party/abseil-cpp',
-  'third_party/breakpad/breakpad',
   'v8',
 ]
 
