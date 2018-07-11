@@ -145,10 +145,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 		return dri_bo_create(bo, width, height, format, use_flags);
 
 	stride = drv_stride_from_format(format, width, 0);
-	if (format == DRM_FORMAT_YVU420_ANDROID)
-		stride = ALIGN(stride, 128);
-	else
-		stride = ALIGN(stride, 64);
+	stride = ALIGN(stride,256);
 
 	drv_bo_from_format(bo, stride, height, format);
 
