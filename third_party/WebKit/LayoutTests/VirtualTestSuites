@@ -581,33 +581,33 @@
     "args": ["--sampling-heap-profiler"]
   },
   {
-    "prefix": "htxg",
-    "base": "http/tests/loading/htxg",
+    "prefix": "sxg",
+    "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchange"]
   },
   {
-    "prefix": "htxg",
-    "base": "http/tests/devtools/htxg",
+    "prefix": "sxg",
+    "base": "http/tests/devtools/sxg",
     "args": ["--enable-features=SignedHTTPExchange"]
   },
   {
-    "prefix": "htxg-with-network-service",
-    "base": "http/tests/loading/htxg",
+    "prefix": "sxg-with-network-service",
+    "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   },
   {
-    "prefix": "htxg-with-network-service",
-    "base": "http/tests/devtools/htxg",
+    "prefix": "sxg-with-network-service",
+    "base": "http/tests/devtools/sxg",
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   },
   {
-    "prefix": "htxg-origin-trial",
-    "base": "http/tests/loading/htxg",
+    "prefix": "sxg-origin-trial",
+    "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchangeOriginTrial"]
   },
   {
-    "prefix": "htxg-origin-trial-with-network-service",
-    "base": "http/tests/loading/htxg",
+    "prefix": "sxg-origin-trial-with-network-service",
+    "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
   },
   {

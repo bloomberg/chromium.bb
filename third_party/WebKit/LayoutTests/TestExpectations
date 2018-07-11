@@ -4307,16 +4307,16 @@ crbug.com/818154 [ Linux Debug ] virtual/gpu-rasterization/images/gif-loop-count
 crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
 
 # These tests will pass once the --enable-features=SignedHTTPExchange flag is enabled by default.
-crbug.com/803774 http/tests/devtools/htxg/ [ Skip ]
-crbug.com/803774 http/tests/loading/htxg/ [ Skip ]
+crbug.com/803774 http/tests/devtools/sxg/ [ Skip ]
+crbug.com/803774 http/tests/loading/sxg/ [ Skip ]
 
 # Signed Exchange is temporarily disabled when Network Service is enabled.
-crbug.com/849935 virtual/htxg-with-network-service/ [ Skip ]
-crbug.com/849935 virtual/htxg-origin-trial-with-network-service/ [ Skip ]
+crbug.com/849935 virtual/sxg-with-network-service/ [ Skip ]
+crbug.com/849935 virtual/sxg-origin-trial-with-network-service/ [ Skip ]
 
 # Prefetching Signed Exchange DevTools tests are flaky.
-crbug.com/851363 virtual/htxg/http/tests/devtools/htxg/htxg-prefetch-expired.js [ Pass Failure ]
-crbug.com/851363 virtual/htxg/http/tests/devtools/htxg/htxg-prefetch.js [ Pass Failure ]
+crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-expired.js [ Pass Failure ]
+crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
