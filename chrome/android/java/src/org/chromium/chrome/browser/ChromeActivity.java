@@ -1519,7 +1519,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         TextBubble.dismissBubbles();
         boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
         getAppMenuHandler().showAppMenu(
-                hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false);
+                hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false,
+                getToolbarManager().isBottomToolbarEnabled());
     }
 
     /**

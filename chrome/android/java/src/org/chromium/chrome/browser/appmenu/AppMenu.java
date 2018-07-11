@@ -158,10 +158,12 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      *                              Can be {@code null} if no item should be highlighted.  Note that
      *                              {@code 0} is dedicated to custom menu items and can be declared
      *                              by external apps.
+     * @param showFromBottom        Whether the appearance animation should run from the bottom up.
      */
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
-            @IdRes int footerResourceId, View headerView, Integer highlightedItemId) {
+            @IdRes int footerResourceId, View headerView, Integer highlightedItemId,
+            boolean showFromBottom) {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -198,7 +200,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mPopup.setBackgroundDrawable(
                 ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.popup_bg));
         if (!isByPermanentButton) {
-            mPopup.setAnimationStyle(R.style.OverflowMenuAnim);
+            mPopup.setAnimationStyle(
+                    showFromBottom ? R.style.OverflowMenuAnimBottom : R.style.OverflowMenuAnim);
         }
 
         // Turn off window animations for low end devices.

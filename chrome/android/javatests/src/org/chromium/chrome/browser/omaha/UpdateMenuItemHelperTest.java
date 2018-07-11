@@ -232,7 +232,7 @@ public class UpdateMenuItemHelperTest {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getActivity().getAppMenuHandler().showAppMenu(null, false);
+                mActivityTestRule.getActivity().getAppMenuHandler().showAppMenu(null, false, false);
             }
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
