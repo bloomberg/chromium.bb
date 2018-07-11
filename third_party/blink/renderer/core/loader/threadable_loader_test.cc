@@ -135,7 +135,7 @@ void SetUpRedirectURL() {
   response.SetHTTPStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", SuccessURL().GetString());
-  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
+  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
   URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
@@ -152,7 +152,7 @@ void SetUpRedirectLoopURL() {
   response.SetHTTPStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", RedirectLoopURL().GetString());
-  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
+  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
   URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
@@ -189,7 +189,11 @@ class ThreadableLoaderTestHelper {
 class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
  public:
   DocumentThreadableLoaderTestHelper()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
+      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {
+    GetDocument().SetURL(KURL("http://fake.url/"));
+    GetDocument().SetSecurityOrigin(
+        SecurityOrigin::Create(KURL("http://fake.url/")));
+  }
 
   void CreateLoader(ThreadableLoaderClient* client) override {
     ThreadableLoaderOptions options;
@@ -265,7 +269,9 @@ class WebWorkerFetchContextForTest : public WebWorkerFetchContext {
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
  public:
   WorkerThreadableLoaderTestHelper()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
+      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {
+    GetDocument().SetURL(KURL("http://fake.url/"));
+  }
 
   void CreateLoader(ThreadableLoaderClient* client) override {
     std::unique_ptr<WaitableEvent> completion_event =
@@ -773,7 +779,8 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
       DidFail(ResourceError::CancelledDueToAccessCheckError(
           SuccessURL(), ResourceRequestBlockedReason::kOther,
           "No 'Access-Control-Allow-Origin' header is present on the requested "
-          "resource. Origin 'null' is therefore not allowed access.")));
+          "resource. Origin 'http://fake.url' is therefore not allowed "
+          "access.")));
 
   StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
