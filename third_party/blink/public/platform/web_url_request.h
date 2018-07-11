@@ -140,7 +140,8 @@ class WebURLRequest {
     kNoScriptOn = 1 << 6,   // Request that script be disabled for page load.
     kResourceLoadingHintsOn = 1 << 7,  // Request that resource loading hints be
                                        // used during pageload.
-    kPreviewsStateLast = kResourceLoadingHintsOn
+    kOfflinePageOn = 1 << 8,
+    kPreviewsStateLast = kOfflinePageOn
   };
 
   class ExtraData {

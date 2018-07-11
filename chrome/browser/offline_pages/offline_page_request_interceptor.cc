@@ -6,15 +6,12 @@
 
 #include "base/supports_user_data.h"
 #include "chrome/browser/offline_pages/offline_page_request_job.h"
-#include "components/previews/core/previews_decider.h"
 
 namespace offline_pages {
 
-OfflinePageRequestInterceptor::OfflinePageRequestInterceptor(
-    previews::PreviewsDecider* previews_decider)
-    : previews_decider_(previews_decider) {}
+OfflinePageRequestInterceptor::OfflinePageRequestInterceptor() = default;
 
-OfflinePageRequestInterceptor::~OfflinePageRequestInterceptor() {}
+OfflinePageRequestInterceptor::~OfflinePageRequestInterceptor() = default;
 
 net::URLRequestJob* OfflinePageRequestInterceptor::MaybeInterceptRequest(
     net::URLRequest* request,
@@ -22,8 +19,7 @@ net::URLRequestJob* OfflinePageRequestInterceptor::MaybeInterceptRequest(
   // OfflinePageRequestJob::Create may return a nullptr if the interception
   // is not needed for some sort of requests, like non-main resource request,
   // non-http request and more.
-  return OfflinePageRequestJob::Create(request, network_delegate,
-                                       previews_decider_);
+  return OfflinePageRequestJob::Create(request, network_delegate);
 }
 
 }  // namespace offline_pages

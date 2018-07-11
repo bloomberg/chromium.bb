@@ -261,6 +261,8 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
                                                 true);
   base::RunLoop().RunUntilIdle();
 
+  SetCommittedPreviewsType(previews::PreviewsType::OFFLINE);
+
   CallDidFinishNavigation();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
