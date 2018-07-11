@@ -9,9 +9,11 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/previews/core/previews_features.h"
 
 namespace previews {
 
@@ -168,6 +170,23 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     // whitelisted for the host suffix.
     std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
     for (const auto optimization : hint.whitelisted_optimizations()) {
+      // If this optimization has been marked with an experiment name, skip it
+      // unless an experiment with that name is running. Experiment names are
+      // configured with the experiment_name parameter to the
+      // kOptimizationHintsExperiments feature.
+      //
+      // If kOptimizationHintsExperiments is disabled, getting the param value
+      // returns an empty string. Since experiment names are not allowed to be
+      // empty strings, all experiments will be disabled if the feature is
+      // disabled.
+      if (optimization.has_experiment_name() &&
+          !optimization.experiment_name().empty() &&
+          optimization.experiment_name() !=
+              base::GetFieldTrialParamValueByFeature(
+                  features::kOptimizationHintsExperiments,
+                  features::kOptimizationHintsExperimentNameParam)) {
+        continue;
+      }
       base::Optional<PreviewsType> previews_type =
           ConvertProtoOptimizationTypeToPreviewsOptimizationType(
               optimization.optimization_type());
