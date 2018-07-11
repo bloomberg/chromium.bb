@@ -562,7 +562,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 public void onMenuVisibilityChanged(boolean isVisible) {
                     if (isVisible && !isInOverviewMode()) {
                         // The app menu badge should be removed the first time the menu is opened.
-                        if (mToolbarManager.getToolbar().isShowingAppMenuUpdateBadge()) {
+                        if (mToolbarManager.isShowingAppMenuUpdateBadge()) {
                             mToolbarManager.removeAppMenuUpdateBadge(true);
                             mCompositorViewHolder.requestRender();
                         }
