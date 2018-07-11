@@ -17,8 +17,17 @@ cast_source_set("post_processor_wrapper") {
 }
 
 cast_shared_library("libcast_governor_2.0") {
+  sources = [
+    "post_processor_name.cc",
+  ]
+  defines = [
+    "DEFINED_POSTPROCESSOR_NAME=chromecast::media::Governor",
+    "DEFINED_POSTPROCESSOR_HEADER=chromecast/media/cma/backend/post_processors/governor.h",
+  ]
   deps = [
     ":governor",
+    "//chromecast/public",
+    "//chromecast/public/media",
   ]
   if (is_fuchsia) {
     ldflags = [ "-Wl,-Bsymbolic" ]
@@ -40,8 +49,17 @@ cast_source_set("governor") {
 }
 
 cast_shared_library("libcast_saturated_gain_2.0") {
+  sources = [
+    "post_processor_name.cc",
+  ]
+  defines = [
+    "DEFINED_POSTPROCESSOR_NAME=chromecast::media::SaturatedGain",
+    "DEFINED_POSTPROCESSOR_HEADER=chromecast/media/cma/backend/post_processors/saturated_gain.h",
+  ]
   deps = [
     ":saturated_gain",
+    "//chromecast/public",
+    "//chromecast/public/media",
   ]
   if (is_fuchsia) {
     ldflags = [ "-Wl,-Bsymbolic" ]

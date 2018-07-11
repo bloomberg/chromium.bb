@@ -12,10 +12,6 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/slew_volume.h"
 
-AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(governor) {
-  return new chromecast::media::Governor(config, num_channels_in);
-}
-
 namespace chromecast {
 namespace media {
 

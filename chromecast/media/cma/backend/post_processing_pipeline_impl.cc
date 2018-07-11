@@ -27,7 +27,6 @@ const char kJsonKeyProcessor[] = "processor";
 
 // Used for AudioPostProcessor2
 const char kJsonKeyLib[] = "lib";
-const char kJsonKeyType[] = "type";
 
 const char kJsonKeyName[] = "name";
 const char kJsonKeyConfig[] = "config";
@@ -78,18 +77,12 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     }
 
     std::string library_path;
-    std::string post_processor_type;
 
     // Keys for AudioPostProcessor2:
     const base::Value* library_val = processor_description_dict.FindKeyOfType(
         kJsonKeyLib, base::Value::Type::STRING);
     if (library_val) {
       library_path = library_val->GetString();
-      const base::Value* type_val = processor_description_dict.FindKeyOfType(
-          kJsonKeyType, base::Value::Type::STRING);
-      DCHECK(type_val) << "AudioPostProcessor2 must specify " << kJsonKeyType
-                       << " (key provided to AUDIO_POST_PROCESSOR2_CREATE())";
-      post_processor_type = type_val->GetString();
     } else {
       // Keys for AudioPostProcessor
       // TODO(bshaya): Remove when AudioPostProcessor support is removed.
@@ -112,10 +105,10 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     LOG(INFO) << "Creating an instance of " << library_path << "("
               << processor_config_string << ")";
 
-    processors_.emplace_back(PostProcessorInfo{
-        factory_.CreatePostProcessor(library_path, post_processor_type,
-                                     processor_config_string, channels),
-        processor_name});
+    processors_.emplace_back(
+        PostProcessorInfo{factory_.CreatePostProcessor(
+                              library_path, processor_config_string, channels),
+                          processor_name});
     channels = processors_.back().ptr->NumOutputChannels();
   }
   num_output_channels_ = channels;

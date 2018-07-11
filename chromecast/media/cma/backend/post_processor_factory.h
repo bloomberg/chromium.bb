@@ -12,6 +12,7 @@
 #include "base/macros.h"
 
 namespace base {
+class FilePath;
 class ScopedNativeLibrary;
 }  // namespace base
 
@@ -25,10 +26,12 @@ class PostProcessorFactory {
   PostProcessorFactory();
   ~PostProcessorFactory();
 
+  // Checks if a library is a V1 or V2 post processor.
+  static bool IsPostProcessorLibrary(const base::FilePath& library_path);
+
   // Creates an instance of AudioPostProcessor2 or a wrapped AudioPostProcessor.
   std::unique_ptr<AudioPostProcessor2> CreatePostProcessor(
       const std::string& library_path,
-      const std::string& post_processor_type,
       const std::string& config,
       int channels);
 
