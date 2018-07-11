@@ -1805,10 +1805,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
           other {Downloading # files.}}
       </message>
       <message name="IDS_DOWNLOADING_MULTIPLE_FILES_WITH_BYTES" desc="InfoBar text describing that chrome is downloading multiple files along with the total size of the files being downloaded">
-        Downloading <ph name="count">%1$d<ex>2</ex></ph> files (<ph name="megabytes">%2$s<ex>100</ex></ph>).
+        Downloading <ph name="count">%1$d<ex>2</ex></ph> files (<ph name="megabytes">%2$s<ex>100 MB</ex></ph>).
       </message>
       <message name="IDS_DOWNLOADING_FILE_WITH_BYTES" desc="Label describing that file download is in progress along with the total size information">
-        Downloading file (<ph name="megabytes">%1$s<ex>100</ex></ph>).
+        Downloading file (<ph name="megabytes">%1$s<ex>100 MB</ex></ph>).
       </message>
       <message name="IDS_MULTIPLE_DOWNLOAD_COMPLETE" desc="Label describing that one or more downloads have completed">
         {FILE_COUNT, plural,
