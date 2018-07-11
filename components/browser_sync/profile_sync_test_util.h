@@ -158,15 +158,15 @@ class ProfileSyncServiceBundle {
     return &fake_invalidation_service_;
   }
 
-  base::SingleThreadTaskRunner* db_thread() { return db_thread_.get(); }
+  base::SequencedTaskRunner* db_thread() { return db_thread_.get(); }
 
   void set_db_thread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread) {
+      const scoped_refptr<base::SequencedTaskRunner>& db_thread) {
     db_thread_ = db_thread;
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_thread_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
