@@ -162,7 +162,7 @@ public class OverlayPanelEventFilterTest {
         }
 
         @Override
-        protected void resizePanelContentView(float width, float height) {}
+        protected void resizePanelContentView() {}
 
         @Override
         protected void animatePanelTo(float height, long duration) {
