@@ -46,6 +46,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_instrumentation.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -551,7 +554,7 @@ void ResourceLoader::DidReceiveResponse(
           ? resource_->GetResponse()
           : response;
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      Context().CheckResponseNosniff(request_context, nosniffed_response);
+      CheckResponseNosniff(request_context, nosniffed_response);
   if (blocked_reason) {
     HandleError(ResourceError::CancelledDueToAccessCheckError(
         response.Url(), blocked_reason.value()));
@@ -873,6 +876,33 @@ void ResourceLoader::FinishedCreatingBlob(
                      response.DecodedBodyLength(),
                      load_did_finish_before_blob_->should_report_corb_blocking);
   }
+}
+
+base::Optional<ResourceRequestBlockedReason>
+ResourceLoader::CheckResponseNosniff(
+    WebURLRequest::RequestContext request_context,
+    const ResourceResponse& response) const {
+  bool sniffing_allowed =
+      ParseContentTypeOptionsHeader(response.HttpHeaderField(
+          HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff;
+  if (sniffing_allowed)
+    return base::nullopt;
+
+  String mime_type = response.HttpContentType();
+  if (request_context == WebURLRequest::kRequestContextStyle &&
+      !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
+    Context().AddErrorConsoleMessage(
+        "Refused to apply style from '" + response.Url().ElidedString() +
+            "' because its MIME type ('" + mime_type + "') " +
+            "is not a supported stylesheet MIME type, and strict MIME checking "
+            "is enabled.",
+        FetchContext::kSecuritySource);
+    return ResourceRequestBlockedReason::kContentType;
+  }
+  // TODO(mkwst): Move the 'nosniff' bit of 'AllowedByNosniff::MimeTypeAsScript'
+  // here alongside the style checks, and put its use counters somewhere else.
+
+  return base::nullopt;
 }
 
 }  // namespace blink
