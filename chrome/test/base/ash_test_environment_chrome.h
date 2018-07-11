@@ -15,6 +15,7 @@ class AshTestEnvironmentChrome : public ash::AshTestEnvironment {
 
   // AshTestEnvironment:
   std::unique_ptr<ash::AshTestViewsDelegate> CreateViewsDelegate() override;
+  void TearDown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentChrome);

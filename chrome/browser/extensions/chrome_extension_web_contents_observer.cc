@@ -22,6 +22,8 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
@@ -177,13 +179,20 @@ void ChromeExtensionWebContentsObserver::ReadyToCommitNavigation(
   const ExtensionRegistry* registry = ExtensionRegistry::Get(
       navigation_handle->GetWebContents()->GetBrowserContext());
 
+  const Extension* extension =
+      GetExtensionFromFrame(web_contents()->GetMainFrame(), false);
+  DCHECK(ExtensionsBrowserClient::Get()->GetKioskDelegate());
+  bool is_kiosk = extension && ExtensionsBrowserClient::Get()
+                                   ->GetKioskDelegate()
+                                   ->IsAutoLaunchedKioskApp(extension->id());
+
   // If the top most frame is an extension, packaged app, hosted app, etc. then
   // the main frame and all iframes should be able to autoplay without
   // restriction. <webview> should still have autoplay blocked though.
   GURL url = navigation_handle->IsInMainFrame()
                  ? navigation_handle->GetURL()
                  : navigation_handle->GetWebContents()->GetLastCommittedURL();
-  if (registry->enabled_extensions().GetExtensionOrAppByURL(url)) {
+  if (is_kiosk || registry->enabled_extensions().GetExtensionOrAppByURL(url)) {
     blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
     navigation_handle->GetRenderFrameHost()
         ->GetRemoteAssociatedInterfaces()
