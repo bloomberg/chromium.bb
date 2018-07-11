@@ -27,8 +27,6 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler {
   void HandleSetGoogleAssistantEnabled(const base::ListValue* args);
   // WebUI call to enable context for the Google Assistant.
   void HandleSetGoogleAssistantContextEnabled(const base::ListValue* args);
-  // WebUI call to enable hotword detection for the Google Assistant.
-  void HandleSetGoogleAssistantHotwordEnabled(const base::ListValue* args);
   // WebUI call to launch into the Google Assistant app settings.
   void HandleShowGoogleAssistantSettings(const base::ListValue* args);
   // WebUI call to launch assistant runtime flow.

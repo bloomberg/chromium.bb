@@ -62,7 +62,8 @@ class AssistantManagerServiceImpl
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor,
-                              Service* service);
+                              Service* service,
+                              const std::string& config_str);
 
   ~AssistantManagerServiceImpl() override;
 
@@ -124,6 +125,7 @@ class AssistantManagerServiceImpl
       ash::mojom::VoiceInteractionState state) override {}
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
+  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
@@ -186,6 +188,7 @@ class AssistantManagerServiceImpl
 
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
+  const std::string config_str_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;

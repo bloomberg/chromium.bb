@@ -26,10 +26,12 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyStatusChanged(mojom::VoiceInteractionState state) override;
   void NotifySettingsEnabled(bool enabled) override;
   void NotifyContextEnabled(bool enabled) override;
+  void NotifyHotwordEnabled(bool enabled) override;
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
   void IsSettingEnabled(IsSettingEnabledCallback callback) override;
   void IsSetupCompleted(IsSetupCompletedCallback callback) override;
+  void IsHotwordEnabled(IsHotwordEnabledCallback callback) override;
   void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
   mojom::VoiceInteractionState voice_interaction_state() const {
@@ -55,6 +57,9 @@ class ASH_EXPORT VoiceInteractionController
 
   // Whether voice intearction setup flow has completed.
   bool setup_completed_ = false;
+
+  // Whether hotword listening is enabled.
+  bool hotword_enabled_ = false;
 
   // Whether voice intearction feature is allowed or disallowed for what reason.
   mojom::AssistantAllowedState allowed_state_ =

@@ -37,13 +37,6 @@ void GoogleAssistantHandler::RegisterMessages() {
       base::BindRepeating(
           &GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled,
           base::Unretained(this)));
-  if (chromeos::switches::IsAssistantEnabled()) {
-    web_ui()->RegisterMessageCallback(
-        "setGoogleAssistantHotwordEnabled",
-        base::BindRepeating(
-            &GoogleAssistantHandler::HandleSetGoogleAssistantHotwordEnabled,
-            base::Unretained(this)));
-  }
   web_ui()->RegisterMessageCallback(
       "showGoogleAssistantSettings",
       base::BindRepeating(
@@ -77,17 +70,6 @@ void GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled(
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (service)
     service->SetVoiceInteractionContextEnabled(enabled);
-}
-
-void GoogleAssistantHandler::HandleSetGoogleAssistantHotwordEnabled(
-    const base::ListValue* args) {
-  CHECK(chromeos::switches::IsAssistantEnabled());
-
-  CHECK_EQ(1U, args->GetSize());
-  bool enabled;
-  CHECK(args->GetBoolean(0, &enabled));
-
-  // TODO(b/110219351) Handle toggle hotword.
 }
 
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(

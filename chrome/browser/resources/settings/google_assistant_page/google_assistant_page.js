@@ -51,12 +51,6 @@ Polymer({
   },
 
   /** @private */
-  onGoogleAssistantHotwordEnableChange_: function() {
-    this.browserProxy_.setGoogleAssistantHotwordEnabled(
-        !!this.getPref('settings.voice_interaction.hotword.enabled.value'));
-  },
-
-  /** @private */
   onGoogleAssistantSettingsTapped_: function() {
     this.browserProxy_.showGoogleAssistantSettings();
   },

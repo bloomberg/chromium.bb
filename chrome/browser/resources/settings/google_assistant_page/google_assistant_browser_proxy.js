@@ -22,12 +22,6 @@ cr.define('settings', function() {
      */
     setGoogleAssistantContextEnabled(enabled) {}
 
-    /**
-     * Enables or disables hotword detection for the Google Assistant.
-     * @param {boolean} enabled
-     */
-    setGoogleAssistantHotwordEnabled(enabled) {}
-
     /** Launches into the Google Assistant app settings. */
     launchGoogleAssistantSettings() {}
   }
@@ -42,11 +36,6 @@ cr.define('settings', function() {
     /** @override */
     setGoogleAssistantContextEnabled(enabled) {
       chrome.send('setGoogleAssistantContextEnabled', [enabled]);
-    }
-
-    /** @override */
-    setGoogleAssistantHotwordEnabled(enabled) {
-      chrome.send('setGoogleAssistantHotwordEnabled', [enabled]);
     }
 
     /** @override */
