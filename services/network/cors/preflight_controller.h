@@ -33,7 +33,7 @@ namespace cors {
 class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
  public:
   using CompletionCallback =
-      base::OnceCallback<void(base::Optional<CORSErrorStatus>)>;
+      base::OnceCallback<void(int, base::Optional<CORSErrorStatus>)>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(

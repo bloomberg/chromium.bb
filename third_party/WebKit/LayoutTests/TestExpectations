@@ -1662,7 +1662,6 @@ crbug.com/757165 [ Win ] virtual/outofblink-cors/external/wpt/service-workers/se
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # Crashing tests in dictionary order.
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Timeout Crash ]
 
 # This test crashes on some builders, passes on others, and fails on yet other builders.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Crash Failure Pass ]
@@ -1681,9 +1680,6 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/simple-cross-origin-denied-events-post.html [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Timeout ]
 
 # Failing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Failure ]
@@ -1695,11 +1691,13 @@ crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/736308 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
 
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
 # ====== Out of Blink CORS related tests END ======

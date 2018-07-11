@@ -69,7 +69,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
  private:
   void StartRequest();
-  void StartNetworkRequest(base::Optional<CORSErrorStatus> status);
+  void StartNetworkRequest(int net_error,
+                           base::Optional<CORSErrorStatus> status);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.

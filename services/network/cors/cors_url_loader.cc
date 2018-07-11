@@ -356,7 +356,7 @@ void CORSURLLoader::StartRequest() {
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
   if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
-    StartNetworkRequest(base::nullopt);
+    StartNetworkRequest(net::OK, base::nullopt);
     return;
   }
 
@@ -373,13 +373,17 @@ void CORSURLLoader::StartRequest() {
 }
 
 void CORSURLLoader::StartNetworkRequest(
+    int error_code,
     base::Optional<CORSErrorStatus> status) {
-  if (status) {
-    forwarding_client_->OnComplete(URLLoaderCompletionStatus(*status));
+  if (error_code != net::OK) {
+    forwarding_client_->OnComplete(status
+                                       ? URLLoaderCompletionStatus(*status)
+                                       : URLLoaderCompletionStatus(error_code));
     forwarding_client_.reset();
     return;
   }
 
+  DCHECK(!status);
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
