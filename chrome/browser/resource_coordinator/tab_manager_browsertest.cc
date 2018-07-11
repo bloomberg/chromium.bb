@@ -1113,6 +1113,58 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
 
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
+// - Discard(kProactive): ACTIVE->PENDING_DISCARD
+// - Freeze happens in renderer: PENDING_DISCARD->DISCARDED
+// - Focus: DISCARDED->ACTIVE
+IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
+                       TabProactiveDiscardAndFocusToReload) {
+  // Proactively discard the background tab.
+  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
+  EXPECT_TRUE(GetLifecycleUnitAt(1)->Discard(DiscardReason::kProactive));
+  EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
+            GetLifecycleUnitAt(1)->GetState());
+
+  // After the freeze happens in the renderer, the tab is discarded.
+  {
+    ExpectStateTransitionObserver expect_state_transition(
+        GetLifecycleUnitAt(1), LifecycleUnitState::DISCARDED);
+    expect_state_transition.Wait();
+  }
+
+  // When the tab is focused and made visible, it transitions to ACTIVE.
+  tsm()->ActivateTabAt(1, true);
+  GetWebContentsAt(1)->WasShown();
+  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
+}
+
+// Verifies the following state transitions for a tab:
+// - Initial state: ACTIVE
+// - Discard(kProactive): ACTIVE->PENDING_DISCARD
+// - Freeze(): Disallowed
+// - Freeze happens in renderer: PENDING_DISCARD->DISCARDED
+IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
+                       TabFreezeDisallowedWhenProactivelyDiscarding) {
+  // Proactively discard the background tab.
+  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
+  EXPECT_TRUE(GetLifecycleUnitAt(1)->Discard(DiscardReason::kProactive));
+  EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
+            GetLifecycleUnitAt(1)->GetState());
+
+  // Freezing the tab should be disallowed.
+  DecisionDetails decision_details;
+  EXPECT_FALSE(GetLifecycleUnitAt(1)->CanFreeze(&decision_details));
+  EXPECT_FALSE(GetLifecycleUnitAt(1)->Freeze());
+  EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
+            GetLifecycleUnitAt(1)->GetState());
+
+  // The tab should eventually transition to DISCARDED.
+  ExpectStateTransitionObserver expect_state_transition(
+      GetLifecycleUnitAt(1), LifecycleUnitState::DISCARDED);
+  expect_state_transition.Wait();
+}
+
+// Verifies the following state transitions for a tab:
+// - Initial state: ACTIVE
 // - Discard(kUrgent): ACTIVE->DISCARDED
 // - Navigate: DISCARDED->ACTIVE
 //             window.document.wasDiscarded is true
