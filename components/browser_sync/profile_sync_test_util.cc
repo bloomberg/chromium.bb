@@ -201,7 +201,7 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetPersonalDataManager(
 
 // The client will call this callback to produce the service.
 void ProfileSyncServiceBundle::SyncClientBuilder::SetSyncableServiceCallback(
-    const base::Callback<base::WeakPtr<syncer::SyncableService>(
+    const base::RepeatingCallback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>& get_syncable_service_callback) {
   get_syncable_service_callback_ = get_syncable_service_callback;
 }
