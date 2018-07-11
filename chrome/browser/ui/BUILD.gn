@@ -1237,9 +1237,9 @@ split_static_library("ui") {
     ]
     deps += [
       "//chrome/browser:jni_headers",
+      "//components/embedder_support/android:web_contents_delegate",
       "//components/navigation_interception",
       "//components/subresource_filter/core/browser:browser",
-      "//components/web_contents_delegate_android",
       "//crypto:platform",
       "//device/usb/mojo",
       "//device/usb/public/cpp",

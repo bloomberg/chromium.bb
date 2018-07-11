@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 
 // Stub WebContentsDelegateAndroid that is meant to be a temporary substitute
 // for a real WebContentsDelegate for the (expectedly short) period between when

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/document/document_web_contents_delegate.h"
 
-#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DocumentWebContentsDelegate_jni.h"
 

@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_WEB_CONTENTS_DELEGATE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_WEB_CONTENTS_DELEGATE_H_
 
-#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 
 namespace android_webview {
 

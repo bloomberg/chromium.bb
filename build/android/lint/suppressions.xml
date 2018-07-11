@@ -157,7 +157,7 @@ Still reading?
     <ignore regexp="tools/android/push_apps_to_background/res"/>
     <ignore regexp="ui/android/java/res"/>
     <!-- crbug.com/457918 is tracking missing assets -->
-    <ignore regexp="components/web_contents_delegate_android/java/res"/>
+    <ignore regexp="components/embedder_support/android/java/res"/>
   </issue>
   <issue id="ImpliedQuantity" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd"/>

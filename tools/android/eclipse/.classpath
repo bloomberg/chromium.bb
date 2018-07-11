@@ -78,7 +78,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/test/android/browsertests_apk/src"/>
     <classpathentry kind="src" path="components/url_formatter/android/java/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
-    <classpathentry kind="src" path="components/web_contents_delegate_android/java/src"/>
+    <classpathentry kind="src" path="components/embedder_suppport/android/java/src"/>
     <classpathentry kind="src" path="components/web_restrictions/browser/java/src"/>
     <classpathentry kind="src" path="components/web_restrictions/browser/javatests/src"/>
     <classpathentry kind="src" path="components/web_restrictions/browser/junit/src"/>
@@ -275,7 +275,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/components/service_tab_launcher/service_tab_launcher_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/signin/core/browser/android/java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/variations/android/variations_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/components/web_contents_delegate_android/web_contents_delegate_android_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/components/embedder_suppport/android/web_contents_delegate_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/content/public/android/content_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/battery/android/battery_monitor_android.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/battery/mojo_bindings_java.jar"/>

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.web_contents_delegate_android;
+package org.chromium.components.embedder_support.delegate;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.ListView;
 
-import org.chromium.components.web_contents_delegate_android.ColorSuggestionListAdapter.OnColorSuggestionClickListener;
+import org.chromium.components.embedder_support.delegate.ColorSuggestionListAdapter.OnColorSuggestionClickListener;
 
 /**
  * Draws a grid of (predefined) colors and allows the user to choose one of

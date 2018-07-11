@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 
 #include <android/keycodes.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "components/web_contents_delegate_android/color_chooser_android.h"
+#include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/invalidate_type.h"
@@ -38,14 +38,12 @@ using content::WebContentsDelegate;
 namespace web_contents_delegate_android {
 
 WebContentsDelegateAndroid::WebContentsDelegateAndroid(JNIEnv* env, jobject obj)
-    : weak_java_delegate_(env, obj) {
-}
+    : weak_java_delegate_(env, obj) {}
 
-WebContentsDelegateAndroid::~WebContentsDelegateAndroid() {
-}
+WebContentsDelegateAndroid::~WebContentsDelegateAndroid() {}
 
-ScopedJavaLocalRef<jobject>
-WebContentsDelegateAndroid::GetJavaDelegate(JNIEnv* env) const {
+ScopedJavaLocalRef<jobject> WebContentsDelegateAndroid::GetJavaDelegate(
+    JNIEnv* env) const {
   return weak_java_delegate_.get(env);
 }
 
@@ -89,7 +87,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     ScopedJavaLocalRef<jstring> java_url =
         ConvertUTF8ToJavaString(env, url.spec());
     ScopedJavaLocalRef<jstring> extra_headers =
-            ConvertUTF8ToJavaString(env, params.extra_headers);
+        ConvertUTF8ToJavaString(env, params.extra_headers);
     ScopedJavaLocalRef<jobject> post_data;
     if (params.uses_post && params.post_data) {
       post_data = content::ConvertResourceRequestBodyToJavaObject(
@@ -124,7 +122,8 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 }
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
-    WebContents* source, content::InvalidateTypes changed_flags) {
+    WebContents* source,
+    content::InvalidateTypes changed_flags) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -150,7 +149,8 @@ void WebContentsDelegateAndroid::ActivateContents(WebContents* contents) {
   Java_WebContentsDelegateAndroid_activateContents(env, obj);
 }
 
-void WebContentsDelegateAndroid::LoadingStateChanged(WebContents* source,
+void WebContentsDelegateAndroid::LoadingStateChanged(
+    WebContents* source,
     bool to_different_document) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
@@ -350,7 +350,8 @@ bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
   if (obj.is_null())
     return false;
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  return Java_WebContentsDelegateAndroid_shouldBlockMediaRequest(env, obj, j_url);
+  return Java_WebContentsDelegateAndroid_shouldBlockMediaRequest(env, obj,
+                                                                 j_url);
 }
 
 void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
@@ -384,8 +385,7 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
 }
 
 void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(
-    content::WebContents* web_contents) {
-}
+    content::WebContents* web_contents) {}
 
 void WebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,

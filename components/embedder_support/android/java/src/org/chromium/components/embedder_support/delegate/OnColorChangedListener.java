@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.web_contents_delegate_android;
+package org.chromium.components.embedder_support.delegate;
 
 /**
  * The callback used to indicate the user changed the color.
