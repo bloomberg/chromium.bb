@@ -133,7 +133,6 @@ class CONTENT_EXPORT LayerTreeView
   bool HasPendingPageScaleAnimation() const override;
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void SetNeedsBeginFrame() override;
-  void DidStopFlinging() override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;

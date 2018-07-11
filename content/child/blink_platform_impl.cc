@@ -47,7 +47,6 @@
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -663,17 +662,6 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
   values.push_back(value2.Utf16());
   return WebString::FromUTF16(base::ReplaceStringPlaceholders(
       GetContentClient()->GetLocalizedString(message_id), values, nullptr));
-}
-
-std::unique_ptr<blink::WebGestureCurve>
-BlinkPlatformImpl::CreateFlingAnimationCurve(
-    blink::WebGestureDevice device_source,
-    const blink::WebFloatPoint& velocity,
-    const blink::WebSize& cumulative_scroll) {
-  return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
-      device_source, gfx::Vector2dF(velocity.x, velocity.y),
-      gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
-      IsMainThread(), false /*use_mobile_fling_curve*/);
 }
 
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(

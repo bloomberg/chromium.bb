@@ -60,8 +60,6 @@ class CC_EXPORT Proxy {
   // scheduler.
   virtual void SetDeferCommits(bool defer_commits) = 0;
 
-  virtual void MainThreadHasStoppedFlinging() = 0;
-
   virtual bool CommitRequested() const = 0;
 
   // Must be called before using the proxy.

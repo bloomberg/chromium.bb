@@ -26,7 +26,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_CURVE_H_
 
 #include "third_party/blink/public/platform/web_float_size.h"
-#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
@@ -38,29 +37,6 @@ namespace blink {
 class WebGestureCurve {
  public:
   virtual ~WebGestureCurve() = default;
-
-  // Returns false if curve has finished and can no longer be applied.
-  // TODO(sahel): This will get removed once touchscreen and autoscroll flings
-  // are handled on browser side (crbug.com/249063).
-  // TODO(dcheng): This parameter should be a base::TimeDelta, but there is
-  // incorrect usage of base::TimeTicks throughout the gesture code. Fix in a
-  // followup.
-  bool AdvanceAndApplyToTarget(double time, WebGestureCurveTarget* target) {
-    gfx::Vector2dF velocity, delta;
-    bool still_active = Advance(time, velocity, delta);
-
-    // As successive timestamps can be arbitrarily close (but monotonic!), don't
-    // assume that a zero delta means the curve has terminated.
-    if (delta.IsZero())
-      return still_active;
-
-    // scrollBy() could delete this curve if the animation is over, so don't
-    // touch any member variables after making that call.
-    bool did_scroll =
-        target->ScrollBy(blink::WebFloatSize(delta.x(), delta.y()),
-                         blink::WebFloatSize(velocity.x(), velocity.y()));
-    return did_scroll && still_active;
-  }
 
   // Returns false if curve has finished and can no longer advance.
   // This function is used for browser side fling.

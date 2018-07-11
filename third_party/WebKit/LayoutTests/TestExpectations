@@ -134,6 +134,33 @@ crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.fill.rtl-manual
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
 
+# With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
+crbug.com/857490 fast/events/touch/gesture/gesture-scrollbar-fling.html [ Skip ]
+crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
+crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
+crbug.com/857490 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
+crbug.com/857490 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
+crbug.com/857490 fast/events/wheel/wheel-fling-cancel.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-fling.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
+crbug.com/857490 virtual/mouseevent_fractional/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
+crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-fling.html [ Skip ]
+crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
+crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
+crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
+crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-fling.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
+crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
+crbug.com/857490 virtual/wheelscrolllatching/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
+crbug.com/857490 virtual/wheelscrolllatching/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
+
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
 
@@ -1749,10 +1776,8 @@ crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ 
 # These tests will pass once the --enable-features=TouchpadAndWheelScrollLatching flag is enabled by default.
 crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
 crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
-crbug.com/526463 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
-crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
 
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]

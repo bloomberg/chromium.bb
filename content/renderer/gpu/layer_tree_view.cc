@@ -326,10 +326,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::DidStopFlinging() {
-  layer_tree_host_->DidStopFlinging();
-}
-
 void LayerTreeView::RegisterViewportLayers(const ViewportLayers& layers) {
   cc::LayerTreeHost::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity = layers.overscroll_elasticity;

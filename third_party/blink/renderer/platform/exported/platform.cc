@@ -40,7 +40,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
@@ -217,13 +216,6 @@ Platform::CreateOffscreenGraphicsContext3DProvider(
 
 std::unique_ptr<WebGraphicsContext3DProvider>
 Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
-  return nullptr;
-}
-
-std::unique_ptr<WebGestureCurve> Platform::CreateFlingAnimationCurve(
-    WebGestureDevice device_source,
-    const WebFloatPoint& velocity,
-    const WebSize& cumulative_scroll) {
   return nullptr;
 }
 

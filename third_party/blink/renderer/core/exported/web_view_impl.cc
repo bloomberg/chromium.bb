@@ -41,7 +41,6 @@
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
@@ -147,7 +146,6 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/cursor.h"
-#include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -535,11 +533,6 @@ void WebViewImpl::HandleMouseUp(LocalFrame& main_frame,
 WebInputEventResult WebViewImpl::HandleMouseWheel(
     LocalFrame& main_frame,
     const WebMouseWheelEvent& event) {
-  // Halt an in-progress fling on a wheel tick.
-  if (!event.has_precise_scrolling_deltas) {
-    if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-      widget->EndActiveFlingAnimation();
-  }
   HidePopups();
   return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
 }
@@ -553,19 +546,9 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   bool event_cancelled = false;  // for disambiguation
 
-  // Special handling for slow-path fling gestures.
-  switch (event.GetType()) {
-    case WebInputEvent::kGestureFlingStart:
-    case WebInputEvent::kGestureFlingCancel: {
-      if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-        event_result = widget->HandleGestureFlingEvent(event);
-
-      client_->DidHandleGestureEvent(event, event_cancelled);
-      return event_result;
-    }
-    default:
-      break;
-  }
+  // Fling events are not sent to the renderer.
+  CHECK(event.GetType() != WebInputEvent::kGestureFlingStart);
+  CHECK(event.GetType() != WebInputEvent::kGestureFlingCancel);
 
   WebGestureEvent scaled_event =
       TransformWebGestureEvent(MainFrameImpl()->GetFrameView(), event);
@@ -588,7 +571,6 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollEnd:
     case WebInputEvent::kGestureScrollUpdate:
-    case WebInputEvent::kGestureFlingStart:
       // Scrolling-related gesture events invoke EventHandler recursively for
       // each frame down the chain, doing a single-frame hit-test per frame.
       // This matches handleWheelEvent.  Perhaps we could simplify things by
@@ -893,10 +875,6 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
   TRACE_EVENT2("input", "WebViewImpl::handleKeyEvent", "type",
                WebInputEvent::GetName(event.GetType()), "text",
                String(event.text).Utf8());
-
-  // Halt an in-progress fling on a key event.
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-    widget->EndActiveFlingAnimation();
 
   // Please refer to the comments explaining the m_suppressNextKeypressEvent
   // member.
@@ -1756,9 +1734,6 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   if (!MainFrameImpl())
     return;
-
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-    widget->UpdateGestureAnimation(last_frame_time);
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
@@ -3185,9 +3160,6 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   link_highlights_.clear();
   if (!MainFrameImpl())
     return;
-
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-    widget->EndActiveFlingAnimation();
 }
 
 void WebViewImpl::ResizeAfterLayout() {

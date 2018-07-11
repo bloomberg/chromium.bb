@@ -283,25 +283,6 @@ TEST_F(RenderWidgetUnittest, EventOverscroll) {
   widget()->SendInputEvent(scroll, handled_event.GetCallback());
 }
 
-TEST_F(RenderWidgetUnittest, FlingOverscroll) {
-  ui::DidOverscrollParams expected_overscroll;
-  expected_overscroll.latest_overscroll_delta = gfx::Vector2dF(10, 5);
-  expected_overscroll.accumulated_overscroll = gfx::Vector2dF(5, 5);
-  expected_overscroll.causal_event_viewport_point = gfx::PointF(1, 1);
-  expected_overscroll.current_fling_velocity = gfx::Vector2dF(10, 5);
-
-  EXPECT_CALL(*widget()->mock_input_handler_host(),
-              DidOverscroll(expected_overscroll))
-      .Times(1);
-
-  // Overscroll notifications received outside of handling an input event should
-  // be sent as a separate IPC.
-  widget()->DidOverscroll(blink::WebFloatSize(10, 5), blink::WebFloatSize(5, 5),
-                          blink::WebFloatPoint(1, 1),
-                          blink::WebFloatSize(10, 5), cc::OverscrollBehavior());
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);

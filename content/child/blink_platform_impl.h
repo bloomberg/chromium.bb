@@ -91,10 +91,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
-  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
-      blink::WebGestureDevice device_source,
-      const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll) override;
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebURL& script_url) override;
   blink::WebCrypto* Crypto() override;

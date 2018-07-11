@@ -510,8 +510,6 @@ jumbo_component("platform") {
     "exported/platform.cc",
     "exported/service_registry.cc",
     "exported/url_conversion.cc",
-    "exported/web_active_gesture_animation.cc",
-    "exported/web_active_gesture_animation.h",
     "exported/web_audio_bus.cc",
     "exported/web_audio_device.cc",
     "exported/web_blob_info.cc",

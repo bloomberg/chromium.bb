@@ -18,9 +18,6 @@
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_size.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -38,15 +35,11 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/latency/latency_info.h"
 
-using blink::WebFloatPoint;
-using blink::WebFloatSize;
 using blink::WebGestureDevice;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebPoint;
-using blink::WebSize;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using testing::Field;
@@ -79,38 +72,16 @@ MATCHER_P(WheelEventsMatch, expected, "") {
   return WheelEventsMatch(arg, expected);
 }
 
-WebGestureEvent CreateFling(base::TimeTicks timestamp,
-                            WebGestureDevice source_device,
-                            WebFloatPoint velocity,
-                            WebFloatPoint point,
-                            WebFloatPoint global_point,
-                            int modifiers) {
-  WebGestureEvent fling(WebInputEvent::kGestureFlingStart, modifiers, timestamp,
-                        source_device);
-  // Touchpad fling is handled on broswer.
-  DCHECK(source_device != blink::kWebGestureDeviceTouchpad);
-  fling.data.fling_start.velocity_x = velocity.x;
-  fling.data.fling_start.velocity_y = velocity.y;
-  fling.SetPositionInWidget(point);
-  fling.SetPositionInScreen(global_point);
-  return fling;
-}
-
-WebScopedInputEvent CreateGestureScrollFlingPinch(
-    WebInputEvent::Type type,
-    WebGestureDevice source_device,
-    float delta_y_or_scale = 0,
-    int x = 0,
-    int y = 0) {
+WebScopedInputEvent CreateGestureScrollPinch(WebInputEvent::Type type,
+                                             WebGestureDevice source_device,
+                                             float delta_y_or_scale = 0,
+                                             int x = 0,
+                                             int y = 0) {
   WebGestureEvent gesture(type, WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests(),
                           source_device);
   if (type == WebInputEvent::kGestureScrollUpdate) {
     gesture.data.scroll_update.delta_y = delta_y_or_scale;
-  } else if (type == WebInputEvent::kGestureFlingStart) {
-    // Touchpad fling is handled on broswer.
-    DCHECK(source_device != blink::kWebGestureDeviceTouchpad);
-    gesture.data.fling_start.velocity_y = delta_y_or_scale;
   } else if (type == WebInputEvent::kGesturePinchUpdate) {
     gesture.data.pinch_update.scale = delta_y_or_scale;
     gesture.SetPositionInWidget(gfx::PointF(x, y));
@@ -143,7 +114,6 @@ class MockInputHandler : public cc::InputHandler {
                             base::TimeDelta));
   MOCK_METHOD1(ScrollBy, cc::InputHandlerScrollResult(cc::ScrollState*));
   MOCK_METHOD2(ScrollEnd, void(cc::ScrollState*, bool));
-  MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
   MOCK_METHOD0(ScrollingShouldSwitchtoMainThread, bool());
 
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
@@ -215,36 +185,6 @@ class MockSynchronousInputHandler : public SynchronousInputHandler {
                     float max_page_scale_factor));
 };
 
-// A simple WebGestureCurve implementation that flings at a constant velocity
-// indefinitely.
-class FakeWebGestureCurve : public blink::WebGestureCurve {
- public:
-  FakeWebGestureCurve(const blink::WebFloatSize& velocity,
-                      const blink::WebFloatSize& cumulative_scroll)
-      : velocity_(velocity), cumulative_scroll_(cumulative_scroll) {}
-
-  ~FakeWebGestureCurve() override {}
-
-  bool Advance(double time,
-               gfx::Vector2dF& out_current_velocity,
-               gfx::Vector2dF& out_delta_to_scroll) override {
-    out_current_velocity = velocity_;
-    gfx::Vector2dF displacement = velocity_;
-    displacement.Scale(time);
-    out_delta_to_scroll = displacement - cumulative_scroll_;
-    cumulative_scroll_ = displacement;
-
-    // The curve is always active.
-    return true;
-  }
-
- private:
-  gfx::Vector2dF velocity_;
-  gfx::Vector2dF cumulative_scroll_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeWebGestureCurve);
-};
-
 class MockInputHandlerProxyClient
     : public InputHandlerProxyClient {
  public:
@@ -266,22 +206,12 @@ class MockInputHandlerProxyClient
     DispatchNonBlockingEventToMainThread_(*event.get());
   }
 
-  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
-      WebGestureDevice deviceSource,
-      const WebFloatPoint& velocity,
-      const WebSize& cumulative_scroll) override {
-    return std::make_unique<FakeWebGestureCurve>(
-        blink::WebFloatSize(velocity.x, velocity.y),
-        blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
-  }
-
   MOCK_METHOD5(DidOverscroll,
                void(const gfx::Vector2dF& accumulated_overscroll,
                     const gfx::Vector2dF& latest_overscroll_delta,
                     const gfx::Vector2dF& current_fling_velocity,
                     const gfx::PointF& causal_event_viewport_point,
                     const cc::OverscrollBehavior& overscroll_behavior));
-  void DidStopFlinging() override {}
   void DidAnimateForInput() override {}
   void DidStartScrollingViewport() override {}
   MOCK_METHOD3(SetWhiteListedTouchAction,
@@ -429,43 +359,6 @@ class InputHandlerProxyTest
     }
   }
 
-  void StartFling(base::TimeTicks timestamp,
-                  WebGestureDevice source_device,
-                  WebFloatPoint velocity,
-                  WebFloatPoint position) {
-    expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-    VERIFY_AND_RESET_MOCKS();
-
-    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-        .WillOnce(testing::Return(kImplThreadScrollState));
-    gesture_.SetType(WebInputEvent::kGestureScrollBegin);
-    gesture_.SetSourceDevice(source_device);
-    EXPECT_EQ(expected_disposition_,
-              input_handler_->HandleInputEvent(gesture_));
-
-    VERIFY_AND_RESET_MOCKS();
-
-    EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-        .WillOnce(testing::Return(kImplThreadScrollState));
-    EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
-
-    gesture_ =
-        CreateFling(timestamp, source_device, velocity, position, position, 0);
-    EXPECT_EQ(expected_disposition_,
-              input_handler_->HandleInputEvent(gesture_));
-
-    VERIFY_AND_RESET_MOCKS();
-  }
-
-  void CancelFling(base::TimeTicks timestamp) {
-    gesture_.SetTimeStamp(timestamp);
-    gesture_.SetType(WebInputEvent::kGestureFlingCancel);
-    EXPECT_EQ(expected_disposition_,
-              input_handler_->HandleInputEvent(gesture_));
-
-    VERIFY_AND_RESET_MOCKS();
-  }
-
   void SetSmoothScrollEnabled(bool value) {
     input_handler_->smooth_scroll_enabled_ = value;
   }
@@ -541,8 +434,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
                                           int y = 0) {
     LatencyInfo latency;
     input_handler_proxy_->HandleInputEventWithLatencyInfo(
-        CreateGestureScrollFlingPinch(type, source_device, delta_y_or_scale, x,
-                                      y),
+        CreateGestureScrollPinch(type, source_device, delta_y_or_scale, x, y),
         latency,
         base::BindOnce(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,

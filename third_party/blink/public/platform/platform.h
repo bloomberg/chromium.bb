@@ -99,7 +99,6 @@ class WebCrypto;
 class WebDatabaseObserver;
 class WebPlatformEventListener;
 class WebFileSystem;
-class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
 class WebImageCaptureFrameGrabber;
@@ -123,7 +122,6 @@ class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
-struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
 struct WebThreadCreationParams;
@@ -550,13 +548,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // for unit tests, a single-threaded compositor may be used so it may remain
   // false.
   virtual bool IsThreadedAnimationEnabled() { return false; }
-
-  // Creates a new fling animation curve instance for device |device_source|
-  // with |velocity| and already scrolled |cumulative_scroll| pixels.
-  virtual std::unique_ptr<WebGestureCurve> CreateFlingAnimationCurve(
-      WebGestureDevice device_source,
-      const WebFloatPoint& velocity,
-      const WebSize& cumulative_scroll);
 
   // Whether the compositor is using gpu and expects gpu resources as inputs,
   // or software based resources.

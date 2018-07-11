@@ -9,7 +9,6 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -29,7 +28,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
-#include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -48,9 +46,7 @@ STATIC_ASSERT_ENUM(kDragOperationEvery, kWebDragOperationEvery);
 bool WebFrameWidgetBase::ignore_input_events_ = false;
 
 WebFrameWidgetBase::WebFrameWidgetBase(WebWidgetClient& client)
-    : client_(&client),
-      fling_modifier_(0),
-      fling_source_device_(kWebGestureDeviceUninitialized) {}
+    : client_(&client) {}
 
 WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 
@@ -379,176 +375,8 @@ LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
              : nullptr;
 }
 
-bool WebFrameWidgetBase::EndActiveFlingAnimation() {
-  if (gesture_animation_) {
-    gesture_animation_.reset();
-    fling_source_device_ = kWebGestureDeviceUninitialized;
-    if (WebLayerTreeView* layer_tree_view = GetLayerTreeView())
-      layer_tree_view->DidStopFlinging();
-    return true;
-  }
-  return false;
-}
-
-bool WebFrameWidgetBase::ScrollBy(const WebFloatSize& delta,
-                                  const WebFloatSize& velocity) {
-  DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
-
-  if (fling_source_device_ == kWebGestureDeviceTouchpad) {
-    bool enable_touchpad_scroll_latching =
-        RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
-    WebMouseWheelEvent synthetic_wheel(
-        WebInputEvent::kMouseWheel, fling_modifier_, WTF::CurrentTimeTicks());
-    const float kTickDivisor = WheelEvent::kTickMultiplier;
-
-    synthetic_wheel.delta_x = delta.width;
-    synthetic_wheel.delta_y = delta.height;
-    synthetic_wheel.wheel_ticks_x = delta.width / kTickDivisor;
-    synthetic_wheel.wheel_ticks_y = delta.height / kTickDivisor;
-    synthetic_wheel.has_precise_scrolling_deltas = true;
-    synthetic_wheel.phase = WebMouseWheelEvent::kPhaseChanged;
-    synthetic_wheel.SetPositionInWidget(position_on_fling_start_.x,
-                                        position_on_fling_start_.y);
-    synthetic_wheel.SetPositionInScreen(global_position_on_fling_start_.x,
-                                        global_position_on_fling_start_.y);
-
-    // TODO(wjmaclean): Is local_root_ the right frame to use here?
-    if (GetPageWidgetEventHandler()->HandleMouseWheel(*local_root_->GetFrame(),
-                                                      synthetic_wheel) !=
-        WebInputEventResult::kNotHandled) {
-      return true;
-    }
-
-    if (!enable_touchpad_scroll_latching) {
-      WebGestureEvent synthetic_scroll_begin =
-          CreateGestureScrollEventFromFling(WebInputEvent::kGestureScrollBegin,
-                                            kWebGestureDeviceTouchpad);
-      synthetic_scroll_begin.data.scroll_begin.delta_x_hint = delta.width;
-      synthetic_scroll_begin.data.scroll_begin.delta_y_hint = delta.height;
-      synthetic_scroll_begin.data.scroll_begin.inertial_phase =
-          WebGestureEvent::kMomentumPhase;
-      GetPageWidgetEventHandler()->HandleGestureEvent(synthetic_scroll_begin);
-    }
-
-    WebGestureEvent synthetic_scroll_update = CreateGestureScrollEventFromFling(
-        WebInputEvent::kGestureScrollUpdate, kWebGestureDeviceTouchpad);
-    synthetic_scroll_update.data.scroll_update.delta_x = delta.width;
-    synthetic_scroll_update.data.scroll_update.delta_y = delta.height;
-    synthetic_scroll_update.data.scroll_update.velocity_x = velocity.width;
-    synthetic_scroll_update.data.scroll_update.velocity_y = velocity.height;
-    synthetic_scroll_update.data.scroll_update.inertial_phase =
-        WebGestureEvent::kMomentumPhase;
-    bool scroll_update_handled =
-        GetPageWidgetEventHandler()->HandleGestureEvent(
-            synthetic_scroll_update) != WebInputEventResult::kNotHandled;
-
-    if (!enable_touchpad_scroll_latching) {
-      WebGestureEvent synthetic_scroll_end = CreateGestureScrollEventFromFling(
-          WebInputEvent::kGestureScrollEnd, kWebGestureDeviceTouchpad);
-      synthetic_scroll_end.data.scroll_end.inertial_phase =
-          WebGestureEvent::kMomentumPhase;
-      GetPageWidgetEventHandler()->HandleGestureEvent(synthetic_scroll_end);
-    }
-
-    return scroll_update_handled;
-  }
-
-  WebGestureEvent synthetic_gesture_event = CreateGestureScrollEventFromFling(
-      WebInputEvent::kGestureScrollUpdate, fling_source_device_);
-  synthetic_gesture_event.data.scroll_update.delta_x = delta.width;
-  synthetic_gesture_event.data.scroll_update.delta_y = delta.height;
-  synthetic_gesture_event.data.scroll_update.velocity_x = velocity.width;
-  synthetic_gesture_event.data.scroll_update.velocity_y = velocity.height;
-  synthetic_gesture_event.data.scroll_update.inertial_phase =
-      WebGestureEvent::kMomentumPhase;
-
-  return GetPageWidgetEventHandler()->HandleGestureEvent(
-             synthetic_gesture_event) != WebInputEventResult::kNotHandled;
-}
-
-WebInputEventResult WebFrameWidgetBase::HandleGestureFlingEvent(
-    const WebGestureEvent& event) {
-  WebInputEventResult event_result = WebInputEventResult::kNotHandled;
-  switch (event.GetType()) {
-    case WebInputEvent::kGestureFlingStart: {
-      if (event.SourceDevice() != kWebGestureDeviceSyntheticAutoscroll)
-        EndActiveFlingAnimation();
-      position_on_fling_start_ = event.PositionInWidget();
-      global_position_on_fling_start_ = event.PositionInScreen();
-      fling_modifier_ = event.GetModifiers();
-      fling_source_device_ = event.SourceDevice();
-      DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
-      std::unique_ptr<WebGestureCurve> fling_curve =
-          Platform::Current()->CreateFlingAnimationCurve(
-              event.SourceDevice(),
-              WebFloatPoint(event.data.fling_start.velocity_x,
-                            event.data.fling_start.velocity_y),
-              WebSize());
-      DCHECK(fling_curve);
-      gesture_animation_ = WebActiveGestureAnimation::CreateWithTimeOffset(
-          std::move(fling_curve), this, event.TimeStamp());
-      ScheduleAnimation();
-
-      WebGestureEvent scaled_event =
-          TransformWebGestureEvent(local_root_->GetFrameView(), event);
-      // Plugins may need to see GestureFlingStart to balance
-      // GestureScrollBegin (since the former replaces GestureScrollEnd when
-      // transitioning to a fling).
-      // TODO(dtapuska): Why isn't the response used?
-      local_root_->GetFrame()->GetEventHandler().HandleGestureScrollEvent(
-          scaled_event);
-
-      event_result = WebInputEventResult::kHandledSystem;
-      break;
-    }
-    case WebInputEvent::kGestureFlingCancel:
-      if (EndActiveFlingAnimation())
-        event_result = WebInputEventResult::kHandledSuppressed;
-
-      break;
-    default:
-      NOTREACHED();
-  }
-  return event_result;
-}
-
 WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
-}
-
-WebGestureEvent WebFrameWidgetBase::CreateGestureScrollEventFromFling(
-    WebInputEvent::Type type,
-    WebGestureDevice source_device) const {
-  WebGestureEvent gesture_event(type, fling_modifier_, WTF::CurrentTimeTicks(),
-                                source_device);
-  gesture_event.SetPositionInWidget(position_on_fling_start_);
-  gesture_event.SetPositionInScreen(global_position_on_fling_start_);
-  return gesture_event;
-}
-
-bool WebFrameWidgetBase::IsFlinging() const {
-  return !!gesture_animation_;
-}
-
-void WebFrameWidgetBase::UpdateGestureAnimation(
-    base::TimeTicks last_frame_time) {
-  if (!gesture_animation_)
-    return;
-
-  if (gesture_animation_->Animate(last_frame_time)) {
-    ScheduleAnimation();
-  } else {
-    DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
-    WebGestureDevice last_fling_source_device = fling_source_device_;
-    EndActiveFlingAnimation();
-
-    if (last_fling_source_device != kWebGestureDeviceSyntheticAutoscroll) {
-      WebGestureEvent end_scroll_event = CreateGestureScrollEventFromFling(
-          WebInputEvent::kGestureScrollEnd, last_fling_source_device);
-      local_root_->GetFrame()->GetEventHandler().HandleGestureScrollEnd(
-          end_scroll_event);
-    }
-  }
 }
 
 }  // namespace blink

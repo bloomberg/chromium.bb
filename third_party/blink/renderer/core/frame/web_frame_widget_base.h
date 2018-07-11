@@ -8,7 +8,6 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -29,7 +28,6 @@ class CompositorMutatorImpl;
 class GraphicsLayer;
 struct IntrinsicSizingInfo;
 class PageWidgetEventHandler;
-class WebActiveGestureAnimation;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -38,11 +36,10 @@ struct WebFloatPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollectedFinalized<WebFrameWidgetBase>,
-      public WebFrameWidget,
-      public WebGestureCurveTarget {
+      public WebFrameWidget {
  public:
   explicit WebFrameWidgetBase(WebWidgetClient&);
-  ~WebFrameWidgetBase() override;
+  virtual ~WebFrameWidgetBase();
 
   WebWidgetClient* Client() const { return client_; }
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
@@ -69,15 +66,6 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual CompositorAnimationHost* AnimationHost() const = 0;
 
   virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
-
-  // Fling operations.
-  bool EndActiveFlingAnimation();
-  WebInputEventResult HandleGestureFlingEvent(const WebGestureEvent&);
-  void UpdateGestureAnimation(base::TimeTicks last_frame_time);
-
-  // WebGestureCurveTarget implementation.
-  bool ScrollBy(const WebFloatSize& delta,
-                const WebFloatSize& velocity) override;
 
   // WebFrameWidget implementation.
   void Close() override;
@@ -121,7 +109,6 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
-  bool IsFlinging() const override;
 
   // Image decode functionality.
   void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
@@ -178,9 +165,6 @@ class CORE_EXPORT WebFrameWidgetBase
   WebDragOperation drag_operation_ = kWebDragOperationNone;
 
  private:
-  // Fling local.
-  WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
-                                                    WebGestureDevice) const;
   void CancelDrag();
 
   WebWidgetClient* client_;
@@ -189,12 +173,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // corresponding to a maximal connected tree of LocalFrames. This member
   // points to the root of that subtree.
   Member<WebLocalFrameImpl> local_root_;
-
-  std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
-  WebFloatPoint position_on_fling_start_;
-  WebFloatPoint global_position_on_fling_start_;
-  int fling_modifier_;
-  WebGestureDevice fling_source_device_;
 
   static bool ignore_input_events_;
   scoped_refptr<UserGestureToken> pointer_lock_gesture_token_;

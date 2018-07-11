@@ -28,7 +28,6 @@ class COMPOSITOR_EXPORT ScrollInputHandler : public cc::InputHandlerClient {
   // cc::InputHandlerClient:
   void WillShutdown() override;
   void Animate(base::TimeTicks time) override;
-  void MainThreadHasStoppedFlinging() override;
   void ReconcileElasticOverscrollAndRootScroll() override;
   void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,

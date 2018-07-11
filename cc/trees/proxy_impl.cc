@@ -145,11 +145,6 @@ void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
     scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
 }
 
-void ProxyImpl::MainThreadHasStoppedFlingingOnImpl() {
-  DCHECK(IsImplThread());
-  host_impl_->MainThreadHasStoppedFlinging();
-}
-
 void ProxyImpl::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {
   DCHECK(IsImplThread());
   if (is_throttled == input_throttled_until_commit_)
