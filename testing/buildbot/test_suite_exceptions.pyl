@@ -330,7 +330,7 @@
           '--test-launcher-jobs=1',
         ],
         'swarming': {
-          'can_use_on_swarming_builders': False,
+          'can_use_on_swarming_builders': False,  # https://crbug.com/861753
         },
       },
       'Cast Linux': {
@@ -341,7 +341,7 @@
           '--test-launcher-jobs=1',
         ],
         'swarming': {
-          'can_use_on_swarming_builders': False,
+          'can_use_on_swarming_builders': False,  # https://crbug.com/861753
         },
       },
     },
@@ -778,7 +778,7 @@
           '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
         'swarming': {
-          'can_use_on_swarming_builders': False,
+          'can_use_on_swarming_builders': False,  # https://crbug.com/861843
         },
       },
       'Cast Linux': {
@@ -786,7 +786,7 @@
           '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
         'swarming': {
-          'can_use_on_swarming_builders': False,
+          'can_use_on_swarming_builders': False,  # https://crbug.com/861843
         },
       },
       # chromium.memory
