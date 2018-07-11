@@ -5,7 +5,7 @@
 /** @fileoverview Suite of tests for extensions-detail-view. */
 cr.define('extension_error_page_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Layout: 'layout',
     CodeSection: 'code section',
     ErrorSelection: 'error selection',
@@ -32,29 +32,29 @@ cr.define('extension_error_page_tests', function() {
     },
   };
 
-  var suiteName = 'ExtensionErrorPageTest';
+  const suiteName = 'ExtensionErrorPageTest';
 
   suite(suiteName, function() {
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    var extensionData;
+    let extensionData;
 
     /** @type {extensions.ErrorPage} */
-    var errorPage;
+    let errorPage;
 
     /** @type {MockErrorPageDelegate} */
-    var mockDelegate;
+    let mockDelegate;
 
-    var extensionId = 'a'.repeat(32);
+    const extensionId = 'a'.repeat(32);
 
     // Common data for runtime errors.
-    var runtimeErrorBase = {
+    const runtimeErrorBase = {
       type: chrome.developerPrivate.ErrorType.RUNTIME,
       extensionId: extensionId,
       fromIncognito: false,
     };
 
     // Common data for manifest errors.
-    var manifestErrorBase = {
+    const manifestErrorBase = {
       type: chrome.developerPrivate.ErrorType.MANIFEST,
       extensionId: extensionId,
       fromIncognito: false,
@@ -63,7 +63,7 @@ cr.define('extension_error_page_tests', function() {
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
-      var runtimeError = Object.assign(
+      const runtimeError = Object.assign(
           {
             source: 'chrome-extension://' + extensionId + '/source.html',
             message: 'message',
@@ -87,19 +87,19 @@ cr.define('extension_error_page_tests', function() {
 
       extension_test_util.testIcons(errorPage);
 
-      var testIsVisible = extension_test_util.isVisible.bind(null, errorPage);
+      const testIsVisible = extension_test_util.isVisible.bind(null, errorPage);
       expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#heading'));
       expectTrue(testIsVisible('#errorsList'));
 
-      var errorElements = errorPage.shadowRoot.querySelectorAll('.error-item');
+      let errorElements = errorPage.shadowRoot.querySelectorAll('.error-item');
       expectEquals(1, errorElements.length);
-      var error = errorElements[0];
+      let error = errorElements[0];
       expectEquals(
           'message', error.querySelector('.error-message').textContent.trim());
       expectTrue(error.querySelector('iron-icon').icon == 'cr:error');
 
-      var manifestError = Object.assign(
+      const manifestError = Object.assign(
           {
             source: 'manifest.json',
             message: 'invalid key',
@@ -132,7 +132,7 @@ cr.define('extension_error_page_tests', function() {
       expectEquals('message', args.message);
 
       expectTrue(!!mockDelegate.requestFileSourceResolver);
-      var code = {
+      const code = {
         beforeHighlight: 'foo',
         highlight: 'bar',
         afterHighlight: 'baz',
@@ -147,7 +147,7 @@ cr.define('extension_error_page_tests', function() {
     });
 
     test(assert(TestNames.ErrorSelection), function() {
-      var nextRuntimeError = Object.assign(
+      const nextRuntimeError = Object.assign(
           {
             source: 'chrome-extension://' + extensionId + '/other_source.html',
             message: 'Other error',
@@ -164,9 +164,9 @@ cr.define('extension_error_page_tests', function() {
       errorPage.push('data.runtimeErrors', nextRuntimeError);
       Polymer.dom.flush();
 
-      var errorElements =
+      const errorElements =
           errorPage.shadowRoot.querySelectorAll('.error-item .start');
-      var ironCollapses =
+      const ironCollapses =
           errorPage.shadowRoot.querySelectorAll('iron-collapse');
       expectEquals(2, errorElements.length);
       expectEquals(2, ironCollapses.length);
@@ -176,7 +176,7 @@ cr.define('extension_error_page_tests', function() {
       expectEquals(
           extensionData.runtimeErrors[0], errorPage.getSelectedError());
       expectTrue(!!mockDelegate.requestFileSourceArgs);
-      var args = mockDelegate.requestFileSourceArgs;
+      let args = mockDelegate.requestFileSourceArgs;
       expectEquals('source.html', args.pathSuffix);
       expectTrue(ironCollapses[0].opened);
       expectFalse(ironCollapses[1].opened);

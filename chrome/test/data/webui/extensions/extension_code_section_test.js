@@ -5,18 +5,18 @@
 /** @fileoverview Suite of tests for extensions-code-section. */
 cr.define('extension_code_section_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Layout: 'layout',
     LongSource: 'long source',
   };
 
-  var suiteName = 'ExtensionCodeSectionTest';
+  const suiteName = 'ExtensionCodeSectionTest';
 
   suite(suiteName, function() {
     /** @type {extensions.CodeSection} */
-    var codeSection;
+    let codeSection;
 
-    var couldNotDisplayCode = 'No code here';
+    const couldNotDisplayCode = 'No code here';
 
     // Initialize an extension item before each test.
     setup(function() {
@@ -28,14 +28,15 @@ cr.define('extension_code_section_tests', function() {
 
     test(assert(TestNames.Layout), function() {
       /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
-      var code = {
+      const code = {
         beforeHighlight: 'this part before the highlight\nAnd this too\n',
         highlight: 'highlight this part\n',
         afterHighlight: 'this part after the highlight',
         message: 'Highlight message',
       };
 
-      var testIsVisible = extension_test_util.isVisible.bind(null, codeSection);
+      const testIsVisible =
+          extension_test_util.isVisible.bind(null, codeSection);
       expectFalse(!!codeSection.code);
       expectTrue(codeSection.$$('#scroll-container').hidden);
       expectFalse(testIsVisible('#main'));
@@ -59,8 +60,8 @@ cr.define('extension_code_section_tests', function() {
 
     test(assert(TestNames.LongSource), function() {
       /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
-      var code;
-      var lineNums;
+      let code;
+      let lineNums;
 
       function setCodeContent(beforeLineCount, afterLineCount) {
         code = {

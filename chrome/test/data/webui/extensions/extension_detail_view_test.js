@@ -5,7 +5,7 @@
 /** @fileoverview Suite of tests for extensions-detail-view. */
 cr.define('extension_detail_view_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Layout: 'layout',
     LayoutSource: 'layout of source section',
     ClickableElements: 'clickable elements',
@@ -15,23 +15,23 @@ cr.define('extension_detail_view_tests', function() {
     RuntimeHostPermissionsSelection: 'runtime host permissions selection',
   };
 
-  var suiteName = 'ExtensionDetailViewTest';
+  const suiteName = 'ExtensionDetailViewTest';
 
   suite(suiteName, function() {
     /**
      * Extension item created before each test.
      * @type {extensions.Item}
      */
-    var item;
+    let item;
 
     /**
      * Backing extension data for the item.
      * @type {chrome.developerPrivate.ExtensionInfo}
      */
-    var extensionData;
+    let extensionData;
 
     /** @type {extension_test_util.MockItemDelegate} */
-    var mockDelegate;
+    let mockDelegate;
 
     // Initialize an extension item before each test.
     setup(function() {
@@ -55,7 +55,7 @@ cr.define('extension_detail_view_tests', function() {
 
       extension_test_util.testIcons(item);
 
-      var testIsVisible = extension_test_util.isVisible.bind(null, item);
+      const testIsVisible = extension_test_util.isVisible.bind(null, item);
       expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#icon'));
       expectTrue(testIsVisible('#enable-toggle'));
@@ -67,12 +67,12 @@ cr.define('extension_detail_view_tests', function() {
       // Check the checkboxes visibility and state. They should be visible
       // only if the associated option is enabled, and checked if the
       // associated option is active.
-      var accessOptions = [
+      const accessOptions = [
         {key: 'incognitoAccess', id: '#allow-incognito'},
         {key: 'fileAccess', id: '#allow-on-file-urls'},
         {key: 'errorCollection', id: '#collect-errors'},
       ];
-      var isChecked = id => item.$$(id).checked;
+      const isChecked = id => item.$$(id).checked;
       for (let option of accessOptions) {
         expectTrue(extension_test_util.isVisible(item, option.id));
         expectFalse(isChecked(option.id), option.id);
@@ -112,7 +112,7 @@ cr.define('extension_detail_view_tests', function() {
       expectFalse(testIsVisible('#host-access'));
       expectFalse(testIsVisible('#runtime-hosts'));
 
-      var optionsUrl =
+      const optionsUrl =
           'chrome-extension://' + extensionData.id + '/options.html';
       item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
       expectTrue(testIsVisible('#extensions-options'));
@@ -150,7 +150,7 @@ cr.define('extension_detail_view_tests', function() {
 
       // Ensure that the "Extension options" button is disabled when the item
       // itself is disabled.
-      var extensionOptions = item.$$('#extensions-options');
+      const extensionOptions = item.$$('#extensions-options');
       assertFalse(extensionOptions.disabled);
       item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
       Polymer.dom.flush();
@@ -190,7 +190,7 @@ cr.define('extension_detail_view_tests', function() {
     });
 
     test(assert(TestNames.ClickableElements), function() {
-      var optionsUrl =
+      const optionsUrl =
           'chrome-extension://' + extensionData.id + '/options.html';
       item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
       item.set('data.prettifiedPath', 'foo/bar/baz/');
@@ -219,7 +219,7 @@ cr.define('extension_detail_view_tests', function() {
     });
 
     test(assert(TestNames.Indicator), function() {
-      var indicator = item.$$('cr-tooltip-icon');
+      const indicator = item.$$('cr-tooltip-icon');
       expectTrue(indicator.hidden);
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
@@ -227,8 +227,8 @@ cr.define('extension_detail_view_tests', function() {
     });
 
     test(assert(TestNames.Warnings), function() {
-      var testWarningVisible = function(id, isVisible) {
-        var f = isVisible ? expectTrue : expectFalse;
+      const testWarningVisible = function(id, isVisible) {
+        const f = isVisible ? expectTrue : expectFalse;
         f(extension_test_util.isVisible(item, id));
       };
 
@@ -299,9 +299,9 @@ cr.define('extension_detail_view_tests', function() {
     });
 
     test(assert(TestNames.RuntimeHostPermissionsDisplay), function() {
-      var HostAccess = chrome.developerPrivate.HostAccess;
+      const HostAccess = chrome.developerPrivate.HostAccess;
 
-      var permissions = {
+      const permissions = {
         simplePermissions: ['permission 1', 'permission 2'],
         hostAccess: HostAccess.ON_CLICK,
         runtimeHostPermissions: [],
@@ -310,12 +310,12 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.permissions', permissions);
       Polymer.dom.flush();
 
-      var testIsVisible = extension_test_util.isVisible.bind(null, item);
+      const testIsVisible = extension_test_util.isVisible.bind(null, item);
       expectTrue(testIsVisible('#host-access'));
 
       // The host-access menu should be visible, since the data includes
       // host access information.
-      var selectHostAccess = item.$$('#host-access');
+      const selectHostAccess = item.$$('#host-access');
       expectEquals(HostAccess.ON_CLICK, selectHostAccess.value);
       // For on-click mode, there should be no runtime hosts listed.
       expectFalse(testIsVisible('#runtime-hosts'));
@@ -340,9 +340,9 @@ cr.define('extension_detail_view_tests', function() {
     });
 
     test(assert(TestNames.RuntimeHostPermissionsSelection), function() {
-      var HostAccess = chrome.developerPrivate.HostAccess;
+      const HostAccess = chrome.developerPrivate.HostAccess;
 
-      var permissions = {
+      const permissions = {
         simplePermissions: ['permission 1', 'permission 2'],
         hostAccess: HostAccess.ON_CLICK,
         runtimeHostPermissions: [],
@@ -351,14 +351,14 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.permissions', permissions);
       Polymer.dom.flush();
 
-      var selectHostAccess = item.$$('#host-access');
+      const selectHostAccess = item.$$('#host-access');
 
       // Changes the value of the selectHostAccess menu and fires the change
       // event, then verifies that the delegate was called with the correct
       // value.
       function expectDelegateCallOnAccessChange(newValue) {
-        var mock = new MockController();
-        var mockMethod =
+        const mock = new MockController();
+        const mockMethod =
             mock.createFunctionMock(mockDelegate, 'setItemHostAccess');
         mockMethod.addExpectation(extensionData.id, newValue);
         selectHostAccess.value = newValue;

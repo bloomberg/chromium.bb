@@ -5,14 +5,14 @@
 /** @fileoverview Suite of tests for extensions-detail-view. */
 cr.define('extension_view_manager_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Visibility: 'visibility',
     EventFiring: 'event firing',
   };
 
-  var viewManager;
-  var views;
-  var suiteName = 'ExtensionViewManagerTest';
+  let viewManager;
+  let views;
+  const suiteName = 'ExtensionViewManagerTest';
 
   suite(suiteName, function() {
     // Initialize an extension item before each test.
@@ -55,13 +55,13 @@ cr.define('extension_view_manager_tests', function() {
     });
 
     test(assert(TestNames.EventFiring), function() {
-      var viewOne = viewManager.querySelector('#viewOne');
-      var enterStart = false;
-      var enterFinish = false;
-      var exitStart = false;
-      var exitFinish = false;
+      const viewOne = viewManager.querySelector('#viewOne');
+      const enterStart = false;
+      const enterFinish = false;
+      const exitStart = false;
+      const exitFinish = false;
 
-      var fired = {};
+      const fired = {};
 
       ['view-enter-start', 'view-enter-finish', 'view-exit-start',
        'view-exit-finish',
@@ -72,7 +72,7 @@ cr.define('extension_view_manager_tests', function() {
       });
 
       // Setup the switch promise first.
-      var enterPromise = viewManager.switchView('viewOne');
+      let enterPromise = viewManager.switchView('viewOne');
       // view-enter-start should fire synchronously.
       expectTrue(!!fired['view-enter-start']);
       // view-enter-finish should not fire yet.
