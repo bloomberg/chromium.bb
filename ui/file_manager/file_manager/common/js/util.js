@@ -1455,3 +1455,15 @@ util.doIfPrimaryContext = function(callback) {
     }
   });
 };
+
+/**
+ * Casts an Entry to a FilesAppEntry, to access a FilesAppEntry-specific
+ * property without Closure compiler complaining.
+ * TODO(lucmult): Wrap Entry in a FilesAppEntry derived class and remove
+ * this function. https://crbug.com/835203.
+ * @param {Entry|FilesAppEntry|FakeEntry} entry
+ * @return {FilesAppEntry}
+ */
+util.toFilesAppEntry = function(entry) {
+  return /** @type {FilesAppEntry} */ (entry);
+};

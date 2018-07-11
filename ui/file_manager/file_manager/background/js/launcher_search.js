@@ -160,6 +160,10 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
             undefined, /* App ID */
             LaunchType.FOCUS_SAME_OR_CREATE);
       } else {
+        entry = util.toFilesAppEntry(entry);
+        if (entry.type_name === undefined) {
+          return;
+        }
         // If the file is not directory, try to execute default task.
         chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
           // Select default task.

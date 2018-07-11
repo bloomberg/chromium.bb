@@ -976,6 +976,7 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
   var sizeId = item.id + '-size';
   var dateId = item.id + '-date';
   filelist.decorateListItem(item, entry, this.metadataModel_);
+  item.setAttribute('file-name', entry.name);
   item.querySelector('.entry-name').setAttribute('id', nameId);
   item.querySelector('.size').setAttribute('id', sizeId);
   item.querySelector('.date').setAttribute('id', dateId);

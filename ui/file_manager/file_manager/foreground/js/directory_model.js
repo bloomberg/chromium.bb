@@ -682,8 +682,9 @@ DirectoryModel.prototype.scan_ = function(
       var locationInfo =
           this.volumeManager_.getLocationInfo(
               assert(dirContents.getDirectoryEntry()));
-      if (locationInfo.volumeInfo.volumeType ===
-          VolumeManagerCommon.VolumeType.DOWNLOADS &&
+      var volumeInfo = locationInfo.volumeInfo;
+      if (volumeInfo &&
+          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS &&
           locationInfo.isRootEntry) {
         metrics.recordMediumCount('DownloadsCount',
                                   dirContents.fileList_.length);
