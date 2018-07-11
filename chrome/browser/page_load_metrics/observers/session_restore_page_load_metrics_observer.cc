@@ -36,14 +36,11 @@ SessionRestorePageLoadMetricsObserver::OnStart(
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   content::WebContents* contents = navigation_handle->GetWebContents();
-  resource_coordinator::TabManager* tab_manager =
-      g_browser_process->GetTabManager();
-  // Should not be null because this is used only on supported platforms.
-  DCHECK(tab_manager);
-
-  if (!started_in_foreground || !tab_manager->IsTabInSessionRestore(contents) ||
-      !tab_manager->IsTabRestoredInForeground(contents))
+  if (!started_in_foreground ||
+      !resource_coordinator::TabManager::IsTabInSessionRestore(contents) ||
+      !resource_coordinator::TabManager::IsTabRestoredInForeground(contents)) {
     return STOP_OBSERVING;
+  }
 
   // The navigation should be from the last session.
   DCHECK(navigation_handle->GetRestoreType() ==

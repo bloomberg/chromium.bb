@@ -157,14 +157,6 @@ class TabManager : public LifecycleUnitObserver,
     return is_session_restore_loading_tabs_;
   }
 
-  // Returns true if the tab was created by session restore and has not finished
-  // the first navigation.
-  bool IsTabInSessionRestore(content::WebContents* web_contents) const;
-
-  // Returns true if the tab was created by session restore and initially in
-  // foreground.
-  bool IsTabRestoredInForeground(content::WebContents* web_contents) const;
-
   // Returns the number of background tabs that are loading in a background tab
   // opening session.
   size_t GetBackgroundTabLoadingCount() const;
@@ -178,11 +170,19 @@ class TabManager : public LifecycleUnitObserver,
 
   // Returns the number of restored tabs during session restore. This is
   // non-zero only during session restore.
-  int restored_tab_count() const;
+  int restored_tab_count() const { return restored_tab_count_; }
 
   InterventionPolicyDatabase* intervention_policy_database() {
     return intervention_policy_database_.get();
   }
+
+  // Returns true if the tab was created by session restore and has not finished
+  // the first navigation.
+  static bool IsTabInSessionRestore(content::WebContents* web_contents);
+
+  // Returns true if the tab was created by session restore and initially in
+  // foreground.
+  static bool IsTabRestoredInForeground(content::WebContents* web_contents);
 
  private:
   friend class TabManagerStatsCollectorTest;

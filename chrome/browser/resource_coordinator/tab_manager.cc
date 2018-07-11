@@ -348,14 +348,6 @@ bool TabManager::CanPurgeBackgroundedRenderer(int render_process_id) const {
   return true;
 }
 
-bool TabManager::IsTabInSessionRestore(WebContents* web_contents) const {
-  return GetWebContentsData(web_contents)->is_in_session_restore();
-}
-
-bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) const {
-  return GetWebContentsData(web_contents)->is_restored_in_foreground();
-}
-
 size_t TabManager::GetBackgroundTabLoadingCount() const {
   if (!IsInBackgroundTabOpeningSession())
     return 0;
@@ -377,8 +369,14 @@ int TabManager::GetTabCount() const {
   return tab_count;
 }
 
-int TabManager::restored_tab_count() const {
-  return restored_tab_count_;
+// static
+bool TabManager::IsTabInSessionRestore(WebContents* web_contents) {
+  return GetWebContentsData(web_contents)->is_in_session_restore();
+}
+
+// static
+bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) {
+  return GetWebContentsData(web_contents)->is_restored_in_foreground();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
