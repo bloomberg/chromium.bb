@@ -149,8 +149,7 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
 void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_TAP_DOWN ||
-      event->type() == ui::ET_GESTURE_LONG_PRESS) {
+      event->type() == ui::ET_GESTURE_TAP_DOWN) {
     ProcessPressedEvent(event);
   }
 }
@@ -161,9 +160,21 @@ void CastSystemGestureEventHandler::ProcessPressedEvent(
     return;
   }
   gfx::Point touch_location(event->location());
-  for (auto* gesture_handler : gesture_handlers_) {
-    // Let the subscriber know about the gesture begin.
-    gesture_handler->HandleTapGesture(touch_location);
+  // Let the subscriber know about the gesture begin.
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      for (auto* gesture_handler : gesture_handlers_) {
+        gesture_handler->HandleTapDownGesture(touch_location);
+      }
+      break;
+    }
+    case ui::ET_GESTURE_TAP: {
+      for (auto* gesture_handler : gesture_handlers_) {
+        gesture_handler->HandleTapGesture(touch_location);
+      }
+      break;
+    }
+    default: { return; }
   }
 }
 

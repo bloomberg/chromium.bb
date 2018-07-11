@@ -44,6 +44,7 @@ class CastContentWindowAura : public CastContentWindow,
                                const gfx::Point& touch_location) override;
   void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
                           const gfx::Point& touch_location) override;
+  void HandleTapDownGesture(const gfx::Point& touch_location) override;
   void HandleTapGesture(const gfx::Point& touch_location) override;
 
  private:
