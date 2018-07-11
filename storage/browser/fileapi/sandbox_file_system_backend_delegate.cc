@@ -443,7 +443,8 @@ SandboxFileSystemBackendDelegate::CreateQuotaReservationOnFileTaskRunner(
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(quota_reservation_manager_);
-  return quota_reservation_manager_->CreateReservation(origin, type);
+  return quota_reservation_manager_->CreateReservation(
+      url::Origin::Create(origin), type);
 }
 
 void SandboxFileSystemBackendDelegate::AddFileUpdateObserver(

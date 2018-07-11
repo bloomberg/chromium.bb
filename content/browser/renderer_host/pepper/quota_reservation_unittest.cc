@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using storage::QuotaReservationManager;
 
@@ -44,7 +45,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   ~FakeBackend() override {}
 
   void ReserveQuota(
-      const GURL& origin,
+      const url::Origin& origin,
       storage::FileSystemType type,
       int64_t delta,
       const QuotaReservationManager::ReserveQuotaCallback& callback) override {
@@ -53,17 +54,17 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
                                   base::File::FILE_OK, delta));
   }
 
-  void ReleaseReservedQuota(const GURL& origin,
+  void ReleaseReservedQuota(const url::Origin& origin,
                             storage::FileSystemType type,
                             int64_t size) override {}
 
-  void CommitQuotaUsage(const GURL& origin,
+  void CommitQuotaUsage(const url::Origin& origin,
                         storage::FileSystemType type,
                         int64_t delta) override {}
 
-  void IncrementDirtyCount(const GURL& origin,
+  void IncrementDirtyCount(const url::Origin& origin,
                            storage::FileSystemType type) override {}
-  void DecrementDirtyCount(const GURL& origin,
+  void DecrementDirtyCount(const url::Origin& origin,
                            storage::FileSystemType type) override {}
 
  private:
@@ -160,7 +161,8 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
   storage::FileSystemType type = kType;
 
   scoped_refptr<storage::QuotaReservation> reservation(
-      reservation_manager()->CreateReservation(origin, type));
+      reservation_manager()->CreateReservation(url::Origin::Create(origin),
+                                               type));
   scoped_refptr<QuotaReservation> test =
       CreateQuotaReservation(reservation, origin, type);
 
@@ -201,7 +203,8 @@ TEST_F(QuotaReservationTest, MultipleFiles) {
   storage::FileSystemType type = kType;
 
   scoped_refptr<storage::QuotaReservation> reservation(
-      reservation_manager()->CreateReservation(origin, type));
+      reservation_manager()->CreateReservation(url::Origin::Create(origin),
+                                               type));
   scoped_refptr<QuotaReservation> test =
       CreateQuotaReservation(reservation, origin, type);
 

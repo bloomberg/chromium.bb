@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -37,7 +37,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
  public:
   QuotaReservationBuffer(
       base::WeakPtr<QuotaReservationManager> reservation_manager,
-      const GURL& origin,
+      const url::Origin& origin,
       FileSystemType type);
 
   scoped_refptr<QuotaReservation> CreateReservation();
@@ -52,7 +52,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
     return reservation_manager_.get();
   }
 
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
   FileSystemType type() const { return type_; }
 
  private:
@@ -61,7 +61,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
 
   static bool DecrementDirtyCount(
       base::WeakPtr<QuotaReservationManager> reservation_manager,
-      const GURL& origin,
+      const url::Origin& origin,
       FileSystemType type,
       base::File::Error error,
       int64_t delta);
@@ -75,7 +75,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
 
   base::WeakPtr<QuotaReservationManager> reservation_manager_;
 
-  GURL origin_;
+  url::Origin origin_;
   storage::FileSystemType type_;
 
   int64_t reserved_quota_;
