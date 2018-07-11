@@ -18,6 +18,8 @@ GrCacheController::GrCacheController(
 GrCacheController::~GrCacheController() = default;
 
 void GrCacheController::ScheduleGrContextCleanup() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   if (!context_state_->gr_context)
     return;
 
