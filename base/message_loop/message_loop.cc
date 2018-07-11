@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/task_annotator.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_default.h"
@@ -68,6 +69,95 @@ void ReportScheduledWakeupResult(ScheduledWakeupResult result,
 
 }  // namespace
 
+class MessageLoop::Controller : public internal::IncomingTaskQueue::Observer {
+ public:
+  // Constructs a MessageLoopController which controls |message_loop|, notifying
+  // |task_annotator_| when tasks are queued scheduling work on |message_loop|
+  // as fits. |message_loop| and |task_annotator_| will not be used after
+  // DisconnectFromParent() returns.
+  Controller(MessageLoop* message_loop);
+
+  ~Controller() override;
+
+  // IncomingTaskQueue::Observer:
+  void WillQueueTask(PendingTask* task) final;
+  void DidQueueTask(bool was_empty) final;
+
+  void StartScheduling();
+
+  // Disconnects |message_loop_| from this Controller instance (DidQueueTask()
+  // will no-op from this point forward).
+  void DisconnectFromParent();
+
+  // Shares this Controller's TaskAnnotator with MessageLoop as TaskAnnotator
+  // requires DidQueueTask(x)/RunTask(x) to be invoked on the same TaskAnnotator
+  // instance.
+  debug::TaskAnnotator& task_annotator() { return task_annotator_; }
+
+ private:
+  // A TaskAnnotator which is owned by this Controller to be able to use it
+  // without locking |message_loop_lock_|. It cannot be owned by MessageLoop
+  // because this Controller cannot access |message_loop_| safely without the
+  // lock. Note: the TaskAnnotator API itself is thread-safe.
+  debug::TaskAnnotator task_annotator_;
+
+  // Lock that serializes |message_loop_->ScheduleWork()| and access to all
+  // members below.
+  base::Lock message_loop_lock_;
+
+  // Points to this Controller's outer MessageLoop instance. Null after
+  // DisconnectFromParent().
+  MessageLoop* message_loop_;
+
+  // False until StartScheduling() is called.
+  bool is_ready_for_scheduling_ = false;
+
+  // True if DidQueueTask() has been called before StartScheduling(); letting it
+  // know whether it needs to ScheduleWork() right away or not.
+  bool pending_schedule_work_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(Controller);
+};
+
+MessageLoop::Controller::Controller(MessageLoop* message_loop)
+    : message_loop_(message_loop) {}
+
+MessageLoop::Controller::~Controller() {
+  DCHECK(!message_loop_)
+      << "DisconnectFromParent() needs to be invoked before destruction.";
+}
+
+void MessageLoop::Controller::WillQueueTask(PendingTask* task) {
+  task_annotator_.WillQueueTask("MessageLoop::PostTask", task);
+}
+
+void MessageLoop::Controller::DidQueueTask(bool was_empty) {
+  // Avoid locking if we don't need to schedule.
+  if (!was_empty)
+    return;
+
+  AutoLock auto_lock(message_loop_lock_);
+
+  if (message_loop_ && is_ready_for_scheduling_)
+    message_loop_->ScheduleWork();
+  else
+    pending_schedule_work_ = true;
+}
+
+void MessageLoop::Controller::StartScheduling() {
+  AutoLock lock(message_loop_lock_);
+  DCHECK(message_loop_);
+  DCHECK(!is_ready_for_scheduling_);
+  is_ready_for_scheduling_ = true;
+  if (pending_schedule_work_)
+    message_loop_->ScheduleWork();
+}
+
+void MessageLoop::Controller::DisconnectFromParent() {
+  AutoLock lock(message_loop_lock_);
+  message_loop_ = nullptr;
+}
+
 //------------------------------------------------------------------------------
 
 MessageLoop::MessageLoop(Type type)
@@ -126,7 +216,8 @@ MessageLoop::~MessageLoop() {
   thread_task_runner_handle_.reset();
 
   // Tell the incoming queue that we are dying.
-  incoming_task_queue_->WillDestroyCurrentMessageLoop();
+  message_loop_controller_->DisconnectFromParent();
+  incoming_task_queue_->Shutdown();
   incoming_task_queue_ = nullptr;
   unbound_task_runner_ = nullptr;
   task_runner_ = nullptr;
@@ -224,13 +315,18 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
   return WrapUnique(new MessageLoop(type, std::move(pump_factory)));
 }
 
+// TODO(gab): Avoid bare new + WrapUnique below when introducing
+// SequencedTaskSource in follow-up @
+// https://chromium-review.googlesource.com/c/chromium/src/+/1088762.
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
     : MessageLoopCurrent(this),
       type_(type),
       pump_factory_(std::move(pump_factory)),
-      incoming_task_queue_(new internal::IncomingTaskQueue(this)),
-      unbound_task_runner_(
-          new internal::MessageLoopTaskRunner(incoming_task_queue_)),
+      message_loop_controller_(new Controller(this)),
+      incoming_task_queue_(MakeRefCounted<internal::IncomingTaskQueue>(
+          WrapUnique(message_loop_controller_))),
+      unbound_task_runner_(MakeRefCounted<internal::MessageLoopTaskRunner>(
+          incoming_task_queue_)),
       task_runner_(unbound_task_runner_) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
   DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
@@ -252,7 +348,7 @@ void MessageLoop::BindToCurrentThread() {
       << "should only have one message loop per thread";
   MessageLoopCurrent::BindToCurrentThreadInternal(this);
 
-  incoming_task_queue_->StartScheduling();
+  message_loop_controller_->StartScheduling();
   unbound_task_runner_->BindToCurrentThread();
   unbound_task_runner_ = nullptr;
   SetThreadTaskRunnerHandle();
@@ -354,7 +450,8 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 
   for (auto& observer : task_observers_)
     observer.WillProcessTask(*pending_task);
-  incoming_task_queue_->RunTask(pending_task);
+  message_loop_controller_->task_annotator().RunTask("MessageLoop::PostTask",
+                                                     pending_task);
   for (auto& observer : task_observers_)
     observer.DidProcessTask(*pending_task);
 

@@ -222,6 +222,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   friend class Thread;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
+  class Controller;
+
   // Creates a MessageLoop without binding to a thread.
   // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
   // to create a message pump for this message loop.  Otherwise a default
@@ -304,6 +306,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   ObserverList<TaskObserver> task_observers_;
 
+  // Pointer to this MessageLoop's Controller, valid until the reference to
+  // |incoming_task_queue_| is dropped below.
+  Controller* const message_loop_controller_;
   scoped_refptr<internal::IncomingTaskQueue> incoming_task_queue_;
 
   // A task runner which we haven't bound to a thread yet.
