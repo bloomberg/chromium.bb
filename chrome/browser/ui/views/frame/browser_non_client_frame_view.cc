@@ -360,20 +360,16 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
 
   bool should_leave_to_top_container = false;
 #if defined(OS_CHROMEOS)
-  if (browser_view()->immersive_mode_controller()->IsRevealed()) {
-    // In immersive mode, the caption buttons container is reparented to the
-    // TopContainerView and hence |rect| should not be claimed here.
-    // See BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted().
-    should_leave_to_top_container = true;
-  }
+  // In immersive mode, the caption buttons container is reparented to the
+  // TopContainerView and hence |rect| should not be claimed here.  See
+  // BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted().
+  should_leave_to_top_container =
+      browser_view()->immersive_mode_controller()->IsRevealed();
 #endif  // defined(OS_CHROMEOS)
 
   if (!browser_view()->IsTabStripVisible()) {
-    if (should_leave_to_top_container)
-      return false;
-
     // Claim |rect| if it is above the top of the topmost client area view.
-    return rect.y() < GetTopInset(false);
+    return !should_leave_to_top_container && (rect.y() < GetTopInset(false));
   }
 
   // If the rect is outside the bounds of the client area, claim it.
@@ -388,9 +384,6 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
   // Otherwise, claim |rect| only if it is above the bottom of the tabstrip in
   // a non-tab portion.
   TabStrip* tabstrip = browser_view()->tabstrip();
-  if (!tabstrip || !browser_view()->IsTabStripVisible())
-    return false;
-
   gfx::RectF rect_in_tabstrip_coords_f(rect);
   View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
   gfx::Rect rect_in_tabstrip_coords =
@@ -405,13 +398,10 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
     return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
 
-  if (should_leave_to_top_container)
-    return false;
-
   // We claim |rect| because it is above the bottom of the tabstrip, but
   // not in the tabstrip itself. In particular, the avatar label/button is left
   // of the tabstrip and the window controls are right of the tabstrip.
-  return true;
+  return !should_leave_to_top_container;
 }
 
 void BrowserNonClientFrameView::OnProfileAdded(
