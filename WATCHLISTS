@@ -1608,7 +1608,7 @@
     'web_package': {
       'filepath': 'content/browser/loader/prefetch_url_loader'\
                   '|content/browser/web_package/'\
-                  '|content/test/data/htxg/'
+                  '|content/test/data/sxg/'
     },
     'web_share': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webshare/'\

@@ -62,7 +62,7 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
 const uint64_t kSignatureHeaderDate = 1517892341;
 const uint64_t kSignatureHeaderExpires = 1517895941;
 
-// See content/testdata/htxg/README on how to generate this data.
+// See content/testdata/sxg/README on how to generate this data.
 // clang-format off
 constexpr char kSignatureHeaderRSA[] =
     "label; "
@@ -78,7 +78,7 @@ constexpr char kSignatureHeaderRSA[] =
     "date=1517892341; expires=1517895941";
 // clang-format on
 
-// See content/testdata/htxg/README on how to generate this data.
+// See content/testdata/sxg/README on how to generate this data.
 // clang-format off
 constexpr char kSignatureHeaderECDSAP256[] =
     "label; "
@@ -91,7 +91,7 @@ constexpr char kSignatureHeaderECDSAP256[] =
     "date=1517892341; expires=1517895941";
 // clang-format on
 
-// See content/testdata/htxg/README on how to generate this data.
+// See content/testdata/sxg/README on how to generate this data.
 // clang-format off
 constexpr char kSignatureHeaderECDSAP384[] =
     "label; "

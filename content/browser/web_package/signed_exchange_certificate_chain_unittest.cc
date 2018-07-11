@@ -196,7 +196,7 @@ TEST(SignedExchangeCertificateParseB1Test, ParseGoldenFile) {
   base::FilePath path;
   base::PathService::Get(content::DIR_TEST_DATA, &path);
   path =
-      path.AppendASCII("htxg").AppendASCII("test.example.org.public.pem.cbor");
+      path.AppendASCII("sxg").AppendASCII("test.example.org.public.pem.cbor");
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path, &contents));
 

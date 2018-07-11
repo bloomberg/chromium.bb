@@ -57,13 +57,13 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
 }  // namespace
 
 TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
-  base::FilePath test_htxg_path;
-  base::PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
-  test_htxg_path = test_htxg_path.AppendASCII("htxg").AppendASCII(
+  base::FilePath test_sxg_path;
+  base::PathService::Get(content::DIR_TEST_DATA, &test_sxg_path);
+  test_sxg_path = test_sxg_path.AppendASCII("sxg").AppendASCII(
       "test.example.org_test.htxg");
 
   std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(test_htxg_path, &contents));
+  ASSERT_TRUE(base::ReadFileToString(test_sxg_path, &contents));
   auto* contents_bytes = reinterpret_cast<const uint8_t*>(contents.data());
 
   ASSERT_GT(contents.size(), SignedExchangePrologue::kEncodedPrologueInBytes);
