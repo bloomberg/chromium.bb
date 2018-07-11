@@ -23,6 +23,7 @@ class WebContents;
 
 namespace resource_coordinator {
 
+class InterventionPolicyDatabase;
 class TabLifecycleObserver;
 class TabLifecycleUnitExternal;
 
@@ -32,7 +33,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                                public PageSignalObserver,
                                public TabStripModelObserver {
  public:
-  TabLifecycleUnitSource();
+  explicit TabLifecycleUnitSource(
+      InterventionPolicyDatabase* intervention_policy_database);
   ~TabLifecycleUnitSource() override;
 
   static TabLifecycleUnitSource* GetInstance();
@@ -49,6 +51,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // Pretend that |tab_strip| is the TabStripModel of the focused window.
   void SetFocusedTabStripModelForTesting(TabStripModel* tab_strip);
+
+  InterventionPolicyDatabase* intervention_policy_database() const {
+    return intervention_policy_database_;
+  }
 
   class TabLifecycleUnitHolder;
 
@@ -128,6 +134,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
   base::ObserverList<TabLifecycleObserver> tab_lifecycle_observers_;
+
+  // The intervention policy database used to assist freezing/discarding
+  // decisions.
+  InterventionPolicyDatabase* intervention_policy_database_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSource);
 };

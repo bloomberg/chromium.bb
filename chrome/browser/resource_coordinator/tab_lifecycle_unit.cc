@@ -16,11 +16,13 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -217,6 +219,10 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
 
   CheckFeatureUsage(reader->UpdatesTitleInBackground(), details,
                     DecisionFailureReason::HEURISTIC_TITLE);
+}
+
+InterventionPolicyDatabase* GetInterventionPolicyDatabase() {
+  return TabLifecycleUnitSource::GetInstance()->intervention_policy_database();
 }
 
 }  // namespace
@@ -438,11 +444,24 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
+  auto intervention_policy = GetInterventionPolicyDatabase()->GetFreezingPolicy(
+      url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
+
+  switch (intervention_policy) {
+    case OriginInterventions::OPT_IN:
+      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
+      break;
+    case OriginInterventions::OPT_OUT:
+      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
+      break;
+    case OriginInterventions::DEFAULT:
+      break;
+  }
+
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
     decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
 
-  CheckIfTabIsUsedInBackground(decision_details,
-                               false /* urgent_intervention */);
+  CheckIfTabIsUsedInBackground(decision_details, InterventionType::kProactive);
 
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
@@ -504,9 +523,26 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 #endif  // defined(OS_CHROMEOS)
   }
 
-// We deliberately run through all of the logic without early termination.
-// This ensures that the decision details lists all possible reasons that the
-// transition can be denied.
+  // We deliberately run through all of the logic without early termination.
+  // This ensures that the decision details lists all possible reasons that the
+  // transition can be denied.
+
+  if (reason == DiscardReason::kProactive) {
+    auto intervention_policy =
+        GetInterventionPolicyDatabase()->GetDiscardingPolicy(
+            url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
+
+    switch (intervention_policy) {
+      case OriginInterventions::OPT_IN:
+        decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
+        break;
+      case OriginInterventions::OPT_OUT:
+        decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
+        break;
+      case OriginInterventions::DEFAULT:
+        break;
+    }
+  }
 
 #if defined(OS_CHROMEOS)
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
@@ -535,7 +571,9 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   }
 
   CheckIfTabIsUsedInBackground(decision_details,
-                               reason == DiscardReason::kUrgent);
+                               reason == DiscardReason::kProactive
+                                   ? InterventionType::kProactive
+                                   : InterventionType::kExternalOrUrgent);
 
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
@@ -818,7 +856,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::OnVisibilityChanged(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
     DecisionDetails* decision_details,
-    bool urgent_intervention) const {
+    InterventionType intervention_type) const {
   DCHECK(decision_details);
 
   // We deliberately run through all of the logic without early termination.
@@ -830,9 +868,9 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
 
   // Consult the local database to see if this tab could try to communicate with
   // the user while in background (don't check for the visibility here as
-  // there's already a check for that above). Skip this test if this is an
-  // urgent intervention.
-  if (!urgent_intervention) {
+  // there's already a check for that above). Only do this for proactive
+  // interventions.
+  if (intervention_type == InterventionType::kProactive) {
     CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
                                                       decision_details);
   }

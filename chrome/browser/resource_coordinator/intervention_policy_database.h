@@ -50,6 +50,9 @@ class InterventionPolicyDatabase {
       const base::Version& version,
       std::unique_ptr<base::DictionaryValue> manifest);
 
+  void AddOriginPoliciesForTesting(const url::Origin& origin,
+                                   OriginInterventionPolicies policies);
+
  protected:
   // Map that associates the MD5 hash of an origin to its polices.
   using InterventionsMap =
