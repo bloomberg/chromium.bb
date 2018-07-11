@@ -42,6 +42,10 @@ const base::Feature kOmniboxRichEntitySuggestions{
 const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable swapping the rows on answers.
+const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to force on the experiment of transmission of tail suggestions
 // from GWS to this client, currently testing for desktop.
 const base::Feature kOmniboxTailSuggestions{
@@ -687,6 +691,13 @@ bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
 
 bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
   return (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
+          ui::MaterialDesignController::is_mode_initialized() &&
+          ui::MaterialDesignController::IsRefreshUi()) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
+  return (base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) &&
           ui::MaterialDesignController::is_mode_initialized() &&
           ui::MaterialDesignController::IsRefreshUi()) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);

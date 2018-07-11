@@ -1605,6 +1605,9 @@ extern const char kOmniboxRichEntitySuggestionsDescription[];
 extern const char kOmniboxNewAnswerLayoutName[];
 extern const char kOmniboxNewAnswerLayoutDescription[];
 
+extern const char kOmniboxReverseAnswersName[];
+extern const char kOmniboxReverseAnswersDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 

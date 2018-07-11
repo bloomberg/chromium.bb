@@ -318,6 +318,9 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
   has_tab_match_ = match.has_tab_match;
+  is_definition_ =
+      !!match.answer &&
+      match.answer->type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
 
   // Set up the small icon.
   if (is_rich_suggestion_) {
@@ -480,9 +483,15 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
     description_view_->SetSize(gfx::Size());
   } else {
     const int text_height = content_view_->GetLineHeight();
-    content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);
+    int content_y = y;
+    int description_y = y + text_height;
+    if (OmniboxFieldTrial::IsReverseAnswersEnabled() && !is_definition_) {
+      std::swap(content_y, description_y);
+    }
+    content_view_->SetBounds(x + kTextIndent, content_y, text_width,
+                             text_height);
     description_view_->SetBounds(
-        x + kTextIndent, y + text_height, text_width,
+        x + kTextIndent, description_y, text_width,
         description_view_->GetHeightForWidth(text_width));
   }
 }

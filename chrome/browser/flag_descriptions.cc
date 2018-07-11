@@ -2647,6 +2647,12 @@ const char kOmniboxNewAnswerLayoutDescription[] =
     "effect unless either the #upcoming-ui-features flag is Enabled or the "
     "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
 
+const char kOmniboxReverseAnswersName[] = "Omnibox reverse answers";
+const char kOmniboxReverseAnswersDescription[] =
+    "Display answers with rows reversed (swapped); except definitions. Has no "
+    "effect unless either the #upcoming-ui-features flag is Enabled or the "
+    "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
