@@ -41,21 +41,43 @@ class TopBackgroundView : public views::View {
   }
 
 #if !defined(USE_AURA)
-  // For non-Aura platforms, forward mouse events intended for the omnibox to
-  // the Widget owning the omnibox. For Aura platforms, this is done with an
-  // event targeter set up in RoundedOmniboxResultsFrame::AddedToWidget(),
-  // below.
-  void OnMouseEvent(ui::MouseEvent* event) override {
+  // For non-Aura platforms, forward mouse events and cursor requests intended
+  // for the omnibox to the proper Widgets/Views. For Aura platforms, this is
+  // done with an event targeter set up in
+  // RoundedOmniboxResultsFrame::AddedToWidget(), below.
+ private:
+  struct OmniboxWidgetEventPair {
+    views::Widget* widget;
+    ui::MouseEvent event;
+  };
+
+  OmniboxWidgetEventPair GetOmniboxWidgetAndEvent(const ui::MouseEvent* event) {
     views::Widget* omnibox_widget = GetWidget()->GetTopLevelWidgetForNativeView(
         GetWidget()->GetNativeView());
     DCHECK_NE(GetWidget(), omnibox_widget);
-    ui::MouseEvent omnibox_event(*event);
+
     gfx::Point event_location = event->location();
     views::View::ConvertPointToScreen(this, &event_location);
     views::View::ConvertPointFromScreen(omnibox_widget->GetRootView(),
                                         &event_location);
+
+    ui::MouseEvent omnibox_event(*event);
     omnibox_event.set_location(event_location);
-    omnibox_widget->OnMouseEvent(&omnibox_event);
+
+    return {omnibox_widget, omnibox_event};
+  }
+
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    auto pair = GetOmniboxWidgetAndEvent(event);
+    pair.widget->OnMouseEvent(&pair.event);
+  }
+
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
+    auto pair = GetOmniboxWidgetAndEvent(&event);
+    views::View* omnibox_view =
+        pair.widget->GetRootView()->GetEventHandlerForPoint(
+            pair.event.location());
+    return omnibox_view->GetCursor(pair.event);
   }
 #endif  // !AURA
 };
