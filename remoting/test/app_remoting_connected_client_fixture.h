@@ -17,7 +17,6 @@
 
 namespace base {
 class RunLoop;
-class Timer;
 }
 
 namespace remoting {
@@ -64,9 +63,6 @@ class AppRemotingConnectedClientFixture
 
   // Used to run the thread's message loop.
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  // Used for setting timeouts and delays.
-  std::unique_ptr<base::Timer> timer_;
 
   // Used to ensure RemoteConnectionObserver methods are called on the same
   // thread.

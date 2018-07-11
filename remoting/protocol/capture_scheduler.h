@@ -63,7 +63,7 @@ class CaptureScheduler : public VideoFeedbackStub {
 
   // Helper functions for tests.
   void SetTickClockForTest(const base::TickClock* tick_clock);
-  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
+  void SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer);
   void SetNumOfProcessorsForTest(int num_of_processors);
 
  private:
@@ -81,7 +81,7 @@ class CaptureScheduler : public VideoFeedbackStub {
   const base::TickClock* tick_clock_;
 
   // Timer used to schedule CaptureNextFrame().
-  std::unique_ptr<base::Timer> capture_timer_;
+  std::unique_ptr<base::OneShotTimer> capture_timer_;
 
   // Minimum interval between frames that determines maximum possible framerate.
   base::TimeDelta minimum_interval_;

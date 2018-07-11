@@ -46,7 +46,7 @@ class AppRemotingReportIssueRequestTest : public ::testing::Test {
   std::string dev_service_environment_url_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<base::Timer> timer_;
+  base::OneShotTimer timer_;
 
   AppRemotingReportIssueRequest app_remoting_report_issue_request_;
 
@@ -66,7 +66,6 @@ AppRemotingReportIssueRequestTest::~AppRemotingReportIssueRequestTest() =
 
 void AppRemotingReportIssueRequestTest::SetUp() {
   run_loop_.reset(new base::RunLoop());
-  timer_.reset(new base::Timer(true, false));
 
   dev_service_environment_url_ =
       GetReportIssueUrl(kTestApplicationId, kTestHostId, kDeveloperEnvironment);
@@ -86,8 +85,8 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromDev) {
   SetFakeResponse(GURL(dev_service_environment_url_), kReportIssueResponse,
                   net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               run_loop_->QuitClosure());
 
   bool request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
@@ -97,8 +96,8 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromDev) {
   run_loop_->Run();
 
   // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
 }
 
 TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromInvalidEnvironment) {
@@ -110,8 +109,8 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromInvalidEnvironment) {
 }
 
 TEST_F(AppRemotingReportIssueRequestTest, ReportIssueNetworkError) {
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               run_loop_->QuitClosure());
 
   bool request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
@@ -121,16 +120,16 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueNetworkError) {
   run_loop_->Run();
 
   // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
 }
 
 TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
   SetFakeResponse(GURL(dev_service_environment_url_), kReportIssueResponse,
                   net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               run_loop_->QuitClosure());
 
   bool request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
@@ -140,12 +139,12 @@ TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
   run_loop_->Run();
 
   // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
 
   run_loop_.reset(new base::RunLoop());
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               run_loop_->QuitClosure());
 
   request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
@@ -155,12 +154,12 @@ TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
   run_loop_->Run();
 
   // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
 
   run_loop_.reset(new base::RunLoop());
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               run_loop_->QuitClosure());
 
   request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
@@ -170,8 +169,8 @@ TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
   run_loop_->Run();
 
   // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
 }
 
 }  // namespace test

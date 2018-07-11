@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/test/app_remoting_test_driver_environment.h"
@@ -31,9 +30,7 @@ namespace test {
 AppRemotingConnectionHelper::AppRemotingConnectionHelper(
     const RemoteApplicationDetails& application_details)
     : application_details_(application_details),
-      connection_is_ready_for_tests_(false),
-      timer_(new base::Timer(true, false)) {
-}
+      connection_is_ready_for_tests_(false) {}
 
 AppRemotingConnectionHelper::~AppRemotingConnectionHelper() {
   // |client_| destroys some of its members via DeleteSoon on the message loop's
@@ -71,9 +68,9 @@ bool AppRemotingConnectionHelper::StartConnection() {
 
   // We will wait up to 30 seconds to complete the remote connection and for the
   // main application window to become visible.
-  DCHECK(!timer_->IsRunning());
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
-                run_loop_->QuitClosure());
+  DCHECK(!timer_.IsRunning());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
+               run_loop_->QuitClosure());
 
   client_->StartConnection(
       /*use_test_api_settings=*/false,
@@ -82,7 +79,7 @@ bool AppRemotingConnectionHelper::StartConnection() {
           AppRemotingSharedData->user_name()));
 
   run_loop_->Run();
-  timer_->Stop();
+  timer_.Stop();
 
   if (connection_is_ready_for_tests_) {
     return true;
@@ -208,15 +205,15 @@ void AppRemotingConnectionHelper::HandleOnWindowAddedMessage(
     connection_is_ready_for_tests_ = true;
     client_->RemoveRemoteConnectionObserver(this);
 
-    if (timer_->IsRunning()) {
-      timer_->Stop();
+    if (timer_.IsRunning()) {
+      timer_.Stop();
     }
 
     DCHECK(run_loop_);
     // Now that the main window is visible, give the app some time to settle
     // before signaling that it is ready to run tests.
-    timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
-                  run_loop_->QuitClosure());
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
+                 run_loop_->QuitClosure());
   }
 }
 

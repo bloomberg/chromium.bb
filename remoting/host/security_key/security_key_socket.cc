@@ -32,7 +32,7 @@ SecurityKeySocket::SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
                                      const base::Closure& timeout_callback)
     : socket_(std::move(socket)),
       read_buffer_(new net::IOBufferWithSize(kRequestReadBufferLength)) {
-  timer_.reset(new base::Timer(false, false));
+  timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE, timeout, timeout_callback);
 }
 

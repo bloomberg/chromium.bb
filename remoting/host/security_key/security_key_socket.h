@@ -17,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace net {
@@ -107,7 +107,7 @@ class SecurityKeySocket {
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
 
   // The activity timer.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeySocket);
 };

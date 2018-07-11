@@ -78,7 +78,7 @@ class TestVideoRendererTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used to set timeouts and delays.
-  std::unique_ptr<base::Timer> timer_;
+  base::OneShotTimer timer_;
 
   // Manages the decoder and process generated video packets.
   std::unique_ptr<TestVideoRenderer> test_video_renderer_;
@@ -117,8 +117,7 @@ class TestVideoRendererTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TestVideoRendererTest);
 };
 
-TestVideoRendererTest::TestVideoRendererTest()
-    : timer_(new base::Timer(true, false)) {}
+TestVideoRendererTest::TestVideoRendererTest() {}
 
 TestVideoRendererTest::~TestVideoRendererTest() = default;
 
@@ -145,22 +144,22 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
   std::unique_ptr<VideoPacket> packet = encoder_->Encode(*original_frame.get());
 
   DCHECK(!run_loop_ || !run_loop_->running());
-  DCHECK(!timer_->IsRunning());
+  DCHECK(!timer_.IsRunning());
   run_loop_.reset(new base::RunLoop());
 
   // Set an extremely long time: 10 min to prevent bugs from hanging the system.
   // NOTE: We've seen cases which take up to 1 min to process a packet, so an
   // extremely long time as 10 min is chosen to avoid being variable/flaky.
-  timer_->Start(FROM_HERE, base::TimeDelta::FromMinutes(10),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(10),
+               run_loop_->QuitClosure());
 
   // Wait for the video packet to be processed and rendered to buffer.
   test_video_renderer_->ProcessVideoPacket(std::move(packet),
                                            run_loop_->QuitClosure());
 
   run_loop_->Run();
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
   run_loop_.reset();
 
   std::unique_ptr<webrtc::DesktopFrame> buffer_copy =
@@ -178,14 +177,14 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
     const webrtc::DesktopRect& expected_rect,
     const RGBValue& expected_average_color) {
   DCHECK(!run_loop_ || !run_loop_->running());
-  DCHECK(!timer_->IsRunning());
+  DCHECK(!timer_.IsRunning());
   run_loop_.reset(new base::RunLoop());
 
   // Set an extremely long time: 10 min to prevent bugs from hanging the system.
   // NOTE: We've seen cases which take up to 1 min to process a packet, so an
   // extremely long time as 10 min is chosen to avoid being variable/flaky.
-  timer_->Start(FROM_HERE, base::TimeDelta::FromMinutes(10),
-                run_loop_->QuitClosure());
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(10),
+               run_loop_->QuitClosure());
 
   // Set expected image pattern.
   test_video_renderer_->ExpectAverageColorInRect(
@@ -210,8 +209,8 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
                                            second_packet_done_callback);
 
   run_loop_->Run();
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
+  EXPECT_TRUE(timer_.IsRunning());
+  timer_.Stop();
   run_loop_.reset();
 
   // if expected image pattern is matched, the QuitClosure of |run_loop_| will

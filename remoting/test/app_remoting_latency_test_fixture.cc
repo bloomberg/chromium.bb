@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/test/app_remoting_connection_helper.h"
@@ -21,8 +20,7 @@
 namespace remoting {
 namespace test {
 
-AppRemotingLatencyTestFixture::AppRemotingLatencyTestFixture()
-    : timer_(new base::Timer(true, false)) {
+AppRemotingLatencyTestFixture::AppRemotingLatencyTestFixture() {
   // NOTE: Derived fixture must initialize application details in constructor.
 }
 
@@ -86,15 +84,15 @@ bool AppRemotingLatencyTestFixture::WaitForImagePatternMatch(
     std::unique_ptr<base::RunLoop> run_loop,
     const base::TimeDelta& max_wait_time) {
   DCHECK(run_loop);
-  DCHECK(!timer_->IsRunning());
+  DCHECK(!timer_.IsRunning());
 
-  timer_->Start(FROM_HERE, max_wait_time, run_loop->QuitClosure());
+  timer_.Start(FROM_HERE, max_wait_time, run_loop->QuitClosure());
 
   run_loop->Run();
 
   // Image pattern is matched if we stopped because of the reply not the timer.
-  bool image_pattern_is_matched = (timer_->IsRunning());
-  timer_->Stop();
+  bool image_pattern_is_matched = (timer_.IsRunning());
+  timer_.Stop();
   run_loop.reset();
 
   return image_pattern_is_matched;
@@ -140,7 +138,7 @@ void AppRemotingLatencyTestFixture::ResetHostMessageReceivedCallback() {
 }
 
 void AppRemotingLatencyTestFixture::ResetApplicationState() {
-  DCHECK(!timer_->IsRunning());
+  DCHECK(!timer_.IsRunning());
   DCHECK(!run_loop_ || !run_loop_->running());
 
   // Give the app some time to settle before reseting to initial state.
