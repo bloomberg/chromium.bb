@@ -67,6 +67,12 @@ void FullscreenMediator::AnimateModelReset() {
   for (auto& observer : observers_) {
     observer.FullscreenModelWasReset(controller_, animator_);
   }
+
+  // Instruct the model to ignore the remainder of the current scroll when
+  // starting this animator.  This prevents the toolbar from immediately being
+  // hidden if AnimateModelReset() is called while a scroll view is
+  // decelerating.
+  model_->IgnoreRemainderOfCurrentScroll();
   StartAnimator();
 }
 

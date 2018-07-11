@@ -24,6 +24,11 @@ void SimulateFullscreenUserScrollWithDelta(FullscreenModel* model,
 void SimulateFullscreenUserScrollForProgress(FullscreenModel* model,
                                              CGFloat progress);
 
+// Returns the delta from |model|'s current Y offset that would result in
+// |progress|.
+CGFloat GetFullscreenOffsetDeltaForProgress(FullscreenModel* model,
+                                            CGFloat progress);
+
 // Returns the base offset against which |model| would calculate |progress|,
 // given its toolbar height and content offset.
 CGFloat GetFullscreenBaseOffsetForProgress(FullscreenModel* model,

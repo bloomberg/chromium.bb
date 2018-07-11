@@ -55,6 +55,12 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // Recalculates the fullscreen progress for a new navigation.
   void ResetForNavigation();
 
+  // Instructs the model to ignore broadcasted scroll updates for the remainder
+  // of the current scroll.  Has no effect if not called while a scroll is
+  // occurring.  The model will resume listening for scroll events when
+  // |scrolling_| is reset to false.
+  void IgnoreRemainderOfCurrentScroll();
+
   // Called when a scroll end animation finishes.  |progress| is the fullscreen
   // progress corresponding to the final state of the aniamtion.
   void AnimationEndedWithProgress(CGFloat progress);
@@ -169,6 +175,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   bool zooming_ = false;
   // Whether the main content is being dragged.
   bool dragging_ = false;
+  // Whether the in-progress scroll is being ignored.
+  bool ignoring_current_scroll_ = false;
   // The number of FullscreenModelObserver callbacks currently being executed.
   size_t observer_callback_count_ = 0;
 
