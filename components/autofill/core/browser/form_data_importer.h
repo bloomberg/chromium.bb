@@ -109,6 +109,9 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
+  // The associated autofill client. Weak reference.
+  AutofillClient* client_;
+
   // Responsible for managing credit card save flows (local or upload).
   std::unique_ptr<CreditCardSaveManager> credit_card_save_manager_;
 
