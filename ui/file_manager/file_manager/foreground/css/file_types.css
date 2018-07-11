@@ -211,6 +211,18 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/archive_active.png) 2x);
 }
 
+[root-type-icon='my_files'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/my_files.png) 1x,
+      url(../images/volumes/2x/my_files.png) 2x);
+}
+
+.tree-row[selected] [root-type-icon='my_files'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/my_files_active.png) 1x,
+      url(../images/volumes/2x/my_files_active.png) 2x);
+}
+
 [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/downloads.png) 1x,
