@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "chromecast_export.h"
 #include "volume_control.h"
 
 // Plugin interface for audio DSP modules.
@@ -29,17 +28,6 @@
 //  * Channel selection for stereo pairs will occur after the "mix" group, so
 //    devices that support stereo pairs should only change the number of
 //    in the "linearize" group of cast_audio.json.
-
-// Creates a PostProcessor
-// Called from StreamMixer when shared objects are listed in
-// /etc/cast_audio.json
-// AudioPostProcessors are created on startup and destroyed on shutdown.
-// libcast_FOOBAR_1.0.so should export a CREATE function as follows:
-// AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(FOOBAR) { }
-#define AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(type)                   \
-  extern "C" CHROMECAST_EXPORT chromecast::media::AudioPostProcessor2*  \
-      AudioPostProcessor2Shlib##type##Create(const std::string& config, \
-                                             int num_channels_in)
 
 namespace chromecast {
 namespace media {

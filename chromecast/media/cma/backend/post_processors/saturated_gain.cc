@@ -12,10 +12,6 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/slew_volume.h"
 
-AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(saturated_gain) {
-  return new chromecast::media::SaturatedGain(config, num_channels_in);
-}
-
 namespace chromecast {
 namespace media {
 
