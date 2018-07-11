@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_export.h"
@@ -90,13 +91,18 @@ class URLDataSourceImpl : public base::RefCountedThreadSafe<
   const std::string source_name_;
 
   // This field is set and maintained by URLDataManagerBackend. It is set when
-  // the DataSource is added, and unset if the DataSource is removed. A
-  // DataSource can be removed in two ways: the URLDataManagerBackend is
-  // deleted, or another DataSource is registered with the same name. backend_
-  // should only be accessed on the IO thread. This reference can't be via a
-  // scoped_refptr else there would be a cycle between the backend and data
-  // source.
-  URLDataManagerBackend* backend_;
+  // the DataSource is added. A DataSource can be removed in two ways:
+  // (1) The URLDataManagerBackend is deleted, and the weak ptr is invalidated.
+  //     In this case queries pending against this data source will implicitly
+  //     be dropped as their responses will have no backend for routing.
+  // (2) Another DataSource is registered with the same name. In this case the
+  //     backend still exists and remains referenced by this data source,
+  //     allowing pending queries to be routed to the backend that formerly
+  //     owned them.
+  // This field should only be referenced on the IO thread. This reference can't
+  // be via a scoped_refptr else there would be a cycle between the backend and
+  // the data source.
+  base::WeakPtr<URLDataManagerBackend> backend_;
 
   std::unique_ptr<URLDataSource> source_;
 };
