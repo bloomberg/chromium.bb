@@ -1,22 +1,26 @@
 Test frontend's timeout support.
 
 
-Testing expression 1 + 1 with timeout: 0
-error: Execution was terminated
-{
-    error : "Execution was terminated"
-}
-
 Testing expression while (1){} with timeout: 0
 error: Execution was terminated
 {
     error : "Execution was terminated"
 }
 
-Testing expression 1 + 1 with timeout: 0
-error: Execution was terminated
+Testing expression 1 + 1 with timeout: undefined
 {
-    error : "Execution was terminated"
+    exceptionDetails : undefined
+    object : {
+        _className : null
+        _customPreview : null
+        _description : "2"
+        _hasChildren : false
+        _runtimeAgent : <object>
+        _runtimeModel : <object>
+        _subtype : undefined
+        _type : "number"
+        _value : 2
+    }
 }
 
 Does the runtime also support side effect checks? true
@@ -25,22 +29,26 @@ Clearing cached side effect support
 Set timer for test function.
 Script execution paused.
 
-Testing expression 1 + 1 with timeout: 0
-error: Execution was terminated
-{
-    error : "Execution was terminated"
-}
-
 Testing expression while (1){} with timeout: 0
 error: Execution was terminated
 {
     error : "Execution was terminated"
 }
 
-Testing expression 1 + 1 with timeout: 0
-error: Execution was terminated
+Testing expression 1 + 1 with timeout: undefined
 {
-    error : "Execution was terminated"
+    exceptionDetails : undefined
+    object : {
+        _className : null
+        _customPreview : null
+        _description : "2"
+        _hasChildren : false
+        _runtimeAgent : <object>
+        _runtimeModel : <object>
+        _subtype : undefined
+        _type : "number"
+        _value : 2
+    }
 }
 Does the runtime also support side effect checks? true
 Script execution resumed.
