@@ -2158,7 +2158,12 @@ group("telemetry_perf_unittests") {
 
     # For smoke testing run_telemetry_benchmark_as_googletest
     "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+
+    # For tests in tools/perf/process_perf_results_unittest.py
+    "//build/android/pylib/",
+    "//tools/swarming_client/",
   ]
+
 
   if (enable_mus) {
     deps += [ "//chrome:chrome_test" ]
