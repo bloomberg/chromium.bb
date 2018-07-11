@@ -123,8 +123,8 @@ TEST_F(ForceSigninVerifierTest, OnLostConnection) {
   ASSERT_EQ(nullptr, verifier_->request());
   ASSERT_TRUE(verifier_->IsDelayTaskPosted());
 
-  verifier_->OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  verifier_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
 
   ASSERT_EQ(0, verifier_->FailureCount());
   ASSERT_EQ(nullptr, verifier_->request());
@@ -138,8 +138,8 @@ TEST_F(ForceSigninVerifierTest, OnReconnected) {
   ASSERT_EQ(nullptr, verifier_->request());
   ASSERT_TRUE(verifier_->IsDelayTaskPosted());
 
-  verifier_->OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  verifier_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
 
   ASSERT_EQ(0, verifier_->FailureCount());
   ASSERT_NE(nullptr, verifier_->request());
