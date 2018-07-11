@@ -89,14 +89,14 @@ AccessibilityPrivateSetFocusRingFunction::Run() {
     SkColor color;
     if (!extensions::image_util::ParseHexColorString(*(params->color), &color))
       return RespondNow(Error("Could not parse hex color"));
-    accessibility_manager->SetFocusRingColor(color);
+    accessibility_manager->SetFocusRingColor(color, extension_id());
   } else {
-    accessibility_manager->ResetFocusRingColor();
+    accessibility_manager->ResetFocusRingColor(extension_id());
   }
 
   // Move the visible focus ring to cover all of these rects.
   accessibility_manager->SetFocusRing(
-      rects, ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
+      rects, ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING, extension_id());
 
   // Also update the touch exploration controller so that synthesized
   // touch events are anchored within the focused object.

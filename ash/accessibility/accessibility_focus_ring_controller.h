@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_focus_ring.h"
+#include "ash/accessibility/accessibility_focus_ring_group.h"
 #include "ash/accessibility/accessibility_layer.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
@@ -23,7 +24,6 @@
 namespace ash {
 
 class AccessibilityCursorRingLayer;
-class AccessibilityFocusRingLayer;
 class AccessibilityHighlightLayer;
 
 // AccessibilityFocusRingController handles drawing custom rings around
@@ -39,11 +39,12 @@ class ASH_EXPORT AccessibilityFocusRingController
   void BindRequest(mojom::AccessibilityFocusRingControllerRequest request);
 
   // mojom::AccessibilityFocusRingController overrides:
-  void SetFocusRingColor(SkColor color) override;
-  void ResetFocusRingColor() override;
+  void SetFocusRingColor(SkColor color, const std::string& caller_id) override;
+  void ResetFocusRingColor(const std::string& caller_id) override;
   void SetFocusRing(const std::vector<gfx::Rect>& rects,
-                    mojom::FocusRingBehavior focus_ring_behavior) override;
-  void HideFocusRing() override;
+                    mojom::FocusRingBehavior focus_ring_behavior,
+                    const std::string& caller_id) override;
+  void HideFocusRing(const std::string& caller_id) override;
   void SetHighlights(const std::vector<gfx::Rect>& rects,
                      SkColor color) override;
   void HideHighlights() override;
@@ -66,22 +67,10 @@ class ASH_EXPORT AccessibilityFocusRingController
   AccessibilityCursorRingLayer* caret_layer_for_testing() {
     return caret_layer_.get();
   }
-  const std::vector<std::unique_ptr<AccessibilityFocusRingLayer>>&
-  focus_ring_layers_for_testing() {
-    return focus_layers_;
-  }
+  const AccessibilityFocusRingGroup* GetFocusRingGroupForTesting(
+      std::string caller_id);
 
  protected:
-  // Given an unordered vector of bounding rectangles that cover everything
-  // that currently has focus, populate a vector of one or more
-  // AccessibilityFocusRings that surround the rectangles. Adjacent or
-  // overlapping rectangles are combined first. This function is protected
-  // so it can be unit-tested.
-  void RectsToRings(const std::vector<gfx::Rect>& rects,
-                    std::vector<AccessibilityFocusRing>* rings) const;
-
-  virtual int GetMargin() const;
-
   // Breaks an SkColor into its opacity and color. If the opacity is
   // not set (or is 0xFF), uses the |default_opacity| instead.
   // Visible for testing.
@@ -95,44 +84,23 @@ class ASH_EXPORT AccessibilityFocusRingController
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;
 
-  void UpdateFocusRingsFromFocusRects();
   void UpdateHighlightFromHighlightRects();
 
-  void AnimateFocusRings(base::TimeTicks timestamp);
+  void AnimateFocusRings(base::TimeTicks timestamp,
+                         AccessibilityFocusRingGroup* focus_ring);
   void AnimateCursorRing(base::TimeTicks timestamp);
   void AnimateCaretRing(base::TimeTicks timestamp);
 
-  AccessibilityFocusRing RingFromSortedRects(
-      const std::vector<gfx::Rect>& rects) const;
-  void SplitIntoParagraphShape(const std::vector<gfx::Rect>& rects,
-                               gfx::Rect* top,
-                               gfx::Rect* middle,
-                               gfx::Rect* bottom) const;
-  bool Intersects(const gfx::Rect& r1, const gfx::Rect& r2) const;
-
-  struct LayerAnimationInfo {
-    base::TimeTicks start_time;
-    base::TimeTicks change_time;
-    base::TimeDelta fade_in_time;
-    base::TimeDelta fade_out_time;
-    float opacity = 0;
-    bool smooth = false;
-  };
   void OnLayerChange(LayerAnimationInfo* animation_info);
-  void ComputeOpacity(LayerAnimationInfo* animation_info,
-                      base::TimeTicks timestamp);
 
   // Binding for mojom::AccessibilityFocusRingController interface.
   mojo::Binding<mojom::AccessibilityFocusRingController> binding_;
 
-  LayerAnimationInfo focus_animation_info_;
-  std::vector<gfx::Rect> focus_rects_;
-  std::vector<AccessibilityFocusRing> previous_focus_rings_;
-  std::vector<AccessibilityFocusRing> focus_rings_;
-  std::vector<std::unique_ptr<AccessibilityFocusRingLayer>> focus_layers_;
-  mojom::FocusRingBehavior focus_ring_behavior_ =
-      mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
-  base::Optional<SkColor> focus_ring_color_;
+  AccessibilityFocusRingGroup* GetFocusRingGroupForCallerId(
+      std::string caller_id,
+      bool create);
+  std::map<std::string, std::unique_ptr<AccessibilityFocusRingGroup>>
+      focus_ring_groups_;
 
   LayerAnimationInfo cursor_animation_info_;
   gfx::Point cursor_location_;
