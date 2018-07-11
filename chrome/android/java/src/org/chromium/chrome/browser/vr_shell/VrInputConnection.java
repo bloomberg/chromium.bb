@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -89,7 +90,13 @@ public class VrInputConnection {
                             ic.commitText(edit.mText, edit.mNewCursorPosition);
                             break;
                         case TextEditActionType.DELETE_TEXT:
-                            ic.deleteSurroundingText(-edit.mNewCursorPosition, 0);
+                            // We only have delete actions for backspace. We cannot use
+                            // deleteSurroundingText, because it is not treated as a user action.
+                            // Instead, we submit the raw key event.
+                            assert edit.mNewCursorPosition == -1;
+                            ic.sendKeyEvent(
+                                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                            ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
                             break;
                         case TextEditActionType.SET_COMPOSING_TEXT:
                             ic.setComposingText(edit.mText, edit.mNewCursorPosition);
