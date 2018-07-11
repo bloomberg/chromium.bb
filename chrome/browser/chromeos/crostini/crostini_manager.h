@@ -278,6 +278,9 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static CrostiniManager* GetInstance();
 
   bool IsVmRunning(Profile* profile, std::string vm_name);
+  bool IsContainerRunning(Profile* profile,
+                          std::string vm_name,
+                          std::string container_name);
 
  private:
   friend struct base::DefaultSingletonTraits<CrostiniManager>;
@@ -376,6 +379,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Running vms as <owner_id, vm_name> pairs.
   std::set<std::pair<std::string, std::string>> running_vms_;
+
+  // Running containers as keyed by <owner_id, vm_name> string pairs.
+  std::multimap<std::pair<std::string, std::string>, std::string>
+      running_containers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
