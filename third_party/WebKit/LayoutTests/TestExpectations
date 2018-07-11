@@ -4030,9 +4030,6 @@ crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
-# Incorrect pixel alignment due to float number scale factor.
-crbug.com/773810 external/wpt/css/css-transforms/transform3d-perspective-008.html [ Failure ]
-
 # Sheriff failures 2017-09-11
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
