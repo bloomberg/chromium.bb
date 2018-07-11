@@ -557,7 +557,7 @@ void TestDictionary::setElementOrNullMember(Element* value) {
 
 void TestDictionary::setElementOrNullMemberToNull() {
   element_or_null_member_ = Member<Element>();
-  has_element_or_null_member_ = false;
+  has_element_or_null_member_ = true;
 }
 
 void TestDictionary::setEnumMember(const String& value) {
@@ -634,7 +634,7 @@ void TestDictionary::setTestInterfaceOrNullMember(TestInterfaceImplementation* v
 
 void TestDictionary::setTestInterfaceOrNullMemberToNull() {
   test_interface_or_null_member_ = Member<TestInterfaceImplementation>();
-  has_test_interface_or_null_member_ = false;
+  has_test_interface_or_null_member_ = true;
 }
 
 void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
