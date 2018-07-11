@@ -166,15 +166,14 @@ int32_t RTCVideoDecoder::Decode(
   DCHECK(!codec_specific_info ||
          video_codec_type_ == codec_specific_info->codecType);
 
-#if defined(OS_WIN)
   // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
-  // to software decoding. See https://crbug.com/webrtc/9304.
+  // to software decoding. See https://crbug.com/webrtc/9304,
+  // https://crbug.com/webrtc/9518.
   if (video_codec_type_ == webrtc::kVideoCodecVP9 && codec_specific_info &&
       codec_specific_info->codecSpecific.VP9.ss_data_available &&
       codec_specific_info->codecSpecific.VP9.num_spatial_layers > 1) {
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
-#endif  // defined(OS_WIN)
 
   base::AutoLock auto_lock(lock_);
   if (state_ == UNINITIALIZED || !decode_complete_callback_) {
