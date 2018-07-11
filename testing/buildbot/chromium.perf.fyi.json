@@ -53,11 +53,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "--benchmarks=experimental.startup.android.coldish",
           "-v",
           "--upload-results",
           "--output-format=histograms",
-          "--browser=android-chromium"
+          "--browser=android-chromium",
+          "--test-shard-map-filename=android_nexus5x_4_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -75,7 +75,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build187-b7--device1",
+              "device_os": "MMB29Q",
+              "device_os_flavor": "google",
+              "device_type": "bullhead",
+              "os": "Android",
               "pool": "chrome.tests.perf-fyi"
             }
           ],
@@ -83,40 +86,13 @@
           "hard_timeout": 1080,
           "ignore_task_failure": false,
           "io_timeout": 360
-        }
-      },
-      {
-        "args": [
-          "--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo,smoothness.oop_rasterization.top_25_smooth,thread_times.oop_rasterization.key_mobile,rendering.oopd.mobile",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build187-b7--device2",
-              "pool": "chrome.tests.perf-fyi"
-            }
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
           ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
     ]
@@ -153,7 +129,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 3600
         }
