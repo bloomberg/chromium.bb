@@ -11,7 +11,7 @@
 #include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/blink/public/platform/modules/payments/web_can_make_payment_event_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
-#include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_proxy.h"
+#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 
 namespace mojo {
 
