@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
+#include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -2686,6 +2687,24 @@ static void CollectDrawableLayersForLayerListRecursively(
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
 }
 
+static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
+  layer->PaintRecursively();
+
+#if DCHECK_IS_ON()
+  if (VLOG_IS_ON(2)) {
+    DEFINE_STATIC_LOCAL(String, s_previous_tree, ());
+    LayerTreeFlags flags = VLOG_IS_ON(3) ? 0xffffffff : kOutputAsLayerTree;
+    String new_tree = GraphicsLayerTreeAsTextForTesting(layer, flags);
+    if (new_tree != s_previous_tree) {
+      VLOG(2) << "After GraphicsLayer::PaintRecursively()\n"
+              << "GraphicsLayer tree:\n"
+              << new_tree.Utf8().data();
+      s_previous_tree = new_tree;
+    }
+  }
+#endif
+}
+
 void LocalFrameView::PaintTree() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
@@ -2729,21 +2748,25 @@ void LocalFrameView::PaintTree() {
     // frame view of a page overlay. The page overlay is in the layer tree of
     // the host page and will be painted during painting of the host page.
     if (GraphicsLayer* root_graphics_layer =
-            layout_view->Compositor()->PaintRootGraphicsLayer())
-      root_graphics_layer->PaintRecursively();
+            layout_view->Compositor()->PaintRootGraphicsLayer()) {
+      PaintGraphicsLayerRecursively(root_graphics_layer);
+    }
 
     // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
     // webkit_unit_tests (http://crbug.com/644788).
     if (viewport_scrollable_area_) {
       if (GraphicsLayer* layer_for_horizontal_scrollbar =
-              viewport_scrollable_area_->LayerForHorizontalScrollbar())
-        layer_for_horizontal_scrollbar->PaintRecursively();
+              viewport_scrollable_area_->LayerForHorizontalScrollbar()) {
+        PaintGraphicsLayerRecursively(layer_for_horizontal_scrollbar);
+      }
       if (GraphicsLayer* layer_for_vertical_scrollbar =
-              viewport_scrollable_area_->LayerForVerticalScrollbar())
-        layer_for_vertical_scrollbar->PaintRecursively();
+              viewport_scrollable_area_->LayerForVerticalScrollbar()) {
+        PaintGraphicsLayerRecursively(layer_for_vertical_scrollbar);
+      }
       if (GraphicsLayer* layer_for_scroll_corner =
-              viewport_scrollable_area_->LayerForScrollCorner())
-        layer_for_scroll_corner->PaintRecursively();
+              viewport_scrollable_area_->LayerForScrollCorner()) {
+        PaintGraphicsLayerRecursively(layer_for_scroll_corner);
+      }
     }
   }
 
