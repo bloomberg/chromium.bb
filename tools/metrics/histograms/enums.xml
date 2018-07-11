@@ -19328,7 +19328,7 @@ Called by update_net_error_codes.py.-->
   <int value="2497" label="V8FunctionTokenOffsetTooLongForToString"/>
   <int value="2498" label="ServiceWorkerImportScriptNotInstalled"/>
   <int value="2499" label="NestedDedicatedWorker"/>
-  <int value="3000" label="ClientHintsMetaAcceptCHLifetime"/>
+  <int value="2500" label="ClientHintsMetaAcceptCHLifetime"/>
 </enum>
 
 <enum name="FeedbackSource">
