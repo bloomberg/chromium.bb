@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell.util;
 
 import static org.chromium.chrome.browser.vr_shell.TestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.TestFramework.POLL_TIMEOUT_SHORT_MS;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -138,6 +139,18 @@ public class TransitionUtils {
         } else {
             XrTransitionUtils.enterPresentationOrFail(framework.getFirstTabWebContents());
         }
+    }
+
+    /**
+     * Waits for the black overlay that shows during VR entry to be gone.
+     */
+    public static void waitForOverlayGone() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !TestVrShellDelegate.getInstance().isBlackOverlayVisible();
+            }
+        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 
     /**

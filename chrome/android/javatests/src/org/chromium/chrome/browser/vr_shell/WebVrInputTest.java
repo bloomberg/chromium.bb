@@ -130,6 +130,7 @@ public class WebVrInputTest {
         TestFramework.executeStepAndWait(
                 "stepVerifyNoInitialTaps()", framework.getFirstTabWebContents());
         TransitionUtils.enterPresentationOrFail(framework);
+        TransitionUtils.waitForOverlayGone();
         // Wait on VrShellImpl to say that its parent consumed the touch event
         // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
         final CountDownLatch touchRegisteredLatch = new CountDownLatch(2);
@@ -143,7 +144,7 @@ public class WebVrInputTest {
                 });
         TouchCommon.singleClickView(mTestRule.getActivity().getWindow().getDecorView());
         Assert.assertTrue("VrShellImpl dispatched touches",
-                touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
+                touchRegisteredLatch.await(POLL_TIMEOUT_LONG_MS * 10, TimeUnit.MILLISECONDS));
         TestFramework.executeStepAndWait(
                 "stepVerifyNoAdditionalTaps()", framework.getFirstTabWebContents());
         TestFramework.endTest(framework.getFirstTabWebContents());
