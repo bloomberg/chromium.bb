@@ -32,8 +32,6 @@ void aom_var_filter_block2d_bil_first_pass_ssse3(
   const uint8_t f1 = filter[1] >> 1;
   const __m128i filters = _mm_setr_epi8(f0, f1, f0, f1, f0, f1, f0, f1, f0, f1,
                                         f0, f1, f0, f1, f0, f1);
-  const __m128i shuffle_mask =
-      _mm_setr_epi8(0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8);
   unsigned int i, j;
   (void)pixel_step;
 
@@ -42,19 +40,15 @@ void aom_var_filter_block2d_bil_first_pass_ssse3(
       for (j = 0; j < output_width; j += 8) {
         // load source
         __m128i source_low = xx_loadl_64(a);
-        __m128i source_hi = _mm_setzero_si128();
+        __m128i source_hi = xx_loadl_64(a + 1);
 
-        // avoid load undefined memory
-        if (a + 8 != NULL) source_hi = xx_loadl_64(a + 8);
-        __m128i source = _mm_unpacklo_epi64(source_low, source_hi);
-
-        // shuffle to:
+        // unpack to:
         // { a[0], a[1], a[1], a[2], a[2], a[3], a[3], a[4],
         //   a[4], a[5], a[5], a[6], a[6], a[7], a[7], a[8] }
-        __m128i source_shuffle = _mm_shuffle_epi8(source, shuffle_mask);
+        __m128i source = _mm_unpacklo_epi8(source_low, source_hi);
 
         // b[i] = a[i] * filter[0] + a[i + 1] * filter[1]
-        __m128i res = _mm_maddubs_epi16(source_shuffle, filters);
+        __m128i res = _mm_maddubs_epi16(source, filters);
 
         // round
         res = _mm_srai_epi16(_mm_add_epi16(res, r), FILTER_BITS - 1);
@@ -68,6 +62,8 @@ void aom_var_filter_block2d_bil_first_pass_ssse3(
       a += src_pixels_per_line - output_width;
     }
   } else {
+    const __m128i shuffle_mask =
+        _mm_setr_epi8(0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8);
     for (i = 0; i < output_height; ++i) {
       // load source, only first 5 values are meaningful:
       // { a[0], a[1], a[2], a[3], a[4], xxxx }
