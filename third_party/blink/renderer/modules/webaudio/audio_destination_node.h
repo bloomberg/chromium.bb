@@ -31,23 +31,19 @@
 
 namespace blink {
 
+// The AudioDestinationHandler (ADH) is a base class for the rendering backend
+// for AudioDestinatioNode. It contains common information required for the
+// rendering such as current sample frame, sample rate and maximum channel count
+// of the context.
 class AudioDestinationHandler : public AudioHandler {
  public:
   AudioDestinationHandler(AudioNode&);
   ~AudioDestinationHandler() override;
 
-  // AudioHandler
-  void Process(size_t) final {
-  }  // we're pulled by hardware so this is never called
-
-  size_t CurrentSampleFrame() const {
-    return AcquireLoad(&current_sample_frame_);
-  }
-  double CurrentTime() const {
-    return CurrentSampleFrame() / static_cast<double>(SampleRate());
-  }
-
-  virtual unsigned long MaxChannelCount() const { return 0; }
+  // The method MUST NOT be invoked when rendering a graph because the
+  // destination node is a sink. Instead, this node gets pulled by the
+  // underlying renderer (audio hardware or worker thread).
+  void Process(size_t) final { NOTREACHED(); }
 
   virtual void StartRendering() = 0;
   virtual void StopRendering() = 0;
@@ -57,20 +53,39 @@ class AudioDestinationHandler : public AudioHandler {
   // restart of the context.
   virtual void RestartRendering() = 0;
 
+  size_t CurrentSampleFrame() const {
+    return AcquireLoad(&current_sample_frame_);
+  }
+
+  double CurrentTime() const {
+    return CurrentSampleFrame() / SampleRate();
+  }
+
   virtual double SampleRate() const = 0;
+  virtual unsigned long MaxChannelCount() const = 0;
 
  protected:
-  // Counts the number of sample-frames processed by the destination.
+  // The number of sample frames processed by the destination so far.
   size_t current_sample_frame_;
 };
 
+// -----------------------------------------------------------------------------
+
+// AudioDestinationNode (ADN) is a base class of two different types of nodes:
+//   1. DefaultDestinationNode for AudioContext (real time)
+//   2. OfflineDestinationNode for OfflineAudioContext (non-real time)
+// They have different rendering mechanisms, so the AudioDestinationHandler
+// (ADH), which is a counterpart of the destination node, encapsulates a
+// different rendering backend.
 class AudioDestinationNode : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  AudioDestinationHandler& GetAudioDestinationHandler() const;
-
   unsigned long maxChannelCount() const;
+
+  // Returns its own handler object instead of a generic one from
+  // AudioNode::Handler().
+  AudioDestinationHandler& GetAudioDestinationHandler() const;
 
  protected:
   AudioDestinationNode(BaseAudioContext&);
