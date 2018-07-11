@@ -681,13 +681,6 @@ class RenderWidgetHostTest : public testing::Test {
     return handle_mouse_event_;
   }
 
-  void RunLoopFor(base::TimeDelta duration) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), duration);
-    run_loop.Run();
-  }
-
  protected:
   // testing::Test
   void SetUp() override {
@@ -1502,7 +1495,10 @@ TEST_F(RenderWidgetHostTest, DontPostponeInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(10));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMilliseconds(10));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1518,7 +1514,10 @@ TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(40));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMilliseconds(40));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1533,7 +1532,10 @@ TEST_F(RenderWidgetHostTest, ShorterDelayInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(25));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMilliseconds(25));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1548,18 +1550,27 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(2));
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(2));
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown(false /* record_presentation_time */);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(2));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1584,7 +1595,10 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1620,7 +1634,10 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
@@ -1634,7 +1651,10 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
 
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
@@ -1648,14 +1668,20 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
   host_->DidNavigate(7);
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
 
   // Don't send any frames after the timer starts. The timer should fire.
   host_->DidNavigate(20);
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
 }
