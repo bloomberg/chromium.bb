@@ -282,7 +282,8 @@ class PreflightController::PreflightLoader final {
     FinalizeLoader();
 
     std::move(completion_callback_)
-        .Run(CORSErrorStatus(mojom::CORSError::kPreflightDisallowedRedirect));
+        .Run(net::ERR_FAILED,
+             CORSErrorStatus(mojom::CORSError::kPreflightDisallowedRedirect));
 
     RemoveFromController();
     // |this| is deleted here.
@@ -310,7 +311,9 @@ class PreflightController::PreflightLoader final {
                                  original_request_.url, std::move(result));
     }
 
-    std::move(completion_callback_).Run(detected_error_status);
+    std::move(completion_callback_)
+        .Run(detected_error_status ? net::ERR_FAILED : net::OK,
+             detected_error_status);
 
     RemoveFromController();
     // |this| is deleted here.
@@ -321,8 +324,12 @@ class PreflightController::PreflightLoader final {
     // unknown hosts, unreachable remote, reset by peer, and so on.
     // See https://crbug.com/826868 for related discussion.
     DCHECK(!response_body);
+    const int error = loader_->NetError();
+    DCHECK_NE(error, net::OK);
     FinalizeLoader();
+    std::move(completion_callback_).Run(error, base::nullopt);
     RemoveFromController();
+    // |this| is deleted here.
   }
 
   void FinalizeLoader() {
@@ -388,7 +395,7 @@ void PreflightController::PerformPreflightCheck(
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator->Serialize(), request.url,
           request.fetch_credentials_mode, request.method, request.headers)) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(net::OK, base::nullopt);
     return;
   }
 

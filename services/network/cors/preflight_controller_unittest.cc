@@ -183,7 +183,9 @@ class PreflightControllerTest : public testing::Test {
   }
 
  protected:
-  void HandleRequestCompletion(base::Optional<CORSErrorStatus> status) {
+  void HandleRequestCompletion(int net_error,
+                               base::Optional<CORSErrorStatus> status) {
+    net_error_ = net_error;
     status_ = status;
     run_loop_->Quit();
   }
@@ -204,6 +206,7 @@ class PreflightControllerTest : public testing::Test {
     run_loop_->Run();
   }
 
+  int net_error() const { return net_error_; }
   base::Optional<CORSErrorStatus> status() { return status_; }
   base::Optional<CORSErrorStatus> success() { return base::nullopt; }
   size_t access_count() { return access_count_; }
@@ -263,6 +266,7 @@ class PreflightControllerTest : public testing::Test {
   bool cancel_preflight_called_ = false;
 
   std::unique_ptr<PreflightController> preflight_controller_;
+  int net_error_ = net::OK;
   base::Optional<CORSErrorStatus> status_;
 };
 
@@ -272,6 +276,7 @@ TEST_F(PreflightControllerTest, CheckInvalidRequest) {
   request.request_initiator = url::Origin::Create(request.url);
 
   PerformPreflightCheck(request);
+  EXPECT_EQ(net::ERR_FAILED, net_error());
   ASSERT_TRUE(status());
   EXPECT_EQ(mojom::CORSError::kPreflightInvalidStatus, status()->cors_error);
   EXPECT_EQ(1u, access_count());
@@ -283,10 +288,12 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   request.request_initiator = url::Origin::Create(request.url);
 
   PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());
 
   PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
 }
@@ -297,6 +304,7 @@ TEST_F(PreflightControllerTest, CheckTaintedRequest) {
   request.request_initiator = url::Origin::Create(request.url);
 
   PerformPreflightCheck(request, true /* tainted */);
+  EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());
 }
@@ -310,6 +318,7 @@ TEST_F(PreflightControllerTest, CancelPreflightIsCalled) {
 
   EXPECT_FALSE(cancel_preflight_called());
   PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_TRUE(cancel_preflight_called());
   EXPECT_EQ(1u, access_count());
