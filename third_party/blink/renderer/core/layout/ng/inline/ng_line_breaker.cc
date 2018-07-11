@@ -34,6 +34,10 @@ inline bool CanBreakAfterLast(const NGInlineItemResults& item_results) {
   return !item_results.IsEmpty() && item_results.back().can_break_after;
 }
 
+inline bool ShouldCreateLineBox(const NGInlineItemResults& item_results) {
+  return !item_results.IsEmpty() && item_results.back().should_create_line_box;
+}
+
 }  // namespace
 
 NGLineBreaker::LineData::LineData(NGInlineNode node,
@@ -94,7 +98,8 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(
     NGInlineItemResults* item_results) {
   DCHECK_LE(end_offset, item.EndOffset());
   item_results->push_back(
-      NGInlineItemResult(&item, item_index_, offset_, end_offset));
+      NGInlineItemResult(&item, item_index_, offset_, end_offset,
+                         ShouldCreateLineBox(*item_results)));
   return &item_results->back();
 }
 
@@ -178,7 +183,6 @@ void NGLineBreaker::PrepareNextLine(
   line_info->SetBaseDirection(base_direction_);
 
   line_.is_after_forced_break = false;
-  line_.should_create_line_box = false;
 
   // Use 'text-indent' as the initial position. This lets tab positions to align
   // regardless of 'text-indent'.
@@ -187,7 +191,7 @@ void NGLineBreaker::PrepareNextLine(
   line_.line_opportunity = line_opportunity;
 }
 
-bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
+void NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
                              NGLineInfo* line_info) {
   PrepareNextLine(line_opportunity, line_info);
   BreakLine(line_info);
@@ -199,17 +203,12 @@ bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
     result.CheckConsistency();
 #endif
 
-  if (line_info->Results().IsEmpty())
-    return false;
-
   // TODO(kojii): There are cases where we need to PlaceItems() without creating
   // line boxes. These cases need to be reviewed.
-  if (line_.should_create_line_box)
+  if (ShouldCreateLineBox(line_info->Results()))
     ComputeLineLocation(line_info);
   else
     line_info->SetIsEmptyLine();
-
-  return true;
 }
 
 void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
@@ -284,8 +283,8 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
           break_iterator_.IsBreakable(item_result->end_offset);
       MoveToNextOf(item);
     } else if (item.Type() == NGInlineItem::kListMarker) {
-      line_.should_create_line_box = true;
       NGInlineItemResult* item_result = AddItem(item, item_results);
+      item_result->should_create_line_box = true;
       DCHECK(!item_result->can_break_after);
       MoveToNextOf(item);
     } else {
@@ -345,8 +344,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     state = LineBreakState::kContinue;
   }
 
-  line_.should_create_line_box = true;
   NGInlineItemResult* item_result = AddItem(item, item_results);
+  item_result->should_create_line_box = true;
   LayoutUnit available_width = line_.AvailableWidthToFit();
 
   if (auto_wrap_) {
@@ -632,12 +631,12 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
     LineBreakState state,
     NGLineInfo* line_info) {
   DCHECK_EQ(item.Length(), 1u);
-  line_.should_create_line_box = true;
 
   UChar character = Text()[item.StartOffset()];
   switch (character) {
     case kNewlineCharacter: {
       NGInlineItemResult* item_result = AddItem(item, &line_info->Results());
+      item_result->should_create_line_box = true;
       item_result->has_only_trailing_spaces = true;
       line_.is_after_forced_break = true;
       line_info->SetIsLastLine(true);
@@ -646,6 +645,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
     }
     case kTabulationCharacter: {
       NGInlineItemResult* item_result = AddItem(item, &line_info->Results());
+      item_result->should_create_line_box = true;
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
       const Font& font = style.GetFont();
@@ -660,6 +660,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
     case kZeroWidthSpaceCharacter: {
       // <wbr> tag creates break opportunities regardless of auto_wrap.
       NGInlineItemResult* item_result = AddItem(item, &line_info->Results());
+      item_result->should_create_line_box = true;
       item_result->can_break_after = true;
       break;
     }
@@ -716,9 +717,9 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleBidiControlItem(
 void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
                                        NGLineInfo* line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
-  line_.should_create_line_box = true;
 
   NGInlineItemResult* item_result = AddItem(item, &line_info->Results());
+  item_result->should_create_line_box = true;
   // When we're just computing min/max content sizes, we can skip the full
   // layout and just compute those sizes. On the other hand, for regular
   // layout we need to do the full layout and get the layout result.
@@ -910,10 +911,10 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
     // line boxes to be zero-height, tests indicate that only inline direction
     // of them do so. See should_create_line_box_.
     // Force to create a box, because such inline boxes affect line heights.
-    if (!line_.should_create_line_box &&
+    if (!item_result->should_create_line_box &&
         (item_result->inline_size ||
          (item_result->margins.inline_start && !in_line_height_quirks_mode_)))
-      line_.should_create_line_box = true;
+      item_result->should_create_line_box = true;
   }
 
   DCHECK(item.Style());
@@ -938,10 +939,10 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
                                borders.inline_end + paddings.inline_end;
     line_.position += item_result->inline_size;
 
-    if (!line_.should_create_line_box &&
+    if (!item_result->should_create_line_box &&
         (item_result->inline_size ||
          (item_result->margins.inline_end && !in_line_height_quirks_mode_)))
-      line_.should_create_line_box = true;
+      item_result->should_create_line_box = true;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());
   bool was_auto_wrap = auto_wrap_;

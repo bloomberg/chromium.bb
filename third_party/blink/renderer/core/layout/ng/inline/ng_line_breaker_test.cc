@@ -49,12 +49,14 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     NGExclusionSpace exclusion_space;
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
+      NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
                                  &positioned_floats, &unpositioned_floats,
                                  /* container_builder */ nullptr,
                                  &exclusion_space, 0u, break_token.get());
-      NGLineInfo line_info;
-      if (!line_breaker.NextLine(line_opportunity, &line_info))
+      line_breaker.NextLine(line_opportunity, &line_info);
+
+      if (line_info.Results().IsEmpty())
         break;
 
       break_token = line_breaker.CreateBreakToken(line_info, nullptr);

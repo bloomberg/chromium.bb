@@ -678,12 +678,14 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   while (!break_token || !break_token->IsFinished()) {
     unpositioned_floats.clear();
 
+    NGLineInfo line_info;
     NGLineBreaker line_breaker(node, mode, *space, &positioned_floats,
                                &unpositioned_floats,
                                nullptr /* container_builder */,
                                &empty_exclusion_space, 0u, break_token.get());
-    NGLineInfo line_info;
-    if (!line_breaker.NextLine(line_opportunity, &line_info))
+    line_breaker.NextLine(line_opportunity, &line_info);
+
+    if (line_info.Results().IsEmpty())
       break;
 
     break_token = line_breaker.CreateBreakToken(line_info, nullptr);

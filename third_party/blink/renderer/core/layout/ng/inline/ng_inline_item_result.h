@@ -78,6 +78,22 @@ struct CORE_EXPORT NGInlineItemResult {
   // characters.
   bool has_only_trailing_spaces = false;
 
+  // We don't create "certain zero-height line boxes".
+  // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
+  // Such line boxes do not prevent two margins being "adjoining", and thus
+  // collapsing.
+  // https://drafts.csswg.org/css2/box.html#collapsing-margins
+  //
+  // This field should be initialized to the previous value in the
+  // NGInlineItemResults list. If line breaker rewinds NGInlineItemResults
+  // list, we can still look at the last value in the list to determine if we
+  // need a line box. E.g.
+  // [float should_create_line_box: false], [text should_create_line_box: true]
+  //
+  // If "text" doesn't fit, and we rewind so that we only have "float", we can
+  // correctly determine that we don't need a line box.
+  bool should_create_line_box = false;
+
   // End effects for text items.
   // The effects are included in |shape_result|, but not in text content.
   NGTextEndEffect text_end_effect = NGTextEndEffect::kNone;
@@ -86,7 +102,8 @@ struct CORE_EXPORT NGInlineItemResult {
   NGInlineItemResult(const NGInlineItem*,
                      unsigned index,
                      unsigned start,
-                     unsigned end);
+                     unsigned end,
+                     bool should_create_line_box);
 
 #if DCHECK_IS_ON()
   void CheckConsistency(bool during_line_break = false) const;

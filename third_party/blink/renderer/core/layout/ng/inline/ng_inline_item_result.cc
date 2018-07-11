@@ -15,8 +15,13 @@ NGInlineItemResult::NGInlineItemResult()
 NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned index,
                                        unsigned start,
-                                       unsigned end)
-    : item(item), item_index(index), start_offset(start), end_offset(end) {}
+                                       unsigned end,
+                                       bool should_create_line_box)
+    : item(item),
+      item_index(index),
+      start_offset(start),
+      end_offset(end),
+      should_create_line_box(should_create_line_box) {}
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               const NGInlineItemsData& items_data,
