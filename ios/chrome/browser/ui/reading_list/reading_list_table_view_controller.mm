@@ -415,14 +415,14 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (void)markSelectedReadingListItemsAfterConfirmation {
   [self initializeMarkConfirmationSheet];
   __weak ReadingListTableViewController* weakSelf = self;
-  __weak NSArray<NSIndexPath*>* weakSelectedIndexPaths =
+  NSArray<NSIndexPath*>* selectedIndexPaths =
       self.tableView.indexPathsForSelectedRows;
   NSString* markAsReadTitle =
       l10n_util::GetNSStringWithFixup(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
   [self.markConfirmationSheet
       addItemWithTitle:markAsReadTitle
                 action:^{
-                  [weakSelf markItemsAtIndexPaths:weakSelectedIndexPaths
+                  [weakSelf markItemsAtIndexPaths:selectedIndexPaths
                                    withReadStatus:YES];
                   weakSelf.markConfirmationSheet = nil;
                 }
@@ -432,7 +432,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   [self.markConfirmationSheet
       addItemWithTitle:markAsUnreadTitle
                 action:^{
-                  [weakSelf markItemsAtIndexPaths:weakSelectedIndexPaths
+                  [weakSelf markItemsAtIndexPaths:selectedIndexPaths
                                    withReadStatus:NO];
                   weakSelf.markConfirmationSheet = nil;
                 }
