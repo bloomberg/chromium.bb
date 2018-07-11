@@ -218,6 +218,10 @@
   IPC_STRUCT_TRAITS_END() \
   struct IPC_MESSAGE_EXPORT struct_name : parent { \
     struct_name(); \
+    struct_name(const struct_name&) = default; \
+    struct_name(struct_name&&) = default; \
+    struct_name& operator=(const struct_name&) = default; \
+    struct_name& operator=(struct_name&&) = default; \
     ~struct_name();
 // Optional variadic parameters specify the default value for this struct
 // member. They are passed through to the constructor for |type|.
