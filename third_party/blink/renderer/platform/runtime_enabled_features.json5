@@ -803,7 +803,7 @@
     },
     {
       name: "NetInfoDownlinkHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetInfoDownlinkMax",
@@ -815,7 +815,7 @@
     },
     {
       name: "NetInfoEffectiveTypeHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetInfoRtt",
@@ -823,7 +823,7 @@
     },
     {
       name: "NetInfoRttHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetInfoSaveData",

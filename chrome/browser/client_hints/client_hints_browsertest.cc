@@ -238,7 +238,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override { request_interceptor_.reset(); }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
     cmd->AppendSwitchASCII(network::switches::kForceEffectiveConnectionType,
                            net::kEffectiveConnectionType2G);
   }
