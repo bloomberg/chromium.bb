@@ -14,6 +14,8 @@ Polymer({
   behaviors: [CrSearchFieldBehavior],
 
   properties: {
+    autofocus: Boolean,
+
     /** @type {?RegExp} */
     searchQuery: {
       type: Object,

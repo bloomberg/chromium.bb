@@ -67,3 +67,35 @@ TEST_F(
       this.runMochaTest(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
     });
+
+PrintPreviewDestinationDialogInteractiveTest =
+    class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'destination_dialog_interactive_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_dialog_interactive_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBox',
+    function() {
+      this.runMochaTest(
+          destination_dialog_interactive_test.TestNames.FocusSearchBox);
+    });
