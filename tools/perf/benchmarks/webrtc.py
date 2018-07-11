@@ -12,7 +12,8 @@ from telemetry.web_perf import timeline_based_measurement
 
 @benchmark.Info(emails=['qiangchen@chromium.org', # For smoothness metrics
                          'ehmaldonado@chromium.org',
-                         'phoglund@chromium.org'])
+                         'phoglund@chromium.org'],
+                documentation_url='http://bit.ly/webrtc-benchmark')
 class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):
   """Base class for WebRTC metrics for real-time communications tests."""
   page_set = page_sets.WebrtcPageSet

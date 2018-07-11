@@ -9,7 +9,8 @@ from telemetry import benchmark
 from telemetry import story as story_module
 
 
-@benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'])
+@benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
+                documentation_url='https://bit.ly/rendering-benchmarks')
 class RenderingDesktop(perf_benchmark.PerfBenchmark):
 
   test = rendering.Rendering
@@ -30,7 +31,8 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
     return page_sets.RenderingStorySet(platform='desktop')
 
 
-@benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'])
+@benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
+                documentation_url='https://bit.ly/rendering-benchmarks')
 class RenderingMobile(perf_benchmark.PerfBenchmark):
 
   test = rendering.Rendering

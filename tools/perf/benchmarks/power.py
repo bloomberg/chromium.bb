@@ -12,7 +12,8 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-@benchmark.Info(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'],
+                documentation_url='https://bit.ly/power-benchmarks')
 class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
@@ -27,7 +28,8 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return 'power.typical_10_mobile'
 
 
-@benchmark.Info(emails=['charliea@chromium.org'])
+@benchmark.Info(emails=['charliea@chromium.org'],
+                documentation_url='https://bit.ly/power-benchmarks')
 class PowerDesktop(perf_benchmark.PerfBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
