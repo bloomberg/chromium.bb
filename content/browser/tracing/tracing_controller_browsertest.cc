@@ -372,8 +372,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
   EXPECT_EQ(get_categories_done_callback_count(), 1);
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_EnableAndStopTracing DISABLED_EnableAndStopTracing
 #else
 #define MAYBE_EnableAndStopTracing EnableAndStopTracing
@@ -382,8 +382,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_EnableAndStopTracing) {
   TestStartAndStopTracingString();
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_DisableRecordingStoresMetadata \
   DISABLED_DisableRecordingStoresMetaData
 #else
@@ -448,8 +448,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_TRUE(last_data().find("this_not_found") == std::string::npos);
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_EnableAndStopTracingWithFilePath \
   DISABLED_EnableAndStopTracingWithFilePath
 #else
@@ -466,8 +466,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_EnableAndStopTracingWithCompression \
   DISABLED_EnableAndStopTracingWithCompression
 #else
@@ -479,8 +479,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   TestStartAndStopTracingCompressed();
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_EnableAndStopTracingWithEmptyFile \
   DISABLED_EnableAndStopTracingWithEmptyFile
 #else
@@ -507,8 +507,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   run_loop.Run();
 }
 
-// TODO(crbug.com/862414): Disabled for flaky crashes on Mac ASAN.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/862414): Disabled for flaky crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
 #else
 #define MAYBE_DoubleStopTracing DoubleStopTracing
