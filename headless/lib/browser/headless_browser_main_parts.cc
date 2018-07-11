@@ -17,8 +17,6 @@ HeadlessBrowserMainParts::HeadlessBrowserMainParts(HeadlessBrowserImpl* browser)
 HeadlessBrowserMainParts::~HeadlessBrowserMainParts() = default;
 
 void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
-  browser_->PreMainMessageLoopRun();
-
   if (browser_->options()->DevtoolsServerEnabled()) {
     StartLocalDevToolsHttpHandler(browser_->options());
     devtools_http_handler_started_ = true;

@@ -18,9 +18,9 @@
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
-#include "headless/lib/browser/headless_net_log.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -81,7 +81,8 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     : browser_(browser),
       context_options_(std::move(context_options)),
       resource_context_(std::make_unique<HeadlessResourceContext>()),
-      permission_manager_(std::make_unique<HeadlessPermissionManager>(this)) {
+      permission_manager_(std::make_unique<HeadlessPermissionManager>(this)),
+      net_log_(new net::NetLog()) {
   InitWhileIOAllowed();
 }
 
@@ -96,6 +97,8 @@ HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        resource_context_.release());
   }
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     net_log_.release());
 
   ShutdownStoragePartitions();
 
@@ -275,8 +278,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       protocol_handlers, context_options_->TakeProtocolHandlers(),
-      std::move(request_interceptors), context_options_.get(),
-      browser_->net_log(), this);
+      std::move(request_interceptors), context_options_.get(), net_log_.get(),
+      this);
   resource_context_->set_url_request_context_getter(url_request_getter_);
   return url_request_getter_.get();
 }

@@ -302,8 +302,6 @@ component("headless") {
     "lib/browser/headless_devtools_client_impl.cc",
     "lib/browser/headless_devtools_manager_delegate.cc",
     "lib/browser/headless_devtools_manager_delegate.h",
-    "lib/browser/headless_net_log.cc",
-    "lib/browser/headless_net_log.h",
     "lib/browser/headless_network_conditions.cc",
     "lib/browser/headless_network_conditions.h",
     "lib/browser/headless_permission_manager.cc",
