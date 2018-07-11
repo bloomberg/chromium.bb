@@ -742,7 +742,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       retry_migrate_back_count_(0),
       current_connection_migration_cause_(UNKNOWN),
       send_packet_after_migration_(false),
-      migration_pending_(false),
+      wait_for_new_network_(false),
+      ignore_read_error_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency &&
           this->connection()->transport_version() > quic::QUIC_VERSION_42),
@@ -1392,7 +1393,7 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.
   Migrate(NetworkChangeNotifier::kInvalidNetworkHandle, new_address,
-          /*close_session_on_error*/ true, net_log_);
+          /*close_session_on_error=*/true, net_log_);
 }
 
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
@@ -1609,6 +1610,7 @@ int QuicChromiumClientSession::HandleWriteError(
       !migrate_session_on_network_change_v2_) {
     return error_code;
   }
+
   NetworkChangeNotifier::NetworkHandle current_network =
       GetDefaultSocket()->GetBoundNetwork();
 
@@ -1618,19 +1620,19 @@ int QuicChromiumClientSession::HandleWriteError(
   DCHECK(packet != nullptr);
   DCHECK_NE(ERR_IO_PENDING, error_code);
   DCHECK_GT(0, error_code);
-  DCHECK(!migration_pending_);
   DCHECK(packet_ == nullptr);
 
   // Post a task to migrate the session onto a new network.
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&QuicChromiumClientSession::MigrateSessionOnWriteError,
-                 weak_factory_.GetWeakPtr(), error_code));
+                 weak_factory_.GetWeakPtr(), error_code,
+                 connection()->writer()));
 
   // Store packet in the session since the actual migration and packet rewrite
   // can happen via this posted task or via an async network notification.
   packet_ = std::move(packet);
-  migration_pending_ = true;
+  ignore_read_error_ = true;
 
   // Cause the packet writer to return ERR_IO_PENDING and block so
   // that the actual migration happens from the message loop instead
@@ -1638,13 +1640,16 @@ int QuicChromiumClientSession::HandleWriteError(
   return ERR_IO_PENDING;
 }
 
-void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
+void QuicChromiumClientSession::MigrateSessionOnWriteError(
+    int error_code,
+    quic::QuicPacketWriter* writer) {
   DCHECK(migrate_session_on_network_change_v2_);
+  // If |writer| is no longer actively in use, abort this migration attempt.
+  if (writer != connection()->writer())
+    return;
+
   most_recent_write_error_timestamp_ = base::TimeTicks::Now();
   most_recent_write_error_ = error_code;
-  // If migration_pending_ is false, an earlier task completed migration.
-  if (!migration_pending_)
-    return;
 
   if (stream_factory_ == nullptr) {
     // Close the connection if migration failed. Do not cause a
@@ -1702,7 +1707,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
 }
 
 void QuicChromiumClientSession::OnNoNewNetwork() {
-  migration_pending_ = true;
+  wait_for_new_network_ = true;
 
   DVLOG(1) << "Force blocking the packet writer";
   // Force blocking the packet writer to avoid any writes since there is no
@@ -1718,8 +1723,6 @@ void QuicChromiumClientSession::OnNoNewNetwork() {
 }
 
 void QuicChromiumClientSession::WriteToNewSocket() {
-  // Prevent any pending migration from executing.
-  migration_pending_ = false;
   // Set |send_packet_after_migration_| to true so that a packet will be
   // sent when the writer becomes unblocked.
   send_packet_after_migration_ = true;
@@ -1757,8 +1760,12 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
 
   LogProbeResultToHistogram(current_connection_migration_cause_, true);
 
+  // Remove |this| as the old packet writer's delegate. Write error on old
+  // writers will be ignored.
   // Set |this| to listen on socket write events on the packet writer
   // that was used for probing.
+  static_cast<QuicChromiumPacketWriter*>(connection()->writer())
+      ->set_delegate(nullptr);
   writer->set_delegate(this);
   connection()->SetSelfAddress(self_address);
 
@@ -1819,9 +1826,9 @@ void QuicChromiumClientSession::OnNetworkConnected(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED,
       NetLog::Int64Callback("connected_network", network));
-  // If there was no migration pending and the path is not degrading, ignore
-  // this signal.
-  if (!migration_pending_ && !connection()->IsPathDegrading())
+  // If there was no migration waiting for new network and the path is not
+  // degrading, ignore this signal.
+  if (!wait_for_new_network_ && !connection()->IsPathDegrading())
     return;
 
   if (connection()->IsPathDegrading()) {
@@ -1832,8 +1839,9 @@ void QuicChromiumClientSession::OnNetworkConnected(
 
   LogHandshakeStatusOnConnectionMigrationSignal();
 
-  if (migration_pending_) {
-    // |migration_pending_| is true, there was no working network previously.
+  if (wait_for_new_network_) {
+    wait_for_new_network_ = false;
+    // |wait_for_new_network_| is true, there was no working network previously.
     // |network| is now the only possible candidate, migrate immediately.
     MigrateImmediately(network);
   } else {
@@ -1964,6 +1972,11 @@ void QuicChromiumClientSession::OnWriteError(int error_code) {
 
 void QuicChromiumClientSession::OnWriteUnblocked() {
   DCHECK(!connection()->writer()->IsWriteBlocked());
+
+  // A new packet will be written after migration completes, unignore read
+  // errors.
+  if (ignore_read_error_)
+    ignore_read_error_ = false;
 
   if (packet_) {
     DCHECK(send_packet_after_migration_);
@@ -2507,6 +2520,7 @@ void QuicChromiumClientSession::OnReadError(
   DCHECK(socket != nullptr);
   base::UmaHistogramSparse("Net.QuicSession.ReadError.AnyNetwork", -result);
   if (socket != GetDefaultSocket()) {
+    DVLOG(1) << "Ignore read error on old sockets";
     base::UmaHistogramSparse("Net.QuicSession.ReadError.OtherNetworks",
                              -result);
     // Ignore read errors from sockets that are not affecting the current
@@ -2521,7 +2535,8 @@ void QuicChromiumClientSession::OnReadError(
         "Net.QuicSession.ReadError.CurrentNetwork.HandshakeConfirmed", -result);
   }
 
-  if (migration_pending_) {
+  if (ignore_read_error_) {
+    DVLOG(1) << "Ignore read error.";
     // Ignore read errors during pending migration. Connection will be closed if
     // pending migration failed or timed out.
     base::UmaHistogramSparse("Net.QuicSession.ReadError.PendingMigration",
@@ -2620,6 +2635,9 @@ MigrationResult QuicChromiumClientSession::Migrate(
                                    net_log_));
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get(), task_runner_));
+
+  static_cast<QuicChromiumPacketWriter*>(connection()->writer())
+      ->set_delegate(nullptr);
   new_writer->set_delegate(this);
 
   // Migrate to the new socket.
@@ -2658,7 +2676,6 @@ bool QuicChromiumClientSession::MigrateToSocket(
     return false;
   }
 
-  // TODO(jri): Make SetQuicPacketWriter take a scoped_ptr.
   packet_readers_.push_back(std::move(reader));
   sockets_.push_back(std::move(socket));
   StartReading();
@@ -2666,6 +2683,7 @@ bool QuicChromiumClientSession::MigrateToSocket(
   // WriteToNewSocket completes.
   DVLOG(1) << "Force blocking the packet writer";
   writer->set_force_write_blocked(true);
+  // TODO(jri): Make SetQuicPacketWriter take a scoped_ptr.
   connection()->SetQuicPacketWriter(writer.release(), /*owns_writer=*/true);
 
   // Post task to write the pending packet or a PING packet to the new
@@ -2674,8 +2692,6 @@ bool QuicChromiumClientSession::MigrateToSocket(
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&QuicChromiumClientSession::WriteToNewSocket,
                             weak_factory_.GetWeakPtr()));
-  // Migration completed.
-  migration_pending_ = false;
   return true;
 }
 
