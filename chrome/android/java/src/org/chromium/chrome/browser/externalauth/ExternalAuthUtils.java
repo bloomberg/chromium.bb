@@ -165,11 +165,8 @@ public class ExternalAuthUtils {
      */
     public boolean isGooglePlayServicesMissing(final Context context) {
         final int resultCode = checkGooglePlayServicesAvailable(context);
-        if (resultCode == ConnectionResult.SERVICE_MISSING
-                || resultCode == ConnectionResult.SERVICE_INVALID) {
-            return true;
-        }
-        return false;
+        return (resultCode == ConnectionResult.SERVICE_MISSING
+                || resultCode == ConnectionResult.SERVICE_INVALID);
     }
 
     /**
@@ -187,9 +184,7 @@ public class ExternalAuthUtils {
         Context context = ContextUtils.getApplicationContext();
         final int resultCode = checkGooglePlayServicesAvailable(context);
         recordConnectionResult(resultCode);
-        if (resultCode == ConnectionResult.SUCCESS) {
-            return true;
-        }
+        if (resultCode == ConnectionResult.SUCCESS) return true;
         // resultCode is some kind of error.
         Log.v(TAG, "Unable to use Google Play Services: %s", describeError(resultCode));
         if (isUserRecoverableError(resultCode)) {
