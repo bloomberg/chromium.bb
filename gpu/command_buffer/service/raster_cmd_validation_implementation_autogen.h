@@ -71,14 +71,13 @@ static const viz::ResourceFormat valid_viz_resource_format_table[] = {
     viz::ResourceFormat::RGBA_8888,    viz::ResourceFormat::RGBA_4444,
     viz::ResourceFormat::BGRA_8888,    viz::ResourceFormat::ALPHA_8,
     viz::ResourceFormat::LUMINANCE_8,  viz::ResourceFormat::RGB_565,
-    viz::ResourceFormat::RGB_565,      viz::ResourceFormat::RED_8,
+    viz::ResourceFormat::BGR_565,      viz::ResourceFormat::RED_8,
     viz::ResourceFormat::RG_88,        viz::ResourceFormat::LUMINANCE_F16,
     viz::ResourceFormat::RGBA_F16,     viz::ResourceFormat::R16_EXT,
     viz::ResourceFormat::RGBX_8888,    viz::ResourceFormat::BGRX_8888,
     viz::ResourceFormat::RGBX_1010102, viz::ResourceFormat::BGRX_1010102,
     viz::ResourceFormat::YVU_420,      viz::ResourceFormat::YUV_420_BIPLANAR,
-    viz::ResourceFormat::UYVY_422
-
+    viz::ResourceFormat::UYVY_422,
 };
 
 Validators::Validators()

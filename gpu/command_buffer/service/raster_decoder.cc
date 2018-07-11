@@ -2043,7 +2043,6 @@ void RasterDecoderImpl::CreateTexture(GLuint client_id,
                                       bool use_buffer,
                                       gfx::BufferUsage buffer_usage,
                                       viz::ResourceFormat resource_format) {
-  DCHECK(GLSupportsFormat(resource_format));
   texture_metadata_.emplace(std::make_pair(
       client_id, TextureMetadata(use_buffer, buffer_usage, resource_format,
                                  GetCapabilities())));
@@ -2361,6 +2360,7 @@ bool RasterDecoderImpl::TexStorage2DImage(
                          "Invalid buffer format");
       return false;
   }
+
   DCHECK(GLSupportsFormat(texture_metadata.format()));
   GLint untyped_format = viz::GLDataFormat(texture_metadata.format());
 
@@ -2524,7 +2524,12 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
     return;
   }
 
-  DCHECK(GLSupportsFormat(texture_metadata->format()));
+  if (!GLSupportsFormat(texture_metadata->format())) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2D",
+                       "Invalid Resource Format");
+    return;
+  }
+
   // Check if we have enough memory.
   unsigned int internal_format =
       viz::GLInternalFormat(texture_metadata->format());

@@ -266,21 +266,23 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
       return GL_RGB565;
     case RED_8:
       return GL_R8_EXT;
+    case RG_88:
+      return GL_RG8_EXT;
     case LUMINANCE_F16:
       return GL_LUMINANCE16F_EXT;
     case R16_EXT:
       return GL_R16_EXT;
-    case ETC1:
-      break;
-    case RG_88:
     case RGBX_8888:
-    case BGRX_8888:
+      return GL_RGB;
     case RGBX_1010102:
+      return GL_RGB10_A2_EXT;
+    case BGR_565:
+    case ETC1:
+    case BGRX_8888:
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
-    case BGR_565:
       break;
   }
   NOTREACHED();
