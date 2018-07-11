@@ -41,11 +41,15 @@ interface DriveFsDelegate {
   // Invoked when the mount is ready for use.
   OnMounted();
 
+  // Invoked when the syncing status changes.
   OnSyncingStatusUpdate(SyncingStatus status);
 
   // Invoked when the mount is going away. If retry_delay is present the
   // browser should try to mount DriveFs again after the specified interval.
   OnUnmounted(mojo_base.mojom.TimeDelta? retry_delay);
+
+  // Invoked when server-side file changes are received.
+  OnFilesChanged(array<FileChange> changes);
 };
 
 struct DriveFsConfiguration {
@@ -176,4 +180,17 @@ struct ItemEvent {
 
 struct SyncingStatus {
   array<ItemEvent> item_events;
+};
+
+// A report of a server-side change to a file.
+struct FileChange {
+  mojo_base.mojom.FilePath path;
+
+  enum Type {
+    kCreate,
+    kDelete,
+    kModify,
+  };
+
+  Type type;
 };

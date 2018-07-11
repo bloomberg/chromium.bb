@@ -201,6 +201,17 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
+  void OnFilesChanged(std::vector<mojom::FileChangePtr> changes) override {
+    std::vector<mojom::FileChange> changes_values;
+    changes_values.reserve(changes.size());
+    for (auto& change : changes) {
+      changes_values.emplace_back(std::move(*change));
+    }
+    for (auto& observer : host_->observers_) {
+      observer.OnFilesChanged(changes_values);
+    }
+  }
+
   void NotifyDelegateOnMounted() { host_->delegate_->OnMounted(mount_path()); }
 
   void NotifyDelegateOnUnmounted() { host_->delegate_->OnUnmounted(); }
