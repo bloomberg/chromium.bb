@@ -4,7 +4,7 @@
 
 html {
   /* Material Design constants */
-  --md-tile-height: 104px;
+  --md-tile-height: 128px;
   --md-tile-margin: 8px;
 
   /* This will be overridden based on the viewport width, see below. */

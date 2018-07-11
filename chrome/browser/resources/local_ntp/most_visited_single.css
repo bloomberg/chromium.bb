@@ -4,18 +4,19 @@
 
 html {
   /* Material Design constants */
-  --md-fallback-letter-size: 17px;
-  --md-favicon-size: 16px;
+  --md-fallback-letter-size: 21px;
+  --md-favicon-size: 24px;
   --md-icon-margin-bottom: 16px;
-  --md-icon-size: 40px;
+  --md-icon-size: 48px;
   --md-max-tiles-row: 5;
   --md-menu-margin-side: 2px;
   --md-menu-margin-top: 4px;
   --md-menu-size: 12px;
-  --md-tile-height: 104px;
+  --md-tile-height: 128px;
   --md-tile-margin: 8px;
-  --md-tile-padding: 8px;
-  --md-tile-width: 88px;
+  --md-tile-padding-horizontal: 8px;
+  --md-tile-padding-vertical: 16px;
+  --md-tile-width: 96px;
   --md-title-font-size: 12px;
   --md-title-height: 32px;
 
@@ -380,7 +381,7 @@ html[dir=rtl] .mv-favicon {
   height: var(--md-tile-height);
   margin-bottom: var(--md-tile-margin);
   opacity: 1;
-  padding: var(--md-tile-padding);
+  padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
   position: relative;
   transition-property:
       background, border-color, box-shadow, opacity, text-shadow;

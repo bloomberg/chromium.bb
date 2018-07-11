@@ -605,7 +605,7 @@ function renderMaterialDesignTile(data) {
   let fi = document.createElement('img');
   // TODO(crbug.com/853780): Use data.fallbackBackgroundColorRgba and
   // data.fallbackTextColorRgba;
-  fi.src = 'chrome-search://ntpicon/size/16@' + window.devicePixelRatio + 'x/' +
+  fi.src = 'chrome-search://ntpicon/size/24@' + window.devicePixelRatio + 'x/' +
       data.url;
   // Set title and alt to empty so screen readers won't say the image name.
   fi.title = '';
