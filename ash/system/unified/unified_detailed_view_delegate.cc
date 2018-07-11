@@ -25,9 +25,6 @@ namespace ash {
 
 namespace {
 
-// TODO(tetsui): Remove when the asset is arrived.
-const int kBackIconSize = 20;
-
 void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
   std::unique_ptr<views::BoxLayout> layout;
 
@@ -62,15 +59,15 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
 class BackButton : public CustomShapeButton {
  public:
   BackButton(views::ButtonListener* listener) : CustomShapeButton(listener) {
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(kSystemMenuArrowBackIcon, kBackIconSize,
-                                   kUnifiedMenuIconColor));
+    gfx::ImageSkia image =
+        gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon, kUnifiedMenuIconColor);
+    SetImage(views::Button::STATE_NORMAL, image);
     SetImageAlignment(HorizontalAlignment::ALIGN_RIGHT,
                       VerticalAlignment::ALIGN_MIDDLE);
     SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
     SetBorder(views::CreateEmptyBorder(
-        gfx::Insets((kTrayItemSize - kBackIconSize) / 2)));
+        gfx::Insets((kTrayItemSize - image.width()) / 2)));
   }
 
   ~BackButton() override = default;
@@ -192,14 +189,14 @@ views::Button* UnifiedDetailedViewDelegate::CreateBackButton(
 views::Button* UnifiedDetailedViewDelegate::CreateInfoButton(
     views::ButtonListener* listener,
     int info_accessible_name_id) {
-  return new TopShortcutButton(listener, kSystemMenuInfoIcon,
+  return new TopShortcutButton(listener, kUnifiedMenuInfoIcon,
                                info_accessible_name_id);
 }
 
 views::Button* UnifiedDetailedViewDelegate::CreateSettingsButton(
     views::ButtonListener* listener,
     int setting_accessible_name_id) {
-  auto* button = new TopShortcutButton(listener, kSystemMenuSettingsIcon,
+  auto* button = new TopShortcutButton(listener, kUnifiedMenuSettingsIcon,
                                        setting_accessible_name_id);
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
