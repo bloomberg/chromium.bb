@@ -31,6 +31,8 @@ class ImeModeView : public TrayItemView,
  private:
   void Update();
 
+  bool ime_menu_on_shelf_activated_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ImeModeView);
 };
 
