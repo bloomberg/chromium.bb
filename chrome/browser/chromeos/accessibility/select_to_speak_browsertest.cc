@@ -293,11 +293,11 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
 
   ash::AccessibilityFocusRingController* controller =
       ash::Shell::Get()->accessibility_focus_ring_controller();
-  std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
-      focus_rings = controller->focus_ring_layers_for_testing();
-
+  const ash::AccessibilityFocusRingGroup* focus_ring_group =
+      controller->GetFocusRingGroupForTesting(
+          extension_misc::kSelectToSpeakExtensionId);
   // No focus rings to start.
-  EXPECT_EQ(focus_rings.size(), 0u);
+  EXPECT_EQ(nullptr, focus_ring_group);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html;charset=utf-8,"
                                                "<p>This is some text</p>"));
@@ -309,6 +309,11 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
 
   // Expect a focus ring to have been drawn.
   WaitForFocusRingChanged();
+  focus_ring_group = controller->GetFocusRingGroupForTesting(
+      extension_misc::kSelectToSpeakExtensionId);
+  ASSERT_NE(nullptr, focus_ring_group);
+  std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
+      focus_rings = focus_ring_group->focus_layers_for_testing();
   EXPECT_EQ(focus_rings.size(), 1u);
 
   gfx::Rect target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();

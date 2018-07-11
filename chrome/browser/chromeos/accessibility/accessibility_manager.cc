@@ -1208,7 +1208,8 @@ void AccessibilityManager::PostUnloadChromeVox() {
 
   // Clear the accessibility focus ring.
   SetFocusRing(std::vector<gfx::Rect>(),
-               ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
+               ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING,
+               extension_misc::kChromeVoxExtensionId);
 
   if (chromevox_panel_) {
     chromevox_panel_->Close();
@@ -1247,7 +1248,7 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   // unloads.
 
   // Clear the accessibility focus ring and highlight.
-  HideFocusRing();
+  HideFocusRing(extension_misc::kSelectToSpeakExtensionId);
   HideHighlights();
 
   // Stop speech.
@@ -1280,25 +1281,27 @@ bool AccessibilityManager::ToggleDictation() {
   return dictation_->OnToggleDictation();
 }
 
-void AccessibilityManager::SetFocusRingColor(SkColor color) {
-  accessibility_focus_ring_controller_->SetFocusRingColor(color);
+void AccessibilityManager::SetFocusRingColor(SkColor color,
+                                             std::string caller_id) {
+  accessibility_focus_ring_controller_->SetFocusRingColor(color, caller_id);
 }
 
-void AccessibilityManager::ResetFocusRingColor() {
-  accessibility_focus_ring_controller_->ResetFocusRingColor();
+void AccessibilityManager::ResetFocusRingColor(std::string caller_id) {
+  accessibility_focus_ring_controller_->ResetFocusRingColor(caller_id);
 }
 
 void AccessibilityManager::SetFocusRing(
     const std::vector<gfx::Rect>& rects_in_screen,
-    ash::mojom::FocusRingBehavior focus_ring_behavior) {
-  accessibility_focus_ring_controller_->SetFocusRing(rects_in_screen,
-                                                     focus_ring_behavior);
+    ash::mojom::FocusRingBehavior focus_ring_behavior,
+    std::string caller_id) {
+  accessibility_focus_ring_controller_->SetFocusRing(
+      rects_in_screen, focus_ring_behavior, caller_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
 
-void AccessibilityManager::HideFocusRing() {
-  accessibility_focus_ring_controller_->HideFocusRing();
+void AccessibilityManager::HideFocusRing(std::string caller_id) {
+  accessibility_focus_ring_controller_->HideFocusRing(caller_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
