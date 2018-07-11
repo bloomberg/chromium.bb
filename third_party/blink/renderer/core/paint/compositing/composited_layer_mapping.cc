@@ -1040,9 +1040,9 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   } else if (compositing_container) {
     common_transform_ancestor =
         &compositing_container->TransformAncestorOrRoot();
+  } else {
+    common_transform_ancestor = owning_layer_.Root();
   }
-
-  // What about a null compositing container?
 
   // FIXME: Cache these offsets.
   LayoutPoint compositing_container_offset_from_transformed_ancestor;
