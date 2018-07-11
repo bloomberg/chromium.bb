@@ -28,15 +28,20 @@ std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
 
 double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
                                    bool is_active_tree) const {
-  // If the scroller isn't in the ScrollTree, the element either no longer
-  // exists or is not currently scrollable. By the spec, return an unresolved
-  // time value.
+  // We may be asked for the CurrentTime before the pending tree with our
+  // scroller has been activated, or after the scroller has been removed (e.g.
+  // if it is no longer composited). In these cases the best we can do is to
+  // return an unresolved time value.
   if ((is_active_tree && !active_id_) || (!is_active_tree && !pending_id_))
     return std::numeric_limits<double>::quiet_NaN();
 
   ElementId scroller_id =
       is_active_tree ? active_id_.value() : pending_id_.value();
-  DCHECK(scroll_tree.FindNodeFromElementId(scroller_id));
+
+  // The scroller may not be in the ScrollTree if it is not currently scrollable
+  // (e.g. has overflow: visible). By the spec, return an unresolved time value.
+  if (!scroll_tree.FindNodeFromElementId(scroller_id))
+    return std::numeric_limits<double>::quiet_NaN();
 
   gfx::ScrollOffset offset = scroll_tree.current_scroll_offset(scroller_id);
   DCHECK_GE(offset.x(), 0);
