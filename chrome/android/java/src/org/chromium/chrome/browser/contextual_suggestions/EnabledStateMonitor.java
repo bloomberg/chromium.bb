@@ -45,8 +45,6 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
     /** Whether the user settings for contextual suggestions are enabled. */
     private boolean mSettingsEnabled;
 
-    private String mOriginalSignedInAccountName;
-
     /**
      * Construct a new {@link EnabledStateMonitor}.
      * @param observer The {@link Observer} to be notified of changes to enabled state.
@@ -67,8 +65,6 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         // every time the default search engine is updated.
         assert !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
 
-        mOriginalSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
-        ChromeSigninController.get().setSignedInAccountName("test@gmail.com");
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED, this);
         ProfileSyncService.get().addSyncStateChangedListener(this);
@@ -85,7 +81,6 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         ProfileSyncService.get().removeSyncStateChangedListener(this);
         SigninManager.get().removeSignInStateObserver(this);
         TemplateUrlService.getInstance().removeObserver(this);
-        ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
     }
 
     /** @return Whether the user settings for contextual suggestions should be shown. */

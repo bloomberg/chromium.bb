@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +26,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -43,6 +45,8 @@ public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
 
     private ProfileSyncServiceStub mProfileSyncServiceStub;
     private EnabledStateMonitor mEnabledStateMonitor;
+
+    private String mOriginalSignedInAccountName;
 
     private static class ProfileSyncServiceStub extends ProfileSyncService {
         public ProfileSyncServiceStub() {
@@ -66,9 +70,18 @@ public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            mOriginalSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+            ChromeSigninController.get().setSignedInAccountName("test@gmail.com");
             mProfileSyncServiceStub = new ProfileSyncServiceStub();
             ProfileSyncService.overrideForTests(mProfileSyncServiceStub);
             mEnabledStateMonitor = new EnabledStateMonitor(this);
+        });
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
         });
     }
 
