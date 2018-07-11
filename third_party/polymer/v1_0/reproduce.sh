@@ -43,10 +43,6 @@ cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
 sed -i 's/^\s*\/\/#\s*sourceMappingURL.*//' \
   ../../web-animations-js/sources/*.min.js
 
-# These components are needed only for demos and docs.
-rm -rf components/{hydrolysis,marked,marked-element,prism,prism-element,\
-iron-component-page,iron-doc-viewer,webcomponentsjs}
-
 # Test and demo directories aren't needed.
 rm -rf components/*/{test,demo}
 rm -rf components/polymer/explainer
