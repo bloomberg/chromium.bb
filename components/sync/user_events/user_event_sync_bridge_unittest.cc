@@ -353,6 +353,7 @@ TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
 TEST_F(UserEventSyncBridgeTest, RecordBeforeMetadataLoads) {
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 3u));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   EXPECT_THAT(GetAllData(), IsEmpty());
 }
 

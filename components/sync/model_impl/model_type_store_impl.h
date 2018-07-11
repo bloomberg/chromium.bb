@@ -17,11 +17,11 @@
 
 namespace syncer {
 
-class ModelTypeStoreBackend;
+class BlockingModelTypeStoreImpl;
 
-// ModelTypeStoreImpl handles details of store initialization, threading and
-// leveldb key formatting. Actual leveldb IO calls are performed by
-// ModelTypeStoreBackend.
+// ModelTypeStoreImpl handles details of store initialization and threading.
+// Actual leveldb IO calls are performed in BlockingModelTypeStoreImpl (in the
+// underlying ModelTypeStoreBackend).
 class ModelTypeStoreImpl : public ModelTypeStore {
  public:
   ~ModelTypeStoreImpl() override;
@@ -42,15 +42,15 @@ class ModelTypeStoreImpl : public ModelTypeStore {
 
  private:
   static void BackendInitDone(
-      const ModelType type,
+      ModelType type,
       std::unique_ptr<base::Optional<ModelError>> result,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       InitCallback callback,
-      scoped_refptr<ModelTypeStoreBackend> backend);
+      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store);
 
   ModelTypeStoreImpl(
-      const ModelType type,
-      scoped_refptr<ModelTypeStoreBackend> backend,
+      ModelType type,
+      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
   // Callbacks for different calls to ModelTypeStoreBackend.
@@ -61,40 +61,24 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void ReadAllDataDone(ReadAllDataCallback callback,
                        std::unique_ptr<RecordList> record_list,
                        const base::Optional<ModelError>& error);
-  void ReadMetadataRecordsDone(ReadMetadataCallback callback,
-                               std::unique_ptr<RecordList> metadata_records,
-                               const base::Optional<ModelError>& error);
   void ReadAllMetadataDone(ReadMetadataCallback callback,
-                           std::unique_ptr<RecordList> metadata_records,
-                           std::unique_ptr<RecordList> global_metadata_records,
-                           std::unique_ptr<IdList> missing_id_list,
+                           std::unique_ptr<MetadataBatch> metadata_batch,
                            const base::Optional<ModelError>& error);
   void WriteModificationsDone(CallbackWithResult callback,
                               const base::Optional<ModelError>& error);
 
-  // Parse the serialized metadata into protos and pass them to |callback|.
-  void DeserializeMetadata(ReadMetadataCallback callback,
-                           const std::string& global_metadata,
-                           std::unique_ptr<RecordList> metadata_records);
-
-  // Backend should be deleted on backend thread.
+  const ModelType type_;
+  // |backend_store_| should be deleted on backend thread.
   // To accomplish this store's dtor posts task to backend thread passing
   // backend ownership to task parameter.
-  scoped_refptr<ModelTypeStoreBackend> backend_;
+  std::unique_ptr<BlockingModelTypeStoreImpl> backend_store_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-
-  const ModelType type_;
-
-  // Key prefix for data/metadata records of this model type.
-  const std::string data_prefix_;
-  const std::string metadata_prefix_;
-
-  // Key for this type's global metadata record.
-  const std::string global_metadata_key_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreImpl);
 };
 
 }  // namespace syncer

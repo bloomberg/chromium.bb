@@ -52,8 +52,7 @@ enum StoreInitResultForHistogram {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class ModelTypeStoreBackend
-    : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
+class ModelTypeStoreBackend : public base::RefCounted<ModelTypeStoreBackend> {
  public:
   // Helper function to create in memory environment for leveldb.
   static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
@@ -92,7 +91,7 @@ class ModelTypeStoreBackend
       const std::string& prefix);
 
  private:
-  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
+  friend class base::RefCounted<ModelTypeStoreBackend>;
   friend class ModelTypeStoreBackendTest;
 
   static const int64_t kLatestSchemaVersion;

@@ -7,15 +7,14 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
+#include "components/sync/model/model_type_store_base.h"
 
 namespace syncer {
 
@@ -45,51 +44,8 @@ namespace syncer {
 // Destroying store object doesn't necessarily cancel asynchronous operations
 // issued previously. You should be prepared to handle callbacks from those
 // operations.
-class ModelTypeStore {
+class ModelTypeStore : public ModelTypeStoreBase {
  public:
-  // Output of read operations is passed back as list of Record structures.
-  struct Record {
-    Record(const std::string& id, const std::string& value)
-        : id(id), value(value) {}
-
-    std::string id;
-    std::string value;
-  };
-
-  // WriteBatch object is used in all modification operations.
-  class WriteBatch {
-   public:
-    // Creates a MetadataChangeList that will accumulate metadata changes and
-    // can later be passed to a WriteBatch via TransferChanges. Use this when
-    // you need a MetadataChangeList and do not have a WriteBatch in scope.
-    static std::unique_ptr<MetadataChangeList> CreateMetadataChangeList();
-
-    WriteBatch();
-    virtual ~WriteBatch();
-
-    // Write the given |value| for data with |id|.
-    virtual void WriteData(const std::string& id, const std::string& value) = 0;
-
-    // Delete the record for data with |id|.
-    virtual void DeleteData(const std::string& id) = 0;
-
-    // Provides access to a MetadataChangeList that will pass its changes
-    // directly into this WriteBatch.
-    virtual MetadataChangeList* GetMetadataChangeList() = 0;
-
-    // Transfers the changes from a MetadataChangeList into this WriteBatch.
-    // |mcl| must have previously been created by CreateMetadataChangeList().
-    // TODO(mastiz): Revisit whether the last requirement above can be removed
-    // and make this API more type-safe.
-    void TakeMetadataChangesFrom(std::unique_ptr<MetadataChangeList> mcl);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(WriteBatch);
-  };
-
-  using RecordList = std::vector<Record>;
-  using IdList = std::vector<std::string>;
-
   using InitCallback =
       base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<ModelTypeStore> store)>;
@@ -114,8 +70,6 @@ class ModelTypeStore {
   // Creates store object backed by in-memory leveldb database, gets its task
   // runner from MessageLoop::task_runner(), and should only be used in tests.
   static void CreateInMemoryStoreForTest(ModelType type, InitCallback callback);
-
-  virtual ~ModelTypeStore();
 
   // Read operations return records either for all entries or only for ones
   // identified in |id_list|. |error| is nullopt if all records were read
