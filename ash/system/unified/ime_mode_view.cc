@@ -34,6 +34,7 @@ void ImeModeView::OnIMERefresh() {
 }
 
 void ImeModeView::OnIMEMenuActivationChanged(bool is_active) {
+  ime_menu_on_shelf_activated_ = is_active;
   Update();
 }
 
@@ -58,7 +59,8 @@ void ImeModeView::Update() {
   ImeController* ime_controller = Shell::Get()->ime_controller();
 
   size_t ime_count = ime_controller->available_imes().size();
-  SetVisible(ime_count > 1 || ime_controller->managed_by_policy());
+  SetVisible(!ime_menu_on_shelf_activated_ &&
+             (ime_count > 1 || ime_controller->managed_by_policy()));
 
   label()->SetText(ime_controller->current_ime().short_name);
   Layout();
