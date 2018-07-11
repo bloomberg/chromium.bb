@@ -374,6 +374,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationState state_;
 
+  // It's important to ensure |navigation_handle_| outlives |loader_|, since
+  // the loader holds raw pointers to objects owned by the navigation handle
+  // (namely, the AppCache and service worker handles). So, declare the handle
+  // before the loader.
+  std::unique_ptr<NavigationHandleImpl> navigation_handle_;
   std::unique_ptr<NavigationURLLoader> loader_;
 
   // These next items are used in browser-initiated navigations to store
@@ -404,8 +409,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // process (unless asked by the content/ embedder). When true, the renderer
   // process expects to be notified if the navigation is aborted.
   bool from_begin_navigation_;
-
-  std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
   // Holds objects received from OnResponseStarted while the WillProcessResponse
   // checks are performed by the NavigationHandle. Once the checks have been

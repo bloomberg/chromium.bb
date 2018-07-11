@@ -726,7 +726,11 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
       FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type));
 
   // Reset the NavigationHandle, which is now incorrectly marked as
-  // same-document.
+  // same-document. Ensure |loader_| does not exist as it can hold raw pointers
+  // to objects owned by the handle (see the comment in the header).
+  // TODO(falken): Turn this CHECK to a DCHECK if it holds, or else call
+  // loader_.reset() manually.
+  CHECK(!loader_);
   navigation_handle_.reset();
 
   // Convert the navigation type to the appropriate cross-document one.
