@@ -1524,18 +1524,6 @@
         "name": "oortonline_tbmv2/http://oortonline.gl/#run"
     },
     {
-        "duration": "33.5630902121212",
-        "name": "power.idle_platform/IdleStory_10s"
-    },
-    {
-        "duration": "153.95646805050504",
-        "name": "power.idle_platform/IdleStory_120s"
-    },
-    {
-        "duration": "81.71001967676764",
-        "name": "power.idle_platform/IdleStory_60s"
-    },
-    {
         "duration": "62.45803603030306",
         "name": "power.typical_10_mobile/http://de.m.wikipedia.org/wiki/K%C3%B6lner_Dom"
     },

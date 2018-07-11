@@ -2008,18 +2008,6 @@
         "name": "power.desktop/uol"
     },
     {
-        "duration": "36.13112123232323",
-        "name": "power.idle_platform/IdleStory_10s"
-    },
-    {
-        "duration": "187.9168787878788",
-        "name": "power.idle_platform/IdleStory_120s"
-    },
-    {
-        "duration": "103.12933329292932",
-        "name": "power.idle_platform/IdleStory_60s"
-    },
-    {
         "duration": "6.930767684848485",
         "name": "rasterize_and_record_micro.partial_invalidation/800_relpos_divs.html"
     },
