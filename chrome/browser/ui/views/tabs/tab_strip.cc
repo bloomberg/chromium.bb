@@ -1349,12 +1349,15 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
 
 void TabStrip::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
+
+  // In refresh, paint a separator before a trailing new tab button.
   if (MD::IsRefreshUi() && GetNewTabButtonPosition() == TRAILING) {
-    float separator_height = Tab::GetTabSeparatorHeight();
+    const int width = Tab::kSeparatorThickness;
+    const float separator_height = Tab::GetTabSeparatorHeight();
     gfx::RectF separator_bounds(
-        new_tab_button_bounds_.x() - Tab::GetCornerRadius(),
-        (height() - separator_height) / 2, Tab::kSeparatorThickness,
-        separator_height);
+        GetMirroredXWithWidthInView(
+            new_tab_button_bounds_.x() - Tab::GetCornerRadius() - width, width),
+        (height() - separator_height) / 2, width, separator_height);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(GetTabSeparatorColor());
@@ -1607,13 +1610,18 @@ int TabStrip::GetFrameGrabWidth() const {
   constexpr int kGrabWidth = 50;
   int width = kGrabWidth;
 
-  // There might be no tabs yet during startup.
-  if ((controller_->GetNewTabButtonPosition() != AFTER_TABS) && tab_count()) {
+  const NewTabButtonPosition position = controller_->GetNewTabButtonPosition();
+  if (position != AFTER_TABS) {
     // The grab area is adjacent to the last tab.  This tab has mostly empty
     // space where the outer (lower) corners are, which should be treated as
     // part of the grab area, so decrease the size of the remaining grab area by
     // that width.
     width -= Tab::GetCornerRadius();
+
+    // The trailing NTB has a separator just before it; don't count that as part
+    // of the frame grab width since it looks visually distinct.
+    if (position == TRAILING)
+      width += Tab::kSeparatorThickness;
   }
 
   return width;
