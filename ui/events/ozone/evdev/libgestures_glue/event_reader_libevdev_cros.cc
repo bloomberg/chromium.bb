@@ -128,7 +128,7 @@ void EventReaderLibevdevCros::OnLogMessage(void* data,
   else if (level >= LOGLEVEL_WARNING)
     LOG(WARNING) << "libevdev: " << FormatLog(fmt, args);
   else
-    VLOG(3) << "libevdev: " << FormatLog(fmt, args);
+    DVLOG(3) << "libevdev: " << FormatLog(fmt, args);
   va_end(args);
 }
 
