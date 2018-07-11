@@ -35,6 +35,8 @@ gfx::NativeCursor WindowDelegateImpl::GetCursor(const gfx::Point& point) {
        server_window; server_window = ServerWindow::GetMayBeNull(
                           server_window->window()->parent())) {
     if (server_window->IsTopLevel()) {
+      if (server_window->window() == window_)
+        return server_window->cursor();
       gfx::Point toplevel_point = point;
       aura::Window::ConvertPointToTarget(window_, server_window->window(),
                                          &toplevel_point);
@@ -45,7 +47,8 @@ gfx::NativeCursor WindowDelegateImpl::GetCursor(const gfx::Point& point) {
       return server_window->cursor();
   }
 
-  NOTREACHED();
+  // TODO(sky): there should be a NOTREACHED() here, but we're hitting this on
+  // asan builder. Figure out. https://crbug.com/855767.
   return gfx::kNullCursor;
 }
 

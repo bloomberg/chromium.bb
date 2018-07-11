@@ -11,8 +11,10 @@
 namespace ui {
 namespace ws2 {
 
-// The aura::WindowDelegate implementation used for non-top-level windows
-// created by the WindowService.
+// The aura::WindowDelegate implementation used by Windows created by the
+// WindowService. The local environment may create its own WindowDelegate for
+// top-level windows (by way of WindowServiceDelegate::NewTopLevel()).
+//
 // WindowDelegateImpl deletes itself when the associated window is deleted.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowDelegateImpl
     : public aura::WindowDelegate {
