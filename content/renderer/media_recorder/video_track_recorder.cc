@@ -296,10 +296,10 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
       return;
     }
 
-    const uint32 source_pixel_format =
+    const uint32_t source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                      : libyuv::FOURCC_ARGB;
-    if (libyuv::ConvertToI420(static_cast<uint8*>(pixmap.writable_addr()),
+    if (libyuv::ConvertToI420(static_cast<uint8_t*>(pixmap.writable_addr()),
                               pixmap.computeByteSize(),
                               frame->visible_data(media::VideoFrame::kYPlane),
                               frame->stride(media::VideoFrame::kYPlane),

@@ -151,13 +151,13 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
       media::PIXEL_FORMAT_I420, resolution, gfx::Rect(resolution), resolution,
       current_time - start_capture_time_);
 
-  const uint32 source_pixel_format =
+  const uint32_t source_pixel_format =
       (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                    : libyuv::FOURCC_ARGB;
 
   if (frame &&
       libyuv::ConvertToI420(
-          static_cast<uint8*>(bitmap_.getPixels()), bitmap_.computeByteSize(),
+          static_cast<uint8_t*>(bitmap_.getPixels()), bitmap_.computeByteSize(),
           frame->visible_data(media::VideoFrame::kYPlane),
           frame->stride(media::VideoFrame::kYPlane),
           frame->visible_data(media::VideoFrame::kUPlane),

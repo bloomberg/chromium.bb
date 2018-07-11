@@ -381,7 +381,7 @@ void CopyRowsToI420Buffer(int first_row,
   } else {
     const int scale = 0x10000 >> (bit_depth - 8);
     libyuv::Convert16To8Plane(
-        reinterpret_cast<const uint16*>(source + source_stride * first_row),
+        reinterpret_cast<const uint16_t*>(source + source_stride * first_row),
         source_stride / 2, output + dest_stride * first_row, dest_stride, scale,
         bytes_per_row, rows);
   }
