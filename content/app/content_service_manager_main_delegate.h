@@ -25,10 +25,6 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
 
   // service_manager::MainDelegate:
   int Initialize(const InitializeParams& params) override;
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetServiceManagerTaskRunnerForEmbedderProcess() override;
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
   bool IsEmbedderSubprocess() override;
   int RunEmbedderProcess() override;
   void ShutDownEmbedderProcess() override;

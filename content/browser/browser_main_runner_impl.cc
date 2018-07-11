@@ -23,7 +23,6 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -63,12 +62,6 @@ BrowserMainRunnerImpl::~BrowserMainRunnerImpl() {
 }
 
 int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
-  return Initialize(parameters, nullptr);
-}
-
-int BrowserMainRunnerImpl::Initialize(
-    const MainFunctionParams& parameters,
-    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
   SCOPED_UMA_HISTOGRAM_LONG_TIMER(
       "Startup.BrowserMainRunnerImplInitializeLongTime");
   TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize");
@@ -117,7 +110,7 @@ int BrowserMainRunnerImpl::Initialize(
 
     main_loop_.reset(new BrowserMainLoop(parameters));
 
-    main_loop_->Init(std::move(service_manager_thread));
+    main_loop_->Init();
 
     if (parameters.created_main_parts_closure) {
       parameters.created_main_parts_closure->Run(main_loop_->parts());

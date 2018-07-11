@@ -126,11 +126,4 @@ ContentServiceManagerMainDelegate::CreateEmbeddedService(
   return nullptr;
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-scoped_refptr<base::SingleThreadTaskRunner> ContentServiceManagerMainDelegate::
-    GetServiceManagerTaskRunnerForEmbedderProcess() {
-  return content_main_runner_->GetServiceManagerTaskRunnerForEmbedderProcess();
-}
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
-
 }  // namespace content

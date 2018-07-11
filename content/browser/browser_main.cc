@@ -8,7 +8,6 @@
 
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browser_main_runner_impl.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/common/content_constants_internal.h"
 
 namespace content {
@@ -31,9 +30,7 @@ class ScopedBrowserMainEvent {
 }  // namespace
 
 // Main routine for running as the Browser process.
-int BrowserMain(
-    const MainFunctionParams& parameters,
-    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
+int BrowserMain(const MainFunctionParams& parameters) {
   ScopedBrowserMainEvent scoped_browser_main_event;
 
   base::trace_event::TraceLog::GetInstance()->set_process_name("Browser");
@@ -43,8 +40,7 @@ int BrowserMain(
   std::unique_ptr<BrowserMainRunnerImpl> main_runner(
       BrowserMainRunnerImpl::Create());
 
-  int exit_code =
-      main_runner->Initialize(parameters, std::move(service_manager_thread));
+  int exit_code = main_runner->Initialize(parameters);
   if (exit_code >= 0)
     return exit_code;
 

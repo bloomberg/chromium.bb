@@ -42,6 +42,7 @@
 #include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
+#include "content/browser/startup_data_impl.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_constants.h"
@@ -580,10 +581,8 @@ static void RegisterMainThreadFactories() {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 // Run the main function for browser process.
 // Returns the exit code for this process.
-int RunBrowserProcessMain(
-    const MainFunctionParams& main_function_params,
-    ContentMainDelegate* delegate,
-    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
+int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
+                          ContentMainDelegate* delegate) {
   int exit_code = delegate->RunProcess("", main_function_params);
 #if defined(OS_ANDROID)
   // In Android's browser process, the negative exit code doesn't mean the
@@ -594,10 +593,7 @@ int RunBrowserProcessMain(
 #else
   if (exit_code >= 0)
     return exit_code;
-  // GetServiceManagerTaskRunnerForEmbedderProcess() needs to be invoked before
-  // Run() for the browser process.
-  DCHECK(service_manager_thread);
-  return BrowserMain(main_function_params, std::move(service_manager_thread));
+  return BrowserMain(main_function_params);
 #endif
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -927,6 +923,10 @@ int ContentMainRunnerImpl::Run() {
   // The thread used to start the ServiceManager is handed-off to
   // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
   if (process_type.empty()) {
+    startup_data_ = std::make_unique<StartupDataImpl>();
+    startup_data_->thread = BrowserProcessSubThread::CreateIOThread();
+    main_params.startup_data = startup_data_.get();
+
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
       // Create the TaskScheduler early to allow upcoming code to use
       // the post_task.h API. Note: This is okay because RunBrowserProcessMain()
@@ -944,8 +944,7 @@ int ContentMainRunnerImpl::Run() {
     if (!base::MessageLoopCurrentForUI::IsSet())
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
 
-    return RunBrowserProcessMain(main_params, delegate_,
-                                 std::move(service_manager_thread_));
+    return RunBrowserProcessMain(main_params, delegate_);
   }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
@@ -979,14 +978,6 @@ void ContentMainRunnerImpl::Shutdown() {
   delegate_ = nullptr;
   is_shutdown_ = true;
 }
-
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-scoped_refptr<base::SingleThreadTaskRunner>
-ContentMainRunnerImpl::GetServiceManagerTaskRunnerForEmbedderProcess() {
-  service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
-  return service_manager_thread_->task_runner();
-}
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 // static
 ContentMainRunner* ContentMainRunner::Create() {
