@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -875,7 +876,8 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
         while (root_layer->Parent())
           root_layer = root_layer->Parent();
       }
-      layers = root_layer->LayerTreeAsJSON(static_cast<LayerTreeFlags>(flags));
+      layers = GraphicsLayerTreeAsJSON(root_layer,
+                                       static_cast<LayerTreeFlags>(flags));
     }
   }
 

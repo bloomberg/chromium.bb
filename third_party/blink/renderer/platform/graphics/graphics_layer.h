@@ -68,7 +68,6 @@ namespace blink {
 
 class CompositorFilterOperations;
 class Image;
-class JSONObject;
 class LinkHighlight;
 class PaintController;
 class RasterInvalidationTracking;
@@ -96,6 +95,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   }
   CompositingReasons GetCompositingReasons() const {
     return compositing_reasons_;
+  }
+  SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
+    return squashing_disallowed_reasons_;
   }
   void SetSquashingDisallowedReasons(SquashingDisallowedReasons reasons) {
     squashing_disallowed_reasons_ = reasons;
@@ -153,6 +155,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool MasksToBounds() const;
   void SetMasksToBounds(bool);
 
+  bool IsRootForIsolatedGroup() const { return is_root_for_isolated_group_; }
+
   bool DrawsContent() const { return draws_content_; }
   void SetDrawsContent(bool);
 
@@ -175,9 +179,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool BackfaceVisibility() const { return backface_visibility_; }
   void SetBackfaceVisibility(bool visible);
 
+  bool ShouldFlattenTransform() const { return should_flatten_transform_; }
+
   float Opacity() const { return opacity_; }
   void SetOpacity(float);
 
+  BlendMode GetBlendMode() const { return blend_mode_; }
   void SetBlendMode(BlendMode);
   void SetIsRootForIsolatedGroup(bool);
 
@@ -229,8 +236,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // returned string.
   String GetLayerTreeAsTextForTesting(LayerTreeFlags = kLayerTreeNormal) const;
 
-  std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
-
   void UpdateTrackingRasterInvalidations();
   void ResetTrackedRasterInvalidations();
   bool HasTrackedRasterInvalidations() const;
@@ -247,8 +252,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetScrollableArea(ScrollableArea*);
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
-
   void ScrollableAreaDisposed();
+
+  int GetRenderingContext3D() const { return rendering_context3d_; }
 
   cc::PictureLayer* ContentLayer() const { return layer_.get(); }
 
@@ -284,6 +290,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetIsResizedByBrowserControls(bool);
   void SetIsContainerForFixedPositionLayers(bool);
 
+  bool HasLayerState() const { return layer_state_.get(); }
   void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
   const PropertyTreeState& GetPropertyTreeState() const {
     return layer_state_->state;
@@ -309,9 +316,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     needs_check_raster_invalidation_ = true;
   }
 
+  bool HasScrollParent() const { return has_scroll_parent_; }
+  bool HasClipParent() const { return has_clip_parent_; }
+
  protected:
   String DebugName(cc::Layer*) const;
-  bool ShouldFlattenTransform() const { return should_flatten_transform_; }
 
   explicit GraphicsLayer(GraphicsLayerClient&);
 
@@ -354,18 +363,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void ClearContentsLayerIfUnregistered();
   cc::Layer* ContentsLayerIfRegistered();
   void SetContentsLayer(cc::Layer*);
-
-  typedef HashMap<int, int> RenderingContextMap;
-  std::unique_ptr<JSONObject> LayerTreeAsJSONInternal(
-      LayerTreeFlags,
-      RenderingContextMap&) const;
-  std::unique_ptr<JSONObject> LayerAsJSONInternal(
-      LayerTreeFlags,
-      RenderingContextMap&,
-      const FloatPoint& position) const;
-  void AddTransformJSONProperties(JSONObject&, RenderingContextMap&) const;
-  void AddFlattenInheritedTransformJSON(JSONObject&) const;
-  class LayersAsJSONArray;
 
   RasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRect(const IntRect&);
@@ -461,11 +458,5 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 };
 
 }  // namespace blink
-
-#if DCHECK_IS_ON()
-// Outside the blink namespace for ease of invocation from gdb.
-void PLATFORM_EXPORT showGraphicsLayerTree(const blink::GraphicsLayer*);
-void PLATFORM_EXPORT showGraphicsLayers(const blink::GraphicsLayer*);
-#endif
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_LAYER_H_

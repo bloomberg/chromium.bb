@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 
 #if INSIDE_BLINK
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #endif
