@@ -48,7 +48,7 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  bool NextLine(const NGLineLayoutOpportunity& line_opportunity, NGLineInfo*);
+  void NextLine(const NGLineLayoutOpportunity& line_opportunity, NGLineInfo*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
@@ -79,13 +79,6 @@ class CORE_EXPORT NGLineBreaker {
     bool is_first_formatted_line;
 
     bool use_first_line_style;
-
-    // We don't create "certain zero-height line boxes".
-    // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
-    // Such line boxes do not prevent two margins being "adjoining", and thus
-    // collapsing.
-    // https://drafts.csswg.org/css2/box.html#collapsing-margins
-    bool should_create_line_box = false;
 
     // Set when the line ended with a forced break. Used to setup the states for
     // the next line.

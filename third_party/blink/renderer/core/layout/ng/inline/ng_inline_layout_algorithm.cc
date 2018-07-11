@@ -683,11 +683,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         Node(), NGLineBreakerMode::kContent, constraint_space_,
         &positioned_floats, &unpositioned_floats_, &container_builder_,
         exclusion_space.get(), handled_item_index, break_token);
-
-    // TODO(ikilpatrick): Does this always succeed when we aren't an empty
-    // inline?
-    if (!line_breaker.NextLine(line_opportunity, &line_info))
-      break;
+    line_breaker.NextLine(line_opportunity, &line_info);
 
     // If this fragment will be larger than the inline-size of the opportunity,
     // *and* the opportunity is smaller than the available inline-size, and the
