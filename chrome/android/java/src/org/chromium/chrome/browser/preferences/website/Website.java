@@ -212,9 +212,7 @@ public class Website implements Serializable {
         } else {
             clearedCallback.onStorageInfoCleared();
         }
-        for (StorageInfo info : mStorageInfo) {
-            info.clear(clearedCallback);
-        }
+        for (StorageInfo info : mStorageInfo) info.clear(clearedCallback);
         mStorageInfo.clear();
     }
 
@@ -225,12 +223,8 @@ public class Website implements Serializable {
 
     public long getTotalUsage() {
         long usage = 0;
-        if (mLocalStorageInfo != null) {
-            usage += mLocalStorageInfo.getSize();
-        }
-        for (StorageInfo info : mStorageInfo) {
-            usage += info.getSize();
-        }
+        if (mLocalStorageInfo != null) usage += mLocalStorageInfo.getSize();
+        for (StorageInfo info : mStorageInfo) usage += info.getSize();
         return usage;
     }
 

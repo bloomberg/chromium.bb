@@ -23,6 +23,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -194,7 +195,8 @@ public class SiteSettingsPreferencesTest {
             }
 
             private boolean doesAcceptCookies() {
-                return PrefServiceBridge.getInstance().isAcceptCookiesEnabled();
+                return PrefServiceBridge.getInstance().isCategoryEnabled(
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
             }
         });
     }
@@ -243,7 +245,9 @@ public class SiteSettingsPreferencesTest {
             @Override
             public void run() {
                 Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"),
-                        enabled, PrefServiceBridge.getInstance().popupsEnabled());
+                        enabled,
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
             }
         });
     }
@@ -255,7 +259,9 @@ public class SiteSettingsPreferencesTest {
             @Override
             public void run() {
                 Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
-                        enabled, PrefServiceBridge.getInstance().isCameraEnabled());
+                        enabled,
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
             }
         });
     }
@@ -477,8 +483,9 @@ public class SiteSettingsPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertFalse(
-                        "Mic should be blocked", PrefServiceBridge.getInstance().isMicEnabled());
+                Assert.assertFalse("Mic should be blocked",
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
             }
         });
 
@@ -554,7 +561,9 @@ public class SiteSettingsPreferencesTest {
             public void run() {
                 Assert.assertEquals(
                         "Background Sync should be " + (enabled ? "enabled" : "disabled"),
-                        PrefServiceBridge.getInstance().isBackgroundSyncAllowed(), enabled);
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC),
+                        enabled);
             }
         });
     }
@@ -583,7 +592,9 @@ public class SiteSettingsPreferencesTest {
             @Override
             public void run() {
                 Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
-                        PrefServiceBridge.getInstance().isUsbEnabled(), enabled);
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD),
+                        enabled);
             }
         });
     }

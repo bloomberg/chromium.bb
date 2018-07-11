@@ -214,27 +214,16 @@ public class PrefServiceBridge {
      */
     @CalledByNative
     public static String[] getAndroidPermissionsForContentSetting(int contentSettingType) {
-        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-            return Arrays.copyOf(LOCATION_PERMISSIONS, LOCATION_PERMISSIONS.length);
+        switch (contentSettingType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                return Arrays.copyOf(LOCATION_PERMISSIONS, LOCATION_PERMISSIONS.length);
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return Arrays.copyOf(MICROPHONE_PERMISSIONS, MICROPHONE_PERMISSIONS.length);
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return Arrays.copyOf(CAMERA_PERMISSIONS, CAMERA_PERMISSIONS.length);
+            default:
+                return EMPTY_PERMISSIONS;
         }
-        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-            return Arrays.copyOf(MICROPHONE_PERMISSIONS, MICROPHONE_PERMISSIONS.length);
-        }
-        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-            return Arrays.copyOf(CAMERA_PERMISSIONS, CAMERA_PERMISSIONS.length);
-        }
-        return EMPTY_PERMISSIONS;
-    }
-
-    /**
-     * @return Whether autoplay is enabled.
-     */
-    public boolean isAutoplayEnabled() {
-        return nativeGetAutoplayEnabled();
-    }
-
-    public boolean isAcceptCookiesEnabled() {
-        return nativeGetAcceptCookiesEnabled();
     }
 
     /**
@@ -280,13 +269,6 @@ public class PrefServiceBridge {
 
     public boolean isPasswordManagerAutoSigninManaged() {
         return nativeGetPasswordManagerAutoSigninManaged();
-    }
-
-    /**
-     * @return Whether notifications are enabled.
-     */
-    public boolean isNotificationsEnabled() {
-        return nativeGetNotificationsEnabled();
     }
 
     /**
@@ -344,14 +326,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return true if JavaScript is enabled. It may return the temporary value set by
-     * {@link #setJavaScriptEnabled}. The default is true.
-     */
-    public boolean javaScriptEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-    }
-
-    /**
      * @return Whether JavaScript is managed by policy.
      */
     public boolean javaScriptManaged() {
@@ -363,48 +337,6 @@ public class PrefServiceBridge {
      */
     public boolean isBackgroundSyncManaged() {
         return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
-    }
-
-    /**
-     * @return true if background sync is enabled.
-     */
-    public boolean isBackgroundSyncAllowed() {
-        return nativeGetBackgroundSyncEnabled();
-    }
-
-    /**
-     * @return true if websites are allowed to read from the clipboard.
-     */
-    public boolean isClipboardEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ);
-    }
-
-    /**
-     * @return true if websites are allowed to access device's sensors.
-     */
-    public boolean areSensorsEnabled() {
-        return nativeGetSensorsEnabled();
-    }
-
-    /**
-     * @return true if websites are allowed to play sound.
-     */
-    public boolean isSoundEnabled() {
-        return nativeGetSoundEnabled();
-    }
-
-    /**
-     * @return true if websites are allowed to request permission to access USB devices.
-     */
-    public boolean isUsbEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD);
-    }
-
-    /**
-     * Sets the preference that controls protected media identifier.
-     */
-    public void setProtectedMediaIdentifierEnabled(boolean enabled) {
-        nativeSetProtectedMediaIdentifierEnabled(enabled);
     }
 
     /**
@@ -426,20 +358,6 @@ public class PrefServiceBridge {
      */
     public void resetTranslateDefaults() {
         nativeResetTranslateDefaults();
-    }
-
-    /**
-     * Enable or disable JavaScript.
-     */
-    public void setJavaScriptEnabled(boolean enabled) {
-        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT, enabled);
-    }
-
-    /**
-     * Enable or disable background sync.
-     */
-    public void setBackgroundSyncEnabled(boolean enabled) {
-        nativeSetBackgroundSyncEnabled(enabled);
     }
 
     /**
@@ -625,13 +543,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether or not the protected media identifier is enabled.
-     */
-    public boolean isProtectedMediaIdentifierEnabled() {
-        return nativeGetProtectedMediaIdentifierEnabled();
-    }
-
-    /**
      * @return true if translate is enabled, false otherwise.
      */
     public boolean isTranslateEnabled() {
@@ -699,8 +610,6 @@ public class PrefServiceBridge {
         nativeSetBrowsingDataDeletionTimePeriod(clearBrowsingDataTab, timePeriod);
     }
 
-
-
     /**
      * @return The index of the tab last visited by the user in the CBD dialog.
      *         Index 0 is for the basic tab, 1 is the advanced tab.
@@ -717,20 +626,8 @@ public class PrefServiceBridge {
         nativeSetLastClearBrowsingDataTab(tabIndex);
     }
 
-    public void setAllowCookiesEnabled(boolean allow) {
-        nativeSetAllowCookiesEnabled(allow);
-    }
-
-    public void setAutoplayEnabled(boolean allow) {
-        nativeSetAutoplayEnabled(allow);
-    }
-
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
         nativeSetBlockThirdPartyCookiesEnabled(enabled);
-    }
-
-    public void setClipboardEnabled(boolean allow) {
-        nativeSetClipboardEnabled(allow);
     }
 
     public void setDoNotTrackEnabled(boolean enabled) {
@@ -745,39 +642,12 @@ public class PrefServiceBridge {
         nativeSetPasswordManagerAutoSigninEnabled(enabled);
     }
 
-    public void setNotificationsEnabled(boolean allow) {
-        nativeSetNotificationsEnabled(allow);
-    }
-
     public void setNotificationsVibrateEnabled(boolean enabled) {
         nativeSetNotificationsVibrateEnabled(enabled);
     }
 
-    public void setAllowLocationEnabled(boolean allow) {
-        nativeSetAllowLocationEnabled(allow);
-    }
-
     public void setPasswordEchoEnabled(boolean enabled) {
         nativeSetPasswordEchoEnabled(enabled);
-    }
-
-    public void setSensorsEnabled(boolean allow) {
-        nativeSetSensorsEnabled(allow);
-    }
-
-    public void setSoundEnabled(boolean allow) {
-        nativeSetSoundEnabled(allow);
-    }
-
-    public void setUsbEnabled(boolean allow) {
-        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD, allow);
-    }
-
-    /**
-     * @return The setting if popups are enabled
-     */
-    public boolean popupsEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS);
     }
 
     /**
@@ -788,42 +658,87 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Sets the preferences on whether to enable/disable popups
-     *
-     * @param allow attribute to enable/disable popups
+     * Sets the preferences on whether to enable/disable given setting.
      */
-    public void setAllowPopupsEnabled(boolean allow) {
-        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS, allow);
+    public void setCategoryEnabled(int contentSettingsType, boolean allow) {
+        switch (contentSettingsType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+                setContentSettingEnabled(contentSettingsType, allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
+                nativeSetAutoplayEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+                nativeSetBackgroundSyncEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                nativeSetCameraEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+                nativeSetClipboardEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
+                nativeSetAllowCookiesEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                nativeSetAllowLocationEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                nativeSetMicEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+                nativeSetNotificationsEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+                nativeSetProtectedMediaIdentifierEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
+                nativeSetSensorsEnabled(allow);
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
+                nativeSetSoundEnabled(allow);
+                break;
+            default:
+                assert false;
+        }
     }
 
-    /**
-     * @return Whether ads are enabled / allowed on sites that tend to show intrusive ads.
-     */
-    public boolean adsEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS);
-    }
-
-    /**
-     * Sets the preferences on whether to enable/disable ads.
-     *
-     * @param allow attribute to enable ads / block ads if the site tends to show intrusive ads.
-     */
-    public void setAllowAdsEnabled(boolean allow) {
-        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS, allow);
-    }
-
-    /**
-     * @return Whether the camera permission is enabled.
-     */
-    public boolean isCameraEnabled() {
-        return nativeGetCameraEnabled();
-    }
-
-    /**
-     * Sets the preferences on whether to enable/disable camera.
-     */
-    public void setCameraEnabled(boolean enabled) {
-        nativeSetCameraEnabled(enabled);
+    public boolean isCategoryEnabled(int contentSettingsType) {
+        switch (contentSettingsType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+            // Returns true if JavaScript is enabled. It may return the temporary value set by
+            // {@link #setJavaScriptEnabled}. The default is true.
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
+            // Returns true if websites are allowed to request permission to access USB devices.
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+                return isContentSettingEnabled(contentSettingsType);
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
+                return nativeGetAutoplayEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+                return nativeGetBackgroundSyncEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return nativeGetCameraEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
+                return nativeGetAcceptCookiesEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return nativeGetMicEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+                return nativeGetNotificationsEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+                return nativeGetProtectedMediaIdentifierEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
+                return nativeGetSensorsEnabled();
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
+                return nativeGetSoundEnabled();
+            default:
+                assert false;
+                return false;
+        }
     }
 
     /**
@@ -839,13 +754,6 @@ public class PrefServiceBridge {
      */
     public boolean isCameraUserModifiable() {
         return nativeGetCameraUserModifiable();
-    }
-
-    /**
-     * @return Whether the microphone permission is enabled.
-     */
-    public boolean isMicEnabled() {
-        return nativeGetMicEnabled();
     }
 
     /**

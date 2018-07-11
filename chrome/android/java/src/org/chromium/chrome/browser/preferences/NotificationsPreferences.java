@@ -83,6 +83,7 @@ public class NotificationsPreferences extends PreferenceFragment {
 
         mFromWebsitesPref.setSummary(ContentSettingsResources.getCategorySummary(
                 ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                PrefServiceBridge.getInstance().isNotificationsEnabled()));
+                PrefServiceBridge.getInstance().isCategoryEnabled(
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)));
     }
 }

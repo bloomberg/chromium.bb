@@ -145,11 +145,13 @@ public class NotificationsPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().setNotificationsEnabled(false);
+                PrefServiceBridge.getInstance().setCategoryEnabled(
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false);
                 fragment.onResume();
                 Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(false));
 
-                PrefServiceBridge.getInstance().setNotificationsEnabled(true);
+                PrefServiceBridge.getInstance().setCategoryEnabled(
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, true);
                 fragment.onResume();
                 Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
             }

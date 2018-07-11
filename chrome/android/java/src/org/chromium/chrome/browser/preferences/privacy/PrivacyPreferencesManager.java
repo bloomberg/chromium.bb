@@ -195,20 +195,15 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
                             prefBandwidth);
                     if (BandwidthType.NEVER_PRERENDER.equals(prefetchBandwidthTypePref)) {
                         newValue = false;
-                    } else if (BandwidthType.PRERENDER_ON_WIFI.equals(prefetchBandwidthTypePref)) {
-                        newValue = true;
-                    } else if (BandwidthType.ALWAYS_PRERENDER.equals(prefetchBandwidthTypePref)) {
+                    } else if (BandwidthType.PRERENDER_ON_WIFI.equals(prefetchBandwidthTypePref)
+                            || BandwidthType.ALWAYS_PRERENDER.equals(prefetchBandwidthTypePref)) {
                         newValue = true;
                     }
                 }
             // Observe PREF_BANDWIDTH_NO_CELLULAR on devices without mobile network.
             } else {
                 if (mSharedPreferences.contains(PREF_BANDWIDTH_NO_CELLULAR_OLD)) {
-                    if (prefBandwidthNoCellular) {
-                        newValue = true;
-                    } else {
-                        newValue = false;
-                    }
+                    newValue = prefBandwidthNoCellular;
                 }
             }
             // Save new value in Chrome PrefService.

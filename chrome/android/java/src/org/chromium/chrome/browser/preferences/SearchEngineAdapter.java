@@ -356,9 +356,7 @@ public class SearchEngineAdapter extends BaseAdapter
                             : R.layout.search_engine,
                     null);
         }
-        if (itemViewType == VIEW_TYPE_DIVIDER) {
-            return view;
-        }
+        if (itemViewType == VIEW_TYPE_DIVIDER) return view;
 
         view.setOnClickListener(this);
         view.setTag(position);

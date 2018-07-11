@@ -77,10 +77,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
         return findPreference(SiteSettingsCategory.preferenceKey(type));
     }
 
-    private String preference(@SiteSettingsCategory.Type int type) {
-        return SiteSettingsCategory.preferenceKey(type);
-    }
-
     private void configurePreferences() {
         if (mMediaSubMenu) {
             // The Media sub-menu only contains Protected Content and Autoplay, so remove all other
@@ -140,97 +136,71 @@ public class SiteSettingsPreferences extends PreferenceFragment
         if (translatePref != null) setTranslateStateSummary(translatePref);
 
         // Preferences that navigate to Website Settings.
-        List<String> websitePrefs = new ArrayList<String>();
+        List<Integer> websitePrefs = new ArrayList<Integer>();
         if (mMediaSubMenu) {
-            websitePrefs.add(preference(SiteSettingsCategory.Type.PROTECTED_MEDIA));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.AUTOPLAY));
+            websitePrefs.add(SiteSettingsCategory.Type.PROTECTED_MEDIA);
+            websitePrefs.add(SiteSettingsCategory.Type.AUTOPLAY);
         } else {
             if (SiteSettingsCategory.adsCategoryEnabled()) {
-                websitePrefs.add(preference(SiteSettingsCategory.Type.ADS));
+                websitePrefs.add(SiteSettingsCategory.Type.ADS);
             }
             // When showing the main menu, if Protected Content is not available, only Autoplay
             // will be visible.
             if (!mProtectedContentMenuAvailable) {
-                websitePrefs.add(preference(SiteSettingsCategory.Type.AUTOPLAY));
+                websitePrefs.add(SiteSettingsCategory.Type.AUTOPLAY);
             }
-            websitePrefs.add(preference(SiteSettingsCategory.Type.BACKGROUND_SYNC));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.CAMERA));
+            websitePrefs.add(SiteSettingsCategory.Type.BACKGROUND_SYNC);
+            websitePrefs.add(SiteSettingsCategory.Type.CAMERA);
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
-                websitePrefs.add(preference(SiteSettingsCategory.Type.CLIPBOARD));
+                websitePrefs.add(SiteSettingsCategory.Type.CLIPBOARD);
             }
-            websitePrefs.add(preference(SiteSettingsCategory.Type.COOKIES));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.JAVASCRIPT));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.DEVICE_LOCATION));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.MICROPHONE));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.NOTIFICATIONS));
-            websitePrefs.add(preference(SiteSettingsCategory.Type.POPUPS));
+            websitePrefs.add(SiteSettingsCategory.Type.COOKIES);
+            websitePrefs.add(SiteSettingsCategory.Type.JAVASCRIPT);
+            websitePrefs.add(SiteSettingsCategory.Type.DEVICE_LOCATION);
+            websitePrefs.add(SiteSettingsCategory.Type.MICROPHONE);
+            websitePrefs.add(SiteSettingsCategory.Type.NOTIFICATIONS);
+            websitePrefs.add(SiteSettingsCategory.Type.POPUPS);
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
-                websitePrefs.add(preference(SiteSettingsCategory.Type.SENSORS));
+                websitePrefs.add(SiteSettingsCategory.Type.SENSORS);
             }
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
-                websitePrefs.add(preference(SiteSettingsCategory.Type.SOUND));
+                websitePrefs.add(SiteSettingsCategory.Type.SOUND);
             }
-            websitePrefs.add(preference(SiteSettingsCategory.Type.USB));
+            websitePrefs.add(SiteSettingsCategory.Type.USB);
         }
 
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.
-        for (String prefName : websitePrefs) {
-            Preference p = findPreference(prefName);
-            boolean checked = false;
-            if (preference(SiteSettingsCategory.Type.ADS).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().adsEnabled();
-            } else if (preference(SiteSettingsCategory.Type.AUTOPLAY).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isAutoplayEnabled();
-            } else if (preference(SiteSettingsCategory.Type.BACKGROUND_SYNC).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isBackgroundSyncAllowed();
-            } else if (preference(SiteSettingsCategory.Type.CAMERA).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isCameraEnabled();
-            } else if (preference(SiteSettingsCategory.Type.CLIPBOARD).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isClipboardEnabled();
-            } else if (preference(SiteSettingsCategory.Type.COOKIES).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isAcceptCookiesEnabled();
-            } else if (preference(SiteSettingsCategory.Type.JAVASCRIPT).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().javaScriptEnabled();
-            } else if (preference(SiteSettingsCategory.Type.DEVICE_LOCATION).equals(prefName)) {
+        for (@SiteSettingsCategory.Type int prefCategory : websitePrefs) {
+            Preference p = findPreference(prefCategory);
+            int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
+
+            boolean checked;
+            if (prefCategory == SiteSettingsCategory.Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
-            } else if (preference(SiteSettingsCategory.Type.MICROPHONE).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isMicEnabled();
-            } else if (preference(SiteSettingsCategory.Type.NOTIFICATIONS).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isNotificationsEnabled();
-            } else if (preference(SiteSettingsCategory.Type.POPUPS).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().popupsEnabled();
-            } else if (preference(SiteSettingsCategory.Type.PROTECTED_MEDIA).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled();
-            } else if (preference(SiteSettingsCategory.Type.SENSORS).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().areSensorsEnabled();
-            } else if (preference(SiteSettingsCategory.Type.SOUND).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isSoundEnabled();
-            } else if (preference(SiteSettingsCategory.Type.USB).equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isUsbEnabled();
+            } else {
+                checked = PrefServiceBridge.getInstance().isCategoryEnabled(contentType);
             }
 
-            int contentType = SiteSettingsCategory.contentSettingsType(prefName);
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             p.setOnPreferenceClickListener(this);
 
             // Disable autoplay preference if Data Saver is ON.
-            if (preference(SiteSettingsCategory.Type.AUTOPLAY).equals(prefName)
+            if (SiteSettingsCategory.Type.AUTOPLAY == prefCategory
                     && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
                 p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
                 p.setEnabled(false);
-            } else if (preference(SiteSettingsCategory.Type.COOKIES).equals(prefName) && checked
+            } else if (SiteSettingsCategory.Type.COOKIES == prefCategory && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
-            } else if (preference(SiteSettingsCategory.Type.CLIPBOARD).equals(prefName)
-                    && !checked) {
+            } else if (SiteSettingsCategory.Type.CLIPBOARD == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getClipboardBlockedListSummary());
-            } else if (preference(SiteSettingsCategory.Type.DEVICE_LOCATION).equals(prefName)
-                    && checked && prefServiceBridge.isLocationAllowedByPolicy()) {
+            } else if (SiteSettingsCategory.Type.DEVICE_LOCATION == prefCategory && checked
+                    && prefServiceBridge.isLocationAllowedByPolicy()) {
                 p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
-            } else if (preference(SiteSettingsCategory.Type.ADS).equals(prefName) && !checked) {
+            } else if (SiteSettingsCategory.Type.ADS == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getAdsBlockedListSummary());
-            } else if (preference(SiteSettingsCategory.Type.SOUND).equals(prefName) && !checked) {
+            } else if (SiteSettingsCategory.Type.SOUND == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getSoundBlockedListSummary());
             } else {
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, checked));
