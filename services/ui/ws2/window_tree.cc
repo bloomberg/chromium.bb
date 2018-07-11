@@ -588,7 +588,7 @@ bool WindowTree::NewWindowImpl(
 bool WindowTree::DeleteWindowImpl(const ClientWindowId& window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "deleting window client=" << client_id_
-           << " client window_id= " << window_id.ToString();
+           << " client window_id=" << window_id.ToString();
   if (!window)
     return false;
 
@@ -689,7 +689,7 @@ bool WindowTree::AddWindowImpl(const ClientWindowId& parent_id,
   aura::Window* child = GetWindowByClientId(child_id);
   DVLOG(3) << "add window client=" << client_id_
            << " client parent window_id=" << parent_id.ToString()
-           << " client child window_id= " << child_id.ToString();
+           << " client child window_id=" << child_id.ToString();
   if (!parent) {
     DVLOG(1) << "AddWindow failed (no parent)";
     return false;
@@ -720,7 +720,7 @@ bool WindowTree::RemoveWindowFromParentImpl(
     const ClientWindowId& client_window_id) {
   aura::Window* window = GetWindowByClientId(client_window_id);
   DVLOG(3) << "removing window from parent client=" << client_id_
-           << " client window_id= " << client_window_id;
+           << " client window_id=" << client_window_id;
   if (!window) {
     DVLOG(1) << "RemoveWindowFromParent failed (invalid window id="
              << client_window_id.ToString() << ")";
@@ -743,7 +743,7 @@ bool WindowTree::RemoveWindowFromParentImpl(
 bool WindowTree::AddTransientWindowImpl(const ClientWindowId& parent_id,
                                         const ClientWindowId& transient_id) {
   DVLOG(3) << "adding transient window client=" << client_id_
-           << " parent_id= " << parent_id << " transient_id=" << transient_id;
+           << " parent_id=" << parent_id << " transient_id=" << transient_id;
   aura::Window* parent = GetWindowByClientId(parent_id);
   aura::Window* transient = GetWindowByClientId(transient_id);
   if (!parent || !transient) {
@@ -794,7 +794,7 @@ bool WindowTree::RemoveTransientWindowFromParentImpl(
 bool WindowTree::SetModalTypeImpl(const ClientWindowId& client_window_id,
                                   ui::ModalType type) {
   DVLOG(3) << "setting window modal type client=" << client_id_
-           << " client_window_id= " << client_window_id << " type=" << type;
+           << " client_window_id=" << client_window_id << " type=" << type;
   aura::Window* window = GetWindowByClientId(client_window_id);
   if (!window) {
     DVLOG(1) << "SetModalType failed (invalid window id="
@@ -827,7 +827,7 @@ bool WindowTree::SetModalTypeImpl(const ClientWindowId& client_window_id,
 bool WindowTree::SetChildModalParentImpl(const ClientWindowId& child_id,
                                          const ClientWindowId& parent_id) {
   DVLOG(3) << "setting child window modal parent client=" << client_id_
-           << " child_id= " << child_id << " parent_id=" << parent_id;
+           << " child_id=" << child_id << " parent_id=" << parent_id;
   aura::Window* child = GetWindowByClientId(child_id);
   aura::Window* parent = GetWindowByClientId(parent_id);
   // A value of null for |parent_id| resets the modal parent.
@@ -850,7 +850,7 @@ bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
                                          bool visible) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowVisibility client=" << client_id_
-           << " client window_id= " << window_id.ToString();
+           << " client window_id=" << window_id.ToString();
   if (!window) {
     DVLOG(1) << "SetWindowVisibility failed (no window)";
     return false;
@@ -875,7 +875,7 @@ bool WindowTree::SetWindowPropertyImpl(
     const base::Optional<std::vector<uint8_t>>& value) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowProperty client=" << client_id_
-           << " client window_id= " << window_id.ToString();
+           << " client window_id=" << window_id.ToString();
   if (!window) {
     DVLOG(1) << "SetWindowProperty failed (no window)";
     return false;
@@ -934,7 +934,7 @@ bool WindowTree::SetWindowOpacityImpl(const ClientWindowId& window_id,
                                       float opacity) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowOpacity client=" << client_id_
-           << " client window_id= " << window_id.ToString();
+           << " client window_id=" << window_id.ToString();
   if (IsClientCreatedWindow(window) ||
       (IsClientRootWindow(window) && can_change_root_window_visibility_)) {
     if (window->layer()->opacity() == opacity)
@@ -1101,7 +1101,7 @@ bool WindowTree::StackAboveImpl(const ClientWindowId& above_window_id,
 }
 
 bool WindowTree::StackAtTopImpl(const ClientWindowId& window_id) {
-  DVLOG(3) << "StackAtTop window_id= " << window_id;
+  DVLOG(3) << "StackAtTop window_id=" << window_id;
 
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window || !IsTopLevel(window)) {
