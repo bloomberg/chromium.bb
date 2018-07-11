@@ -137,6 +137,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
       base::Optional<HitTestRegionList> hit_test_region_list,
+      uint64_t submit_time,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback);
 
   // CapturableFrameSink implementation.

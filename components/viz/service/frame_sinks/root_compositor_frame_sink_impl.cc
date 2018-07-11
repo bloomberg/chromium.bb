@@ -154,7 +154,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
 
   const auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
-      SubmitCompositorFrameSyncCallback());
+      submit_time, SubmitCompositorFrameSyncCallback());
   if (result == CompositorFrameSinkSupport::ACCEPTED)
     return;
 

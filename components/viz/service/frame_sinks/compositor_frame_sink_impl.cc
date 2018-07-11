@@ -67,7 +67,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrameInternal(
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   const auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
-      std::move(callback));
+      submit_time, std::move(callback));
   if (result == CompositorFrameSinkSupport::ACCEPTED)
     return;
 
