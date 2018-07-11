@@ -14,7 +14,8 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
+#import "ios/chrome/browser/ui/find_bar/find_bar_ui_element.h"
+#import "ios/chrome/browser/ui/find_bar/legacy_find_bar_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -85,7 +86,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 @property(nonatomic, readwrite, strong) UIView* view;
 // The view containing all the buttons and textfields that is common between
 // iPhone and iPad.
-@property(nonatomic, strong) FindBarView* findBarView;
+@property(nonatomic, strong) UIView<FindBarUIElement>* findBarView;
 // Typing delay timer.
 @property(nonatomic, strong) NSTimer* delayTimer;
 // Yes if incognito.
@@ -128,7 +129,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
     findBarBackground.backgroundColor = [UIColor whiteColor];
   }
 
-  self.findBarView = [[FindBarView alloc]
+  self.findBarView = [[LegacyFindBarView alloc]
       initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;

@@ -5,12 +5,17 @@
 source_set("find_bar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "find_bar_constants.h",
+    "find_bar_constants.mm",
     "find_bar_controller_ios.h",
     "find_bar_controller_ios.mm",
     "find_bar_touch_forwarding_view.h",
     "find_bar_touch_forwarding_view.mm",
+    "find_bar_ui_element.h",
     "find_bar_view.h",
     "find_bar_view.mm",
+    "legacy_find_bar_view.h",
+    "legacy_find_bar_view.mm",
   ]
   deps = [
     "resources:find_bg",
