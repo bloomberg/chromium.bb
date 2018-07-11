@@ -2932,10 +2932,12 @@ LayoutRect CompositedLayerMapping::ContentsBox() const {
 }
 
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
+  const ComputedStyle& style = owning_layer_.GetLayoutObject().StyleRef();
   return owning_layer_.GetScrollableArea() &&
          owning_layer_.GetScrollableArea()->HasOverlayScrollbars() &&
-         !owning_layer_.GetLayoutObject().StyleRef().IsStackingContext() &&
-         owning_layer_.GetScrollableArea()->HasPaintLayerScrollChild();
+         !style.IsStackingContext() &&
+         (style.IsStacked() ||
+          owning_layer_.IsNonStackedWithInFlowStackedDescendant());
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {

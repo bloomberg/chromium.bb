@@ -61,6 +61,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     PaintLayer& layer,
     GraphicsLayerVector& child_layers,
     PendingOverflowControlReparents& pending_reparents) {
+  const ComputedStyle& style = layer.GetLayoutObject().StyleRef();
+
   // Make the layer compositing if necessary, and set up clipping and content
   // layers.  Note that we can only do work here that is independent of whether
   // the descendant layers have been processed. computeCompositingRequirements()
@@ -88,7 +90,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     mutation_checker.emplace(layer.StackingNode());
 #endif
 
-  if (layer.GetLayoutObject().StyleRef().IsStackingContext()) {
+  if (style.IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer.StackingNode(),
                                             kNegativeZOrderChildren);
     while (PaintLayer* child_layer = iterator.Next()) {
@@ -155,7 +157,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   // Also insert for self, to handle the case of scrollers with negative
   // z-index children (the scrolbars should still paint on top of the
   // scroller itself).
-  if (has_composited_layer_mapping &&
+  if (style.IsStacked() && has_composited_layer_mapping &&
       layer.GetCompositedLayerMapping()->NeedsToReparentOverflowControls())
     pending_reparents.Set(&layer, child_layers.size());
 
@@ -164,7 +166,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   // scroller, so keep overwriting if we find a PaintLayer that is
   // later in paint order.
   const PaintLayer* scroll_parent = layer.ScrollParent();
-  if (scroll_parent && scroll_parent->HasCompositedLayerMapping() &&
+  if (style.IsStacked() && scroll_parent &&
+      scroll_parent->HasCompositedLayerMapping() &&
       scroll_parent->GetCompositedLayerMapping()
           ->NeedsToReparentOverflowControls())
     pending_reparents.Set(layer.ScrollParent(), child_layers.size());

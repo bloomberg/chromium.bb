@@ -843,6 +843,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_self_painting_layer_descendant_;
   }
+  bool IsNonStackedWithInFlowStackedDescendant() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return is_non_stacked_with_in_flow_stacked_descendant_;
+  }
 
   // Returns true if there is a descendant with blend-mode that is
   // not contained within another enclosing stacking context other
@@ -1321,8 +1325,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned needs_compositing_layer_assignment_ : 1;
   unsigned descendant_needs_compositing_layer_assignment_ : 1;
 
-  unsigned is_non_stacked_with_in_flow_self_painting_descendant_ : 1;
   unsigned has_self_painting_layer_descendant_ : 1;
+  unsigned is_non_stacked_with_in_flow_stacked_descendant_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 

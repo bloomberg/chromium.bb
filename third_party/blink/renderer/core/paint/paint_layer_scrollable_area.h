@@ -440,15 +440,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateNeedsCompositedScrolling(bool layer_has_been_composited = false);
   bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
 
-  // Sets whether there is a PaintLayer whose ScrollParent() is the
-  // owner of this PaintLayerScrollableArea.
-  void SetHasPaintLayerScrollChild(bool val) {
-    has_paint_layer_scroll_child_ = val;
-  }
-  bool HasPaintLayerScrollChild() const {
-    return has_paint_layer_scroll_child_;
-  }
-
   IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
   PaintLayer* Layer() const override;
@@ -659,7 +650,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned needs_relayout_ : 1;
   unsigned had_horizontal_scrollbar_before_relayout_ : 1;
   unsigned had_vertical_scrollbar_before_relayout_ : 1;
-  unsigned has_paint_layer_scroll_child_ : 1;
   unsigned scroll_origin_changed_ : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
