@@ -95,9 +95,8 @@ class WebGestureEvent : public WebInputEvent {
       // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertial_phase;
-      // True if this event was synthesized in order to force a hit test;
-      // avoiding scroll latching behavior until crbug.com/526463 is fully
-      // implemented.
+      // True if this event is generated from a wheel event with synthetic
+      // phase.
       bool synthetic;
 
       // number of pointers down.
@@ -128,10 +127,8 @@ class WebGestureEvent : public WebInputEvent {
       // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertial_phase;
-      // True if this event was synthesized in order to generate the proper
-      // GSB/GSU/GSE matching sequences. This is a temporary so that a future
-      // GSB will generate a hit test so latching behavior is avoided
-      // until crbug.com/526463 is fully implemented.
+      // True if this event is generated from a wheel event with synthetic
+      // phase.
       bool synthetic;
     } scroll_end;
 

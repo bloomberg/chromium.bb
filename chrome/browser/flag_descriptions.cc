@@ -706,12 +706,6 @@ const char kEnableSyncUSSSessionsDescription[] =
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 
-extern const char kEnableTouchpadAndWheelScrollLatchingName[] =
-    "Wheel Scroll Latching.";
-extern const char kEnableTouchpadAndWheelScrollLatchingDescription[] =
-    "Wheel scroll latching enforces latching to a single element for the "
-    "duration of a scroll sequence.";
-
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
 const char kEnableUseZoomForDsfDescription[] =

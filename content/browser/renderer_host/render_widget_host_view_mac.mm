@@ -1461,15 +1461,13 @@ void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
   blink::WebMouseWheelEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-  if (wheel_scroll_latching_enabled()) {
-    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-        web_event, ShouldRouteEvent(web_event));
-    if (web_event.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
-      // A wheel end event is scheduled and will get dispatched if momentum
-      // phase doesn't start in 100ms. Don't sent the wheel end event
-      // immediately.
-      return;
-    }
+  mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+      web_event, ShouldRouteEvent(web_event));
+  if (web_event.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+    // A wheel end event is scheduled and will get dispatched if momentum
+    // phase doesn't start in 100ms. Don't sent the wheel end event
+    // immediately.
+    return;
   }
   if (ShouldRouteEvent(web_event)) {
     host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
@@ -1491,14 +1489,8 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(
 void RenderWidgetHostViewMac::ForwardWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
-  if (wheel_scroll_latching_enabled()) {
-    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(web_event,
-                                                                   false);
-  } else {
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-    host()->ForwardWheelEventWithLatencyInfo(web_event, latency_info);
-  }
+  mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(web_event,
+                                                                 false);
 }
 
 void RenderWidgetHostViewMac::GestureBegin(blink::WebGestureEvent begin_event,
@@ -1530,11 +1522,9 @@ void RenderWidgetHostViewMac::GestureUpdate(
 
   // Send a GesturePinchBegin event if none has been sent yet.
   if (!gesture_begin_pinch_sent_) {
-    if (wheel_scroll_latching_enabled()) {
-      // Before starting a pinch sequence, send the pending wheel end event to
-      // finish scrolling.
-      mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
-    }
+    // Before starting a pinch sequence, send the pending wheel end event to
+    // finish scrolling.
+    mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
     WebGestureEvent begin_event(*gesture_begin_event_);
     begin_event.SetType(WebInputEvent::kGesturePinchBegin);
     begin_event.SetSourceDevice(

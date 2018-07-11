@@ -22,7 +22,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature
     kAllowSignedHTTPExchangeCertsWithoutExtension;
 CONTENT_EXPORT extern const base::Feature kAsmJsToWebAssembly;
-CONTENT_EXPORT extern const base::Feature kAsyncWheelEvents;
 CONTENT_EXPORT extern const base::Feature kAudioServiceAudioStreams;
 CONTENT_EXPORT extern const base::Feature kAudioServiceLaunchOnStartup;
 CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
@@ -99,7 +98,6 @@ CONTENT_EXPORT extern const base::Feature kStopLoadingInBackground;
 CONTENT_EXPORT extern const base::Feature kStopNonTimersInBackground;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTopDocumentIsolation;
-CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUserActivationV2;

@@ -1750,10 +1750,9 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   blink::WebMouseWheelEvent wheel_event(event);
   bool should_route_events = ShouldRouteEvents();
-  if (wheel_scroll_latching_enabled()) {
-    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-        wheel_event, should_route_events);
-  }
+  mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+      wheel_event, should_route_events);
+
   if (should_route_events) {
     host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
         this, &wheel_event, latency_info);
@@ -1800,28 +1799,26 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
 
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
-  if (wheel_scroll_latching_enabled()) {
-    if (event.SourceDevice() ==
-        blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
-      if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-        // If there is a current scroll going on and a new scroll that isn't
-        // wheel based, send a synthetic wheel event with kPhaseEnded to cancel
-        // the current scroll.
-        mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
-      } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
-        // Make sure that the next wheel event will have phase = |kPhaseBegan|.
-        // This is for maintaining the correct phase info when some of the wheel
-        // events get ignored while a touchscreen scroll is going on.
-        mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
-      }
-
-    } else if (event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
-               event.SourceDevice() ==
-                   blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
-      // Ignore the pending wheel end event to avoid sending a wheel event with
-      // kPhaseEnded before a GFS.
+  if (event.SourceDevice() ==
+      blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      // If there is a current scroll going on and a new scroll that isn't
+      // wheel based, send a synthetic wheel event with kPhaseEnded to cancel
+      // the current scroll.
+      mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
+    } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+      // Make sure that the next wheel event will have phase = |kPhaseBegan|.
+      // This is for maintaining the correct phase info when some of the wheel
+      // events get ignored while a touchscreen scroll is going on.
       mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
     }
+
+  } else if (event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
+             event.SourceDevice() ==
+                 blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+    // Ignore the pending wheel end event to avoid sending a wheel event with
+    // kPhaseEnded before a GFS.
+    mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
   }
   if (ShouldRouteEvents()) {
     blink::WebGestureEvent gesture_event(event);

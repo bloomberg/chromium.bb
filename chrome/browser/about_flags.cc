@@ -3582,11 +3582,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kAv1Decoder)},
 #endif  // ENABLE_AV1_DECODER
 
-    {"enable-wheel-scroll-latching",
-     flag_descriptions::kEnableTouchpadAndWheelScrollLatchingName,
-     flag_descriptions::kEnableTouchpadAndWheelScrollLatchingDescription,
-     kOsAll, FEATURE_VALUE_TYPE(features::kTouchpadAndWheelScrollLatching)},
-
 #if defined(OS_ANDROID)
     {"grant-notifications-to-dse",
      flag_descriptions::kGrantNotificationsToDSEName,

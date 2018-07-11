@@ -630,43 +630,17 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   double zoom_level_ = 0;
 };
 
-enum WheelScrollingMode {
-  kWheelScrollingModeNone,
-  kWheelScrollLatching,
-  kAsyncWheelEvents,
-};
-
 // RenderWidgetHostTest --------------------------------------------------------
 
 class RenderWidgetHostTest : public testing::Test {
  public:
-  RenderWidgetHostTest(
-      WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
+  RenderWidgetHostTest()
       : process_(nullptr),
         handle_key_press_event_(false),
         handle_mouse_event_(false),
-        last_simulated_event_time_(ui::EventTimeForNow()),
-        wheel_scroll_latching_enabled_(wheel_scrolling_mode !=
-                                       kWheelScrollingModeNone) {
+        last_simulated_event_time_(ui::EventTimeForNow()) {
     std::vector<base::StringPiece> features;
     std::vector<base::StringPiece> disabled_features;
-
-    switch (wheel_scrolling_mode) {
-      case kWheelScrollingModeNone:
-        disabled_features.push_back(
-            features::kTouchpadAndWheelScrollLatching.name);
-        disabled_features.push_back(features::kAsyncWheelEvents.name);
-        break;
-      case kWheelScrollLatching:
-        features.push_back(features::kTouchpadAndWheelScrollLatching.name);
-        disabled_features.push_back(features::kAsyncWheelEvents.name);
-        break;
-      case kAsyncWheelEvents:
-        features.push_back(features::kTouchpadAndWheelScrollLatching.name);
-        features.push_back(features::kAsyncWheelEvents.name);
-        break;
-    }
-
     features.push_back(features::kVsyncAlignedInputEvents.name);
 
     feature_list_.InitFromCommandLine(base::JoinString(features, ","),
@@ -820,16 +794,14 @@ class RenderWidgetHostTest : public testing::Test {
         0, 0, dX, dY, modifiers, precise));
   }
 
-  void SimulateWheelEventPossiblyIncludingPhase(
-      float dX,
-      float dY,
-      int modifiers,
-      bool precise,
-      WebMouseWheelEvent::Phase phase) {
+  void SimulateWheelEvent(float dX,
+                          float dY,
+                          int modifiers,
+                          bool precise,
+                          WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
         0, 0, dX, dY, modifiers, precise);
-    if (wheel_scroll_latching_enabled_)
-      wheel_event.phase = phase;
+    wheel_event.phase = phase;
     host_->ForwardWheelEvent(wheel_event);
   }
 
@@ -844,17 +816,15 @@ class RenderWidgetHostTest : public testing::Test {
         ui_latency);
   }
 
-  void SimulateWheelEventWithLatencyInfoAndPossiblyPhase(
-      float dX,
-      float dY,
-      int modifiers,
-      bool precise,
-      const ui::LatencyInfo& ui_latency,
-      WebMouseWheelEvent::Phase phase) {
+  void SimulateWheelEventWithLatencyInfo(float dX,
+                                         float dY,
+                                         int modifiers,
+                                         bool precise,
+                                         const ui::LatencyInfo& ui_latency,
+                                         WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
         0, 0, dX, dY, modifiers, precise);
-    if (wheel_scroll_latching_enabled_)
-      wheel_event.phase = phase;
+    wheel_event.phase = phase;
     host_->ForwardWheelEventWithLatencyInfo(wheel_event, ui_latency);
   }
 
@@ -922,10 +892,6 @@ class RenderWidgetHostTest : public testing::Test {
     return reinterpret_cast<const WebInputEvent*>(data);
   }
 
-  void UnhandledWheelEvent();
-  void HandleWheelEvent();
-  void InputEventRWHLatencyComponent();
-
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
@@ -941,7 +907,6 @@ class RenderWidgetHostTest : public testing::Test {
       renderer_compositor_frame_sink_;
   std::unique_ptr<FakeRenderFrameMetadataObserver>
       renderer_render_frame_metadata_observer_;
-  bool wheel_scroll_latching_enabled_;
 
  private:
   SyntheticWebTouchEvent touch_event_;
@@ -951,20 +916,6 @@ class RenderWidgetHostTest : public testing::Test {
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
-};
-
-class RenderWidgetHostWheelScrollLatchingDisabledTest
-    : public RenderWidgetHostTest {
- public:
-  RenderWidgetHostWheelScrollLatchingDisabledTest()
-      : RenderWidgetHostTest(kWheelScrollingModeNone) {}
-};
-
-class RenderWidgetHostAsyncWheelEventsEnabledTest
-    : public RenderWidgetHostTest {
- public:
-  RenderWidgetHostAsyncWheelEventsEnabledTest()
-      : RenderWidgetHostTest(kAsyncWheelEvents) {}
 };
 
 // RenderWidgetHostWithSourceTest ----------------------------------------------
@@ -1409,9 +1360,8 @@ TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
   EXPECT_EQ(WebInputEvent::kKeyUp, delegate_->unhandled_keyboard_event_type());
 }
 
-void RenderWidgetHostTest::UnhandledWheelEvent() {
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
+TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
+  SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
 
   MockWidgetInputHandler::MessageVector dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
@@ -1428,22 +1378,12 @@ void RenderWidgetHostTest::UnhandledWheelEvent() {
   EXPECT_EQ(1, view_->unhandled_wheel_event_count());
   EXPECT_EQ(-5, view_->unhandled_wheel_event().delta_x);
 }
-TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
-  UnhandledWheelEvent();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingDisabledTest, UnhandledWheelEvent) {
-  UnhandledWheelEvent();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledTest, UnhandledWheelEvent) {
-  UnhandledWheelEvent();
-}
 
-void RenderWidgetHostTest::HandleWheelEvent() {
+TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
   // Indicate that we're going to handle this wheel event
   delegate_->set_handle_wheel_event(true);
 
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
+  SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
 
   MockWidgetInputHandler::MessageVector dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
@@ -1461,15 +1401,6 @@ void RenderWidgetHostTest::HandleWheelEvent() {
 
   // and that it suppressed the unhandled wheel event handler.
   EXPECT_EQ(0, view_->unhandled_wheel_event_count());
-}
-TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
-  HandleWheelEvent();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingDisabledTest, HandleWheelEvent) {
-  HandleWheelEvent();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledTest, HandleWheelEvent) {
-  HandleWheelEvent();
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
@@ -1851,20 +1782,19 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
 // or ForwardXXXEventWithLatencyInfo(), LatencyInfo component
 // ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
 // event's LatencyInfo.
-void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
+TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
   // Tests RWHI::ForwardWheelEvent().
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
+  SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
   MockWidgetInputHandler::MessageVector dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kMouseWheel);
 
   // Tests RWHI::ForwardWheelEventWithLatencyInfo().
-  SimulateWheelEventWithLatencyInfoAndPossiblyPhase(
-      -5, 0, 0, true, ui::LatencyInfo(), WebMouseWheelEvent::kPhaseChanged);
+  SimulateWheelEventWithLatencyInfo(-5, 0, 0, true, ui::LatencyInfo(),
+                                    WebMouseWheelEvent::kPhaseChanged);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   CheckLatencyInfoComponentInMessage(dispatched_events,
@@ -1921,17 +1851,6 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kTouchStart);
-}
-TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponent();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingDisabledTest,
-       InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponent();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledTest,
-       InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponent();
 }
 
 TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {

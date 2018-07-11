@@ -264,7 +264,7 @@
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
 -WebViewFocusBrowserPluginSpecificTest.*
--WebViewGuestScrollLatchingTest.ScrollLatchingPreservedInGuests
+-WebViewScrollBubbling/WebViewGuestScrollTest.ScrollLatchingPreservedInGuests/*
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
 -WebViewScrollGuestContentBrowserPluginSpecificTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewScrollBubbling/WebViewGuestScrollTest.TestGuestWheelScrollsBubble/*

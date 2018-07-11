@@ -52,9 +52,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                           public cc::SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
-                    InputHandlerProxyClient* client,
-                    bool touchpad_and_wheel_scroll_latching_enabled,
-                    bool async_wheel_events_enabled);
+                    InputHandlerProxyClient* client);
   ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
@@ -201,8 +199,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       scroll_elasticity_controller_;
 
   bool smooth_scroll_enabled_;
-  const bool touchpad_and_wheel_scroll_latching_enabled_;
-  const bool async_wheel_events_enabled_;
 
   // The merged result of the last touch event with previous touch events.
   // This value will get returned for subsequent TouchMove events to allow

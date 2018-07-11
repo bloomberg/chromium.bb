@@ -5,10 +5,8 @@
 #include "content/browser/renderer_host/input/fling_controller.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
-#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/fling_booster.h"
@@ -51,8 +49,6 @@ class FlingControllerTest : public testing::Test,
                                                  GestureEventQueue::Config());
     fling_controller_ = std::make_unique<FakeFlingController>(
         queue_.get(), this, this, FlingController::Config());
-    feature_list_.InitFromCommandLine(
-        features::kTouchpadAndWheelScrollLatching.name, "");
   }
 
   // GestureEventQueueClient
@@ -129,7 +125,6 @@ class FlingControllerTest : public testing::Test,
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<GestureEventQueue> queue_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(FlingControllerTest,

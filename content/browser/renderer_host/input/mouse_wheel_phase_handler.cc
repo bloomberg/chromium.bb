@@ -157,7 +157,6 @@ void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
     bool should_route_event) {
   TRACE_EVENT0("input",
                "MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded");
-  DCHECK(host_view_->wheel_scroll_latching_enabled());
   last_mouse_wheel_event_.SetTimeStamp(ui::EventTimeForNow());
   last_mouse_wheel_event_.delta_x = 0;
   last_mouse_wheel_event_.delta_y = 0;

@@ -890,4 +890,3 @@ crbug.com/591099 virtual/user-activation-v2/fast/events/mouse-cursor.html [ Fail
 crbug.com/591099 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/user-activation-v2/fullscreen/full-screen-with-flex-item.html [ Failure ]
 crbug.com/591099 virtual/video-surface-layer/media/video-display-toggle.html [ Failure ]
-crbug.com/591099 virtual/wheelscrolllatching/ [ Skip ]

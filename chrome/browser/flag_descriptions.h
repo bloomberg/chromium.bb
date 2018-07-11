@@ -447,9 +447,6 @@ extern const char kEnableSyncUSSSessionsDescription[];
 extern const char kEnableTokenBindingName[];
 extern const char kEnableTokenBindingDescription[];
 
-extern const char kEnableTouchpadAndWheelScrollLatchingName[];
-extern const char kEnableTouchpadAndWheelScrollLatchingDescription[];
-
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];

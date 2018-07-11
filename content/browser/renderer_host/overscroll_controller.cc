@@ -46,9 +46,7 @@ float ClampAbsoluteValue(float value, float max_abs) {
 
 }  // namespace
 
-OverscrollController::OverscrollController()
-    : wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
-          features::kTouchpadAndWheelScrollLatching)) {}
+OverscrollController::OverscrollController() {}
 
 OverscrollController::~OverscrollController() {}
 
@@ -343,14 +341,8 @@ bool OverscrollController::ProcessEventForOverscroll(
   bool event_processed = false;
   switch (event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin: {
-      // When wheel scroll latching is disabled avoid resetting the state on
-      // GestureScrollBegin generated from the touchpad since it is sent for
-      // every wheel event.
-      if (overscroll_mode_ != OVERSCROLL_NONE &&
-          (!IsGestureEventFromTouchpad(event) ||
-           wheel_scroll_latching_enabled_)) {
+      if (overscroll_mode_ != OVERSCROLL_NONE)
         SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
-      }
       break;
     }
     case blink::WebInputEvent::kGestureScrollEnd: {

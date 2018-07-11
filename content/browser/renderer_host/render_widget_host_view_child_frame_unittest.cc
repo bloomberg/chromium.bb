@@ -31,7 +31,6 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -238,29 +237,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
   EXPECT_EQ(intersection_rect, std::get<1>(sent_rects));
 }
 
-// Tests specific to non-scroll-latching behaviour.
-// TODO(mcnee): Remove once scroll-latching lands. crbug.com/526463
-class RenderWidgetHostViewChildFrameScrollLatchingDisabledTest
-    : public RenderWidgetHostViewChildFrameTest {
- public:
-  RenderWidgetHostViewChildFrameScrollLatchingDisabledTest() {}
-
-  void SetUp() override {
-    feature_list_.InitWithFeatures({},
-                                   {features::kTouchpadAndWheelScrollLatching,
-                                    features::kAsyncWheelEvents});
-
-    RenderWidgetHostViewChildFrameTest::SetUp();
-    DCHECK(!view_->wheel_scroll_latching_enabled());
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      RenderWidgetHostViewChildFrameScrollLatchingDisabledTest);
-};
-
 class RenderWidgetHostViewChildFrameZoomForDSFTest
     : public RenderWidgetHostViewChildFrameTest {
  public:
@@ -273,26 +249,6 @@ class RenderWidgetHostViewChildFrameZoomForDSFTest
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameZoomForDSFTest);
 };
-
-// Test that when a child scrolls and then stops consuming once it hits the
-// extent, we don't bubble the subsequent unconsumed GestureScrollUpdates
-// in the same gesture.
-TEST_F(RenderWidgetHostViewChildFrameScrollLatchingDisabledTest,
-       DoNotBubbleIfChildHasAlreadyScrolled) {
-  blink::WebGestureEvent gesture_scroll(
-      blink::WebGestureEvent::kGestureScrollBegin,
-      blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  view_->GestureEventAck(gesture_scroll, INPUT_EVENT_ACK_STATE_IGNORED);
-
-  gesture_scroll.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
-  view_->GestureEventAck(gesture_scroll, INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_FALSE(test_frame_connector_->seen_bubbled_gsu_);
-
-  view_->GestureEventAck(gesture_scroll,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_FALSE(test_frame_connector_->seen_bubbled_gsu_);
-}
 
 // Tests that moving the child around does not affect the physical backing size.
 TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest,

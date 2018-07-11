@@ -158,8 +158,6 @@ crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gestur
 crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
-crbug.com/857490 virtual/wheelscrolllatching/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
-crbug.com/857490 virtual/wheelscrolllatching/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
@@ -3869,9 +3867,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Release ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
-# Sheriff failure 2017-08-07
-crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-scroll-impl-to-main.html [ Failure Pass ]
-
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
@@ -3951,7 +3946,6 @@ crbug.com/757165 [ Win ] paint/invalidation/scroll/scrollbar-damage-and-full-vie
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-scroll-impl-to-main.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-clipping.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-color-over-color.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-color-over-gradient.html [ Skip ]
@@ -4196,9 +4190,6 @@ crbug.com/798592 [ Win7 Mac ] virtual/threaded/http/tests/devtools/tracing/timel
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
 crbug.com/804682 [ Mac ] external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Pass Failure ]
-
-# This test is flaking (failing, crashing) on mac_chromium_rel_ng.
-crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-scroll-impl-to-main.html [ Skip ]
 
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)

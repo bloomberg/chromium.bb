@@ -3944,31 +3944,9 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
   }
 }
 
-// Tests scroll latching behaviour with WebViews.
-// Only applicable with OOPIF-based guests when scroll latching is enabled.
-// We can move these tests to a more general fixture once the features
-// have landed (crbug.com/533069 and crbug.com/526463).
-class WebViewGuestScrollLatchingTest : public WebViewTest {
- protected:
-  WebViewGuestScrollLatchingTest() {}
-  ~WebViewGuestScrollLatchingTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
-                                    features::kAsyncWheelEvents},
-                                   {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollLatchingTest);
-};
-
 // Test that when we bubble scroll from a guest, the guest does not also
 // consume the scroll.
-IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
+IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
                        ScrollLatchingPreservedInGuests) {
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 

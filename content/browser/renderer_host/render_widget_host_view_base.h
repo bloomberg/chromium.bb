@@ -536,10 +536,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   bool is_fullscreen() { return is_fullscreen_; }
 
-  bool wheel_scroll_latching_enabled() {
-    return wheel_scroll_latching_enabled_;
-  }
-
   void set_web_contents_accessibility(WebContentsAccessibility* wcax) {
     web_contents_accessibility_ = wcax;
   }
@@ -646,8 +642,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The default background color used before getting the
   // |content_background_color|.
   base::Optional<SkColor> default_background_color_;
-
-  const bool wheel_scroll_latching_enabled_;
 
   WebContentsAccessibility* web_contents_accessibility_;
 

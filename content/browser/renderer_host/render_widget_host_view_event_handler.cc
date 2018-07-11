@@ -368,14 +368,12 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
     if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
       bool should_route_event = ShouldRouteEvent(event);
-      if (host_view_->wheel_scroll_latching_enabled()) {
-        // End the touchpad scrolling sequence (if such exists) before handling
-        // a ui::ET_MOUSEWHEEL event.
-        mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded();
+      // End the touchpad scrolling sequence (if such exists) before handling
+      // a ui::ET_MOUSEWHEEL event.
+      mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded();
 
-        mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-            mouse_wheel_event, should_route_event);
-      }
+      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+          mouse_wheel_event, should_route_event);
       if (should_route_event) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             host_view_, &mouse_wheel_event, *event->latency());
@@ -442,10 +440,8 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     gesture_event.SetPositionInWidget(event->location_f());
     blink::WebMouseWheelEvent mouse_wheel_event = ui::MakeWebMouseWheelEvent(
         *event, base::Bind(&GetScreenLocationFromEvent));
-    if (host_view_->wheel_scroll_latching_enabled()) {
-      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-          mouse_wheel_event, should_route_event);
-    }
+    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+        mouse_wheel_event, should_route_event);
     if (should_route_event) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &gesture_event,

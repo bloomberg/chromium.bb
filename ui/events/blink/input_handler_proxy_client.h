@@ -36,8 +36,8 @@ class InputHandlerProxyClient {
 
   virtual void DidStartScrollingViewport() = 0;
 
-  // Used to send a GSB to the main thread when the wheel scroll latching is
-  // enabled and the scrolling should switch to the main thread.
+  // Used to send a GSB to the main thread when the scrolling should switch to
+  // the main thread.
   virtual void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event) = 0;
 

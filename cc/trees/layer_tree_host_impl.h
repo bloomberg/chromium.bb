@@ -235,8 +235,7 @@ class CC_EXPORT LayerTreeHostImpl
   ~LayerTreeHostImpl() override;
 
   // InputHandler implementation
-  void BindToClient(InputHandlerClient* client,
-                    bool wheel_scroll_latching_enabled) override;
+  void BindToClient(InputHandlerClient* client) override;
   InputHandler::ScrollStatus ScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
@@ -1071,8 +1070,6 @@ class CC_EXPORT LayerTreeHostImpl
   // thread.
   bool has_scrolled_by_wheel_ = false;
   bool has_scrolled_by_touch_ = false;
-
-  bool touchpad_and_wheel_scroll_latching_enabled_ = false;
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 

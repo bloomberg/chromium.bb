@@ -94,7 +94,6 @@ Bug(none) virtual/targetedstylerecalc/ [ Skip ]
 Bug(none) virtual/unified-autoplay/ [ Skip ]
 Bug(none) virtual/user-activation-v2/ [ Skip ]
 Bug(none) virtual/video-surface-layer/ [ Skip ]
-Bug(none) virtual/wheelscrolllatching/ [ Skip ]
 Bug(none) virtual/windows-directwrite/ [ Skip ]
 Bug(none) virtual/without-smil/ [ Skip ]
 
