@@ -138,12 +138,15 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network_service_ =
         network::NetworkService::Create(std::move(network_service_request),
                                         /*netlog=*/nullptr);
-    tracker_ = std::make_unique<NetworkConnectionTracker>();
-    tracker_->Initialize(network_service_.get());
+    tracker_ = std::make_unique<NetworkConnectionTracker>(
+        base::BindRepeating(&NetworkConnectionTrackerTest::network_service,
+                            base::Unretained(this)));
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
   }
 
-  network::NetworkService* network_service() { return network_service_.get(); }
+  network::mojom::NetworkService* network_service() {
+    return network_service_.get();
+  }
 
   NetworkConnectionTracker* network_connection_tracker() {
     return tracker_.get();
@@ -249,13 +252,24 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
 // Tests that GetConnectionType returns false and doesn't modify its |type|
 // parameter when the connection type is unavailable.
 TEST_F(NetworkConnectionTrackerTest, GetConnectionTypeUnavailable) {
-  auto tracker = std::make_unique<NetworkConnectionTracker>();
+  // Returns a dummy network service that has not been initialized.
+  network::mojom::NetworkServicePtr* network_service_ptr =
+      new network::mojom::NetworkServicePtr;
 
+  network::mojom::NetworkServiceRequest request =
+      mojo::MakeRequest(network_service_ptr);
+  base::RepeatingCallback<network::mojom::NetworkService*()> callback =
+      base::BindRepeating(
+          [](network::mojom::NetworkService* service) { return service; },
+          base::Unretained(network_service_ptr->get()));
+
+  auto tracker = std::make_unique<NetworkConnectionTracker>(callback);
   auto type = network::mojom::ConnectionType::CONNECTION_3G;
   bool sync = tracker->GetConnectionType(&type, base::DoNothing());
 
   EXPECT_FALSE(sync);
   EXPECT_EQ(type, network::mojom::ConnectionType::CONNECTION_3G);
+  delete network_service_ptr;
 }
 
 // Tests GetConnectionType() on a different thread.
