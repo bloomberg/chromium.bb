@@ -148,13 +148,11 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start with a short timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout(
       TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Wait long enough for first timeout and see if it fired.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMilliseconds(10));
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
@@ -162,13 +160,11 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start with a short timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout(
       TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Wait long enough for first timeout and see if it fired.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TimeDelta::FromMilliseconds(10));
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(nullptr);
