@@ -4,8 +4,8 @@
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/allocator_shim_internals.h"
-#include "third_party/tcmalloc/chromium/src/config.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/config.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/tcmalloc.h"
 
 namespace {
 
