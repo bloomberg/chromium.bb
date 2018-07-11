@@ -11,9 +11,7 @@ Security Critical: no
 Description:
 Android Platform engineering tools, specifically:
 1. stack symbolization scripts
-2. A ported copy of the Android relocation packing tool source, along with the
-   files required to build it in the chromium tree.
-3. IntelliJ formatting settings.
+2. IntelliJ formatting settings.
    Taken from commit: 622d3d4c5b3bee50fd335f3282d9e9d64ae0f5f7
 
 Local Modifications:
@@ -45,20 +43,3 @@ objdump, etc, since llvm symbolizer is more efficient in finding
 function names, line numbers etc.
 
 Speedup symbolization by avoiding unnecessary APK manifest extraction loops.
-
-Android relocation packing tool details:
-    Copy sources from AOSP bionic/tools/relocation_packer
-    Remove scripts that regenerate golden test data (not relevant here)
-    Create a nativehelper/ScopedFd.h to satisfy inclusion from main.cc
-    Create gyp build
-    Create gn build (currently packer only; no unit tests)
-    List of bionic changes currently included:
-      Refresh: https://android-review.googlesource.com/#/c/143878/
-      Refresh: https://android-review.googlesource.com/#/c/147620/
-               https://android-review.googlesource.com/#/c/147745/
-               https://android-review.googlesource.com/#/c/148073/
-      Refresh: https://android-review.googlesource.com/#/c/151901/
-               https://android-review.googlesource.com/#/c/149300/
-               https://android-review.googlesource.com/#/c/148822/
-               https://android-review.googlesource.com/#/c/148492/
-               https://android-review.googlesource.com/#/c/148175/

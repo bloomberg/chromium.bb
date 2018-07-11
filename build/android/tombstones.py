@@ -123,7 +123,6 @@ def _ResolveTombstones(jobs, tombstones, tombstone_symbolizer):
   if not tombstones:
     logging.warning('No tombstones to resolve.')
     return []
-  tombstone_symbolizer.UnzipAPKIfNecessary()
   if len(tombstones) == 1:
     data = [_ResolveTombstone([tombstones[0], tombstone_symbolizer])]
   else:

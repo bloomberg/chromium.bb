@@ -425,11 +425,6 @@ def AddInstrumentationTestOptions(parser):
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       dest='run_disabled', action='store_true',
       help='Also run disabled tests if applicable.')
-  parser.add_argument(
-      '--non-native-packed-relocations',
-      action='store_true',
-      help='Whether relocations were packed using the Android '
-           'relocation_packer tool.')
   def package_replacement(arg):
     split_arg = arg.split(',')
     if len(split_arg) != 2:
