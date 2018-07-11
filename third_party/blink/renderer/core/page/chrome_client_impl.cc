@@ -777,8 +777,8 @@ void ChromeClientImpl::UpdateCompositedSelection(
                                     ? gfx::SelectionBound::Type::RIGHT
                                     : gfx::SelectionBound::Type::LEFT;
       cc_selection.end.type = selection.end.is_text_direction_rtl
-                                  ? gfx::SelectionBound::Type::RIGHT
-                                  : gfx::SelectionBound::Type::LEFT;
+                                  ? gfx::SelectionBound::Type::LEFT
+                                  : gfx::SelectionBound::Type::RIGHT;
     } else {
       cc_selection.start.type = gfx::SelectionBound::Type::CENTER;
       cc_selection.end.type = gfx::SelectionBound::Type::CENTER;
