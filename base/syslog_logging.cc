@@ -10,9 +10,10 @@
 #include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"
 #elif defined(OS_LINUX)
-// <syslog.h> defines a LOG_WARNING macro that could conflict with
-// base::LOG_WARNING.
+// <syslog.h> defines LOG_INFO, LOG_WARNING macros that could conflict with
+// base::LOG_INFO, base::LOG_WARNING.
 #include <syslog.h>
+#undef LOG_INFO
 #undef LOG_WARNING
 #endif
 
