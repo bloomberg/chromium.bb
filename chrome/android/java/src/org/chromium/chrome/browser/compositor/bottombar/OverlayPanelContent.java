@@ -365,9 +365,7 @@ public class OverlayPanelContent {
                 mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, mWebContents);
 
         mContentDelegate.onContentViewCreated();
-        int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
-        onPhysicalBackingSizeChanged(mContentViewWidth, viewHeight);
-        mWebContents.setSize(mContentViewWidth, viewHeight);
+        resizePanelContentView();
         mActivity.getCompositorViewHolder().addView(mContainerView, 1);
     }
 
@@ -502,17 +500,13 @@ public class OverlayPanelContent {
         return mContainerView;
     }
 
-    void onSizeChanged(int width, int height) {
-        if (getWebContents() == null) return;
-        getWebContents().setSize(width, height);
-    }
-
-    void onPhysicalBackingSizeChanged(int width, int height) {
+    void resizePanelContentView() {
         WebContents webContents = getWebContents();
-        if (webContents != null) {
-            nativeOnPhysicalBackingSizeChanged(
-                    mNativeOverlayPanelContentPtr, webContents, width, height);
-        }
+        if (webContents == null) return;
+        int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
+        nativeOnPhysicalBackingSizeChanged(
+                mNativeOverlayPanelContentPtr, webContents, mContentViewWidth, viewHeight);
+        mWebContents.setSize(mContentViewWidth, viewHeight);
     }
 
     /**

@@ -814,32 +814,28 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
             int orientation) {
         // Filter events that don't change the viewport width or height.
         if (height != mViewportHeight || width != mViewportWidth) {
-          // We only care if the orientation is changing or we're shifting in/out of multi-window.
-          // In either case the screen's viewport width or height will certainly change.
+            // We only care if the orientation is changing or we're shifting in/out of multi-window.
+            // In either case the screen's viewport width or height will certainly change.
             mViewportWidth = width;
             mViewportHeight = height;
-            resizePanelContentView(width, height);
+
             onLayoutChanged(width, height, visibleViewportOffsetY);
+            resizePanelContentView();
         }
     }
 
     /**
      * Resize the panel's ContentView. Apply adjusted bar size to the height.
-     * @param width The new width in dp.
-     * @param height The new height in dp.
      */
-    protected void resizePanelContentView(float width, float height) {
+    protected void resizePanelContentView() {
         if (!isShowing()) return;
+
         OverlayPanelContent panelContent = getOverlayPanelContent();
-        int widthPx = (int) (width / mPxToDp);
-        int heightPx = (int) (height / mPxToDp);
 
         // Device could have been rotated before panel webcontent creation. Update content size.
-        panelContent.setContentViewSize(widthPx, heightPx, isFullWidthSizePanel());
-
-        if (isFullWidthSizePanel()) heightPx = (int) ((height - getBarHeight()) / mPxToDp);
-        panelContent.onSizeChanged(widthPx, heightPx);
-        panelContent.onPhysicalBackingSizeChanged(widthPx, heightPx);
+        panelContent.setContentViewSize(
+                getContentViewWidthPx(), getContentViewHeightPx(), isFullWidthSizePanel());
+        panelContent.resizePanelContentView();
     }
 
     @Override
