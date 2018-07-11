@@ -796,12 +796,11 @@ void BridgedNativeWidget::OnVisibilityChanged() {
   // TODO(tapted): Investigate whether we want this for Mac. This is what Aura
   // does, and it is what tests expect. However, because layer drawing is
   // asynchronous (and things like deminiaturize in AppKit are not), it can
-  // result in a CALayer appearing on screen before it has been redrawn in the
-  // GPU process. This is a general problem. In content, a helper class,
-  // RenderWidgetResizeHelper, blocks the UI thread in -[NSView setFrameSize:]
-  // and RenderWidgetHostView::Show() until a frame is ready.
+  // result in the compositor producing a blank frame during the time that the
+  // layer is not visible. Avoid this by locking the compositor (preventing any
+  // new frames) in UpdateLayerVisibility whenever the layer is hidden.
   if (layer()) {
-    layer()->SetVisible(window_visible_);
+    UpdateLayerVisibility();
     layer()->SchedulePaint(gfx::Rect(GetClientAreaSize()));
 
     // For translucent windows which are made visible, recalculate shadow when
@@ -904,7 +903,7 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   SetLayer(std::make_unique<ui::Layer>(layer_type));
   // Note, except for controls, this will set the layer to be hidden, since it
   // is only called during Init().
-  layer()->SetVisible(window_visible_);
+  UpdateLayerVisibility();
   layer()->set_delegate(this);
 
   InitCompositor();
@@ -1347,7 +1346,7 @@ void BridgedNativeWidget::ShowAsModalSheet() {
   // So that it doesn't animate a fully transparent window, first wait for a
   // frame. The first step is to pretend that the window is already visible.
   window_visible_ = true;
-  layer()->SetVisible(true);
+  UpdateLayerVisibility();
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(true);
   MaybeWaitForFrame(GetClientAreaSize());
 
@@ -1374,6 +1373,18 @@ NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
                              properties, OBJC_ASSOCIATION_RETAIN);
   }
   return properties;
+}
+
+void BridgedNativeWidget::UpdateLayerVisibility() {
+  layer()->SetVisible(window_visible_);
+  if (window_visible_) {
+    compositor_lock_.reset();
+  } else if (!compositor_lock_) {
+    // Assume that GetCompositorLock always succeeds (if it does not, then a
+    // flicker may be seen).
+    compositor_lock_ =
+        compositor_->GetCompositorLock(nullptr, base::TimeDelta());
+  }
 }
 
 }  // namespace views

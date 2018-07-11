@@ -287,6 +287,11 @@ class VIEWS_EXPORT BridgedNativeWidget
   // DialogObserver:
   void OnDialogModelChanged() override;
 
+  // Set |layer()| to be visible or not visible based on |window_visible_|. If
+  // the layer is not visible, then lock the compositor, so we don't draw any
+  // new frames.
+  void UpdateLayerVisibility();
+
   views::NativeWidgetMac* native_widget_mac_;  // Weak. Owns this.
   base::scoped_nsobject<NSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
@@ -307,6 +312,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   std::unique_ptr<ui::AcceleratedWidgetMac> compositor_widget_;
   std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
   std::unique_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   // Tracks the bounds when the window last started entering fullscreen. Used to
