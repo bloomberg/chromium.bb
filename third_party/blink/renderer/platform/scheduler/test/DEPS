@@ -1,3 +1,7 @@
+include_rules = [
+  "+cc/base/lap_timer.h"
+]
+
 specific_include_rules = {
  "lazy_thread_controller_for_test.h": [
    "+base/task/sequence_manager/thread_controller_impl.h",
