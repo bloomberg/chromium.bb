@@ -2055,9 +2055,15 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
     // Allocations in av1_alloc_context_buffers() depend on individual
     // dimensions as well as the overall size.
     if (new_mi_cols > cm->mi_cols || new_mi_rows > cm->mi_rows) {
-      if (av1_alloc_context_buffers(cm, width, height))
+      if (av1_alloc_context_buffers(cm, width, height)) {
+        // The cm->mi_* values have been cleared and any existing context
+        // buffers have been freed. Clear cm->width and cm->height to be
+        // consistent and to force a realloc next time.
+        cm->width = 0;
+        cm->height = 0;
         aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to allocate context buffers");
+      }
     } else {
       av1_set_mb_mi(cm, width, height);
     }
