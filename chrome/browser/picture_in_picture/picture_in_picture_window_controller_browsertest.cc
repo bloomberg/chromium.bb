@@ -782,8 +782,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when a new surface id is sent to the Picture-in-Picture window, it
 // doesn't move back to its default position.
+// TODO(https://crbug.com/862505): test is currently flaky.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       SurfaceIdChangeDoesNotMoveWindow) {
+                       DISABLED_SurfaceIdChangeDoesNotMoveWindow) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::WebContents* active_web_contents =
