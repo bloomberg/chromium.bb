@@ -83,7 +83,6 @@ extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kVrBrowsingNativeAndroidUi;
 extern const base::Feature kVrBrowsingTabsView;
-extern const base::Feature kWebVrAutopresentFromIntent;
 
 }  // namespace android
 }  // namespace chrome

@@ -3404,11 +3404,6 @@ const char kVrBrowsingExperimentalRenderingDescription[] =
     "Experimental rendering features for VR browsing (e.g. power-saving "
     "rendering modes).";
 
-const char kWebVrAutopresentFromIntentName[] =
-    "WebVR auto presentation from intents";
-const char kWebVrAutopresentFromIntentDescription[] =
-    "Allow auto presentation of WebVR content from trusted first-party apps.";
-
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)

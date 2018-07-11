@@ -2094,9 +2094,6 @@ extern const char kWebVrVsyncAlignDescription[];
 extern const char kVrBrowsingExperimentalRenderingName[];
 extern const char kVrBrowsingExperimentalRenderingDescription[];
 
-extern const char kWebVrAutopresentFromIntentName[];
-extern const char kWebVrAutopresentFromIntentDescription[];
-
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
