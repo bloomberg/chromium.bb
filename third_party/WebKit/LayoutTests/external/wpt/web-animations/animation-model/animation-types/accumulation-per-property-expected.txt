@@ -317,8 +317,8 @@ PASS hyphens (type: discrete) has testAccumulation function
 PASS hyphens: "none" onto "manual"
 PASS hyphens: "manual" onto "none"
 PASS image-orientation (type: discrete) has testAccumulation function
-FAIL image-orientation: "90deg" onto "0deg" assert_equals: The value should be 90deg at 0ms expected "90deg" but got "0deg"
-PASS image-orientation: "0deg" onto "90deg"
+PASS image-orientation: "from-image" onto "none"
+FAIL image-orientation: "none" onto "from-image" assert_equals: The value should be none at 0ms expected "none" but got "from-image"
 PASS isolation (type: discrete) has testAccumulation function
 PASS isolation: "isolate" onto "auto"
 PASS isolation: "auto" onto "isolate"
