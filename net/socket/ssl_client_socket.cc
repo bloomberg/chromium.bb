@@ -7,12 +7,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/socket/ssl_client_socket_impl.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_key_logger.h"
 
 namespace net {
 
@@ -21,12 +21,8 @@ SSLClientSocket::SSLClientSocket()
       stapled_ocsp_response_received_(false) {}
 
 // static
-void SSLClientSocket::SetSSLKeyLogFile(const base::FilePath& path) {
-#if !defined(OS_NACL)
-  SSLClientSocketImpl::SetSSLKeyLogFile(path);
-#else
-  NOTIMPLEMENTED();
-#endif
+void SSLClientSocket::SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger) {
+  SSLClientSocketImpl::SetSSLKeyLogger(std::move(logger));
 }
 
 bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {

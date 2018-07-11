@@ -80,6 +80,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -334,8 +335,10 @@ void IOThread::Init() {
 
   // Export ssl keys if log file specified.
   base::FilePath ssl_keylog_file = GetSSLKeyLogFile(command_line);
-  if (!ssl_keylog_file.empty())
-    net::SSLClientSocket::SetSSLKeyLogFile(ssl_keylog_file);
+  if (!ssl_keylog_file.empty()) {
+    net::SSLClientSocket::SetSSLKeyLogger(
+        std::make_unique<net::SSLKeyLoggerImpl>(ssl_keylog_file));
+  }
 
   DCHECK(!globals_);
   globals_ = new Globals;

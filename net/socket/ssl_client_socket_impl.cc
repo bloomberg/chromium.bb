@@ -51,6 +51,7 @@
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_key_logger.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/token_binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -60,10 +61,6 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-
-#if !defined(OS_NACL)
-#include "net/ssl/ssl_key_logger.h"
-#endif
 
 #if !defined(NET_DISABLE_BROTLI)
 #include "third_party/brotli/include/brotli/decode.h"
@@ -315,13 +312,11 @@ class SSLClientSocketImpl::SSLContext {
     return SSL_set_ex_data(ssl, ssl_socket_data_index_, socket) != 0;
   }
 
-#if !defined(OS_NACL)
-  void SetSSLKeyLogFile(const base::FilePath& path) {
+  void SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger) {
     DCHECK(!ssl_key_logger_);
-    ssl_key_logger_.reset(new SSLKeyLogger(path));
+    ssl_key_logger_ = std::move(logger);
     SSL_CTX_set_keylog_callback(ssl_ctx_.get(), KeyLogCallback);
   }
-#endif
 
   static const SSL_PRIVATE_KEY_METHOD kPrivateKeyMethod;
 
@@ -397,11 +392,9 @@ class SSLClientSocketImpl::SSLContext {
     return socket->PrivateKeyCompleteCallback(out, out_len, max_out);
   }
 
-#if !defined(OS_NACL)
   static void KeyLogCallback(const SSL* ssl, const char* line) {
     GetInstance()->ssl_key_logger_->WriteLine(line);
   }
-#endif
 
   static void InfoCallback(const SSL* ssl, int type, int value) {
     SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
@@ -425,9 +418,7 @@ class SSLClientSocketImpl::SSLContext {
 
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;
 
-#if !defined(OS_NACL)
   std::unique_ptr<SSLKeyLogger> ssl_key_logger_;
-#endif
 
   // TODO(davidben): Use a separate cache per URLRequestContext.
   // https://crbug.com/458365
@@ -491,12 +482,10 @@ SSLClientSocketImpl::~SSLClientSocketImpl() {
   Disconnect();
 }
 
-#if !defined(OS_NACL)
-void SSLClientSocketImpl::SetSSLKeyLogFile(
-    const base::FilePath& ssl_keylog_file) {
-  SSLContext::GetInstance()->SetSSLKeyLogFile(ssl_keylog_file);
+void SSLClientSocketImpl::SetSSLKeyLogger(
+    std::unique_ptr<SSLKeyLogger> logger) {
+  SSLContext::GetInstance()->SetSSLKeyLogger(std::move(logger));
 }
-#endif
 
 int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
                                               bool has_context,

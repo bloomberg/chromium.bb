@@ -20,16 +20,13 @@
 #include "net/socket/stream_socket.h"
 #include "net/ssl/token_binding.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CTVerifier;
+class SSLKeyLogger;
 class TransportSecurityState;
 
 // This struct groups together several fields which are used by various
@@ -70,14 +67,12 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
  public:
   SSLClientSocket();
 
-  // Log SSL key material to |path|. Must be called before any
+  // Log SSL key material to |logger|. Must be called before any
   // SSLClientSockets are created.
   //
   // TODO(davidben): Switch this to a parameter on the SSLClientSocketContext
-  // once https://crbug.com/458365 is resolved. To avoid a dependency from
-  // OS_NACL to file I/O logic, this will require splitting SSLKeyLogger into an
-  // interface, built with OS_NACL and a non-NaCl SSLKeyLoggerImpl.
-  static void SetSSLKeyLogFile(const base::FilePath& path);
+  // once https://crbug.com/458365 is resolved.
+  static void SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger);
 
   // Returns true if |error| is OK or |load_flags| ignores certificate errors
   // and |error| is a certificate error.

@@ -44,6 +44,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -311,7 +312,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
     ssl_key_log_file_set = true;
     base::FilePath ssl_key_log_file(ssl_key_log_file_name_);
-    net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file);
+    net::SSLClientSocket::SetSSLKeyLogger(
+        std::make_unique<net::SSLKeyLoggerImpl>(ssl_key_log_file));
   }
 
   if (user_agent_partial_)
