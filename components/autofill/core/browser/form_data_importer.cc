@@ -130,8 +130,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     // not match a masked server card. We can offer to upload either kind.
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
         submitted_form, *imported_credit_card,
-        imported_credit_card_record_type_ ==
-            ImportedCreditCardRecordType::LOCAL_CARD);
+        offering_upload_of_local_credit_card_);
   }
 }
 
@@ -172,9 +171,6 @@ bool FormDataImporter::ImportFormData(
   // - ImportCreditCard may update an existing card, or fill
   //   |imported_credit_card| with an extracted card. See .h for details of
   //   |should_return_local_card|.
-  // Reset |imported_credit_card_record_type_| every time we import data from
-  // form no matter whether ImportCreditCard() is called or not.
-  imported_credit_card_record_type_ = ImportedCreditCardRecordType::NO_CARD;
   bool cc_import = false;
   if (credit_card_autofill_enabled) {
     cc_import = ImportCreditCard(submitted_form, should_return_local_card,
@@ -309,6 +305,9 @@ bool FormDataImporter::ImportCreditCard(
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card) {
   DCHECK(!*imported_credit_card);
+  // Reset |offering_upload_of_local_credit_card_| every time a new credit card
+  // is imported.
+  offering_upload_of_local_credit_card_ = false;
 
   // The candidate for credit card import. There are many ways for the candidate
   // to be rejected (see everywhere this function returns false, below).
@@ -335,9 +334,6 @@ bool FormDataImporter::ImportCreditCard(
   }
   AutofillMetrics::LogSubmittedCardStateMetric(
       AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE);
-  // Can import one valid card per form. Start by treating it as NEW_CARD, but
-  // overwrite this type if we discover it is already a local or server card.
-  imported_credit_card_record_type_ = ImportedCreditCardRecordType::NEW_CARD;
 
   // Attempt to merge with an existing credit card. Don't present a prompt if we
   // have already saved this card number, unless |should_return_local_card| is
@@ -351,14 +347,13 @@ bool FormDataImporter::ImportCreditCard(
     CreditCard card_copy(*card);
     if (card_copy.UpdateFromImportedCard(candidate_credit_card, app_locale_)) {
       personal_data_manager_->UpdateCreditCard(card_copy);
-      // Mark that the credit card imported from the submitted form is
-      // already a local card.
-      imported_credit_card_record_type_ =
-          ImportedCreditCardRecordType::LOCAL_CARD;
       // If we should not return the local card, return that we merged it,
       // without setting |imported_credit_card|.
       if (!should_return_local_card)
         return true;
+      // Mark that the credit card potentially being offered to upload is
+      // already a local card.
+      offering_upload_of_local_credit_card_ = true;
 
       break;
     }
@@ -372,9 +367,6 @@ bool FormDataImporter::ImportCreditCard(
   for (const CreditCard* card :
        personal_data_manager_->GetServerCreditCards()) {
     if (candidate_credit_card.HasSameNumberAs(*card)) {
-      // Mark that the imported credit card is a server card.
-      imported_credit_card_record_type_ =
-          ImportedCreditCardRecordType::SERVER_CARD;
       // Record metric on whether expiration dates matched.
       if (candidate_credit_card.expiration_month() ==
               card->expiration_month() &&
