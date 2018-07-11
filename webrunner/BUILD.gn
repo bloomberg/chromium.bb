@@ -13,31 +13,59 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
+fuchsia_package("runner_pkg") {
+  binary = ":runner_exe"
+  package_name_override = "web_runner"
+}
+
+fuchsia_package_runner("runner") {
+  package = ":runner_pkg"
+  package_name_override = "web_runner"
+  package_deps = [ [
+        ":service_pkg",
+        "chromium",
+      ] ]
+}
+
+executable("runner_exe") {
+  sources = [
+    "app/component_controller_impl.cc",
+    "app/component_controller_impl.h",
+    "app/main.cc",
+    "app/web_content_runner.cc",
+    "app/web_content_runner.h",
+  ]
+  deps = [
+    ":fidl",
+    "//base",
+    "//url",
+  ]
+}
+
 # Uber-target, used by buildbots and :gn_all for discovery of all buildable
 # webrunner code.
 group("webrunner") {
   testonly = true
   deps = [
-    ":service_exec",
+    ":service_exe",
     ":service_unittests",
   ]
 }
 
 fuchsia_package("service_pkg") {
-  binary = ":service_exec"
+  binary = ":service_exe"
   package_name_override = "chromium"
 }
 
-executable("service_exec") {
+executable("service_exe") {
   deps = [
     ":fidl",
     ":service_lib",
     "//base",
     "//content/public/app:both",
   ]
-
   sources = [
-    "service/webrunner_main.cc",
+    "service/web_content_service_main.cc",
   ]
 }
 
