@@ -47633,6 +47633,7 @@ Full version information for the fingerprint enum values:
   <int value="9" label="Synced Notifications"/>
   <int value="10" label="WiFi Credentials"/>
   <int value="11" label="Reading List"/>
+  <int value="12" label="User Events"/>
 </enum>
 
 <enum name="UserType">

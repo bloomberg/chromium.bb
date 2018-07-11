@@ -1674,6 +1674,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
     {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+    {"userEventsCheckboxLabel", IDS_SETTINGS_USER_EVENTS_CHECKBOX_LABEL},
+    {"userEventsCheckboxText", IDS_SETTINGS_USER_EVENTS_CHECKBOX_TEXT},
     {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},

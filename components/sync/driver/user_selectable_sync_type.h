@@ -36,11 +36,12 @@ enum UserSelectableSyncType {
   SYNCED_NOTIFICATIONS = 9,
   WIFI_CREDENTIAL = 10,
   READING_LIST = 11,
+  USER_EVENTS = 12,
 
   // TODO(lgcheng) ARC_PACKAGE would be selectable.
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
-  SELECTABLE_DATATYPE_COUNT = 12,
+  SELECTABLE_DATATYPE_COUNT = 13,
 };
 
 }  // namespace user_selectable_type
