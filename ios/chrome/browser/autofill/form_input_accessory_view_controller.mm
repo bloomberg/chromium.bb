@@ -11,6 +11,7 @@
 #include "base/mac/scoped_block.h"
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -124,7 +125,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 }  // namespace
 
-@interface FormInputAccessoryViewController ()
+@interface FormInputAccessoryViewController ()<FormActivityObserver>
 
 // Allows injection of the JsSuggestionManager.
 - (instancetype)initWithWebState:(web::WebState*)webState
@@ -192,6 +193,10 @@ NSArray* FindDescendantToolbarItemsForActionName(
   // Logs UMA metrics for the keyboard accessory.
   std::unique_ptr<autofill::KeyboardAccessoryMetricsLogger>
       _keyboardAccessoryMetricsLogger;
+
+  // Bridge to observe form activity in |_webState|.
+  std::unique_ptr<autofill::FormActivityObserverBridge>
+      _formActivityObserverBridge;
 }
 
 @synthesize grayBackgroundView = _grayBackgroundView;
@@ -222,6 +227,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
+    _formActivityObserverBridge =
+        std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
     _providers = [providers copy];
     _suggestionsHaveBeenShown = NO;
     _keyboardAccessoryMetricsLogger.reset(
@@ -241,6 +248,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)dealloc {
   if (_webState) {
+    _formActivityObserverBridge.reset();
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
@@ -260,6 +268,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
+    _formActivityObserverBridge =
+        std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
 
     _providers = @[ FormSuggestionTabHelper::FromWebState(_webState)
                         ->GetAccessoryViewProvider() ];
@@ -273,6 +283,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 - (void)detachFromWebState {
   [self reset];
   if (_webState) {
+    _formActivityObserverBridge.reset();
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
@@ -454,6 +465,29 @@ NSArray* FindDescendantToolbarItemsForActionName(
 }
 
 #pragma mark -
+#pragma mark FormActivityObserver
+
+- (void)webState:(web::WebState*)webState
+    registeredFormActivity:(const web::FormActivityParams&)params {
+  DCHECK_EQ(_webState, webState);
+  web::URLVerificationTrustLevel trustLevel;
+  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
+  if (params.input_missing ||
+      trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
+      !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+    [self reset];
+    return;
+  }
+
+  if (params.type == "blur" || params.type == "change" ||
+      params.type == "form_changed") {
+    return;
+  }
+
+  [self retrieveAccessoryViewForForm:params webState:webState];
+}
+
+#pragma mark -
 #pragma mark CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
@@ -501,26 +535,6 @@ NSArray* FindDescendantToolbarItemsForActionName(
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
   [self reset];
-}
-
-- (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
-  DCHECK_EQ(_webState, webState);
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (params.input_missing ||
-      trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
-      !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
-    [self reset];
-    return;
-  }
-
-  if (params.type == "blur" || params.type == "change" ||
-      params.type == "form_changed") {
-    return;
-  }
-
-  [self retrieveAccessoryViewForForm:params webState:webState];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {

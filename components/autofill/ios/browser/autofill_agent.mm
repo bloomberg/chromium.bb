@@ -35,6 +35,7 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
+#import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -89,7 +90,9 @@ void GetFormAndField(autofill::FormData* form,
 
 }  // namespace
 
-@interface AutofillAgent ()<CRWWebStateObserver, PrefObserverDelegate>
+@interface AutofillAgent ()<CRWWebStateObserver,
+                            FormActivityObserver,
+                            PrefObserverDelegate>
 
 // Notifies the autofill manager when forms are detected on a page.
 - (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
@@ -191,6 +194,10 @@ void GetFormAndField(autofill::FormData* form,
   std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar prefChangeRegistrar_;
+
+  // Bridge to observe form activity in |webState_|.
+  std::unique_ptr<autofill::FormActivityObserverBridge>
+      formActivityObserverBridge_;
 }
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -204,6 +211,8 @@ void GetFormAndField(autofill::FormData* form,
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     webState_->AddObserver(webStateObserverBridge_.get());
+    formActivityObserverBridge_ =
+        std::make_unique<autofill::FormActivityObserverBridge>(webState_, self);
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
     prefChangeRegistrar_.Init(prefService);
     prefObserverBridge_->ObserveChangesForPreference(
@@ -222,6 +231,7 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)dealloc {
   if (webState_) {
+    formActivityObserverBridge_.reset();
     webState_->RemoveObserver(webStateObserverBridge_.get());
     webStateObserverBridge_.reset();
     webState_ = nullptr;
@@ -232,6 +242,7 @@ void GetFormAndField(autofill::FormData* form,
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   if (webState_) {
+    formActivityObserverBridge_.reset();
     webState_->RemoveObserver(webStateObserverBridge_.get());
     webStateObserverBridge_.reset();
     webState_ = nullptr;
@@ -506,51 +517,6 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)webState:(web::WebState*)webState
-    didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated
-                       isMainFrame:(BOOL)isMainFrame {
-  if (!isMainFrame) {
-    // Saving from iframes is not implemented.
-    return;
-  }
-
-  if (![self isAutofillEnabled])
-    return;
-
-  __weak AutofillAgent* weakSelf = self;
-  id completionHandler = ^(BOOL success, const FormDataVector& forms) {
-    AutofillAgent* strongSelf = weakSelf;
-    if (!strongSelf || !success)
-      return;
-    autofill::AutofillManager* autofillManager =
-        [strongSelf autofillManagerFromWebState:webState];
-    if (!autofillManager || forms.empty())
-      return;
-    if (forms.size() > 1) {
-      DLOG(WARNING) << "Only one form should be extracted.";
-      return;
-    }
-    [strongSelf notifyAutofillManager:autofillManager
-                     ofFormsSubmitted:forms
-                        userInitiated:userInitiated];
-
-  };
-
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-
-  // This code is racing against the new page loading and will not get the
-  // password form data if the page has changed. In most cases this code wins
-  // the race.
-  // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
-  [self fetchFormsFiltered:YES
-                        withName:base::UTF8ToUTF16(formName)
-      minimumRequiredFieldsCount:1
-                         pageURL:pageURL
-               completionHandler:completionHandler];
-}
-
-- (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   // Ignore navigations within the same document, e.g., history.pushState().
   if (navigation->IsSameDocument())
@@ -620,8 +586,11 @@ void GetFormAndField(autofill::FormData* form,
                completionHandler:completionHandler];
 }
 
+#pragma mark -
+#pragma mark FormActivityObserver
+
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
+    registeredFormActivity:(const web::FormActivityParams&)params {
   if (![self isAutofillEnabled])
     return;
 
@@ -676,6 +645,51 @@ void GetFormAndField(autofill::FormData* form,
   // requirement because key/value suggestions are offered even on short forms.
   [self fetchFormsFiltered:YES
                         withName:base::UTF8ToUTF16(params.form_name)
+      minimumRequiredFieldsCount:1
+                         pageURL:pageURL
+               completionHandler:completionHandler];
+}
+
+- (void)webState:(web::WebState*)webState
+    submittedDocumentWithFormNamed:(const std::string&)formName
+                    hasUserGesture:(BOOL)hasUserGesture
+                   formInMainFrame:(BOOL)formInMainFrame {
+  if (!formInMainFrame) {
+    // Saving from iframes is not implemented.
+    return;
+  }
+
+  if (![self isAutofillEnabled])
+    return;
+
+  __weak AutofillAgent* weakSelf = self;
+  id completionHandler = ^(BOOL success, const FormDataVector& forms) {
+    AutofillAgent* strongSelf = weakSelf;
+    if (!strongSelf || !success)
+      return;
+    autofill::AutofillManager* autofillManager =
+        [strongSelf autofillManagerFromWebState:webState];
+    if (!autofillManager || forms.empty())
+      return;
+    if (forms.size() > 1) {
+      DLOG(WARNING) << "Only one form should be extracted.";
+      return;
+    }
+    [strongSelf notifyAutofillManager:autofillManager
+                     ofFormsSubmitted:forms
+                        userInitiated:hasUserGesture];
+
+  };
+
+  web::URLVerificationTrustLevel trustLevel;
+  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
+
+  // This code is racing against the new page loading and will not get the
+  // password form data if the page has changed. In most cases this code wins
+  // the race.
+  // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
+  [self fetchFormsFiltered:YES
+                        withName:base::UTF8ToUTF16(formName)
       minimumRequiredFieldsCount:1
                          pageURL:pageURL
                completionHandler:completionHandler];

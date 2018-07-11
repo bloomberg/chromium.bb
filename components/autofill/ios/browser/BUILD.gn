@@ -35,6 +35,7 @@ source_set("browser") {
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/autofill/ios/form_util",
     "//components/prefs:prefs",
     "//components/prefs/ios",
     "//google_apis",
