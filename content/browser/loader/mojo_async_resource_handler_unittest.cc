@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -1479,7 +1480,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
   request_->Start();
 
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  url_loader_client_.RunUntilComplete();
+  url_request_delegate_.RunUntilComplete();
 
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -1515,7 +1516,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(status));
-  url_loader_client_.RunUntilComplete();
+  url_request_delegate_.RunUntilComplete();
   EXPECT_TRUE(ResourceRequestInfoImpl::ForRequest(request_.get())
                   ->blocked_response_from_reaching_renderer());
   EXPECT_EQ(0, url_loader_client_.body_transfer_size());
