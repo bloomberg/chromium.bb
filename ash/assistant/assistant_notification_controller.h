@@ -35,7 +35,7 @@ class ASH_EXPORT AssistantNotificationController
   void OnRemoveNotification(const std::string& grouping_id) override;
 
  private:
-  AssistantController* assistant_controller_;
+  AssistantController* const assistant_controller_;  // Owned by Shell.
 
   mojo::Binding<chromeos::assistant::mojom::AssistantNotificationSubscriber>
       assistant_notification_subscriber_binding_;

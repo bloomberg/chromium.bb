@@ -104,7 +104,7 @@ class AssistantInteractionController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  // Owned by AssisantController.
+  // Owned by AssistantController.
   AssistantUiController* assistant_ui_controller_ = nullptr;
 
   mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>

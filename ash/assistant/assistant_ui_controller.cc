@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
@@ -71,6 +72,17 @@ void AssistantUiController::SetAssistantInteractionController(
     assistant_interaction_controller_->AddModelObserver(this);
 }
 
+void AssistantUiController::SetAssistantScreenContextController(
+    AssistantScreenContextController* assistant_screen_context_controller) {
+  if (assistant_screen_context_controller_)
+    assistant_screen_context_controller_->RemoveModelObserver(this);
+
+  assistant_screen_context_controller_ = assistant_screen_context_controller;
+
+  if (assistant_screen_context_controller_)
+    assistant_screen_context_controller_->AddModelObserver(this);
+}
+
 void AssistantUiController::SetAssistantSetup(
     mojom::AssistantSetup* assistant_setup) {
   assistant_setup_ = assistant_setup;
@@ -125,6 +137,17 @@ void AssistantUiController::OnInteractionStateChanged(
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
   UpdateUiMode();
+}
+
+void AssistantUiController::OnScreenContextRequestStateChanged(
+    ScreenContextRequestState request_state) {
+  if (!assistant_ui_model_.visible())
+    return;
+
+  // Once screen context request state has become idle, it is safe to activate
+  // the Assistant widget without causing complications.
+  if (request_state == ScreenContextRequestState::kIdle)
+    container_view_->GetWidget()->Activate();
 }
 
 bool AssistantUiController::OnCaptionButtonPressed(CaptionButtonId id) {
@@ -211,9 +234,10 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     container_view_->GetWidget()->AddObserver(this);
   }
 
-  // TODO(dmblack): Initially show UI as inactive and only activate after the
-  // screen context has been sent to the server.
-  container_view_->GetWidget()->Show();
+  // Note that we initially show the Assistant widget as inactive. This is
+  // necessary due to limitations imposed by retrieving screen context. Once we
+  // have finished retrieving screen context, the Assistant widget is activated.
+  container_view_->GetWidget()->ShowInactive();
   assistant_ui_model_.SetVisible(true, source);
 }
 

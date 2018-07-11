@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
@@ -27,21 +25,16 @@ namespace base {
 class UnguessableToken;
 }  // namespace base
 
-namespace ui {
-class LayerTreeOwner;
-}  // namespace ui
-
 namespace ash {
 
 class AssistantControllerObserver;
 class AssistantInteractionController;
 class AssistantNotificationController;
+class AssistantScreenContextController;
 class AssistantUiController;
 
 class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
-      public AssistantUiModelObserver,
-      public HighlighterController::Observer,
       public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
   AssistantController();
@@ -79,6 +72,8 @@ class ASH_EXPORT AssistantController
 
   // mojom::AssistantController:
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
+  // TODO(dmblack): Expose RequestScreenshot(...) over mojo through
+  // AssistantScreenContextController.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantImageDownloader(
@@ -88,12 +83,6 @@ class ASH_EXPORT AssistantController
       mojom::WebContentsManagerPtr web_contents_manager) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
-
-  // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
-
-  // HighlighterController::Observer:
-  void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void OnOpenUrlFromTab(const GURL& url) override;
@@ -107,14 +96,22 @@ class ASH_EXPORT AssistantController
     return assistant_interaction_controller_.get();
   }
 
+  AssistantNotificationController* notification_controller() {
+    DCHECK(assistant_notification_controller_);
+    return assistant_notification_controller_.get();
+  }
+
+  AssistantScreenContextController* screen_context_controller() {
+    DCHECK(assistant_screen_context_controller_);
+    return assistant_screen_context_controller_.get();
+  }
+
   AssistantUiController* ui_controller() {
     DCHECK(assistant_ui_controller_);
     return assistant_ui_controller_.get();
   }
 
   base::WeakPtr<AssistantController> GetWeakPtr();
-
-  std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
   // The observer list should be initialized early so that sub-controllers may
@@ -137,10 +134,13 @@ class ASH_EXPORT AssistantController
   std::unique_ptr<AssistantInteractionController>
       assistant_interaction_controller_;
 
-  std::unique_ptr<AssistantUiController> assistant_ui_controller_;
-
   std::unique_ptr<AssistantNotificationController>
       assistant_notification_controller_;
+
+  std::unique_ptr<AssistantScreenContextController>
+      assistant_screen_context_controller_;
+
+  std::unique_ptr<AssistantUiController> assistant_ui_controller_;
 
   base::WeakPtrFactory<AssistantController> weak_factory_;
 
