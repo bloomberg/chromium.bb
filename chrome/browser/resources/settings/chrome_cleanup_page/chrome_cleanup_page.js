@@ -654,7 +654,7 @@ Polymer({
 
       // Card's icon indicates a warning (in case of failure).
       WARNING: {
-        statusIcon: 'cr:error',
+        statusIcon: 'settings:error',
         statusIconClassName: 'status-icon-warning',
       },
 

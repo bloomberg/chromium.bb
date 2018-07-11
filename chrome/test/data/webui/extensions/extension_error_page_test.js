@@ -97,7 +97,7 @@ cr.define('extension_error_page_tests', function() {
       let error = errorElements[0];
       expectEquals(
           'message', error.querySelector('.error-message').textContent.trim());
-      expectTrue(error.querySelector('iron-icon').icon == 'cr:error');
+      expectTrue(error.querySelector('iron-icon').icon == 'error');
 
       const manifestError = Object.assign(
           {
@@ -115,7 +115,7 @@ cr.define('extension_error_page_tests', function() {
       expectEquals(
           'invalid key',
           error.querySelector('.error-message').textContent.trim());
-      expectTrue(error.querySelector('iron-icon').icon == 'cr:warning');
+      expectTrue(error.querySelector('iron-icon').icon == 'warning');
 
       mockDelegate.testClickingCalls(
           error.querySelector('.icon-delete-gray button'), 'deleteErrors',
