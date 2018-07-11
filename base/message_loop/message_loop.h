@@ -271,8 +271,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   const Type type_;
 
 #if defined(OS_WIN)
-  // Tracks if we have requested high resolution timers. Its only use is to
-  // turn off the high resolution timer upon loop destruction.
+  // Tracks if this MessageLoop has requested system-wide high resolution timers
+  // for its sleep period. Used to downvote that request when the sleep is over.
   bool in_high_res_mode_ = false;
 #endif
 

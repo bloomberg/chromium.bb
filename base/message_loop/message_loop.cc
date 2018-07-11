@@ -192,7 +192,8 @@ MessageLoop::~MessageLoop() {
 #if defined(OS_WIN)
   if (in_high_res_mode_)
     Time::ActivateHighResolutionTimer(false);
-#endif
+#endif  // defined (OS_WIN)
+
   // Clean up any unprocessed tasks, but take care: deleting a task could
   // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
   // limit on the number of times we will allow a deleted task to generate more
@@ -490,6 +491,18 @@ bool MessageLoop::DoWork() {
   if (!task_execution_allowed_)
     return false;
 
+#if defined(OS_WIN)
+  // Raising timer frequency has a system-wide effect. Ensure this thread's vote
+  // to raise the frequency is only active while it is sleeping (with pending
+  // hi-res tasks) to avoid unnecessarily keeping the entire system in a high
+  // frequency mode while this thread isn't sleeping (even if it has pending
+  // hi-res delayed tasks). Ref. https://crbug.com/854237#c3
+  if (in_high_res_mode_) {
+    in_high_res_mode_ = false;
+    Time::ActivateHighResolutionTimer(false);
+  }
+#endif  // defined (OS_WIN)
+
   // Execute oldest task.
   while (incoming_task_queue_->triage_tasks().HasTasks()) {
     if (!scheduled_wakeup_.next_run_time.is_null()) {
@@ -660,15 +673,16 @@ bool MessageLoop::DoIdleWork() {
     // for some tasks.
     need_high_res_timers =
         incoming_task_queue_->HasPendingHighResolutionTasks();
-#endif
+#endif  // defined (OS_WIN)
   }
 
 #if defined(OS_WIN)
-  if (in_high_res_mode_ != need_high_res_timers) {
-    in_high_res_mode_ = need_high_res_timers;
-    Time::ActivateHighResolutionTimer(in_high_res_mode_);
+  if (need_high_res_timers) {
+    DCHECK(!in_high_res_mode_);
+    in_high_res_mode_ = true;
+    Time::ActivateHighResolutionTimer(true);
   }
-#endif
+#endif  // defined (OS_WIN)
 
   // When we return we will do a kernel wait for more tasks.
   return false;
