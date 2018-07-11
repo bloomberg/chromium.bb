@@ -148,9 +148,9 @@ void RankerModelLoaderImpl::StartLoadFromFile() {
   load_start_time_ = base::TimeTicks::Now();
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::Bind(&LoadFromFile, model_path_),
-      base::Bind(&RankerModelLoaderImpl::OnFileLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LoadFromFile, model_path_),
+      base::BindOnce(&RankerModelLoaderImpl::OnFileLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RankerModelLoaderImpl::OnFileLoaded(const std::string& data) {
@@ -221,8 +221,8 @@ void RankerModelLoaderImpl::StartLoadFromURL() {
       load_start_time_ + base::TimeDelta::FromMinutes(kMinRetryDelayMins);
   bool request_started =
       url_fetcher_->Request(model_url_,
-                            base::Bind(&RankerModelLoaderImpl::OnURLFetched,
-                                       weak_ptr_factory_.GetWeakPtr()),
+                            base::BindOnce(&RankerModelLoaderImpl::OnURLFetched,
+                                           weak_ptr_factory_.GetWeakPtr()),
                             url_loader_factory_.get());
 
   // |url_fetcher_| maintains a request retry counter. If all allowed attempts

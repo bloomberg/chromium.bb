@@ -24,7 +24,7 @@ namespace assist_ranker {
 class RankerURLFetcher {
  public:
   // Callback type for Request().
-  typedef base::Callback<void(bool, const std::string&)> Callback;
+  typedef base::OnceCallback<void(bool, const std::string&)> Callback;
 
   // Represents internal state if the fetch is completed successfully.
   enum State {
@@ -45,7 +45,7 @@ class RankerURLFetcher {
   // Returns false if the previous request is not finished, or the request
   // is omitted due to retry limitation.
   bool Request(const GURL& url,
-               const Callback& callback,
+               Callback callback,
                network::mojom::URLLoaderFactory* url_loader_factory);
 
   // Gets internal state.
