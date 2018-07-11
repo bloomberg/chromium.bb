@@ -187,8 +187,8 @@ TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
 }
 
 TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
-  BrowserAccessibility* wrapper = [accessibility_ browserAccessibility];
-  ASSERT_NE(nullptr, wrapper);
+  BrowserAccessibility* owner = [accessibility_ owner];
+  ASSERT_NE(nullptr, owner);
 
   // Insertion but no deletion.
 

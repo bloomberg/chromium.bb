@@ -411,7 +411,7 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
     DCHECK(obj);
     const AXTextEdit text_edit = [obj computeTextEdit];
     if (!text_edit.IsEmpty())
-      text_edits_[[obj browserAccessibility]->GetId()] = text_edit;
+      text_edits_[[obj owner]->GetId()] = text_edit;
   }
 }
 
