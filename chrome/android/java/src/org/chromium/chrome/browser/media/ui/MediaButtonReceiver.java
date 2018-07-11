@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.ui;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.view.KeyEvent;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.AppHooks;
@@ -26,11 +27,18 @@ public abstract class MediaButtonReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent == null || !Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())
                 || !intent.hasExtra(Intent.EXTRA_KEY_EVENT)) {
-            Log.i(TAG, "Received unsupported intent: " + intent);
+            return;
         }
 
-        intent.setClass(context, getServiceClass());
         Log.i(TAG, "Receive broadcast message, starting foreground service");
+
+        KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+        if (event == null)
+            Log.i(TAG, "no event");
+        else
+            Log.i(TAG, "action: " + event.getAction());
+
+        intent.setClass(context, getServiceClass());
         AppHooks.get().startForegroundService(intent);
     }
 }
