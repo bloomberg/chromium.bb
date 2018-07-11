@@ -6,8 +6,6 @@ import unittest
 from core import perf_data_generator
 from core.perf_data_generator import BenchmarkMetadata
 
-from telemetry import benchmark
-
 import mock
 import json
 
@@ -86,243 +84,159 @@ class PerfDataGeneratorTest(unittest.TestCase):
       perf_data_generator.verify_all_tests_in_benchmark_csv(tests, benchmarks)
     self.assertTrue('Unknown test' in context.exception.message)
 
-  def testGenerateTelemetryTestForNonReferenceBuild(self):
-    swarming_dimensions = [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}]
-    test = perf_data_generator.generate_telemetry_test(
-        swarming_dimensions, 'speedometer', 'release')
+
+  def testGenerateCPlusPlusTestSuite(self):
+    swarming_dimensions = [
+        {'os': 'SkyNet', 'pool': 'T-RIP'}
+    ]
+    test_config = {
+        'platform': 'win',
+        'dimension': swarming_dimensions,
+    }
+    test = {
+        'isolate': 'angle_perftest',
+        'telemetry': False,
+        'num_shards': 1
+    }
+    returned_test = perf_data_generator.generate_performance_test(
+        test_config, test)
+
     expected_generated_test = {
-        'override_compile_targets': ['telemetry_perf_tests'],
-        'args': ['speedometer', '-v', '--upload-results',
-                 '--browser=release', '--output-format=histograms'],
+        'override_compile_targets': ['angle_perftest'],
+        'isolate_name': 'angle_perftest',
+        'args': ['--non-telemetry=true', '--migrated-test=true'],
+        'trigger_script': {
+          'args': [
+            '--multiple-dimension-script-verbose',
+            'True'
+          ],
+          'script': '//testing/trigger_scripts/perf_device_trigger.py'
+        },
+        'merge': {
+          'args': [
+            '--service-account-file',
+            'C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json'
+          ],
+          'script': '//tools/perf/process_perf_results.py'
+        },
         'swarming': {
           'ignore_task_failure': False,
-          'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
-          'hard_timeout': 10800,
           'can_use_on_swarming_builders': True,
-          'expiration': 36000,
-          'io_timeout': 1200,
+          'expiration': 21600,
+          'io_timeout': 1800,
+          'hard_timeout': 25200,
           'upload_test_results': True,
+          'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
+          'shards': 1
         },
-        'name': 'speedometer',
-        'isolate_name': 'telemetry_perf_tests',
+        'name': 'angle_perftest'
       }
-    self.assertEquals(test, expected_generated_test)
+    self.assertEquals(returned_test, expected_generated_test)
 
-  def testGenerateTelemetryTestForReferenceBuild(self):
-    swarming_dimensions = [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}]
-    test = perf_data_generator.generate_telemetry_test(
-        swarming_dimensions, 'speedometer', 'reference')
+  def testGeneratePerformanceTestSuiteWebview(self):
+    swarming_dimensions = [
+        {'os': 'SkyNet', 'pool': 'T-RIP'}
+    ]
+    test_config = {
+        'platform': 'android-webview',
+        'dimension': swarming_dimensions,
+    }
+    test = {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=shard_map.json',
+          ],
+        'num_shards': 26
+    }
+    returned_test = perf_data_generator.generate_performance_test(
+        test_config, test)
+
     expected_generated_test = {
-        'override_compile_targets': ['telemetry_perf_tests'],
-        'args': ['speedometer', '-v', '--upload-results',
-                 '--browser=reference', '--output-format=histograms',
-                 '--max-failures=5',
-                 '--output-trace-tag=_ref'],
+        'override_compile_targets': ['performance_test_suite'],
+        'isolate_name': 'performance_test_suite',
+        'args': ['-v', '--browser=android-webview', '--upload-results',
+                 '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk',
+                 '--run-ref-build',
+                 '--test-shard-map-filename=shard_map.json'],
+        'trigger_script': {
+          'args': [
+            '--multiple-dimension-script-verbose',
+            'True'
+          ],
+          'script': '//testing/trigger_scripts/perf_device_trigger.py'
+        },
+        'merge': {
+          'args': [
+            '--service-account-file',
+            '/creds/service_accounts/service-account-chromium-perf-histograms.json'
+          ],
+          'script': '//tools/perf/process_perf_results.py'
+        },
         'swarming': {
-          'ignore_task_failure': True,
-          'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
-          'hard_timeout': 10800,
+          'ignore_task_failure': False,
           'can_use_on_swarming_builders': True,
-          'expiration': 36000,
-          'io_timeout': 1200,
+          'expiration': 21600,
+          'io_timeout': 1800,
+          'hard_timeout': 25200,
           'upload_test_results': True,
+          'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
+          'shards': 26
         },
-        'name': 'speedometer.reference',
-        'isolate_name': 'telemetry_perf_tests',
+        'name': 'performance_test_suite'
       }
-    self.assertEquals(test, expected_generated_test)
+    self.assertEquals(returned_test, expected_generated_test)
 
-  def testGenerateTelemetryTestsWebView(self):
-    class RegularBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'regular'
-
+  def testGeneratePerformanceTestSuite(self):
     swarming_dimensions = [
-        {'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP', 'device_ids': ['a']}
+        {'os': 'SkyNet', 'pool': 'T-RIP'}
     ]
     test_config = {
         'platform': 'android',
-        'swarming_dimensions': swarming_dimensions,
-        'replace_system_webview': True,
+        'dimension': swarming_dimensions,
     }
-    sharding_map = {'fake': {'regular': 'a'}}
-    benchmarks = [RegularBenchmark]
-    tests = perf_data_generator.generate_telemetry_tests(
-        'fake', test_config, benchmarks, sharding_map, ['blacklisted'])
-
-    self.assertEqual(len(tests), 1)
-    test = tests[0]
-    self.assertEquals(test['args'], [
-        'regular', '-v', '--upload-results',
-        '--browser=android-webview', '--output-format=histograms',
-        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk'])
-    self.assertEquals(test['isolate_name'], 'telemetry_perf_webview_tests')
-
-  def testGenerateTelemetryTestsBlacklistedReferenceBuildTest(self):
-    class BlacklistedBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'blacklisted'
-
-    class NotBlacklistedBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'not_blacklisted'
-
-    swarming_dimensions = [
-        {'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP', 'device_ids': ['a']}
-    ]
-    test_config = {
-        'platform': 'android',
-        'swarming_dimensions': swarming_dimensions,
+    test = {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=shard_map.json',
+          ],
+        'num_shards': 26
     }
-    sharding_map = {'fake': {'blacklisted': 'a', 'not_blacklisted': 'a'}}
-    benchmarks = [BlacklistedBenchmark, NotBlacklistedBenchmark]
-    tests = perf_data_generator.generate_telemetry_tests(
-        'fake', test_config, benchmarks, sharding_map, ['blacklisted'])
+    returned_test = perf_data_generator.generate_performance_test(
+        test_config, test)
 
-    generated_test_names = set(t['name'] for t in tests)
-    self.assertEquals(
-        generated_test_names,
-        {'blacklisted', 'not_blacklisted', 'not_blacklisted.reference'})
-
-
-  def testRemoveBlacklistedTestsNoop(self):
-    tests = [{
-        'swarming': {
-            'dimension_sets': [{
-                'id': 'build1-b1',
-            }]
+    expected_generated_test = {
+        'override_compile_targets': ['performance_test_suite'],
+        'isolate_name': 'performance_test_suite',
+        'args': ['-v', '--browser=android-chromium', '--upload-results',
+                 '--run-ref-build',
+                 '--test-shard-map-filename=shard_map.json'],
+        'trigger_script': {
+          'args': [
+            '--multiple-dimension-script-verbose',
+            'True'
+          ],
+          'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
-        'name': 'test',
-    }]
-    self.assertEqual(
-        perf_data_generator.remove_blacklisted_device_tests(tests, []), (
-            tests, {}))
-
-  def testRemoveBlacklistedTestsShouldRemove(self):
-    tests = [{
-        'swarming': {
-            'dimension_sets': [{
-                'id': 'build1-b1',
-            }]
+        'merge': {
+          'args': [
+            '--service-account-file',
+            '/creds/service_accounts/service-account-chromium-perf-histograms.json'
+          ],
+          'script': '//tools/perf/process_perf_results.py'
         },
-        'name': 'test',
-    }]
-    self.assertEqual(
-        perf_data_generator.remove_blacklisted_device_tests(
-            tests, ['build1-b1']), ([], {'build1-b1': ['test']}))
-
-  def testRemoveBlacklistedTestsShouldRemoveMultiple(self):
-    tests = [{
         'swarming': {
-            'dimension_sets': [{
-                'id': 'build1-b1',
-            }]
+          'ignore_task_failure': False,
+          'can_use_on_swarming_builders': True,
+          'expiration': 21600,
+          'io_timeout': 1800,
+          'hard_timeout': 25200,
+          'upload_test_results': True,
+          'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
+          'shards': 26
         },
-        'name': 'test',
-    }, {
-        'swarming': {
-            'dimension_sets': [{
-                'id': 'build2-b1',
-            }]
-        },
-        'name': 'other_test',
-    }, {
-        'swarming': {
-            'dimension_sets': [{
-                'id': 'build2-b1',
-            }]
-        },
-        'name': 'test',
-    }]
-    self.assertEqual(
-        perf_data_generator.remove_blacklisted_device_tests(
-            tests, ['build1-b1', 'build2-b1']), ([], {
-                'build1-b1': ['test'],
-                'build2-b1': ['other_test', 'test'],
-            }))
-
-  def testShouldBenchmarksBeScheduledBadOS(self):
-    class RegularBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'regular'
-
-    with self.assertRaises(TypeError):
-      perf_data_generator.ShouldBenchmarksBeScheduled(
-          RegularBenchmark, 'bot_name', 'os_name', None)
-
-  def testShouldBenchmarksBeScheduledShouldRun(self):
-    class RegularBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'regular'
-    valid_os_list = ['mac', 'android', 'windows', 'linux']
-    for os in valid_os_list:
-      self.assertTrue(
-          perf_data_generator.ShouldBenchmarksBeScheduled(
-              RegularBenchmark, 'bot_name', os, None))
-
-  def testShouldBenchmarkBeScheduledSupportedPlatform(self):
-    class RegularBenchmark(benchmark.Benchmark):
-      SUPPORTED_PLATFORMS = []
-
-      @classmethod
-      def Name(cls):
-        return 'regular'
-
-    self.assertFalse(
-        perf_data_generator.ShouldBenchmarksBeScheduled(
-            RegularBenchmark, 'bot_name', 'mac', None))
-
-  def testListsAlphabetical(self):
-    keys = [
-        'BENCHMARK_REF_BUILD_BLACKLIST',
-        'SVELTE_DEVICE_LIST'
-    ]
-    for key in keys:
-      lst = getattr(perf_data_generator, key)
-      self.assertEqual(sorted(lst), lst, 'please sort %s' % key)
-
-  def testGenerateCplusplusIsolateScriptTest(self):
-    dimension={
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'Chrome-perf',
-        'device_ids': [
-          'build92-m1', 'build93-m1',
-          'build94-m1', 'build95-m1', 'build96-m1'
-        ],
-        'perf_tests': [
-          ('angle_perftests', 'build94-m1'),
-        ],
+        'name': 'performance_test_suite'
       }
-    test = perf_data_generator.generate_cplusplus_isolate_script_test(dimension)
-    test = test[0]
-    self.assertEqual(test['name'], 'angle_perftests')
-    self.assertEqual(test['isolate_name'], 'angle_perftests')
+    self.assertEquals(returned_test, expected_generated_test)
 
-  def testGenerateCplusplusIsolateScriptTestWithArgs(self):
-    dimension={
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1',
-      'pool': 'Chrome-perf',
-      'device_ids': [
-        'build92-m1', 'build93-m1',
-        'build94-m1', 'build95-m1', 'build96-m1'
-      ],
-      'perf_tests_with_args': [
-        ('passthrough_command_buffer_perftests', 'build94-m1',
-          ['--use-cmd-decoder=passthrough', '--use-angle=gl-null'],
-          'command_buffer_perftests')
-      ]
-    }
-    test = perf_data_generator.generate_cplusplus_isolate_script_test_with_args(
-              dimension)
-    test = test[0]
-    self.assertEqual(test['name'], 'passthrough_command_buffer_perftests')
-    self.assertEqual(test['isolate_name'], 'command_buffer_perftests')
-    self.assertTrue('--use-cmd-decoder=passthrough' in test['args'])
-    self.assertTrue('--use-angle=gl-null' in test['args'])
