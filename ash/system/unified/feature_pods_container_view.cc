@@ -84,6 +84,11 @@ void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
   SchedulePaint();
 }
 
+void FeaturePodsContainerView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  UpdateChildVisibility();
+}
+
 void FeaturePodsContainerView::Layout() {
   UpdateCollapsedSidePadding();
 
