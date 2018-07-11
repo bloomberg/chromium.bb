@@ -51,8 +51,8 @@ def parse_args(extra_args=None, tests_included=False):
     if not '--platform' in extra_args:
         args.extend(['--platform', 'test'])
 
-    if not '--child-processes' in extra_args:
-        args.extend(['--child-processes', 1])
+    if not {'--jobs', '-j', '--child-processes'}.intersection(set(args)):
+        args.extend(['--jobs', 1])
     args.extend(extra_args)
     if not tests_included:
         # We use the glob to test that globbing works.
@@ -217,17 +217,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_max_locked_shards(self):
         # Tests for the default of using one locked shard even in the case of more than one child process.
-        _, regular_output, _ = logging_run(['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
+        _, regular_output, _ = logging_run(['--debug-rwt-logging', '--jobs', '2'], shared_port=False)
         self.assertTrue(any('1 locked' in line for line in regular_output.buflist))
 
     def test_child_processes_2(self):
         _, regular_output, _ = logging_run(
-            ['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
+            ['--debug-rwt-logging', '--jobs', '2'], shared_port=False)
         self.assertTrue(any(['Running 2 ' in line for line in regular_output.buflist]))
 
     def test_child_processes_min(self):
         _, regular_output, _ = logging_run(
-            ['--debug-rwt-logging', '--child-processes', '2', '-i', 'passes/virtual_passes', 'passes'],
+            ['--debug-rwt-logging', '--jobs', '2', '-i', 'passes/virtual_passes', 'passes'],
             tests_included=True, shared_port=False)
         self.assertTrue(any(['Running 1 ' in line for line in regular_output.buflist]))
 
@@ -252,11 +252,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # WorkerExceptions (a subclass of BaseException), which have a string capture of the stack which can
         # be printed, but don't display properly in the unit test exception handlers.
         with self.assertRaises(BaseException):
-            logging_run(['failures/expected/exception.html', '--child-processes', '1'], tests_included=True)
+            logging_run(['failures/expected/exception.html', '--jobs', '1'], tests_included=True)
 
         with self.assertRaises(BaseException):
             logging_run(
-                ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
+                ['--jobs', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
                 tests_included=True,
                 shared_port=False)
 
@@ -269,11 +269,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_keyboard_interrupt(self):
         # Note that this also tests running a test marked as SKIP if
         # you specify it explicitly.
-        details, _, _ = logging_run(['failures/expected/keyboard.html', '--child-processes', '1'], tests_included=True)
+        details, _, _ = logging_run(['failures/expected/keyboard.html', '--jobs', '1'], tests_included=True)
         self.assertEqual(details.exit_code, exit_codes.INTERRUPTED_EXIT_STATUS)
 
         _, regular_output, _ = logging_run(
-            ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'],
+            ['failures/expected/keyboard.html', 'passes/text.html', '--jobs', '2', '--skipped=ignore'],
             tests_included=True, shared_port=False)
         self.assertTrue(any(['Interrupted, exiting' in line for line in regular_output.buflist]))
 
@@ -1044,7 +1044,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # see the verbose log output. However, we can't use logging_run() because using
         # output_capture to capture stdout and stderr latter results in a nonpicklable host.
 
-        options, parsed_args = parse_args(['--verbose', '--fully-parallel', '--child-processes',
+        options, parsed_args = parse_args(['--verbose', '--fully-parallel', '--jobs',
                                            '2', 'passes/text.html', 'passes/image.html'], tests_included=True)
         host = MockHost()
         port_obj = host.port_factory.get(port_name=options.platform, options=options)

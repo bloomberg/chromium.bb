@@ -39,7 +39,7 @@ fi
 pkill -f "$RENDERER_REGEX"
 
 # Run with a single child process as this script attaches only to the first renderer.
-$SCRIPTS_DIR/run_web_tests.py --child-processes=1 --time-out-ms=100000000 --additional-driver-flag=--no-sandbox --additional-driver-flag=--renderer-startup-dialog $* &
+$SCRIPTS_DIR/run_web_tests.py --jobs=1 --time-out-ms=100000000 --additional-driver-flag=--no-sandbox --additional-driver-flag=--renderer-startup-dialog $* &
 
 wait_renderer_pid() {
   for i in {1..200}; do
