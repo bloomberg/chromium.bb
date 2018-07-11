@@ -3055,10 +3055,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
-    {"enable-chromevox-arc-support",
-     flag_descriptions::kEnableChromevoxArcSupportName,
-     flag_descriptions::kEnableChromevoxArcSupportDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
+    {"ChromeVoxArcSupport", flag_descriptions::kChromeVoxArcSupportName,
+     flag_descriptions::kChromeVoxArcSupportDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kChromeVoxArcSupport)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)

@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
@@ -78,33 +78,6 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
       1.0f / toplevel_window->layer()->device_scale_factor());
 
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
-}
-
-arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableChromeVoxArcSupport)) {
-    return arc::mojom::AccessibilityFilterType::ALL;
-  }
-
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager)
-    return arc::mojom::AccessibilityFilterType::OFF;
-
-  // TODO(yawano): Support the case where primary user is in background.
-  if (accessibility_manager->profile() != profile)
-    return arc::mojom::AccessibilityFilterType::OFF;
-
-  if (accessibility_manager->IsSpokenFeedbackEnabled() ||
-      accessibility_manager->IsSelectToSpeakEnabled() ||
-      accessibility_manager->IsSwitchAccessEnabled()) {
-    return arc::mojom::AccessibilityFilterType::ALL;
-  }
-
-  if (accessibility_manager->IsFocusHighlightEnabled())
-    return arc::mojom::AccessibilityFilterType::FOCUS;
-
-  return arc::mojom::AccessibilityFilterType::OFF;
 }
 
 }  // namespace
@@ -506,6 +479,38 @@ void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
 
   UpdateFilterType();
   UpdateWindowProperties(GetActiveWindow());
+}
+
+arc::mojom::AccessibilityFilterType
+ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
+  if (use_filter_type_all_for_test_)
+    return arc::mojom::AccessibilityFilterType::ALL;
+
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  if (!accessibility_manager)
+    return arc::mojom::AccessibilityFilterType::OFF;
+
+  // TODO(yawano): Support the case where primary user is in background.
+  if (accessibility_manager->profile() != profile)
+    return arc::mojom::AccessibilityFilterType::OFF;
+
+  if (accessibility_manager->IsSelectToSpeakEnabled() ||
+      accessibility_manager->IsSwitchAccessEnabled()) {
+    return arc::mojom::AccessibilityFilterType::ALL;
+  }
+
+  if (accessibility_manager->IsSpokenFeedbackEnabled()) {
+    return base::FeatureList::IsEnabled(
+               chromeos::features::kChromeVoxArcSupport)
+               ? arc::mojom::AccessibilityFilterType::ALL
+               : arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME;
+  }
+
+  if (accessibility_manager->IsFocusHighlightEnabled())
+    return arc::mojom::AccessibilityFilterType::FOCUS;
+
+  return arc::mojom::AccessibilityFilterType::OFF;
 }
 
 void ArcAccessibilityHelperBridge::UpdateFilterType() {

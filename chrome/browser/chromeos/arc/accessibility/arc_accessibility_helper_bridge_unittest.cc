@@ -183,11 +183,10 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
 };
 
 TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableChromeVoxArcSupport);
-
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
+  helper_bridge->set_filter_type_all_for_test();
+
   const auto& task_id_to_tree = helper_bridge->task_id_to_tree_for_test();
   ASSERT_EQ(0U, task_id_to_tree.size());
 
@@ -268,9 +267,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 // mojo: notification 2 removed
 // wayland: surface 2 removed
 TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableChromeVoxArcSupport);
-
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
   arc_notification_surface_manager_->AddObserver(helper_bridge);
@@ -364,9 +360,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
 // mojo: notification 1 created
 // mojo: notification 1 removed
 TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableChromeVoxArcSupport);
-
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
   arc_notification_surface_manager_->AddObserver(helper_bridge);
@@ -404,8 +397,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
 
 TEST_F(ArcAccessibilityHelperBridgeTest,
        TextSelectionChangeActivateNotificationWidget) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableChromeVoxArcSupport);
+  accessibility_helper_bridge()->set_filter_type_all_for_test();
 
   // Prepare notification surface.
   std::unique_ptr<MockArcNotificationSurface> surface =
@@ -460,8 +452,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableChromeVoxArcSupport);
+  accessibility_helper_bridge()->set_filter_type_all_for_test();
 
   // Prepare notification surface.
   std::unique_ptr<MockArcNotificationSurface> surface =
