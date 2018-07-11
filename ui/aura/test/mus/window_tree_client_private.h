@@ -52,7 +52,8 @@ class WindowTreeClientPrivate {
   static std::unique_ptr<WindowTreeClient> CreateWindowTreeClient(
       WindowTreeClientDelegate* window_tree_delegate,
       WindowManagerDelegate* window_manager_delegate,
-      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
+      WindowTreeClient::Config config =
+          WindowTreeClient::Config::kMashDeprecated);
 
   // Calls OnEmbed() on the WindowTreeClient.
   void OnEmbed(ui::mojom::WindowTree* window_tree);

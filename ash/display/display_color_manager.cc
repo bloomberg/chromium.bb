@@ -328,8 +328,8 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
   // don't create the Shell when running this code, hence the
   // Shell::HasInstance() conditional.
   if (Shell::HasInstance() &&
-      (base::FeatureList::IsEnabled(::features::kMash) ||
-       base::FeatureList::IsEnabled(::features::kOopAsh))) {
+      (base::FeatureList::IsEnabled(::features::kMashDeprecated) ||
+       base::FeatureList::IsEnabled(::features::kMash))) {
     return false;
   }
 

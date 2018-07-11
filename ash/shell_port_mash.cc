@@ -48,7 +48,7 @@ ShellPortMash::ShellPortMash(
           std::make_unique<ImmersiveHandlerFactoryMash>()) {
   DCHECK(window_manager_);
   DCHECK(pointer_watcher_event_router_);
-  DCHECK_EQ(Config::MASH, GetAshConfig());
+  DCHECK_EQ(Config::MASH_DEPRECATED, GetAshConfig());
 }
 
 ShellPortMash::~ShellPortMash() = default;
@@ -56,7 +56,7 @@ ShellPortMash::~ShellPortMash() = default;
 // static
 ShellPortMash* ShellPortMash::Get() {
   const ash::Config config = ShellPort::Get()->GetAshConfig();
-  CHECK_EQ(Config::MASH, config);
+  CHECK_EQ(Config::MASH_DEPRECATED, config);
   return static_cast<ShellPortMash*>(ShellPort::Get());
 }
 
@@ -66,7 +66,7 @@ void ShellPortMash::Shutdown() {
 }
 
 Config ShellPortMash::GetAshConfig() const {
-  return Config::MASH;
+  return Config::MASH_DEPRECATED;
 }
 
 std::unique_ptr<display::TouchTransformSetter>
@@ -171,7 +171,7 @@ void ShellPortMash::ToggleIgnoreExternalKeyboard() {
 void ShellPortMash::CreatePointerWatcherAdapter() {
   // In Config::CLASSIC PointerWatcherAdapterClassic must be created when this
   // function is called (it is order dependent), that is not the case with
-  // Config::MASH.
+  // Config::MASH_DEPRECATED.
 }
 
 std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(

@@ -61,7 +61,8 @@ class AuraTestHelper {
   void EnableMusWithTestWindowTree(
       WindowTreeClientDelegate* window_tree_delegate,
       WindowManagerDelegate* window_manager_delegate,
-      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
+      WindowTreeClient::Config config =
+          WindowTreeClient::Config::kMashDeprecated);
 
   // Makes aura target mus with the specified WindowTreeClient. Must be called
   // before SetUp().

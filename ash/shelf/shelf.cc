@@ -60,7 +60,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 Shelf::Shelf() : shelf_locking_manager_(this) {
   // TODO: ShelfBezelEventHandler needs to work with mus too.
   // http://crbug.com/636647
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     bezel_event_handler_ = std::make_unique<ShelfBezelEventHandler>(this);
 }
 
@@ -349,7 +349,7 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   if (new_state != SHELF_AUTO_HIDE) {
     auto_hide_event_handler_.reset();
   } else if (!auto_hide_event_handler_ &&
-             Shell::GetAshConfig() != Config::MASH) {
+             Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     auto_hide_event_handler_ =
         std::make_unique<AutoHideEventHandler>(shelf_layout_manager());
   }

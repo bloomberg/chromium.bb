@@ -76,7 +76,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     service_manager::Identity identity;
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
     aura::WindowTreeClient::Config wtc_config =
-        aura::WindowTreeClient::Config::kMash;
+        aura::WindowTreeClient::Config::kMashDeprecated;
 
     // Create a wm::WMState. Some processes (e.g. the browser) may already
     // have one.

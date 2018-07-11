@@ -60,7 +60,7 @@ bool CanStartOneFingerDrag(int window_component) {
 }
 
 void ShowResizeShadow(aura::Window* window, int component) {
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     // TODO: http://crbug.com/640773.
     return;
   }
@@ -79,7 +79,7 @@ void ShowResizeShadow(aura::Window* window, int component) {
 }
 
 void HideResizeShadow(aura::Window* window) {
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     // TODO: http://crbug.com/640773.
     return;
   }

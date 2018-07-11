@@ -34,10 +34,10 @@ class MusDemoTest : public service_manager::test::ServiceTest {
   ~MusDemoTest() override {}
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kMash);
+    feature_list_.InitAndEnableFeature(features::kMashDeprecated);
     base::CommandLine::ForCurrentProcess()->AppendSwitch("use-test-config");
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableFeatures, features::kMash.name);
+        switches::kEnableFeatures, features::kMashDeprecated.name);
     ServiceTest::SetUp();
   }
 

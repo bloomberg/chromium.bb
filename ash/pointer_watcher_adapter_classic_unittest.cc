@@ -154,7 +154,7 @@ class TestHelper {
 
 TEST_F(PointerWatcherAdapterClassicTest, MouseEvents) {
   // Not relevant for mash.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   TestHelper helper;
@@ -200,7 +200,7 @@ TEST_F(PointerWatcherAdapterClassicTest, MouseEvents) {
 
 TEST_F(PointerWatcherAdapterClassicTest, TouchEvents) {
   // Not relevant for mash.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   TestHelper helper;

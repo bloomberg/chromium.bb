@@ -1405,18 +1405,6 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--enable-features=Mash",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mash.ash_unittests.filter"
-        ],
-        "name": "mash_ash_unittests",
-        "override_isolate_target": "ash_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },

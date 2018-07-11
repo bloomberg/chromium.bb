@@ -60,8 +60,8 @@ void AshTestSuite::Initialize() {
         ash_test_resources_200, ui::SCALE_FACTOR_200P);
   }
 
-  const bool is_mash = base::FeatureList::IsEnabled(features::kMash);
-  AshTestHelper::config_ = is_mash ? Config::MASH : Config::CLASSIC;
+  const bool is_mash = base::FeatureList::IsEnabled(features::kMashDeprecated);
+  AshTestHelper::config_ = is_mash ? Config::MASH_DEPRECATED : Config::CLASSIC;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(is_mash ? aura::Env::Mode::MUS

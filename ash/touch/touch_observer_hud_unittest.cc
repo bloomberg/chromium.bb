@@ -485,7 +485,7 @@ TEST_F(TouchHudDebugTest, Headless) {
 // Test if the WM sets correct work area under different density.
 TEST_F(TouchHudProjectionTest, TouchMoveRelease) {
   // Mash has a separate app for touch HUD.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   SetupSingleDisplay();
@@ -507,7 +507,7 @@ TEST_F(TouchHudProjectionTest, TouchMoveRelease) {
 // and touch-cancelled events.
 TEST_F(TouchHudProjectionTest, TouchMoveCancel) {
   // Mash has a separate app for touch HUD.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   SetupSingleDisplay();
@@ -528,7 +528,7 @@ TEST_F(TouchHudProjectionTest, TouchMoveCancel) {
 // Checks projection touch HUD with two simultaneous touches.
 TEST_F(TouchHudProjectionTest, DoubleTouch) {
   // Mash has a separate app for touch HUD.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   SetupSingleDisplay();

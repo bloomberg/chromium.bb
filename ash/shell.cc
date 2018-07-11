@@ -403,8 +403,8 @@ Config Shell::GetAshConfig() {
 
 // static
 bool Shell::ShouldUseIMEService() {
-  return Shell::GetAshConfig() == Config::MASH ||
-         base::FeatureList::IsEnabled(::features::kOopAsh);
+  return Shell::GetAshConfig() == Config::MASH_DEPRECATED ||
+         base::FeatureList::IsEnabled(::features::kMash);
 }
 
 // static
@@ -570,7 +570,7 @@ void Shell::UpdateCursorCompositingEnabled() {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  if (GetAshConfig() != Config::MASH) {
+  if (GetAshConfig() != Config::MASH_DEPRECATED) {
     // TODO: needs to work in mash. http://crbug.com/705592.
     CursorWindowController* cursor_window_controller =
         window_tree_host_manager_->cursor_window_controller();
@@ -1028,7 +1028,7 @@ void Shell::Init(
   wallpaper_controller_ = std::make_unique<WallpaperController>();
 
   // TODO(sky): move creation to ShellPort.
-  if (config != Config::MASH)
+  if (config != Config::MASH_DEPRECATED)
     immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryAsh>();
 
   window_positioner_ = std::make_unique<WindowPositioner>();
@@ -1038,8 +1038,8 @@ void Shell::Init(
     cursor_manager_ = std::make_unique<CursorManager>(
         base::WrapUnique(native_cursor_manager_));
   } else {
-    // TODO(jamescook|estade): Cursor manager for Config::MASH. We might be able
-    // to use most of the classic version after we switch to ws2.
+    // TODO(jamescook|estade): Cursor manager for Config::MASH_DEPRECATED. We
+    // might be able to use most of the classic version after we switch to ws2.
   }
 
   shell_delegate_->PreInit();
@@ -1140,7 +1140,7 @@ void Shell::Init(
   toplevel_window_event_handler_ =
       std::make_unique<ToplevelWindowEventHandler>();
 
-  if (config != Config::MASH) {
+  if (config != Config::MASH_DEPRECATED) {
     system_gesture_filter_.reset(new SystemGestureEventFilter);
     AddPreTargetHandler(system_gesture_filter_.get());
   }
@@ -1180,7 +1180,7 @@ void Shell::Init(
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
   // In mash drag and drop is handled by mus.
-  if (config != Config::MASH)
+  if (config != Config::MASH_DEPRECATED)
     drag_drop_controller_ = std::make_unique<DragDropController>();
 
   // |screenshot_controller_| needs to be created (and prepended as a
@@ -1270,7 +1270,7 @@ void Shell::Init(
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
-  if (config != Config::MASH)
+  if (config != Config::MASH_DEPRECATED)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
   if (cursor_manager_) {
@@ -1309,7 +1309,7 @@ void Shell::Init(
         tap_visualizer::mojom::kServiceName);
   }
 
-  if (config != Config::MASH) {
+  if (config != Config::MASH_DEPRECATED) {
     window_service_owner_ =
         std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
     if (!ShouldUseIMEService()) {
@@ -1409,10 +1409,10 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   root_window->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   if (drag_drop_controller_) {
-    DCHECK_NE(Config::MASH, GetAshConfig());
+    DCHECK_NE(Config::MASH_DEPRECATED, GetAshConfig());
     aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   } else {
-    DCHECK_EQ(Config::MASH, GetAshConfig());
+    DCHECK_EQ(Config::MASH_DEPRECATED, GetAshConfig());
   }
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());

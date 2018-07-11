@@ -1549,7 +1549,7 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     // TODO(xdai): This piece of codes seems knowing too much impl details about
     // WindowResizer. Revisit the logic here later to see if there is anything
     // we can do to simplify the logic and hide impl details.
-    if (Shell::GetAshConfig() != Config::MASH) {
+    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
       real_window_resizer = static_cast<DragWindowResizer*>(resizer)
                                 ->next_window_resizer_for_testing();
 

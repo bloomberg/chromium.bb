@@ -78,7 +78,7 @@ class ImeFocusHandlerTest : public AshTestBase {
 // a ClientWindow and an ash window.
 TEST_F(ImeFocusHandlerTest, BetweenClientWindowAndAshWindow) {
   // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   // Activates a non-ash window. IME should lose focus.
@@ -101,7 +101,7 @@ TEST_F(ImeFocusHandlerTest, BetweenClientWindowAndAshWindow) {
 // different ClientWindows.
 TEST_F(ImeFocusHandlerTest, BetweenClientWindows) {
   // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   // Activates a non-ash window. IME should lose focus.
@@ -119,7 +119,7 @@ TEST_F(ImeFocusHandlerTest, BetweenClientWindows) {
 // windows.
 TEST_F(ImeFocusHandlerTest, BetweenAshWindows) {
   // This test relies on state only set in classic.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   // Activates an ash window. IME is focused.

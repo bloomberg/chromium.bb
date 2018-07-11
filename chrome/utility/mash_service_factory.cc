@@ -55,7 +55,7 @@ void RecordMashServiceLaunch(MashService service) {
 
 std::unique_ptr<service_manager::Service> CreateAshService() {
   RecordMashServiceLaunch(MashService::kAsh);
-  if (base::FeatureList::IsEnabled(features::kMash)) {
+  if (base::FeatureList::IsEnabled(features::kMashDeprecated)) {
     const bool show_primary_host_on_connect = true;
     return std::make_unique<ash::WindowManagerService>(
         show_primary_host_on_connect);

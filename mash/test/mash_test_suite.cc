@@ -41,8 +41,8 @@ void MashTestSuite::Initialize() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kOverrideUseSoftwareGLForTests);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableFeatures, features::kMash.name);
-  feature_list_.InitAndEnableFeature(features::kMash);
+      switches::kEnableFeatures, features::kMashDeprecated.name);
+  feature_list_.InitAndEnableFeature(features::kMashDeprecated);
 
   // Load ash mus strings and resources; not 'common' (Chrome) resources.
   base::FilePath resources;
@@ -50,7 +50,7 @@ void MashTestSuite::Initialize() {
   resources = resources.Append(FILE_PATH_LITERAL("ash_service_resources.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(resources);
 
-  ash::AshTestHelper::config_ = ash::Config::MASH;
+  ash::AshTestHelper::config_ = ash::Config::MASH_DEPRECATED;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);

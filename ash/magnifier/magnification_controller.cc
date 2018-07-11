@@ -372,7 +372,7 @@ void MagnificationController::OnImplicitAnimationsCompleted() {
         aura::client::GetCursorClient(root_window_);
     if (cursor_client)
       cursor_client->EnableMouseEvents();
-    else if (Shell::GetAshConfig() == Config::MASH)
+    else if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
       ShellPort::Get()->SetCursorTouchVisible(true);
   }
 
@@ -734,7 +734,7 @@ void MagnificationController::AfterAnimationMoveCursorTo(
     if (!cursor_client->IsCursorVisible())
       return;
     cursor_client->DisableMouseEvents();
-  } else if (Shell::GetAshConfig() == Config::MASH) {
+  } else if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
     ShellPort::Get()->SetCursorTouchVisible(false);
   }
   move_cursor_after_animation_ = true;

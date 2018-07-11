@@ -271,7 +271,7 @@ bool ShouldDestroyWindowInCloseChildWindows(aura::Window* window) {
   if (!window->owned_by_parent())
     return false;
 
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     return true;
 
   aura::WindowMus* window_mus = aura::WindowMus::Get(window);
@@ -710,7 +710,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
-    if (Shell::GetAshConfig() != Config::MASH)
+    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
       shell->EnableKeyboard();
   } else {
     window_tree_host_->Show();
@@ -723,7 +723,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode) &&
-      Shell::GetAshConfig() != Config::MASH) {
+      Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     touch_exploration_manager_ =
         std::make_unique<TouchExplorationManager>(this);
   }

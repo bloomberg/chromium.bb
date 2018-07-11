@@ -75,7 +75,7 @@ class AshViewsDelegate : public views::ViewsDelegate {
 AshService::AshService() = default;
 
 AshService::~AshService() {
-  if (!base::FeatureList::IsEnabled(features::kOopAsh))
+  if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
   Shell::DeleteInstance();
@@ -104,7 +104,7 @@ service_manager::EmbeddedServiceInfo AshService::CreateEmbeddedServiceInfo() {
   return info;
 }
 
-void AshService::InitForOop() {
+void AshService::InitForMash() {
   wm_state_ = std::make_unique<::wm::WMState>();
 
   discardable_shared_memory_manager_ =
@@ -183,8 +183,8 @@ void AshService::OnStart() {
   registry_.AddInterface(base::BindRepeating(&AshService::BindServiceFactory,
                                              base::Unretained(this)));
 
-  if (base::FeatureList::IsEnabled(features::kOopAsh))
-    InitForOop();
+  if (base::FeatureList::IsEnabled(features::kMash))
+    InitForMash();
 }
 
 void AshService::OnBindInterface(
@@ -200,7 +200,7 @@ void AshService::CreateService(
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
   DCHECK_EQ(name, ui::mojom::kServiceName);
   Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
-  if (base::FeatureList::IsEnabled(features::kOopAsh)) {
+  if (base::FeatureList::IsEnabled(features::kMash)) {
     ui::ws2::WindowService* window_service =
         Shell::Get()->window_service_owner()->window_service();
     input_device_controller_ = std::make_unique<ui::InputDeviceController>();

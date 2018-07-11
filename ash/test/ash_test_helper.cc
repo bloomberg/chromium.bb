@@ -374,7 +374,7 @@ void AshTestHelper::CreateWindowService() {
 }
 
 void AshTestHelper::CreateMashWindowManager() {
-  CHECK_EQ(config_, Config::MASH);
+  CHECK_EQ(config_, Config::MASH_DEPRECATED);
   const bool show_primary_root_on_connect = false;
   window_manager_service_ =
       std::make_unique<WindowManagerService>(show_primary_root_on_connect);

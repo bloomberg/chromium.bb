@@ -460,7 +460,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (Shell::GetAshConfig() != Config::MASH) {
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     // Hide the cursor before entering overview to test that it will be shown.
     aura::client::GetCursorClient(root_window)->HideCursor();
   }
@@ -480,7 +480,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (Shell::GetAshConfig() != Config::MASH) {
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
     // Cursor should have been unlocked.
     EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
   }

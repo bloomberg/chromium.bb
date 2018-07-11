@@ -93,7 +93,7 @@ WindowServerTestBase::ReleaseMostRecentClient() {
 }
 
 void WindowServerTestBase::SetUp() {
-  feature_list_.InitAndEnableFeature(features::kMash);
+  feature_list_.InitAndEnableFeature(features::kMashDeprecated);
   WindowServerServiceTestBase::SetUp();
 
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);

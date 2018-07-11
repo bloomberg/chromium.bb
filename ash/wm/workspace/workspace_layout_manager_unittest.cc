@@ -458,7 +458,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (Shell::GetAshConfig() == Config::MASH)
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
     return;
 
   // Normal window bounds shouldn't be changed.

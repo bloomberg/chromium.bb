@@ -17,7 +17,8 @@ TestWindowTreeClientSetup::~TestWindowTreeClientSetup() {}
 
 void TestWindowTreeClientSetup::Init(
     WindowTreeClientDelegate* window_tree_delegate) {
-  CommonInit(window_tree_delegate, nullptr, WindowTreeClient::Config::kMash);
+  CommonInit(window_tree_delegate, nullptr,
+             WindowTreeClient::Config::kMashDeprecated);
   WindowTreeClientPrivate(window_tree_client_.get())
       .OnEmbed(window_tree_.get());
 }
@@ -27,7 +28,7 @@ void TestWindowTreeClientSetup::InitForWindowManager(
     WindowManagerDelegate* window_manager_delegate) {
   test_window_manager_client_ = std::make_unique<TestWindowManagerClient>();
   CommonInit(window_tree_delegate, window_manager_delegate,
-             WindowTreeClient::Config::kMash);
+             WindowTreeClient::Config::kMashDeprecated);
   WindowTreeClientPrivate window_tree_client_private(window_tree_client_.get());
   window_tree_client_private.SetTree(window_tree_.get());
   window_tree_->set_window_manager(window_tree_client_.get());

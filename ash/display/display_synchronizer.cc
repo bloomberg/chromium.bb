@@ -68,7 +68,7 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
       Shell::Get()->window_tree_host_manager()->mirror_window_controller();
   for (const auto& mirror :
        display_manager->software_mirroring_display_list()) {
-    if (base::FeatureList::IsEnabled(features::kMash)) {
+    if (base::FeatureList::IsEnabled(features::kMashDeprecated)) {
       // If mus is hosting viz, the window server handle mirrors internally.
       mirrors.push_back(mirror);
       metrics.push_back(GetMetricsForDisplay(mirror.id()));

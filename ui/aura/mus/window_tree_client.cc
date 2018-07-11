@@ -1708,7 +1708,7 @@ void WindowTreeClient::OnWindowInputEvent(
   // this code. Now that ash does not use it, it can be removed once --mash is
   // removed. https://crbug.com/842365.
   std::unique_ptr<ui::MouseEvent> mapped_event_with_native;
-  if (config_ == Config::kMash) {
+  if (config_ == Config::kMashDeprecated) {
     if (mapped_event->type() == ui::ET_MOUSE_MOVED ||
         mapped_event->type() == ui::ET_MOUSE_DRAGGED) {
       mapped_event_with_native = std::make_unique<ui::MouseEvent>(
@@ -1735,7 +1735,7 @@ void WindowTreeClient::OnWindowInputEvent(
   WindowMus* display_root_window = GetWindowByServerId(display_root_window_id);
   // TODO(sky): simplify conditional. See comment in USE_OZONE above for why
   // this isn't necessary with kMus2. https://crbug.com/842365.
-  if (config_ == Config::kMash && display_root_window &&
+  if (config_ == Config::kMashDeprecated && display_root_window &&
       event->IsLocatedEvent() &&
       display::Screen::GetScreen()->GetPrimaryDisplay().id() ==
           display::kUnifiedDisplayId) {

@@ -32,7 +32,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     AshTestBase::SetUp();
     // Mash doesn't do this yet, so don't do it in tests either.
     // http://crbug.com/718072
-    if (Shell::GetAshConfig() != Config::MASH) {
+    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
       chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
                                                               &local_state_);
     }
@@ -57,7 +57,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     model_.reset();
 
     // This roughly matches production shutdown order.
-    if (Shell::GetAshConfig() != Config::MASH) {
+    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
       chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     }
     AshTestBase::TearDown();

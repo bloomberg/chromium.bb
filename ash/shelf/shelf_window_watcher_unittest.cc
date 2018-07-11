@@ -91,7 +91,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
 
 // Ensure shelf items are added and removed for some unknown windows in mash.
 TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
-  if (Shell::GetAshConfig() != Config::MASH)
+  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
     return;
 
   // Windows with no valid ShelfItemType and ShelfID properties get shelf items.
@@ -142,7 +142,7 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  const bool is_mash = Shell::GetAshConfig() == Config::MASH;
+  const bool is_mash = Shell::GetAshConfig() == Config::MASH_DEPRECATED;
   EXPECT_EQ(is_mash ? 4 : 2, model_->item_count());
 
   // Create a ShelfItem for the first window.

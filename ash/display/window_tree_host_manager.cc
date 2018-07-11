@@ -101,7 +101,7 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
 
 bool ShouldUpdateMirrorWindowController() {
   return aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
-         !base::FeatureList::IsEnabled(::features::kMash);
+         !base::FeatureList::IsEnabled(::features::kMashDeprecated);
 }
 
 }  // namespace

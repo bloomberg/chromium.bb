@@ -75,7 +75,7 @@ void AuraTestHelper::EnableMusWithTestWindowTree(
     WindowTreeClient::Config config) {
   DCHECK(!setup_called_);
   DCHECK_EQ(Mode::LOCAL, mode_);
-  mode_ = (config == WindowTreeClient::Config::kMash)
+  mode_ = (config == WindowTreeClient::Config::kMashDeprecated)
               ? Mode::MUS_CREATE_WINDOW_TREE_CLIENT
               : Mode::MUS2_CREATE_WINDOW_TREE_CLIENT;
   window_tree_delegate_ = window_tree_delegate;
