@@ -62,6 +62,8 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                void(content::WebContents*,
                     PasswordProtectionService::RequestOutcome,
                     const safe_browsing::LoginReputationClientResponse*));
+  MOCK_METHOD3(CanShowInterstitial,
+               bool(RequestOutcome, ReusedPasswordType, const GURL&));
   MOCK_METHOD4(
       MaybeStartPasswordFieldOnFocusRequest,
       void(content::WebContents*, const GURL&, const GURL&, const GURL&));

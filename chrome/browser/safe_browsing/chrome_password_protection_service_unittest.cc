@@ -947,4 +947,52 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
 }
 
+TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
+  ASSERT_FALSE(
+      profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
+  GURL trigger_url = GURL(kPhishingURL);
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+  EXPECT_TRUE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
+  EXPECT_TRUE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
+
+  // Add |trigger_url| to enterprise whitelist.
+  base::ListValue whitelisted_domains;
+  whitelisted_domains.AppendString(trigger_url.host());
+  profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains,
+                             whitelisted_domains);
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
+}
+
 }  // namespace safe_browsing
