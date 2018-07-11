@@ -5038,6 +5038,7 @@ interface PaymentResponse
     getter shippingOption
     method complete
     method constructor
+    method retry
     method toJSON
 interface Performance : EventTarget
     attribute @@toStringTag

@@ -804,6 +804,14 @@ ExecutionContext* PaymentRequest::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
+ScriptPromise PaymentRequest::Retry(ScriptState*,
+                                    const PaymentValidationErrors&) {
+  // TODO(zino): Should implement this method. Please see
+  // https://crbug.com/861704
+  NOTIMPLEMENTED();
+  return ScriptPromise();
+}
+
 ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
                                        PaymentComplete result) {
   if (!script_state->ContextIsValid()) {

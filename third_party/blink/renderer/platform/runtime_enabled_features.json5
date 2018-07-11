@@ -955,6 +955,10 @@
       status: "stable",
     },
     {
+      name: "PaymentRetry",
+      status: "experimental",
+    },
+    {
       name: "PerformanceNavigationTiming2",
       status: "stable",
     },

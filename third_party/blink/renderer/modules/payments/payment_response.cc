@@ -7,7 +7,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
-#include "third_party/blink/renderer/modules/payments/payment_completer.h"
+#include "third_party/blink/renderer/modules/payments/payment_state_resolver.h"
+#include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -16,7 +17,7 @@ namespace blink {
 PaymentResponse::PaymentResponse(
     payments::mojom::blink::PaymentResponsePtr response,
     PaymentAddress* shipping_address,
-    PaymentCompleter* payment_completer,
+    PaymentStateResolver* payment_state_resolver,
     const String& requestId)
     : requestId_(requestId),
       method_name_(response->method_name),
@@ -26,8 +27,8 @@ PaymentResponse::PaymentResponse(
       payer_name_(response->payer_name),
       payer_email_(response->payer_email),
       payer_phone_(response->payer_phone),
-      payment_completer_(payment_completer) {
-  DCHECK(payment_completer_);
+      payment_state_resolver_(payment_state_resolver) {
+  DCHECK(payment_state_resolver_);
 }
 
 PaymentResponse::~PaymentResponse() = default;
@@ -62,18 +63,24 @@ ScriptValue PaymentResponse::details(ScriptState* script_state,
 
 ScriptPromise PaymentResponse::complete(ScriptState* script_state,
                                         const String& result) {
-  PaymentCompleter::PaymentComplete converted_result =
-      PaymentCompleter::kUnknown;
+  PaymentStateResolver::PaymentComplete converted_result =
+      PaymentStateResolver::PaymentComplete::kUnknown;
   if (result == "success")
-    converted_result = PaymentCompleter::kSuccess;
+    converted_result = PaymentStateResolver::PaymentComplete::kSuccess;
   else if (result == "fail")
-    converted_result = PaymentCompleter::kFail;
-  return payment_completer_->Complete(script_state, converted_result);
+    converted_result = PaymentStateResolver::PaymentComplete::kFail;
+  return payment_state_resolver_->Complete(script_state, converted_result);
+}
+
+ScriptPromise PaymentResponse::retry(
+    ScriptState* script_state,
+    const PaymentValidationErrors& error_fields) {
+  return payment_state_resolver_->Retry(script_state, error_fields);
 }
 
 void PaymentResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(shipping_address_);
-  visitor->Trace(payment_completer_);
+  visitor->Trace(payment_state_resolver_);
   ScriptWrappable::Trace(visitor);
 }
 

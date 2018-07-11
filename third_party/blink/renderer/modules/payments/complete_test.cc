@@ -23,9 +23,12 @@ TEST(CompleteTest, CannotCallCompleteTwice) {
   request->show(scope.GetScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kFail);
+  request->Complete(scope.GetScriptState(),
+                    PaymentStateResolver::PaymentComplete::kFail);
 
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 }
 
@@ -41,7 +44,9 @@ TEST(CompleteTest, ResolveCompletePromiseOnUnknownError) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
@@ -60,7 +65,9 @@ TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
@@ -83,7 +90,9 @@ TEST(CompleteTest, RejectCompletePromiseAfterError) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
       payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
 
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 }
 
@@ -99,7 +108,9 @@ TEST(CompleteTest, ResolvePromiseOnComplete) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -120,7 +131,9 @@ TEST(CompleteTest, RejectCompletePromiseOnUpdateDetailsFailure) {
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   String error_message;
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   request->OnUpdatePaymentDetailsFailure("oops");
@@ -144,7 +157,9 @@ TEST(CompleteTest, RejectCompletePromiseAfterTimeout) {
   request->OnCompleteTimeoutForTesting();
 
   String error_message;
-  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+  request
+      ->Complete(scope.GetScriptState(),
+                 PaymentStateResolver::PaymentComplete::kSuccess)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
