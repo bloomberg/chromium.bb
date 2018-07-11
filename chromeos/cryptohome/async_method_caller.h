@@ -33,10 +33,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   virtual ~AsyncMethodCaller() {}
 
-  // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.
-  // |callback| will be called with status info on completion.
-  virtual void AsyncMountGuest(Callback callback) = 0;
-
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_id| and then nuke it.
   virtual void AsyncRemove(const Identification& user_id,
@@ -125,12 +121,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
       const std::string& key_name,
       const std::string& challenge,
       const DataCallback& callback) = 0;
-
-  // Asks cryptohome to asynchronously retrieve a string associated with given
-  // |user_id| that would be used in mount path instead of |user_id|.
-  // On success the data is sent to |callback|.
-  virtual void AsyncGetSanitizedUsername(const Identification& user_id,
-                                         const DataCallback& callback) = 0;
 
   // Creates the global AsyncMethodCaller instance.
   static void Initialize();

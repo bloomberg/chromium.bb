@@ -35,13 +35,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
   }
 
-  void AsyncMountGuest(Callback callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->AsyncMountGuest(
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
-                       "Couldn't initiate async mount of cryptohome."));
-  }
-
   void AsyncRemove(const Identification& cryptohome_id,
                    Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->AsyncRemove(
@@ -152,19 +145,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                 weak_ptr_factory_.GetWeakPtr(), callback,
                 "Couldn't initiate async attestation simple challenge."));
-  }
-
-  void AsyncGetSanitizedUsername(const Identification& cryptohome_id,
-                                 const DataCallback& callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
-        cryptohome_id,
-        base::BindOnce(&AsyncMethodCallerImpl::GetSanitizedUsernameCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
-  void GetSanitizedUsernameCallback(const DataCallback& callback,
-                                    base::Optional<std::string> result) {
-    callback.Run(true, result.value_or(std::string()));
   }
 
  private:

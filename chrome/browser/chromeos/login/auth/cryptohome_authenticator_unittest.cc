@@ -150,6 +150,10 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
     migrate_key_should_succeed_ = should_succeed;
   }
 
+  void set_mount_guest_should_succeed(bool should_succeed) {
+    mount_guest_should_succeed_ = should_succeed;
+  }
+
   void MountEx(const cryptohome::Identification& cryptohome_id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
@@ -198,11 +202,23 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
         FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
+  void MountGuestEx(
+      const cryptohome::MountGuestRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    cryptohome::BaseReply reply;
+    if (!mount_guest_should_succeed_)
+      reply.set_error(cryptohome::CRYPTOHOME_ERROR_MOUNT_FATAL);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), reply));
+  }
+
  private:
   cryptohome::Identification expected_id_;
   std::string expected_authorization_secret_;
   bool is_create_attempt_expected_ = false;
   bool migrate_key_should_succeed_ = false;
+  bool mount_guest_should_succeed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
 };
@@ -382,6 +398,10 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     fake_cryptohome_client_->set_expected_id(
         cryptohome::Identification(user_context_.GetAccountId()));
     fake_cryptohome_client_->set_migrate_key_should_succeed(should_succeed);
+  }
+
+  void ExpectMountGuestExCall(bool should_succeed) {
+    fake_cryptohome_client_->set_mount_guest_should_succeed(should_succeed);
   }
 
   void RunResolve(CryptohomeAuthenticator* auth) {
@@ -610,11 +630,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveFailedMount) {
 TEST_F(CryptohomeAuthenticatorTest, DriveGuestLogin) {
   ExpectGuestLoginSuccess();
   FailOnLoginFailure();
-
-  // Set up mock async method caller to respond as though a tmpfs mount
-  // attempt has occurred and succeeded.
-  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
+  ExpectMountGuestExCall(true /*should_succeeed*/);
 
   auth_->LoginOffTheRecord();
   run_loop_.Run();
@@ -623,11 +639,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveGuestLogin) {
 TEST_F(CryptohomeAuthenticatorTest, DriveGuestLoginButFail) {
   FailOnGuestLoginSuccess();
   ExpectLoginFailure(AuthFailure(AuthFailure::COULD_NOT_MOUNT_TMPFS));
-
-  // Set up mock async method caller to respond as though a tmpfs mount
-  // attempt has occurred and failed.
-  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_FATAL);
-  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
+  ExpectMountGuestExCall(false /*should_succeed*/);
 
   auth_->LoginOffTheRecord();
   run_loop_.Run();

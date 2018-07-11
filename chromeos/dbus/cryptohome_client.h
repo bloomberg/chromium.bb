@@ -31,6 +31,7 @@ class GetKeyDataRequest;
 class GetSupportedKeyPoliciesRequest;
 class MigrateKeyRequest;
 class MigrateToDircryptoRequest;
+class MountGuestRequest;
 class MountRequest;
 class RemoveFirmwareManagementParametersRequest;
 class RemoveKeyRequest;
@@ -195,9 +196,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual std::string BlockingGetSanitizedUsername(
       const cryptohome::Identification& cryptohome_id) = 0;
 
-  // Calls AsyncMountGuest method.  |callback| is called after the method call
+  // Calls MountGuestEx method. |callback| is called after the method call
   // succeeds.
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
+  virtual void MountGuestEx(
+      const cryptohome::MountGuestRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls TpmIsReady method.
   virtual void TpmIsReady(DBusMethodCallback<bool> callback) = 0;
