@@ -14,7 +14,6 @@
 
 namespace {
 const CGFloat kSpotlightHeight = 38.0f;
-const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
 }  // namespace
 
 @implementation ToolbarSearchButton
@@ -31,8 +30,7 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
   if (!dimmed) {
     // Override the color of the non-dimmed button.
     self.spotlightView.backgroundColor =
-        [self.configuration locationBarBackgroundColorWithVisibility:
-                                kOmniboxButtonBackgroundAlphaFactor];
+        [self.configuration locationBarBackgroundColorWithVisibility:1];
   }
 }
 
@@ -49,8 +47,7 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
   spotlightView.userInteractionEnabled = NO;
   spotlightView.layer.cornerRadius = kSpotlightHeight / 2;
   spotlightView.backgroundColor =
-      [self.configuration locationBarBackgroundColorWithVisibility:
-                              kOmniboxButtonBackgroundAlphaFactor];
+      [self.configuration locationBarBackgroundColorWithVisibility:1];
   [self addSubview:spotlightView];
   AddSameCenterConstraints(self, spotlightView);
   [spotlightView.heightAnchor constraintEqualToConstant:kSpotlightHeight]
