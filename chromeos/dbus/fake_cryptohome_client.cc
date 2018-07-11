@@ -146,8 +146,10 @@ std::string FakeCryptohomeClient::BlockingGetSanitizedUsername(
                                : std::string();
 }
 
-void FakeCryptohomeClient::AsyncMountGuest(AsyncMethodCallback callback) {
-  ReturnAsyncMethodResult(std::move(callback));
+void FakeCryptohomeClient::MountGuestEx(
+    const cryptohome::MountGuestRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
