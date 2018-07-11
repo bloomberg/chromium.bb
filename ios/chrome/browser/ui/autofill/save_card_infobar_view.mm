@@ -159,10 +159,20 @@ UIFont* InfoBarMessageFont() {
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  // Return early if no subviews have been added yet.
-  if (!self.subviews.count)
-    return;
+  [self.sizingDelegate didSetInfoBarTargetHeight:CGRectGetHeight(self.frame)];
+}
 
+- (void)setFrame:(CGRect)frame {
+  [super setFrame:frame];
+
+  // Updates layout of subviews immediately, if layout updates are pending,
+  // rather than waiting for the next update cycle. Otherwise, the layout breaks
+  // on iPhone X.
+  // TODO(crbug.com/862688): Investigate why this is happening.
+  [self layoutIfNeeded];
+}
+
+- (CGSize)sizeThatFits:(CGSize)size {
   // Set a bottom margin equal to the height of the secondary toolbar, if any.
   // Deduct the bottom safe area inset as it is already included in the height
   // of the secondary toolbar.
@@ -174,16 +184,6 @@ UIFont* InfoBarMessageFont() {
           ? layoutGuide.layoutFrame.size.height - bottomSafeAreaInset
           : 0;
 
-  [self.sizingDelegate didSetInfoBarTargetHeight:CGRectGetHeight(self.frame)];
-}
-
-- (void)setFrame:(CGRect)frame {
-  [super setFrame:frame];
-
-  [self layoutIfNeeded];
-}
-
-- (CGSize)sizeThatFits:(CGSize)size {
   CGSize computedSize = [self systemLayoutSizeFittingSize:size];
   return CGSizeMake(size.width, computedSize.height);
 }
