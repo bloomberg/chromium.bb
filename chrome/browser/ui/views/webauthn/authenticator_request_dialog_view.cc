@@ -17,6 +17,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
 
 // static
