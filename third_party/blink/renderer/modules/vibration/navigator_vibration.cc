@@ -94,7 +94,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
           "https://www.chromestatus.com/feature/5644273861001216.";
     }
 
-    Intervention::GenerateReport(frame, message);
+    Intervention::GenerateReport(frame, "NavigatorVibrate", message);
     return false;
   }
 
