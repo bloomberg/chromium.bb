@@ -36,12 +36,20 @@ base::Optional<std::string> GetHeaderString(
 }
 
 bool NeedsPreflight(const ResourceRequest& request) {
+  if (!cors::IsCORSEnabledRequestMode(request.fetch_request_mode))
+    return false;
+
   if (request.is_external_request)
     return true;
 
   if (request.fetch_request_mode ==
       mojom::FetchRequestMode::kCORSWithForcedPreflight) {
     return true;
+  }
+
+  if (request.cors_preflight_policy ==
+      mojom::CORSPreflightPolicy::kPreventPreflight) {
+    return false;
   }
 
   if (!IsCORSSafelistedMethod(request.method))
