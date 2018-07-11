@@ -15,7 +15,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -119,11 +118,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
     AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
-  ]);
-
-  FormInputAccessoryViewTabHelper::CreateForWebState(web_state, @[
-    FormSuggestionTabHelper::FromWebState(web_state)
-        ->GetAccessoryViewProvider(),
   ]);
 
   InsecureInputTabHelper::CreateForWebState(web_state);

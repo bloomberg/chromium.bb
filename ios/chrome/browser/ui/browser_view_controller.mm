@@ -55,6 +55,7 @@
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_coordinator.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -618,6 +619,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for UI related to launching external apps.
   AppLauncherCoordinator* _appLauncherCoordinator;
 
+  // Coordinator in charge of the presenting autofill options above the
+  // keyboard.
+  FormInputAccessoryCoordinator* _formInputAccessoryCoordinator;
+
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -1010,6 +1015,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     _appLauncherCoordinator =
         [[AppLauncherCoordinator alloc] initWithBaseViewController:self];
+
+    _formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
+        initWithBaseViewController:self
+                      browserState:self.browserState
+                      webStateList:model.webStateList];
+    [_formInputAccessoryCoordinator start];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));

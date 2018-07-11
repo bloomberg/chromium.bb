@@ -11,6 +11,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 @protocol CRWWebViewProxy;
+@protocol FormInputAccessoryViewProvider;
 
 namespace autofill {
 extern NSString* const kFormSuggestionAssistButtonPreviousElement;
@@ -18,56 +19,6 @@ extern NSString* const kFormSuggestionAssistButtonNextElement;
 extern NSString* const kFormSuggestionAssistButtonDone;
 extern CGFloat const kInputAccessoryHeight;
 }  // namespace autofill
-
-@protocol FormInputAccessoryViewProvider;
-@class FormInputAccessoryViewController;
-
-// Block type to indicate that a FormInputAccessoryViewProvider has an accessory
-// view to provide.
-typedef void (^AccessoryViewAvailableCompletion)(
-    BOOL inputAccessoryViewAvailable);
-
-// Block type to provide an accessory view asynchronously.
-typedef void (^AccessoryViewReadyCompletion)(
-    UIView* view,
-    id<FormInputAccessoryViewProvider> provider);
-
-// Represents an object that can provide a custom keyboard input accessory view.
-@protocol FormInputAccessoryViewProvider<NSObject>
-
-// A delegate for form navigation.
-@property(nonatomic, assign)
-    id<FormInputAccessoryViewDelegate> accessoryViewDelegate;
-
-// Determines asynchronously if this provider has a view available for the
-// specified form/field and invokes |completionHandler| with the answer.
-- (void)
-checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
-                              webState:(web::WebState*)webState
-                     completionHandler:
-                         (AccessoryViewAvailableCompletion)completionHandler;
-
-// Asynchronously retrieves an accessory view from this provider for the
-// specified form/field and returns it via |accessoryViewUpdateBlock|.
-- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
-                            webState:(web::WebState*)webState
-            accessoryViewUpdateBlock:
-                (AccessoryViewReadyCompletion)accessoryViewUpdateBlock;
-
-// Notifies this provider that the accessory view is going away.
-- (void)inputAccessoryViewControllerDidReset:
-        (FormInputAccessoryViewController*)controller;
-
-// Notifies this provider that the accessory view frame is changing. If the
-// view provided by this provider needs to change, the updated view should be
-// set using |accessoryViewUpdateBlock|.
-- (void)resizeAccessoryView;
-
-// Returns YES if UMA metrics for keyboard accessory button presses should be
-// logged for this provider.
-- (BOOL)getLogKeyboardAccessoryMetrics;
-
-@end
 
 // Creates and manages a custom input accessory view while the user is
 // interacting with a form. Also handles hiding and showing the default
@@ -80,16 +31,14 @@ checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
 // interface, it is used in tests as a backdoor.
 @property(nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
 
+// The current web state that this view controller is observing.
+@property(nonatomic) web::WebState* webState;
+
 // Initializes a new controller with the specified |providers| of input
 // accessory views.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                       providers:(NSArray*)providers;
-
-// Notifies the controller that the owning tab was shown.
-- (void)wasShown;
-
-// Notifies the controller that the owning tab was hidden.
-- (void)wasHidden;
+                       providers:(NSArray<id<FormInputAccessoryViewProvider>>*)
+                                     providers;
 
 // Instructs the controller to detach itself from the WebState.
 - (void)detachFromWebState;

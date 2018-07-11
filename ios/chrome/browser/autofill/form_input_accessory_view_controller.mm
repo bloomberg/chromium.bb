@@ -12,6 +12,8 @@
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
+#import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -193,6 +195,9 @@ NSArray* FindDescendantToolbarItemsForActionName(
 }
 
 @synthesize grayBackgroundView = _grayBackgroundView;
+@synthesize webState = _webState;
+
+#pragma mark - Life Cycle
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                        providers:(NSArray*)providers {
@@ -234,44 +239,35 @@ NSArray* FindDescendantToolbarItemsForActionName(
   return self;
 }
 
-- (void)wasShown {
-  // There is no defined relation on the timing of JavaScript events and
-  // keyboard showing up. So it is necessary to listen to the keyboard
-  // notification to make sure the keyboard is updated.
-  if (IsIPadIdiom()) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardWillOrDidChangeFrame:)
-               name:UIKeyboardWillChangeFrameNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(textInputDidBeginEditing:)
-               name:UITextFieldTextDidBeginEditingNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(textInputDidBeginEditing:)
-               name:UITextViewTextDidBeginEditingNotification
-             object:nil];
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
   }
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(keyboardWillOrDidChangeFrame:)
-             name:UIKeyboardDidChangeFrameNotification
-           object:nil];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(keyboardDidHide:)
-             name:UIKeyboardDidHideNotification
-           object:nil];
 }
 
-- (void)wasHidden {
-  [_customAccessoryView removeFromSuperview];
-  [self.grayBackgroundView removeFromSuperview];
+#pragma mark - Public
 
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+- (void)setWebState:(web::WebState*)webState {
+  if (webState == _webState) {
+    return;
+  }
+  [self detachFromWebState];
+
+  _webState = webState;
+  if (_webState) {
+    _webStateObserverBridge =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserverBridge.get());
+
+    _providers = @[ FormSuggestionTabHelper::FromWebState(_webState)
+                        ->GetAccessoryViewProvider() ];
+    _suggestionsHaveBeenShown = NO;
+    _JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
+        [_webState->GetJSInjectionReceiver()
+            instanceOfClass:[JsSuggestionManager class]]);
+  }
 }
 
 - (void)detachFromWebState {
@@ -280,14 +276,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
-  }
-}
-
-- (void)dealloc {
-  if (_webState) {
-    _webState->RemoveObserver(_webStateObserverBridge.get());
-    _webStateObserverBridge.reset();
-    _webState = nullptr;
+    _providers = @[];
+    _JSSuggestionManager = nullptr;
   }
 }
 
@@ -378,8 +368,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)closeKeyboardWithButtonPress {
   [self closeKeyboardWithoutButtonPress];
-  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
-    _keyboardAccessoryMetricsLogger->OnCloseButtonPressed();
+  _keyboardAccessoryMetricsLogger->OnCloseButtonPressed();
 }
 
 - (void)closeKeyboardWithoutButtonPress {
@@ -426,8 +415,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)selectPreviousElementWithButtonPress {
   [self selectPreviousElementWithoutButtonPress];
-  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
-    _keyboardAccessoryMetricsLogger->OnPreviousButtonPressed();
+  _keyboardAccessoryMetricsLogger->OnPreviousButtonPressed();
 }
 
 - (void)selectPreviousElementWithoutButtonPress {
@@ -443,8 +431,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)selectNextElementWithButtonPress {
   [self selectNextElementWithoutButtonPress];
-  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
-    _keyboardAccessoryMetricsLogger->OnNextButtonPressed();
+  _keyboardAccessoryMetricsLogger->OnNextButtonPressed();
 }
 
 - (void)selectNextElementWithoutButtonPress {
@@ -468,6 +455,48 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 #pragma mark -
 #pragma mark CRWWebStateObserver
+
+- (void)webStateWasShown:(web::WebState*)webState {
+  // There is no defined relation on the timing of JavaScript events and
+  // keyboard showing up. So it is necessary to listen to the keyboard
+  // notification to make sure the keyboard is updated.
+  if (IsIPadIdiom()) {
+    // On iPad, there's no inputAccessoryView available, so we attach the custom
+    // view to the keyboard. Because of this and the different keyboards on iPad
+    // we need to listen to these extra notifications.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(keyboardWillOrDidChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(textInputDidBeginEditing:)
+               name:UITextFieldTextDidBeginEditingNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(textInputDidBeginEditing:)
+               name:UITextViewTextDidBeginEditingNotification
+             object:nil];
+  }
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWillOrDidChangeFrame:)
+             name:UIKeyboardDidChangeFrameNotification
+           object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardDidHide:)
+             name:UIKeyboardDidHideNotification
+           object:nil];
+}
+
+- (void)webStateWasHidden:(web::WebState*)webState {
+  [_customAccessoryView removeFromSuperview];
+  [self.grayBackgroundView removeFromSuperview];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);

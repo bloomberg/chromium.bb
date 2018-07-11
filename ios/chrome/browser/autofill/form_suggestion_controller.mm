@@ -14,6 +14,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -375,17 +376,13 @@ checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
 }
 
 - (void)inputAccessoryViewControllerDidReset:
-        (FormInputAccessoryViewController*)controller {
+    (FormInputAccessoryViewController*)controller {
   accessoryViewUpdateBlock_ = nil;
   [self resetSuggestionState];
 }
 
 - (void)resizeAccessoryView {
   [self updateKeyboard:_suggestionState.get()];
-}
-
-- (BOOL)getLogKeyboardAccessoryMetrics {
-  return YES;
 }
 
 @end
