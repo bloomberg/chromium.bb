@@ -4561,3 +4561,18 @@ crbug.com/856601 [ Linux ] http/tests/event-timing/event-timing-retrievability.h
 
 # Test timeouts on mac_chromium_rel_ng
 crbug.com/862215 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Timeout Pass ]
+
+# Sheriff 2018-07-11
+# Test timeouts following wpt-import@89ccb892...
+crbug.com/862588 [ Linux ] external/wpt/cookie-store/idlharness.tentative.https.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/gamepad/idlharness.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/payment-request/idlharness.https.window.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/picture-in-picture/idlharness.window.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.sharedworker.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.worker.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.worker.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/selection/interfaces.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
+crbug.com/862588 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/idlharness.https.window.html [ Timeout Pass ]
