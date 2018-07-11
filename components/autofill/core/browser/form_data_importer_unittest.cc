@@ -2043,8 +2043,9 @@ TEST_F(FormDataImporterTest,
   EXPECT_EQ(0, credit_card.Compare(*results[0]));
 }
 
-// Ensures that |offering_upload_of_local_credit_card_| is set correctly.
-TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfLocalCard) {
+// Ensures that |imported_credit_card_record_type_| is set and reset correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_SecondImportResetsCreditCardRecordType) {
   // Start with a single valid credit card stored via the preferences.
   CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
@@ -2067,14 +2068,17 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfLocalCard) {
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(ImportCreditCard(form_structure, true, &imported_credit_card));
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  // |offering_upload_of_local_credit_card_| should be true because upload was
+  // |imported_credit_card_record_type_| should be LOCAL_CARD because upload was
   // offered and the card is a local card already on the device.
-  ASSERT_TRUE(form_data_importer_->offering_upload_of_local_credit_card_);
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD);
 
   // Second form is filled with a new card so
-  // |offering_upload_of_local_credit_card_| should be reset.
+  // |imported_credit_card_record_type_| should be reset.
   // Simulate a form submission with a new card.
   FormData form2;
   AddFullCreditCardForm(&form2, "Biggie Smalls", "4012888888881881", "01",
@@ -2084,15 +2088,55 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfLocalCard) {
   form_structure2.DetermineHeuristicTypes(nullptr /* ukm_service */,
                                           0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card2;
-  EXPECT_TRUE(ImportCreditCard(form_structure2, true, &imported_credit_card2));
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure2, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card2));
   ASSERT_TRUE(imported_credit_card2);
-  // |offering_upload_of_local_credit_card_| should be false because user use a
-  // new card for upload.
-  ASSERT_FALSE(form_data_importer_->offering_upload_of_local_credit_card_);
+  // |imported_credit_card_record_type_| should be NEW_CARD because the imported
+  // card is not already on the device.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NEW_CARD);
+
+  // Third form is an address form and set |credit_card_autofill_enabled| to be
+  // false so that the ImportCreditCard won't be called.
+  // |imported_credit_card_record_type_| should still be reset even if
+  // ImportCreditCard is not called. Simulate a form submission with no card.
+  FormData form3;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "bogus@example.com", "text",
+                            &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form3.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form3.fields.push_back(field);
+  FormStructure form_structure3(form3);
+  form_structure3.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                          0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card3;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure3, /*credit_card_autofill_enabled=*/false,
+      /*should_return_local_card=*/true, &imported_credit_card3));
+  // |imported_credit_card_record_type_| should be NO_CARD because no valid card
+  // was imported from the form.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
 }
 
-// Ensures that |offering_upload_of_local_credit_card_| is set correctly.
-TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfNewCard) {
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_NewCard) {
   // Simulate a form submission with a new credit card.
   FormData form;
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
@@ -2102,11 +2146,200 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfNewCard) {
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
                                          0 /* source_id */);
   std::unique_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(ImportCreditCard(form_structure, true, &imported_credit_card));
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  // |offering_upload_of_local_credit_card_| should be false because upload was
-  // offered but the card is NOT a local card already on the device.
-  ASSERT_FALSE(form_data_importer_->offering_upload_of_local_credit_card_);
+  // |imported_credit_card_record_type_| should be NEW_CARD because the imported
+  // card is not already on the device.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NEW_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_LocalCard) {
+  // Start with a single valid credit card stored via the preferences.
+  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
+                          "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
+  personal_data_manager_->AddCreditCard(saved_credit_card);
+
+  WaitForOnPersonalDataChanged();
+
+  const std::vector<CreditCard*>& results =
+      personal_data_manager_->GetCreditCards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, saved_credit_card.Compare(*results[0]));
+
+  // Simulate a form submission with the same card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be LOCAL_CARD because upload was
+  // offered and the card is a local card already on the device.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_MaskedServerCard) {
+  // Add a masked server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "Biggie Smalls",
+                          "1111" /* Visa */, "01", "2999", "");
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_manager_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_manager_->GetCreditCards().size());
+
+  // Simulate a form submission with the same masked server card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be SERVER_CARD.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_FullServerCard) {
+  // Add a full server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Biggie Smalls",
+                          "378282246310005" /* American Express */, "04",
+                          "2999", "1");
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_manager_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_manager_->GetCreditCards().size());
+
+  // Simulate a form submission with the same full server card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "378282246310005", "04",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be SERVER_CARD.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_NoCard_InvalidCardNumber) {
+  // Simulate a form submission using a credit card with an invalid card number.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1112", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be NO_CARD because no valid card
+  // was successfully imported from the form.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard) {
+  // Simulate a form submission with an expired credit card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "1999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be NO_CARD because no valid card
+  // was successfully imported from the form.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_NoCard_NoCardOnForm) {
+  // Simulate a form submission with no credit card on form.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "bogus@example.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
+                                         0 /* source_id */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be NO_CARD because the form
+  // doesn't have credit card section.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
 }
 
 // ImportFormData tests (both addresses and credit cards).
