@@ -37,7 +37,12 @@ class CastGestureHandler {
   virtual void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
                                   const gfx::Point& touch_location) {}
 
-  // Triggered on the completion of a tap event.
+  // Triggered on the completion of a tap down event, fired when the
+  // finger is pressed.
+  virtual void HandleTapDownGesture(const gfx::Point& touch_location) {}
+
+  // Triggered on the completion of a tap event, fire after a press
+  // followed by a release, within the tap timeout window
   virtual void HandleTapGesture(const gfx::Point& touch_location) {}
 
  private:

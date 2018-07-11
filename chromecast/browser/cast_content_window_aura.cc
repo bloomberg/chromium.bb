@@ -144,14 +144,19 @@ void CastContentWindowAura::HandleSideSwipeContinue(
   gesture_dispatcher_->HandleSideSwipeContinue(swipe_origin, touch_location);
 }
 
-void CastContentWindowAura::HandleTapGesture(const gfx::Point& touch_location) {
-  gesture_dispatcher_->HandleTapGesture(touch_location);
-}
-
 void CastContentWindowAura::HandleSideSwipeEnd(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
   gesture_dispatcher_->HandleSideSwipeEnd(swipe_origin, touch_location);
+}
+
+void CastContentWindowAura::HandleTapDownGesture(
+    const gfx::Point& touch_location) {
+  gesture_dispatcher_->HandleTapDownGesture(touch_location);
+}
+
+void CastContentWindowAura::HandleTapGesture(const gfx::Point& touch_location) {
+  gesture_dispatcher_->HandleTapGesture(touch_location);
 }
 
 }  // namespace shell

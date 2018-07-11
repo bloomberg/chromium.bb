@@ -77,6 +77,14 @@ void CastGestureDispatcher::HandleSideSwipeEnd(
   }
 }
 
+void CastGestureDispatcher::HandleTapDownGesture(
+    const gfx::Point& touch_location) {
+  if (!delegate_->CanHandleGesture(GestureType::TAP_DOWN)) {
+    return;
+  }
+  delegate_->ConsumeGesture(GestureType::TAP_DOWN);
+}
+
 void CastGestureDispatcher::HandleTapGesture(const gfx::Point& touch_location) {
   if (!delegate_->CanHandleGesture(GestureType::TAP)) {
     return;
