@@ -1,13 +1,13 @@
 {
   "TestTrial1": [
     {
-      "platforms": ["win"],
+      "platforms": ["windows"],
       "experiments": [{"name": "TestGroup1"}]
     }
   ],
   "TestTrial2": [
     {
-      "platforms": ["win"],
+      "platforms": ["windows"],
       "experiments": [
         {
           "name": "TestGroup2",
@@ -32,13 +32,13 @@
   ],
   "TestTrial3": [
     {
-      "platforms": ["win"],
+      "platforms": ["windows"],
       "experiments": [{"name": "TestGroup3", "enable_features": ["X"]}]
     }
   ],
   "TrialWithForcingFlag":  [
     {
-      "platforms": ["win"],
+      "platforms": ["windows"],
       "experiments": [
         {
           "name": "ForcedGroup",

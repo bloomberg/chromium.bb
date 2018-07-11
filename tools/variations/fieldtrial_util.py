@@ -109,7 +109,7 @@ def main():
   print_shell_cmd = len(sys.argv) >= 4 and sys.argv[3] == 'shell_cmd'
 
   supported_platforms = ['android', 'android_webview', 'chromeos', 'ios',
-                         'linux', 'mac', 'win']
+                         'linux', 'mac', 'windows']
   if sys.argv[2] not in supported_platforms:
     print ('\'%s\' is an unknown platform. Supported platforms: %s' %
         (sys.argv[2], supported_platforms))

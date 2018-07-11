@@ -14,7 +14,7 @@ class FieldTrialToStruct(unittest.TestCase):
     config = {
       'Trial1': [
         {
-          'platforms': ['win'],
+          'platforms': ['windows'],
           'experiments': [
             {
               'name': 'Group1',
@@ -39,13 +39,13 @@ class FieldTrialToStruct(unittest.TestCase):
       ],
       'Trial2': [
         {
-          'platforms': ['win'],
+          'platforms': ['windows'],
           'experiments': [{'name': 'OtherGroup'}]
         }
       ],
       'TrialWithForcingFlag':  [
         {
-          'platforms': ['win'],
+          'platforms': ['windows'],
           'experiments': [
             {
               'name': 'ForcedGroup',
@@ -56,7 +56,7 @@ class FieldTrialToStruct(unittest.TestCase):
       ]
     }
     result = fieldtrial_to_struct._FieldTrialConfigToDescription(config,
-                                                                 ['win'])
+                                                                 ['windows'])
     expected = {
       'elements': {
         'kFieldTrialConfig': {
@@ -115,7 +115,7 @@ class FieldTrialToStruct(unittest.TestCase):
   _MULTIPLE_PLATFORM_CONFIG = {
     'Trial1': [
       {
-        'platforms': ['win', 'ios'],
+        'platforms': ['windows', 'ios'],
         'experiments': [
           {
             'name': 'Group1',
@@ -148,7 +148,7 @@ class FieldTrialToStruct(unittest.TestCase):
     ],
     'Trial2': [
       {
-        'platforms': ['win', 'mac'],
+        'platforms': ['windows', 'mac'],
         'experiments': [{'name': 'OtherGroup'}]
       }
     ]
@@ -229,7 +229,7 @@ class FieldTrialToStruct(unittest.TestCase):
     fieldtrial_to_struct.main([
       '--schema=' + schema,
       '--output=' + test_output_filename,
-      '--platform=win',
+      '--platform=windows',
       '--year=2015',
       unittest_data_dir + 'test_config.json'
     ])
