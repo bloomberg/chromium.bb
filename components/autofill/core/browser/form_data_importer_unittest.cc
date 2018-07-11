@@ -34,7 +34,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -221,7 +220,6 @@ class FormDataImporterTestBase {
   scoped_refptr<WebDatabaseService> web_database_;
   AutofillTable* autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
-  std::unique_ptr<TestAutofillClient> autofill_client_;
   std::unique_ptr<PersonalDataManager> personal_data_manager_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
 };
@@ -247,13 +245,11 @@ class FormDataImporterTest : public FormDataImporterTestBase,
         WebDataServiceBase::ProfileErrorCallback());
     autofill_database_service_->Init();
 
-    autofill_client_ = std::make_unique<TestAutofillClient>();
-
     test::DisableSystemServices(prefs_.get());
     ResetPersonalDataManager(USER_MODE_NORMAL);
 
     form_data_importer_.reset(
-        new FormDataImporter(autofill_client_.get(),
+        new FormDataImporter(/*AutofillClient=*/nullptr,
                              /*payments::PaymentsClient=*/nullptr,
                              personal_data_manager_.get(), "en"));
 

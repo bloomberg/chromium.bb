@@ -265,14 +265,6 @@ void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::ConfirmSaveAutofillProfile(
-    const autofill::AutofillProfile& profile,
-    base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
-}
-
 void AwAutofillClient::ConfirmSaveCreditCardLocally(
     const autofill::CreditCard& card,
     const base::Closure& callback) {

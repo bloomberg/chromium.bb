@@ -61,8 +61,6 @@ class ChromeAutofillClient
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
                                     const base::Closure& callback) override;
   void ConfirmSaveCreditCardToCloud(
