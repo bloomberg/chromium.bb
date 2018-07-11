@@ -9,7 +9,6 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_view_ids.h"
-#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -50,6 +49,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
@@ -64,7 +64,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
-
 #include "ui/views/view.h"
 
 using chromeos::ManagedNetworkConfigurationHandler;
@@ -646,7 +645,7 @@ NetworkListView::UpdateNetworkListEntries() {
   // TODO(jamescook): Create UIProxyConfigService under mash. This will require
   // the mojo pref service to work with prefs in Local State.
   // http://crbug.com/718072
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
+  if (::features::IsAshInBrowserProcess()) {
     using_proxy = NetworkHandler::Get()
                       ->ui_proxy_config_service()
                       ->HasDefaultNetworkProxyConfigured();
