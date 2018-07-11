@@ -46,21 +46,25 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
       const WebAudioLatencyHint&);
   ~DefaultAudioDestinationHandler() override;
 
-  // AudioHandler
+  // For AudioHandler.
   void Dispose() override;
   void Initialize() override;
   void Uninitialize() override;
   void SetChannelCount(unsigned long, ExceptionState&) override;
+  double LatencyTime() const override { return 0; }
+  double TailTime() const override { return 0; }
+  bool RequiresTailProcessing() const final { return false; }
 
-  // AudioDestinationHandler
+  // For AudioDestinationHandler.
   void StartRendering() override;
   void StopRendering() override;
   void RestartRendering() override;
   unsigned long MaxChannelCount() const override;
   double SampleRate() const override;
 
-  // Implements AudioIOCallback: invoked by Platform AudioDestination to get
-  // the next render quantum into |destination_bus|.
+  // For AudioIOCallback. This is invoked by the platform audio destination to
+  // get the next render quantum into |destination_bus| and update
+  // |output_position|.
   void Render(AudioBus* destination_bus,
               size_t number_of_frames,
               const AudioIOPosition& output_position) final;
@@ -71,27 +75,19 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   // Returns a given frames-per-buffer size from audio infra.
   int GetFramesPerBuffer() const;
 
-  double TailTime() const override { return 0; }
-  double LatencyTime() const override { return 0; }
-  bool RequiresTailProcessing() const final { return false; }
-
  private:
   explicit DefaultAudioDestinationHandler(AudioNode&,
                                           const WebAudioLatencyHint&);
+
   void CreateDestination();
-
-  // Starts platform/AudioDestination. If the runtime flag for AudioWorklet is
-  // set, uses the AudioWorkletThread's backing thread for the rendering.
   void StartDestination();
-
   void StopDestination();
 
-  // Uses |RefPtr| to keep the AudioDestination alive until all the cross-thread
-  // tasks are completed.
-  scoped_refptr<AudioDestination> destination_;
-
   const WebAudioLatencyHint latency_hint_;
+  scoped_refptr<AudioDestination> destination_;
 };
+
+// -----------------------------------------------------------------------------
 
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
  public:
