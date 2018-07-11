@@ -176,9 +176,10 @@
                                alpha:kAdaptiveLocationBarBackgroundAlpha *
                                      visibilityFactor];
     case INCOGNITO:
-      return [UIColor colorWithWhite:1
-                               alpha:kAdaptiveLocationBarBackgroundAlpha *
-                                     visibilityFactor];
+      return
+          [UIColor colorWithWhite:1
+                            alpha:kAdaptiveLocationBarBackgroundAlphaIncognito *
+                                  visibilityFactor];
   }
 }
 
