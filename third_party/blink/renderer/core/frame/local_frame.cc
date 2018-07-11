@@ -1102,16 +1102,6 @@ static bool CanAccessAncestor(const SecurityOrigin& active_security_origin,
   return false;
 }
 
-blink::mojom::blink::PrefetchURLLoaderService*
-LocalFrame::PrefetchURLLoaderService() {
-  if (!prefetch_loader_service_ &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&prefetch_loader_service_));
-  }
-  return prefetch_loader_service_.get();
-}
-
 bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
                                                 String& reason) {
   if (&target_frame == this)

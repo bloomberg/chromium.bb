@@ -587,14 +587,6 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::link;
-    auto* service = document.GetFrame()->PrefetchURLLoaderService();
-    if (service) {
-      network::mojom::blink::URLLoaderFactoryPtr prefetch_url_loader_factory;
-      service->GetFactory(mojo::MakeRequest(&prefetch_url_loader_factory));
-      options.url_loader_factory = base::MakeRefCounted<
-          base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>(
-          std::move(prefetch_url_loader_factory));
-    }
 
     FetchParameters link_fetch_params(resource_request, options);
     if (params.cross_origin != kCrossOriginAttributeNotSet) {

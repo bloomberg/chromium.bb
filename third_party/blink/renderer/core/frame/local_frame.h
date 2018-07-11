@@ -34,7 +34,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -333,9 +332,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // preview.
   bool IsUsingDataSavingPreview() const;
 
-  // Prefetch URLLoader service. May return nullptr.
-  blink::mojom::blink::PrefetchURLLoaderService* PrefetchURLLoaderService();
-
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID,
                                                             WebComputedAXTree*);
 
@@ -458,7 +454,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
 
-  blink::mojom::blink::PrefetchURLLoaderServicePtr prefetch_loader_service_;
   ClientHintsPreferences client_hints_preferences_;
 };
 
