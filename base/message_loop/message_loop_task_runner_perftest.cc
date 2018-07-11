@@ -8,7 +8,11 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/debug/task_annotator.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/incoming_task_queue.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump.h"
@@ -20,27 +24,36 @@
 
 namespace base {
 
-class StubMessagePump : public MessagePump {
+namespace {
+
+// Tests below will post tasks in a loop until |kPostTaskPerfTestDuration| has
+// elapsed.
+constexpr TimeDelta kPostTaskPerfTestDuration =
+    base::TimeDelta::FromSeconds(30);
+
+}  // namespace
+
+class FakeObserver : public internal::IncomingTaskQueue::Observer {
  public:
-  StubMessagePump() = default;
-  ~StubMessagePump() override = default;
+  // IncomingTaskQueue::Observer
+  void WillQueueTask(PendingTask* task) override {}
+  void DidQueueTask(bool was_empty) override {}
 
-  void Run(Delegate* delegate) override {}
-
-  void Quit() override {}
-  void ScheduleWork() override {}
-  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override {}
+  virtual void RunTask(PendingTask* task) { std::move(task->task).Run(); }
 };
 
-// Exercises MessageLoopTaskRunner+IncomingTaskQueue w/ a mock MessageLoop.
+// Exercises MessageLoopTaskRunner's multi-threaded queue in isolation.
 class BasicPostTaskPerfTest : public testing::Test {
  public:
-  void Run(int batch_size, int tasks_per_reload) {
+  void Run(int batch_size,
+           int tasks_per_reload,
+           std::unique_ptr<FakeObserver> task_source_observer) {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks now;
-    MessageLoop loop(std::unique_ptr<MessagePump>(new StubMessagePump));
+    FakeObserver* task_source_observer_raw = task_source_observer.get();
     scoped_refptr<internal::IncomingTaskQueue> queue(
-        base::MakeRefCounted<internal::IncomingTaskQueue>(&loop));
+        base::MakeRefCounted<internal::IncomingTaskQueue>(
+            std::move(task_source_observer)));
     scoped_refptr<SingleThreadTaskRunner> task_runner(
         base::MakeRefCounted<internal::MessageLoopTaskRunner>(queue));
     uint32_t num_posted = 0;
@@ -55,31 +68,85 @@ class BasicPostTaskPerfTest : public testing::Test {
         while (!loop_local_queue.empty()) {
           PendingTask t = std::move(loop_local_queue.front());
           loop_local_queue.pop();
-          loop.RunTask(&t);
+          task_source_observer_raw->RunTask(&t);
         }
       }
 
       now = base::TimeTicks::Now();
-    } while (now - start < base::TimeDelta::FromSeconds(5));
+    } while (now - start < kPostTaskPerfTestDuration);
     std::string trace = StringPrintf("%d_tasks_per_reload", tasks_per_reload);
     perf_test::PrintResult(
         "task", "", trace,
         (now - start).InMicroseconds() / static_cast<double>(num_posted),
         "us/task", true);
-    queue->WillDestroyCurrentMessageLoop();
   }
 };
 
 TEST_F(BasicPostTaskPerfTest, OneTaskPerReload) {
-  Run(10000, 1);
+  Run(10000, 1, std::make_unique<FakeObserver>());
 }
 
 TEST_F(BasicPostTaskPerfTest, TenTasksPerReload) {
-  Run(10000, 10);
+  Run(10000, 10, std::make_unique<FakeObserver>());
 }
 
 TEST_F(BasicPostTaskPerfTest, OneHundredTasksPerReload) {
-  Run(1000, 100);
+  Run(1000, 100, std::make_unique<FakeObserver>());
+}
+
+class StubMessagePump : public MessagePump {
+ public:
+  StubMessagePump() = default;
+  ~StubMessagePump() override = default;
+
+  // MessagePump:
+  void Run(Delegate* delegate) override {}
+  void Quit() override {}
+  void ScheduleWork() override {}
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override {}
+};
+
+// Simulates the overhead of hooking TaskAnnotator and ScheduleWork() to the
+// post task machinery.
+class FakeObserverSimulatingOverhead : public FakeObserver {
+ public:
+  FakeObserverSimulatingOverhead() = default;
+
+  // FakeObserver:
+  void WillQueueTask(PendingTask* task) final {
+    task_annotator_.WillQueueTask("MessageLoop::PostTask", task);
+  }
+
+  void DidQueueTask(bool was_empty) final {
+    AutoLock scoped_lock(message_loop_lock_);
+    pump_->ScheduleWork();
+  }
+
+  void RunTask(PendingTask* task) final {
+    task_annotator_.RunTask("MessageLoop::PostTask", task);
+  }
+
+ private:
+  // Simulates overhead from ScheduleWork() and TaskAnnotator calls involved in
+  // a real PostTask (stores the StubMessagePump in a pointer to force a virtual
+  // dispatch for ScheduleWork() and be closer to reality).
+  Lock message_loop_lock_;
+  std::unique_ptr<MessagePump> pump_{std::make_unique<StubMessagePump>()};
+  debug::TaskAnnotator task_annotator_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeObserverSimulatingOverhead);
+};
+
+TEST_F(BasicPostTaskPerfTest, OneTaskPerReloadWithOverhead) {
+  Run(10000, 1, std::make_unique<FakeObserverSimulatingOverhead>());
+}
+
+TEST_F(BasicPostTaskPerfTest, TenTasksPerReloadWithOverhead) {
+  Run(10000, 10, std::make_unique<FakeObserverSimulatingOverhead>());
+}
+
+TEST_F(BasicPostTaskPerfTest, OneHundredTasksPerReloadWithOverhead) {
+  Run(1000, 100, std::make_unique<FakeObserverSimulatingOverhead>());
 }
 
 // Exercises the full MessageLoop/RunLoop machinery.
@@ -100,7 +167,7 @@ class IntegratedPostTaskPerfTest : public testing::Test {
       }
 
       now = base::TimeTicks::Now();
-    } while (now - start < base::TimeDelta::FromSeconds(5));
+    } while (now - start < kPostTaskPerfTestDuration);
     std::string trace = StringPrintf("%d_tasks_per_reload", tasks_per_reload);
     perf_test::PrintResult(
         "task", "", trace,
